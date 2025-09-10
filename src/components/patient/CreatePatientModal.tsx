@@ -17,69 +17,63 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import PatientSelector from "@/components/patient/PatientSelector";
 
 const formSchema = z.object({
-  title: z.string().min(1, "Treatment plan title is required"),
-  description: z.string().optional(),
-  patient_id: z.string().min(1, "Please select a patient"),
+  name: z.string().min(1, "Patient name is required"),
+  email: z.string().email("Valid email is required"),
+  phone: z.string().optional(),
+  date_of_birth: z.string().optional(),
 });
 
-interface CreateTreatmentPlanModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
+interface Patient {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  date_of_birth?: string;
+  created_at: string;
 }
 
-const CreateTreatmentPlanModal = ({ open, onOpenChange, onSuccess }: CreateTreatmentPlanModalProps) => {
+interface CreatePatientModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess: (patient: Patient) => void;
+}
+
+const CreatePatientModal = ({ open, onOpenChange, onSuccess }: CreatePatientModalProps) => {
   const [loading, setLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      patient_id: "",
+      name: "",
+      email: "",
+      phone: "",
+      date_of_birth: "",
     },
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error("You must be logged in to create treatment plans");
-        return;
-      }
-
-      // For now, we'll use the patient email as a patient ID
-      // In a real app, you'd look up or create the patient record
-      const patientId = values.patient_id;
-
-      const planData = {
-        dentist_id: user.id,
-        patient_id: patientId,
-        title: values.title,
-        description: values.description || null,
-        status: "draft" as any,
-        total_cost: 0,
+      // In a real app, you'd save this to a patients table
+      // For now, we'll create a mock patient
+      const newPatient: Patient = {
+        id: values.email,
+        name: values.name,
+        email: values.email,
+        phone: values.phone || undefined,
+        date_of_birth: values.date_of_birth || undefined,
+        created_at: new Date().toISOString(),
       };
 
-      const { error } = await supabase
-        .from("treatment_plans")
-        .insert([planData]);
-
-      if (error) throw error;
-
-      toast.success("Treatment plan created successfully");
+      toast.success("Patient added successfully");
       form.reset();
-      onSuccess();
+      onSuccess(newPatient);
     } catch (error: any) {
-      toast.error("Failed to create treatment plan: " + error.message);
+      toast.error("Failed to add patient: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -94,19 +88,19 @@ const CreateTreatmentPlanModal = ({ open, onOpenChange, onSuccess }: CreateTreat
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Create New Treatment Plan</DialogTitle>
+          <DialogTitle>Add New Patient</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="title"
+              name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Treatment Plan Title*</FormLabel>
+                  <FormLabel>Full Name*</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Comprehensive Dental Restoration" {...field} />
+                    <Input placeholder="e.g., John Smith" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -115,15 +109,15 @@ const CreateTreatmentPlanModal = ({ open, onOpenChange, onSuccess }: CreateTreat
 
             <FormField
               control={form.control}
-              name="patient_id"
+              name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Patient*</FormLabel>
+                  <FormLabel>Email Address*</FormLabel>
                   <FormControl>
-                    <PatientSelector 
-                      value={field.value}
-                      onSelect={(patient) => field.onChange(patient.id)}
-                      placeholder="Search and select a patient"
+                    <Input 
+                      type="email" 
+                      placeholder="patient@example.com" 
+                      {...field} 
                     />
                   </FormControl>
                   <FormMessage />
@@ -133,15 +127,32 @@ const CreateTreatmentPlanModal = ({ open, onOpenChange, onSuccess }: CreateTreat
 
             <FormField
               control={form.control}
-              name="description"
+              name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Phone Number</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Optional description of the treatment plan..."
-                      className="min-h-[80px]"
-                      {...field}
+                    <Input 
+                      type="tel" 
+                      placeholder="(555) 123-4567" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="date_of_birth"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Date of Birth</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="date" 
+                      {...field} 
                     />
                   </FormControl>
                   <FormMessage />
@@ -154,7 +165,7 @@ const CreateTreatmentPlanModal = ({ open, onOpenChange, onSuccess }: CreateTreat
                 Cancel
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? "Creating..." : "Create Plan"}
+                {loading ? "Adding..." : "Add Patient"}
               </Button>
             </div>
           </form>
@@ -164,4 +175,4 @@ const CreateTreatmentPlanModal = ({ open, onOpenChange, onSuccess }: CreateTreat
   );
 };
 
-export default CreateTreatmentPlanModal;
+export default CreatePatientModal;

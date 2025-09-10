@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import AddProcedureToPlanModal from "./AddProcedureToPlanModal";
+import FileAttachmentSection from "@/components/files/FileAttachmentSection";
 
 interface TreatmentPlan {
   id: string;
@@ -327,6 +328,12 @@ const TreatmentPlanDetailModal = ({
               )}
             </CardContent>
           </Card>
+
+          {/* File Attachments */}
+          <FileAttachmentSection 
+            treatmentPlanId={treatmentPlan.id}
+            title="Treatment Plan Files"
+          />
         </div>
 
         {/* Add Procedure Modal */}
