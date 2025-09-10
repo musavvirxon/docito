@@ -32,6 +32,12 @@ const ToothSelector = ({
       upperLeft: [9, 10, 11, 12, 13, 14, 15, 16],
       lowerLeft: [17, 18, 19, 20, 21, 22, 23, 24],
       lowerRight: [25, 26, 27, 28, 29, 30, 31, 32],
+    },
+    palmer: {
+      upperRight: [8, 7, 6, 5, 4, 3, 2, 1],
+      upperLeft: [1, 2, 3, 4, 5, 6, 7, 8],
+      lowerLeft: [1, 2, 3, 4, 5, 6, 7, 8],
+      lowerRight: [8, 7, 6, 5, 4, 3, 2, 1],
     }
   };
 
@@ -48,6 +54,12 @@ const ToothSelector = ({
       upperLeft: [6, 7, 8, 9, 10],
       lowerLeft: [11, 12, 13, 14, 15],
       lowerRight: [16, 17, 18, 19, 20],
+    },
+    palmer: {
+      upperRight: [5, 4, 3, 2, 1],
+      upperLeft: [1, 2, 3, 4, 5],
+      lowerLeft: [1, 2, 3, 4, 5],
+      lowerRight: [5, 4, 3, 2, 1],
     }
   };
 
@@ -91,6 +103,27 @@ const ToothSelector = ({
 
   const renderTooth = (toothNumber: number, position: "top" | "bottom" = "top") => {
     const isSelected = selectedTeeth.includes(toothNumber);
+    
+    // Display function for Palmer notation
+    const getDisplayValue = (tooth: number) => {
+      if (currentSystem === "palmer") {
+        // For Palmer, show the tooth number with quadrant indicators
+        const isPermanent = activeChart === "permanent";
+        if (isPermanent) {
+          if (currentTeethData.upperRight.includes(tooth)) return `${tooth}⁺ʳ`;
+          if (currentTeethData.upperLeft.includes(tooth)) return `${tooth}⁺ˡ`;
+          if (currentTeethData.lowerLeft.includes(tooth)) return `${tooth}⁻ˡ`;
+          if (currentTeethData.lowerRight.includes(tooth)) return `${tooth}⁻ʳ`;
+        } else {
+          if (currentTeethData.upperRight.includes(tooth)) return `${tooth}⁺ʳ`;
+          if (currentTeethData.upperLeft.includes(tooth)) return `${tooth}⁺ˡ`;
+          if (currentTeethData.lowerLeft.includes(tooth)) return `${tooth}⁻ˡ`;
+          if (currentTeethData.lowerRight.includes(tooth)) return `${tooth}⁻ʳ`;
+        }
+      }
+      return tooth.toString();
+    };
+    
     return (
       <Button
         key={toothNumber}
@@ -98,12 +131,12 @@ const ToothSelector = ({
         size="sm"
         onClick={() => handleToothClick(toothNumber)}
         className={`
-          w-8 h-8 p-0 text-xs font-mono transition-all
+          w-10 h-8 p-0 text-xs font-mono transition-all
           ${isSelected ? "bg-primary text-primary-foreground" : "hover:bg-muted"}
           ${position === "bottom" ? "rotate-180" : ""}
         `}
       >
-        {toothNumber}
+        {getDisplayValue(toothNumber)}
       </Button>
     );
   };
@@ -121,6 +154,7 @@ const ToothSelector = ({
               <SelectContent>
                 <SelectItem value="international_fdi">FDI (International)</SelectItem>
                 <SelectItem value="universal">Universal</SelectItem>
+                <SelectItem value="palmer">Palmer</SelectItem>
               </SelectContent>
             </Select>
             {selectedTeeth.length > 0 && (

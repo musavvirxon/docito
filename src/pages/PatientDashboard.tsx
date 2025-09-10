@@ -14,6 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import SearchBar from "@/components/patient/SearchBar";
 import SearchResults from "@/components/patient/SearchResults";
 import MedicalHistory from "@/components/patient/MedicalHistory";
+import PatientTreatmentPlansSection from "@/components/patient/PatientTreatmentPlansSection";
 import { 
   Heart, 
   Calendar, 
@@ -265,10 +266,14 @@ const PatientDashboard = () => {
 
         {/* Main Dashboard */}
         <Tabs defaultValue="wellness" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="wellness" className="flex items-center space-x-2">
               <Heart className="w-4 h-4" />
               <span>Wellness Guide</span>
+            </TabsTrigger>
+            <TabsTrigger value="treatment-plans" className="flex items-center space-x-2">
+              <Calendar className="w-4 h-4" />
+              <span>Treatment Plans</span>
             </TabsTrigger>
             <TabsTrigger value="care-team" className="flex items-center space-x-2">
               <Users className="w-4 h-4" />
@@ -366,6 +371,11 @@ const PatientDashboard = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Treatment Plans Tab */}
+          <TabsContent value="treatment-plans" className="space-y-6">
+            <PatientTreatmentPlansSection />
           </TabsContent>
 
           {/* Care Team Tab */}
