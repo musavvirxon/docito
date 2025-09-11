@@ -238,7 +238,7 @@ const SearchResults = () => {
       />
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-0 min-h-screen">
+      <main className="container mx-auto px-4 pt-5 pb-0 min-h-screen">
         {/* Results Layout */}
         <div className="flex gap-8">
           {/* Desktop Filters Sidebar */}
