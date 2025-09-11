@@ -64,17 +64,16 @@ const SearchResults = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>(location.state?.results || []);
-  const [isSearchPanelFixed, setIsSearchPanelFixed] = useState(false);
+  const [isLayoutFixed, setIsLayoutFixed] = useState(false);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
-  const [showMobileSearchPanel, setShowMobileSearchPanel] = useState(true);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   
   const searchPanelRef = useRef<HTMLDivElement>(null);
   const backButtonRef = useRef<HTMLDivElement>(null);
   const resultsContainerRef = useRef<HTMLDivElement>(null);
-  const filtersRef = useRef<HTMLDivElement>(null);
-  const lastScrollYRef = useRef(0);
+  const mainContentRef = useRef<HTMLDivElement>(null);
+  const intersectionObserverRef = useRef<IntersectionObserver | null>(null);
 
   // Check if mobile on mount and resize
   useEffect(() => {
@@ -87,82 +86,60 @@ const SearchResults = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Desktop scroll handler for search panel fixing and results scrolling
-  const handleDesktopScroll = useCallback(() => {
-    if (isMobile) return;
-    
-    const searchPanel = searchPanelRef.current;
-    const backButton = backButtonRef.current;
-    
-    if (!searchPanel || !backButton) return;
-    
-    const searchPanelRect = searchPanel.getBoundingClientRect();
-    const backButtonRect = backButton.getBoundingClientRect();
-    const currentScrollY = window.scrollY;
-    
-    // Check if search panel has reached just above back button
-    const shouldFix = searchPanelRect.bottom <= backButtonRect.top + 10;
-    
-    if (shouldFix !== isSearchPanelFixed) {
-      setIsSearchPanelFixed(shouldFix);
-    }
-    
-    // Show scroll-to-top when scrolling up
-    const scrollDirection = currentScrollY > lastScrollYRef.current ? 'down' : 'up';
-    if (scrollDirection === 'up' && currentScrollY > 200) {
-      setShowScrollToTop(true);
-    } else if (scrollDirection === 'down') {
-      setShowScrollToTop(false);
-    }
-    
-    lastScrollYRef.current = currentScrollY;
-  }, [isMobile, isSearchPanelFixed]);
-
-  // Mobile scroll handler for panel visibility
-  const handleMobileScroll = useCallback(() => {
-    if (!isMobile) return;
-    
-    const currentScrollY = window.scrollY;
-    const scrollDirection = currentScrollY > lastScrollYRef.current ? 'down' : 'up';
-    
-    // Hide search panel when scrolling down, show when scrolling up
-    if (scrollDirection === 'down' && currentScrollY > 100) {
-      setShowMobileSearchPanel(false);
-    } else if (scrollDirection === 'up') {
-      setShowMobileSearchPanel(true);
-    }
-    
-    // Show scroll-to-top when scrolling up
-    if (scrollDirection === 'up' && currentScrollY > 200) {
-      setShowScrollToTop(true);
-    } else if (scrollDirection === 'down') {
-      setShowScrollToTop(false);
-    }
-    
-    lastScrollYRef.current = currentScrollY;
-  }, [isMobile]);
-
-  // Add scroll listeners
+  // IntersectionObserver for search panel visibility
   useEffect(() => {
-    let ticking = false;
+    if (!searchPanelRef.current || !backButtonRef.current) return;
+
+    intersectionObserverRef.current = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        const isVisible = entry.isIntersecting;
+        
+        // Lock layout when search panel is not visible
+        setIsLayoutFixed(!isVisible);
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px' // Trigger slightly before fully hidden
+      }
+    );
+
+    intersectionObserverRef.current.observe(searchPanelRef.current);
+
+    return () => {
+      if (intersectionObserverRef.current) {
+        intersectionObserverRef.current.disconnect();
+      }
+    };
+  }, []);
+
+  // Handle results container scroll for scroll-to-top button
+  const handleResultsScroll = useCallback(() => {
+    if (!resultsContainerRef.current) return;
     
+    const scrollTop = resultsContainerRef.current.scrollTop;
+    setShowScrollToTop(scrollTop > 200);
+  }, []);
+
+  // Add scroll listener to results container only
+  useEffect(() => {
+    const resultsContainer = resultsContainerRef.current;
+    if (!resultsContainer) return;
+
+    let ticking = false;
     const throttledScroll = () => {
       if (!ticking) {
         requestAnimationFrame(() => {
-          if (isMobile) {
-            handleMobileScroll();
-          } else {
-            handleDesktopScroll();
-          }
+          handleResultsScroll();
           ticking = false;
         });
         ticking = true;
       }
     };
-    
-    window.addEventListener('scroll', throttledScroll);
-    return () => window.removeEventListener('scroll', throttledScroll);
-  }, [isMobile, handleMobileScroll, handleDesktopScroll]);
+
+    resultsContainer.addEventListener('scroll', throttledScroll, { passive: true });
+    return () => resultsContainer.removeEventListener('scroll', throttledScroll);
+  }, [handleResultsScroll]);
 
   // Auto-trigger search based on URL parameters
   useEffect(() => {
@@ -291,10 +268,19 @@ const SearchResults = () => {
   const results = filteredAndSortedResults();
 
   const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
+    if (isLayoutFixed && resultsContainerRef.current) {
+      // When layout is fixed, scroll the results container to top
+      resultsContainerRef.current.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    } else {
+      // When layout is not fixed, scroll the page to top
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
   };
 
   return (
@@ -302,162 +288,111 @@ const SearchResults = () => {
       <Header />
       
       <main className="pt-20">
-        {/* Desktop: Search Panel (natural scroll until fixed) */}
-        {!isMobile && (
-          <div 
-            ref={searchPanelRef}
-            className={cn(
-              "bg-primary/5 py-4 border-b border-border transition-all duration-400 ease-out",
-              isSearchPanelFixed ? "fixed top-16 left-0 right-0 z-40 shadow-lg" : "relative"
-            )}
-          >
-            <div className="container mx-auto px-4">
-              <SearchBar 
-                onSearch={handleSearchResults}
-                className="max-w-6xl mx-auto"
-                showResultsInline={true}
-              />
-            </div>
+        {/* Search Panel - Natural scroll until intersection */}
+        <div 
+          ref={searchPanelRef}
+          className="bg-primary/5 py-4 border-b border-border"
+        >
+          <div className="container mx-auto px-4">
+            <SearchBar 
+              onSearch={handleSearchResults}
+              className="max-w-6xl mx-auto"
+              showResultsInline={true}
+            />
           </div>
-        )}
+        </div>
 
-        {/* Mobile: Search Panel (slide up/down) */}
-        {isMobile && (
-          <>
-            {/* Mobile Search Panel */}
-            <div 
-              className={cn(
-                "bg-primary/5 py-4 border-b border-border transition-all duration-400 ease-out",
-                showMobileSearchPanel ? "relative" : "fixed -top-96 left-0 right-0 z-40"
-              )}
-            >
-              <div className="container mx-auto px-4">
-                <SearchBar 
-                  onSearch={handleSearchResults}
-                  className="max-w-6xl mx-auto"
-                  showResultsInline={true}
-                />
-                {/* Hide button for mobile */}
-                {showMobileSearchPanel && (
-                  <div className="flex justify-center mt-4">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowMobileSearchPanel(false)}
-                      className="text-muted-foreground"
-                    >
-                      <ChevronUp className="w-4 h-4 mr-2" />
-                      Hide Search
-                    </Button>
-                  </div>
-                )}
-              </div>
+        {/* Main Content Area */}
+        <div 
+          ref={mainContentRef}
+          className={cn(
+            "transition-all duration-300 ease-out",
+            isLayoutFixed ? "fixed top-20 left-0 right-0 bottom-0 overflow-hidden" : "relative"
+          )}
+        >
+          <div className="container mx-auto px-4 py-8 h-full">
+            <div ref={backButtonRef}>
+              <BackButton />
             </div>
-
-            {/* Mobile Show Search Button */}
-            {!showMobileSearchPanel && (
-              <div className="fixed top-16 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
-                <div className="container mx-auto px-4 py-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowMobileSearchPanel(true)}
-                    className="w-full text-muted-foreground"
+            
+            {/* Results Header */}
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
+              <div>
+                <h1 className="text-2xl font-bold text-foreground mb-2">
+                  Search Results for "{searchQuery}"
+                </h1>
+                <p className="text-muted-foreground">
+                  {results.length} {results.length === 1 ? 'result' : 'results'} found
+                </p>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-4">
+                {/* Sort Dropdown */}
+                <div className="flex items-center gap-2">
+                  <Label className="text-sm">Sort by:</Label>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as any)}
+                    className="px-3 py-2 border rounded-md text-sm bg-background"
                   >
-                    <ChevronDown className="w-4 h-4 mr-2" />
-                    Show Search Panel
+                    <option value="relevance">Relevance</option>
+                    <option value="rating">Rating</option>
+                    <option value="distance">Distance</option>
+                    <option value="experience">Experience</option>
+                  </select>
+                </div>
+
+                {/* View Toggle */}
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                  >
+                    <List className="w-4 h-4 mr-2" />
+                    List
+                  </Button>
+                  <Button
+                    variant={viewMode === 'map' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewMode('map')}
+                  >
+                    <Map className="w-4 h-4 mr-2" />
+                    Map
                   </Button>
                 </div>
               </div>
+            </div>
+
+            {/* Mobile Filters Button */}
+            {isMobile && (
+              <div className="mb-4 lg:hidden">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowMobileFilters(!showMobileFilters)}
+                  className="w-full"
+                >
+                  <Filter className="w-4 h-4 mr-2" />
+                  {showMobileFilters ? 'Hide Filters' : 'Show Filters'}
+                  {showMobileFilters ? <ChevronUp className="w-4 h-4 ml-2" /> : <ChevronDown className="w-4 h-4 ml-2" />}
+                </Button>
+              </div>
             )}
-          </>
-        )}
 
-        <div className={cn(
-          "container mx-auto px-4 py-8",
-          isSearchPanelFixed && !isMobile ? "pt-32" : ""
-        )}>
-          <div ref={backButtonRef}>
-            <BackButton />
-          </div>
-          
-          {/* Mobile Filters Button */}
-          {isMobile && !showMobileSearchPanel && (
-            <div className="mb-4">
-              <Button
-                variant="outline"
-                onClick={() => setShowMobileFilters(!showMobileFilters)}
-                className="w-full lg:hidden"
-              >
-                <Filter className="w-4 h-4 mr-2" />
-                Show Filters
-                {showMobileFilters ? <ChevronUp className="w-4 h-4 ml-2" /> : <ChevronDown className="w-4 h-4 ml-2" />}
-              </Button>
-            </div>
-          )}
-          
-          {/* Results Header */}
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground mb-2">
-                Search Results for "{searchQuery}"
-              </h1>
-              <p className="text-muted-foreground">
-                {results.length} {results.length === 1 ? 'result' : 'results'} found
-              </p>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row gap-4">
-              {/* Sort Dropdown */}
-              <div className="flex items-center gap-2">
-                <Label className="text-sm">Sort by:</Label>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
-                  className="px-3 py-2 border rounded-md text-sm bg-background"
-                >
-                  <option value="relevance">Relevance</option>
-                  <option value="rating">Rating</option>
-                  <option value="distance">Distance</option>
-                  <option value="experience">Experience</option>
-                </select>
-              </div>
-
-              {/* View Toggle */}
-              <div className="flex items-center gap-2">
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('list')}
-                >
-                  <List className="w-4 h-4 mr-2" />
-                  List
-                </Button>
-                <Button
-                  variant={viewMode === 'map' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setViewMode('map')}
-                >
-                  <Map className="w-4 h-4 mr-2" />
-                  Map
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          <div className={cn(
-            "flex gap-8",
-            isSearchPanelFixed && !isMobile ? "lg:flex-row lg:h-[calc(100vh-280px)]" : "flex-col lg:flex-row"
-          )}>
-            {/* Filter Sidebar */}
-            <aside className={cn(
-              "lg:w-80",
-              isMobile && showMobileFilters ? "block" : isMobile ? "hidden" : "block"
+            {/* Main Layout */}
+            <div className={cn(
+              "flex gap-8",
+              isLayoutFixed ? "h-[calc(100vh-280px)]" : "flex-col lg:flex-row"
             )}>
-              <div ref={filtersRef} className={cn(
-                isSearchPanelFixed && !isMobile ? "sticky top-4 max-h-[calc(100vh-120px)] overflow-y-auto" : "sticky top-32"
+              {/* Filter Sidebar */}
+              <aside className={cn(
+                "lg:w-80 flex-shrink-0",
+                isMobile && !showMobileFilters ? "hidden" : "block",
+                isLayoutFixed ? "overflow-y-auto" : ""
               )}>
-                <Card>
+                <Card className={cn(
+                  isLayoutFixed ? "h-full" : "sticky top-32"
+                )}>
                   <CardContent className="p-6">
                     <div className="flex items-center gap-2 mb-6">
                       <Filter className="w-5 h-5" />
@@ -563,26 +498,32 @@ const SearchResults = () => {
                     </div>
                   </CardContent>
                 </Card>
-              </div>
-            </aside>
+              </aside>
 
-            {/* Main Results */}
-            <div className={cn(
-              "flex-1",
-              isSearchPanelFixed && !isMobile ? "overflow-y-auto" : ""
-            )} ref={resultsContainerRef}>
-              {viewMode === 'map' ? (
-                /* Map View */
-                <Card className="h-96 mb-6">
-                  <CardContent className="p-6 h-full flex items-center justify-center text-muted-foreground">
-                    <div className="text-center">
-                      <Map className="w-12 h-12 mx-auto mb-4" />
-                      <p>Map integration coming soon</p>
-                      <p className="text-sm">Interactive map with doctor pins will be displayed here</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : null}
+              {/* Main Results */}
+              <div 
+                ref={resultsContainerRef}
+                className={cn(
+                  "flex-1",
+                  isLayoutFixed ? "overflow-y-auto overflow-x-hidden pr-2" : ""
+                )}
+                style={isLayoutFixed ? { 
+                  scrollBehavior: 'smooth',
+                  overscrollBehavior: 'contain'
+                } : {}}
+              >
+                {viewMode === 'map' ? (
+                  /* Map View */
+                  <Card className="h-96 mb-6">
+                    <CardContent className="p-6 h-full flex items-center justify-center text-muted-foreground">
+                      <div className="text-center">
+                        <Map className="w-12 h-12 mx-auto mb-4" />
+                        <p>Map integration coming soon</p>
+                        <p className="text-sm">Interactive map with doctor pins will be displayed here</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : null}
 
               {/* Loading State */}
               {isLoading && (
@@ -756,17 +697,35 @@ const SearchResults = () => {
                               >
                                 View Profile
                               </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+                             </div>
+                           </div>
+                         </div>
+                       </CardContent>
+                     </Card>
+                   ))}
+                 </div>
+               )}
+               </div>
+             </div>
+           </div>
+         </div>
+
+         {/* Scroll to Top Button */}
+         {showScrollToTop && (
+           <Button
+             onClick={scrollToTop}
+             className={cn(
+               "fixed bottom-6 right-6 z-50 w-12 h-12 p-0",
+               "bg-transparent hover:bg-transparent border-0 shadow-none",
+               "text-foreground hover:text-primary transition-all duration-300",
+               "animate-fade-in"
+             )}
+             aria-label="Scroll to top"
+             title="Back to top"
+           >
+             <ChevronUp className="w-6 h-6" />
+           </Button>
+         )}
 
         {/* Scroll to Top Button */}
         {showScrollToTop && (
