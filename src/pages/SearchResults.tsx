@@ -238,7 +238,7 @@ const SearchResults = () => {
       />
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-2">
+      <main className="container mx-auto px-4 py-0 min-h-screen">
         {/* Smart Back Navigation */}
         <div className="mb-6">
           {location.state?.fromDashboard ? (
