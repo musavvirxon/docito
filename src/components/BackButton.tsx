@@ -20,6 +20,15 @@ const BackButton = ({
       navigate(defaultRoute);
     }
   };
-  return;
+  return (
+    <Button 
+      variant="ghost" 
+      onClick={handleBack}
+      className={`flex items-center gap-2 ${className}`}
+    >
+      <ChevronLeft className="w-4 h-4" />
+      Back
+    </Button>
+  );
 };
 export default BackButton;
