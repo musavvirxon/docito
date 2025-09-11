@@ -83,20 +83,22 @@ const PatientDashboard = () => {
   };
 
   const handleBookAppointment = (result?: SearchResult) => {
-    if (!emailVerified || !phoneVerified) {
-      toast({
-        title: "⚠️ Verification Required",
-        description: "Please verify your email and phone before booking appointments.",
-        variant: "destructive",
-      });
-      return;
-    }
+    // Allow navigation but only require verification for actual booking
     toast({
       title: "🎉 Redirecting to booking!",
       description: result 
         ? `Booking appointment with ${result.name}...`
         : "Taking you to our secure payment and booking system...",
     });
+    
+    // Show verification requirement when actually booking
+    if (!emailVerified || !phoneVerified) {
+      toast({
+        title: "⚠️ Verification Required for Booking",
+        description: "Please verify your email and phone to complete your appointment booking.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSearch = (results: SearchResult[]) => {
@@ -169,7 +171,7 @@ const PatientDashboard = () => {
                     Complete Verification to Start Booking 🌟
                   </h3>
                   <p className="text-orange-700 mb-4">
-                    We need to confirm your info to give you the best care possible and secure your bookings.
+                    You can browse and explore freely, but we need to confirm your info to secure your bookings.
                   </p>
                   <div className="flex items-center space-x-6 mb-4">
                     <div className="flex items-center space-x-2">
@@ -219,7 +221,7 @@ const PatientDashboard = () => {
 
         {/* Search Results */}
         {showResults && (
-          <div className="mb-8">
+          <div className="w-full">
             <SearchResults
               results={searchResults}
               onBookAppointment={handleBookAppointment}

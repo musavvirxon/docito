@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
+import BackButton from "@/components/BackButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +26,7 @@ import {
   ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 interface Doctor {
   id: string;
@@ -67,6 +69,7 @@ interface Doctor {
 const DoctorProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [isSaved, setIsSaved] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
@@ -172,16 +175,28 @@ const DoctorProfile = () => {
     if (!selectedDate || !selectedTime) {
       // Show selection UI first
       document.getElementById('availability-tab')?.click();
+      toast({
+        title: "Select Date & Time",
+        description: "Please choose your preferred appointment slot first.",
+        variant: "destructive",
+      });
       return;
     }
     
-    // Check if user is authenticated - redirect to signup if not
-    navigate('/signup', { 
-      state: { 
-        redirectTo: `/doctor/${id}/book`,
-        appointmentDetails: { date: selectedDate, time: selectedTime }
-      }
+    // Store appointment details and redirect to signup
+    localStorage.setItem('pendingAppointment', JSON.stringify({
+      doctorId: id,
+      doctorName: doctor.name,
+      date: selectedDate,
+      time: selectedTime
+    }));
+    
+    toast({
+      title: `Booking with ${doctor.name}`,
+      description: "You'll need to create an account to complete your booking.",
     });
+    
+    navigate('/signup');
   };
 
   const renderStars = (rating: number) => {
@@ -204,6 +219,8 @@ const DoctorProfile = () => {
       
       <main className="pt-20">
         <div className="container mx-auto px-4 py-8">
+          <BackButton />
+          
           {/* Top Section */}
           <Card className="mb-8">
             <CardContent className="p-8">

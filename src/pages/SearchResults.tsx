@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
+import BackButton from "@/components/BackButton";
 import SearchBar from "@/components/patient/SearchBar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -205,6 +206,8 @@ const SearchResults = () => {
         </div>
 
         <div className="container mx-auto px-4 py-8">
+          <BackButton />
+          
           {/* Results Header */}
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
             <div>
@@ -427,7 +430,9 @@ const SearchResults = () => {
                       className="cursor-pointer hover:shadow-lg transition-shadow"
                       onClick={() => {
                         if (result.type === 'doctor') {
-                          navigate(`/doctor/${result.id}`);
+                          // Store doctor info for redirect after signup if not logged in
+                          localStorage.setItem('pendingDoctorVisit', JSON.stringify(result));
+                          window.location.href = '/signup';
                         } else {
                           navigate(`/practice/${result.id}`);
                         }

@@ -82,7 +82,7 @@ const SearchResults = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="w-full min-h-[80vh] space-y-4">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">
           {results.length} provider{results.length !== 1 ? 's' : ''} found
@@ -92,22 +92,22 @@ const SearchResults = ({
         </div>
       </div>
 
-      {results.map((result) => (
-        <Card key={result.id} className="hover:shadow-md transition-shadow">
-          <CardContent className="p-6">
-            <div className="flex items-start space-x-4">
-              {/* Avatar/Icon */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {results.map((result) => (
+          <Card key={result.id} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-6">
+            <div className="flex items-start space-x-3">
               <div className="flex-shrink-0">
                 {result.type === 'doctor' ? (
-                  <Avatar className="w-16 h-16">
+                  <Avatar className="w-12 h-12">
                     <AvatarImage src="" />
-                    <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+                    <AvatarFallback className="bg-primary text-primary-foreground">
                       {result.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                     </AvatarFallback>
                   </Avatar>
                 ) : (
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Building2 className="w-8 h-8 text-blue-600" />
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Building2 className="w-6 h-6 text-blue-600" />
                   </div>
                 )}
               </div>
@@ -116,11 +116,11 @@ const SearchResults = ({
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between mb-2">
                   <div>
-                    <h4 className="text-lg font-semibold text-foreground truncate">
+                    <h4 className="font-semibold text-foreground truncate">
                       {result.name}
                     </h4>
                     {result.specialty && (
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         {result.specialty}
                       </p>
                     )}
@@ -131,122 +131,65 @@ const SearchResults = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => onFavorite(result)}
-                    className="text-muted-foreground hover:text-red-500"
+                    className="text-muted-foreground hover:text-red-500 p-1"
                   >
-                    <Heart className="w-4 h-4" />
+                    <Heart className="w-3 h-3" />
                   </Button>
                 </div>
 
                 {/* Rating and Location */}
-                <div className="flex items-center space-x-4 mb-3">
+                <div className="flex items-center space-x-2 mb-2">
                   <div className="flex items-center space-x-1">
-                    <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                    <span className="text-sm font-medium">{result.rating}</span>
+                    <Star className="w-3 h-3 text-yellow-500 fill-current" />
+                    <span className="text-xs font-medium">{result.rating}</span>
                   </div>
                   
                   <div className="flex items-center space-x-1">
-                    <MapPin className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground truncate">
+                    <MapPin className="w-3 h-3 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground truncate">
                       {result.location}
                     </span>
                   </div>
-                  
-                  {result.distance && (
-                    <div className="text-sm text-muted-foreground">
-                      {result.distance}
-                    </div>
-                  )}
                 </div>
 
-                {/* Availability and Status */}
-                <div className="flex items-center space-x-4 mb-4">
-                  {result.availability && (
-                    <div className="flex items-center space-x-1">
-                      <Clock className="w-4 h-4 text-green-600" />
-                      <span className="text-sm text-green-700">
-                        {result.availability}
-                      </span>
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center space-x-3">
-                    <div className="flex items-center space-x-1">
-                      {result.acceptsInsurance ? (
-                        <CheckCircle className="w-4 h-4 text-green-600" />
-                      ) : (
-                        <XCircle className="w-4 h-4 text-red-500" />
-                      )}
-                      <span className="text-xs text-muted-foreground">
-                        Insurance
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center space-x-1">
-                      {result.acceptsNewPatients ? (
-                        <CheckCircle className="w-4 h-4 text-green-600" />
-                      ) : (
-                        <XCircle className="w-4 h-4 text-red-500" />
-                      )}
-                      <span className="text-xs text-muted-foreground">
-                        New patients
-                      </span>
-                    </div>
+                {/* Availability */}
+                {result.availability && (
+                  <div className="flex items-center space-x-1 mb-2">
+                    <Clock className="w-3 h-3 text-green-600" />
+                    <span className="text-xs text-green-700">
+                      {result.availability}
+                    </span>
                   </div>
-                </div>
-
-                {/* Tags */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {result.type === 'doctor' && (
-                    <Badge variant="secondary" className="text-xs">
-                      Doctor
-                    </Badge>
-                  )}
-                  {result.type === 'practice' && (
-                    <Badge variant="secondary" className="text-xs">
-                      Practice
-                    </Badge>
-                  )}
-                  {result.acceptsInsurance && (
-                    <Badge variant="outline" className="text-xs text-green-700 border-green-300">
-                      Accepts Insurance
-                    </Badge>
-                  )}
-                  {result.acceptsNewPatients && (
-                    <Badge variant="outline" className="text-xs text-blue-700 border-blue-300">
-                      New Patients
-                    </Badge>
-                  )}
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-col space-y-2 flex-shrink-0">
-                {result.type === 'doctor' ? (
-                  <Button
-                    onClick={() => onBookAppointment(result)}
-                    className="bg-primary hover:bg-primary/90"
-                  >
-                    Book
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={() => onViewPractice(result)}
-                    variant="outline"
-                  >
-                    <Users className="w-4 h-4 mr-2" />
-                    View Doctors
-                  </Button>
                 )}
-                
-                <Button variant="outline" size="sm">
-                  <Phone className="w-4 h-4 mr-2" />
-                  Call
-                </Button>
+
+                {/* Action Button */}
+                <div className="mt-2">
+                  {result.type === 'doctor' ? (
+                    <Button
+                      onClick={() => onBookAppointment(result)}
+                      size="sm"
+                      className="w-full text-xs"
+                    >
+                      Book
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => onViewPractice(result)}
+                      variant="outline"
+                      size="sm"
+                      className="w-full text-xs"
+                    >
+                      <Users className="w-3 h-3 mr-1" />
+                      View
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      ))}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
       {/* Load More */}
       {results.length >= 10 && (

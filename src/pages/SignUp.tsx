@@ -64,8 +64,20 @@ const SignUp = () => {
         description: "Please check your email to confirm your account.",
       });
       
-      // Redirect to patient dashboard after successful signup
-      window.location.href = '/patient-dashboard';
+      // Check for pending doctor visit
+      const pendingDoctor = localStorage.getItem('pendingDoctorVisit');
+      if (pendingDoctor) {
+        const doctorData = JSON.parse(pendingDoctor);
+        localStorage.removeItem('pendingDoctorVisit');
+        toast({
+          title: `Welcome! You're now viewing ${doctorData.name}'s profile.`,
+          description: "You can now book appointments and view full details.",
+        });
+        window.location.href = `/doctor-profile/${doctorData.id}`;
+      } else {
+        // Default redirect to patient dashboard
+        window.location.href = '/patient-dashboard';
+      }
     } catch (error: any) {
       toast({
         title: "Error",

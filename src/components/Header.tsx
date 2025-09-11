@@ -58,6 +58,15 @@ const Header = () => {
 
           {/* Auth Buttons */}
           <div className="flex items-center space-x-3">
+            {/* Dashboard button if signed in (mock check for now) */}
+            <Button 
+              variant="secondary" 
+              className="font-medium text-sm h-9 px-4"
+              onClick={() => window.location.href = '/patient-dashboard'}
+            >
+              Dashboard
+            </Button>
+            
             <Button 
               variant="secondary" 
               className="font-medium text-sm h-9 px-4"
