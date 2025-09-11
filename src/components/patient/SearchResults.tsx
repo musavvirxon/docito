@@ -82,7 +82,7 @@ const SearchResults = ({
   }
 
   return (
-    <div className="w-full min-h-[80vh] space-y-4">
+    <div className="w-full space-y-4 pb-8">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">
           {results.length} provider{results.length !== 1 ? 's' : ''} found

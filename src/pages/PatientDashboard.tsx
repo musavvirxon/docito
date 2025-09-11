@@ -141,7 +141,7 @@ const PatientDashboard = () => {
   const isFullyVerified = emailVerified && phoneVerified;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-accent/10 to-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-accent/10 to-background overflow-y-auto">
       {/* Header */}
       <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4">
@@ -229,7 +229,16 @@ const PatientDashboard = () => {
 
         {/* Search Results */}
         {showResults && (
-          <div id="search-results-section" className="w-full">
+          <div id="search-results-section" className="w-full mb-8">
+            <div className="mb-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowResults(false)}
+                className="mb-4"
+              >
+                ← Back to Dashboard
+              </Button>
+            </div>
             <SearchResults
               results={searchResults}
               onBookAppointment={handleBookAppointment}
