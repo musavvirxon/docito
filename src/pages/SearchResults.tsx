@@ -1,29 +1,13 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
 import BackButton from "@/components/BackButton";
-import SearchBar from "@/components/patient/SearchBar";
-import { Card, CardContent } from "@/components/ui/card";
+import SearchResultsHeader from "@/components/search/SearchResultsHeader";
+import FilterSidebar from "@/components/search/FilterSidebar";
+import MobileFilterDrawer from "@/components/search/MobileFilterDrawer";
+import ResultsList from "@/components/search/ResultsList";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { 
-  MapPin, 
-  Star, 
-  Calendar, 
-  CreditCard, 
-  Users, 
-  Clock,
-  Map,
-  List,
-  Filter,
-  Languages,
-  GraduationCap,
-  ChevronUp,
-  ChevronDown
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { ArrowLeft } from "lucide-react";
 
 interface SearchResult {
   id: string;
@@ -47,33 +31,21 @@ interface SearchResult {
 const SearchResults = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [searchParams] = useSearchParams();
+  const [isMobile, setIsMobile] = useState(false);
   const [sortBy, setSortBy] = useState<'relevance' | 'rating' | 'distance' | 'experience'>(
     (searchParams.get('sort') as any) || 'relevance'
   );
   const [filters, setFilters] = useState({
     doctorsOnly: false,
     practicesOnly: false,
+    acceptsNewPatients: searchParams.get('new_patients') === 'true',
     availableToday: false,
     acceptsInsurance: searchParams.get('insurance_accepted') === 'true',
-    acceptsNewPatients: searchParams.get('new_patients') === 'true',
     videoConsultation: false,
-    minExperience: 0,
-    languages: [] as string[]
   });
   const [isLoading, setIsLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>(location.state?.results || []);
-  const [isLayoutFixed, setIsLayoutFixed] = useState(false);
-  const [showScrollToTop, setShowScrollToTop] = useState(false);
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  
-  const searchPanelRef = useRef<HTMLDivElement>(null);
-  const backButtonRef = useRef<HTMLDivElement>(null);
-  const resultsContainerRef = useRef<HTMLDivElement>(null);
-  const mainContentRef = useRef<HTMLDivElement>(null);
-  const intersectionObserverRef = useRef<IntersectionObserver | null>(null);
 
   // Check if mobile on mount and resize
   useEffect(() => {
@@ -85,117 +57,6 @@ const SearchResults = () => {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
-  // Scroll direction tracking with proper debouncing
-  const previousScrollY = useRef(0);
-  const scrollDirection = useRef<'up' | 'down'>('down');
-  const scrollDelta = useRef(0);
-  const panelHidden = useRef(false);
-
-  // IntersectionObserver for search panel visibility with improved logic
-  useEffect(() => {
-    if (!searchPanelRef.current) return;
-
-    intersectionObserverRef.current = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries;
-        const isVisible = entry.isIntersecting;
-        
-        // Only lock layout when panel is completely hidden and not reappearing
-        if (!isVisible && scrollDirection.current === 'down') {
-          panelHidden.current = true;
-          setIsLayoutFixed(true);
-        } else if (isVisible && scrollDirection.current === 'up' && scrollDelta.current > 50) {
-          panelHidden.current = false;
-          setIsLayoutFixed(false);
-        }
-      },
-      {
-        threshold: [0, 0.1], // Multiple thresholds for better control
-        rootMargin: '0px 0px -100px 0px' // Larger margin to prevent premature triggering
-      }
-    );
-
-    intersectionObserverRef.current.observe(searchPanelRef.current);
-
-    return () => {
-      if (intersectionObserverRef.current) {
-        intersectionObserverRef.current.disconnect();
-      }
-    };
-  }, []);
-
-  // Enhanced scroll tracking for the main window
-  useEffect(() => {
-    let ticking = false;
-    
-    const handleWindowScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          const currentScrollY = window.scrollY;
-          const delta = Math.abs(currentScrollY - previousScrollY.current);
-          
-          // Determine scroll direction
-          if (currentScrollY > previousScrollY.current) {
-            scrollDirection.current = 'down';
-          } else if (currentScrollY < previousScrollY.current) {
-            scrollDirection.current = 'up';
-          }
-          
-          // Track scroll delta for intentional vs accidental scrolling
-          scrollDelta.current = delta;
-          
-          // Only unlock layout if user scrolls up significantly and panel is hidden
-          if (scrollDirection.current === 'up' && 
-              panelHidden.current && 
-              delta > 50 && 
-              currentScrollY < 200) {
-            panelHidden.current = false;
-            setIsLayoutFixed(false);
-          }
-          
-          previousScrollY.current = currentScrollY;
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    // Only add scroll listener when layout is not fixed to prevent conflicts
-    if (!isLayoutFixed) {
-      window.addEventListener('scroll', handleWindowScroll, { passive: true });
-    }
-    
-    return () => window.removeEventListener('scroll', handleWindowScroll);
-  }, [isLayoutFixed]);
-
-  // Handle results container scroll for scroll-to-top button
-  const handleResultsScroll = useCallback(() => {
-    if (!resultsContainerRef.current) return;
-    
-    const scrollTop = resultsContainerRef.current.scrollTop;
-    setShowScrollToTop(scrollTop > 200);
-  }, []);
-
-  // Add scroll listener to results container only
-  useEffect(() => {
-    const resultsContainer = resultsContainerRef.current;
-    if (!resultsContainer) return;
-
-    let ticking = false;
-    const throttledScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          handleResultsScroll();
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    resultsContainer.addEventListener('scroll', throttledScroll, { passive: true });
-    return () => resultsContainer.removeEventListener('scroll', throttledScroll);
-  }, [handleResultsScroll]);
 
   // Auto-trigger search based on URL parameters
   useEffect(() => {
@@ -266,6 +127,23 @@ const SearchResults = () => {
         experience: "12 years",
         languages: ["English", "Mandarin"],
         practiceName: "Boston Medical Center"
+      },
+      {
+        id: "4",
+        type: "doctor",
+        name: "Dr. Emily Rodriguez",
+        specialty: specialty || "Pediatrician",
+        location: "Children's Health Center, NH",
+        rating: 4.6,
+        reviewCount: 203,
+        availability: "Available today",
+        acceptsInsurance: true,
+        acceptsNewPatients: false,
+        distance: "1.5 miles",
+        image: "/placeholder.svg",
+        bio: "Compassionate pediatric care with focus on family-centered medicine.",
+        experience: "10 years",
+        languages: ["English", "Spanish", "French"]
       }
     ];
     
@@ -280,6 +158,32 @@ const SearchResults = () => {
 
   const handleSearchResults = (results: SearchResult[]) => {
     setSearchResults(results);
+  };
+
+  const handleFilterChange = (key: string, value: boolean) => {
+    setFilters(prev => {
+      const newFilters = { ...prev, [key]: value };
+      
+      // Ensure mutual exclusivity for provider type filters
+      if (key === 'doctorsOnly' && value) {
+        newFilters.practicesOnly = false;
+      } else if (key === 'practicesOnly' && value) {
+        newFilters.doctorsOnly = false;
+      }
+      
+      return newFilters;
+    });
+  };
+
+  const handleResetFilters = () => {
+    setFilters({
+      doctorsOnly: false,
+      practicesOnly: false,
+      acceptsNewPatients: false,
+      availableToday: false,
+      acceptsInsurance: false,
+      videoConsultation: false,
+    });
   };
 
   const filteredAndSortedResults = () => {
@@ -323,482 +227,70 @@ const SearchResults = () => {
 
   const results = filteredAndSortedResults();
 
-  const scrollToTop = () => {
-    if (isLayoutFixed && resultsContainerRef.current) {
-      // When layout is fixed, scroll the results container to top
-      resultsContainerRef.current.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    } else {
-      // When layout is not fixed, scroll the page to top
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
-      <main className="pt-20">
-        {/* Search Panel - Natural scroll until intersection */}
-        <div 
-          ref={searchPanelRef}
-          className="bg-primary/5 py-4 border-b border-border"
-        >
-          <div className="container mx-auto px-4">
-            <SearchBar 
-              onSearch={handleSearchResults}
-              className="max-w-6xl mx-auto"
-              showResultsInline={true}
-            />
-          </div>
+      {/* Search Header - Sticky */}
+      <SearchResultsHeader 
+        searchQuery={searchQuery}
+        onSearch={handleSearchResults}
+      />
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-6">
+        {/* Navigation */}
+        <div className="flex items-center gap-4 mb-6">
+          <BackButton />
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/patient-dashboard')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Dashboard
+          </Button>
         </div>
 
-        {/* Main Content Area */}
-        <div 
-          ref={mainContentRef}
-          className={cn(
-            "transition-all duration-300 ease-out",
-            isLayoutFixed ? "fixed top-20 left-0 right-0 bottom-0 overflow-hidden" : "relative"
+        {/* Results Layout */}
+        <div className="flex gap-8">
+          {/* Desktop Filters Sidebar */}
+          {!isMobile && (
+            <FilterSidebar 
+              filters={filters}
+              onFilterChange={handleFilterChange}
+            />
           )}
-        >
-          <div className="container mx-auto px-4 py-8 h-full">
-            <div ref={backButtonRef}>
-              <BackButton />
-            </div>
-            
-            {/* Results Header */}
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
-              <div>
-                <h1 className="text-2xl font-bold text-foreground mb-2">
-                  Search Results for "{searchQuery}"
-                </h1>
-                <p className="text-muted-foreground">
-                  {results.length} {results.length === 1 ? 'result' : 'results'} found
-                </p>
-              </div>
-              
-              <div className="flex flex-col sm:flex-row gap-4">
-                {/* Sort Dropdown */}
-                <div className="flex items-center gap-2">
-                  <Label className="text-sm">Sort by:</Label>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as any)}
-                    className="px-3 py-2 border rounded-md text-sm bg-background"
-                  >
-                    <option value="relevance">Relevance</option>
-                    <option value="rating">Rating</option>
-                    <option value="distance">Distance</option>
-                    <option value="experience">Experience</option>
-                  </select>
-                </div>
 
-                {/* View Toggle */}
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant={viewMode === 'list' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                  >
-                    <List className="w-4 h-4 mr-2" />
-                    List
-                  </Button>
-                  <Button
-                    variant={viewMode === 'map' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setViewMode('map')}
-                  >
-                    <Map className="w-4 h-4 mr-2" />
-                    Map
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            {/* Mobile Filters Button */}
+          {/* Results Content */}
+          <div className="flex-1">
+            {/* Mobile Filter Button */}
             {isMobile && (
-              <div className="mb-4 lg:hidden">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowMobileFilters(!showMobileFilters)}
-                  className="w-full"
-                >
-                  <Filter className="w-4 h-4 mr-2" />
-                  {showMobileFilters ? 'Hide Filters' : 'Show Filters'}
-                  {showMobileFilters ? <ChevronUp className="w-4 h-4 ml-2" /> : <ChevronDown className="w-4 h-4 ml-2" />}
-                </Button>
+              <div className="flex justify-end mb-4">
+                <MobileFilterDrawer 
+                  filters={filters}
+                  onFilterChange={handleFilterChange}
+                  onReset={handleResetFilters}
+                />
               </div>
             )}
 
-            {/* Main Layout */}
-            <div className={cn(
-              "flex gap-8",
-              isLayoutFixed ? "h-[calc(100vh-280px)]" : "flex-col lg:flex-row"
-            )}>
-              {/* Filter Sidebar */}
-              <aside className={cn(
-                "lg:w-80 flex-shrink-0",
-                isMobile && !showMobileFilters ? "hidden" : "block",
-                isLayoutFixed ? "overflow-y-auto" : ""
-              )}>
-                <Card className={cn(
-                  isLayoutFixed ? "h-full" : "sticky top-32"
-                )}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-2 mb-6">
-                      <Filter className="w-5 h-5" />
-                      <h3 className="text-lg font-semibold">Filters</h3>
-                    </div>
-
-                    {/* Result Type Filters */}
-                    <div className="space-y-3 mb-6">
-                      <Label className="text-sm font-medium">Show Results</Label>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label htmlFor="doctors-only" className="text-sm">
-                            Doctors only
-                          </Label>
-                          <Switch
-                            id="doctors-only"
-                            checked={filters.doctorsOnly}
-                            onCheckedChange={(checked) => 
-                              setFilters(prev => ({
-                                ...prev, 
-                                doctorsOnly: checked,
-                                practicesOnly: checked ? false : prev.practicesOnly
-                              }))
-                            }
-                          />
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <Label htmlFor="practices-only" className="text-sm">
-                            Practices only
-                          </Label>
-                          <Switch
-                            id="practices-only"
-                            checked={filters.practicesOnly}
-                            onCheckedChange={(checked) => 
-                              setFilters(prev => ({
-                                ...prev, 
-                                practicesOnly: checked,
-                                doctorsOnly: checked ? false : prev.doctorsOnly
-                              }))
-                            }
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Availability Filters */}
-                    <div className="space-y-3 mb-6">
-                      <Label className="text-sm font-medium">Availability</Label>
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="available-today" className="text-sm">
-                          Available today
-                        </Label>
-                        <Switch
-                          id="available-today"
-                          checked={filters.availableToday}
-                          onCheckedChange={(checked) => 
-                            setFilters(prev => ({...prev, availableToday: checked}))
-                          }
-                        />
-                      </div>
-                    </div>
-
-                    {/* Insurance & New Patients */}
-                    <div className="space-y-3 mb-6">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="accepts-insurance" className="text-sm">
-                          Accepts insurance
-                        </Label>
-                        <Switch
-                          id="accepts-insurance"
-                          checked={filters.acceptsInsurance}
-                          onCheckedChange={(checked) => 
-                            setFilters(prev => ({...prev, acceptsInsurance: checked}))
-                          }
-                        />
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="new-patients" className="text-sm">
-                          Accepts new patients
-                        </Label>
-                        <Switch
-                          id="new-patients"
-                          checked={filters.acceptsNewPatients}
-                          onCheckedChange={(checked) => 
-                            setFilters(prev => ({...prev, acceptsNewPatients: checked}))
-                          }
-                        />
-                      </div>
-                    </div>
-
-                    {/* Video Consultation */}
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="video-consultation" className="text-sm">
-                        Video consultation available
-                      </Label>
-                      <Switch
-                        id="video-consultation"
-                        checked={filters.videoConsultation}
-                        onCheckedChange={(checked) => 
-                          setFilters(prev => ({...prev, videoConsultation: checked}))
-                        }
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              </aside>
-
-              {/* Main Results */}
-              <div 
-                ref={resultsContainerRef}
-                className={cn(
-                  "flex-1",
-                  isLayoutFixed ? "overflow-y-auto overflow-x-hidden pr-2" : ""
-                )}
-                style={isLayoutFixed ? { 
-                  scrollBehavior: 'smooth',
-                  overscrollBehavior: 'contain'
-                } : {}}
-              >
-                {viewMode === 'map' ? (
-                  /* Map View */
-                  <Card className="h-96 mb-6">
-                    <CardContent className="p-6 h-full flex items-center justify-center text-muted-foreground">
-                      <div className="text-center">
-                        <Map className="w-12 h-12 mx-auto mb-4" />
-                        <p>Map integration coming soon</p>
-                        <p className="text-sm">Interactive map with doctor pins will be displayed here</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ) : null}
-
-              {/* Loading State */}
-              {isLoading && (
-                <div className="space-y-6">
-                  {[1, 2, 3].map((i) => (
-                    <Card key={i} className="animate-pulse">
-                      <CardContent className="p-6">
-                        <div className="flex gap-4">
-                          <div className="w-24 h-24 bg-gray-200 rounded-lg"></div>
-                          <div className="flex-1 space-y-2">
-                            <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-                            <div className="h-3 bg-gray-200 rounded w-1/4"></div>
-                            <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-
-              {/* No Results */}
-              {!isLoading && results.length === 0 && searchResults.length === 0 && (
-                <Card>
-                  <CardContent className="p-12 text-center">
-                    <div className="mb-4">
-                      <Users className="w-16 h-16 mx-auto text-muted-foreground" />
-                    </div>
-                    <h3 className="text-lg font-semibold mb-2">No results found</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Try adjusting your search terms or filters to find what you're looking for.
-                    </p>
-                    <Button variant="outline" onClick={() => window.location.href = '/'}>
-                      Start New Search
-                    </Button>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Results List */}
-              {!isLoading && (
-                <div className="space-y-6">
-                  {results.map((result) => (
-                    <Card 
-                      key={result.id}
-                      className="cursor-pointer hover:shadow-lg transition-shadow"
-                      onClick={() => {
-                        if (result.type === 'doctor') {
-                          // Store doctor info for redirect after signup if not logged in
-                          localStorage.setItem('pendingDoctorVisit', JSON.stringify(result));
-                          window.location.href = '/signup';
-                        } else {
-                          navigate(`/practice/${result.id}`);
-                        }
-                      }}
-                    >
-                      <CardContent className="p-6">
-                        <div className="flex gap-4">
-                          {/* Image */}
-                          <div className="flex-shrink-0">
-                            <img
-                              src={result.image || "/placeholder.svg"}
-                              alt={result.name}
-                              className="w-24 h-24 rounded-lg object-cover"
-                            />
-                          </div>
-
-                          {/* Content */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-3">
-                              <div>
-                                <div className="flex items-center gap-2 mb-1">
-                                  <h3 className="text-lg font-semibold text-foreground">
-                                    {result.name}
-                                  </h3>
-                                  <Badge 
-                                    variant={result.type === 'doctor' ? 'default' : 'secondary'}
-                                    className="text-xs"
-                                  >
-                                    {result.type === 'doctor' ? 'Doctor' : 'Practice'}
-                                  </Badge>
-                                </div>
-                                {result.specialty && (
-                                  <p className="text-primary font-medium">{result.specialty}</p>
-                                )}
-                                {result.practiceName && (
-                                  <p className="text-sm text-muted-foreground">{result.practiceName}</p>
-                                )}
-                              </div>
-                              
-                              <div className="flex items-center gap-1">
-                                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                                <span className="font-medium">{result.rating}</span>
-                                {result.reviewCount && (
-                                  <span className="text-muted-foreground text-sm">
-                                    ({result.reviewCount})
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-
-                            {result.bio && (
-                              <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                                {result.bio}
-                              </p>
-                            )}
-
-                            <div className="flex flex-wrap gap-2 mb-4">
-                              <Badge variant="secondary" className="text-xs">
-                                <MapPin className="w-3 h-3 mr-1" />
-                                {result.distance}
-                              </Badge>
-                              {result.experience && (
-                                <Badge variant="secondary" className="text-xs">
-                                  <GraduationCap className="w-3 h-3 mr-1" />
-                                  {result.experience}
-                                </Badge>
-                              )}
-                              {result.languages && result.languages.length > 0 && (
-                                <Badge variant="secondary" className="text-xs">
-                                  <Languages className="w-3 h-3 mr-1" />
-                                  {result.languages.join(', ')}
-                                </Badge>
-                              )}
-                              {result.availability && (
-                                <Badge 
-                                  variant={result.availability.includes('today') ? 'default' : 'outline'}
-                                  className={cn(
-                                    "text-xs",
-                                    result.availability.includes('today') && "bg-green-100 text-green-700"
-                                  )}
-                                >
-                                  <Clock className="w-3 h-3 mr-1" />
-                                  {result.availability}
-                                </Badge>
-                              )}
-                              {result.acceptsInsurance && (
-                                <Badge variant="outline" className="text-xs">
-                                  <CreditCard className="w-3 h-3 mr-1" />
-                                  Insurance accepted
-                                </Badge>
-                              )}
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row gap-2">
-                              <Button 
-                                className="flex-1"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (result.type === 'doctor') {
-                                    navigate('/signup');
-                                  } else {
-                                    navigate(`/practice/${result.id}`);
-                                  }
-                                }}
-                              >
-                                <Calendar className="w-4 h-4 mr-2" />
-                                {result.type === 'doctor' ? 'Book Appointment' : 'View Doctors'}
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (result.type === 'doctor') {
-                                    navigate(`/doctor/${result.id}`);
-                                  } else {
-                                    navigate(`/practice/${result.id}`);
-                                  }
-                                }}
-                              >
-                                View Profile
-                              </Button>
-                             </div>
-                           </div>
-                         </div>
-                       </CardContent>
-                     </Card>
-                   ))}
-                 </div>
-               )}
-               </div>
-             </div>
-           </div>
-         </div>
-
-         {/* Scroll to Top Button */}
-         {showScrollToTop && (
-           <Button
-             onClick={scrollToTop}
-             className={cn(
-               "fixed bottom-6 right-6 z-50 w-12 h-12 p-0",
-               "bg-transparent hover:bg-transparent border-0 shadow-none",
-               "text-foreground hover:text-primary transition-all duration-300",
-               "animate-fade-in"
-             )}
-             aria-label="Scroll to top"
-             title="Back to top"
-           >
-             <ChevronUp className="w-6 h-6" />
-           </Button>
-         )}
-
-        {/* Scroll to Top Button */}
-        {showScrollToTop && (
-          <Button
-            onClick={scrollToTop}
-            className={cn(
-              "fixed bottom-6 right-6 z-50 w-12 h-12 p-0",
-              "bg-transparent hover:bg-transparent border-0 shadow-none",
-              "text-foreground hover:text-primary transition-all duration-300",
-              "animate-fade-in"
+            {/* Results List */}
+            {isLoading ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">Searching...</p>
+              </div>
+            ) : (
+              <ResultsList 
+                results={results}
+                searchQuery={searchQuery}
+                sortBy={sortBy}
+                onSortChange={(value) => setSortBy(value as any)}
+                isMobile={isMobile}
+              />
             )}
-            aria-label="Scroll to top"
-            title="Back to top"
-          >
-            <ChevronUp className="w-6 h-6" />
-          </Button>
-        )}
+          </div>
+        </div>
       </main>
     </div>
   );
