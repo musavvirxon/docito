@@ -114,6 +114,14 @@ const PatientDashboard = () => {
         return [searchQuery, ...filtered].slice(0, 5);
       });
     }
+
+    // Scroll to search results area smoothly
+    setTimeout(() => {
+      document.getElementById('search-results-section')?.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }, 100);
   };
 
   const handleViewPractice = (result: SearchResult) => {
@@ -221,7 +229,7 @@ const PatientDashboard = () => {
 
         {/* Search Results */}
         {showResults && (
-          <div className="w-full">
+          <div id="search-results-section" className="w-full">
             <SearchResults
               results={searchResults}
               onBookAppointment={handleBookAppointment}
@@ -231,7 +239,7 @@ const PatientDashboard = () => {
           </div>
         )}
 
-        {/* Recent Searches */}
+        {/* Recent Searches - Only show when not searching */}
         {recentSearches.length > 0 && !showResults && (
           <Card className="mb-8">
             <CardHeader>
@@ -256,6 +264,13 @@ const PatientDashboard = () => {
                         acceptsNewPatients: true
                       };
                       handleSearch([mockResult]);
+                      // Scroll to results
+                      setTimeout(() => {
+                        document.getElementById('search-results-section')?.scrollIntoView({ 
+                          behavior: 'smooth',
+                          block: 'start'
+                        });
+                      }, 100);
                     }}
                   >
                     {search}
@@ -266,8 +281,9 @@ const PatientDashboard = () => {
           </Card>
         )}
 
-        {/* Main Dashboard */}
-        <Tabs defaultValue="wellness" className="space-y-6">
+        {/* Main Dashboard - Hide when showing search results */}
+        {!showResults && (
+          <Tabs defaultValue="wellness" className="space-y-6">
           <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="wellness" className="flex items-center space-x-2">
               <Heart className="w-4 h-4" />
@@ -677,6 +693,23 @@ const PatientDashboard = () => {
             <MedicalHistory />
           </TabsContent>
         </Tabs>
+        )}
+
+        {/* Clear Search Results Button - Show when results are displayed */}
+        {showResults && (
+          <div className="fixed bottom-6 right-6 z-50">
+            <Button 
+              onClick={() => {
+                setShowResults(false);
+                setSearchResults([]);
+              }}
+              variant="outline"
+              className="bg-background shadow-lg border-2"
+            >
+              ← Back to Dashboard
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
