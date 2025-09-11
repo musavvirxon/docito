@@ -18,7 +18,7 @@ interface FilterSidebarProps {
 const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) => {
   return (
     <aside className="w-80 flex-shrink-0">
-      <Card className="sticky top-48">
+      <Card className="sticky top-6">{/* Reduced top offset since search panel is no longer sticky */}
         <CardContent className="p-6">
           <div className="flex items-center gap-2 mb-6">
             <Filter className="w-5 h-5" />
