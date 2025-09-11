@@ -8,8 +8,8 @@ interface SearchResultsHeaderProps {
 const SearchResultsHeader = ({ searchQuery, onSearch }: SearchResultsHeaderProps) => {
   return (
     <div className="bg-primary/5 border-b border-border">
-      <div className="container mx-auto px-4 py-6">
-        <h1 className="text-2xl font-semibold text-foreground mb-4">
+      <div className="container mx-auto px-4 py-4">
+        <h1 className="text-xl font-semibold text-foreground mb-3">
           Find the right care for you
         </h1>
         <SearchBar 
