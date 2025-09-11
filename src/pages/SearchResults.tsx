@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
 import BackButton from "@/components/BackButton";
@@ -20,7 +20,8 @@ import {
   Filter,
   Languages,
   GraduationCap,
-  ChevronUp
+  ChevronUp,
+  ChevronDown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -63,40 +64,96 @@ const SearchResults = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>(location.state?.results || []);
-  const [searchPanelVisible, setSearchPanelVisible] = useState(true);
+  const [isSearchPanelFixed, setIsSearchPanelFixed] = useState(false);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const [showMobileSearchPanel, setShowMobileSearchPanel] = useState(true);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  
+  const searchPanelRef = useRef<HTMLDivElement>(null);
+  const backButtonRef = useRef<HTMLDivElement>(null);
+  const resultsContainerRef = useRef<HTMLDivElement>(null);
+  const filtersRef = useRef<HTMLDivElement>(null);
+  const lastScrollYRef = useRef(0);
 
-  // Scroll handler for hiding search panel and showing scroll-to-top
-  const handleScroll = useCallback(() => {
-    const currentScrollY = window.scrollY;
-    const scrollDirection = currentScrollY > lastScrollY ? 'down' : 'up';
+  // Check if mobile on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
     
-    // Hide search panel when scrolling down, show when scrolling up
-    if (scrollDirection === 'down' && currentScrollY > 100) {
-      setSearchPanelVisible(false);
-    } else if (scrollDirection === 'up') {
-      setSearchPanelVisible(true);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Desktop scroll handler for search panel fixing and results scrolling
+  const handleDesktopScroll = useCallback(() => {
+    if (isMobile) return;
+    
+    const searchPanel = searchPanelRef.current;
+    const backButton = backButtonRef.current;
+    
+    if (!searchPanel || !backButton) return;
+    
+    const searchPanelRect = searchPanel.getBoundingClientRect();
+    const backButtonRect = backButton.getBoundingClientRect();
+    const currentScrollY = window.scrollY;
+    
+    // Check if search panel has reached just above back button
+    const shouldFix = searchPanelRect.bottom <= backButtonRect.top + 10;
+    
+    if (shouldFix !== isSearchPanelFixed) {
+      setIsSearchPanelFixed(shouldFix);
     }
     
-    // Show scroll-to-top button when scrolling up (regardless of position)
-    if (scrollDirection === 'up' && currentScrollY > 0) {
+    // Show scroll-to-top when scrolling up
+    const scrollDirection = currentScrollY > lastScrollYRef.current ? 'down' : 'up';
+    if (scrollDirection === 'up' && currentScrollY > 200) {
       setShowScrollToTop(true);
     } else if (scrollDirection === 'down') {
       setShowScrollToTop(false);
     }
     
-    setLastScrollY(currentScrollY);
-  }, [lastScrollY]);
+    lastScrollYRef.current = currentScrollY;
+  }, [isMobile, isSearchPanelFixed]);
 
-  // Add scroll listener
+  // Mobile scroll handler for panel visibility
+  const handleMobileScroll = useCallback(() => {
+    if (!isMobile) return;
+    
+    const currentScrollY = window.scrollY;
+    const scrollDirection = currentScrollY > lastScrollYRef.current ? 'down' : 'up';
+    
+    // Hide search panel when scrolling down, show when scrolling up
+    if (scrollDirection === 'down' && currentScrollY > 100) {
+      setShowMobileSearchPanel(false);
+    } else if (scrollDirection === 'up') {
+      setShowMobileSearchPanel(true);
+    }
+    
+    // Show scroll-to-top when scrolling up
+    if (scrollDirection === 'up' && currentScrollY > 200) {
+      setShowScrollToTop(true);
+    } else if (scrollDirection === 'down') {
+      setShowScrollToTop(false);
+    }
+    
+    lastScrollYRef.current = currentScrollY;
+  }, [isMobile]);
+
+  // Add scroll listeners
   useEffect(() => {
     let ticking = false;
     
     const throttledScroll = () => {
       if (!ticking) {
         requestAnimationFrame(() => {
-          handleScroll();
+          if (isMobile) {
+            handleMobileScroll();
+          } else {
+            handleDesktopScroll();
+          }
           ticking = false;
         });
         ticking = true;
@@ -105,7 +162,7 @@ const SearchResults = () => {
     
     window.addEventListener('scroll', throttledScroll);
     return () => window.removeEventListener('scroll', throttledScroll);
-  }, [handleScroll]);
+  }, [isMobile, handleMobileScroll, handleDesktopScroll]);
 
   // Auto-trigger search based on URL parameters
   useEffect(() => {
@@ -245,25 +302,99 @@ const SearchResults = () => {
       <Header />
       
       <main className="pt-20">
-        {/* Fixed Search Bar - Auto-hide on scroll down */}
-        <div 
-          className={cn(
-            "bg-primary/5 py-4 sticky top-16 z-40 border-b border-border transition-transform duration-300 ease-out",
-            searchPanelVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
-          )}
-          id="find-the-right-care"
-        >
-          <div className="container mx-auto px-4">
-            <SearchBar 
-              onSearch={handleSearchResults}
-              className="max-w-6xl mx-auto"
-              showResultsInline={true}
-            />
+        {/* Desktop: Search Panel (natural scroll until fixed) */}
+        {!isMobile && (
+          <div 
+            ref={searchPanelRef}
+            className={cn(
+              "bg-primary/5 py-4 border-b border-border transition-all duration-400 ease-out",
+              isSearchPanelFixed ? "fixed top-16 left-0 right-0 z-40 shadow-lg" : "relative"
+            )}
+          >
+            <div className="container mx-auto px-4">
+              <SearchBar 
+                onSearch={handleSearchResults}
+                className="max-w-6xl mx-auto"
+                showResultsInline={true}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
-        <div className="container mx-auto px-4 py-8">
-          <BackButton />
+        {/* Mobile: Search Panel (slide up/down) */}
+        {isMobile && (
+          <>
+            {/* Mobile Search Panel */}
+            <div 
+              className={cn(
+                "bg-primary/5 py-4 border-b border-border transition-all duration-400 ease-out",
+                showMobileSearchPanel ? "relative" : "fixed -top-96 left-0 right-0 z-40"
+              )}
+            >
+              <div className="container mx-auto px-4">
+                <SearchBar 
+                  onSearch={handleSearchResults}
+                  className="max-w-6xl mx-auto"
+                  showResultsInline={true}
+                />
+                {/* Hide button for mobile */}
+                {showMobileSearchPanel && (
+                  <div className="flex justify-center mt-4">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowMobileSearchPanel(false)}
+                      className="text-muted-foreground"
+                    >
+                      <ChevronUp className="w-4 h-4 mr-2" />
+                      Hide Search
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Mobile Show Search Button */}
+            {!showMobileSearchPanel && (
+              <div className="fixed top-16 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
+                <div className="container mx-auto px-4 py-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowMobileSearchPanel(true)}
+                    className="w-full text-muted-foreground"
+                  >
+                    <ChevronDown className="w-4 h-4 mr-2" />
+                    Show Search Panel
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        <div className={cn(
+          "container mx-auto px-4 py-8",
+          isSearchPanelFixed && !isMobile ? "pt-32" : ""
+        )}>
+          <div ref={backButtonRef}>
+            <BackButton />
+          </div>
+          
+          {/* Mobile Filters Button */}
+          {isMobile && !showMobileSearchPanel && (
+            <div className="mb-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowMobileFilters(!showMobileFilters)}
+                className="w-full lg:hidden"
+              >
+                <Filter className="w-4 h-4 mr-2" />
+                Show Filters
+                {showMobileFilters ? <ChevronUp className="w-4 h-4 ml-2" /> : <ChevronDown className="w-4 h-4 ml-2" />}
+              </Button>
+            </div>
+          )}
           
           {/* Results Header */}
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
@@ -283,7 +414,7 @@ const SearchResults = () => {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as any)}
-                  className="px-3 py-2 border rounded-md text-sm"
+                  className="px-3 py-2 border rounded-md text-sm bg-background"
                 >
                   <option value="relevance">Relevance</option>
                   <option value="rating">Rating</option>
@@ -314,119 +445,132 @@ const SearchResults = () => {
             </div>
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-8">
+          <div className={cn(
+            "flex gap-8",
+            isSearchPanelFixed && !isMobile ? "lg:flex-row lg:h-[calc(100vh-280px)]" : "flex-col lg:flex-row"
+          )}>
             {/* Filter Sidebar */}
-            <aside className="lg:w-80">
-              <Card className="sticky top-32">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-2 mb-6">
-                    <Filter className="w-5 h-5" />
-                    <h3 className="text-lg font-semibold">Filters</h3>
-                  </div>
+            <aside className={cn(
+              "lg:w-80",
+              isMobile && showMobileFilters ? "block" : isMobile ? "hidden" : "block"
+            )}>
+              <div ref={filtersRef} className={cn(
+                isSearchPanelFixed && !isMobile ? "sticky top-4 max-h-[calc(100vh-120px)] overflow-y-auto" : "sticky top-32"
+              )}>
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-2 mb-6">
+                      <Filter className="w-5 h-5" />
+                      <h3 className="text-lg font-semibold">Filters</h3>
+                    </div>
 
-                  {/* Result Type Filters */}
-                  <div className="space-y-3 mb-6">
-                    <Label className="text-sm font-medium">Show Results</Label>
-                    <div className="space-y-2">
+                    {/* Result Type Filters */}
+                    <div className="space-y-3 mb-6">
+                      <Label className="text-sm font-medium">Show Results</Label>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="doctors-only" className="text-sm">
+                            Doctors only
+                          </Label>
+                          <Switch
+                            id="doctors-only"
+                            checked={filters.doctorsOnly}
+                            onCheckedChange={(checked) => 
+                              setFilters(prev => ({
+                                ...prev, 
+                                doctorsOnly: checked,
+                                practicesOnly: checked ? false : prev.practicesOnly
+                              }))
+                            }
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="practices-only" className="text-sm">
+                            Practices only
+                          </Label>
+                          <Switch
+                            id="practices-only"
+                            checked={filters.practicesOnly}
+                            onCheckedChange={(checked) => 
+                              setFilters(prev => ({
+                                ...prev, 
+                                practicesOnly: checked,
+                                doctorsOnly: checked ? false : prev.doctorsOnly
+                              }))
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Availability Filters */}
+                    <div className="space-y-3 mb-6">
+                      <Label className="text-sm font-medium">Availability</Label>
                       <div className="flex items-center justify-between">
-                        <Label htmlFor="doctors-only" className="text-sm">
-                          Doctors only
+                        <Label htmlFor="available-today" className="text-sm">
+                          Available today
                         </Label>
                         <Switch
-                          id="doctors-only"
-                          checked={filters.doctorsOnly}
+                          id="available-today"
+                          checked={filters.availableToday}
                           onCheckedChange={(checked) => 
-                            setFilters(prev => ({
-                              ...prev, 
-                              doctorsOnly: checked,
-                              practicesOnly: checked ? false : prev.practicesOnly
-                            }))
+                            setFilters(prev => ({...prev, availableToday: checked}))
+                          }
+                        />
+                      </div>
+                    </div>
+
+                    {/* Insurance & New Patients */}
+                    <div className="space-y-3 mb-6">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="accepts-insurance" className="text-sm">
+                          Accepts insurance
+                        </Label>
+                        <Switch
+                          id="accepts-insurance"
+                          checked={filters.acceptsInsurance}
+                          onCheckedChange={(checked) => 
+                            setFilters(prev => ({...prev, acceptsInsurance: checked}))
                           }
                         />
                       </div>
                       <div className="flex items-center justify-between">
-                        <Label htmlFor="practices-only" className="text-sm">
-                          Practices only
+                        <Label htmlFor="new-patients" className="text-sm">
+                          Accepts new patients
                         </Label>
                         <Switch
-                          id="practices-only"
-                          checked={filters.practicesOnly}
+                          id="new-patients"
+                          checked={filters.acceptsNewPatients}
                           onCheckedChange={(checked) => 
-                            setFilters(prev => ({
-                              ...prev, 
-                              practicesOnly: checked,
-                              doctorsOnly: checked ? false : prev.doctorsOnly
-                            }))
+                            setFilters(prev => ({...prev, acceptsNewPatients: checked}))
                           }
                         />
                       </div>
                     </div>
-                  </div>
 
-                  {/* Availability Filters */}
-                  <div className="space-y-3 mb-6">
-                    <Label className="text-sm font-medium">Availability</Label>
+                    {/* Video Consultation */}
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="available-today" className="text-sm">
-                        Available today
+                      <Label htmlFor="video-consultation" className="text-sm">
+                        Video consultation available
                       </Label>
                       <Switch
-                        id="available-today"
-                        checked={filters.availableToday}
+                        id="video-consultation"
+                        checked={filters.videoConsultation}
                         onCheckedChange={(checked) => 
-                          setFilters(prev => ({...prev, availableToday: checked}))
+                          setFilters(prev => ({...prev, videoConsultation: checked}))
                         }
                       />
                     </div>
-                  </div>
-
-                  {/* Insurance & New Patients */}
-                  <div className="space-y-3 mb-6">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="accepts-insurance" className="text-sm">
-                        Accepts insurance
-                      </Label>
-                      <Switch
-                        id="accepts-insurance"
-                        checked={filters.acceptsInsurance}
-                        onCheckedChange={(checked) => 
-                          setFilters(prev => ({...prev, acceptsInsurance: checked}))
-                        }
-                      />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="new-patients" className="text-sm">
-                        Accepts new patients
-                      </Label>
-                      <Switch
-                        id="new-patients"
-                        checked={filters.acceptsNewPatients}
-                        onCheckedChange={(checked) => 
-                          setFilters(prev => ({...prev, acceptsNewPatients: checked}))
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  {/* Video Consultation */}
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="video-consultation" className="text-sm">
-                      Video consultation available
-                    </Label>
-                    <Switch
-                      id="video-consultation"
-                      checked={filters.videoConsultation}
-                      onCheckedChange={(checked) => 
-                        setFilters(prev => ({...prev, videoConsultation: checked}))
-                      }
-                    />
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
             </aside>
 
             {/* Main Results */}
-            <div className="flex-1">
+            <div className={cn(
+              "flex-1",
+              isSearchPanelFixed && !isMobile ? "overflow-y-auto" : ""
+            )} ref={resultsContainerRef}>
               {viewMode === 'map' ? (
                 /* Map View */
                 <Card className="h-96 mb-6">
