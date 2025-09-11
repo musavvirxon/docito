@@ -86,21 +86,33 @@ const SearchResults = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // IntersectionObserver for search panel visibility
+  // Scroll direction tracking with proper debouncing
+  const previousScrollY = useRef(0);
+  const scrollDirection = useRef<'up' | 'down'>('down');
+  const scrollDelta = useRef(0);
+  const panelHidden = useRef(false);
+
+  // IntersectionObserver for search panel visibility with improved logic
   useEffect(() => {
-    if (!searchPanelRef.current || !backButtonRef.current) return;
+    if (!searchPanelRef.current) return;
 
     intersectionObserverRef.current = new IntersectionObserver(
       (entries) => {
         const [entry] = entries;
         const isVisible = entry.isIntersecting;
         
-        // Lock layout when search panel is not visible
-        setIsLayoutFixed(!isVisible);
+        // Only lock layout when panel is completely hidden and not reappearing
+        if (!isVisible && scrollDirection.current === 'down') {
+          panelHidden.current = true;
+          setIsLayoutFixed(true);
+        } else if (isVisible && scrollDirection.current === 'up' && scrollDelta.current > 50) {
+          panelHidden.current = false;
+          setIsLayoutFixed(false);
+        }
       },
       {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px' // Trigger slightly before fully hidden
+        threshold: [0, 0.1], // Multiple thresholds for better control
+        rootMargin: '0px 0px -100px 0px' // Larger margin to prevent premature triggering
       }
     );
 
@@ -112,6 +124,50 @@ const SearchResults = () => {
       }
     };
   }, []);
+
+  // Enhanced scroll tracking for the main window
+  useEffect(() => {
+    let ticking = false;
+    
+    const handleWindowScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY;
+          const delta = Math.abs(currentScrollY - previousScrollY.current);
+          
+          // Determine scroll direction
+          if (currentScrollY > previousScrollY.current) {
+            scrollDirection.current = 'down';
+          } else if (currentScrollY < previousScrollY.current) {
+            scrollDirection.current = 'up';
+          }
+          
+          // Track scroll delta for intentional vs accidental scrolling
+          scrollDelta.current = delta;
+          
+          // Only unlock layout if user scrolls up significantly and panel is hidden
+          if (scrollDirection.current === 'up' && 
+              panelHidden.current && 
+              delta > 50 && 
+              currentScrollY < 200) {
+            panelHidden.current = false;
+            setIsLayoutFixed(false);
+          }
+          
+          previousScrollY.current = currentScrollY;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    // Only add scroll listener when layout is not fixed to prevent conflicts
+    if (!isLayoutFixed) {
+      window.addEventListener('scroll', handleWindowScroll, { passive: true });
+    }
+    
+    return () => window.removeEventListener('scroll', handleWindowScroll);
+  }, [isLayoutFixed]);
 
   // Handle results container scroll for scroll-to-top button
   const handleResultsScroll = useCallback(() => {
