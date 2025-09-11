@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
 import BackButton from "@/components/BackButton";
@@ -19,7 +19,8 @@ import {
   List,
   Filter,
   Languages,
-  GraduationCap
+  GraduationCap,
+  ChevronUp
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -62,6 +63,49 @@ const SearchResults = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>(location.state?.results || []);
+  const [searchPanelVisible, setSearchPanelVisible] = useState(true);
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  // Scroll handler for hiding search panel and showing scroll-to-top
+  const handleScroll = useCallback(() => {
+    const currentScrollY = window.scrollY;
+    const scrollDirection = currentScrollY > lastScrollY ? 'down' : 'up';
+    
+    // Hide search panel when scrolling down, show when scrolling up
+    if (scrollDirection === 'down' && currentScrollY > 100) {
+      setSearchPanelVisible(false);
+    } else if (scrollDirection === 'up') {
+      setSearchPanelVisible(true);
+    }
+    
+    // Show scroll-to-top button when scrolling up (regardless of position)
+    if (scrollDirection === 'up' && currentScrollY > 0) {
+      setShowScrollToTop(true);
+    } else if (scrollDirection === 'down') {
+      setShowScrollToTop(false);
+    }
+    
+    setLastScrollY(currentScrollY);
+  }, [lastScrollY]);
+
+  // Add scroll listener
+  useEffect(() => {
+    let ticking = false;
+    
+    const throttledScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    
+    window.addEventListener('scroll', throttledScroll);
+    return () => window.removeEventListener('scroll', throttledScroll);
+  }, [handleScroll]);
 
   // Auto-trigger search based on URL parameters
   useEffect(() => {
@@ -189,13 +233,26 @@ const SearchResults = () => {
 
   const results = filteredAndSortedResults();
 
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
       <main className="pt-20">
-        {/* Fixed Search Bar */}
-        <div className="bg-primary/5 py-4 sticky top-16 z-40 border-b border-border">
+        {/* Fixed Search Bar - Auto-hide on scroll down */}
+        <div 
+          className={cn(
+            "bg-primary/5 py-4 sticky top-16 z-40 border-b border-border transition-transform duration-300 ease-out",
+            searchPanelVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
+          )}
+          id="find-the-right-care"
+        >
           <div className="container mx-auto px-4">
             <SearchBar 
               onSearch={handleSearchResults}
@@ -566,6 +623,23 @@ const SearchResults = () => {
             </div>
           </div>
         </div>
+
+        {/* Scroll to Top Button */}
+        {showScrollToTop && (
+          <Button
+            onClick={scrollToTop}
+            className={cn(
+              "fixed bottom-6 right-6 z-50 w-12 h-12 p-0",
+              "bg-transparent hover:bg-transparent border-0 shadow-none",
+              "text-foreground hover:text-primary transition-all duration-300",
+              "animate-fade-in"
+            )}
+            aria-label="Scroll to top"
+            title="Back to top"
+          >
+            <ChevronUp className="w-6 h-6" />
+          </Button>
+        )}
       </main>
     </div>
   );
