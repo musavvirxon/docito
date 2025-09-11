@@ -239,22 +239,6 @@ const SearchResults = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-0 min-h-screen">
-        {/* Smart Back Navigation */}
-        <div className="mb-6">
-          {location.state?.fromDashboard ? (
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate('/patient-dashboard')}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Dashboard
-            </Button>
-          ) : (
-            <BackButton />
-          )}
-        </div>
-
         {/* Results Layout */}
         <div className="flex gap-8">
           {/* Desktop Filters Sidebar */}
