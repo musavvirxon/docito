@@ -82,7 +82,7 @@ const ResultsList = ({ results, searchQuery, sortBy, onSortChange, isMobile = fa
       {/* Results Container */}
       <div 
         ref={containerRef}
-        className="max-h-[calc(100vh-350px)] overflow-y-auto pr-1"
+        className="max-h-[calc(100vh-200px)] overflow-y-auto pr-1"
         style={{ scrollbarGutter: 'stable' }}
       >
         {results.length === 0 ? (
