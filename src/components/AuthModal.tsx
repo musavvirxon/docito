@@ -99,7 +99,6 @@ const AuthModal = ({ isOpen, onClose, userType = "patient", mode = "signin" }: A
               id="firstName"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
-              required
             />
           </div>
           <div>
@@ -108,7 +107,6 @@ const AuthModal = ({ isOpen, onClose, userType = "patient", mode = "signin" }: A
               id="lastName"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
-              required
             />
           </div>
         </div>
@@ -119,7 +117,6 @@ const AuthModal = ({ isOpen, onClose, userType = "patient", mode = "signin" }: A
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
           />
         </div>
         <div>
@@ -129,7 +126,6 @@ const AuthModal = ({ isOpen, onClose, userType = "patient", mode = "signin" }: A
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
           />
         </div>
         <Button type="submit" className="w-full" disabled={isLoading}>
@@ -158,7 +154,6 @@ const AuthModal = ({ isOpen, onClose, userType = "patient", mode = "signin" }: A
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="mt-1 h-12 bg-muted/30 border-0 focus-visible:ring-1 focus-visible:ring-primary"
-            required
           />
         </div>
         <div>
@@ -169,7 +164,6 @@ const AuthModal = ({ isOpen, onClose, userType = "patient", mode = "signin" }: A
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="mt-1 h-12 bg-muted/30 border-0 focus-visible:ring-1 focus-visible:ring-primary"
-            required
           />
         </div>
         <Button 

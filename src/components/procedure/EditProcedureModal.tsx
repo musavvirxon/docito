@@ -25,10 +25,10 @@ import { toast } from "sonner";
 import ToothSelector from "./ToothSelector";
 
 const formSchema = z.object({
-  name: z.string().min(1, "Procedure name is required"),
-  category: z.string().min(1, "Category is required"),
-  type: z.string().min(1, "Type is required"),
-  default_cost: z.number().min(0, "Cost must be positive").optional(),
+  name: z.string().optional(),
+  category: z.string().optional(),
+  type: z.string().optional(),
+  default_cost: z.number().optional(),
   notes: z.string().optional(),
   tooth_range: z.array(z.number()).optional(),
 });

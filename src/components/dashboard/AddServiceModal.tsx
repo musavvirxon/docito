@@ -125,7 +125,6 @@ export const AddServiceModal = ({ open, onOpenChange }: AddServiceModalProps) =>
                 value={formData.serviceName}
                 onChange={(e) => setFormData(prev => ({ ...prev, serviceName: e.target.value }))}
                 placeholder="e.g., General Consultation"
-                required
               />
             </div>
 

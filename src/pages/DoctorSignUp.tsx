@@ -140,19 +140,19 @@ const DoctorSignUp = () => {
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="firstName">First Name *</Label>
+                    <Label htmlFor="firstName">First Name (Optional)</Label>
                     <Input id="firstName" placeholder="John" />
                   </div>
                   <div>
-                    <Label htmlFor="lastName">Last Name *</Label>
+                    <Label htmlFor="lastName">Last Name (Optional)</Label>
                     <Input id="lastName" placeholder="Smith" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="gender">Gender *</Label>
-                    <Select required>
+                    <Label htmlFor="gender">Gender (Optional)</Label>
+                    <Select>
                       <SelectTrigger>
                         <SelectValue placeholder="Select gender" />
                       </SelectTrigger>
@@ -165,20 +165,20 @@ const DoctorSignUp = () => {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="phone">Phone Number *</Label>
+                    <Label htmlFor="phone">Phone Number (Optional)</Label>
                     <Input id="phone" placeholder="(555) 123-4567" />
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="email">Email Address *</Label>
+                  <Label htmlFor="email">Email Address (Optional)</Label>
                   <Input id="email" type="email" placeholder="doctor@example.com" />
                   <p className="text-sm text-muted-foreground mt-1">Used for login and patient communication</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="password">Password *</Label>
+                    <Label htmlFor="password">Password (Optional)</Label>
                     <div className="relative">
                       <Input 
                         id="password" 
@@ -218,7 +218,7 @@ const DoctorSignUp = () => {
                     )}
                   </div>
                   <div>
-                    <Label htmlFor="confirmPassword">Confirm Password *</Label>
+                    <Label htmlFor="confirmPassword">Confirm Password (Optional)</Label>
                     <div className="relative">
                       <Input 
                         id="confirmPassword" 
@@ -257,7 +257,7 @@ const DoctorSignUp = () => {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <Label htmlFor="specialty">Specialty *</Label>
+                  <Label htmlFor="specialty">Specialty (Optional)</Label>
                   <Select>
                     <SelectTrigger>
                       <SelectValue placeholder="Select your specialty" />
@@ -375,7 +375,7 @@ const DoctorSignUp = () => {
                 {/* Country and Region */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="country">Country *</Label>
+                    <Label htmlFor="country">Country (Optional)</Label>
                     <Select value={country} onValueChange={setCountry}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select country" />
@@ -390,7 +390,7 @@ const DoctorSignUp = () => {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="region">Region/State *</Label>
+                    <Label htmlFor="region">Region/State (Optional)</Label>
                     <Select value={region} onValueChange={setRegion} disabled={!country}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select region/state" />
@@ -482,7 +482,7 @@ const DoctorSignUp = () => {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div>
-                        <Label htmlFor="practice-name">Practice Name *</Label>
+                        <Label htmlFor="practice-name">Practice Name (Optional)</Label>
                         <Input id="practice-name" placeholder="Enter clinic/practice name" />
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

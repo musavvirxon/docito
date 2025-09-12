@@ -129,7 +129,6 @@ export const AddLocationModal = ({ open, onOpenChange }: AddLocationModalProps) 
                     value={formData.locationName}
                     onChange={(e) => setFormData(prev => ({ ...prev, locationName: e.target.value }))}
                     placeholder="e.g., Downtown Medical Center"
-                    required
                   />
                 </div>
 
@@ -140,30 +139,27 @@ export const AddLocationModal = ({ open, onOpenChange }: AddLocationModalProps) 
                     value={formData.address}
                     onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
                     placeholder="123 Medical Center Dr"
-                    required
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="zipCode">ZIP / Postal Code</Label>
-                    <Input
-                      id="zipCode"
-                      value={formData.zipCode}
-                      onChange={(e) => setFormData(prev => ({ ...prev, zipCode: e.target.value }))}
-                      placeholder="12345"
-                      required
-                    />
+                      <Input
+                        id="zipCode"
+                        value={formData.zipCode}
+                        onChange={(e) => setFormData(prev => ({ ...prev, zipCode: e.target.value }))}
+                        placeholder="12345"
+                      />
                   </div>
                   <div>
                     <Label htmlFor="phoneNumber">Phone Number</Label>
-                    <Input
-                      id="phoneNumber"
-                      value={formData.phoneNumber}
-                      onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
-                      placeholder="(555) 123-4567"
-                      required
-                    />
+                      <Input
+                        id="phoneNumber"
+                        value={formData.phoneNumber}
+                        onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                        placeholder="(555) 123-4567"
+                      />
                   </div>
                 </div>
 

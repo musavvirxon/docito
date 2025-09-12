@@ -41,13 +41,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 const medicalRecordSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  record_type: z.enum(["diagnosis", "condition", "examination", "note", "treatment"]),
+  title: z.string().optional(),
+  record_type: z.enum(["diagnosis", "condition", "examination", "note", "treatment"]).optional(),
   description: z.string().optional(),
-  record_date: z.date(),
+  record_date: z.date().optional(),
   doctor_name: z.string().optional(),
-  doctor_phone: z.string().min(1, "Doctor phone is required"),
-  doctor_email: z.string().email().optional(),
+  doctor_phone: z.string().optional(),
+  doctor_email: z.string().optional(),
   practice_name: z.string().optional(),
 });
 

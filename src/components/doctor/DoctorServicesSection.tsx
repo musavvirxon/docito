@@ -105,18 +105,17 @@ const DoctorServicesSection = ({ readOnly = false, assignedServices }: DoctorSer
     return (
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <Label htmlFor="serviceName">Service Name *</Label>
-          <Input 
+          <Label htmlFor="serviceName">Service Name (Optional)</Label>
+          <Input
             id="serviceName"
             value={formData.name}
             onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
             placeholder="e.g., Cardiology Consultation"
-            required
           />
         </div>
 
         <div>
-          <Label htmlFor="category">Category *</Label>
+          <Label htmlFor="category">Category (Optional)</Label>
           <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
             <SelectTrigger>
               <SelectValue placeholder="Select category" />

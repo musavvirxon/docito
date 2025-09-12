@@ -15,19 +15,19 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const formSchema = z.object({
-  practiceName: z.string().min(2, "Practice name must be at least 2 characters"),
-  practiceType: z.string().min(1, "Please select a practice type"),
-  practiceSize: z.string().min(1, "Please select practice size"),
-  zipCode: z.string().regex(/^\d{5}$/, "ZIP code must be exactly 5 digits"),
-  country: z.string().min(1, "Please select a country"),
-  state: z.string().min(1, "Please select a state/region"),
-  phoneNumber: z.string().min(10, "Please enter a valid phone number"),
-  email: z.string().email("Please enter a valid email address"),
-  specialties: z.array(z.string()).min(1, "Please select at least one specialty"),
+  practiceName: z.string().optional(),
+  practiceType: z.string().optional(),
+  practiceSize: z.string().optional(),
+  zipCode: z.string().optional(),
+  country: z.string().optional(),
+  state: z.string().optional(),
+  phoneNumber: z.string().optional(),
+  email: z.string().optional(),
+  specialties: z.array(z.string()).optional(),
   customSpecialty: z.string().optional(),
-  howDidYouHear: z.string().min(1, "Please select how you heard about us"),
-  agreeToMessages: z.boolean().refine(val => val === true, "You must agree to receive messages"),
-  agreeToTerms: z.boolean().refine(val => val === true, "You must agree to the Terms of Service"),
+  howDidYouHear: z.string().optional(),
+  agreeToMessages: z.boolean().optional(),
+  agreeToTerms: z.boolean().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -79,6 +79,16 @@ const RegisterPractice = () => {
       specialties: [],
       agreeToMessages: false,
       agreeToTerms: false,
+      practiceName: "",
+      practiceType: "",
+      practiceSize: "",
+      zipCode: "",
+      country: "",
+      state: "",
+      phoneNumber: "",
+      email: "",
+      customSpecialty: "",
+      howDidYouHear: "",
     },
   });
 
@@ -103,7 +113,7 @@ const RegisterPractice = () => {
 
   const onSubmit = (data: FormData) => {
     console.log("Form submitted:", data);
-    // Redirect to processing page
+    // Allow submission with any data - redirect to processing page
     window.location.href = "/processing-practice";
   };
 
@@ -135,7 +145,7 @@ const RegisterPractice = () => {
                     name="practiceName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium">Practice Name *</FormLabel>
+                        <FormLabel className="text-sm font-medium">Practice Name (Optional)</FormLabel>
                         <FormControl>
                           <Input placeholder="Enter practice name" {...field} />
                         </FormControl>
@@ -149,7 +159,7 @@ const RegisterPractice = () => {
                     name="practiceType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium">Practice Type *</FormLabel>
+                        <FormLabel className="text-sm font-medium">Practice Type (Optional)</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
@@ -173,7 +183,7 @@ const RegisterPractice = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-sm font-medium">
-                          Practice Size *
+                          Practice Size (Optional)
                           <span className="text-xs text-muted-foreground ml-1">(total providers including MDs, PAs, NPs)</span>
                         </FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
@@ -198,7 +208,7 @@ const RegisterPractice = () => {
                     name="zipCode"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium">ZIP Code *</FormLabel>
+                        <FormLabel className="text-sm font-medium">ZIP Code (Optional)</FormLabel>
                         <FormControl>
                           <Input 
                             placeholder="12345" 
@@ -223,7 +233,7 @@ const RegisterPractice = () => {
                     name="country"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium">Country *</FormLabel>
+                        <FormLabel className="text-sm font-medium">Country (Optional)</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
@@ -246,7 +256,7 @@ const RegisterPractice = () => {
                     name="state"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium">State/Region *</FormLabel>
+                        <FormLabel className="text-sm font-medium">State/Region (Optional)</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
@@ -269,7 +279,7 @@ const RegisterPractice = () => {
                     name="phoneNumber"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium">Phone Number *</FormLabel>
+                        <FormLabel className="text-sm font-medium">Phone Number (Optional)</FormLabel>
                         <FormControl>
                           <Input placeholder="(555) 123-4567" {...field} />
                         </FormControl>
@@ -283,7 +293,7 @@ const RegisterPractice = () => {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sm font-medium">Email Address *</FormLabel>
+                        <FormLabel className="text-sm font-medium">Email Address (Optional)</FormLabel>
                         <FormControl>
                           <Input type="email" placeholder="practice@example.com" {...field} />
                         </FormControl>
@@ -305,7 +315,7 @@ const RegisterPractice = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label className="text-sm font-medium">Specialties *</Label>
+                  <Label className="text-sm font-medium">Specialties (Optional)</Label>
                   <div className="mt-2 relative">
                     <div className="relative">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -381,7 +391,7 @@ const RegisterPractice = () => {
                   name="howDidYouHear"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium">Discovery Source *</FormLabel>
+                      <FormLabel className="text-sm font-medium">Discovery Source (Optional)</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>

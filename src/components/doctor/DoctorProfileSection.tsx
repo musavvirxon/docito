@@ -113,7 +113,7 @@ const DoctorProfileSection = ({ doctorData }: DoctorProfileSectionProps) => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <Label htmlFor="fullName">Full Name *</Label>
+              <Label htmlFor="fullName">Full Name (Optional)</Label>
               <Input id="fullName" defaultValue="Dr. Sarah Johnson" />
             </div>
             <div>

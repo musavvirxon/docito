@@ -21,8 +21,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 const formSchema = z.object({
-  name: z.string().min(1, "Patient name is required"),
-  email: z.string().email("Valid email is required"),
+  name: z.string().optional(),
+  email: z.string().optional(),
   phone: z.string().optional(),
   date_of_birth: z.string().optional(),
 });

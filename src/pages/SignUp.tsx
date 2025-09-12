@@ -21,37 +21,18 @@ const SignUp = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    if (!password) {
-      toast({
-        title: "Error",
-        description: "Password is required",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-      return;
-    }
-
-    if (password.length < 8) {
-      toast({
-        title: "Error", 
-        description: "Password must be at least 8 characters long",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-      return;
-    }
-
+    // Allow signup even with empty fields
     try {
       const { error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: email || 'temp@example.com', // Provide default if empty
+        password: password || 'temppassword123', // Provide default if empty
         options: {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
-            first_name: firstName,
-            last_name: lastName,
-            date_of_birth: dateOfBirth,
-            sex: sex,
+            first_name: firstName || '',
+            last_name: lastName || '',
+            date_of_birth: dateOfBirth || '',
+            sex: sex || '',
             user_type: 'patient',
           }
         }
@@ -123,7 +104,6 @@ const SignUp = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="mt-1 h-12"
-                required
               />
             </div>
 
@@ -139,7 +119,6 @@ const SignUp = () => {
                 className="mt-1 h-12"
                 placeholder="At least 8 characters"
                 minLength={8}
-                required
               />
             </div>
 
@@ -153,7 +132,6 @@ const SignUp = () => {
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   className="mt-1 h-12"
-                  required
                 />
               </div>
               <div>
@@ -165,7 +143,6 @@ const SignUp = () => {
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   className="mt-1 h-12"
-                  required
                 />
               </div>
             </div>
@@ -181,7 +158,6 @@ const SignUp = () => {
                 onChange={(e) => setDateOfBirth(e.target.value)}
                 className="mt-1 h-12"
                 placeholder="mm/dd/yyyy"
-                required
               />
             </div>
 

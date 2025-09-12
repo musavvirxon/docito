@@ -24,9 +24,9 @@ import { toast } from "sonner";
 import PatientSelector from "@/components/patient/PatientSelector";
 
 const formSchema = z.object({
-  title: z.string().min(1, "Treatment plan title is required"),
+  title: z.string().optional(),
   description: z.string().optional(),
-  patient_id: z.string().min(1, "Please select a patient"),
+  patient_id: z.string().optional(),
 });
 
 interface CreateTreatmentPlanModalProps {

@@ -101,7 +101,6 @@ export const InviteStaffModal = ({ open, onOpenChange }: InviteStaffModalProps) 
                   id="fullName"
                   value={formData.fullName}
                   onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
-                  required
                 />
               </div>
               <div>
@@ -111,7 +110,6 @@ export const InviteStaffModal = ({ open, onOpenChange }: InviteStaffModalProps) 
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                  required
                 />
               </div>
             </div>

@@ -28,8 +28,8 @@ import { toast } from "sonner";
 import ToothSelector from "@/components/procedure/ToothSelector";
 
 const formSchema = z.object({
-  procedure_id: z.string().min(1, "Please select a procedure"),
-  custom_cost: z.number().min(0, "Cost must be positive").optional(),
+  procedure_id: z.string().optional(),
+  custom_cost: z.number().optional(),
   custom_notes: z.string().optional(),
   tooth_numbers: z.array(z.number()).optional(),
 });

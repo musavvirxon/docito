@@ -108,7 +108,6 @@ export const InviteProviderModal = ({ open, onOpenChange }: InviteProviderModalP
                   id="fullName"
                   value={formData.fullName}
                   onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
-                  required
                 />
               </div>
               <div>
@@ -118,7 +117,6 @@ export const InviteProviderModal = ({ open, onOpenChange }: InviteProviderModalP
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                  required
                 />
               </div>
             </div>
