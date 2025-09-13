@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Search, MapPin, CreditCard } from "lucide-react";
 import { useState } from "react";
 import SearchResults from "@/components/patient/SearchResults";
+import { useBookingAuth } from "@/hooks/useBookingAuth";
 
 const HeroSection = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -10,6 +11,7 @@ const HeroSection = () => {
   const [insuranceTerm, setInsuranceTerm] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showResults, setShowResults] = useState(false);
+  const { handleBookingClick } = useBookingAuth();
 
   const handleSearch = () => {
     // Mock search results
@@ -44,10 +46,8 @@ const HeroSection = () => {
   };
 
   const handleDoctorClick = (doctor: any) => {
-    // Store doctor info for redirect after signup
-    localStorage.setItem('pendingDoctorVisit', JSON.stringify(doctor));
-    // Redirect to signup
-    window.location.href = '/signup';
+    // Use proper booking authentication flow
+    handleBookingClick(doctor.id, doctor.name);
   };
 
   const specialties = [

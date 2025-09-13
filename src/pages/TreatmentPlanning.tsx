@@ -65,17 +65,44 @@ const TreatmentPlanning = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      // In development mode, bypass authentication check
-      if (!user && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) {
-        toast.error("Please log in to access treatment plans");
-        navigate("/");
+      // Allow anonymous access - load sample data if not authenticated
+      if (!user) {
+        // Load sample treatment plans for demonstration
+        const samplePlans = [
+          {
+            id: 'sample-1',
+            dentist_id: 'demo-dentist',
+            patient_id: 'demo-patient-1',
+            title: 'Comprehensive Oral Rehabilitation',
+            description: 'Complete treatment plan including cleanings, fillings, and crown placement',
+            status: 'published',
+            total_cost: 2800,
+            created_at: new Date().toISOString(),
+            published_at: new Date().toISOString(),
+            completed_at: null,
+          },
+          {
+            id: 'sample-2',
+            dentist_id: 'demo-dentist',
+            patient_id: 'demo-patient-2',
+            title: 'Preventive Care Package',
+            description: 'Regular cleanings and preventive treatments',
+            status: 'in_progress',
+            total_cost: 450,
+            created_at: new Date().toISOString(),
+            published_at: new Date().toISOString(),
+            completed_at: null,
+          }
+        ];
+        setTreatmentPlans(samplePlans);
+        setLoading(false);
         return;
       }
 
       const { data, error } = await supabase
         .from("treatment_plans")
         .select("*")
-        .eq("dentist_id", user?.id || 'dev-user-123')
+        .eq("dentist_id", user.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -90,24 +117,37 @@ const TreatmentPlanning = () => {
   const fetchPatients = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) return;
+      
+      // Create mock patient data for demonstration
+      const mockPatients = [
+        { id: 'demo-patient-1', name: 'John Smith', email: 'john@example.com' },
+        { id: 'demo-patient-2', name: 'Sarah Johnson', email: 'sarah@example.com' },
+        { id: 'demo-patient-3', name: 'Mike Wilson', email: 'mike@example.com' }
+      ];
+      
+      if (!user) {
+        setPatients(mockPatients);
+        return;
+      }
 
       // Get unique patient IDs from treatment plans
       const { data: planData } = await supabase
         .from("treatment_plans")
         .select("patient_id")
-        .eq("dentist_id", user?.id || 'dev-user-123');
+        .eq("dentist_id", user.id);
 
       if (planData && planData.length > 0) {
         const patientIds = [...new Set(planData.map(p => p.patient_id))];
         
         // For now, we'll create mock patient data since we don't have a patients table
-        const mockPatients = patientIds.map((id, index) => ({
+        const userPatients = patientIds.map((id, index) => ({
           id,
           name: `Patient ${index + 1}`,
           email: `patient${index + 1}@example.com`
         }));
         
+        setPatients([...mockPatients, ...userPatients]);
+      } else {
         setPatients(mockPatients);
       }
     } catch (error: any) {
@@ -224,7 +264,18 @@ const TreatmentPlanning = () => {
             <p className="text-muted-foreground">Create and manage patient treatment plans</p>
           </div>
         </div>
-        <Button onClick={() => setShowCreateModal(true)} className="flex items-center gap-2">
+        <Button 
+          onClick={async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+              toast.error("Please sign in to create treatment plans");
+              navigate("/signup");
+              return;
+            }
+            setShowCreateModal(true);
+          }} 
+          className="flex items-center gap-2"
+        >
           <Plus className="w-4 h-4" />
           Create Treatment Plan
         </Button>

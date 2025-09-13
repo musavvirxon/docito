@@ -68,17 +68,53 @@ const ProcedureLibrary = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      // In development mode, bypass authentication check
-      if (!user && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) {
-        toast.error("Please log in to access your procedures");
-        navigate("/");
+      // Allow anonymous access - load sample data if not authenticated
+      if (!user) {
+        // Load sample procedures for demonstration
+        const sampleProcedures = [
+          {
+            id: 'sample-1',
+            name: 'General Cleaning',
+            category: 'preventive',
+            type: 'tooth_based',
+            default_cost: 120,
+            notes: 'Routine dental cleaning and examination',
+            tooth_range: [],
+            is_active: true,
+            created_at: new Date().toISOString(),
+          },
+          {
+            id: 'sample-2',
+            name: 'Dental Filling',
+            category: 'restorative',
+            type: 'tooth_based',
+            default_cost: 180,
+            notes: 'Composite or amalgam filling',
+            tooth_range: [],
+            is_active: true,
+            created_at: new Date().toISOString(),
+          },
+          {
+            id: 'sample-3',
+            name: 'Root Canal',
+            category: 'endodontic',
+            type: 'tooth_based',
+            default_cost: 800,
+            notes: 'Endodontic treatment for infected tooth',
+            tooth_range: [],
+            is_active: true,
+            created_at: new Date().toISOString(),
+          }
+        ];
+        setProcedures(sampleProcedures);
+        setLoading(false);
         return;
       }
 
       const { data, error } = await supabase
         .from("procedures")
         .select("*")
-        .eq("dentist_id", user?.id || 'dev-user-123')
+        .eq("dentist_id", user.id)
         .eq("is_active", true)
         .order("created_at", { ascending: false });
 
@@ -133,10 +169,13 @@ const ProcedureLibrary = () => {
   const handleDuplicateProcedure = async (procedure: Procedure) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) return;
+      if (!user) {
+        toast.error("Please sign in to duplicate procedures");
+        return;
+      }
 
       const duplicatedProcedure = {
-        dentist_id: user?.id || 'dev-user-123',
+        dentist_id: user.id,
         name: `${procedure.name} (Copy)`,
         category: procedure.category as any,
         type: procedure.type as any,
@@ -209,7 +248,18 @@ const ProcedureLibrary = () => {
             <p className="text-muted-foreground">Manage your dental procedures and treatments</p>
           </div>
         </div>
-        <Button onClick={() => setShowAddModal(true)} className="flex items-center gap-2">
+        <Button 
+          onClick={async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+              toast.error("Please sign in to add procedures");
+              navigate("/signup");
+              return;
+            }
+            setShowAddModal(true);
+          }} 
+          className="flex items-center gap-2"
+        >
           <Plus className="w-4 h-4" />
           Add Procedure
         </Button>

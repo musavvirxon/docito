@@ -35,8 +35,9 @@ export const useBookingAuth = () => {
           : "Please sign in to book an appointment",
       });
       
-      // Redirect to sign-up with return URL
-      navigate(`/signup?returnTo=/book-appointment/${doctorId}`);
+      // Use URL parameter method for redirect (preferred approach)
+      const returnUrl = `/book-appointment/${doctorId}`;
+      navigate(`/signup?returnTo=${encodeURIComponent(returnUrl)}`);
       return;
     }
 

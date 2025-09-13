@@ -1,7 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Star, Calendar } from "lucide-react";
+import { useBookingAuth } from "@/hooks/useBookingAuth";
 
 const TopSpecialistsSection = () => {
+  const { handleBookingClick } = useBookingAuth();
   const specialists = [
     {
       id: 1,
@@ -107,9 +110,17 @@ const TopSpecialistsSection = () => {
                     </div>
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground mt-4 line-clamp-3">
+                <p className="text-sm text-muted-foreground mt-4 line-clamp-3 mb-4">
                   {specialist.biography}
                 </p>
+                <Button 
+                  onClick={() => handleBookingClick(specialist.id.toString(), `Dr. ${specialist.firstName} ${specialist.lastName}`)}
+                  size="sm" 
+                  className="w-full"
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Book Appointment
+                </Button>
               </CardContent>
             </Card>
           ))}

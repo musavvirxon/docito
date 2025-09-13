@@ -1,7 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Star, MapPin } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Star, MapPin, Building2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const TopMedicalPracticesSection = () => {
+  const navigate = useNavigate();
   const practices = [
     {
       id: 1,
@@ -115,9 +118,18 @@ const TopMedicalPracticesSection = () => {
                       )}
                     </div>
                     
-                    <p className="text-sm text-muted-foreground line-clamp-3">
+                    <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
                       {practice.description}
                     </p>
+                    <Button 
+                      onClick={() => navigate(`/practices/${practice.id}`)}
+                      variant="outline"
+                      size="sm" 
+                      className="w-full"
+                    >
+                      <Building2 className="w-4 h-4 mr-2" />
+                      View Practice
+                    </Button>
                   </div>
                 </div>
               </CardContent>

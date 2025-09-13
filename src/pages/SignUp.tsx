@@ -54,16 +54,41 @@ const SignUp = () => {
       description: "Please check your email to confirm your account.",
     });
     
-    // Check for pending doctor visit
+    // Check for URL parameter first (new flow)
+    const urlParams = new URLSearchParams(window.location.search);
+    const returnTo = urlParams.get('returnTo');
+    
+    if (returnTo) {
+      // Validate returnTo URL to prevent open redirects
+      const validPaths = ['/book-appointment/', '/doctor/', '/search-results', '/patient-dashboard'];
+      const isValidPath = validPaths.some(path => returnTo.startsWith(path));
+      
+      if (isValidPath) {
+        toast({
+          title: "Welcome! Redirecting to booking...",
+          description: "You're now signed in and can complete your appointment booking.",
+        });
+        window.location.href = returnTo;
+        return;
+      }
+    }
+    
+    // Fallback: Check for pending doctor visit (legacy flow)
     const pendingDoctor = localStorage.getItem('pendingDoctorVisit');
     if (pendingDoctor) {
-      const doctorData = JSON.parse(pendingDoctor);
-      localStorage.removeItem('pendingDoctorVisit');
-      toast({
-        title: `Welcome! You're now viewing ${doctorData.name}'s profile.`,
-        description: "You can now book appointments and view full details.",
-      });
-      window.location.href = `/doctor-profile/${doctorData.id}`;
+      try {
+        const doctorData = JSON.parse(pendingDoctor);
+        localStorage.removeItem('pendingDoctorVisit');
+        toast({
+          title: `Welcome! Redirecting to ${doctorData.name}'s booking page...`,
+          description: "You can now book appointments and view full details.",
+        });
+        // Redirect to booking page instead of doctor profile
+        window.location.href = `/book-appointment/${doctorData.id}`;
+      } catch (error) {
+        console.error('Error parsing pending doctor data:', error);
+        navigateToPatientDashboard();
+      }
     } else {
       navigateToPatientDashboard();
     }
