@@ -254,6 +254,7 @@ export type Database = {
       }
       procedures: {
         Row: {
+          active: boolean | null
           category: Database["public"]["Enums"]["procedure_category"] | null
           created_at: string | null
           default_cost: number | null
@@ -267,6 +268,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          active?: boolean | null
           category?: Database["public"]["Enums"]["procedure_category"] | null
           created_at?: string | null
           default_cost?: number | null
@@ -280,6 +282,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          active?: boolean | null
           category?: Database["public"]["Enums"]["procedure_category"] | null
           created_at?: string | null
           default_cost?: number | null
@@ -354,6 +357,7 @@ export type Database = {
           id: string
           notes: string | null
           procedure_id: string | null
+          sequence_order: number | null
           status: string | null
           tooth_numbers: number[] | null
           treatment_plan_id: string | null
@@ -364,6 +368,7 @@ export type Database = {
           id?: string
           notes?: string | null
           procedure_id?: string | null
+          sequence_order?: number | null
           status?: string | null
           tooth_numbers?: number[] | null
           treatment_plan_id?: string | null
@@ -374,6 +379,7 @@ export type Database = {
           id?: string
           notes?: string | null
           procedure_id?: string | null
+          sequence_order?: number | null
           status?: string | null
           tooth_numbers?: number[] | null
           treatment_plan_id?: string | null
