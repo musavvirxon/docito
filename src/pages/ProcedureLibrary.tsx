@@ -15,14 +15,17 @@ import ToothSelector from "@/components/procedure/ToothSelector";
 
 interface Procedure {
   id: string;
+  dentist_id: string;
   name: string;
   category: string;
   type: string;
   default_cost: number;
+  duration_minutes?: number;
   notes?: string;
   tooth_range?: number[];
   is_active: boolean;
   created_at: string;
+  updated_at: string;
 }
 
 const ProcedureLibrary = () => {
@@ -71,39 +74,48 @@ const ProcedureLibrary = () => {
       // Allow anonymous access - load sample data if not authenticated
       if (!user) {
         // Load sample procedures for demonstration
-        const sampleProcedures = [
+        const sampleProcedures: Procedure[] = [
           {
             id: 'sample-1',
+            dentist_id: 'demo-dentist',
             name: 'General Cleaning',
             category: 'preventive',
             type: 'tooth_based',
             default_cost: 120,
+            duration_minutes: 30,
             notes: 'Routine dental cleaning and examination',
             tooth_range: [],
             is_active: true,
             created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
           },
           {
             id: 'sample-2',
+            dentist_id: 'demo-dentist',
             name: 'Dental Filling',
             category: 'restorative',
             type: 'tooth_based',
             default_cost: 180,
+            duration_minutes: 45,
             notes: 'Composite or amalgam filling',
             tooth_range: [],
             is_active: true,
             created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
           },
           {
             id: 'sample-3',
+            dentist_id: 'demo-dentist',
             name: 'Root Canal',
             category: 'endodontic',
             type: 'tooth_based',
             default_cost: 800,
+            duration_minutes: 90,
             notes: 'Endodontic treatment for infected tooth',
             tooth_range: [],
             is_active: true,
             created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
           }
         ];
         setProcedures(sampleProcedures);

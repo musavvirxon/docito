@@ -134,7 +134,7 @@ const TreatmentPlanning = () => {
       const { data: planData } = await supabase
         .from("treatment_plans")
         .select("patient_id")
-        .eq("dentist_id", user.id);
+        .eq("doctor_id", user.id);
 
       if (planData && planData.length > 0) {
         const patientIds = [...new Set(planData.map(p => p.patient_id))];
