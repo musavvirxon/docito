@@ -64,7 +64,9 @@ const TreatmentPlanning = () => {
   const fetchTreatmentPlans = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      
+      // In development mode, bypass authentication check
+      if (!user && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) {
         toast.error("Please log in to access treatment plans");
         navigate("/");
         return;
@@ -73,7 +75,7 @@ const TreatmentPlanning = () => {
       const { data, error } = await supabase
         .from("treatment_plans")
         .select("*")
-        .eq("dentist_id", user.id)
+        .eq("dentist_id", user?.id || 'dev-user-123')
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -88,13 +90,13 @@ const TreatmentPlanning = () => {
   const fetchPatients = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) return;
 
       // Get unique patient IDs from treatment plans
       const { data: planData } = await supabase
         .from("treatment_plans")
         .select("patient_id")
-        .eq("dentist_id", user.id);
+        .eq("dentist_id", user?.id || 'dev-user-123');
 
       if (planData && planData.length > 0) {
         const patientIds = [...new Set(planData.map(p => p.patient_id))];

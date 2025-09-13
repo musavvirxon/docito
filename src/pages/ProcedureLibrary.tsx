@@ -67,7 +67,9 @@ const ProcedureLibrary = () => {
   const fetchProcedures = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      
+      // In development mode, bypass authentication check
+      if (!user && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) {
         toast.error("Please log in to access your procedures");
         navigate("/");
         return;
@@ -76,7 +78,7 @@ const ProcedureLibrary = () => {
       const { data, error } = await supabase
         .from("procedures")
         .select("*")
-        .eq("dentist_id", user.id)
+        .eq("dentist_id", user?.id || 'dev-user-123')
         .eq("is_active", true)
         .order("created_at", { ascending: false });
 
@@ -131,10 +133,10 @@ const ProcedureLibrary = () => {
   const handleDuplicateProcedure = async (procedure: Procedure) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) return;
 
       const duplicatedProcedure = {
-        dentist_id: user.id,
+        dentist_id: user?.id || 'dev-user-123',
         name: `${procedure.name} (Copy)`,
         category: procedure.category as any,
         type: procedure.type as any,

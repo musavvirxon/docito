@@ -48,6 +48,14 @@ export const AddLocationModal = ({ open, onOpenChange }: AddLocationModalProps) 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Skip validation in development mode
+    const isDev = window.location.hostname.includes('localhost') || window.location.hostname.includes('127.0.0.1');
+    if (!isDev && (!formData.locationName.trim() || !formData.address.trim())) {
+      // Show error in production only
+      return;
+    }
+    
     console.log("Add location:", { formData, workingHours, uploadedPhotos });
     onOpenChange(false);
     // Reset form

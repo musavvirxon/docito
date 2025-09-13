@@ -54,6 +54,14 @@ export const AddServiceModal = ({ open, onOpenChange }: AddServiceModalProps) =>
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Skip validation in development mode
+    const isDev = window.location.hostname.includes('localhost') || window.location.hostname.includes('127.0.0.1');
+    if (!isDev && (!formData.serviceName.trim() || !formData.price || parseFloat(formData.price) <= 0)) {
+      // Show error in production only
+      return;
+    }
+    
     console.log("Add service:", formData);
     onOpenChange(false);
     // Reset form

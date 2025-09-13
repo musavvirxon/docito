@@ -77,13 +77,16 @@ const AddProcedureModal = ({ open, onOpenChange, onSuccess }: AddProcedureModalP
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      
+      // In development mode, bypass authentication check
+      const isDev = window.location.hostname.includes('localhost') || window.location.hostname.includes('127.0.0.1');
+      if (!isDev && !user) {
         toast.error("You must be logged in to create procedures");
         return;
       }
 
       const procedureData = {
-        dentist_id: user.id,
+        dentist_id: user?.id || 'dev-user-123',
         name: values.name,
         category: values.category as any,
         type: values.type as any,

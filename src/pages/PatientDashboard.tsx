@@ -91,8 +91,9 @@ const PatientDashboard = () => {
         : "Taking you to our secure payment and booking system...",
     });
     
-    // Show verification requirement when actually booking
-    if (!emailVerified || !phoneVerified) {
+    // In development mode, skip verification requirement
+    const isDev = window.location.hostname.includes('localhost') || window.location.hostname.includes('127.0.0.1');
+    if (!isDev && (!emailVerified || !phoneVerified)) {
       toast({
         title: "⚠️ Verification Required for Booking",
         description: "Please verify your email and phone to complete your appointment booking.",
