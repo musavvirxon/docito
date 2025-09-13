@@ -23,10 +23,12 @@ import {
   CreditCard,
   Video,
   Building2,
-  ChevronRight
+  ChevronRight,
+  Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useBookingAuth } from "@/hooks/useBookingAuth";
 
 interface Doctor {
   id: string;
@@ -70,9 +72,11 @@ const DoctorProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { handleBookingClick } = useBookingAuth();
   const [isSaved, setIsSaved] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
+  const [isBookingLoading, setIsBookingLoading] = useState(false);
 
   // Mock doctor data - replace with real API call
   const doctor: Doctor = {
@@ -171,9 +175,14 @@ const DoctorProfile = () => {
     ]
   };
 
-  const handleBookAppointment = () => {
-    // Navigate to the new appointment booking page
-    navigate(`/book-appointment/${id}`);
+  const handleBookAppointment = async () => {
+    setIsBookingLoading(true);
+    
+    // Small delay for better UX
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    handleBookingClick(id!, doctor.name);
+    setIsBookingLoading(false);
   };
 
   const renderStars = (rating: number) => {
@@ -272,17 +281,31 @@ const DoctorProfile = () => {
                     {doctor.bio}
                   </p>
 
-                  {/* Book Appointment Button - Fixed on Desktop */}
+                  {/* Book Appointment Button - Enhanced */}
                   <div className="flex gap-3">
                     <Button 
                       size="lg" 
-                      className="flex-1 lg:flex-none"
+                      className="flex-1 lg:flex-none bg-primary hover:bg-primary/90 hover:shadow-lg active:scale-95 transition-all duration-200 min-h-[48px]"
                       onClick={handleBookAppointment}
+                      disabled={isBookingLoading}
                     >
-                      <Calendar className="w-5 h-5 mr-2" />
-                      Book Appointment
+                      {isBookingLoading ? (
+                        <>
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          Booking...
+                        </>
+                      ) : (
+                        <>
+                          <Calendar className="w-5 h-5 mr-2" />
+                          Book Appointment
+                        </>
+                      )}
                     </Button>
-                    <Button variant="outline" size="lg">
+                    <Button 
+                      variant="outline" 
+                      size="lg"
+                      className="hover:bg-muted active:scale-95 transition-all duration-200 min-h-[48px]"
+                    >
                       <Video className="w-5 h-5 mr-2" />
                       Video Call
                     </Button>

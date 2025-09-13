@@ -14,7 +14,9 @@ import {
   Stethoscope,
   Building2,
   UserCheck,
-  Wifi
+  Wifi,
+  MapPin,
+  ChevronRight
 } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
@@ -122,6 +124,39 @@ const Doctors = () => {
     }
   ];
 
+  const mockDoctors = [
+    {
+      id: '1',
+      name: 'Dr. Sarah Johnson',
+      specialty: 'Cardiologist',
+      rating: 4.9,
+      reviewCount: 127,
+      location: 'Downtown Medical Center',
+      image: '/placeholder.svg',
+      availability: 'Available today'
+    },
+    {
+      id: '2', 
+      name: 'Dr. Michael Chen',
+      specialty: 'Neurologist',
+      rating: 4.8,
+      reviewCount: 89,
+      location: 'Metro Health Clinic',
+      image: '/placeholder.svg',
+      availability: 'Next available: Tomorrow'
+    },
+    {
+      id: '3',
+      name: 'Dr. Emily Rodriguez',
+      specialty: 'Dermatologist', 
+      rating: 4.7,
+      reviewCount: 156,
+      location: 'Skin Care Specialists',
+      image: '/placeholder.svg',
+      availability: 'Available today'
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -169,8 +204,88 @@ const Doctors = () => {
         </div>
       </section>
 
-      {/* What Doctors Get Section */}
+      {/* Featured Doctors Directory */}
       <section className="py-20 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+              Find Top Doctors
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Book appointments with qualified healthcare professionals
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+            {mockDoctors.map((doctor) => (
+              <Card key={doctor.id} className="border-border hover:shadow-lg transition-all duration-300 group">
+                <CardContent className="p-6">
+                  <div className="flex items-center mb-4">
+                    <img 
+                      src={doctor.image} 
+                      alt={doctor.name}
+                      className="w-16 h-16 rounded-full object-cover mr-4"
+                    />
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                        {doctor.name}
+                      </h3>
+                      <p className="text-muted-foreground text-sm">{doctor.specialty}</p>
+                      <div className="flex items-center gap-1 mt-1">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-sm font-medium">{doctor.rating}</span>
+                        <span className="text-xs text-muted-foreground">({doctor.reviewCount})</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 mb-4">
+                    <MapPin className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">{doctor.location}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 mb-4">
+                    <Calendar className="w-4 h-4 text-green-600" />
+                    <span className="text-sm text-green-600">{doctor.availability}</span>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Button 
+                      className="flex-1 bg-primary hover:bg-primary/90 hover:shadow-md active:scale-95 transition-all duration-150"
+                      onClick={() => window.location.href = `/book-appointment/${doctor.id}`}
+                    >
+                      <Calendar className="w-4 h-4 mr-2" />
+                      Book Now
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      className="hover:bg-muted active:scale-95 transition-all duration-150"
+                      onClick={() => window.location.href = `/doctor/${doctor.id}`}
+                    >
+                      View Profile
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          
+          <div className="text-center">
+            <Button 
+              variant="outline" 
+              size="lg"
+              onClick={() => window.location.href = '/search-results'}
+              className="hover:bg-muted"
+            >
+              View All Doctors
+              <ChevronRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* What Doctors Get Section */}
+      <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
@@ -202,7 +317,7 @@ const Doctors = () => {
       </section>
 
       {/* Who It's For Section */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">

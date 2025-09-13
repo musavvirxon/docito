@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Star, Calendar, CreditCard, Languages } from "lucide-react";
+import { MapPin, Star, Calendar, CreditCard, Languages, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useBookingAuth } from "@/hooks/useBookingAuth";
 
 interface SearchResult {
   id: string;
@@ -30,14 +32,21 @@ interface ResultCardProps {
 
 const ResultCard = ({ result, isMobile = false }: ResultCardProps) => {
   const navigate = useNavigate();
+  const { handleBookingClick } = useBookingAuth();
+  const [isBookingLoading, setIsBookingLoading] = useState(false);
 
-  const handleBookAppointment = () => {
-    // Navigate directly to the appointment booking page
-    navigate(`/book-appointment/${result.id}`);
+  const handleBookAppointment = async () => {
+    setIsBookingLoading(true);
+    
+    // Small delay for better UX
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    handleBookingClick(result.id, result.name);
+    setIsBookingLoading(false);
   };
 
   const handleViewProfile = () => {
-    navigate(`/doctor-profile/${result.id}`);
+    navigate(`/doctor/${result.id}`);
   };
 
   if (isMobile) {
@@ -65,9 +74,29 @@ const ResultCard = ({ result, isMobile = false }: ResultCardProps) => {
               <span className="text-xs text-muted-foreground">({result.reviewCount})</span>
             )}
           </div>
-          <Button onClick={handleViewProfile} variant="outline" size="sm" className="w-full">
-            View More
-          </Button>
+          <div className="flex gap-2 mt-3">
+            <Button 
+              onClick={handleBookAppointment} 
+              size="sm" 
+              className="flex-1 min-h-[44px] bg-primary hover:bg-primary/90 active:scale-95 transition-all duration-150"
+              disabled={isBookingLoading}
+            >
+              {isBookingLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Booking...
+                </>
+              ) : (
+                <>
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Book Now
+                </>
+              )}
+            </Button>
+            <Button onClick={handleViewProfile} variant="outline" size="sm" className="min-h-[44px] active:scale-95 transition-all duration-150">
+              View
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -161,10 +190,30 @@ const ResultCard = ({ result, isMobile = false }: ResultCardProps) => {
 
         {/* Action Buttons */}
         <div className="flex gap-3">
-          <Button onClick={handleBookAppointment} size="sm" className="flex-1 max-w-[140px]">
-            Book Appointment
+          <Button 
+            onClick={handleBookAppointment} 
+            size="sm" 
+            className="flex-1 max-w-[140px] min-h-[40px] bg-primary hover:bg-primary/90 hover:shadow-md active:scale-95 transition-all duration-150"
+            disabled={isBookingLoading}
+          >
+            {isBookingLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Booking...
+              </>
+            ) : (
+              <>
+                <Calendar className="w-4 h-4 mr-2" />
+                Book Now
+              </>
+            )}
           </Button>
-          <Button onClick={handleViewProfile} variant="outline" size="sm" className="flex-1 max-w-[120px]">
+          <Button 
+            onClick={handleViewProfile} 
+            variant="outline" 
+            size="sm" 
+            className="flex-1 max-w-[120px] min-h-[40px] hover:bg-muted active:scale-95 transition-all duration-150"
+          >
             View Profile
           </Button>
         </div>
