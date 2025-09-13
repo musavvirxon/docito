@@ -1,727 +1,686 @@
 import { useState } from "react";
+import { Bell, Settings, User, Calendar, FileText, Search, Plus, Clock, MapPin, Phone, Download, Eye, X, RotateCcw, AlertCircle, CheckCircle, Star } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import SearchBar from "@/components/patient/SearchBar";
-import SearchResults from "@/components/patient/SearchResults";
-import MedicalHistory from "@/components/patient/MedicalHistory";
-import PatientTreatmentPlansSection from "@/components/patient/PatientTreatmentPlansSection";
-import { 
-  Heart, 
-  Calendar, 
-  CheckCircle, 
-  XCircle, 
-  Users, 
-  CreditCard,
-  Settings,
-  User,
-  Shield,
-  Bell,
-  Upload,
-  Search,
-  Star,
-  MapPin,
-  Clock,
-  Phone,
-  Mail,
-  Camera,
-  Plus,
-  Eye,
-  EyeOff,
-  Activity
-} from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import { format, addDays, isPast, isFuture, isToday } from "date-fns";
 
-interface SearchResult {
+interface Appointment {
   id: string;
-  type: 'doctor' | 'practice';
-  name: string;
-  specialty?: string;
+  doctorName: string;
+  doctorSpecialty: string;
+  doctorImage?: string;
+  procedure: string;
+  date: Date;
+  time: string;
+  duration: number;
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  confirmationCode: string;
   location: string;
-  rating: number;
-  availability?: string;
-  acceptsInsurance?: boolean;
-  acceptsNewPatients?: boolean;
-  distance?: string;
+  fee: number;
+  notes?: string;
+  treatmentPlanId?: string;
+  canCancel: boolean;
+  canReschedule: boolean;
 }
 
 const PatientDashboard = () => {
-  const [emailVerified, setEmailVerified] = useState(false);
-  const [phoneVerified, setPhoneVerified] = useState(false);
-  const [showPasswords, setShowPasswords] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  const [showResults, setShowResults] = useState(false);
-  const [recentSearches, setRecentSearches] = useState<string[]>([
-    "Dr. Sarah Johnson",
-    "Dental cleaning",
-    "Eye exam near me"
-  ]);
+  const [activeSection, setActiveSection] = useState("dashboard");
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleVerifyEmail = () => {
-    toast({
-      title: "✉️ Verification email sent!",
-      description: "Please check your inbox and click the verification link.",
-    });
-  };
+  // Mock appointment data - would come from API
+  const mockAppointments: Appointment[] = [
+    {
+      id: '1',
+      doctorName: 'Dr. Sarah Johnson',
+      doctorSpecialty: 'Cardiologist',
+      doctorImage: '/placeholder.svg',
+      procedure: 'Consultation',
+      date: addDays(new Date(), 2),
+      time: '10:00 AM',
+      duration: 30,
+      status: 'confirmed',
+      confirmationCode: 'APT-2024-001234',
+      location: 'Downtown Medical Center',
+      fee: 200,
+      canCancel: true,
+      canReschedule: true
+    },
+    {
+      id: '2',
+      doctorName: 'Dr. Michael Chen',
+      doctorSpecialty: 'Neurologist',
+      doctorImage: '/placeholder.svg',
+      procedure: 'Follow-up Visit',
+      date: addDays(new Date(), 7),
+      time: '2:30 PM',
+      duration: 45,
+      status: 'pending',
+      confirmationCode: 'APT-2024-001235',
+      location: 'Metro Health Clinic',
+      fee: 300,
+      canCancel: true,
+      canReschedule: false
+    },
+    {
+      id: '3',
+      doctorName: 'Dr. Emily Rodriguez',
+      doctorSpecialty: 'Dermatologist',
+      doctorImage: '/placeholder.svg',
+      procedure: 'Skin Examination',
+      date: addDays(new Date(), -5),
+      time: '11:00 AM',
+      duration: 30,
+      status: 'completed',
+      confirmationCode: 'APT-2024-001230',
+      location: 'Skin Care Specialists',
+      fee: 150,
+      treatmentPlanId: 'tp-123',
+      canCancel: false,
+      canReschedule: false
+    },
+    {
+      id: '4',
+      doctorName: 'Dr. James Wilson',
+      doctorSpecialty: 'Family Medicine',
+      doctorImage: '/placeholder.svg',
+      procedure: 'Annual Checkup',
+      date: addDays(new Date(), -15),
+      time: '9:00 AM',
+      duration: 60,
+      status: 'completed',
+      confirmationCode: 'APT-2024-001225',
+      location: 'Family Health Center',
+      fee: 250,
+      canCancel: false,
+      canReschedule: false
+    }
+  ];
 
-  const handleVerifyPhone = () => {
-    toast({
-      title: "📱 OTP sent!",
-      description: "We've sent a code to your phone number.",
-    });
-  };
+  const upcomingAppointments = mockAppointments.filter(apt => 
+    isFuture(apt.date) || isToday(apt.date)
+  ).sort((a, b) => a.date.getTime() - b.date.getTime());
 
-  const handleBookAppointment = (result?: SearchResult) => {
-    // Allow navigation but only require verification for actual booking
-    toast({
-      title: "🎉 Redirecting to booking!",
-      description: result 
-        ? `Booking appointment with ${result.name}...`
-        : "Taking you to our secure payment and booking system...",
-    });
-    
-    // In development mode, skip verification requirement
-    const isDev = window.location.hostname.includes('localhost') || window.location.hostname.includes('127.0.0.1');
-    if (!isDev && (!emailVerified || !phoneVerified)) {
-      toast({
-        title: "⚠️ Verification Required for Booking",
-        description: "Please verify your email and phone to complete your appointment booking.",
-        variant: "destructive",
-      });
+  const pastAppointments = mockAppointments.filter(apt => 
+    isPast(apt.date) && !isToday(apt.date)
+  ).sort((a, b) => b.date.getTime() - a.date.getTime());
+
+  const sidebarItems = [
+    { id: "dashboard", label: "Dashboard", icon: User },
+    { id: "appointments", label: "My Appointments", icon: Calendar },
+    { id: "medical-records", label: "Medical Records", icon: FileText },
+    { id: "search", label: "Find Doctors", icon: Search },
+    { id: "settings", label: "Settings", icon: Settings },
+  ];
+
+  const getStatusColor = (status: Appointment['status']) => {
+    switch (status) {
+      case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'confirmed': return 'bg-green-100 text-green-800 border-green-200';
+      case 'completed': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'cancelled': return 'bg-red-100 text-red-800 border-red-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
-  const handleSearch = (results: SearchResult[]) => {
-    setSearchResults(results);
-    setShowResults(true);
-    
-    // Add to recent searches (simplified)
-    if (results.length > 0) {
-      const firstResult = results[0];
-      const searchQuery = firstResult.name;
-      setRecentSearches(prev => {
-        const filtered = prev.filter(s => s !== searchQuery);
-        return [searchQuery, ...filtered].slice(0, 5);
-      });
+  const getStatusIcon = (status: Appointment['status']) => {
+    switch (status) {
+      case 'pending': return <AlertCircle className="w-4 h-4" />;
+      case 'confirmed': return <CheckCircle className="w-4 h-4" />;
+      case 'completed': return <CheckCircle className="w-4 h-4" />;
+      case 'cancelled': return <X className="w-4 h-4" />;
+      default: return <Clock className="w-4 h-4" />;
     }
-
-    // Scroll to search results area smoothly
-    setTimeout(() => {
-      document.getElementById('search-results-section')?.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'start'
-      });
-    }, 100);
   };
 
-  const handleViewPractice = (result: SearchResult) => {
+  const handleCancelAppointment = (appointmentId: string) => {
     toast({
-      title: `Viewing ${result.name}`,
-      description: "Showing doctors and services at this practice...",
+      title: "Appointment Cancelled",
+      description: "Your appointment has been cancelled successfully.",
     });
   };
 
-  const handleFavorite = (result: SearchResult) => {
+  const handleRescheduleAppointment = (appointmentId: string) => {
     toast({
-      title: "Added to favorites",
-      description: `${result.name} has been saved to your favorites.`,
+      title: "Reschedule Request",
+      description: "You will be redirected to reschedule your appointment.",
     });
   };
 
-  const isFullyVerified = emailVerified && phoneVerified;
+  const handleViewDetails = (appointmentId: string) => {
+    navigate(`/booking-confirmation/${appointmentId}`);
+  };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-accent/10 to-background overflow-y-auto">
-      {/* Header */}
-      <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4">
-          <nav className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <div className="bg-yellow-400 rounded-full w-8 h-8 flex items-center justify-center">
-                <span className="text-foreground font-bold text-lg">Z</span>
-              </div>
-              <span className="text-xl font-semibold text-foreground">Your Health Dashboard</span>
+  const handleBookFollowUp = (doctorName: string) => {
+    navigate('/search-results');
+    toast({
+      title: "Book Follow-up",
+      description: `Searching for available appointments with ${doctorName}`,
+    });
+  };
+
+  const AppointmentCard = ({ appointment, isPast = false }: { appointment: Appointment; isPast?: boolean }) => (
+    <Card className="border-border hover:shadow-md transition-shadow">
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <Avatar className="w-12 h-12">
+              <AvatarImage src={appointment.doctorImage} alt={appointment.doctorName} />
+              <AvatarFallback>{appointment.doctorName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+            </Avatar>
+            <div>
+              <h3 className="font-semibold text-foreground">{appointment.doctorName}</h3>
+              <p className="text-sm text-muted-foreground">{appointment.doctorSpecialty}</p>
             </div>
-            <div className="flex items-center space-x-4">
-              <Badge variant={isFullyVerified ? "default" : "secondary"} className="px-3">
-                {isFullyVerified ? "✅ Verified" : "⏳ Verification Pending"}
-              </Badge>
-              <Avatar>
-                <AvatarImage src="" />
-                <AvatarFallback className="bg-primary text-primary-foreground">JD</AvatarFallback>
-              </Avatar>
-            </div>
-          </nav>
+          </div>
+          <Badge className={`${getStatusColor(appointment.status)} border`}>
+            {getStatusIcon(appointment.status)}
+            <span className="ml-1 capitalize">{appointment.status}</span>
+          </Badge>
         </div>
-      </header>
 
-      <div className="container mx-auto px-4 py-8">
-        {/* Verification Alert */}
-        {!isFullyVerified && (
-          <Card className="mb-8 border-orange-200 bg-orange-50/50">
-            <CardContent className="p-6">
-              <div className="flex items-start space-x-4">
-                <div className="bg-orange-100 rounded-full p-2">
-                  <Shield className="w-5 h-5 text-orange-600" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-orange-800 mb-2">
-                    Complete Verification to Start Booking 🌟
-                  </h3>
-                  <p className="text-orange-700 mb-4">
-                    You can browse and explore freely, but we need to confirm your info to secure your bookings.
-                  </p>
-                  <div className="flex items-center space-x-6 mb-4">
-                    <div className="flex items-center space-x-2">
-                      {emailVerified ? (
-                        <CheckCircle className="w-5 h-5 text-green-600" />
-                      ) : (
-                        <XCircle className="w-5 h-5 text-red-500" />
-                      )}
-                      <span className={emailVerified ? "text-green-700" : "text-red-600"}>
-                        Email {emailVerified ? "verified" : "not verified"}
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      {phoneVerified ? (
-                        <CheckCircle className="w-5 h-5 text-green-600" />
-                      ) : (
-                        <XCircle className="w-5 h-5 text-red-500" />
-                      )}
-                      <span className={phoneVerified ? "text-green-700" : "text-red-600"}>
-                        Phone {phoneVerified ? "verified" : "not verified"}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex space-x-3">
-                    {!emailVerified && (
-                      <Button onClick={handleVerifyEmail} variant="outline" size="sm">
-                        Verify Email
-                      </Button>
-                    )}
-                    {!phoneVerified && (
-                      <Button onClick={handleVerifyPhone} variant="outline" size="sm">
-                        Verify Phone
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        <div className="space-y-2 mb-4">
+          <div className="flex items-center gap-2 text-sm">
+            <Calendar className="w-4 h-4 text-muted-foreground" />
+            <span className="font-medium">{format(appointment.date, 'EEEE, MMMM d, yyyy')}</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <Clock className="w-4 h-4 text-muted-foreground" />
+            <span>{appointment.time} ({appointment.duration} min)</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <MapPin className="w-4 h-4 text-muted-foreground" />
+            <span>{appointment.location}</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <FileText className="w-4 h-4 text-muted-foreground" />
+            <span>{appointment.procedure}</span>
+          </div>
+        </div>
 
-        {/* Enhanced Search Section */}
-        <SearchBar 
-          onSearch={handleSearch}
-          className="mb-8"
-        />
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-muted-foreground">
+            <span className="font-medium">Confirmation:</span> {appointment.confirmationCode}
+          </div>
+          <div className="text-sm font-medium">
+            ${appointment.fee}
+          </div>
+        </div>
 
-        {/* Search Results */}
-        {showResults && (
-          <div id="search-results-section" className="w-full mb-8">
-            <div className="mb-4">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowResults(false)}
-                className="mb-4"
+        <Separator className="my-3" />
+
+        <div className="flex gap-2 flex-wrap">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handleViewDetails(appointment.id)}
+          >
+            <Eye className="w-3 h-3 mr-1" />
+            Details
+          </Button>
+
+          {!isPast && (
+            <>
+              {appointment.canReschedule && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleRescheduleAppointment(appointment.id)}
+                >
+                  <RotateCcw className="w-3 h-3 mr-1" />
+                  Reschedule
+                </Button>
+              )}
+
+              {appointment.canCancel && appointment.status !== 'cancelled' && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="sm" variant="outline" className="text-destructive hover:text-destructive">
+                      <X className="w-3 h-3 mr-1" />
+                      Cancel
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Cancel Appointment</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to cancel your appointment with {appointment.doctorName} on {format(appointment.date, 'MMMM d, yyyy')} at {appointment.time}?
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Keep Appointment</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={() => handleCancelAppointment(appointment.id)}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Cancel Appointment
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+            </>
+          )}
+
+          {isPast && (
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleBookFollowUp(appointment.doctorName)}
               >
-                ← Back to Dashboard
+                <Calendar className="w-3 h-3 mr-1" />
+                Book Follow-up
+              </Button>
+
+              {appointment.treatmentPlanId && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => navigate(`/treatment-plan/${appointment.treatmentPlanId}`)}
+                >
+                  <FileText className="w-3 h-3 mr-1" />
+                  Treatment Plan
+                </Button>
+              )}
+
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  toast({
+                    title: "Download Started",
+                    description: "Appointment summary is being prepared for download.",
+                  });
+                }}
+              >
+                <Download className="w-3 h-3 mr-1" />
+                Download
+              </Button>
+            </>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const renderContent = () => {
+    switch (activeSection) {
+      case "appointments":
+        return (
+          <div className="space-y-8">
+            <div className="flex items-center justify-between">
+              <h2 className="text-3xl font-bold">My Appointments</h2>
+              <Button onClick={() => navigate('/search-results')} className="bg-primary hover:bg-primary/90">
+                <Plus className="w-4 h-4 mr-2" />
+                Book New Appointment
               </Button>
             </div>
-            <SearchResults
-              results={searchResults}
-              onBookAppointment={handleBookAppointment}
-              onViewPractice={handleViewPractice}
-              onFavorite={handleFavorite}
-            />
-          </div>
-        )}
 
-        {/* Recent Searches - Only show when not searching */}
-        {recentSearches.length > 0 && !showResults && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="text-lg">Recent Searches</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {recentSearches.map((search, index) => (
-                  <Badge
-                    key={index}
-                    variant="outline"
-                    className="cursor-pointer hover:bg-accent"
-                    onClick={() => {
-                      // Simulate a quick search
-                      const mockResult: SearchResult = {
-                        id: `recent-${index}`,
-                        type: search.includes('Dr.') ? 'doctor' : 'practice',
-                        name: search,
-                        location: "Your area",
-                        rating: 4.5,
-                        acceptsInsurance: true,
-                        acceptsNewPatients: true
-                      };
-                      handleSearch([mockResult]);
-                      // Scroll to results
-                      setTimeout(() => {
-                        document.getElementById('search-results-section')?.scrollIntoView({ 
-                          behavior: 'smooth',
-                          block: 'start'
-                        });
-                      }, 100);
-                    }}
-                  >
-                    {search}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+            {/* Appointment Reminders */}
+            {upcomingAppointments.filter(apt => apt.status === 'confirmed' && 
+              apt.date.getTime() - new Date().getTime() <= 24 * 60 * 60 * 1000).length > 0 && (
+              <Alert className="border-blue-200 bg-blue-50">
+                <Bell className="h-4 w-4" />
+                <AlertDescription>
+                  <span className="font-medium">Upcoming appointments:</span> You have appointments in the next 24 hours. 
+                  Please arrive 15 minutes early and bring your insurance card.
+                </AlertDescription>
+              </Alert>
+            )}
 
-        {/* Main Dashboard - Hide when showing search results */}
-        {!showResults && (
-          <Tabs defaultValue="wellness" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="wellness" className="flex items-center space-x-2">
-              <Heart className="w-4 h-4" />
-              <span>Wellness Guide</span>
-            </TabsTrigger>
-            <TabsTrigger value="treatment-plans" className="flex items-center space-x-2">
-              <Calendar className="w-4 h-4" />
-              <span>Treatment Plans</span>
-            </TabsTrigger>
-            <TabsTrigger value="care-team" className="flex items-center space-x-2">
-              <Users className="w-4 h-4" />
-              <span>Care Team</span>
-            </TabsTrigger>
-            <TabsTrigger value="insurance" className="flex items-center space-x-2">
-              <CreditCard className="w-4 h-4" />
-              <span>Insurance</span>
-            </TabsTrigger>
-            <TabsTrigger value="medical-history" className="flex items-center space-x-2">
-              <Activity className="w-4 h-4" />
-              <span>Medical History</span>
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center space-x-2">
-              <Settings className="w-4 h-4" />
-              <span>Settings</span>
-            </TabsTrigger>
-          </TabsList>
+            <Tabs defaultValue="upcoming" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="upcoming">
+                  Upcoming ({upcomingAppointments.length})
+                </TabsTrigger>
+                <TabsTrigger value="past">
+                  Past ({pastAppointments.length})
+                </TabsTrigger>
+              </TabsList>
 
-          {/* Wellness Guide Tab */}
-          <TabsContent value="wellness" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Heart className="w-5 h-5 text-red-500" />
-                  <span>Your Wellness Journey</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="text-center p-6 bg-green-50 rounded-lg">
-                    <h3 className="text-lg font-semibold text-green-800 mb-2">
-                      🎉 You're taking a great step toward better health!
-                    </h3>
-                    <p className="text-green-700">
-                      Let's keep track of your wellness milestones together.
-                    </p>
-                  </div>
-
-                  {/* Checkup Reminders */}
-                  <div className="space-y-3">
-                    {[
-                      { task: "Annual Physical", status: "due", dueDate: "Due in 2 weeks" },
-                      { task: "Dental Cleaning", status: "completed", dueDate: "Completed 3 months ago" },
-                      { task: "Eye Exam", status: "upcoming", dueDate: "Scheduled for next month" },
-                      { task: "Blood Work", status: "overdue", dueDate: "Overdue by 1 month" }
-                    ].map((item, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex items-center space-x-3">
-                          <div className={`w-3 h-3 rounded-full ${
-                            item.status === 'completed' ? 'bg-green-500' :
-                            item.status === 'upcoming' ? 'bg-blue-500' :
-                            item.status === 'due' ? 'bg-yellow-500' :
-                            'bg-red-500'
-                          }`} />
-                          <div>
-                            <h4 className="font-medium">{item.task}</h4>
-                            <p className="text-sm text-muted-foreground">{item.dueDate}</p>
-                          </div>
-                        </div>
-                        <div className="flex space-x-2">
-                          {item.status !== 'completed' && (
-                            <Button onClick={() => handleBookAppointment()} size="sm">
-                              Book
-                            </Button>
-                          )}
-                          {item.status === 'completed' && (
-                            <Button variant="outline" size="sm">
-                              Mark Done
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Booking Demo */}
-            <Card>
-              <CardHeader>
-                <CardTitle>🩺 Book Your Next Appointment</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center p-6 border-2 border-dashed border-primary/30 rounded-lg">
-                  <Calendar className="w-12 h-12 mx-auto mb-4 text-primary" />
-                  <h3 className="text-lg font-semibold mb-2">Ready to book?</h3>
-                  <p className="text-muted-foreground mb-4">
-                    You'll be charged now, but don't worry — your money is protected and only released after the appointment!
-                  </p>
-                  <Button onClick={() => handleBookAppointment()} className="bg-primary hover:bg-primary/90">
-                    Start Booking Process
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Treatment Plans Tab */}
-          <TabsContent value="treatment-plans" className="space-y-6">
-            <PatientTreatmentPlansSection />
-          </TabsContent>
-
-          {/* Care Team Tab */}
-          <TabsContent value="care-team" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Users className="w-5 h-5 text-blue-600" />
-                    <span>Your Care Team</span>
-                  </div>
-                  <Button variant="outline" size="sm">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Provider
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {/* Search Bar */}
-                <div className="relative mb-6">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search for doctors, dentists, specialists..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-
-                {/* Current Providers */}
-                <div className="space-y-4">
-                  <div className="p-4 border rounded-lg">
-                    <div className="flex items-center space-x-4">
-                      <Avatar>
-                        <AvatarImage src="" />
-                        <AvatarFallback>DR</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <h4 className="font-semibold">Dr. Sarah Johnson</h4>
-                        <p className="text-sm text-muted-foreground">Primary Care Physician</p>
-                        <div className="flex items-center space-x-4 mt-2">
-                          <div className="flex items-center space-x-1">
-                            <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                            <span className="text-sm">4.9</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <MapPin className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-sm">Downtown Medical</span>
-                          </div>
-                        </div>
-                      </div>
-                      <Button onClick={() => handleBookAppointment()} size="sm">
+              <TabsContent value="upcoming" className="space-y-4">
+                {upcomingAppointments.length === 0 ? (
+                  <Card className="border-dashed">
+                    <CardContent className="flex flex-col items-center justify-center py-12">
+                      <Calendar className="w-12 h-12 text-muted-foreground mb-4" />
+                      <h3 className="text-lg font-medium text-muted-foreground mb-2">No upcoming appointments</h3>
+                      <p className="text-sm text-muted-foreground mb-4">Book your next appointment to get started</p>
+                      <Button onClick={() => navigate('/search-results')}>
+                        <Plus className="w-4 h-4 mr-2" />
                         Book Appointment
                       </Button>
-                    </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="grid gap-4">
+                    {upcomingAppointments.map((appointment) => (
+                      <AppointmentCard key={appointment.id} appointment={appointment} />
+                    ))}
                   </div>
+                )}
+              </TabsContent>
 
-                  {/* Add Provider CTA */}
-                  <div className="text-center p-6 border-2 border-dashed border-muted rounded-lg">
-                    <h4 className="font-medium mb-2">Need a specialist?</h4>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Find dentists, specialists, and more in your area
+              <TabsContent value="past" className="space-y-4">
+                {pastAppointments.length === 0 ? (
+                  <Card className="border-dashed">
+                    <CardContent className="flex flex-col items-center justify-center py-12">
+                      <FileText className="w-12 h-12 text-muted-foreground mb-4" />
+                      <h3 className="text-lg font-medium text-muted-foreground mb-2">No appointment history</h3>
+                      <p className="text-sm text-muted-foreground">Your completed appointments will appear here</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="grid gap-4">
+                    {pastAppointments.map((appointment) => (
+                      <AppointmentCard key={appointment.id} appointment={appointment} isPast />
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          </div>
+        );
+
+      case "medical-records":
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">Medical Records</h2>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Upload Record
+              </Button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((item) => (
+                <Card key={item} className="cursor-pointer hover:shadow-md transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex items-center space-x-3 mb-3">
+                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <FileText className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium">Lab Report {item}</h3>
+                        <p className="text-sm text-muted-foreground">Dec {item}, 2023</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Blood work results from recent checkup
                     </p>
-                    <Button variant="outline">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Find Providers
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                    <div className="flex justify-between items-center">
+                      <Badge variant="outline">Lab Result</Badge>
+                      <Button variant="ghost" size="sm">
+                        View
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        );
 
-          {/* Insurance Tab */}
-          <TabsContent value="insurance" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <CreditCard className="w-5 h-5 text-green-600" />
-                  <span>Insurance Plans</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Medical Insurance */}
-                <div className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-semibold">Medical Insurance</h4>
-                    <Button variant="outline" size="sm">
-                      <Camera className="w-4 h-4 mr-2" />
-                      Upload Card
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="medical-carrier">Carrier</Label>
-                      <Input id="medical-carrier" placeholder="e.g., Aetna" />
-                    </div>
-                    <div>
-                      <Label htmlFor="medical-plan">Plan</Label>
-                      <Input id="medical-plan" placeholder="e.g., Silver 80 PPO" />
-                    </div>
-                  </div>
-                </div>
+      case "search":
+        return (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold">Find Doctors</h2>
+            <p className="text-muted-foreground">Search will be implemented here</p>
+          </div>
+        );
 
-                {/* Dental Insurance */}
-                <div className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-semibold">Dental Insurance</h4>
-                    <Button variant="outline" size="sm">
-                      <Camera className="w-4 h-4 mr-2" />
-                      Upload Card
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="dental-carrier">Carrier</Label>
-                      <Input id="dental-carrier" placeholder="e.g., Delta Dental" />
-                    </div>
-                    <div>
-                      <Label htmlFor="dental-plan">Plan</Label>
-                      <Input id="dental-plan" placeholder="e.g., Premium Plan" />
-                    </div>
-                  </div>
-                </div>
+      case "settings":
+        return (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold">Settings</h2>
+            <p className="text-muted-foreground">Settings will be implemented here</p>
+          </div>
+        );
 
-                {/* Vision Insurance */}
-                <div className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-semibold">Vision Insurance</h4>
-                    <Button variant="outline" size="sm">
-                      <Camera className="w-4 h-4 mr-2" />
-                      Upload Card
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="vision-carrier">Carrier</Label>
-                      <Input id="vision-carrier" placeholder="e.g., VSP" />
-                    </div>
-                    <div>
-                      <Label htmlFor="vision-plan">Plan</Label>
-                      <Input id="vision-plan" placeholder="e.g., Choice Plan" />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+      default:
+        return (
+          <div className="space-y-6">
+            {/* Welcome Section */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border">
+              <h2 className="text-2xl font-bold mb-2">Welcome back, John!</h2>
+              <p className="text-muted-foreground">Here's your health overview for today.</p>
+            </div>
 
-          {/* Settings Tab */}
-          <TabsContent value="settings" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Settings Sidebar */}
-              <Card className="lg:col-span-1">
-                <CardHeader>
-                  <CardTitle className="text-lg">Settings</CardTitle>
+            {/* Upcoming Appointments Alert */}
+            {upcomingAppointments.length > 0 && (
+              <Alert className="border-green-200 bg-green-50">
+                <Calendar className="h-4 w-4" />
+                <AlertDescription>
+                  <span className="font-medium">Next appointment:</span> {upcomingAppointments[0].doctorName} on {format(upcomingAppointments[0].date, 'MMMM d')} at {upcomingAppointments[0].time}
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="ml-2"
+                    onClick={() => setActiveSection("appointments")}
+                  >
+                    View Details
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Quick Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Upcoming Appointments</CardTitle>
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <nav className="space-y-2">
-                    {[
-                      { icon: User, label: "Personal Information", active: true },
-                      { icon: Users, label: "Family Members" },
-                      { icon: CreditCard, label: "Insurance & ID Cards" },
-                      { icon: Shield, label: "Privacy" },
-                      { icon: Settings, label: "Login & Security" },
-                      { icon: Bell, label: "Notifications" }
-                    ].map((item, index) => (
-                      <button
-                        key={index}
-                        className={`w-full flex items-center space-x-3 p-3 rounded-lg text-left transition-colors ${
-                          item.active 
-                            ? 'bg-primary/10 text-primary border border-primary/20' 
-                            : 'hover:bg-muted'
-                        }`}
-                      >
-                        <item.icon className="w-4 h-4" />
-                        <span className="text-sm">{item.label}</span>
-                      </button>
-                    ))}
-                  </nav>
+                  <div className="text-2xl font-bold">{upcomingAppointments.length}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {upcomingAppointments.length > 0 
+                      ? `Next: ${format(upcomingAppointments[0].date, 'MMM d')}`
+                      : 'No upcoming appointments'
+                    }
+                  </p>
                 </CardContent>
               </Card>
 
-              {/* Settings Content */}
-              <div className="lg:col-span-2 space-y-6">
-                {/* Personal Information */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Personal Information</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="first-name">First Name</Label>
-                        <Input id="first-name" defaultValue="John" />
-                      </div>
-                      <div>
-                        <Label htmlFor="last-name">Last Name</Label>
-                        <Input id="last-name" defaultValue="Doe" />
-                      </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="email">Email</Label>
-                      <Input id="email" type="email" defaultValue="john.doe@example.com" />
-                    </div>
-                    <div>
-                      <Label htmlFor="phone">Phone Number</Label>
-                      <Input id="phone" defaultValue="(555) 123-4567" />
-                    </div>
-                    <div>
-                      <Label htmlFor="dob">Date of Birth</Label>
-                      <Input id="dob" type="date" defaultValue="1985-06-15" />
-                    </div>
-                  </CardContent>
-                </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Medical Records</CardTitle>
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">24</div>
+                  <p className="text-xs text-muted-foreground">Total documents</p>
+                </CardContent>
+              </Card>
 
-                {/* Security Settings */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Login & Security</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <Label htmlFor="current-password">Current Password</Label>
-                      <div className="relative">
-                        <Input 
-                          id="current-password" 
-                          type={showPasswords ? "text" : "password"}
-                          placeholder="Enter current password"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-2 top-1/2 transform -translate-y-1/2"
-                          onClick={() => setShowPasswords(!showPasswords)}
-                        >
-                          {showPasswords ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </Button>
-                      </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="new-password">New Password</Label>
-                      <Input 
-                        id="new-password" 
-                        type={showPasswords ? "text" : "password"}
-                        placeholder="Enter new password"
-                      />
-                    </div>
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h4 className="font-medium">Two-Factor Authentication</h4>
-                        <p className="text-sm text-muted-foreground">Add an extra layer of security</p>
-                      </div>
-                      <Switch />
-                    </div>
-                  </CardContent>
-                </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Health Score</CardTitle>
+                  <div className="h-4 w-4 bg-green-500 rounded-full" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">Good</div>
+                  <p className="text-xs text-muted-foreground">Based on recent visits</p>
+                </CardContent>
+              </Card>
+            </div>
 
-                {/* Notification Settings */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Notification Preferences</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {[
-                      { label: "Appointment Confirmations", desc: "Get notified when appointments are confirmed" },
-                      { label: "Appointment Reminders", desc: "Receive reminders before your appointments" },
-                      { label: "Cancellation Notices", desc: "Be informed of any cancellations" },
-                      { label: "Health Tips", desc: "Receive personalized health recommendations" }
-                    ].map((item, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div>
-                          <h4 className="font-medium">{item.label}</h4>
-                          <p className="text-sm text-muted-foreground">{item.desc}</p>
-                        </div>
-                        <div className="flex space-x-2">
-                          <div className="text-center">
-                            <Mail className="w-4 h-4 mx-auto mb-1 text-muted-foreground" />
-                            <Switch defaultChecked />
-                          </div>
-                          <div className="text-center">
-                            <Phone className="w-4 h-4 mx-auto mb-1 text-muted-foreground" />
-                            <Switch />
-                          </div>
-                        </div>
+            {/* Recent Activity */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle>Recent Appointments</CardTitle>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setActiveSection("appointments")}
+                  >
+                    View All
+                  </Button>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {pastAppointments.slice(0, 3).map((appointment) => (
+                    <div key={appointment.id} className="flex items-center space-x-4">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={appointment.doctorImage} />
+                        <AvatarFallback>{appointment.doctorName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 space-y-1">
+                        <p className="text-sm font-medium">{appointment.doctorName}</p>
+                        <p className="text-xs text-muted-foreground">
+                          <Clock className="w-3 h-3 inline mr-1" />
+                          {format(appointment.date, 'MMM d, yyyy')}
+                        </p>
                       </div>
-                    ))}
-                  </CardContent>
-                </Card>
+                      <Badge variant="outline" className={getStatusColor(appointment.status)}>
+                        {appointment.status}
+                      </Badge>
+                    </div>
+                  ))}
+                  {pastAppointments.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No appointment history yet
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quick Actions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Button 
+                      variant="outline" 
+                      className="h-20 flex-col"
+                      onClick={() => navigate('/search-results')}
+                    >
+                      <Calendar className="w-6 h-6 mb-2" />
+                      Book Appointment
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="h-20 flex-col"
+                      onClick={() => setActiveSection("appointments")}
+                    >
+                      <Clock className="w-6 h-6 mb-2" />
+                      My Appointments
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="h-20 flex-col"
+                      onClick={() => setActiveSection("medical-records")}
+                    >
+                      <FileText className="w-6 h-6 mb-2" />
+                      View Records
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="h-20 flex-col"
+                      onClick={() => setActiveSection("search")}
+                    >
+                      <Search className="w-6 h-6 mb-2" />
+                      Find Doctors
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        );
+    }
+  };
+
+  return (
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full bg-background">
+        <Sidebar className="border-r">
+          <SidebarContent>
+            <SidebarGroup>
+              <SidebarGroupLabel>Patient Dashboard</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {sidebarItems.map((item) => (
+                    <SidebarMenuItem key={item.id}>
+                      <SidebarMenuButton
+                        onClick={() => setActiveSection(item.id)}
+                        isActive={activeSection === item.id}
+                      >
+                        <item.icon className="w-4 h-4" />
+                        <span>{item.label}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+        </Sidebar>
+
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <header className="h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40">
+            <div className="flex h-16 items-center justify-between px-6">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger />
+                <div>
+                  <h1 className="text-lg font-semibold">Welcome back, John!</h1>
+                  <p className="text-sm text-muted-foreground">Patient Dashboard</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <Button variant="ghost" size="sm">
+                  <Bell className="w-4 h-4" />
+                </Button>
+                <Avatar>
+                  <AvatarImage src="/placeholder.svg" />
+                  <AvatarFallback>JD</AvatarFallback>
+                </Avatar>
               </div>
             </div>
-          </TabsContent>
+          </header>
 
-          {/* Medical History Tab */}
-          <TabsContent value="medical-history" className="space-y-6">
-            <MedicalHistory />
-          </TabsContent>
-        </Tabs>
-        )}
-
-        {/* Clear Search Results Button - Show when results are displayed */}
-        {showResults && (
-          <div className="fixed bottom-6 right-6 z-50">
-            <Button 
-              onClick={() => {
-                setShowResults(false);
-                setSearchResults([]);
-              }}
-              variant="outline"
-              className="bg-background shadow-lg border-2"
-            >
-              ← Back to Dashboard
-            </Button>
-          </div>
-        )}
+          {/* Main Content */}
+          <main className="flex-1 p-6">
+            {renderContent()}
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
