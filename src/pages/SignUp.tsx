@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,68 +5,73 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import { useSimpleForm } from "@/hooks/useSimpleForm";
+import { useQuickNavigate } from "@/hooks/useQuickNavigate";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const SignUp = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [dateOfBirth, setDateOfBirth] = useState("");
-  const [sex, setSex] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { quickNavigate, navigateToPatientDashboard, isDevMode } = useQuickNavigate();
+  
+  const {
+    formData,
+    updateField,
+    fillDummyData,
+    isLoading,
+    setIsLoading,
+    handleSubmit,
+    canFillDummy
+  } = useSimpleForm({
+    email: "",
+    password: "",
+    firstName: "",
+    lastName: "",
+    dateOfBirth: "",
+    sex: ""
+  }, 'patient');
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    // Allow signup even with empty fields
-    try {
-      const { error } = await supabase.auth.signUp({
-        email: email || 'temp@example.com', // Provide default if empty
-        password: password || 'temppassword123', // Provide default if empty
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            first_name: firstName || '',
-            last_name: lastName || '',
-            date_of_birth: dateOfBirth || '',
-            sex: sex || '',
-            user_type: 'patient',
-          }
+  const handleSignUp = async (data: typeof formData) => {
+    const submitData = {
+      email: data.email || 'temp@example.com',
+      password: data.password || 'temppassword123',
+      options: {
+        emailRedirectTo: `${window.location.origin}/`,
+        data: {
+          first_name: data.firstName || '',
+          last_name: data.lastName || '',
+          date_of_birth: data.dateOfBirth || '',
+          sex: data.sex || '',
+          user_type: 'patient',
         }
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success!",
-        description: "Please check your email to confirm your account.",
-      });
-      
-      // Check for pending doctor visit
-      const pendingDoctor = localStorage.getItem('pendingDoctorVisit');
-      if (pendingDoctor) {
-        const doctorData = JSON.parse(pendingDoctor);
-        localStorage.removeItem('pendingDoctorVisit');
-        toast({
-          title: `Welcome! You're now viewing ${doctorData.name}'s profile.`,
-          description: "You can now book appointments and view full details.",
-        });
-        window.location.href = `/doctor-profile/${doctorData.id}`;
-      } else {
-        // Default redirect to patient dashboard
-        window.location.href = '/patient-dashboard';
       }
-    } catch (error: any) {
+    };
+
+    const { error } = await supabase.auth.signUp(submitData);
+    if (error) throw error;
+
+    toast({
+      title: "Success!",
+      description: "Please check your email to confirm your account.",
+    });
+    
+    // Check for pending doctor visit
+    const pendingDoctor = localStorage.getItem('pendingDoctorVisit');
+    if (pendingDoctor) {
+      const doctorData = JSON.parse(pendingDoctor);
+      localStorage.removeItem('pendingDoctorVisit');
       toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
+        title: `Welcome! You're now viewing ${doctorData.name}'s profile.`,
+        description: "You can now book appointments and view full details.",
       });
-    } finally {
-      setIsLoading(false);
+      window.location.href = `/doctor-profile/${doctorData.id}`;
+    } else {
+      navigateToPatientDashboard();
     }
+  };
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await handleSubmit(handleSignUp, { skipValidation: true });
   };
 
   return (
@@ -89,59 +93,79 @@ const SignUp = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-md mx-auto">
+          {isDevMode && (
+            <Alert className="mb-6 bg-yellow-50 border-yellow-200">
+              <AlertDescription className="text-yellow-800">
+                🚧 Development Mode: All fields are optional for quick testing
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <h1 className="text-3xl font-semibold text-center mb-8 text-foreground">
             Create an account
           </h1>
 
-          <form onSubmit={handleSignUp} className="space-y-6">
+          {canFillDummy && (
+            <div className="mb-6 text-center">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={fillDummyData}
+                className="bg-yellow-100 border-yellow-300 text-yellow-800 hover:bg-yellow-200"
+              >
+                🎭 Fill Dummy Data
+              </Button>
+            </div>
+          )}
+
+          <form onSubmit={onSubmit} className="space-y-6">
             <div>
               <Label htmlFor="email" className="text-sm font-medium text-foreground">
-                Email
+                Email {!isDevMode && "(Optional)"}
               </Label>
               <Input
                 id="email"
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={formData.email}
+                onChange={(e) => updateField('email', e.target.value)}
                 className="mt-1 h-12"
               />
             </div>
 
             <div>
               <Label htmlFor="password" className="text-sm font-medium text-foreground">
-                Password
+                Password {!isDevMode && "(Optional)"}
               </Label>
               <Input
                 id="password"
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={formData.password}
+                onChange={(e) => updateField('password', e.target.value)}
                 className="mt-1 h-12"
                 placeholder="At least 8 characters"
-                minLength={8}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="firstName" className="text-sm font-medium text-foreground">
-                  Legal first name
+                  Legal first name {!isDevMode && "(Optional)"}
                 </Label>
                 <Input
                   id="firstName"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
+                  value={formData.firstName}
+                  onChange={(e) => updateField('firstName', e.target.value)}
                   className="mt-1 h-12"
                 />
               </div>
               <div>
                 <Label htmlFor="lastName" className="text-sm font-medium text-foreground">
-                  Legal last name
+                  Legal last name {!isDevMode && "(Optional)"}
                 </Label>
                 <Input
                   id="lastName"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
+                  value={formData.lastName}
+                  onChange={(e) => updateField('lastName', e.target.value)}
                   className="mt-1 h-12"
                 />
               </div>
@@ -149,21 +173,25 @@ const SignUp = () => {
 
             <div>
               <Label htmlFor="dateOfBirth" className="text-sm font-medium text-foreground">
-                Date of birth
+                Date of birth {!isDevMode && "(Optional)"}
               </Label>
               <Input
                 id="dateOfBirth"
                 type="date"
-                value={dateOfBirth}
-                onChange={(e) => setDateOfBirth(e.target.value)}
+                value={formData.dateOfBirth}
+                onChange={(e) => updateField('dateOfBirth', e.target.value)}
                 className="mt-1 h-12"
                 placeholder="mm/dd/yyyy"
               />
             </div>
 
             <div>
-              <Label className="text-sm font-medium text-foreground">Sex</Label>
-              <RadioGroup value={sex} onValueChange={setSex} className="mt-2">
+              <Label className="text-sm font-medium text-foreground">Sex {!isDevMode && "(Optional)"}</Label>
+              <RadioGroup 
+                value={formData.sex} 
+                onValueChange={(value) => updateField('sex', value)} 
+                className="mt-2"
+              >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="male" id="male" />
                   <Label htmlFor="male" className="text-sm text-foreground cursor-pointer">

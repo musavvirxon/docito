@@ -10,20 +10,45 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { Eye, EyeOff, Upload, Info, User, Briefcase, Building2, FileText, Settings, Shield } from "lucide-react";
+import { useSimpleForm } from "@/hooks/useSimpleForm";
+import { useQuickNavigate } from "@/hooks/useQuickNavigate";
+import { DevBanner } from "@/components/DevBanner";
 
 const DoctorSignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [hasAssociatedPractice, setHasAssociatedPractice] = useState<string>("");
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [languageSearch, setLanguageSearch] = useState("");
-  const [country, setCountry] = useState("");
-  const [region, setRegion] = useState("");
   const [clinicSearch, setClinicSearch] = useState("");
   const [selectedClinic, setSelectedClinic] = useState<any>(null);
   const [showManualClinic, setShowManualClinic] = useState(false);
+  
+  const { navigateToDoctorDashboard } = useQuickNavigate();
+  
+  const {
+    formData,
+    updateField,
+    fillDummyData,
+    isLoading,
+    handleSubmit,
+    canFillDummy,
+    isDevMode
+  } = useSimpleForm({
+    firstName: "",
+    lastName: "",
+    gender: "",
+    phone: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    specialty: "",
+    degrees: "",
+    experience: "",
+    license: "",
+    country: "",
+    region: ""
+  }, 'doctor');
 
   const specialties = [
     "Family Medicine", "Internal Medicine", "Cardiology", "Dermatology", 
@@ -74,7 +99,8 @@ const DoctorSignUp = () => {
     return { level: 2, text: "Fair", color: "text-yellow-500" };
   };
 
-  const passwordStrength = getPasswordStrength(password);
+  const passwordStrength = getPasswordStrength(formData.password || "");
+  const passwordsMatch = formData.password && formData.confirmPassword && formData.password === formData.confirmPassword;
 
   const toggleLanguage = (language: string) => {
     setSelectedLanguages(prev => 
@@ -93,10 +119,20 @@ const DoctorSignUp = () => {
     !selectedLanguages.includes(lang)
   );
 
-  const passwordsMatch = password && confirmPassword && password === confirmPassword;
   const filteredClinics = mockClinics.filter(clinic =>
     clinic.name.toLowerCase().includes(clinicSearch.toLowerCase())
   );
+
+  const handleDoctorSignUp = async () => {
+    // Simulate signup process
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    navigateToDoctorDashboard();
+  };
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await handleSubmit(handleDoctorSignUp, { skipValidation: true });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -104,6 +140,8 @@ const DoctorSignUp = () => {
       
       <div className="pt-24 pb-20">
         <div className="container mx-auto px-4 max-w-4xl">
+          <DevBanner onFillDummy={fillDummyData} showFillButton={canFillDummy} />
+          
           {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
@@ -128,7 +166,7 @@ const DoctorSignUp = () => {
             </div>
           </div>
 
-          <form className="space-y-8">
+          <form onSubmit={onSubmit} className="space-y-8">
             {/* Section 1: Personal Details */}
             <Card>
               <CardHeader>
@@ -184,8 +222,8 @@ const DoctorSignUp = () => {
                         id="password" 
                         type={showPassword ? "text" : "password"} 
                         placeholder="Enter password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        value={formData.password}
+                        onChange={(e) => updateField('password', e.target.value)}
                       />
                       <Button
                         type="button"
@@ -197,7 +235,7 @@ const DoctorSignUp = () => {
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </Button>
                     </div>
-                    {password && (
+                    {formData.password && (
                       <div className="mt-2">
                         <div className="flex items-center space-x-2">
                           <div className="flex-1 h-1 bg-muted rounded">
@@ -224,8 +262,8 @@ const DoctorSignUp = () => {
                         id="confirmPassword" 
                         type={showConfirmPassword ? "text" : "password"} 
                         placeholder="Confirm password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        value={formData.confirmPassword}
+                        onChange={(e) => updateField('confirmPassword', e.target.value)}
                       />
                       <Button
                         type="button"
@@ -237,7 +275,7 @@ const DoctorSignUp = () => {
                         {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </Button>
                     </div>
-                    {confirmPassword && (
+                    {formData.confirmPassword && (
                       <div className={`mt-2 text-sm font-medium ${passwordsMatch ? 'text-green-600' : 'text-red-600'}`}>
                         {passwordsMatch ? '✅ Passwords match' : '❌ Passwords do not match'}
                       </div>
@@ -376,7 +414,7 @@ const DoctorSignUp = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="country">Country (Optional)</Label>
-                    <Select value={country} onValueChange={setCountry}>
+                    <Select value={formData.country} onValueChange={(value) => updateField('country', value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select country" />
                       </SelectTrigger>
@@ -391,12 +429,12 @@ const DoctorSignUp = () => {
                   </div>
                   <div>
                     <Label htmlFor="region">Region/State (Optional)</Label>
-                    <Select value={region} onValueChange={setRegion} disabled={!country}>
+                    <Select value={formData.region} onValueChange={(value) => updateField('region', value)} disabled={!formData.country}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select region/state" />
                       </SelectTrigger>
                       <SelectContent>
-                        {country === "united states" && usStates.map((state) => (
+                        {formData.country === "united states" && usStates.map((state) => (
                           <SelectItem key={state} value={state.toLowerCase()}>
                             {state}
                           </SelectItem>
