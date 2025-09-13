@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Calendar, Clock, MapPin, Star, User, Phone, Mail, FileText, ArrowLeft, AlertCircle } from "lucide-react";
+import { Calendar, Clock, MapPin, Star, User, Phone, Mail, FileText, ArrowLeft, AlertCircle, Loader2, HelpCircle, Wifi, WifiOff } from "lucide-react";
 import { format, addDays, isSameDay, setHours, setMinutes } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -62,6 +63,14 @@ const AppointmentBooking = () => {
   const [submitting, setSubmitting] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [timeSlotCalculator] = useState(new TimeSlotCalculator());
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [loadingStates, setLoadingStates] = useState({
+    doctor: false,
+    procedures: false,
+    timeSlots: false
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showHelp, setShowHelp] = useState(false);
 
   const [bookingForm, setBookingForm] = useState<BookingForm>({
     procedureId: "",
@@ -82,6 +91,18 @@ const AppointmentBooking = () => {
       fetchDoctorProcedures();
       fetchBookedAppointments();
     }
+
+    // Monitor online status
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, [doctorId]);
 
   useEffect(() => {
@@ -115,17 +136,29 @@ const AppointmentBooking = () => {
     setBookedAppointments(mockAppointments);
   };
 
-  const generateTimeSlots = () => {
+  const generateTimeSlots = async () => {
     if (!selectedDate || !selectedProcedure) return;
     
-    const slots = timeSlotCalculator.generateTimeSlots(
-      selectedDate,
-      selectedProcedure.duration_minutes,
-      undefined,
-      bookedAppointments
-    );
+    setLoadingStates(prev => ({ ...prev, timeSlots: true }));
     
-    setAvailableSlots(slots);
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      const slots = timeSlotCalculator.generateTimeSlots(
+        selectedDate,
+        selectedProcedure.duration_minutes,
+        undefined,
+        bookedAppointments
+      );
+      
+      setAvailableSlots(slots);
+    } catch (error) {
+      console.error("Error generating time slots:", error);
+      toast.error("Failed to load time slots");
+    } finally {
+      setLoadingStates(prev => ({ ...prev, timeSlots: false }));
+    }
   };
 
   const checkUserAuth = async () => {
@@ -142,7 +175,11 @@ const AppointmentBooking = () => {
   };
 
   const fetchDoctorInfo = async () => {
+    setLoadingStates(prev => ({ ...prev, doctor: true }));
     try {
+      // Simulate network delay for loading state
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
       // Mock doctor data (replace with real Supabase query)
       const mockDoctor: Doctor = {
         id: doctorId!,
@@ -155,12 +192,22 @@ const AppointmentBooking = () => {
       setDoctor(mockDoctor);
     } catch (error) {
       console.error("Error fetching doctor info:", error);
-      toast.error("Failed to load doctor information");
+      if (!isOnline) {
+        toast.error("Unable to load doctor information. Please check your connection.");
+      } else {
+        toast.error("Failed to load doctor information");
+      }
+    } finally {
+      setLoadingStates(prev => ({ ...prev, doctor: false }));
     }
   };
 
   const fetchDoctorProcedures = async () => {
+    setLoadingStates(prev => ({ ...prev, procedures: true }));
     try {
+      // Simulate network delay for loading state
+      await new Promise(resolve => setTimeout(resolve, 600));
+      
       // Mock procedures data with varying durations (replace with real Supabase query)
       const mockProcedures: Procedure[] = [
         {
@@ -195,8 +242,13 @@ const AppointmentBooking = () => {
       setProcedures(mockProcedures);
     } catch (error) {
       console.error("Error fetching procedures:", error);
-      toast.error("Failed to load available procedures");
+      if (!isOnline) {
+        toast.error("Unable to load procedures. Please check your connection.");
+      } else {
+        toast.error("Failed to load available procedures");
+      }
     } finally {
+      setLoadingStates(prev => ({ ...prev, procedures: false }));
       setLoading(false);
     }
   };
@@ -262,34 +314,42 @@ const AppointmentBooking = () => {
   };
 
   const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
     if (!bookingForm.procedureId) {
-      toast.error("Please select a procedure");
-      return false;
+      newErrors.procedureId = "Please select a procedure";
     }
     if (!bookingForm.appointmentDate) {
-      toast.error("Please select an appointment date");
-      return false;
+      newErrors.appointmentDate = "Please select an appointment date";
     }
     if (!bookingForm.timeSlot) {
-      toast.error("Please select a time slot");
-      return false;
+      newErrors.timeSlot = "Please select a time slot";
     }
     if (!bookingForm.patientName.trim()) {
-      toast.error("Please enter your name");
-      return false;
+      newErrors.patientName = "Please enter your name";
     }
     if (!bookingForm.patientPhone.trim()) {
-      toast.error("Please enter your phone number");
-      return false;
+      newErrors.patientPhone = "Please enter your phone number";
+    } else if (!/^\(\d{3}\) \d{3}-\d{4}$/.test(bookingForm.patientPhone)) {
+      newErrors.patientPhone = "Please enter a valid phone number";
     }
     if (!bookingForm.patientEmail.trim()) {
-      toast.error("Please enter your email address");
-      return false;
+      newErrors.patientEmail = "Please enter your email address";
+    } else if (!/\S+@\S+\.\S+/.test(bookingForm.patientEmail)) {
+      newErrors.patientEmail = "Please enter a valid email address";
     }
     if (!bookingForm.purposeOfVisit.trim()) {
-      toast.error("Please describe the purpose of your visit");
+      newErrors.purposeOfVisit = "Please describe the purpose of your visit";
+    }
+    
+    setErrors(newErrors);
+    
+    if (Object.keys(newErrors).length > 0) {
+      const firstError = Object.values(newErrors)[0];
+      toast.error(firstError);
       return false;
     }
+    
     return true;
   };
 
@@ -299,6 +359,11 @@ const AppointmentBooking = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!isOnline) {
+      toast.error("No internet connection. Please check your connection and try again.");
+      return;
+    }
     
     if (!currentUser) {
       // Redirect to sign up and return to this page
@@ -391,53 +456,133 @@ const AppointmentBooking = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Back Button */}
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate(-1)}
-          className="mb-6 flex items-center gap-2"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </Button>
-
-        {/* Doctor Summary Panel */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row gap-6">
-              <Avatar className="w-24 h-24 mx-auto md:mx-0">
-                <AvatarImage src={doctor.profile_photo} alt={doctor.name} />
-                <AvatarFallback className="text-lg">
-                  {doctor.name.split(' ').map(n => n[0]).join('')}
-                </AvatarFallback>
-              </Avatar>
+    <TooltipProvider>
+      <div className="min-h-screen bg-background">
+        <Header />
+        
+        {/* Connection Status Bar */}
+        {!isOnline && (
+          <div className="bg-destructive text-destructive-foreground px-4 py-2 text-center text-sm flex items-center justify-center gap-2">
+            <WifiOff className="w-4 h-4" />
+            You're offline. Some features may not work properly.
+          </div>
+        )}
+        
+        <main className="container mx-auto px-4 py-4 md:py-8 max-w-4xl">
+          {/* Header with Back Button and Help */}
+          <div className="flex items-center justify-between mb-6">
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2"
+              aria-label="Go back to previous page"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Back</span>
+            </Button>
+            
+            <div className="flex items-center gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowHelp(!showHelp)}
+                    aria-label="Show booking help"
+                  >
+                    <HelpCircle className="w-4 h-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Get help with booking</p>
+                </TooltipContent>
+              </Tooltip>
               
-              <div className="flex-1 text-center md:text-left">
-                <h1 className="text-2xl font-bold mb-2">{doctor.name}</h1>
-                <p className="text-lg text-primary mb-2">{doctor.specialty}</p>
-                
-                <div className="flex items-center justify-center md:justify-start gap-4 mb-3">
-                  <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    <span className="font-medium">{doctor.rating}</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-muted-foreground">
-                    <MapPin className="w-4 h-4" />
-                    <span className="text-sm">{doctor.practice_location}</span>
+              {isOnline ? (
+                <Wifi className="w-4 h-4 text-green-600" aria-label="Connected" />
+              ) : (
+                <WifiOff className="w-4 h-4 text-red-600" aria-label="Disconnected" />
+              )}
+            </div>
+          </div>
+          
+          {/* Help Panel */}
+          {showHelp && (
+            <Alert className="mb-6 bg-blue-50 border-blue-200">
+              <HelpCircle className="h-4 w-4" />
+              <AlertDescription>
+                <div className="space-y-2">
+                  <p className="font-medium">Booking Help:</p>
+                  <ul className="text-sm space-y-1 list-disc list-inside">
+                    <li>Select a procedure that matches your needs</li>
+                    <li>Choose an available date and time slot</li>
+                    <li>Fill in your contact information accurately</li>
+                    <li>Describe your symptoms or reason for visit</li>
+                    <li>You'll receive a confirmation email after booking</li>
+                  </ul>
+                  <Button
+                    variant="link"
+                    size="sm"
+                    className="p-0 h-auto text-blue-600"
+                    onClick={() => setShowHelp(false)}
+                  >
+                    Got it, close help
+                  </Button>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Doctor Summary Panel */}
+          <Card className="mb-6 md:mb-8">
+            <CardContent className="p-4 md:p-6">
+              {loadingStates.doctor ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin mr-2" />
+                  <span>Loading doctor information...</span>
+                </div>
+              ) : doctor ? (
+                <div className="flex flex-col md:flex-row gap-4 md:gap-6">
+                  <Avatar className="w-20 h-20 md:w-24 md:h-24 mx-auto md:mx-0 ring-2 ring-primary/10">
+                    <AvatarImage 
+                      src={doctor.profile_photo} 
+                      alt={`Profile photo of ${doctor.name}`}
+                      loading="lazy"
+                    />
+                    <AvatarFallback className="text-lg">
+                      {doctor.name.split(' ').map(n => n[0]).join('')}
+                    </AvatarFallback>
+                  </Avatar>
+                  
+                  <div className="flex-1 text-center md:text-left">
+                    <h1 className="text-xl md:text-2xl font-bold mb-2">{doctor.name}</h1>
+                    <p className="text-base md:text-lg text-primary mb-2">{doctor.specialty}</p>
+                    
+                    <div className="flex items-center justify-center md:justify-start gap-3 md:gap-4 mb-3 text-sm md:text-base">
+                      <div className="flex items-center gap-1">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" aria-hidden="true" />
+                        <span className="font-medium">{doctor.rating}</span>
+                        <span className="sr-only">out of 5 stars</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <MapPin className="w-4 h-4" aria-hidden="true" />
+                        <span className="text-xs md:text-sm">{doctor.practice_location}</span>
+                      </div>
+                    </div>
+                    
+                    {doctor.bio && (
+                      <p className="text-muted-foreground text-xs md:text-sm leading-relaxed">{doctor.bio}</p>
+                    )}
                   </div>
                 </div>
-                
-                {doctor.bio && (
-                  <p className="text-muted-foreground text-sm">{doctor.bio}</p>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              ) : (
+                <div className="text-center py-8">
+                  <AlertCircle className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                  <p>Unable to load doctor information</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Procedure Selection */}
@@ -449,29 +594,53 @@ const AppointmentBooking = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Select 
-                value={bookingForm.procedureId} 
-                onValueChange={(value) => handleFormChange('procedureId', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose a procedure" />
-                </SelectTrigger>
-                <SelectContent>
-                  {procedures.map((procedure) => (
-                    <SelectItem key={procedure.id} value={procedure.id}>
-                      <div className="flex justify-between items-center w-full">
-                        <div>
-                          <div className="font-medium">{procedure.name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {procedure.duration_minutes} minutes
+              {loadingStates.procedures ? (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  <span className="text-sm">Loading procedures...</span>
+                </div>
+              ) : (
+                <Select 
+                  value={bookingForm.procedureId} 
+                  onValueChange={(value) => handleFormChange('procedureId', value)}
+                  disabled={procedures.length === 0}
+                >
+                  <SelectTrigger 
+                    className={cn(
+                      "min-h-[3rem] touch-manipulation",
+                      errors.procedureId && "border-destructive"
+                    )}
+                    aria-describedby={errors.procedureId ? "procedure-error" : undefined}
+                  >
+                    <SelectValue placeholder="Choose a procedure" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border shadow-lg">
+                    {procedures.map((procedure) => (
+                      <SelectItem 
+                        key={procedure.id} 
+                        value={procedure.id}
+                        className="touch-manipulation min-h-[3rem] focus:bg-muted"
+                      >
+                        <div className="flex justify-between items-center w-full">
+                          <div>
+                            <div className="font-medium">{procedure.name}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {procedure.duration_minutes} minutes
+                            </div>
                           </div>
+                          <Badge variant="secondary">${procedure.fee_amount}</Badge>
                         </div>
-                        <Badge variant="secondary">${procedure.fee_amount}</Badge>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              
+              {errors.procedureId && (
+                <p id="procedure-error" className="text-sm text-destructive mt-1" role="alert">
+                  {errors.procedureId}
+                </p>
+              )}
               
               {selectedProcedure && (
                 <div className="mt-4 p-4 bg-muted/30 rounded-lg">
@@ -512,15 +681,17 @@ const AppointmentBooking = () => {
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !selectedDate && "text-muted-foreground"
+                      "w-full justify-start text-left font-normal min-h-[3rem] touch-manipulation",
+                      !selectedDate && "text-muted-foreground",
+                      errors.appointmentDate && "border-destructive"
                     )}
+                    aria-describedby={errors.appointmentDate ? "date-error" : undefined}
                   >
-                    <Calendar className="mr-2 h-4 w-4" />
+                    <Calendar className="mr-2 h-4 w-4" aria-hidden="true" />
                     {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 bg-background border shadow-lg" align="start">
                   <CalendarComponent
                     mode="single"
                     selected={selectedDate}
@@ -530,9 +701,16 @@ const AppointmentBooking = () => {
                     }
                     initialFocus
                     className={cn("p-3 pointer-events-auto")}
+                    aria-label="Select appointment date"
                   />
                 </PopoverContent>
               </Popover>
+              
+              {errors.appointmentDate && (
+                <p id="date-error" className="text-sm text-destructive mt-1" role="alert">
+                  {errors.appointmentDate}
+                </p>
+              )}
             </CardContent>
           </Card>
 
@@ -546,7 +724,12 @@ const AppointmentBooking = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {availableSlots.length === 0 ? (
+                {loadingStates.timeSlots ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin mr-2" />
+                    <span>Loading available time slots...</span>
+                  </div>
+                ) : availableSlots.length === 0 ? (
                   <Alert>
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
@@ -556,23 +739,27 @@ const AppointmentBooking = () => {
                 ) : (
                   <>
                     {/* Legend */}
-                    <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-muted/30 rounded-lg">
+                    <div className="flex flex-wrap items-center gap-2 md:gap-4 mb-4 p-3 bg-muted/30 rounded-lg">
                       <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-green-100 border border-green-200 rounded"></div>
+                        <div className="w-3 h-3 bg-green-100 border border-green-200 rounded" aria-hidden="true"></div>
                         <span className="text-xs text-muted-foreground">Available</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-gray-100 border border-gray-200 rounded"></div>
+                        <div className="w-3 h-3 bg-gray-100 border border-gray-200 rounded" aria-hidden="true"></div>
                         <span className="text-xs text-muted-foreground">Booked</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-red-50 border border-red-200 rounded"></div>
+                        <div className="w-3 h-3 bg-red-50 border border-red-200 rounded" aria-hidden="true"></div>
                         <span className="text-xs text-muted-foreground">Break</span>
                       </div>
                     </div>
 
                     {/* Time Slots Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div 
+                      className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3"
+                      role="radiogroup"
+                      aria-label="Select appointment time"
+                    >
                       {availableSlots.map((slot) => {
                         const isSelected = bookingForm.timeSlot === slot.time;
                         const isDisabled = slot.status !== 'available';
@@ -584,11 +771,19 @@ const AppointmentBooking = () => {
                             variant="outline"
                             disabled={isDisabled}
                             onClick={() => handleTimeSlotSelect(slot)}
-                            className={getSlotButtonClass(slot, isSelected)}
+                            className={cn(
+                              getSlotButtonClass(slot, isSelected),
+                              "min-h-[3rem] touch-manipulation transition-all duration-200",
+                              "focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                            )}
                             title={getSlotTooltip(slot)}
+                            aria-pressed={isSelected}
+                            role="radio"
+                            aria-checked={isSelected}
+                            aria-label={`${slot.time} to ${slot.endTime}, ${slot.status}`}
                           >
                             <div className="text-center">
-                              <div className="font-medium">{slot.time}</div>
+                              <div className="font-medium text-sm">{slot.time}</div>
                               {slot.endTime && (
                                 <div className="text-xs opacity-75">to {slot.endTime}</div>
                               )}
@@ -598,8 +793,14 @@ const AppointmentBooking = () => {
                       })}
                     </div>
 
+                    {errors.timeSlot && (
+                      <p className="text-sm text-destructive mt-2" role="alert">
+                        {errors.timeSlot}
+                      </p>
+                    )}
+
                     {/* Available slots summary */}
-                    <div className="mt-4 text-sm text-muted-foreground">
+                    <div className="mt-4 text-sm text-muted-foreground" aria-live="polite">
                       {availableSlots.filter(slot => slot.status === 'available').length} of {availableSlots.length} slots available
                     </div>
                   </>
@@ -619,55 +820,116 @@ const AppointmentBooking = () => {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="patientName">Full Name *</Label>
+                  <Label htmlFor="patientName" className="text-sm font-medium">
+                    Full Name *
+                  </Label>
                   <Input
                     id="patientName"
+                    type="text"
+                    autoComplete="name"
                     value={bookingForm.patientName}
                     onChange={(e) => handleFormChange('patientName', e.target.value)}
                     placeholder="Enter your full name"
+                    className={cn(
+                      "min-h-[3rem] touch-manipulation",
+                      errors.patientName && "border-destructive"
+                    )}
+                    aria-describedby={errors.patientName ? "name-error" : undefined}
+                    required
                   />
+                  {errors.patientName && (
+                    <p id="name-error" className="text-sm text-destructive mt-1" role="alert">
+                      {errors.patientName}
+                    </p>
+                  )}
                 </div>
+                
                 <div>
-                  <Label htmlFor="patientPhone">Phone Number *</Label>
+                  <Label htmlFor="patientPhone" className="text-sm font-medium">
+                    Phone Number *
+                  </Label>
                   <Input
                     id="patientPhone"
+                    type="tel"
+                    autoComplete="tel"
                     value={bookingForm.patientPhone}
                     onChange={(e) => handleFormChange('patientPhone', e.target.value)}
                     placeholder="(555) 123-4567"
+                    className={cn(
+                      "min-h-[3rem] touch-manipulation",
+                      errors.patientPhone && "border-destructive"
+                    )}
+                    aria-describedby={errors.patientPhone ? "phone-error" : undefined}
+                    required
                   />
+                  {errors.patientPhone && (
+                    <p id="phone-error" className="text-sm text-destructive mt-1" role="alert">
+                      {errors.patientPhone}
+                    </p>
+                  )}
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="patientEmail">Email Address *</Label>
+                <Label htmlFor="patientEmail" className="text-sm font-medium">
+                  Email Address *
+                </Label>
                 <Input
                   id="patientEmail"
                   type="email"
+                  autoComplete="email"
                   value={bookingForm.patientEmail}
                   onChange={(e) => handleFormChange('patientEmail', e.target.value)}
                   placeholder="your.email@example.com"
+                  className={cn(
+                    "min-h-[3rem] touch-manipulation",
+                    errors.patientEmail && "border-destructive"
+                  )}
+                  aria-describedby={errors.patientEmail ? "email-error" : undefined}
+                  required
                 />
+                {errors.patientEmail && (
+                  <p id="email-error" className="text-sm text-destructive mt-1" role="alert">
+                    {errors.patientEmail}
+                  </p>
+                )}
               </div>
 
               <div>
-                <Label htmlFor="purposeOfVisit">Purpose of Visit *</Label>
+                <Label htmlFor="purposeOfVisit" className="text-sm font-medium">
+                  Purpose of Visit *
+                </Label>
                 <Textarea
                   id="purposeOfVisit"
                   value={bookingForm.purposeOfVisit}
                   onChange={(e) => handleFormChange('purposeOfVisit', e.target.value)}
                   placeholder="Please describe the reason for your visit..."
                   rows={3}
+                  className={cn(
+                    "min-h-[4rem] touch-manipulation resize-none",
+                    errors.purposeOfVisit && "border-destructive"
+                  )}
+                  aria-describedby={errors.purposeOfVisit ? "purpose-error" : undefined}
+                  required
                 />
+                {errors.purposeOfVisit && (
+                  <p id="purpose-error" className="text-sm text-destructive mt-1" role="alert">
+                    {errors.purposeOfVisit}
+                  </p>
+                )}
               </div>
 
               <div>
-                <Label htmlFor="notes">Additional Notes (Optional)</Label>
+                <Label htmlFor="notes" className="text-sm font-medium">
+                  Additional Notes (Optional)
+                </Label>
                 <Textarea
                   id="notes"
                   value={bookingForm.notes}
                   onChange={(e) => handleFormChange('notes', e.target.value)}
                   placeholder="Any additional information you'd like to share..."
                   rows={2}
+                  className="min-h-[3rem] touch-manipulation resize-none"
                 />
               </div>
             </CardContent>
@@ -678,15 +940,29 @@ const AppointmentBooking = () => {
             <CardContent className="pt-6">
               <Button 
                 type="submit" 
-                className="w-full h-12 text-lg"
-                disabled={submitting}
+                className="w-full h-12 md:h-14 text-base md:text-lg font-medium touch-manipulation"
+                disabled={submitting || !isOnline}
+                aria-describedby="submit-help"
               >
-                {submitting ? "Booking Appointment..." : "Book Appointment"}
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Booking Appointment...
+                  </>
+                ) : (
+                  "Book Appointment"
+                )}
               </Button>
               
               {!currentUser && (
-                <p className="text-center text-sm text-muted-foreground mt-4">
+                <p id="submit-help" className="text-center text-sm text-muted-foreground mt-4">
                   You'll be redirected to sign up before completing your booking
+                </p>
+              )}
+              
+              {!isOnline && (
+                <p className="text-center text-sm text-destructive mt-2" role="alert">
+                  Cannot book appointment while offline
                 </p>
               )}
             </CardContent>
@@ -694,8 +970,9 @@ const AppointmentBooking = () => {
         </form>
       </main>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </TooltipProvider>
   );
 };
 
