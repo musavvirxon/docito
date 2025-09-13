@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Calendar, Clock, MapPin, Star, User, Phone, Mail, FileText, ArrowLeft } from "lucide-react";
+import { Calendar, Clock, MapPin, Star, User, Phone, Mail, FileText, ArrowLeft, AlertCircle } from "lucide-react";
 import { format, addDays, isSameDay, setHours, setMinutes } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,9 +12,11 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { TimeSlotCalculator, TimeSlot, BookedAppointment } from "@/utils/TimeSlotCalculator";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -53,10 +55,13 @@ const AppointmentBooking = () => {
   const [doctor, setDoctor] = useState<Doctor | null>(null);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
+  const [selectedProcedure, setSelectedProcedure] = useState<Procedure | null>(null);
+  const [bookedAppointments, setBookedAppointments] = useState<BookedAppointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [timeSlotCalculator] = useState(new TimeSlotCalculator());
 
   const [bookingForm, setBookingForm] = useState<BookingForm>({
     procedureId: "",
@@ -69,30 +74,59 @@ const AppointmentBooking = () => {
     notes: ""
   });
 
-  // Generate time slots from 9 AM to 5 PM in 30-minute intervals
-  const generateTimeSlots = () => {
-    const slots = [];
-    for (let hour = 9; hour < 17; hour++) {
-      slots.push(`${hour.toString().padStart(2, '0')}:00`);
-      slots.push(`${hour.toString().padStart(2, '0')}:30`);
-    }
-    return slots;
-  };
 
   useEffect(() => {
     checkUserAuth();
     if (doctorId) {
       fetchDoctorInfo();
       fetchDoctorProcedures();
+      fetchBookedAppointments();
     }
   }, [doctorId]);
 
   useEffect(() => {
-    if (selectedDate) {
-      // For now, show all slots as available (in real app, check against appointments)
-      setAvailableSlots(generateTimeSlots());
+    if (selectedDate && selectedProcedure) {
+      generateTimeSlots();
     }
-  }, [selectedDate]);
+  }, [selectedDate, selectedProcedure]);
+
+  useEffect(() => {
+    // Auto-advance to next available day if current day has no slots
+    if (selectedDate && selectedProcedure && availableSlots.length === 0) {
+      const nextAvailableDay = timeSlotCalculator.findNextAvailableDay(
+        selectedDate,
+        selectedProcedure.duration_minutes,
+        undefined,
+        bookedAppointments
+      );
+      
+      if (nextAvailableDay && !isSameDay(nextAvailableDay, selectedDate)) {
+        setSelectedDate(nextAvailableDay);
+        handleFormChange('appointmentDate', nextAvailableDay);
+        toast.info(`No slots available on selected date. Moved to next available day: ${format(nextAvailableDay, 'PPP')}`);
+      }
+    }
+  }, [selectedDate, selectedProcedure, availableSlots, bookedAppointments]);
+
+  const fetchBookedAppointments = async () => {
+    // In a real app, this would fetch from the database
+    // For now, use mock data
+    const mockAppointments = timeSlotCalculator.getMockBookedAppointments();
+    setBookedAppointments(mockAppointments);
+  };
+
+  const generateTimeSlots = () => {
+    if (!selectedDate || !selectedProcedure) return;
+    
+    const slots = timeSlotCalculator.generateTimeSlots(
+      selectedDate,
+      selectedProcedure.duration_minutes,
+      undefined,
+      bookedAppointments
+    );
+    
+    setAvailableSlots(slots);
+  };
 
   const checkUserAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -127,28 +161,35 @@ const AppointmentBooking = () => {
 
   const fetchDoctorProcedures = async () => {
     try {
-      // Mock procedures data (replace with real Supabase query)
+      // Mock procedures data with varying durations (replace with real Supabase query)
       const mockProcedures: Procedure[] = [
         {
           id: "1",
-          name: "Initial Consultation",
-          duration_minutes: 60,
+          name: "Quick Consultation",
+          duration_minutes: 15,
+          fee_amount: 100,
+          description: "Brief consultation and basic examination"
+        },
+        {
+          id: "2",
+          name: "Standard Consultation",
+          duration_minutes: 30,
           fee_amount: 200,
           description: "Comprehensive cardiac evaluation and consultation"
         },
         {
-          id: "2", 
-          name: "Follow-up Visit",
-          duration_minutes: 30,
-          fee_amount: 150,
-          description: "Regular follow-up appointment"
+          id: "3", 
+          name: "Detailed Assessment",
+          duration_minutes: 45,
+          fee_amount: 300,
+          description: "In-depth consultation with detailed analysis"
         },
         {
-          id: "3",
-          name: "ECG Test",
-          duration_minutes: 30,
-          fee_amount: 100,
-          description: "Electrocardiogram test and analysis"
+          id: "4",
+          name: "Comprehensive Exam",
+          duration_minutes: 60,
+          fee_amount: 400,
+          description: "Complete cardiac examination and testing"
         }
       ];
       setProcedures(mockProcedures);
@@ -165,6 +206,13 @@ const AppointmentBooking = () => {
       ...prev,
       [field]: value
     }));
+
+    // Handle procedure selection
+    if (field === 'procedureId') {
+      const procedure = procedures.find(p => p.id === value);
+      setSelectedProcedure(procedure || null);
+      handleFormChange('timeSlot', ''); // Reset time slot when procedure changes
+    }
   };
 
   const handleDateSelect = (date: Date | undefined) => {
@@ -175,8 +223,42 @@ const AppointmentBooking = () => {
     }
   };
 
-  const handleTimeSlotSelect = (slot: string) => {
-    handleFormChange('timeSlot', slot);
+  const handleTimeSlotSelect = (slot: TimeSlot) => {
+    if (slot.status === 'available') {
+      handleFormChange('timeSlot', slot.time);
+    }
+  };
+
+  const getSlotButtonClass = (slot: TimeSlot, isSelected: boolean) => {
+    const baseClass = "text-sm transition-all duration-200";
+    
+    if (isSelected) {
+      return `${baseClass} bg-primary text-primary-foreground hover:bg-primary/90`;
+    }
+    
+    switch (slot.color) {
+      case 'green':
+        return `${baseClass} bg-green-50 text-green-700 border-green-200 hover:bg-green-100 hover:border-green-300`;
+      case 'gray':
+        return `${baseClass} bg-gray-100 text-gray-500 border-gray-200 cursor-not-allowed`;
+      case 'red':
+        return `${baseClass} bg-red-50 text-red-600 border-red-200 cursor-not-allowed`;
+      default:
+        return `${baseClass} variant-outline`;
+    }
+  };
+
+  const getSlotTooltip = (slot: TimeSlot) => {
+    switch (slot.status) {
+      case 'available':
+        return `Available: ${slot.time} - ${slot.endTime}`;
+      case 'booked':
+        return `Already booked: ${slot.time} - ${slot.endTime}`;
+      case 'break':
+        return `Break time: ${slot.time} - ${slot.endTime}`;
+      default:
+        return slot.time;
+    }
   };
 
   const validateForm = () => {
@@ -374,6 +456,29 @@ const AppointmentBooking = () => {
                   ))}
                 </SelectContent>
               </Select>
+              
+              {selectedProcedure && (
+                <div className="mt-4 p-4 bg-muted/30 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h4 className="font-medium">{selectedProcedure.name}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Duration: {selectedProcedure.duration_minutes} minutes
+                      </p>
+                      {selectedProcedure.description && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {selectedProcedure.description}
+                        </p>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-semibold text-primary">
+                        ${selectedProcedure.fee_amount}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -416,28 +521,73 @@ const AppointmentBooking = () => {
           </Card>
 
           {/* Time Slot Selection */}
-          {selectedDate && (
+          {selectedDate && selectedProcedure && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Clock className="w-5 h-5" />
-                  Select Time
+                  Select Time ({selectedProcedure.duration_minutes} min slots)
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {availableSlots.map((slot) => (
-                    <Button
-                      key={slot}
-                      type="button"
-                      variant={bookingForm.timeSlot === slot ? "default" : "outline"}
-                      onClick={() => handleTimeSlotSelect(slot)}
-                      className="text-sm"
-                    >
-                      {slot}
-                    </Button>
-                  ))}
-                </div>
+                {availableSlots.length === 0 ? (
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      No available slots for this date. Please select another date or we'll automatically find the next available day.
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <>
+                    {/* Legend */}
+                    <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-muted/30 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-green-100 border border-green-200 rounded"></div>
+                        <span className="text-xs text-muted-foreground">Available</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-gray-100 border border-gray-200 rounded"></div>
+                        <span className="text-xs text-muted-foreground">Booked</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-red-50 border border-red-200 rounded"></div>
+                        <span className="text-xs text-muted-foreground">Break</span>
+                      </div>
+                    </div>
+
+                    {/* Time Slots Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {availableSlots.map((slot) => {
+                        const isSelected = bookingForm.timeSlot === slot.time;
+                        const isDisabled = slot.status !== 'available';
+                        
+                        return (
+                          <Button
+                            key={slot.time}
+                            type="button"
+                            variant="outline"
+                            disabled={isDisabled}
+                            onClick={() => handleTimeSlotSelect(slot)}
+                            className={getSlotButtonClass(slot, isSelected)}
+                            title={getSlotTooltip(slot)}
+                          >
+                            <div className="text-center">
+                              <div className="font-medium">{slot.time}</div>
+                              {slot.endTime && (
+                                <div className="text-xs opacity-75">to {slot.endTime}</div>
+                              )}
+                            </div>
+                          </Button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Available slots summary */}
+                    <div className="mt-4 text-sm text-muted-foreground">
+                      {availableSlots.filter(slot => slot.status === 'available').length} of {availableSlots.length} slots available
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           )}
