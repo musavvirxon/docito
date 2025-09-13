@@ -32,15 +32,8 @@ const ResultCard = ({ result, isMobile = false }: ResultCardProps) => {
   const navigate = useNavigate();
 
   const handleBookAppointment = () => {
-    // Check if user is signed in (this would come from auth context)
-    const isSignedIn = false; // Replace with actual auth check
-    
-    if (!isSignedIn) {
-      navigate('/signup', { state: { returnTo: `/doctor-profile/${result.id}` } });
-    } else {
-      // Handle booking logic
-      console.log('Book appointment with:', result.name);
-    }
+    // Navigate directly to the appointment booking page
+    navigate(`/book-appointment/${result.id}`);
   };
 
   const handleViewProfile = () => {

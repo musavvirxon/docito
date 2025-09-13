@@ -172,31 +172,8 @@ const DoctorProfile = () => {
   };
 
   const handleBookAppointment = () => {
-    if (!selectedDate || !selectedTime) {
-      // Show selection UI first
-      document.getElementById('availability-tab')?.click();
-      toast({
-        title: "Select Date & Time",
-        description: "Please choose your preferred appointment slot first.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Store appointment details and redirect to signup
-    localStorage.setItem('pendingAppointment', JSON.stringify({
-      doctorId: id,
-      doctorName: doctor.name,
-      date: selectedDate,
-      time: selectedTime
-    }));
-    
-    toast({
-      title: `Booking with ${doctor.name}`,
-      description: "You'll need to create an account to complete your booking.",
-    });
-    
-    navigate('/signup');
+    // Navigate to the new appointment booking page
+    navigate(`/book-appointment/${id}`);
   };
 
   const renderStars = (rating: number) => {
