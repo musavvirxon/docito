@@ -22,6 +22,7 @@ const DoctorProfile = lazy(() => import("./pages/DoctorProfile"));
 const ProcedureLibrary = lazy(() => import("./pages/ProcedureLibrary"));
 const TreatmentPlanning = lazy(() => import("./pages/TreatmentPlanning"));
 const AppointmentBooking = lazy(() => import("./pages/AppointmentBooking"));
+const BookingConfirmation = lazy(() => import("./pages/BookingConfirmation"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => (
             <Route path="/procedure-library" element={<ProcedureLibrary />} />
             <Route path="/treatment-planning" element={<TreatmentPlanning />} />
             <Route path="/book-appointment/:doctorId" element={<AppointmentBooking />} />
+            <Route path="/booking-confirmation/:appointmentId" element={<BookingConfirmation />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

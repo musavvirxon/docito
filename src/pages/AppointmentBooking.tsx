@@ -293,6 +293,10 @@ const AppointmentBooking = () => {
     return true;
   };
 
+  const generateConfirmationCode = () => {
+    return `APT-${new Date().getFullYear()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -307,6 +311,7 @@ const AppointmentBooking = () => {
     setSubmitting(true);
     try {
       const selectedProcedure = procedures.find(p => p.id === bookingForm.procedureId);
+      const confirmationCode = generateConfirmationCode();
       
       // Create appointment record
       const appointmentData = {
@@ -324,17 +329,28 @@ const AppointmentBooking = () => {
         procedure_name: selectedProcedure?.name,
         duration_minutes: selectedProcedure?.duration_minutes || 30,
         fee_amount: selectedProcedure?.fee_amount || 0,
-        status: 'pending',
+        status: 'confirmed',
         purpose_of_visit: bookingForm.purposeOfVisit,
         patient_notes: bookingForm.notes,
-        confirmation_code: `APPT-${Date.now()}`,
+        confirmation_code: confirmationCode,
         payment_status: 'none'
       };
 
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Simulate sending confirmation email
+      console.log(`Confirmation email sent to ${bookingForm.patientEmail}:`);
+      console.log(`Subject: Appointment Confirmation - ${confirmationCode}`);
+      console.log(`Dear ${bookingForm.patientName}, your appointment with ${doctor.name} on ${format(bookingForm.appointmentDate!, 'PPP')} at ${bookingForm.timeSlot} has been confirmed.`);
+
       // For now, just simulate the booking since appointments table may not exist yet
       console.log("Appointment data (would be saved to appointments table):", appointmentData);
-      toast.success("Appointment booked successfully! (Demo mode - database table needed)");
-      navigate('/patient-dashboard');
+      
+      toast.success(`Appointment booked! Confirmation: ${confirmationCode}`);
+      
+      // Redirect to confirmation page
+      navigate(`/booking-confirmation/${confirmationCode}`);
     } catch (error: any) {
       console.error("Error booking appointment:", error);
       toast.error("Failed to book appointment: " + error.message);
