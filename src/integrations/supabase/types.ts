@@ -14,7 +14,434 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      appointments: {
+        Row: {
+          appointment_date: string
+          created_at: string | null
+          doctor_id: string | null
+          end_time: string
+          id: string
+          notes: string | null
+          patient_id: string | null
+          practice_id: string | null
+          start_time: string
+          status: Database["public"]["Enums"]["appointment_status"] | null
+        }
+        Insert: {
+          appointment_date: string
+          created_at?: string | null
+          doctor_id?: string | null
+          end_time: string
+          id?: string
+          notes?: string | null
+          patient_id?: string | null
+          practice_id?: string | null
+          start_time: string
+          status?: Database["public"]["Enums"]["appointment_status"] | null
+        }
+        Update: {
+          appointment_date?: string
+          created_at?: string | null
+          doctor_id?: string | null
+          end_time?: string
+          id?: string
+          notes?: string | null
+          patient_id?: string | null
+          practice_id?: string | null
+          start_time?: string
+          status?: Database["public"]["Enums"]["appointment_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      consent_forms: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          patient_full_name: string | null
+          patient_signature: string | null
+          signed_at: string | null
+          status: Database["public"]["Enums"]["consent_status"] | null
+          title: string
+          treatment_plan_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          patient_full_name?: string | null
+          patient_signature?: string | null
+          signed_at?: string | null
+          status?: Database["public"]["Enums"]["consent_status"] | null
+          title: string
+          treatment_plan_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          patient_full_name?: string | null
+          patient_signature?: string | null
+          signed_at?: string | null
+          status?: Database["public"]["Enums"]["consent_status"] | null
+          title?: string
+          treatment_plan_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consent_forms_treatment_plan_id_fkey"
+            columns: ["treatment_plan_id"]
+            isOneToOne: false
+            referencedRelation: "treatment_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      doctors: {
+        Row: {
+          accepts_new_patients: boolean | null
+          bio: string | null
+          consultation_fee: number | null
+          created_at: string | null
+          id: string
+          license_number: string | null
+          practice_id: string | null
+          specialty: string
+          user_id: string
+          verified: boolean | null
+        }
+        Insert: {
+          accepts_new_patients?: boolean | null
+          bio?: string | null
+          consultation_fee?: number | null
+          created_at?: string | null
+          id?: string
+          license_number?: string | null
+          practice_id?: string | null
+          specialty: string
+          user_id: string
+          verified?: boolean | null
+        }
+        Update: {
+          accepts_new_patients?: boolean | null
+          bio?: string | null
+          consultation_fee?: number | null
+          created_at?: string | null
+          id?: string
+          license_number?: string | null
+          practice_id?: string | null
+          specialty?: string
+          user_id?: string
+          verified?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctors_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      medical_records: {
+        Row: {
+          added_by: string | null
+          created_at: string | null
+          description: string | null
+          doctor_email: string | null
+          doctor_name: string | null
+          doctor_phone: string | null
+          id: string
+          patient_id: string | null
+          practice_name: string | null
+          record_date: string | null
+          record_type: Database["public"]["Enums"]["record_type"] | null
+          status: string | null
+          title: string
+        }
+        Insert: {
+          added_by?: string | null
+          created_at?: string | null
+          description?: string | null
+          doctor_email?: string | null
+          doctor_name?: string | null
+          doctor_phone?: string | null
+          id?: string
+          patient_id?: string | null
+          practice_name?: string | null
+          record_date?: string | null
+          record_type?: Database["public"]["Enums"]["record_type"] | null
+          status?: string | null
+          title: string
+        }
+        Update: {
+          added_by?: string | null
+          created_at?: string | null
+          description?: string | null
+          doctor_email?: string | null
+          doctor_name?: string | null
+          doctor_phone?: string | null
+          id?: string
+          patient_id?: string | null
+          practice_name?: string | null
+          record_date?: string | null
+          record_type?: Database["public"]["Enums"]["record_type"] | null
+          status?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      practices: {
+        Row: {
+          address: string | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          description: string | null
+          email: string | null
+          id: string
+          logo_url: string | null
+          name: string
+          phone: string | null
+          verified: boolean | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          description?: string | null
+          email?: string | null
+          id?: string
+          logo_url?: string | null
+          name: string
+          phone?: string | null
+          verified?: boolean | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          description?: string | null
+          email?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          phone?: string | null
+          verified?: boolean | null
+        }
+        Relationships: []
+      }
+      procedures: {
+        Row: {
+          category: Database["public"]["Enums"]["procedure_category"] | null
+          created_at: string | null
+          default_cost: number | null
+          dentist_id: string | null
+          duration_minutes: number | null
+          id: string
+          name: string
+          notes: string | null
+          tooth_range: number[] | null
+          type: Database["public"]["Enums"]["procedure_type"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["procedure_category"] | null
+          created_at?: string | null
+          default_cost?: number | null
+          dentist_id?: string | null
+          duration_minutes?: number | null
+          id?: string
+          name: string
+          notes?: string | null
+          tooth_range?: number[] | null
+          type?: Database["public"]["Enums"]["procedure_type"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["procedure_category"] | null
+          created_at?: string | null
+          default_cost?: number | null
+          dentist_id?: string | null
+          duration_minutes?: number | null
+          id?: string
+          name?: string
+          notes?: string | null
+          tooth_range?: number[] | null
+          type?: Database["public"]["Enums"]["procedure_type"] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "procedures_dentist_id_fkey"
+            columns: ["dentist_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          address: string | null
+          avatar_url: string | null
+          created_at: string | null
+          date_of_birth: string | null
+          email: string
+          full_name: string
+          gender: Database["public"]["Enums"]["gender_type"] | null
+          id: string
+          phone: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          avatar_url?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          email: string
+          full_name: string
+          gender?: Database["public"]["Enums"]["gender_type"] | null
+          id?: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          avatar_url?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          email?: string
+          full_name?: string
+          gender?: Database["public"]["Enums"]["gender_type"] | null
+          id?: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      treatment_plan_procedures: {
+        Row: {
+          cost: number | null
+          created_at: string | null
+          id: string
+          notes: string | null
+          procedure_id: string | null
+          status: string | null
+          tooth_numbers: number[] | null
+          treatment_plan_id: string | null
+        }
+        Insert: {
+          cost?: number | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          procedure_id?: string | null
+          status?: string | null
+          tooth_numbers?: number[] | null
+          treatment_plan_id?: string | null
+        }
+        Update: {
+          cost?: number | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          procedure_id?: string | null
+          status?: string | null
+          tooth_numbers?: number[] | null
+          treatment_plan_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "treatment_plan_procedures_procedure_id_fkey"
+            columns: ["procedure_id"]
+            isOneToOne: false
+            referencedRelation: "procedures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "treatment_plan_procedures_treatment_plan_id_fkey"
+            columns: ["treatment_plan_id"]
+            isOneToOne: false
+            referencedRelation: "treatment_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      treatment_plans: {
+        Row: {
+          created_at: string | null
+          doctor_id: string | null
+          id: string
+          notes: string | null
+          patient_id: string | null
+          published_at: string | null
+          status: Database["public"]["Enums"]["treatment_plan_status"] | null
+          title: string
+          total_cost: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          doctor_id?: string | null
+          id?: string
+          notes?: string | null
+          patient_id?: string | null
+          published_at?: string | null
+          status?: Database["public"]["Enums"]["treatment_plan_status"] | null
+          title: string
+          total_cost?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          doctor_id?: string | null
+          id?: string
+          notes?: string | null
+          patient_id?: string | null
+          published_at?: string | null
+          status?: Database["public"]["Enums"]["treatment_plan_status"] | null
+          title?: string
+          total_cost?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "treatment_plans_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +450,36 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      appointment_status:
+        | "pending"
+        | "confirmed"
+        | "completed"
+        | "canceled"
+        | "no_show"
+      consent_status: "pending" | "signed" | "declined"
+      gender_type: "male" | "female" | "other" | "prefer_not_to_say"
+      procedure_category:
+        | "general"
+        | "preventive"
+        | "restorative"
+        | "cosmetic"
+        | "orthodontic"
+        | "oral_surgery"
+        | "endodontic"
+        | "periodontic"
+      procedure_type:
+        | "single_visit"
+        | "multi_visit"
+        | "tooth_based"
+        | "full_mouth"
+      record_type:
+        | "note"
+        | "diagnosis"
+        | "condition"
+        | "examination"
+        | "treatment"
+      treatment_plan_status: "draft" | "published" | "in_progress" | "completed"
+      user_role: "patient" | "doctor" | "admin" | "staff"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +606,41 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      appointment_status: [
+        "pending",
+        "confirmed",
+        "completed",
+        "canceled",
+        "no_show",
+      ],
+      consent_status: ["pending", "signed", "declined"],
+      gender_type: ["male", "female", "other", "prefer_not_to_say"],
+      procedure_category: [
+        "general",
+        "preventive",
+        "restorative",
+        "cosmetic",
+        "orthodontic",
+        "oral_surgery",
+        "endodontic",
+        "periodontic",
+      ],
+      procedure_type: [
+        "single_visit",
+        "multi_visit",
+        "tooth_based",
+        "full_mouth",
+      ],
+      record_type: [
+        "note",
+        "diagnosis",
+        "condition",
+        "examination",
+        "treatment",
+      ],
+      treatment_plan_status: ["draft", "published", "in_progress", "completed"],
+      user_role: ["patient", "doctor", "admin", "staff"],
+    },
   },
 } as const
