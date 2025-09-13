@@ -54,6 +54,8 @@ const DoctorDashboard = () => {
         { id: "dashboard", label: "Dashboard", icon: Home },
         { id: "profile", label: "My Profile", icon: User },
         { id: "services", label: "My Services", icon: Briefcase },
+        { id: "schedule", label: "Schedule Settings", icon: Clock },
+        { id: "procedures", label: "Procedures", icon: FileText },
         { id: "procedure-library", label: "Procedure Library", icon: FileText },
         { id: "treatment-planning", label: "Treatment Planning", icon: Calendar },
         { id: "calendar", label: "Calendar", icon: Calendar },
@@ -65,6 +67,8 @@ const DoctorDashboard = () => {
         { id: "dashboard", label: "Dashboard", icon: Home },
         { id: "profile", label: "My Profile", icon: User },
         { id: "assigned-services", label: "Assigned Services", icon: Briefcase },
+        { id: "schedule", label: "Schedule Settings", icon: Clock },
+        { id: "procedures", label: "Procedures", icon: FileText },
         { id: "procedure-library", label: "Procedure Library", icon: FileText },
         { id: "treatment-planning", label: "Treatment Planning", icon: Calendar },
         { id: "assigned-patients", label: "My Patients", icon: Users },
@@ -82,6 +86,12 @@ const DoctorDashboard = () => {
         return <DoctorServicesSection />;
       case "assigned-services":
         return <DoctorServicesSection readOnly={true} assignedServices={doctorData.clinic?.assignedServices} />;
+      case "schedule":
+        navigate("/dashboard/schedule");
+        return null;
+      case "procedures":
+        navigate("/dashboard/procedures");
+        return null;
       case "calendar":
         return <DoctorCalendarSection doctorStatus={doctorStatus} />;
       case "performance":
@@ -253,20 +263,36 @@ const DoctorDashboard = () => {
                   <CardTitle>Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Button className="w-full justify-start" variant="outline">
+                  <Button 
+                    className="w-full justify-start" 
+                    variant="outline"
+                    onClick={() => setActiveSection("calendar")}
+                  >
                     <Calendar className="w-4 h-4 mr-2" />
                     View Today's Schedule
                   </Button>
-                  <Button className="w-full justify-start" variant="outline">
-                    <Users className="w-4 h-4 mr-2" />
-                    Manage Patients
+                  <Button 
+                    className="w-full justify-start" 
+                    variant="outline"
+                    onClick={() => setActiveSection("schedule")}
+                  >
+                    <Clock className="w-4 h-4 mr-2" />
+                    Manage Schedule
                   </Button>
-                  <Button className="w-full justify-start" variant="outline">
+                  <Button 
+                    className="w-full justify-start" 
+                    variant="outline"
+                    onClick={() => setActiveSection("procedures")}
+                  >
                     <Briefcase className="w-4 h-4 mr-2" />
-                    Update Services
+                    Update Procedures
                   </Button>
                   {doctorStatus === "independent" && (
-                    <Button className="w-full justify-start" variant="outline">
+                    <Button 
+                      className="w-full justify-start" 
+                      variant="outline"
+                      onClick={() => setActiveSection("clinic-finder")}
+                    >
                       <Search className="w-4 h-4 mr-2" />
                       Find Clinics
                     </Button>
