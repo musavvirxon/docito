@@ -11,7 +11,7 @@ import ConsentSigningModal from "../consent/ConsentSigningModal";
 
 interface TreatmentPlan {
   id: string;
-  dentist_id: string;
+  doctor_id: string;
   patient_id: string;
   title: string;
   description?: string;

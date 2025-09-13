@@ -14,7 +14,7 @@ import TreatmentPlanDetailModal from "@/components/treatment/TreatmentPlanDetail
 
 interface TreatmentPlan {
   id: string;
-  dentist_id: string;
+  doctor_id: string;
   patient_id: string;
   title: string;
   description?: string;
@@ -71,7 +71,7 @@ const TreatmentPlanning = () => {
         const samplePlans = [
           {
             id: 'sample-1',
-            dentist_id: 'demo-dentist',
+            doctor_id: 'demo-dentist',
             patient_id: 'demo-patient-1',
             title: 'Comprehensive Oral Rehabilitation',
             description: 'Complete treatment plan including cleanings, fillings, and crown placement',
@@ -83,7 +83,7 @@ const TreatmentPlanning = () => {
           },
           {
             id: 'sample-2',
-            dentist_id: 'demo-dentist',
+            doctor_id: 'demo-dentist',
             patient_id: 'demo-patient-2',
             title: 'Preventive Care Package',
             description: 'Regular cleanings and preventive treatments',
@@ -102,7 +102,7 @@ const TreatmentPlanning = () => {
       const { data, error } = await supabase
         .from("treatment_plans")
         .select("*")
-        .eq("dentist_id", user.id)
+        .eq("doctor_id", user.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;

@@ -31,11 +31,28 @@ const SignUp = () => {
   }, 'patient');
 
   const handleSignUp = async (data: typeof formData) => {
+    // Check for URL parameter to preserve redirect after signup
+    const urlParams = new URLSearchParams(window.location.search);
+    const returnTo = urlParams.get('returnTo');
+    
+    let emailRedirectTo = `${window.location.origin}/`;
+    
+    // If there's a returnTo parameter, include it in the email redirect
+    if (returnTo) {
+      // Validate returnTo URL to prevent open redirects
+      const validPaths = ['/book-appointment/', '/doctor/', '/search-results', '/patient-dashboard'];
+      const isValidPath = validPaths.some(path => returnTo.startsWith(path));
+      
+      if (isValidPath) {
+        emailRedirectTo = `${window.location.origin}${returnTo}`;
+      }
+    }
+    
     const submitData = {
       email: data.email || 'temp@example.com',
       password: data.password || 'temppassword123',
       options: {
-        emailRedirectTo: `${window.location.origin}/`,
+        emailRedirectTo,
         data: {
           first_name: data.firstName || '',
           last_name: data.lastName || '',
@@ -49,49 +66,32 @@ const SignUp = () => {
     const { error } = await supabase.auth.signUp(submitData);
     if (error) throw error;
 
-    toast({
-      title: "Success!",
-      description: "Please check your email to confirm your account.",
-    });
-    
-    // Check for URL parameter first (new flow)
-    const urlParams = new URLSearchParams(window.location.search);
-    const returnTo = urlParams.get('returnTo');
-    
+    // Store the redirect URL for after email confirmation
     if (returnTo) {
-      // Validate returnTo URL to prevent open redirects
       const validPaths = ['/book-appointment/', '/doctor/', '/search-results', '/patient-dashboard'];
       const isValidPath = validPaths.some(path => returnTo.startsWith(path));
       
       if (isValidPath) {
-        toast({
-          title: "Welcome! Redirecting to booking...",
-          description: "You're now signed in and can complete your appointment booking.",
-        });
-        window.location.href = returnTo;
-        return;
+        localStorage.setItem('postSignupRedirect', returnTo);
       }
     }
     
-    // Fallback: Check for pending doctor visit (legacy flow)
+    // Store pending doctor data if it exists (legacy flow)
     const pendingDoctor = localStorage.getItem('pendingDoctorVisit');
-    if (pendingDoctor) {
+    if (pendingDoctor && !returnTo) {
       try {
         const doctorData = JSON.parse(pendingDoctor);
+        localStorage.setItem('postSignupRedirect', `/book-appointment/${doctorData.id}`);
         localStorage.removeItem('pendingDoctorVisit');
-        toast({
-          title: `Welcome! Redirecting to ${doctorData.name}'s booking page...`,
-          description: "You can now book appointments and view full details.",
-        });
-        // Redirect to booking page instead of doctor profile
-        window.location.href = `/book-appointment/${doctorData.id}`;
       } catch (error) {
         console.error('Error parsing pending doctor data:', error);
-        navigateToPatientDashboard();
       }
-    } else {
-      navigateToPatientDashboard();
     }
+
+    toast({
+      title: "Account created successfully!",
+      description: "Please check your email and click the confirmation link to complete your registration.",
+    });
   };
 
   const onSubmit = async (e: React.FormEvent) => {

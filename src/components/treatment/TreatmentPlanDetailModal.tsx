@@ -17,7 +17,7 @@ import FileAttachmentSection from "@/components/files/FileAttachmentSection";
 
 interface TreatmentPlan {
   id: string;
-  dentist_id: string;
+  doctor_id: string;
   patient_id: string;
   title: string;
   description?: string;
@@ -31,15 +31,16 @@ interface TreatmentPlanProcedure {
   treatment_plan_id: string;
   procedure_id: string;
   tooth_numbers?: number[];
-  custom_cost?: number;
-  custom_notes?: string;
+  cost?: number;
+  notes?: string;
   status: string;
-  sequence_order: number;
+  created_at: string;
   procedure: {
     name: string;
     category: string;
     type: string;
     default_cost?: number;
+    notes?: string;
   };
 }
 
@@ -134,7 +135,7 @@ const TreatmentPlanDetailModal = ({
   const updateTotalCost = async () => {
     try {
       const total = procedures.reduce((sum, proc) => {
-        const cost = proc.custom_cost || proc.procedure.default_cost || 0;
+        const cost = proc.cost || proc.procedure.default_cost || 0;
         return sum + cost;
       }, 0);
 
@@ -168,7 +169,7 @@ const TreatmentPlanDetailModal = ({
   };
 
   const totalCost = procedures.reduce((sum, proc) => {
-    const cost = proc.custom_cost || proc.procedure.default_cost || 0;
+    const cost = proc.cost || proc.procedure.default_cost || 0;
     return sum + cost;
   }, 0);
 
@@ -277,9 +278,9 @@ const TreatmentPlanDetailModal = ({
                             <p className="text-sm text-muted-foreground">
                               {proc.procedure.category}
                             </p>
-                            {proc.custom_notes && (
+                            {proc.notes && (
                               <p className="text-sm text-muted-foreground mt-1">
-                                {proc.custom_notes}
+                                {proc.notes}
                               </p>
                             )}
                           </div>
@@ -294,7 +295,7 @@ const TreatmentPlanDetailModal = ({
                           )}
                         </TableCell>
                         <TableCell className="font-medium">
-                          {formatCurrency(proc.custom_cost || proc.procedure.default_cost || 0)}
+                          {formatCurrency(proc.cost || proc.procedure.default_cost || 0)}
                         </TableCell>
                         <TableCell>
                           <Badge className={getStatusBadgeColor(proc.status)}>

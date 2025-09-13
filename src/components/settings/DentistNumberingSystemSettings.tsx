@@ -3,14 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Settings, Save } from "lucide-react";
 
 type ToothNumberingSystem = "international_fdi" | "universal" | "palmer";
 
 interface DentistSettings {
-  id: string;
   default_tooth_numbering: ToothNumberingSystem;
   practice_name?: string;
   practice_email?: string;
@@ -30,46 +28,23 @@ const DentistNumberingSystemSettings = () => {
 
   const fetchSettings = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error("Please log in to access settings");
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from("dentist_settings")
-        .select("*")
-        .eq("dentist_id", user.id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-        throw error;
-      }
-
-      if (data) {
-        setSettings(data);
-        setSelectedSystem(data.default_tooth_numbering);
+      // Use local storage for settings for now
+      const savedSettings = localStorage.getItem('dentist_settings');
+      if (savedSettings) {
+        const parsedSettings = JSON.parse(savedSettings);
+        setSettings(parsedSettings);
+        setSelectedSystem(parsedSettings.default_tooth_numbering);
       } else {
-        // Create default settings if none exist
-        const defaultSettings = {
-          dentist_id: user.id,
-          default_tooth_numbering: "international_fdi" as ToothNumberingSystem,
+        // Set default settings
+        const defaultSettings: DentistSettings = {
+          default_tooth_numbering: "international_fdi"
         };
-
-        const { data: newSettings, error: createError } = await supabase
-          .from("dentist_settings")
-          .insert(defaultSettings)
-          .select()
-          .single();
-
-        if (createError) throw createError;
-        
-        setSettings(newSettings);
-        setSelectedSystem(newSettings.default_tooth_numbering);
+        setSettings(defaultSettings);
+        setSelectedSystem("international_fdi");
       }
-    } catch (error: any) {
-      console.error("Error fetching settings:", error);
-      toast.error("Failed to load settings: " + error.message);
+    } catch (error) {
+      console.error('Error loading settings:', error);
+      toast.error("Failed to load settings");
     } finally {
       setLoading(false);
     }
@@ -77,28 +52,22 @@ const DentistNumberingSystemSettings = () => {
 
   const saveSettings = async () => {
     if (!settings) return;
-    
+
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from("dentist_settings")
-        .update({
-          default_tooth_numbering: selectedSystem,
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", settings.id);
-
-      if (error) throw error;
-
-      setSettings({
+      const updatedSettings = {
         ...settings,
         default_tooth_numbering: selectedSystem
-      });
+      };
 
-      toast.success("Settings saved successfully");
-    } catch (error: any) {
-      console.error("Error saving settings:", error);
-      toast.error("Failed to save settings: " + error.message);
+      // Save to local storage
+      localStorage.setItem('dentist_settings', JSON.stringify(updatedSettings));
+      
+      setSettings(updatedSettings);
+      toast.success("Settings saved successfully!");
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      toast.error("Failed to save settings");
     } finally {
       setSaving(false);
     }

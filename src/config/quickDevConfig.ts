@@ -4,7 +4,7 @@ export const DISABLE_VALIDATION = true;
 // Dummy data for quick form filling
 export const DUMMY_DATA = {
   patient: {
-    email: 'patient@test.com',
+    email: 'patient@example.com',
     password: 'password123',
     firstName: 'John',
     lastName: 'Doe',
@@ -23,7 +23,7 @@ export const DUMMY_DATA = {
     medicalHistory: 'No significant history'
   },
   doctor: {
-    email: 'doctor@test.com',
+    email: 'doctor@example.com',
     password: 'password123',
     firstName: 'Dr. Sarah',
     lastName: 'Smith',
@@ -42,7 +42,7 @@ export const DUMMY_DATA = {
     clinicZip: '02101'
   },
   practice: {
-    email: 'practice@test.com',
+    email: 'practice@example.com',
     password: 'password123',
     practiceName: 'Downtown Medical Center',
     practiceType: 'General Practice',

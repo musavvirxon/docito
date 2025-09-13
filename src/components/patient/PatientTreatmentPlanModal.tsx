@@ -14,7 +14,7 @@ import { toast } from "sonner";
 
 interface TreatmentPlan {
   id: string;
-  dentist_id: string;
+  doctor_id: string;
   patient_id: string;
   title: string;
   description?: string;
@@ -29,11 +29,10 @@ interface TreatmentPlanProcedure {
   treatment_plan_id: string;
   procedure_id: string;
   tooth_numbers?: number[];
-  custom_cost?: number;
-  custom_notes?: string;
+  cost?: number;
+  notes?: string;
   status: string;
-  sequence_order: number;
-  completed_at?: string;
+  created_at: string;
   procedure: {
     name: string;
     category: string;
@@ -141,7 +140,7 @@ const PatientTreatmentPlanModal = ({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Doctor</p>
-                  <p className="font-medium">Dr. {treatmentPlan.dentist_id}</p>
+                  <p className="font-medium">Dr. {treatmentPlan.doctor_id}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Created</p>
@@ -232,22 +231,17 @@ const PatientTreatmentPlanModal = ({
                           )}
                         </TableCell>
                         <TableCell className="font-medium">
-                          {formatCurrency(proc.custom_cost || proc.procedure.default_cost || 0)}
+                          {formatCurrency(proc.cost || proc.procedure.default_cost || 0)}
                         </TableCell>
                         <TableCell>
                           <Badge className={getStatusBadgeColor(proc.status)}>
                             {proc.status.replace('_', ' ')}
                           </Badge>
-                          {proc.completed_at && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Completed: {new Date(proc.completed_at).toLocaleDateString()}
-                            </p>
-                          )}
                         </TableCell>
                         <TableCell>
                           <div className="max-w-xs">
-                            {proc.custom_notes && (
-                              <p className="text-sm text-muted-foreground">{proc.custom_notes}</p>
+                            {proc.notes && (
+                              <p className="text-sm text-muted-foreground">{proc.notes}</p>
                             )}
                             {proc.procedure.notes && (
                               <p className="text-xs text-muted-foreground italic">
