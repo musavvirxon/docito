@@ -34,6 +34,9 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { format, addDays, isPast, isFuture, isToday } from "date-fns";
+import { useAuth } from "@/contexts/AuthContext";
+import { useAppointments } from "@/hooks/useAppointments";
+import { useMedicalRecords } from "@/hooks/useMedicalRecords";
 
 interface Appointment {
   id: string;
