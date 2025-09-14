@@ -693,7 +693,14 @@ export type Database = {
         | "condition"
         | "examination"
         | "treatment"
-      treatment_plan_status: "draft" | "published" | "in_progress" | "completed"
+      treatment_plan_status:
+        | "draft"
+        | "published"
+        | "in_progress"
+        | "completed"
+        | "confirmed"
+        | "paused"
+        | "cancelled"
       user_role: "patient" | "doctor" | "admin" | "staff"
     }
     CompositeTypes: {
@@ -854,7 +861,15 @@ export const Constants = {
         "examination",
         "treatment",
       ],
-      treatment_plan_status: ["draft", "published", "in_progress", "completed"],
+      treatment_plan_status: [
+        "draft",
+        "published",
+        "in_progress",
+        "completed",
+        "confirmed",
+        "paused",
+        "cancelled",
+      ],
       user_role: ["patient", "doctor", "admin", "staff"],
     },
   },

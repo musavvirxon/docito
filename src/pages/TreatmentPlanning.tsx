@@ -50,11 +50,9 @@ const TreatmentPlanning = () => {
   const statusOptions = [
     { value: "all", label: "All Statuses" },
     { value: "draft", label: "Draft" },
-    { value: "confirmed", label: "Confirmed" },
+    { value: "published", label: "Published" },
     { value: "in_progress", label: "In Progress" },
-    { value: "completed", label: "Completed" },
-    { value: "paused", label: "Paused" },
-    { value: "cancelled", label: "Cancelled" }
+    { value: "completed", label: "Completed" }
   ];
 
   useEffect(() => {
@@ -80,7 +78,7 @@ const TreatmentPlanning = () => {
             patient_id: 'demo-patient-1',
             title: 'Comprehensive Oral Rehabilitation',
             description: 'Complete treatment plan including cleanings, fillings, and crown placement',
-            status: 'confirmed',
+            status: 'published',
             total_cost: 2800,
             created_at: new Date().toISOString(),
             published_at: new Date().toISOString(),
@@ -212,17 +210,17 @@ const TreatmentPlanning = () => {
       const { error } = await supabase
         .from("treatment_plans")
         .update({ 
-          status: "confirmed",
+          status: "published",
           published_at: new Date().toISOString()
         })
         .eq("id", plan.id);
 
       if (error) throw error;
       
-      toast.success("Treatment plan confirmed successfully");
+      toast.success("Treatment plan published successfully");
       fetchTreatmentPlans();
     } catch (error: any) {
-      toast.error("Failed to confirm treatment plan: " + error.message);
+      toast.error("Failed to publish treatment plan: " + error.message);
     }
   };
 
@@ -236,11 +234,9 @@ const TreatmentPlanning = () => {
   const getStatusBadgeColor = (status: string) => {
     const colors: Record<string, string> = {
       draft: "bg-gray-100 text-gray-800",
-      confirmed: "bg-blue-100 text-blue-800",
+      published: "bg-blue-100 text-blue-800",
       in_progress: "bg-orange-100 text-orange-800",
-      completed: "bg-green-100 text-green-800",
-      paused: "bg-yellow-100 text-yellow-800",
-      cancelled: "bg-red-100 text-red-800"
+      completed: "bg-green-100 text-green-800"
     };
     return colors[status] || colors.draft;
   };
