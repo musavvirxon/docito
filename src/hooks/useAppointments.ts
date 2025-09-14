@@ -18,10 +18,6 @@ interface Appointment {
     id: string;
     specialty: string;
     user_id: string;
-    profile?: {
-      full_name: string;
-      avatar_url?: string;
-    };
   };
   practice?: {
     id: string;
@@ -53,11 +49,7 @@ export const useAppointments = () => {
           doctor:doctors(
             id,
             specialty,
-            user_id,
-            profile:profiles!doctors_user_id_fkey(
-              full_name,
-              avatar_url
-            )
+            user_id
           ),
           practice:practices(
             id,
