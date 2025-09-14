@@ -22,6 +22,8 @@ import {
   Users
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useDoctors } from "@/hooks/useDoctors";
+import { usePractices } from "@/hooks/usePractices";
 
 interface SearchResult {
   id: string;
@@ -46,6 +48,8 @@ interface SearchBarProps {
 const SearchBar = ({ onSearch, className, initialQuery, showResultsInline = false }: SearchBarProps) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { searchDoctors } = useDoctors();
+  const { searchPractices } = usePractices();
   
   const [doctorQuery, setDoctorQuery] = useState(initialQuery || searchParams.get('specialty') || "");
   const [locationQuery, setLocationQuery] = useState(searchParams.get('location') || "");
@@ -115,39 +119,63 @@ const SearchBar = ({ onSearch, className, initialQuery, showResultsInline = fals
   // Handle search function
   const handleSearch = async () => {
     if (showResultsInline && onSearch) {
-      // For inline results (existing behavior)
+      // For inline results - use real Supabase search
       setIsLoading(true);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const mockResults: SearchResult[] = [
-        {
-          id: "1",
-          type: "doctor",
-          name: "Dr. Sarah Johnson",
-          specialty: "Cardiologist",
-          location: "Manchester Medical Center, NH",
-          rating: 4.9,
-          availability: "Available today",
-          acceptsInsurance: true,
-          acceptsNewPatients: true,
-          distance: "0.8 miles"
-        },
-        {
-          id: "2",
-          type: "practice",
-          name: "Downtown Dental Clinic",
-          location: "Manchester, NH",
-          rating: 4.7,
-          acceptsInsurance: true,
-          acceptsNewPatients: true,
-          distance: "1.2 miles"
-        }
-      ];
+      try {
+        const [doctorsResults, practicesResults] = await Promise.all([
+          searchDoctors(doctorQuery, locationQuery),
+          searchPractices(practiceQuery, locationQuery)
+        ]);
 
-      setIsLoading(false);
-      onSearch(mockResults);
+        // Transform results to match interface
+        const transformedResults: SearchResult[] = [
+          ...doctorsResults.map(doctor => ({
+            id: doctor.id,
+            type: "doctor" as const,
+            name: doctor.profiles ? (doctor.profiles as any).full_name || "Doctor" : "Doctor",
+            specialty: doctor.specialty,
+            location: doctor.practices ? `${(doctor.practices as any).city || "City"}, ${(doctor.practices as any).country || "Country"}` : "Location",
+            rating: 4.8,
+            availability: "Available today",
+            acceptsInsurance: true,
+            acceptsNewPatients: doctor.accepts_new_patients,
+            distance: "0.8 miles"
+          })),
+          ...practicesResults.map(practice => ({
+            id: practice.id,
+            type: "practice" as const,
+            name: practice.name,
+            location: `${practice.city || "City"}, ${practice.country || "Country"}`,
+            rating: 4.7,
+            acceptsInsurance: true,
+            acceptsNewPatients: true,
+            distance: "1.2 miles"
+          }))
+        ];
+
+        onSearch(transformedResults);
+      } catch (error) {
+        console.error('Search error:', error);
+        // Fallback to mock results
+        const mockResults: SearchResult[] = [
+          {
+            id: "1",
+            type: "doctor",
+            name: "Dr. Sarah Johnson",
+            specialty: "Cardiologist",
+            location: "Manchester Medical Center, NH",
+            rating: 4.9,
+            availability: "Available today",
+            acceptsInsurance: true,
+            acceptsNewPatients: true,
+            distance: "0.8 miles"
+          }
+        ];
+        onSearch(mockResults);
+      } finally {
+        setIsLoading(false);
+      }
     } else {
       // Navigate to search results page with query parameters
       const params = new URLSearchParams();

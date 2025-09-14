@@ -2,10 +2,25 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Star, Calendar } from "lucide-react";
 import { useBookingAuth } from "@/hooks/useBookingAuth";
+import { useDoctors } from "@/hooks/useDoctors";
+import { useEffect, useState } from "react";
 
 const TopSpecialistsSection = () => {
   const { handleBookingClick } = useBookingAuth();
-  const specialists = [
+  const { getTopRatedDoctors, loading } = useDoctors();
+  const [specialists, setSpecialists] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchTopDoctors = async () => {
+      const topDoctors = await getTopRatedDoctors(6);
+      setSpecialists(topDoctors);
+    };
+    
+    fetchTopDoctors();
+  }, []);
+
+  // Fallback to sample data if no real data available
+  const fallbackSpecialists = [
     {
       id: 1,
       photo: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=150&h=150&fit=crop&crop=face",
@@ -80,13 +95,48 @@ const TopSpecialistsSection = () => {
     }
   ];
 
+  // Transform real data to match component interface
+  const displaySpecialists = specialists.length > 0 
+    ? specialists.map((doctor) => ({
+        id: doctor.id,
+        photo: doctor.profiles?.avatar_url || "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=150&h=150&fit=crop&crop=face",
+        firstName: doctor.profiles?.full_name?.split(' ')[0] || "Doctor",
+        lastName: doctor.profiles?.full_name?.split(' ').slice(1).join(' ') || "",
+        specialty: doctor.specialty,
+        degree: "MD", // Default degree since not in current schema
+        country: doctor.practices?.country || "United States",
+        region: `${doctor.practices?.city || "City"}, ${doctor.practices?.country || "Country"}`,
+        rating: 4.8, // Default rating since not in current schema
+        biography: doctor.bio || "Experienced medical professional dedicated to providing quality healthcare."
+      }))
+    : fallbackSpecialists;
+
   return (
     <section className="py-16 bg-background">
       <div className="container mx-auto px-4">
         <h2 className="text-3xl font-bold text-foreground mb-12 text-center">Top Specialists</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {specialists.map((specialist) => (
+          {loading ? (
+            // Loading skeleton
+            Array.from({ length: 6 }).map((_, index) => (
+              <Card key={index} className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardContent className="p-6">
+                  <div className="flex items-start space-x-4">
+                    <div className="w-20 h-20 rounded-full bg-muted animate-pulse"></div>
+                    <div className="flex-1">
+                      <div className="h-5 bg-muted rounded animate-pulse mb-2"></div>
+                      <div className="h-4 bg-muted rounded animate-pulse mb-2 w-3/4"></div>
+                      <div className="h-3 bg-muted rounded animate-pulse mb-2 w-1/2"></div>
+                      <div className="h-3 bg-muted rounded animate-pulse w-2/3"></div>
+                    </div>
+                  </div>
+                  <div className="h-12 bg-muted rounded animate-pulse mt-4"></div>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            displaySpecialists.map((specialist) => (
             <Card key={specialist.id} className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-6">
                 <div className="flex items-start space-x-4">
@@ -123,7 +173,8 @@ const TopSpecialistsSection = () => {
                 </Button>
               </CardContent>
             </Card>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </section>

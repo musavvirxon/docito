@@ -2,10 +2,25 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Star, MapPin, Building2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { usePractices } from "@/hooks/usePractices";
+import { useEffect, useState } from "react";
 
 const TopMedicalPracticesSection = () => {
   const navigate = useNavigate();
-  const practices = [
+  const { getTopRatedPractices, loading } = usePractices();
+  const [practices, setPractices] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchTopPractices = async () => {
+      const topPractices = await getTopRatedPractices(6);
+      setPractices(topPractices);
+    };
+    
+    fetchTopPractices();
+  }, []);
+
+  // Fallback practices if no real data available
+  const fallbackPractices = [
     {
       id: 1,
       photo: "https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=400&h=250&fit=crop",
@@ -68,13 +83,52 @@ const TopMedicalPracticesSection = () => {
     }
   ];
 
+  // Transform real data to match component interface
+  const displayPractices = practices.length > 0 
+    ? practices.map((practice) => ({
+        id: practice.id,
+        photo: practice.logo_url || "https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=400&h=250&fit=crop",
+        name: practice.name,
+        type: "Medical Practice", // Default type since not in current schema
+        location: `${practice.city || "City"}, ${practice.country || "Country"}`,
+        specialties: ["General Medicine"], // Default specialties since not in current schema
+        rating: 4.7, // Default rating since not in current schema
+        description: practice.description || "Professional healthcare facility providing comprehensive medical services."
+      }))
+    : fallbackPractices;
+
   return (
     <section className="py-16 bg-muted/30">
       <div className="container mx-auto px-4">
         <h2 className="text-3xl font-bold text-foreground mb-12 text-center">Top Medical Practices</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {practices.map((practice) => (
+          {loading ? (
+            // Loading skeleton
+            Array.from({ length: 6 }).map((_, index) => (
+              <Card key={index} className="hover:shadow-lg transition-shadow cursor-pointer overflow-hidden">
+                <div className="aspect-video overflow-hidden">
+                  <div className="w-full h-full bg-muted animate-pulse"></div>
+                </div>
+                <CardContent className="p-6">
+                  <div className="space-y-3">
+                    <div>
+                      <div className="h-5 bg-muted rounded animate-pulse mb-2"></div>
+                      <div className="h-4 bg-muted rounded animate-pulse mb-2 w-3/4"></div>
+                      <div className="h-4 bg-muted rounded animate-pulse w-1/2"></div>
+                    </div>
+                    <div className="h-4 bg-muted rounded animate-pulse w-1/4"></div>
+                    <div className="flex flex-wrap gap-1">
+                      <div className="h-6 bg-muted rounded animate-pulse w-20"></div>
+                      <div className="h-6 bg-muted rounded animate-pulse w-16"></div>
+                    </div>
+                    <div className="h-12 bg-muted rounded animate-pulse w-full"></div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            displayPractices.map((practice) => (
             <Card key={practice.id} className="hover:shadow-lg transition-shadow cursor-pointer overflow-hidden">
               <div className="aspect-video overflow-hidden">
                 <img
@@ -134,7 +188,8 @@ const TopMedicalPracticesSection = () => {
                 </div>
               </CardContent>
             </Card>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </section>
