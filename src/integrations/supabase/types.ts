@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointment_procedures: {
+        Row: {
+          appointment_id: string | null
+          consent_ip_address: unknown | null
+          consent_signed_at: string | null
+          created_at: string
+          estimated_cost: number | null
+          id: string
+          patient_consent_status: string | null
+          prescribed_at: string
+          prescribed_by: string | null
+          procedure_id: string | null
+          procedure_notes: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          consent_ip_address?: unknown | null
+          consent_signed_at?: string | null
+          created_at?: string
+          estimated_cost?: number | null
+          id?: string
+          patient_consent_status?: string | null
+          prescribed_at?: string
+          prescribed_by?: string | null
+          procedure_id?: string | null
+          procedure_notes?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          consent_ip_address?: unknown | null
+          consent_signed_at?: string | null
+          created_at?: string
+          estimated_cost?: number | null
+          id?: string
+          patient_consent_status?: string | null
+          prescribed_at?: string
+          prescribed_by?: string | null
+          procedure_id?: string | null
+          procedure_notes?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_procedures_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_procedures_procedure_id_fkey"
+            columns: ["procedure_id"]
+            isOneToOne: false
+            referencedRelation: "procedures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           appointment_date: string
@@ -350,48 +413,154 @@ export type Database = {
         }
         Relationships: []
       }
+      procedure_files: {
+        Row: {
+          created_at: string
+          description: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string
+          id: string
+          procedure_id: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type: string
+          id?: string
+          procedure_id?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string
+          id?: string
+          procedure_id?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "procedure_files_procedure_id_fkey"
+            columns: ["procedure_id"]
+            isOneToOne: false
+            referencedRelation: "procedures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      procedure_materials: {
+        Row: {
+          created_at: string
+          id: string
+          is_required: boolean | null
+          material_name: string
+          notes: string | null
+          procedure_id: string | null
+          quantity: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_required?: boolean | null
+          material_name: string
+          notes?: string | null
+          procedure_id?: string | null
+          quantity?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_required?: boolean | null
+          material_name?: string
+          notes?: string | null
+          procedure_id?: string | null
+          quantity?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "procedure_materials_procedure_id_fkey"
+            columns: ["procedure_id"]
+            isOneToOne: false
+            referencedRelation: "procedures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       procedures: {
         Row: {
           category: Database["public"]["Enums"]["procedure_category"] | null
           created_at: string | null
           default_cost: number | null
+          default_notes_template: string | null
+          default_time_interval: number | null
           dentist_id: string | null
+          description: string | null
           duration_minutes: number | null
+          estimated_duration_minutes: number | null
           id: string
+          informed_consent_template: string | null
           is_active: boolean | null
           name: string
           notes: string | null
+          price: number | null
           tooth_range: number[] | null
           type: Database["public"]["Enums"]["procedure_type"] | null
           updated_at: string | null
+          what_to_expect: string | null
         }
         Insert: {
           category?: Database["public"]["Enums"]["procedure_category"] | null
           created_at?: string | null
           default_cost?: number | null
+          default_notes_template?: string | null
+          default_time_interval?: number | null
           dentist_id?: string | null
+          description?: string | null
           duration_minutes?: number | null
+          estimated_duration_minutes?: number | null
           id?: string
+          informed_consent_template?: string | null
           is_active?: boolean | null
           name: string
           notes?: string | null
+          price?: number | null
           tooth_range?: number[] | null
           type?: Database["public"]["Enums"]["procedure_type"] | null
           updated_at?: string | null
+          what_to_expect?: string | null
         }
         Update: {
           category?: Database["public"]["Enums"]["procedure_category"] | null
           created_at?: string | null
           default_cost?: number | null
+          default_notes_template?: string | null
+          default_time_interval?: number | null
           dentist_id?: string | null
+          description?: string | null
           duration_minutes?: number | null
+          estimated_duration_minutes?: number | null
           id?: string
+          informed_consent_template?: string | null
           is_active?: boolean | null
           name?: string
           notes?: string | null
+          price?: number | null
           tooth_range?: number[] | null
           type?: Database["public"]["Enums"]["procedure_type"] | null
           updated_at?: string | null
+          what_to_expect?: string | null
         }
         Relationships: [
           {
@@ -445,6 +614,45 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      real_time_notifications: {
+        Row: {
+          created_at: string
+          data: Json | null
+          expires_at: string | null
+          id: string
+          message: string
+          notification_type: string
+          read_at: string | null
+          recipient_user_id: string | null
+          sender_user_id: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          expires_at?: string | null
+          id?: string
+          message: string
+          notification_type: string
+          read_at?: string | null
+          recipient_user_id?: string | null
+          sender_user_id?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          expires_at?: string | null
+          id?: string
+          message?: string
+          notification_type?: string
+          read_at?: string | null
+          recipient_user_id?: string | null
+          sender_user_id?: string | null
+          title?: string
         }
         Relationships: []
       }
