@@ -135,6 +135,7 @@ export type Database = {
         Row: {
           content: string
           created_at: string | null
+          digital_signature: string | null
           id: string
           ip_address: unknown | null
           patient_full_name: string | null
@@ -147,6 +148,7 @@ export type Database = {
         Insert: {
           content: string
           created_at?: string | null
+          digital_signature?: string | null
           id?: string
           ip_address?: unknown | null
           patient_full_name?: string | null
@@ -159,6 +161,7 @@ export type Database = {
         Update: {
           content?: string
           created_at?: string | null
+          digital_signature?: string | null
           id?: string
           ip_address?: unknown | null
           patient_full_name?: string | null
@@ -319,6 +322,8 @@ export type Database = {
           instructions: string | null
           name: string
           patient_id: string
+          reminder_enabled: boolean | null
+          route: string | null
           start_date: string
           status: string | null
           treatment_plan_id: string | null
@@ -334,6 +339,8 @@ export type Database = {
           instructions?: string | null
           name: string
           patient_id: string
+          reminder_enabled?: boolean | null
+          route?: string | null
           start_date: string
           status?: string | null
           treatment_plan_id?: string | null
@@ -349,6 +356,8 @@ export type Database = {
           instructions?: string | null
           name?: string
           patient_id?: string
+          reminder_enabled?: boolean | null
+          route?: string | null
           start_date?: string
           status?: string | null
           treatment_plan_id?: string | null
@@ -716,6 +725,9 @@ export type Database = {
       }
       treatment_plan_procedures: {
         Row: {
+          appointment_id: string | null
+          consent_form_id: string | null
+          consent_required: boolean | null
           cost: number | null
           created_at: string | null
           id: string
@@ -727,6 +739,9 @@ export type Database = {
           treatment_plan_id: string | null
         }
         Insert: {
+          appointment_id?: string | null
+          consent_form_id?: string | null
+          consent_required?: boolean | null
           cost?: number | null
           created_at?: string | null
           id?: string
@@ -738,6 +753,9 @@ export type Database = {
           treatment_plan_id?: string | null
         }
         Update: {
+          appointment_id?: string | null
+          consent_form_id?: string | null
+          consent_required?: boolean | null
           cost?: number | null
           created_at?: string | null
           id?: string
@@ -749,6 +767,20 @@ export type Database = {
           treatment_plan_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "treatment_plan_procedures_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "treatment_plan_procedures_consent_form_id_fkey"
+            columns: ["consent_form_id"]
+            isOneToOne: false
+            referencedRelation: "consent_forms"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "treatment_plan_procedures_procedure_id_fkey"
             columns: ["procedure_id"]
@@ -909,6 +941,7 @@ export type Database = {
         | "confirmed"
         | "paused"
         | "cancelled"
+        | "pending_confirmation"
       user_role: "patient" | "doctor" | "admin" | "staff"
     }
     CompositeTypes: {
@@ -1077,6 +1110,7 @@ export const Constants = {
         "confirmed",
         "paused",
         "cancelled",
+        "pending_confirmation",
       ],
       user_role: ["patient", "doctor", "admin", "staff"],
     },
