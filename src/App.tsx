@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { RealTimeProvider } from "@/contexts/RealTimeContext";
 import Index from "./pages/Index";
 
 // Lazy load non-critical pages to reduce initial bundle size
@@ -33,6 +34,7 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <AuthProvider>
       <RealTimeProvider>
         <Toaster />
         <Sonner />
@@ -65,6 +67,7 @@ const App = () => (
             </Routes>
           </Suspense>
         </BrowserRouter>
+      </RealTimeProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

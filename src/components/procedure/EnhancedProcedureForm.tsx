@@ -159,7 +159,15 @@ export const EnhancedProcedureForm = ({
         const { data, error } = await supabase
           .from('procedures')
           .insert({
-            ...formData,
+            name: formData.name,
+            category: formData.category,
+            estimated_duration_minutes: formData.estimated_duration_minutes,
+            price: formData.price,
+            default_time_interval: formData.default_time_interval,
+            description: formData.description,
+            what_to_expect: formData.what_to_expect,
+            informed_consent_template: formData.informed_consent_template,
+            default_notes_template: formData.default_notes_template,
             dentist_id: doctor.id,
             is_active: true,
           })
@@ -255,7 +263,7 @@ export const EnhancedProcedureForm = ({
                   <Label htmlFor="category">Category *</Label>
                   <Select
                     value={form.watch("category")}
-                    onValueChange={(value) => form.setValue("category", value)}
+                    onValueChange={(value) => form.setValue("category", value as any)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select category" />
