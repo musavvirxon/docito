@@ -26,6 +26,7 @@ import ClinicFinderSection from "@/components/doctor/ClinicFinderSection";
 import DoctorSettingsSection from "@/components/doctor/DoctorSettingsSection";
 import AssignedPatientsSection from "@/components/doctor/AssignedPatientsSection";
 import InternalMessagingSection from "@/components/doctor/InternalMessagingSection";
+import TreatmentPlanningSection from "@/components/doctor/TreatmentPlanningSection";
 import { useNavigate } from "react-router-dom";
 
 type DoctorStatus = "independent" | "clinic-member";
@@ -106,8 +107,7 @@ const DoctorDashboard = () => {
         navigate("/procedure-library");
         return null;
       case "treatment-planning":
-        navigate("/treatment-planning");
-        return null;
+        return <TreatmentPlanningSection />;
       case "settings":
         return <DoctorSettingsSection />;
       default:
