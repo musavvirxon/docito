@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bell, Settings, User, Calendar, FileText, Search, Plus, Clock, MapPin, Phone, Download, Eye, X, RotateCcw, AlertCircle, CheckCircle, Star } from "lucide-react";
+import { Bell, Settings, User, Calendar, FileText, Search, Plus, Clock, MapPin, Phone, Download, Eye, X, RotateCcw, AlertCircle, CheckCircle, Star, Pill, Activity } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +37,9 @@ import { format, addDays, isPast, isFuture, isToday } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAppointments } from "@/hooks/useAppointments";
 import { useMedicalRecords } from "@/hooks/useMedicalRecords";
+import { useMedicationReminders } from "@/hooks/useMedicationReminders";
+import { RealTimeProcedureNotification } from "@/components/appointment/RealTimeProcedureNotification";
+import { MedicationReminderDashboard } from "@/components/medication/MedicationReminderDashboard";
 
 interface Appointment {
   id: string;
@@ -61,6 +64,10 @@ const PatientDashboard = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { 
+    getPendingRemindersCount, 
+    getOverdueRemindersCount 
+  } = useMedicationReminders();
 
   // Mock appointment data - would come from API
   const mockAppointments: Appointment[] = [
@@ -142,6 +149,7 @@ const PatientDashboard = () => {
   const sidebarItems = [
     { id: "dashboard", label: "Dashboard", icon: User },
     { id: "appointments", label: "My Appointments", icon: Calendar },
+    { id: "medications", label: "Medications", icon: Pill, badge: getPendingRemindersCount() },
     { id: "medical-records", label: "Medical Records", icon: FileText },
     { id: "search", label: "Find Doctors", icon: Search },
     { id: "settings", label: "Settings", icon: Settings },
@@ -416,6 +424,33 @@ const PatientDashboard = () => {
           </div>
         );
 
+      case "medications":
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-3xl font-bold">Medication Reminders</h2>
+              <div className="flex items-center gap-2">
+                {getOverdueRemindersCount() > 0 && (
+                  <Badge variant="destructive" className="animate-pulse">
+                    {getOverdueRemindersCount()} Overdue
+                  </Badge>
+                )}
+                {getPendingRemindersCount() > 0 && (
+                  <Badge variant="outline" className="border-blue-200 text-blue-600">
+                    {getPendingRemindersCount()} Pending
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            {/* Real-time Procedure Notifications */}
+            <RealTimeProcedureNotification />
+
+            {/* Medication Reminder Dashboard */}
+            <MedicationReminderDashboard />
+          </div>
+        );
+
       case "medical-records":
         return (
           <div className="space-y-6">
@@ -530,15 +565,25 @@ const PatientDashboard = () => {
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Health Score</CardTitle>
-                  <div className="h-4 w-4 bg-green-500 rounded-full" />
+                  <CardTitle className="text-sm font-medium">Medication Reminders</CardTitle>
+                  <Pill className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">Good</div>
-                  <p className="text-xs text-muted-foreground">Based on recent visits</p>
+                  <div className="text-2xl font-bold">{getPendingRemindersCount()}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {getPendingRemindersCount() === 1 ? 'Pending reminder' : 'Pending reminders'}
+                  </p>
+                  {getOverdueRemindersCount() > 0 && (
+                    <Badge variant="destructive" className="text-xs mt-1">
+                      {getOverdueRemindersCount()} overdue
+                    </Badge>
+                  )}
                 </CardContent>
               </Card>
             </div>
+
+            {/* Real-time Notifications */}
+            <RealTimeProcedureNotification />
 
             {/* Recent Activity */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -644,6 +689,14 @@ const PatientDashboard = () => {
                       >
                         <item.icon className="w-4 h-4" />
                         <span>{item.label}</span>
+                        {item.badge && item.badge > 0 && (
+                          <Badge 
+                            variant="destructive" 
+                            className="ml-auto text-xs px-1.5 py-0.5 min-w-[1.25rem] h-5"
+                          >
+                            {item.badge}
+                          </Badge>
+                        )}
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
