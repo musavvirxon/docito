@@ -1,40 +1,15 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-
-interface Appointment {
-  id: string;
-  doctor_id?: string;
-  patient_id?: string;
-  practice_id?: string;
-  appointment_date: string;
-  start_time: string;
-  end_time: string;
-  status: 'pending' | 'confirmed' | 'completed' | 'canceled' | 'no_show';
-  notes?: string;
-  created_at: string;
-  // Joined data from related tables
-  doctor?: {
-    id: string;
-    specialty: string;
-    user_id: string;
-  };
-  practice?: {
-    id: string;
-    name: string;
-    address?: string;
-    phone?: string;
-  };
-}
+import { appointmentApi, type Appointment } from '@/lib/api/supabase-api';
 
 export const useAppointments = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
   const fetchAppointments = async () => {
-    if (!user) {
+    if (!user || !profile) {
       setAppointments([]);
       setLoading(false);
       return;
@@ -42,32 +17,19 @@ export const useAppointments = () => {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('appointments')
-        .select(`
-          *,
-          doctor:doctors(
-            id,
-            specialty,
-            user_id
-          ),
-          practice:practices(
-            id,
-            name,
-            address,
-            phone
-          )
-        `)
-        .eq('patient_id', user.id)
-        .order('appointment_date', { ascending: true })
-        .order('start_time', { ascending: true });
-
-      if (error) throw error;
-
-      setAppointments(data || []);
+      const result = await appointmentApi.fetchAppointments(user.id, profile.role as 'patient' | 'doctor');
+      
+      if ('success' in result && result.success) {
+        setAppointments(result.data as any[]);
+        setError(null);
+      } else if ('error' in result) {
+        setError(result.error);
+        setAppointments([]);
+      }
     } catch (err: any) {
       console.error('Error fetching appointments:', err);
-      setError(err.message);
+      setError('Failed to fetch appointments');
+      setAppointments([]);
     } finally {
       setLoading(false);
     }
@@ -75,25 +37,25 @@ export const useAppointments = () => {
 
   const cancelAppointment = async (appointmentId: string) => {
     try {
-      const { error } = await supabase
-        .from('appointments')
-        .update({ status: 'canceled' })
-        .eq('id', appointmentId);
-
-      if (error) throw error;
-
-      // Refresh appointments
-      await fetchAppointments();
-      return { success: true };
+      const result = await appointmentApi.cancelAppointment(appointmentId);
+      
+      if ('success' in result && result.success) {
+        // Refresh appointments
+        await fetchAppointments();
+        return { success: true };
+      } else if ('error' in result) {
+        return { error: result.error };
+      }
+      return { error: 'Unknown error' };
     } catch (err: any) {
       console.error('Error cancelling appointment:', err);
-      return { error: err.message };
+      return { error: 'Failed to cancel appointment' };
     }
   };
 
   useEffect(() => {
     fetchAppointments();
-  }, [user]);
+  }, [user, profile]);
 
   return {
     appointments,

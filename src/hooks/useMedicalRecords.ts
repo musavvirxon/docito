@@ -1,22 +1,9 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { medicalRecordsApi } from '@/lib/api/supabase-api';
+import { Tables } from '@/integrations/supabase/types';
 
-interface MedicalRecord {
-  id: string;
-  patient_id?: string;
-  title: string;
-  description?: string;
-  record_type: 'note' | 'diagnosis' | 'condition' | 'examination' | 'treatment';
-  record_date: string;
-  doctor_name?: string;
-  doctor_email?: string;
-  doctor_phone?: string;
-  practice_name?: string;
-  status: string;
-  created_at: string;
-  added_by?: string;
-}
+type MedicalRecord = Tables<'medical_records'>;
 
 export const useMedicalRecords = () => {
   const [records, setRecords] = useState<MedicalRecord[]>([]);
@@ -33,47 +20,54 @@ export const useMedicalRecords = () => {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('medical_records')
-        .select('*')
-        .eq('patient_id', user.id)
-        .order('record_date', { ascending: false });
-
-      if (error) throw error;
-
-      setRecords(data || []);
+      const result = await medicalRecordsApi.fetchMedicalRecords(user.id);
+      
+      if ('success' in result && result.success) {
+        setRecords(result.data);
+        setError(null);
+      } else if ('error' in result) {
+        setError(result.error);
+        setRecords([]);
+      }
     } catch (err: any) {
       console.error('Error fetching medical records:', err);
-      setError(err.message);
+      setError('Failed to fetch medical records');
+      setRecords([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const addMedicalRecord = async (recordData: { title: string; description?: string; record_type?: 'note' | 'diagnosis' | 'condition' | 'examination' | 'treatment'; record_date?: string; }) => {
+  const addMedicalRecord = async (recordData: { 
+    title: string; 
+    description?: string; 
+    record_type?: MedicalRecord['record_type']; 
+    record_date?: string; 
+  }) => {
     if (!user) return { error: 'User not authenticated' };
 
     try {
-      const { error } = await supabase
-        .from('medical_records')
-        .insert({
-          title: recordData.title,
-          description: recordData.description,
-          record_type: recordData.record_type || 'note',
-          record_date: recordData.record_date || new Date().toISOString().split('T')[0],
-          patient_id: user.id,
-          added_by: user.id,
-          status: 'active',
-        });
+      const result = await medicalRecordsApi.addMedicalRecord({
+        title: recordData.title,
+        description: recordData.description,
+        record_type: recordData.record_type || 'note',
+        record_date: recordData.record_date || new Date().toISOString().split('T')[0],
+        patient_id: user.id,
+        added_by: user.id,
+        status: 'active',
+      } as any);
 
-      if (error) throw error;
-
-      // Refresh records
-      await fetchMedicalRecords();
-      return { success: true };
+      if ('success' in result && result.success) {
+        // Refresh records
+        await fetchMedicalRecords();
+        return { data: result.data, success: true };
+      } else if ('error' in result) {
+        return { error: result.error };
+      }
+      return { error: 'Unknown error' };
     } catch (err: any) {
       console.error('Error adding medical record:', err);
-      return { error: err.message };
+      return { error: 'Failed to add medical record' };
     }
   };
 
