@@ -902,7 +902,81 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      add_medication_to_treatment_plan: {
+        Args: {
+          dosage: string
+          end_date?: string
+          frequency: string
+          instructions?: string
+          medication_name: string
+          reminder_enabled?: boolean
+          start_date: string
+          treatment_plan_id: string
+        }
+        Returns: Json
+      }
+      add_procedure_to_treatment_plan: {
+        Args: {
+          cost?: number
+          notes?: string
+          procedure_id: string
+          sequence_order?: number
+          tooth_numbers?: number[]
+          treatment_plan_id: string
+        }
+        Returns: Json
+      }
+      book_appointment: {
+        Args: {
+          appointment_date: string
+          doctor_id: string
+          end_time: string
+          notes?: string
+          patient_id: string
+          payment_intent_id?: string
+          practice_id: string
+          start_time: string
+        }
+        Returns: Json
+      }
+      cancel_or_update_appointment: {
+        Args: {
+          appointment_id: string
+          new_date?: string
+          new_end_time?: string
+          new_notes?: string
+          new_start_time?: string
+          new_status?: Database["public"]["Enums"]["appointment_status"]
+        }
+        Returns: Json
+      }
+      sign_informed_consent: {
+        Args: {
+          consent_form_id: string
+          digital_signature?: string
+          ip_address?: unknown
+          patient_full_name: string
+          patient_signature?: string
+        }
+        Returns: Json
+      }
+      update_user_role: {
+        Args: {
+          new_role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Returns: Json
+      }
+      validate_appointment_slot: {
+        Args: {
+          appointment_date: string
+          doctor_id: string
+          end_time: string
+          exclude_appointment_id?: string
+          start_time: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       appointment_status:
