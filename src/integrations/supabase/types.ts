@@ -950,6 +950,43 @@ export type Database = {
         }
         Returns: Json
       }
+      check_user_access: {
+        Args: {
+          access_type?: string
+          resource_id: string
+          resource_type: string
+        }
+        Returns: boolean
+      }
+      fetch_available_slots: {
+        Args: {
+          date_from: string
+          date_to: string
+          doctor_id: string
+          procedure_duration?: number
+        }
+        Returns: Json
+      }
+      get_user_profile_by_uid: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      mark_notification_as_read: {
+        Args: { notification_id: string }
+        Returns: Json
+      }
+      send_notification_to_user: {
+        Args: {
+          data?: Json
+          expires_at?: string
+          message: string
+          notification_type: string
+          recipient_user_id: string
+          sender_user_id?: string
+          title: string
+        }
+        Returns: Json
+      }
       sign_informed_consent: {
         Args: {
           consent_form_id: string
