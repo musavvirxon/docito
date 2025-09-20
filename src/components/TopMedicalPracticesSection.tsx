@@ -92,7 +92,8 @@ const TopMedicalPracticesSection = () => {
         type: "Medical Practice", // Default type since not in current schema
         location: `${practice.city || "City"}, ${practice.country || "Country"}`,
         specialties: ["General Medicine"], // Default specialties since not in current schema
-        rating: 4.7, // Default rating since not in current schema
+        rating: practice.weighted_rating || practice.average_rating || 4.7,
+        reviewCount: practice.num_reviews || 0,
         description: practice.description || "Professional healthcare facility providing comprehensive medical services."
       }))
     : fallbackPractices;
@@ -152,7 +153,10 @@ const TopMedicalPracticesSection = () => {
                   
                   <div className="flex items-center">
                     <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    <span className="ml-1 text-sm font-medium">{practice.rating}</span>
+                    <span className="ml-1 text-sm font-medium">⭐ {practice.rating.toFixed(2)}</span>
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      Based on {practice.reviewCount} reviews
+                    </span>
                   </div>
                   
                   <div className="space-y-2">

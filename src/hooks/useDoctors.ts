@@ -12,7 +12,14 @@ export const useDoctors = () => {
       const result = await doctorApi.fetchDoctors();
       
       if ('success' in result && result.success) {
-        setDoctors(result.data);
+        // Sort by weighted rating DESC, then appointment count DESC
+        const sortedDoctors = result.data.sort((a, b) => {
+          if (b.weighted_rating !== a.weighted_rating) {
+            return (b.weighted_rating || 0) - (a.weighted_rating || 0);
+          }
+          return (b.appointment_count || 0) - (a.appointment_count || 0);
+        });
+        setDoctors(sortedDoctors);
         setError(null);
       } else if ('error' in result) {
         setError(result.error);
@@ -33,9 +40,16 @@ export const useDoctors = () => {
       const result = await doctorApi.searchDoctors(searchTerm, location, specialty);
       
       if ('success' in result && result.success) {
-        setDoctors(result.data);
+        // Sort by weighted rating DESC, then appointment count DESC
+        const sortedDoctors = result.data.sort((a, b) => {
+          if (b.weighted_rating !== a.weighted_rating) {
+            return (b.weighted_rating || 0) - (a.weighted_rating || 0);
+          }
+          return (b.appointment_count || 0) - (a.appointment_count || 0);
+        });
+        setDoctors(sortedDoctors);
         setError(null);
-        return result.data;
+        return sortedDoctors;
       } else if ('error' in result) {
         setError(result.error);
         setDoctors([]);
@@ -58,7 +72,14 @@ export const useDoctors = () => {
       const result = await doctorApi.fetchDoctors();
       
       if ('success' in result && result.success) {
-        const topDoctors = result.data.slice(0, limit);
+        // Sort by weighted rating DESC, then appointment count DESC, then take top N
+        const sortedDoctors = result.data.sort((a, b) => {
+          if (b.weighted_rating !== a.weighted_rating) {
+            return (b.weighted_rating || 0) - (a.weighted_rating || 0);
+          }
+          return (b.appointment_count || 0) - (a.appointment_count || 0);
+        });
+        const topDoctors = sortedDoctors.slice(0, limit);
         setDoctors(topDoctors);
         setError(null);
         return topDoctors;

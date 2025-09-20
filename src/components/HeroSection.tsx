@@ -133,7 +133,8 @@ const HeroSection = () => {
         name: doctor.profiles ? (doctor.profiles as any).full_name || "Doctor" : "Doctor",
         specialty: doctor.specialty,
         location: doctor.practices ? `${(doctor.practices as any).city || "City"}, ${(doctor.practices as any).country || "Country"}` : "Location",
-        rating: 4.8, // Default rating
+        rating: doctor.weighted_rating || doctor.average_rating || 4.8,
+        reviewCount: doctor.num_reviews || 0,
         availability: "Available Today",
         acceptsInsurance: true,
         acceptsNewPatients: doctor.accepts_new_patients,
@@ -146,7 +147,8 @@ const HeroSection = () => {
         name: practice.name,
         specialty: "Medical Practice",
         location: `${practice.city || "City"}, ${practice.country || "Country"}`,
-        rating: 4.7, // Default rating
+        rating: practice.weighted_rating || practice.average_rating || 4.7,
+        reviewCount: practice.num_reviews || 0,
         availability: "Open Today",
         acceptsInsurance: true,
         acceptsNewPatients: true,

@@ -16,7 +16,8 @@ export const usePractices = () => {
         .from('practices')
         .select('*')
         .eq('verified', true)
-        .order('created_at', { ascending: false });
+        .order('weighted_rating', { ascending: false })
+        .order('appointment_count', { ascending: false });
 
       if (error) throw error;
 
@@ -46,7 +47,9 @@ export const usePractices = () => {
         query = query.or(`city.ilike.%${location}%,country.ilike.%${location}%,address.ilike.%${location}%`);
       }
 
-      const { data, error } = await query.order('created_at', { ascending: false });
+      const { data, error } = await query
+        .order('weighted_rating', { ascending: false })
+        .order('appointment_count', { ascending: false });
 
       if (error) throw error;
 
@@ -69,7 +72,8 @@ export const usePractices = () => {
         .from('practices')
         .select('*')
         .eq('verified', true)
-        .order('created_at', { ascending: false })
+        .order('weighted_rating', { ascending: false })
+        .order('appointment_count', { ascending: false })
         .limit(limit);
 
       if (error) throw error;

@@ -191,39 +191,51 @@ export type Database = {
       doctors: {
         Row: {
           accepts_new_patients: boolean | null
+          appointment_count: number | null
+          average_rating: number | null
           bio: string | null
           consultation_fee: number | null
           created_at: string | null
           id: string
           license_number: string | null
+          num_reviews: number | null
           practice_id: string | null
           specialty: string
           user_id: string
           verified: boolean | null
+          weighted_rating: number | null
         }
         Insert: {
           accepts_new_patients?: boolean | null
+          appointment_count?: number | null
+          average_rating?: number | null
           bio?: string | null
           consultation_fee?: number | null
           created_at?: string | null
           id?: string
           license_number?: string | null
+          num_reviews?: number | null
           practice_id?: string | null
           specialty: string
           user_id: string
           verified?: boolean | null
+          weighted_rating?: number | null
         }
         Update: {
           accepts_new_patients?: boolean | null
+          appointment_count?: number | null
+          average_rating?: number | null
           bio?: string | null
           consultation_fee?: number | null
           created_at?: string | null
           id?: string
           license_number?: string | null
+          num_reviews?: number | null
           practice_id?: string | null
           specialty?: string
           user_id?: string
           verified?: boolean | null
+          weighted_rating?: number | null
         }
         Relationships: [
           {
@@ -404,6 +416,8 @@ export type Database = {
       practices: {
         Row: {
           address: string | null
+          appointment_count: number | null
+          average_rating: number | null
           city: string | null
           country: string | null
           created_at: string | null
@@ -412,11 +426,15 @@ export type Database = {
           id: string
           logo_url: string | null
           name: string
+          num_reviews: number | null
           phone: string | null
           verified: boolean | null
+          weighted_rating: number | null
         }
         Insert: {
           address?: string | null
+          appointment_count?: number | null
+          average_rating?: number | null
           city?: string | null
           country?: string | null
           created_at?: string | null
@@ -425,11 +443,15 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name: string
+          num_reviews?: number | null
           phone?: string | null
           verified?: boolean | null
+          weighted_rating?: number | null
         }
         Update: {
           address?: string | null
+          appointment_count?: number | null
+          average_rating?: number | null
           city?: string | null
           country?: string | null
           created_at?: string | null
@@ -438,8 +460,10 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name?: string
+          num_reviews?: number | null
           phone?: string | null
           verified?: boolean | null
+          weighted_rating?: number | null
         }
         Relationships: []
       }
@@ -1064,6 +1088,10 @@ export type Database = {
         Args: { notification_id: string }
         Returns: Json
       }
+      refresh_all_ratings: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       send_notification_to_user: {
         Args: {
           data?: Json
@@ -1085,6 +1113,18 @@ export type Database = {
           patient_signature?: string
         }
         Returns: Json
+      }
+      update_appointment_counts: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      update_doctor_weighted_ratings: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      update_practice_weighted_ratings: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       update_user_role: {
         Args: {

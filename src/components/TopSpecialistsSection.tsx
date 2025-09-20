@@ -106,7 +106,8 @@ const TopSpecialistsSection = () => {
         degree: "MD", // Default degree since not in current schema
         country: doctor.practices?.country || "United States",
         region: `${doctor.practices?.city || "City"}, ${doctor.practices?.country || "Country"}`,
-        rating: 4.8, // Default rating since not in current schema
+        rating: doctor.weighted_rating || doctor.average_rating || 4.8,
+        reviewCount: doctor.num_reviews || 0,
         biography: doctor.bio || "Experienced medical professional dedicated to providing quality healthcare."
       }))
     : fallbackSpecialists;
@@ -156,7 +157,10 @@ const TopSpecialistsSection = () => {
                     </p>
                     <div className="flex items-center mt-2">
                       <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <span className="ml-1 text-sm font-medium">{specialist.rating}</span>
+                      <span className="ml-1 text-sm font-medium">⭐ {specialist.rating.toFixed(2)}</span>
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        Based on {specialist.reviewCount} reviews
+                      </span>
                     </div>
                   </div>
                 </div>

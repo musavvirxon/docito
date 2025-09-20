@@ -121,7 +121,8 @@ export const doctorApi = {
         `)
         .eq('verified', true)
         .eq('accepts_new_patients', true)
-        .order('created_at', { ascending: false });
+        .order('weighted_rating', { ascending: false })
+        .order('appointment_count', { ascending: false });
 
       if (error) throw error;
       return { data: data || [], success: true };
@@ -159,7 +160,9 @@ export const doctorApi = {
         query = query.or(`specialty.ilike.%${searchTerm}%,bio.ilike.%${searchTerm}%`);
       }
 
-      const { data, error } = await query.order('created_at', { ascending: false });
+      const { data, error } = await query
+        .order('weighted_rating', { ascending: false })
+        .order('appointment_count', { ascending: false });
       if (error) throw error;
 
       // Filter by location if provided
