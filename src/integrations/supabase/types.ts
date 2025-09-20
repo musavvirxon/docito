@@ -119,6 +119,13 @@ export type Database = {
             foreignKeyName: "appointments_doctor_id_fkey"
             columns: ["doctor_id"]
             isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
             referencedRelation: "doctors"
             referencedColumns: ["id"]
           },
@@ -225,6 +232,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "practices"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_doctors_user_id"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -364,6 +378,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "medications_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "medications_doctor_id_fkey"
             columns: ["doctor_id"]
@@ -576,6 +597,13 @@ export type Database = {
             foreignKeyName: "procedures_dentist_id_fkey"
             columns: ["dentist_id"]
             isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "procedures_dentist_id_fkey"
+            columns: ["dentist_id"]
+            isOneToOne: false
             referencedRelation: "doctors"
             referencedColumns: ["id"]
           },
@@ -704,7 +732,21 @@ export type Database = {
             foreignKeyName: "referrals_referred_doctor_id_fkey"
             columns: ["referred_doctor_id"]
             isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_referred_doctor_id_fkey"
+            columns: ["referred_doctor_id"]
+            isOneToOne: false
             referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_referring_doctor_id_fkey"
+            columns: ["referring_doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
             referencedColumns: ["id"]
           },
           {
@@ -836,6 +878,13 @@ export type Database = {
             foreignKeyName: "treatment_plan_templates_doctor_id_fkey"
             columns: ["doctor_id"]
             isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "treatment_plan_templates_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
             referencedRelation: "doctors"
             referencedColumns: ["id"]
           },
@@ -892,6 +941,13 @@ export type Database = {
             foreignKeyName: "treatment_plans_doctor_id_fkey"
             columns: ["doctor_id"]
             isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "treatment_plans_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
             referencedRelation: "doctors"
             referencedColumns: ["id"]
           },
@@ -899,7 +955,40 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      doctor_profiles_view: {
+        Row: {
+          accepts_new_patients: boolean | null
+          avatar_url: string | null
+          bio: string | null
+          consultation_fee: number | null
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string | null
+          license_number: string | null
+          phone: string | null
+          practice_id: string | null
+          specialty: string | null
+          user_id: string | null
+          verified: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctors_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_doctors_user_id"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
     }
     Functions: {
       add_medication_to_treatment_plan: {
