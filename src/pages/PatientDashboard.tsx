@@ -495,7 +495,7 @@ const PatientDashboard = () => {
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold">Find Doctors</h2>
-            <p className="text-muted-foreground">Search will be implemented here</p>
+            <p className="text-muted-foreground">Search functionality coming soon with enhanced backend integration</p>
           </div>
         );
 

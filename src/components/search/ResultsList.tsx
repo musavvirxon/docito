@@ -21,6 +21,14 @@ interface SearchResult {
   experience?: string;
   languages?: string[];
   practiceName?: string;
+  degree?: string;
+  consultationFee?: number;
+  practiceType?: string;
+  description?: string;
+  specialties?: string[];
+  doctorCount?: number;
+  logoUrl?: string;
+  affiliatedPractice?: string;
 }
 
 interface ResultsListProps {

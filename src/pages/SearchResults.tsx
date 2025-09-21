@@ -8,6 +8,9 @@ import MobileFilterDrawer from "@/components/search/MobileFilterDrawer";
 import ResultsList from "@/components/search/ResultsList";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { doctorApi } from "@/lib/api/supabase-api";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface SearchResult {
   id: string;
@@ -26,6 +29,14 @@ interface SearchResult {
   experience?: string;
   languages?: string[];
   practiceName?: string;
+  degree?: string;
+  consultationFee?: number;
+  practiceType?: string;
+  description?: string;
+  specialties?: string[];
+  doctorCount?: number;
+  logoUrl?: string;
+  affiliatedPractice?: string;
 }
 
 const SearchResults = () => {
@@ -71,84 +82,86 @@ const SearchResults = () => {
   const performSearch = async () => {
     setIsLoading(true);
     
-    // Simulate API search based on URL parameters
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    const specialty = searchParams.get('specialty');
-    const location = searchParams.get('location');
-    
-    // Generate relevant mock results based on search parameters
-    const allMockResults: SearchResult[] = [
-      {
-        id: "1",
-        type: "doctor",
-        name: "Dr. Sarah Johnson",
-        specialty: specialty || "Cardiologist",
-        location: "Manchester Medical Center, NH",
-        rating: 4.9,
-        reviewCount: 127,
-        availability: "Available today",
-        acceptsInsurance: true,
-        acceptsNewPatients: true,
-        distance: "0.8 miles",
-        image: "/placeholder.svg",
-        bio: "Board-certified specialist with expertise in preventive care and advanced treatments.",
-        experience: "15 years",
-        languages: ["English", "Spanish"],
-        practiceName: "Manchester Medical Center"
-      },
-      {
-        id: "2",
-        type: "practice",
-        name: `${specialty ? specialty.replace('ist', '') : 'Medical'} Center`,
-        location: location || "Manchester, NH",
-        rating: 4.7,
-        reviewCount: 89,
-        acceptsInsurance: true,
-        acceptsNewPatients: true,
-        distance: "1.2 miles",
-        image: "/placeholder.svg",
-        bio: `Full-service ${specialty?.toLowerCase() || 'medical'} practice offering comprehensive care and specialized treatments.`
-      },
-      {
-        id: "3",
-        type: "doctor",
-        name: "Dr. Michael Chen",
-        specialty: specialty || "Dermatologist",
-        location: "Boston Medical Center, MA",
-        rating: 4.8,
-        reviewCount: 156,
-        availability: "Next available: Tomorrow",
-        acceptsInsurance: false,
-        acceptsNewPatients: true,
-        distance: "2.1 miles",
-        image: "/placeholder.svg",
-        bio: "Specialized in modern treatments with a focus on patient-centered care.",
-        experience: "12 years",
-        languages: ["English", "Mandarin"],
-        practiceName: "Boston Medical Center"
-      },
-      {
-        id: "4",
-        type: "doctor",
-        name: "Dr. Emily Rodriguez",
-        specialty: specialty || "Pediatrician",
-        location: "Children's Health Center, NH",
-        rating: 4.6,
-        reviewCount: 203,
-        availability: "Available today",
-        acceptsInsurance: true,
-        acceptsNewPatients: false,
-        distance: "1.5 miles",
-        image: "/placeholder.svg",
-        bio: "Compassionate pediatric care with focus on family-centered medicine.",
-        experience: "10 years",
-        languages: ["English", "Spanish", "French"]
+    try {
+      const specialty = searchParams.get('specialty');
+      const location = searchParams.get('location');
+      const searchTerm = searchParams.get('q');
+      
+      const results: SearchResult[] = [];
+
+      // Search doctors
+      const doctorsResponse = specialty 
+        ? await doctorApi.searchDoctors(specialty, location || undefined, specialty)
+        : searchTerm 
+        ? await doctorApi.searchDoctors(searchTerm, location || undefined)
+        : await doctorApi.fetchDoctors();
+
+      // Handle doctor API response
+      if ('data' in doctorsResponse && doctorsResponse.data) {
+        const doctorResults: SearchResult[] = doctorsResponse.data.map(doctor => ({
+          id: doctor.id,
+          type: 'doctor',
+          name: doctor.profiles?.full_name || 'Doctor',
+          specialty: doctor.specialty,
+          location: doctor.practices ? `${doctor.practices.city}, ${doctor.practices.country}` : 'Location not specified',
+          rating: doctor.average_rating || 0,
+          reviewCount: doctor.num_reviews || 0,
+          availability: doctor.accepts_new_patients ? "Accepting new patients" : "Not accepting new patients",
+          acceptsInsurance: true, // Default for now
+          acceptsNewPatients: doctor.accepts_new_patients,
+          image: doctor.profiles?.avatar_url || "/placeholder.svg",
+          bio: doctor.bio || "Experienced medical professional",
+          consultationFee: doctor.consultation_fee || undefined,
+          degree: "MD", // Default for now
+          languages: ["English"], // Default for now
+          affiliatedPractice: doctor.practices?.name || "Independent Doctor"
+        }));
+        results.push(...doctorResults);
       }
-    ];
-    
-    setSearchResults(allMockResults);
-    setIsLoading(false);
+
+      // Search practices using existing hook pattern
+      try {
+        const { data: practicesData } = await supabase
+          .from('practices')
+          .select('*')
+          .eq('verified', true)
+          .order('weighted_rating', { ascending: false })
+          .order('appointment_count', { ascending: false });
+
+        if (practicesData) {
+          const practiceResults: SearchResult[] = practicesData.map(practice => ({
+            id: practice.id,
+            type: 'practice',
+            name: practice.name,
+            location: `${practice.city}, ${practice.country}`,
+            rating: practice.average_rating || 0,
+            reviewCount: practice.num_reviews || 0,
+            acceptsInsurance: true, // Default for now
+            acceptsNewPatients: true, // Default for now
+            logoUrl: practice.logo_url || "/placeholder.svg",
+            description: practice.description || "Quality healthcare services",
+            practiceType: "Medical Practice", // Default for now
+            specialties: [], // Could be derived from practice description
+            doctorCount: 5 // Default for now
+          }));
+          results.push(...practiceResults);
+        }
+      } catch (practiceError) {
+        console.error('Failed to fetch practices:', practiceError);
+        // Continue without practices if they fail to load
+      }
+
+      // Sort results by rating
+      results.sort((a, b) => b.rating - a.rating);
+      
+      setSearchResults(results);
+    } catch (error) {
+      console.error('Search failed:', error);
+      toast.error('Failed to search. Please try again.');
+      setSearchResults([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const searchQuery = location.state?.searchQuery || 
