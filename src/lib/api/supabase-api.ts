@@ -157,7 +157,17 @@ export const doctorApi = {
       }
 
       if (searchTerm && !specialty) {
-        query = query.or(`specialty.ilike.%${searchTerm}%,bio.ilike.%${searchTerm}%`);
+        // Clean the search term by removing problematic characters
+        const cleanSearchTerm = searchTerm.replace(/[,()]/g, ' ').trim();
+        if (cleanSearchTerm) {
+          // Split into words and search each separately to avoid SQL parsing issues
+          const words = cleanSearchTerm.split(/\s+/).filter(word => word.length > 0);
+          if (words.length > 0) {
+            // Use the first word for the main search to avoid complex OR queries
+            const mainWord = words[0];
+            query = query.or(`specialty.ilike.%${mainWord}%,bio.ilike.%${mainWord}%`);
+          }
+        }
       }
 
       const { data, error } = await query

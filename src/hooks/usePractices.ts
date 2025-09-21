@@ -40,11 +40,27 @@ export const usePractices = () => {
         .eq('verified', true);
 
       if (searchTerm) {
-        query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`);
+        // Clean the search term by removing problematic characters
+        const cleanSearchTerm = searchTerm.replace(/[,()]/g, ' ').trim();
+        if (cleanSearchTerm) {
+          // Split into words and use the first word to avoid SQL parsing issues
+          const words = cleanSearchTerm.split(/\s+/).filter(word => word.length > 0);
+          if (words.length > 0) {
+            const mainWord = words[0];
+            query = query.or(`name.ilike.%${mainWord}%,description.ilike.%${mainWord}%`);
+          }
+        }
       }
 
       if (location) {
-        query = query.or(`city.ilike.%${location}%,country.ilike.%${location}%,address.ilike.%${location}%`);
+        const cleanLocation = location.replace(/[,()]/g, ' ').trim();
+        if (cleanLocation) {
+          const locationWords = cleanLocation.split(/\s+/).filter(word => word.length > 0);
+          if (locationWords.length > 0) {
+            const mainLocationWord = locationWords[0];
+            query = query.or(`city.ilike.%${mainLocationWord}%,country.ilike.%${mainLocationWord}%,address.ilike.%${mainLocationWord}%`);
+          }
+        }
       }
 
       const { data, error } = await query
