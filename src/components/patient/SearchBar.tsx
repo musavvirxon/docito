@@ -136,7 +136,7 @@ const SearchBar = ({ onSearch, className, initialQuery, showResultsInline = fals
             name: doctor.profiles ? (doctor.profiles as any).full_name || "Doctor" : "Doctor",
             specialty: doctor.specialty,
             location: doctor.practices ? `${(doctor.practices as any).city || "City"}, ${(doctor.practices as any).country || "Country"}` : "Location",
-            rating: 4.8,
+            rating: doctor.weighted_rating || doctor.average_rating || 4.8,
             availability: "Available today",
             acceptsInsurance: true,
             acceptsNewPatients: doctor.accepts_new_patients,
@@ -147,7 +147,7 @@ const SearchBar = ({ onSearch, className, initialQuery, showResultsInline = fals
             type: "practice" as const,
             name: practice.name,
             location: `${practice.city || "City"}, ${practice.country || "Country"}`,
-            rating: 4.7,
+            rating: practice.weighted_rating || practice.average_rating || 4.7,
             acceptsInsurance: true,
             acceptsNewPatients: true,
             distance: "1.2 miles"
