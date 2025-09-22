@@ -101,20 +101,21 @@ const SearchResults = () => {
         const doctorResults: SearchResult[] = doctorsResponse.data.map(doctor => ({
           id: doctor.id,
           type: 'doctor',
-          name: doctor.profiles?.full_name || 'Doctor',
+          name: doctor.profiles ? (doctor.profiles as any).full_name || 'Dr. Professional' : `Dr. ${doctor.specialty} Specialist`,
+          image: doctor.profiles ? (doctor.profiles as any).avatar_url : undefined,
           specialty: doctor.specialty,
-          location: doctor.practices ? `${doctor.practices.city}, ${doctor.practices.country}` : 'Location not specified',
-          rating: doctor.average_rating || 0,
+          degree: doctor.license_number ? doctor.license_number : 'MD',
+          rating: doctor.weighted_rating || doctor.average_rating || 4.8,
           reviewCount: doctor.num_reviews || 0,
+          affiliatedPractice: doctor.practices ? (doctor.practices as any).name : 'Independent Doctor',
+          location: doctor.practices ? `${(doctor.practices as any).city || 'City'}, ${(doctor.practices as any).country || 'Country'}` : 'Location not specified',
+          consultationFee: doctor.consultation_fee,
+          languages: ['English'], // Default language
+          bio: doctor.bio || 'Experienced medical professional',
           availability: doctor.accepts_new_patients ? "Accepting new patients" : "Not accepting new patients",
           acceptsInsurance: true, // Default for now
           acceptsNewPatients: doctor.accepts_new_patients,
-          image: doctor.profiles?.avatar_url || "/placeholder.svg",
-          bio: doctor.bio || "Experienced medical professional",
-          consultationFee: doctor.consultation_fee || undefined,
-          degree: "MD", // Default for now
-          languages: ["English"], // Default for now
-          affiliatedPractice: doctor.practices?.name || "Independent Doctor"
+          distance: '0.5 mi'
         }));
         results.push(...doctorResults);
       }
@@ -133,16 +134,18 @@ const SearchResults = () => {
             id: practice.id,
             type: 'practice',
             name: practice.name,
-            location: `${practice.city}, ${practice.country}`,
-            rating: practice.average_rating || 0,
+            image: practice.logo_url,
+            practiceType: 'Medical Practice',
+            description: practice.description || 'Quality healthcare services',
+            location: `${practice.city || 'City'}, ${practice.country || 'Country'}`,
+            specialties: ['General Medicine', 'Family Practice'], // Default specialties
+            rating: practice.weighted_rating || practice.average_rating || 4.7,
             reviewCount: practice.num_reviews || 0,
+            doctorCount: 5, // Default doctor count
             acceptsInsurance: true, // Default for now
             acceptsNewPatients: true, // Default for now
-            logoUrl: practice.logo_url || "/placeholder.svg",
-            description: practice.description || "Quality healthcare services",
-            practiceType: "Medical Practice", // Default for now
-            specialties: [], // Could be derived from practice description
-            doctorCount: 5 // Default for now
+            availability: 'Open Today',
+            distance: '1.0 mi'
           }));
           results.push(...practiceResults);
         }

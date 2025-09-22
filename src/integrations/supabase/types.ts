@@ -201,7 +201,7 @@ export type Database = {
           num_reviews: number | null
           practice_id: string | null
           specialty: string
-          user_id: string
+          user_id: string | null
           verified: boolean | null
           weighted_rating: number | null
         }
@@ -217,7 +217,7 @@ export type Database = {
           num_reviews?: number | null
           practice_id?: string | null
           specialty: string
-          user_id: string
+          user_id?: string | null
           verified?: boolean | null
           weighted_rating?: number | null
         }
@@ -233,7 +233,7 @@ export type Database = {
           num_reviews?: number | null
           practice_id?: string | null
           specialty?: string
-          user_id?: string
+          user_id?: string | null
           verified?: boolean | null
           weighted_rating?: number | null
         }
