@@ -65,7 +65,9 @@ const ResultsList = ({ results, searchQuery, sortBy, onSortChange, isMobile = fa
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h2 className="text-xl font-semibold text-foreground mb-1">
-            Search Results for "{searchQuery}"
+            {searchQuery === "Healthcare providers" 
+              ? "All Healthcare Providers" 
+              : `Search Results for "${searchQuery}"`}
           </h2>
           <p className="text-muted-foreground">
             {results.length} {results.length === 1 ? 'result' : 'results'} found

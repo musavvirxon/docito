@@ -183,7 +183,15 @@ const SearchBar = ({ onSearch, className, initialQuery, showResultsInline = fals
       // Navigate to search results page with query parameters
       const params = new URLSearchParams();
       
-      if (doctorQuery.trim()) params.set('specialty', doctorQuery.trim());
+      // Use 'q' for general search term to be more standard
+      if (doctorQuery.trim()) {
+        params.set('q', doctorQuery.trim());
+        // Also set specialty if it looks like a specialty search
+        if (['cardiologist', 'dentist', 'dermatologist', 'pediatrician', 'ophthalmologist', 'neurologist'].some(spec => 
+          doctorQuery.toLowerCase().includes(spec))) {
+          params.set('specialty', doctorQuery.trim());
+        }
+      }
       if (locationQuery.trim()) params.set('location', locationQuery.trim());
       if (practiceQuery.trim()) params.set('practice', practiceQuery.trim());
       if (insuranceQuery.trim()) params.set('insurance', insuranceQuery.trim());

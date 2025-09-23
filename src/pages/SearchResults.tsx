@@ -86,14 +86,19 @@ const SearchResults = () => {
       const specialty = searchParams.get('specialty');
       const location = searchParams.get('location');
       const searchTerm = searchParams.get('q');
+      const practice = searchParams.get('practice');
+      
+      // Use the actual search term for queries
+      const queryTerm = searchTerm || specialty || practice || '';
+      const locationTerm = location || '';
       
       const results: SearchResult[] = [];
 
-      // Search doctors
+      // Search doctors with the actual search term
       const doctorsResponse = specialty 
-        ? await doctorApi.searchDoctors(specialty, location || undefined, specialty)
-        : searchTerm 
-        ? await doctorApi.searchDoctors(searchTerm, location || undefined)
+        ? await doctorApi.searchDoctors(specialty, locationTerm, specialty)
+        : queryTerm 
+        ? await doctorApi.searchDoctors(queryTerm, locationTerm)
         : await doctorApi.fetchDoctors();
 
       // Handle doctor API response
@@ -167,10 +172,24 @@ const SearchResults = () => {
     }
   };
 
-  const searchQuery = location.state?.searchQuery || 
-    searchParams.get('specialty') || 
-    searchParams.get('location') || 
-    "Healthcare providers";
+  // Build search query from multiple sources
+  const buildSearchQuery = () => {
+    const specialty = searchParams.get('specialty');
+    const locationParam = searchParams.get('location');
+    const practice = searchParams.get('practice');
+    const searchTerm = searchParams.get('q');
+    const fromState = location.state?.searchQuery;
+
+    // Priority: explicit search term > specialty > practice > location > state > fallback
+    if (searchTerm) return searchTerm;
+    if (fromState && fromState !== "Healthcare providers") return fromState;
+    if (specialty) return specialty;
+    if (practice) return practice;
+    if (locationParam) return `providers in ${locationParam}`;
+    return "Healthcare providers";
+  };
+
+  const searchQuery = buildSearchQuery();
 
   const handleSearchResults = (results: SearchResult[]) => {
     setSearchResults(results);
