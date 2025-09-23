@@ -67,14 +67,14 @@ const SearchResults = ({
         {[...Array(3)].map((_, index) => (
           <Card key={index}>
             <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
+              <div className="flex items-start space-x-4">
                 <Skeleton className="w-16 h-16 rounded-full" />
                 <div className="flex-1 space-y-2">
-                  <Skeleton className="h-5 w-48" />
+                  <Skeleton className="h-6 w-48" />
                   <Skeleton className="h-4 w-32" />
                   <Skeleton className="h-4 w-64" />
+                  <Skeleton className="h-4 w-40" />
                 </div>
-                <Skeleton className="h-9 w-24" />
               </div>
             </CardContent>
           </Card>
@@ -110,7 +110,7 @@ const SearchResults = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="space-y-4">
         {results.map((result) => (
           <Card key={result.id} className="hover:shadow-md transition-shadow">
             <CardContent className="p-6">
@@ -139,13 +139,13 @@ const SearchResults = ({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
-                      <h4 className="font-semibold text-lg text-foreground mb-1">
+                      <h4 className="font-semibold text-xl text-foreground mb-1">
                         {result.name}
                       </h4>
                       
                       {/* Doctor-specific info */}
                       {result.type === 'doctor' && (
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center gap-3 mb-2">
                           <Badge variant="secondary" className="text-xs">Doctor</Badge>
                           {result.degree && (
                             <div className="flex items-center gap-1">
@@ -161,11 +161,12 @@ const SearchResults = ({
                       
                       {/* Practice-specific info */}
                       {result.type === 'practice' && (
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center gap-3 mb-2">
                           <Badge variant="secondary" className="text-xs">{result.practiceType || 'Practice'}</Badge>
                           {result.specialties && result.specialties.length > 0 && (
                             <span className="text-sm text-muted-foreground">
-                              {result.specialties.join(', ')}
+                              {result.specialties.slice(0, 2).join(', ')}
+                              {result.specialties.length > 2 && ` +${result.specialties.length - 2} more`}
                             </span>
                           )}
                         </div>
@@ -214,10 +215,16 @@ const SearchResults = ({
                         {result.location}
                       </span>
                     </div>
+
+                    {result.distance && (
+                      <div className="flex items-center space-x-1">
+                        <span className="text-sm text-muted-foreground">• {result.distance}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Additional Details Grid */}
-                  <div className="grid grid-cols-2 gap-2 mb-3">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
                     {/* Doctor-specific details */}
                     {result.type === 'doctor' && result.consultationFee && (
                       <div className="flex items-center gap-1">
@@ -251,14 +258,16 @@ const SearchResults = ({
                   </div>
 
                   {/* Status Badges */}
-                  <div className="flex flex-wrap gap-2 mb-3">
+                  <div className="flex flex-wrap gap-2 mb-4">
                     {result.acceptsNewPatients && (
                       <Badge variant="outline" className="text-blue-600 border-blue-600 text-xs">
+                        <CheckCircle className="w-3 h-3 mr-1" />
                         New patients
                       </Badge>
                     )}
                     {result.acceptsInsurance && (
                       <Badge variant="outline" className="text-purple-600 border-purple-600 text-xs">
+                        <CreditCard className="w-3 h-3 mr-1" />
                         Insurance
                       </Badge>
                     )}
@@ -270,18 +279,18 @@ const SearchResults = ({
                       <Button
                         onClick={() => onBookAppointment(result)}
                         size="sm"
-                        className="flex-1 text-xs"
+                        className="flex-1 text-sm"
                       >
-                        <Calendar className="w-3 h-3 mr-1" />
+                        <Calendar className="w-4 h-4 mr-2" />
                         Book Appointment
                       </Button>
                     ) : (
                       <Button
                         onClick={() => onViewPractice(result)}
                         size="sm"
-                        className="flex-1 text-xs"
+                        className="flex-1 text-sm"
                       >
-                        <Calendar className="w-3 h-3 mr-1" />
+                        <Calendar className="w-4 h-4 mr-2" />
                         Book Appointment
                       </Button>
                     )}
@@ -289,7 +298,7 @@ const SearchResults = ({
                       onClick={() => result.type === 'doctor' ? onBookAppointment(result) : onViewPractice(result)}
                       variant="outline"
                       size="sm"
-                      className="text-xs"
+                      className="text-sm"
                     >
                       View Profile
                     </Button>
@@ -300,15 +309,6 @@ const SearchResults = ({
           </Card>
         ))}
       </div>
-
-      {/* Load More */}
-      {results.length >= 10 && (
-        <div className="text-center pt-4">
-          <Button variant="outline">
-            Load more results
-          </Button>
-        </div>
-      )}
     </div>
   );
 };

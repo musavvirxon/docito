@@ -40,6 +40,10 @@ import { useMedicalRecords } from "@/hooks/useMedicalRecords";
 import { useMedicationReminders } from "@/hooks/useMedicationReminders";
 import { RealTimeProcedureNotification } from "@/components/appointment/RealTimeProcedureNotification";
 import { MedicationReminderDashboard } from "@/components/medication/MedicationReminderDashboard";
+import SearchBar from "@/components/patient/SearchBar";
+import SearchResults from "@/components/patient/SearchResults";
+import { useDoctors } from "@/hooks/useDoctors";
+import { usePractices } from "@/hooks/usePractices";
 
 interface Appointment {
   id: string;
@@ -199,6 +203,101 @@ const PatientDashboard = () => {
       title: "Book Follow-up",
       description: `Searching for available appointments with ${doctorName}`,
     });
+  };
+
+  // Patient Search Section Component
+  const PatientSearchSection = () => {
+    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const { searchDoctors } = useDoctors();
+    const { searchPractices } = usePractices();
+
+    const handleSearch = async (results: any[]) => {
+      setIsLoading(true);
+      
+      try {
+        if (results && results.length > 0) {
+          // Transform results to match the SearchResult interface from patient/SearchResults
+          const transformedResults = results.map(result => ({
+            id: result.id,
+            type: result.type,
+            name: result.name,
+            specialty: result.specialty,
+            location: result.location,
+            rating: result.rating,
+            reviewCount: result.reviewCount,
+            availability: result.availability,
+            acceptsInsurance: result.acceptsInsurance,
+            acceptsNewPatients: result.acceptsNewPatients,
+            distance: result.distance,
+            image: result.image,
+            bio: result.bio,
+            experience: result.experience,
+            languages: result.languages,
+            practiceName: result.practiceName,
+            degree: result.degree,
+            consultationFee: result.consultationFee,
+            practiceType: result.practiceType,
+            description: result.description,
+            specialties: result.specialties,
+            doctorCount: result.doctorCount,
+            logoUrl: result.logoUrl,
+            affiliatedPractice: result.affiliatedPractice
+          }));
+          setSearchResults(transformedResults);
+        } else {
+          setSearchResults([]);
+        }
+      } catch (error) {
+        console.error('Search error:', error);
+        setSearchResults([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const handleBookAppointment = (result: any) => {
+      navigate('/appointment-booking', { 
+        state: { 
+          doctorId: result.id, 
+          doctorName: result.name,
+          specialty: result.specialty 
+        } 
+      });
+    };
+
+    const handleViewPractice = (result: any) => {
+      navigate(`/practices/${result.id}`);
+    };
+
+    const handleFavorite = (result: any) => {
+      toast({
+        title: "Added to Favorites",
+        description: `${result.name} has been added to your favorites.`,
+      });
+    };
+
+    return (
+      <div className="space-y-6">
+        <h2 className="text-3xl font-bold">Find Healthcare Providers</h2>
+        
+        <SearchBar 
+          onSearch={handleSearch}
+          showResultsInline={true}
+          className="max-w-4xl"
+        />
+
+        {searchResults.length > 0 && (
+          <SearchResults
+            results={searchResults}
+            isLoading={isLoading}
+            onBookAppointment={handleBookAppointment}
+            onViewPractice={handleViewPractice}
+            onFavorite={handleFavorite}
+          />
+        )}
+      </div>
+    );
   };
 
   const AppointmentCard = ({ appointment, isPast = false }: { appointment: Appointment; isPast?: boolean }) => (
@@ -492,12 +591,7 @@ const PatientDashboard = () => {
         );
 
       case "search":
-        return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold">Find Doctors</h2>
-            <p className="text-muted-foreground">Search functionality coming soon with enhanced backend integration</p>
-          </div>
-        );
+        return <PatientSearchSection />;
 
       case "settings":
         return (

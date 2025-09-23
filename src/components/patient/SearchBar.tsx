@@ -125,54 +125,57 @@ const SearchBar = ({ onSearch, className, initialQuery, showResultsInline = fals
       try {
         const [doctorsResults, practicesResults] = await Promise.all([
           searchDoctors(doctorQuery, locationQuery),
-          searchPractices(practiceQuery, locationQuery)
+          searchPractices(practiceQuery || practiceQuery, locationQuery)
         ]);
 
-        // Transform results to match interface
+        // Transform results to match interface with enhanced data
         const transformedResults: SearchResult[] = [
           ...doctorsResults.map(doctor => ({
             id: doctor.id,
             type: "doctor" as const,
-            name: doctor.profiles ? (doctor.profiles as any).full_name || "Doctor" : "Doctor",
+            name: doctor.profiles ? (doctor.profiles as any).full_name || "Dr. Professional" : `Dr. ${doctor.specialty} Specialist`,
+            image: doctor.profiles ? (doctor.profiles as any).avatar_url : undefined,
             specialty: doctor.specialty,
-            location: doctor.practices ? `${(doctor.practices as any).city || "City"}, ${(doctor.practices as any).country || "Country"}` : "Location",
+            degree: doctor.license_number ? doctor.license_number : 'MD',
             rating: doctor.weighted_rating || doctor.average_rating || 4.8,
-            availability: "Available today",
-            acceptsInsurance: true,
+            reviewCount: doctor.num_reviews || 0,
+            affiliatedPractice: doctor.practices ? (doctor.practices as any).name : 'Independent Doctor',
+            location: doctor.practices ? `${(doctor.practices as any).city || 'City'}, ${(doctor.practices as any).country || 'Country'}` : 'Location not specified',
+            consultationFee: doctor.consultation_fee,
+            languages: ['English'], // Default language
+            bio: doctor.bio || 'Experienced medical professional',
+            availability: doctor.accepts_new_patients ? "Accepting new patients" : "Not accepting new patients",
+            acceptsInsurance: true, // Default for now
             acceptsNewPatients: doctor.accepts_new_patients,
-            distance: "0.8 miles"
+            distance: '0.5 mi'
           })),
           ...practicesResults.map(practice => ({
             id: practice.id,
             type: "practice" as const,
             name: practice.name,
-            location: `${practice.city || "City"}, ${practice.country || "Country"}`,
+            image: practice.logo_url,
+            practiceType: 'Medical Practice',
+            description: practice.description || 'Quality healthcare services',
+            location: `${practice.city || 'City'}, ${practice.country || 'Country'}`,
+            specialties: ['General Medicine', 'Family Practice'], // Default specialties
             rating: practice.weighted_rating || practice.average_rating || 4.7,
-            acceptsInsurance: true,
-            acceptsNewPatients: true,
-            distance: "1.2 miles"
+            reviewCount: practice.num_reviews || 0,
+            doctorCount: 5, // Default doctor count
+            acceptsInsurance: true, // Default for now
+            acceptsNewPatients: true, // Default for now
+            availability: 'Open Today',
+            distance: '1.0 mi'
           }))
         ];
 
+        // Sort results by rating
+        transformedResults.sort((a, b) => b.rating - a.rating);
+        
         onSearch(transformedResults);
       } catch (error) {
         console.error('Search error:', error);
-        // Fallback to mock results
-        const mockResults: SearchResult[] = [
-          {
-            id: "1",
-            type: "doctor",
-            name: "Dr. Sarah Johnson",
-            specialty: "Cardiologist",
-            location: "Manchester Medical Center, NH",
-            rating: 4.9,
-            availability: "Available today",
-            acceptsInsurance: true,
-            acceptsNewPatients: true,
-            distance: "0.8 miles"
-          }
-        ];
-        onSearch(mockResults);
+        // Don't fallback to mock results, show empty results instead to maintain real data integrity
+        onSearch([]);
       } finally {
         setIsLoading(false);
       }
