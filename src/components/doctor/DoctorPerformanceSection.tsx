@@ -4,13 +4,32 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart3, TrendingUp, Users, Calendar, Star, DollarSign, Clock, Award } from "lucide-react";
 
-const DoctorPerformanceSection = () => {
+interface DoctorPerformanceSectionProps {
+  doctorProfile: {
+    id: string;
+    specialty: string;
+    verified: boolean;
+    average_rating: number;
+    num_reviews: number;
+    appointment_count: number;
+  };
+  stats: {
+    totalPatients: number;
+    totalAppointments: number;
+    totalRevenue: number;
+    averageRating: number;
+    numReviews: number;
+    profileCompletion: number;
+  };
+}
+
+const DoctorPerformanceSection = ({ doctorProfile, stats }: DoctorPerformanceSectionProps) => {
   const performanceData = {
-    totalAppointments: 124,
-    totalPatients: 89,
-    averageRating: 4.8,
-    totalReviews: 67,
-    monthlyRevenue: 12450,
+    totalAppointments: stats.totalAppointments,
+    totalPatients: stats.totalPatients,
+    averageRating: stats.averageRating,
+    totalReviews: stats.numReviews,
+    monthlyRevenue: stats.totalRevenue,
     averageSessionLength: 45,
     completionRate: 96,
     responseTime: 12 // hours
@@ -73,7 +92,7 @@ const DoctorPerformanceSection = () => {
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{performanceData.averageRating}</div>
+            <div className="text-2xl font-bold">{performanceData.averageRating.toFixed(1)}</div>
             <p className="text-xs text-muted-foreground">
               Based on {performanceData.totalReviews} reviews
             </p>

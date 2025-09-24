@@ -510,3 +510,99 @@ export const storageApi = {
     return data.publicUrl;
   }
 };
+
+// Doctor Dashboard API
+export const doctorDashboardApi = {
+  async fetchDoctorProfile(userId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('doctors')
+        .select(`
+          *,
+          profiles:user_id (
+            full_name,
+            email,
+            avatar_url,
+            phone
+          ),
+          practices:practice_id (
+            name,
+            city,
+            country,
+            verified
+          )
+        `)
+        .eq('user_id', userId)
+        .single();
+
+      if (error) throw error;
+      return { data, success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to fetch doctor profile');
+    }
+  },
+
+  async fetchTodaysAppointments(doctorId: string) {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      const { data, error } = await supabase
+        .from('appointments')
+        .select(`
+          id,
+          appointment_date,
+          start_time,
+          end_time,
+          status,
+          notes,
+          profiles:patient_id (
+            full_name
+          )
+        `)
+        .eq('doctor_id', doctorId)
+        .eq('appointment_date', today)
+        .order('start_time', { ascending: true });
+
+      if (error) throw error;
+      return { data: data || [], success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to fetch today\'s appointments');
+    }
+  },
+
+  async fetchPerformanceStats(doctorId: string) {
+    try {
+      // Get unique patients count
+      const { data: appointments } = await supabase
+        .from('appointments')
+        .select('patient_id, status')
+        .eq('doctor_id', doctorId)
+        .neq('status', 'canceled');
+
+      const uniquePatients = new Set(appointments?.map(a => a.patient_id) || []);
+      const completedAppointments = appointments?.filter(a => a.status === 'completed') || [];
+
+      // Get doctor profile for additional stats
+      const { data: doctorProfile } = await supabase
+        .from('doctors')
+        .select('appointment_count, average_rating, num_reviews, consultation_fee')
+        .eq('id', doctorId)
+        .single();
+
+      const revenue = completedAppointments.length * (doctorProfile?.consultation_fee || 150);
+
+      return {
+        data: {
+          totalPatients: uniquePatients.size,
+          totalAppointments: doctorProfile?.appointment_count || 0,
+          totalRevenue: revenue,
+          averageRating: doctorProfile?.average_rating || 0,
+          numReviews: doctorProfile?.num_reviews || 0,
+        },
+        success: true
+      };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to fetch performance stats');
+    }
+  }
+};

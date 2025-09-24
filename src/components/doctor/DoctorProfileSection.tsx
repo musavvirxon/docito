@@ -12,17 +12,36 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload, CheckCircle, AlertCircle, Clock } from "lucide-react";
 
 interface DoctorProfileSectionProps {
-  doctorData: {
-    name: string;
+  doctorProfile: {
+    id: string;
+    user_id: string;
     specialty: string;
+    bio?: string;
     verified: boolean;
-    profileCompletion: number;
+    license_number?: string;
+    consultation_fee?: number;
+    average_rating: number;
+    num_reviews: number;
+    profiles?: {
+      full_name: string;
+      email: string;
+      avatar_url?: string;
+      phone?: string;
+    };
+    practices?: {
+      name: string;
+      city: string;
+      country: string;
+      verified: boolean;
+    };
   };
 }
 
-const DoctorProfileSection = ({ doctorData }: DoctorProfileSectionProps) => {
+const DoctorProfileSection = ({ doctorProfile }: DoctorProfileSectionProps) => {
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(["English", "Spanish"]);
-  const [verificationStatus, setVerificationStatus] = useState<"pending" | "verified" | "rejected">("pending");
+  const [verificationStatus, setVerificationStatus] = useState<"pending" | "verified" | "rejected">(
+    doctorProfile.verified ? "verified" : "pending"
+  );
 
   const specialties = [
     "Cardiology", "Dermatology", "Family Medicine", "Internal Medicine", "Pediatrics",
@@ -84,9 +103,9 @@ const DoctorProfileSection = ({ doctorData }: DoctorProfileSectionProps) => {
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span>Progress</span>
-              <span className="font-medium">{doctorData.profileCompletion}%</span>
+              <span className="font-medium">85%</span>
             </div>
-            <Progress value={doctorData.profileCompletion} className="h-2" />
+            <Progress value={85} className="h-2" />
           </div>
         </CardHeader>
       </Card>
@@ -99,8 +118,10 @@ const DoctorProfileSection = ({ doctorData }: DoctorProfileSectionProps) => {
         <CardContent className="space-y-6">
           <div className="flex items-center space-x-6">
             <Avatar className="h-24 w-24">
-              <AvatarImage src="/api/placeholder/96/96" />
-              <AvatarFallback className="text-lg">SJ</AvatarFallback>
+              <AvatarImage src={doctorProfile.profiles?.avatar_url} />
+              <AvatarFallback className="text-lg">
+                {doctorProfile.profiles?.full_name?.charAt(0) || 'DR'}
+              </AvatarFallback>
             </Avatar>
             <div className="space-y-2">
               <Button variant="outline" size="sm">
@@ -114,7 +135,7 @@ const DoctorProfileSection = ({ doctorData }: DoctorProfileSectionProps) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Label htmlFor="fullName">Full Name (Optional)</Label>
-              <Input id="fullName" defaultValue="Dr. Sarah Johnson" />
+              <Input id="fullName" defaultValue={doctorProfile.profiles?.full_name || ''} />
             </div>
             <div>
               <Label htmlFor="degree">Degree/Certifications</Label>
@@ -125,7 +146,7 @@ const DoctorProfileSection = ({ doctorData }: DoctorProfileSectionProps) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Label htmlFor="specialty">Specialty *</Label>
-              <Select defaultValue="cardiology">
+              <Select defaultValue={doctorProfile.specialty.toLowerCase()}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -162,7 +183,7 @@ const DoctorProfileSection = ({ doctorData }: DoctorProfileSectionProps) => {
               id="bio" 
               placeholder="Tell patients about your experience, approach to care, and what makes you unique..."
               className="min-h-[100px]"
-              defaultValue="Experienced cardiologist with 8 years of practice. Specialized in preventive cardiology and heart disease management."
+              defaultValue={doctorProfile.bio || ''}
             />
           </div>
 
@@ -194,7 +215,7 @@ const DoctorProfileSection = ({ doctorData }: DoctorProfileSectionProps) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Label htmlFor="license">Medical License Number</Label>
-              <Input id="license" placeholder="License number" />
+              <Input id="license" placeholder="License number" defaultValue={doctorProfile.license_number || ''} />
             </div>
             <div>
               <Label htmlFor="npi">NPI Number</Label>
@@ -217,11 +238,12 @@ const DoctorProfileSection = ({ doctorData }: DoctorProfileSectionProps) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Label htmlFor="defaultPrice">Default Consultation Price</Label>
-              <Input id="defaultPrice" placeholder="$150" />
+              <Input id="defaultPrice" placeholder="$150" defaultValue={doctorProfile.consultation_fee ? `$${doctorProfile.consultation_fee}` : ''} />
             </div>
             <div>
               <Label htmlFor="location">Primary Location</Label>
-              <Input id="location" placeholder="City, State" defaultValue="New York, NY" />
+              <Input id="location" placeholder="City, State" 
+                defaultValue={doctorProfile.practices ? `${doctorProfile.practices.city}, ${doctorProfile.practices.country}` : ''} />
             </div>
           </div>
         </CardContent>

@@ -28,27 +28,48 @@ import AssignedPatientsSection from "@/components/doctor/AssignedPatientsSection
 import InternalMessagingSection from "@/components/doctor/InternalMessagingSection";
 import TreatmentPlanningSection from "@/components/doctor/TreatmentPlanningSection";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useDoctorDashboard } from "@/hooks/useDoctorDashboard";
+import { authApi } from "@/lib/api/supabase-api";
 
 type DoctorStatus = "independent" | "clinic-member";
 
 const DoctorDashboard = () => {
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
+  const { doctorProfile, stats, recentAppointments, todaysAppointments, loading, error } = useDoctorDashboard();
   const [activeSection, setActiveSection] = useState("dashboard");
-  const [doctorStatus] = useState<DoctorStatus>("independent"); // This would come from user state
+
+  const doctorStatus: DoctorStatus = doctorProfile?.practice_id ? "clinic-member" : "independent";
   
-  // Mock data - would come from API/database
-  const doctorData = {
-    name: "Dr. Sarah Johnson",
-    specialty: "Cardiologist",
-    verified: true,
-    profileCompletion: 85,
-    clinic: doctorStatus === "clinic-member" ? {
-      name: "Metro Medical Center",
-      location: "Downtown, NY",
-      verified: true,
-      assignedServices: ["Cardiology Consultation", "ECG", "Stress Test"]
-    } : null
+  const handleLogout = async () => {
+    await authApi.signOut();
+    navigate('/');
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !doctorProfile) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-destructive">Error loading dashboard: {error}</p>
+          <Button onClick={() => window.location.reload()} className="mt-4">
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const sidebarItems = doctorStatus === "independent" 
     ? [
@@ -82,21 +103,21 @@ const DoctorDashboard = () => {
   const renderContent = () => {
     switch (activeSection) {
       case "profile":
-        return <DoctorProfileSection doctorData={doctorData} />;
+        return <DoctorProfileSection doctorProfile={doctorProfile} />;
       case "services":
         return <DoctorServicesSection />;
       case "assigned-services":
-        return <DoctorServicesSection readOnly={true} assignedServices={doctorData.clinic?.assignedServices} />;
+        return <DoctorServicesSection readOnly={true} assignedServices={doctorProfile.practices?.name ? ["Clinic Services"] : []} />;
       case "schedule":
-        navigate("/dashboard/schedule");
+        navigate("/doctor-schedule-settings");
         return null;
       case "procedures":
-        navigate("/dashboard/procedures");
+        navigate("/doctor-procedures");
         return null;
       case "calendar":
-        return <DoctorCalendarSection doctorStatus={doctorStatus} />;
+        return <DoctorCalendarSection doctorStatus={doctorStatus} todaysAppointments={todaysAppointments} />;
       case "performance":
-        return <DoctorPerformanceSection />;
+        return <DoctorPerformanceSection doctorProfile={doctorProfile} stats={stats} />;
       case "clinic-finder":
         return <ClinicFinderSection />;
       case "assigned-patients":
@@ -114,7 +135,7 @@ const DoctorDashboard = () => {
         return (
           <div className="space-y-6">
             {/* Clinic Profile Card (for clinic members) */}
-            {doctorStatus === "clinic-member" && doctorData.clinic && (
+            {doctorStatus === "clinic-member" && doctorProfile.practices && (
               <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -124,8 +145,8 @@ const DoctorDashboard = () => {
                       </div>
                       <div>
                         <CardTitle className="flex items-center gap-2">
-                          {doctorData.clinic.name}
-                          {doctorData.clinic.verified && (
+                          {doctorProfile.practices.name}
+                          {doctorProfile.practices.verified && (
                             <Badge variant="secondary" className="bg-green-100 text-green-700">
                               Verified
                             </Badge>
@@ -133,7 +154,7 @@ const DoctorDashboard = () => {
                         </CardTitle>
                         <p className="text-muted-foreground flex items-center gap-1">
                           <MapPin className="w-4 h-4" />
-                          {doctorData.clinic.location}
+                          {doctorProfile.practices.city}, {doctorProfile.practices.country}
                         </p>
                       </div>
                     </div>
@@ -148,7 +169,7 @@ const DoctorDashboard = () => {
             )}
 
             {/* Verification Status (for independent doctors) */}
-            {doctorStatus === "independent" && (
+            {doctorStatus === "independent" && !doctorProfile.verified && (
               <Card className="border-amber-200 bg-amber-50">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-amber-800">
@@ -160,10 +181,10 @@ const DoctorDashboard = () => {
                     To go public and appear in search results, your verification must be completed.
                   </p>
                   <div className="flex gap-2 mt-4">
-                    <Button size="sm" className="bg-amber-600 hover:bg-amber-700">
+                    <Button size="sm" className="bg-amber-600 hover:bg-amber-700" onClick={() => setActiveSection("profile")}>
                       Upload Documents
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => setActiveSection("profile")}>
                       Submit for Verification
                     </Button>
                   </div>
@@ -178,9 +199,9 @@ const DoctorDashboard = () => {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Complete your profile to get more bookings</span>
-                    <span className="font-medium">{doctorData.profileCompletion}%</span>
+                    <span className="font-medium">{stats.profileCompletion}%</span>
                   </div>
-                  <Progress value={doctorData.profileCompletion} className="h-2" />
+                  <Progress value={stats.profileCompletion} className="h-2" />
                 </div>
               </CardHeader>
             </Card>
@@ -189,12 +210,12 @@ const DoctorDashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
+                  <CardTitle className="text-sm font-medium">Total Appointments</CardTitle>
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">124</div>
-                  <p className="text-xs text-muted-foreground">+12% from last month</p>
+                  <div className="text-2xl font-bold">{stats.totalAppointments}</div>
+                  <p className="text-xs text-muted-foreground">All time bookings</p>
                 </CardContent>
               </Card>
 
@@ -204,8 +225,8 @@ const DoctorDashboard = () => {
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">89</div>
-                  <p className="text-xs text-muted-foreground">+8 new this month</p>
+                  <div className="text-2xl font-bold">{stats.totalPatients}</div>
+                  <p className="text-xs text-muted-foreground">Unique patients served</p>
                 </CardContent>
               </Card>
 
@@ -215,8 +236,8 @@ const DoctorDashboard = () => {
                   <BarChart3 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">4.8</div>
-                  <p className="text-xs text-muted-foreground">Based on 67 reviews</p>
+                  <div className="text-2xl font-bold">{stats.averageRating.toFixed(1)}</div>
+                  <p className="text-xs text-muted-foreground">Based on {stats.numReviews} reviews</p>
                 </CardContent>
               </Card>
 
@@ -226,8 +247,8 @@ const DoctorDashboard = () => {
                   <BarChart3 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">$12,450</div>
-                  <p className="text-xs text-muted-foreground">This month</p>
+                  <div className="text-2xl font-bold">${stats.totalRevenue.toLocaleString()}</div>
+                  <p className="text-xs text-muted-foreground">Total earnings</p>
                 </CardContent>
               </Card>
             </div>
@@ -239,22 +260,34 @@ const DoctorDashboard = () => {
                   <CardTitle>Recent Appointments</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {[1, 2, 3].map((item) => (
-                    <div key={item} className="flex items-center space-x-4">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={`/api/placeholder/32/32?text=P${item}`} />
-                        <AvatarFallback>P{item}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 space-y-1">
-                        <p className="text-sm font-medium">Patient {item}</p>
-                        <p className="text-xs text-muted-foreground">
-                          <Clock className="w-3 h-3 inline mr-1" />
-                          Today at {10 + item}:00 AM
-                        </p>
+                  {recentAppointments.length > 0 ? (
+                    recentAppointments.map((appointment) => (
+                      <div key={appointment.id} className="flex items-center space-x-4">
+                        <Avatar className="h-8 w-8">
+                          <AvatarFallback>
+                            {appointment.patient_name?.charAt(0) || 'P'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 space-y-1">
+                          <p className="text-sm font-medium">{appointment.patient_name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            <Clock className="w-3 h-3 inline mr-1" />
+                            {new Date(appointment.appointment_date).toLocaleDateString()} at {appointment.start_time}
+                          </p>
+                        </div>
+                        <Badge variant="outline" className={
+                          appointment.status === 'completed' ? 'bg-green-100 text-green-700' :
+                          appointment.status === 'confirmed' ? 'bg-blue-100 text-blue-700' :
+                          appointment.status === 'canceled' ? 'bg-red-100 text-red-700' :
+                          'bg-gray-100 text-gray-700'
+                        }>
+                          {appointment.status}
+                        </Badge>
                       </div>
-                      <Badge variant="outline">Scheduled</Badge>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p className="text-muted-foreground text-sm">No recent appointments</p>
+                  )}
                 </CardContent>
               </Card>
 
@@ -269,12 +302,12 @@ const DoctorDashboard = () => {
                     onClick={() => setActiveSection("calendar")}
                   >
                     <Calendar className="w-4 h-4 mr-2" />
-                    View Today's Schedule
+                    View Today's Schedule ({todaysAppointments.length})
                   </Button>
                   <Button 
                     className="w-full justify-start" 
                     variant="outline"
-                    onClick={() => setActiveSection("schedule")}
+                    onClick={() => navigate("/doctor-schedule-settings")}
                   >
                     <Clock className="w-4 h-4 mr-2" />
                     Manage Schedule
@@ -282,7 +315,7 @@ const DoctorDashboard = () => {
                   <Button 
                     className="w-full justify-start" 
                     variant="outline"
-                    onClick={() => setActiveSection("procedures")}
+                    onClick={() => navigate("/doctor-procedures")}
                   >
                     <Briefcase className="w-4 h-4 mr-2" />
                     Update Procedures
@@ -338,8 +371,8 @@ const DoctorDashboard = () => {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="text-lg font-semibold">Welcome back, {doctorData.name}</h1>
-                  <p className="text-sm text-muted-foreground">{doctorData.specialty}</p>
+                  <h1 className="text-lg font-semibold">Welcome back, {doctorProfile.profiles?.full_name || 'Doctor'}</h1>
+                  <p className="text-sm text-muted-foreground">{doctorProfile.specialty}</p>
                 </div>
               </div>
               
@@ -347,7 +380,7 @@ const DoctorDashboard = () => {
                 <Button variant="ghost" size="sm">
                   <Bell className="w-4 h-4" />
                 </Button>
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" onClick={handleLogout}>
                   <LogOut className="w-4 h-4" />
                 </Button>
               </div>

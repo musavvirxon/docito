@@ -10,6 +10,13 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 
 interface DoctorCalendarSectionProps {
   doctorStatus: "independent" | "clinic-member";
+  todaysAppointments?: {
+    id: string;
+    start_time: string;
+    end_time: string;
+    patient_name?: string;
+    status: string;
+  }[];
 }
 
 interface TimeSlot {
@@ -28,7 +35,7 @@ interface WorkingHours {
   };
 }
 
-const DoctorCalendarSection = ({ doctorStatus }: DoctorCalendarSectionProps) => {
+const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [] }: DoctorCalendarSectionProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [workingHours, setWorkingHours] = useState<WorkingHours>({
     monday: { enabled: true, start: "09:00", end: "17:00" },
@@ -40,16 +47,37 @@ const DoctorCalendarSection = ({ doctorStatus }: DoctorCalendarSectionProps) => 
     sunday: { enabled: false, start: "09:00", end: "13:00" }
   });
   
-  const [timeSlots] = useState<TimeSlot[]>([
-    { id: "1", time: "09:00", patient: "John Smith", service: "Cardiology Consultation", status: "booked" },
-    { id: "2", time: "10:00", status: "available" },
-    { id: "3", time: "11:00", patient: "Sarah Johnson", service: "ECG Test", status: "booked" },
-    { id: "4", time: "12:00", status: "blocked" },
-    { id: "5", time: "13:00", status: "available" },
-    { id: "6", time: "14:00", status: "available" },
-    { id: "7", time: "15:00", patient: "Mike Wilson", service: "Follow-up", status: "booked" },
-    { id: "8", time: "16:00", status: "available" }
-  ]);
+  // Convert today's appointments to time slots
+  const generateTimeSlots = (): TimeSlot[] => {
+    const slots: TimeSlot[] = [];
+    const startHour = 9;
+    const endHour = 17;
+    
+    for (let hour = startHour; hour < endHour; hour++) {
+      const timeString = `${hour.toString().padStart(2, '0')}:00`;
+      const appointment = todaysAppointments.find(apt => apt.start_time === timeString);
+      
+      if (appointment) {
+        slots.push({
+          id: appointment.id,
+          time: timeString,
+          patient: appointment.patient_name,
+          service: "Consultation",
+          status: appointment.status === 'confirmed' ? "booked" : appointment.status as any
+        });
+      } else {
+        slots.push({
+          id: `slot-${hour}`,
+          time: timeString,
+          status: "available"
+        });
+      }
+    }
+    
+    return slots;
+  };
+
+  const [timeSlots] = useState<TimeSlot[]>(generateTimeSlots());
 
   const [slotDuration, setSlotDuration] = useState("60");
   const [bufferTime, setBufferTime] = useState("15");
