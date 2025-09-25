@@ -65,12 +65,20 @@ export const useDoctorDashboard = () => {
   const [todaysAppointments, setTodaysAppointments] = useState<RecentAppointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   const fetchDoctorProfile = async () => {
     if (!user || profile?.role !== 'doctor') return;
 
     try {
-      const { data, error } = await supabase
+      setError(null);
+      
+      // Use timeout to prevent endless loading
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Request timeout')), 10000)
+      );
+
+      const queryPromise = supabase
         .from('doctors')
         .select(`
           *,
@@ -88,13 +96,52 @@ export const useDoctorDashboard = () => {
           )
         `)
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle(); // Use maybeSingle to handle cases where no doctor record exists
 
-      if (error) throw error;
-      setDoctorProfile(data);
+      const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
+
+      if (error) {
+        if (error.code === 'PGRST116' || !data) {
+          // No doctor profile exists, create one
+          const { data: newDoctor, error: createError } = await supabase
+            .from('doctors')
+            .insert({
+              user_id: user.id,
+              specialty: 'General Practice',
+              verified: false,
+              accepts_new_patients: true
+            })
+            .select(`
+              *,
+              profiles:user_id (
+                full_name,
+                email,
+                avatar_url,
+                phone
+              ),
+              practices:practice_id (
+                name,
+                city,
+                country,
+                verified
+              )
+            `)
+            .single();
+
+          if (createError) throw createError;
+          setDoctorProfile(newDoctor);
+          return;
+        }
+        throw error;
+      }
+      
+      if (data) {
+        setDoctorProfile(data);
+      }
     } catch (err: any) {
       console.error('Error fetching doctor profile:', err);
-      setError(err.message);
+      setError(err.message || 'Failed to load doctor profile');
+      toast.error(`Error loading doctor profile: ${err.message}`);
     }
   };
 
@@ -102,8 +149,12 @@ export const useDoctorDashboard = () => {
     if (!user || !doctorProfile) return;
 
     try {
-      // Fetch recent appointments
-      const { data: appointments, error: appointmentsError } = await supabase
+      // Use timeout for appointments fetch
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Appointments fetch timeout')), 8000)
+      );
+
+      const queryPromise = supabase
         .from('appointments')
         .select(`
           id,
@@ -120,6 +171,8 @@ export const useDoctorDashboard = () => {
         .order('appointment_date', { ascending: false })
         .order('start_time', { ascending: false })
         .limit(10);
+
+      const { data: appointments, error: appointmentsError } = await Promise.race([queryPromise, timeoutPromise]) as any;
 
       if (appointmentsError) throw appointmentsError;
 
@@ -144,7 +197,9 @@ export const useDoctorDashboard = () => {
 
     } catch (err: any) {
       console.error('Error fetching appointments:', err);
-      setError(err.message);
+      // Don't set error for appointments - it's not critical for dashboard loading
+      setRecentAppointments([]);
+      setTodaysAppointments([]);
     }
   };
 
@@ -152,23 +207,32 @@ export const useDoctorDashboard = () => {
     if (!user || !doctorProfile) return;
 
     try {
+      // Use timeout for stats calculation
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Stats calculation timeout')), 8000)
+      );
+
       // Get total unique patients
-      const { data: patients, error: patientsError } = await supabase
+      const patientsPromise = supabase
         .from('appointments')
         .select('patient_id')
         .eq('doctor_id', doctorProfile.id)
         .neq('status', 'canceled');
+
+      const { data: patients, error: patientsError } = await Promise.race([patientsPromise, timeoutPromise]) as any;
 
       if (patientsError) throw patientsError;
       
       const uniquePatients = new Set(patients?.map(p => p.patient_id) || []);
 
       // Calculate revenue from completed appointments
-      const { data: completedAppointments, error: revenueError } = await supabase
+      const revenuePromise = supabase
         .from('appointments')
         .select('id')
         .eq('doctor_id', doctorProfile.id)
         .eq('status', 'completed');
+
+      const { data: completedAppointments, error: revenueError } = await Promise.race([revenuePromise, timeoutPromise]) as any;
 
       if (revenueError) throw revenueError;
 
@@ -188,7 +252,15 @@ export const useDoctorDashboard = () => {
 
     } catch (err: any) {
       console.error('Error calculating stats:', err);
-      setError(err.message);
+      // Don't set error for stats - use defaults instead
+      setStats({
+        totalPatients: 0,
+        totalAppointments: doctorProfile.appointment_count || 0,
+        totalRevenue: 0,
+        averageRating: doctorProfile.average_rating || 0,
+        numReviews: doctorProfile.num_reviews || 0,
+        profileCompletion: calculateProfileCompletion(doctorProfile),
+      });
     }
   };
 
@@ -230,6 +302,13 @@ export const useDoctorDashboard = () => {
     }
   };
 
+  const retryFetch = async () => {
+    setRetryCount(prev => prev + 1);
+    setLoading(true);
+    setError(null);
+    await fetchDoctorProfile();
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       if (!user || profile?.role !== 'doctor') {
@@ -242,14 +321,21 @@ export const useDoctorDashboard = () => {
     };
 
     fetchData();
-  }, [user, profile]);
+  }, [user, profile, retryCount]);
 
   useEffect(() => {
-    if (doctorProfile) {
-      fetchAppointments();
-      calculateStats();
-    }
-    setLoading(false);
+    const fetchSecondaryData = async () => {
+      if (doctorProfile) {
+        // Fetch appointments and stats in parallel
+        await Promise.allSettled([
+          fetchAppointments(),
+          calculateStats()
+        ]);
+      }
+      setLoading(false);
+    };
+
+    fetchSecondaryData();
   }, [doctorProfile]);
 
   return {
@@ -260,10 +346,18 @@ export const useDoctorDashboard = () => {
     loading,
     error,
     updateDoctorProfile,
+    retryFetch,
     refreshData: async () => {
+      setLoading(true);
+      setError(null);
       await fetchDoctorProfile();
-      await fetchAppointments();
-      await calculateStats();
+      if (doctorProfile) {
+        await Promise.allSettled([
+          fetchAppointments(),
+          calculateStats()
+        ]);
+      }
+      setLoading(false);
     }
   };
 };

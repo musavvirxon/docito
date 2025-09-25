@@ -151,11 +151,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signUp = async (email: string, password: string, userData: any = {}) => {
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: `${window.location.origin}/dashboard`,
           data: {
             full_name: userData.fullName || email,
             role: userData.role || 'patient'
@@ -165,7 +165,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (error) throw error;
       
-      toast.success('Account created successfully! Please check your email to verify your account.');
+      // If user is immediately confirmed (development/testing), redirect them
+      if (data.user && !data.user.email_confirmed_at) {
+        toast.success('Account created successfully! Please check your email to verify your account.');
+      } else if (data.user && userData.role === 'doctor') {
+        toast.success('Doctor account created! Redirecting to complete your profile...');
+        // Auto-redirect to doctor setup after successful signup
+        setTimeout(() => {
+          window.location.href = '/doctor-signup';
+        }, 1500);
+      } else {
+        toast.success('Account created successfully!');
+      }
+      
       return {};
     } catch (error: any) {
       toast.error(error.message || 'Failed to create account');

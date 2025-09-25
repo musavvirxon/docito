@@ -37,7 +37,7 @@ type DoctorStatus = "independent" | "clinic-member";
 const DoctorDashboard = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
-  const { doctorProfile, stats, recentAppointments, todaysAppointments, loading, error } = useDoctorDashboard();
+  const { doctorProfile, stats, recentAppointments, todaysAppointments, loading, error, retryFetch } = useDoctorDashboard();
   const [activeSection, setActiveSection] = useState("dashboard");
 
   const doctorStatus: DoctorStatus = doctorProfile?.practice_id ? "clinic-member" : "independent";
@@ -53,6 +53,7 @@ const DoctorDashboard = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
+          <p className="text-sm text-muted-foreground mt-2">If this takes too long, please refresh the page</p>
         </div>
       </div>
     );
@@ -61,11 +62,32 @@ const DoctorDashboard = () => {
   if (error || !doctorProfile) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <p className="text-destructive">Error loading dashboard: {error}</p>
-          <Button onClick={() => window.location.reload()} className="mt-4">
-            Retry
-          </Button>
+        <div className="text-center max-w-md">
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold text-destructive mb-2">Dashboard Loading Error</h2>
+            <p className="text-muted-foreground mb-4">
+              {error || 'Unable to load your doctor profile. This might be because your doctor account is not fully set up.'}
+            </p>
+          </div>
+          <div className="space-y-2">
+            <Button onClick={retryFetch} className="w-full">
+              Retry Loading
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/doctor-signup')} 
+              className="w-full"
+            >
+              Complete Profile Setup
+            </Button>
+            <Button 
+              variant="ghost" 
+              onClick={() => window.location.reload()} 
+              className="w-full"
+            >
+              Refresh Page
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -181,11 +203,11 @@ const DoctorDashboard = () => {
                     To go public and appear in search results, your verification must be completed.
                   </p>
                   <div className="flex gap-2 mt-4">
-                    <Button size="sm" className="bg-amber-600 hover:bg-amber-700" onClick={() => setActiveSection("profile")}>
-                      Upload Documents
+                    <Button size="sm" className="bg-amber-600 hover:bg-amber-700" onClick={() => navigate('/doctor-signup')}>
+                      Complete Profile
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => setActiveSection("profile")}>
-                      Submit for Verification
+                      View Profile
                     </Button>
                   </div>
                 </CardHeader>
