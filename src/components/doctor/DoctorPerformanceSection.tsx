@@ -2,7 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, TrendingUp, Users, Calendar, Star, DollarSign, Clock, Award } from "lucide-react";
+import { BarChart3, TrendingUp, Users, Calendar, Star, DollarSign, Award } from "lucide-react";
+import { useDoctorPerformance } from "@/hooks/useDoctorPerformance";
 
 interface DoctorPerformanceSectionProps {
   doctorProfile: {
@@ -24,38 +25,33 @@ interface DoctorPerformanceSectionProps {
 }
 
 const DoctorPerformanceSection = ({ doctorProfile, stats }: DoctorPerformanceSectionProps) => {
-  const performanceData = {
-    totalAppointments: stats.totalAppointments,
-    totalPatients: stats.totalPatients,
-    averageRating: stats.averageRating,
-    totalReviews: stats.numReviews,
-    monthlyRevenue: stats.totalRevenue,
-    averageSessionLength: 45,
-    completionRate: 96,
-    responseTime: 12 // hours
-  };
+  const { 
+    stats: performanceStats, 
+    monthlyData, 
+    topServices, 
+    recentReviews, 
+    loading,
+    error 
+  } = useDoctorPerformance();
 
-  const monthlyStats = [
-    { month: "Jan", appointments: 98, revenue: 9800 },
-    { month: "Feb", appointments: 112, revenue: 11200 },
-    { month: "Mar", appointments: 124, revenue: 12450 },
-    { month: "Apr", appointments: 108, revenue: 10800 },
-    { month: "May", appointments: 135, revenue: 13500 },
-    { month: "Jun", appointments: 142, revenue: 14200 }
-  ];
+  // Use either provided stats or fetched stats
+  const displayStats = stats || performanceStats;
 
-  const topServices = [
-    { name: "Cardiology Consultation", bookings: 45, revenue: 11250 },
-    { name: "ECG Test", bookings: 38, revenue: 2850 },
-    { name: "Stress Test", bookings: 22, revenue: 6600 },
-    { name: "Follow-up Visit", bookings: 19, revenue: 2375 }
-  ];
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
-  const recentReviews = [
-    { patient: "Sarah M.", rating: 5, comment: "Excellent care and very thorough examination.", date: "2 days ago" },
-    { patient: "John D.", rating: 5, comment: "Dr. Johnson is very knowledgeable and caring.", date: "1 week ago" },
-    { patient: "Emily R.", rating: 4, comment: "Great experience, would recommend to others.", date: "2 weeks ago" }
-  ];
+  if (error) {
+    return (
+      <div className="text-center p-8 text-destructive">
+        <p>Error loading performance data: {error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -67,10 +63,34 @@ const DoctorPerformanceSection = ({ doctorProfile, stats }: DoctorPerformanceSec
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{performanceData.totalAppointments}</div>
+  // Create fallback stats with default values
+  const safeStats = {
+    totalAppointments: displayStats.totalAppointments || 0,
+    totalPatients: displayStats.totalPatients || 0,
+    averageRating: displayStats.averageRating || 0,
+    totalReviews: (displayStats as any).totalReviews || (displayStats as any).numReviews || 0,
+    monthlyRevenue: (displayStats as any).monthlyRevenue || displayStats.totalRevenue || 0,
+    completionRate: (displayStats as any).completionRate || 96,
+    monthlyGrowth: (displayStats as any).monthlyGrowth || 12,
+    patientGrowth: (displayStats as any).patientGrowth || 8,
+    averageSessionLength: (displayStats as any).averageSessionLength || 45,
+    responseTime: (displayStats as any).responseTime || 12
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Performance Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Appointments</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{safeStats.totalAppointments}</div>
             <p className="text-xs text-muted-foreground">
               <TrendingUp className="w-3 h-3 inline mr-1" />
-              +12% from last month
+              {safeStats.monthlyGrowth >= 0 ? '+' : ''}{safeStats.monthlyGrowth}% from last month
             </p>
           </CardContent>
         </Card>
@@ -81,8 +101,10 @@ const DoctorPerformanceSection = ({ doctorProfile, stats }: DoctorPerformanceSec
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{performanceData.totalPatients}</div>
-            <p className="text-xs text-muted-foreground">+8 new this month</p>
+            <div className="text-2xl font-bold">{safeStats.totalPatients}</div>
+            <p className="text-xs text-muted-foreground">
+              {safeStats.patientGrowth >= 0 ? '+' : ''}{safeStats.patientGrowth}% new this month
+            </p>
           </CardContent>
         </Card>
 
@@ -92,9 +114,9 @@ const DoctorPerformanceSection = ({ doctorProfile, stats }: DoctorPerformanceSec
             <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{performanceData.averageRating.toFixed(1)}</div>
+            <div className="text-2xl font-bold">{safeStats.averageRating.toFixed(1)}</div>
             <p className="text-xs text-muted-foreground">
-              Based on {performanceData.totalReviews} reviews
+              Based on {safeStats.totalReviews} reviews
             </p>
           </CardContent>
         </Card>
@@ -105,8 +127,10 @@ const DoctorPerformanceSection = ({ doctorProfile, stats }: DoctorPerformanceSec
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${performanceData.monthlyRevenue.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">+18% from last month</p>
+            <div className="text-2xl font-bold">${safeStats.monthlyRevenue.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">
+              {safeStats.monthlyGrowth >= 0 ? '+' : ''}{safeStats.monthlyGrowth}% from last month
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -131,26 +155,26 @@ const DoctorPerformanceSection = ({ doctorProfile, stats }: DoctorPerformanceSec
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Appointment Completion Rate</span>
-                    <span className="font-medium">{performanceData.completionRate}%</span>
+                    <span className="font-medium">{safeStats.completionRate}%</span>
                   </div>
-                  <Progress value={performanceData.completionRate} className="h-2" />
+                  <Progress value={safeStats.completionRate} className="h-2" />
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Patient Satisfaction</span>
-                    <span className="font-medium">{(performanceData.averageRating / 5 * 100).toFixed(0)}%</span>
+                    <span className="font-medium">{(safeStats.averageRating / 5 * 100).toFixed(0)}%</span>
                   </div>
-                  <Progress value={performanceData.averageRating / 5 * 100} className="h-2" />
+                  <Progress value={safeStats.averageRating / 5 * 100} className="h-2" />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 pt-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{performanceData.averageSessionLength}</div>
+                    <div className="text-2xl font-bold text-primary">{safeStats.averageSessionLength}</div>
                     <div className="text-sm text-muted-foreground">Avg. Session (min)</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{performanceData.responseTime}</div>
+                    <div className="text-2xl font-bold text-primary">{safeStats.responseTime}</div>
                     <div className="text-sm text-muted-foreground">Response Time (hrs)</div>
                   </div>
                 </div>
@@ -163,7 +187,7 @@ const DoctorPerformanceSection = ({ doctorProfile, stats }: DoctorPerformanceSec
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {monthlyStats.slice(-3).map((stat, index) => (
+                  {monthlyData.slice(-3).map((stat, index) => (
                     <div key={stat.month} className="flex items-center justify-between p-3 border rounded-lg">
                       <div>
                         <div className="font-medium">{stat.month}</div>
@@ -259,18 +283,18 @@ const DoctorPerformanceSection = ({ doctorProfile, stats }: DoctorPerformanceSec
                 {recentReviews.map((review, index) => (
                   <div key={index} className="p-4 border rounded-lg">
                     <div className="flex items-center justify-between mb-2">
-                      <div className="font-medium">{review.patient}</div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`w-4 h-4 ${i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
-                            />
-                          ))}
+                        <div className="font-medium">{review.patient_name}</div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`w-4 h-4 ${i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-sm text-muted-foreground">{review.date}</span>
                         </div>
-                        <span className="text-sm text-muted-foreground">{review.date}</span>
-                      </div>
                     </div>
                     <p className="text-sm text-muted-foreground">{review.comment}</p>
                   </div>
@@ -291,7 +315,7 @@ const DoctorPerformanceSection = ({ doctorProfile, stats }: DoctorPerformanceSec
                 <div>
                   <h3 className="font-medium mb-4">6-Month Appointment Trends</h3>
                   <div className="space-y-2">
-                    {monthlyStats.map((stat) => (
+                    {monthlyData.map((stat) => (
                       <div key={stat.month} className="flex items-center gap-4">
                         <div className="w-12 text-sm font-medium">{stat.month}</div>
                         <div className="flex-1">
@@ -306,7 +330,7 @@ const DoctorPerformanceSection = ({ doctorProfile, stats }: DoctorPerformanceSec
                 <div>
                   <h3 className="font-medium mb-4">Revenue Growth</h3>
                   <div className="space-y-2">
-                    {monthlyStats.map((stat) => (
+                    {monthlyData.map((stat) => (
                       <div key={stat.month} className="flex items-center gap-4">
                         <div className="w-12 text-sm font-medium">{stat.month}</div>
                         <div className="flex-1">

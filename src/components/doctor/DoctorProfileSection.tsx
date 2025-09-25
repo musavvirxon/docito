@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,9 +10,11 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload, CheckCircle, AlertCircle, Clock } from "lucide-react";
+import { useDoctorProfile } from "@/hooks/useDoctorProfile";
+import { toast } from "sonner";
 
 interface DoctorProfileSectionProps {
-  doctorProfile: {
+  doctorProfile?: {
     id: string;
     user_id: string;
     specialty: string;
@@ -37,11 +39,38 @@ interface DoctorProfileSectionProps {
   };
 }
 
-const DoctorProfileSection = ({ doctorProfile }: DoctorProfileSectionProps) => {
-  const [selectedLanguages, setSelectedLanguages] = useState<string[]>(["English", "Spanish"]);
-  const [verificationStatus, setVerificationStatus] = useState<"pending" | "verified" | "rejected">(
-    doctorProfile.verified ? "verified" : "pending"
-  );
+const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSectionProps) => {
+  const { profile, loading, updateProfile, profileCompletion } = useDoctorProfile();
+  const doctorProfile = propProfile || profile;
+  
+  const [formData, setFormData] = useState({
+    specialty: '',
+    bio: '',
+    license_number: '',
+    consultation_fee: '',
+    years_experience: '',
+    languages: ['English'],
+    consultation_types: ['In-person', 'Video']
+  });
+
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>(["English"]);
+  const [selectedConsultationTypes, setSelectedConsultationTypes] = useState<string[]>(["In-person", "Video"]);
+  
+  useEffect(() => {
+    if (doctorProfile) {
+      setFormData({
+        specialty: doctorProfile.specialty || '',
+        bio: doctorProfile.bio || '',
+        license_number: doctorProfile.license_number || '',
+        consultation_fee: doctorProfile.consultation_fee?.toString() || '',
+        years_experience: '5', // Default or from profile
+        languages: ['English'], // Default or from profile
+        consultation_types: ['In-person', 'Video'] // Default or from profile
+      });
+    }
+  }, [doctorProfile]);
+
+  const verificationStatus: "pending" | "verified" = doctorProfile?.verified ? "verified" : "pending";
 
   const specialties = [
     "Cardiology", "Dermatology", "Family Medicine", "Internal Medicine", "Pediatrics",
@@ -55,6 +84,22 @@ const DoctorProfileSection = ({ doctorProfile }: DoctorProfileSectionProps) => {
 
   const consultationTypes = ["In-person", "Video", "Chat"];
 
+  const handleSaveChanges = async () => {
+    if (!updateProfile) return;
+
+    const updates = {
+      specialty: formData.specialty,
+      bio: formData.bio,
+      license_number: formData.license_number,
+      consultation_fee: formData.consultation_fee ? parseFloat(formData.consultation_fee) : undefined,
+    };
+
+    const result = await updateProfile(updates);
+    if (result.success) {
+      toast.success('Profile updated successfully');
+    }
+  };
+
   const toggleLanguage = (language: string) => {
     setSelectedLanguages(prev => 
       prev.includes(language) 
@@ -63,12 +108,34 @@ const DoctorProfileSection = ({ doctorProfile }: DoctorProfileSectionProps) => {
     );
   };
 
+  const toggleConsultationType = (type: string) => {
+    setSelectedConsultationTypes(prev => 
+      prev.includes(type) 
+        ? prev.filter(t => t !== type)
+        : [...prev, type]
+    );
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!doctorProfile) {
+    return (
+      <div className="text-center p-8">
+        <p className="text-muted-foreground">Doctor profile not found</p>
+      </div>
+    );
+  }
+
   const getVerificationIcon = () => {
     switch (verificationStatus) {
       case "verified":
         return <CheckCircle className="w-5 h-5 text-green-600" />;
-      case "rejected":
-        return <AlertCircle className="w-5 h-5 text-red-600" />;
       default:
         return <Clock className="w-5 h-5 text-amber-600" />;
     }
@@ -78,8 +145,6 @@ const DoctorProfileSection = ({ doctorProfile }: DoctorProfileSectionProps) => {
     switch (verificationStatus) {
       case "verified":
         return <Badge className="bg-green-100 text-green-700">Verified</Badge>;
-      case "rejected":
-        return <Badge variant="destructive">Rejected</Badge>;
       default:
         return <Badge className="bg-amber-100 text-amber-700">Pending Verification</Badge>;
     }
@@ -100,13 +165,13 @@ const DoctorProfileSection = ({ doctorProfile }: DoctorProfileSectionProps) => {
             </div>
             {getVerificationBadge()}
           </div>
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>Progress</span>
-              <span className="font-medium">85%</span>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Progress</span>
+                <span className="font-medium">{profileCompletion}%</span>
+              </div>
+              <Progress value={profileCompletion} className="h-2" />
             </div>
-            <Progress value={85} className="h-2" />
-          </div>
         </CardHeader>
       </Card>
 
@@ -134,34 +199,12 @@ const DoctorProfileSection = ({ doctorProfile }: DoctorProfileSectionProps) => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <Label htmlFor="fullName">Full Name (Optional)</Label>
-              <Input id="fullName" defaultValue={doctorProfile.profiles?.full_name || ''} />
+              <Label htmlFor="fullName">Full Name</Label>
+              <Input id="fullName" value={doctorProfile.profiles?.full_name || ''} readOnly className="bg-muted" />
             </div>
             <div>
-              <Label htmlFor="degree">Degree/Certifications</Label>
-              <Input id="degree" placeholder="MD, Board Certified" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <Label htmlFor="specialty">Specialty *</Label>
-              <Select defaultValue={doctorProfile.specialty.toLowerCase()}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {specialties.map((specialty) => (
-                    <SelectItem key={specialty} value={specialty.toLowerCase()}>
-                      {specialty}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="experience">Years of Experience</Label>
-              <Select defaultValue="6-10">
+              <Label htmlFor="degree">Years of Experience</Label>
+              <Select value={formData.years_experience} onValueChange={(value) => setFormData(prev => ({ ...prev, years_experience: value }))}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -177,13 +220,36 @@ const DoctorProfileSection = ({ doctorProfile }: DoctorProfileSectionProps) => {
             </div>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <Label htmlFor="specialty">Specialty *</Label>
+              <Select value={formData.specialty.toLowerCase()} onValueChange={(value) => setFormData(prev => ({ ...prev, specialty: value }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {specialties.map((specialty) => (
+                    <SelectItem key={specialty} value={specialty.toLowerCase()}>
+                      {specialty}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" value={doctorProfile.profiles?.email || ''} readOnly className="bg-muted" />
+            </div>
+          </div>
+
           <div>
             <Label htmlFor="bio">About Me / Bio</Label>
             <Textarea 
               id="bio" 
               placeholder="Tell patients about your experience, approach to care, and what makes you unique..."
               className="min-h-[100px]"
-              defaultValue={doctorProfile.bio || ''}
+              value={formData.bio}
+              onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
             />
           </div>
 
@@ -215,11 +281,22 @@ const DoctorProfileSection = ({ doctorProfile }: DoctorProfileSectionProps) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Label htmlFor="license">Medical License Number</Label>
-              <Input id="license" placeholder="License number" defaultValue={doctorProfile.license_number || ''} />
+              <Input 
+                id="license" 
+                placeholder="License number" 
+                value={formData.license_number}
+                onChange={(e) => setFormData(prev => ({ ...prev, license_number: e.target.value }))}
+              />
             </div>
             <div>
-              <Label htmlFor="npi">NPI Number</Label>
-              <Input id="npi" placeholder="National Provider Identifier" />
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input 
+                id="phone" 
+                placeholder="Phone number" 
+                value={doctorProfile.profiles?.phone || ''}
+                readOnly
+                className="bg-muted"
+              />
             </div>
           </div>
 
@@ -228,7 +305,11 @@ const DoctorProfileSection = ({ doctorProfile }: DoctorProfileSectionProps) => {
             <div className="flex space-x-4 mt-2">
               {consultationTypes.map((type) => (
                 <div key={type} className="flex items-center space-x-2">
-                  <Checkbox id={type} defaultChecked />
+                  <Checkbox 
+                    id={type} 
+                    checked={selectedConsultationTypes.includes(type)}
+                    onCheckedChange={() => toggleConsultationType(type)}
+                  />
                   <Label htmlFor={type} className="text-sm">{type}</Label>
                 </div>
               ))}
@@ -238,7 +319,13 @@ const DoctorProfileSection = ({ doctorProfile }: DoctorProfileSectionProps) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Label htmlFor="defaultPrice">Default Consultation Price</Label>
-              <Input id="defaultPrice" placeholder="$150" defaultValue={doctorProfile.consultation_fee ? `$${doctorProfile.consultation_fee}` : ''} />
+              <Input 
+                id="defaultPrice" 
+                placeholder="150" 
+                type="number"
+                value={formData.consultation_fee}
+                onChange={(e) => setFormData(prev => ({ ...prev, consultation_fee: e.target.value }))}
+              />
             </div>
             <div>
               <Label htmlFor="location">Primary Location</Label>
@@ -271,7 +358,7 @@ const DoctorProfileSection = ({ doctorProfile }: DoctorProfileSectionProps) => {
           </div>
           
           <div className="flex gap-2">
-            <Button>Save Changes</Button>
+            <Button onClick={handleSaveChanges}>Save Changes</Button>
             <Button variant="outline">Submit for Verification</Button>
           </div>
         </CardContent>

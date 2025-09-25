@@ -8,93 +8,56 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Edit, Trash2, DollarSign, Clock, Tag } from "lucide-react";
-
-interface Service {
-  id: string;
-  name: string;
-  category: string;
-  description: string;
-  price: number;
-  duration: number;
-  active: boolean;
-  tags: string[];
-}
+import { Plus, Edit, Trash2, DollarSign, Clock } from "lucide-react";
+import { useDoctorServices } from "@/hooks/useDoctorServices";
 
 interface DoctorServicesSectionProps {
   readOnly?: boolean;
   assignedServices?: string[];
 }
 
+interface ServiceFormData {
+  name: string;
+  category: 'general' | 'preventive' | 'restorative' | 'cosmetic' | 'orthodontic' | 'oral_surgery' | 'endodontic' | 'periodontic';
+  description: string;
+  default_cost: number;
+  duration_minutes: number;
+  is_active: boolean;
+}
+
 const DoctorServicesSection = ({ readOnly = false, assignedServices }: DoctorServicesSectionProps) => {
-  const [services, setServices] = useState<Service[]>([
-    {
-      id: "1",
-      name: "Cardiology Consultation",
-      category: "Consultation",
-      description: "Comprehensive cardiovascular examination and consultation",
-      price: 250,
-      duration: 60,
-      active: true,
-      tags: ["Heart", "Consultation"]
-    },
-    {
-      id: "2",
-      name: "ECG Test",
-      category: "Diagnostic",
-      description: "Electrocardiogram test to monitor heart rhythm",
-      price: 75,
-      duration: 30,
-      active: true,
-      tags: ["Heart", "Test", "Diagnostic"]
-    },
-    {
-      id: "3",
-      name: "Stress Test",
-      category: "Diagnostic",
-      description: "Exercise stress test to evaluate heart function",
-      price: 300,
-      duration: 90,
-      active: false,
-      tags: ["Heart", "Exercise", "Test"]
-    }
-  ]);
-
+  const { services, loading, addService, updateService, deleteService, toggleServiceStatus } = useDoctorServices();
   const [isAddingService, setIsAddingService] = useState(false);
-  const [editingService, setEditingService] = useState<Service | null>(null);
+  const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
 
-  const categories = ["Consultation", "Diagnostic", "Surgical", "Preventive", "Emergency", "Follow-up"];
-  const commonTags = ["Heart", "Consultation", "Test", "Diagnostic", "Treatment", "Prevention", "Emergency"];
+  const categories = ['general', 'preventive', 'restorative', 'cosmetic', 'orthodontic', 'oral_surgery', 'endodontic', 'periodontic'] as const;
 
-  const toggleServiceStatus = (serviceId: string) => {
+  const handleToggleStatus = async (serviceId: string, active: boolean) => {
     if (readOnly) return;
-    setServices(prev => 
-      prev.map(service => 
-        service.id === serviceId 
-          ? { ...service, active: !service.active }
-          : service
-      )
-    );
+    await toggleServiceStatus(serviceId, active);
   };
 
-  const deleteService = (serviceId: string) => {
+  const handleDeleteService = async (serviceId: string) => {
     if (readOnly) return;
-    setServices(prev => prev.filter(service => service.id !== serviceId));
+    if (confirm('Are you sure you want to delete this service?')) {
+      await deleteService(serviceId);
+    }
   };
 
-  const ServiceForm = ({ service, onSave, onCancel }: { 
-    service?: Service; 
-    onSave: (service: Omit<Service, 'id'>) => void; 
+  const ServiceForm = ({ serviceId, onSave, onCancel }: { 
+    serviceId?: string; 
+    onSave: (serviceData: ServiceFormData) => void; 
     onCancel: () => void; 
   }) => {
-    const [formData, setFormData] = useState({
-      name: service?.name || '',
-      category: service?.category || '',
-      description: service?.description || '',
-      price: service?.price || 0,
-      duration: service?.duration || 30,
-      active: service?.active ?? true,
-      tags: service?.tags || []
+    const existingService = serviceId ? services.find(s => s.id === serviceId) : null;
+    
+    const [formData, setFormData] = useState<ServiceFormData>({
+      name: existingService?.name || '',
+      category: (existingService?.category as any) || 'general',
+      description: existingService?.description || '',
+      default_cost: existingService?.default_cost || 0,
+      duration_minutes: existingService?.duration_minutes || 30,
+      is_active: existingService?.is_active ?? true
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -105,24 +68,26 @@ const DoctorServicesSection = ({ readOnly = false, assignedServices }: DoctorSer
     return (
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <Label htmlFor="serviceName">Service Name (Optional)</Label>
+          <Label htmlFor="serviceName">Service Name</Label>
           <Input
             id="serviceName"
             value={formData.name}
             onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-            placeholder="e.g., Cardiology Consultation"
+            placeholder="e.g., General Consultation"
           />
         </div>
 
         <div>
-          <Label htmlFor="category">Category (Optional)</Label>
-          <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
+          <Label htmlFor="category">Category</Label>
+          <Select value={formData.category} onValueChange={(value: any) => setFormData(prev => ({ ...prev, category: value }))}>
             <SelectTrigger>
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
               {categories.map(category => (
-                <SelectItem key={category} value={category}>{category}</SelectItem>
+                <SelectItem key={category} value={category}>
+                  {category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -145,14 +110,14 @@ const DoctorServicesSection = ({ readOnly = false, assignedServices }: DoctorSer
             <Input 
               id="price"
               type="number"
-              value={formData.price}
-              onChange={(e) => setFormData(prev => ({ ...prev, price: Number(e.target.value) }))}
+              value={formData.default_cost}
+              onChange={(e) => setFormData(prev => ({ ...prev, default_cost: Number(e.target.value) }))}
               placeholder="150"
             />
           </div>
           <div>
             <Label htmlFor="duration">Duration (minutes)</Label>
-            <Select value={formData.duration.toString()} onValueChange={(value) => setFormData(prev => ({ ...prev, duration: Number(value) }))}>
+            <Select value={formData.duration_minutes.toString()} onValueChange={(value) => setFormData(prev => ({ ...prev, duration_minutes: Number(value) }))}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -168,62 +133,40 @@ const DoctorServicesSection = ({ readOnly = false, assignedServices }: DoctorSer
           </div>
         </div>
 
-        <div>
-          <Label>Tags</Label>
-          <p className="text-sm text-muted-foreground mb-2">Select relevant tags</p>
-          <div className="flex flex-wrap gap-2">
-            {commonTags.map(tag => (
-              <Badge
-                key={tag}
-                variant={formData.tags.includes(tag) ? "default" : "outline"}
-                className="cursor-pointer"
-                onClick={() => {
-                  setFormData(prev => ({
-                    ...prev,
-                    tags: prev.tags.includes(tag)
-                      ? prev.tags.filter(t => t !== tag)
-                      : [...prev.tags, tag]
-                  }));
-                }}
-              >
-                {tag}
-              </Badge>
-            ))}
-          </div>
-        </div>
-
         <div className="flex justify-between pt-4">
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
           </Button>
           <Button type="submit">
-            {service ? 'Update Service' : 'Add Service'}
+            {serviceId ? 'Update Service' : 'Add Service'}
           </Button>
         </div>
       </form>
     );
   };
 
-  const addService = (serviceData: Omit<Service, 'id'>) => {
-    const newService = {
-      ...serviceData,
-      id: Date.now().toString()
-    };
-    setServices(prev => [...prev, newService]);
-    setIsAddingService(false);
+  const handleAddService = async (serviceData: ServiceFormData) => {
+    const result = await addService(serviceData);
+    if (result.success) {
+      setIsAddingService(false);
+    }
   };
 
-  const updateService = (serviceData: Omit<Service, 'id'>) => {
-    if (!editingService) return;
-    setServices(prev => 
-      prev.map(service => 
-        service.id === editingService.id 
-          ? { ...serviceData, id: editingService.id }
-          : service
-      )
-    );
-    setEditingService(null);
+  const handleUpdateService = async (serviceData: ServiceFormData) => {
+    if (!editingServiceId) return;
+    const result = await updateService(editingServiceId, serviceData);
+    if (result.success) {
+      setEditingServiceId(null);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   if (readOnly) {
     return (
@@ -276,7 +219,7 @@ const DoctorServicesSection = ({ readOnly = false, assignedServices }: DoctorSer
                   <DialogTitle>Add New Service</DialogTitle>
                 </DialogHeader>
                 <ServiceForm 
-                  onSave={addService}
+                  onSave={handleAddService}
                   onCancel={() => setIsAddingService(false)}
                 />
               </DialogContent>
@@ -285,78 +228,79 @@ const DoctorServicesSection = ({ readOnly = false, assignedServices }: DoctorSer
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {services.map((service) => (
-              <div key={service.id} className="p-4 border rounded-lg">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-medium">{service.name}</h3>
-                      <Badge variant="outline">{service.category}</Badge>
-                      {service.active ? (
-                        <Badge className="bg-green-100 text-green-700">Active</Badge>
-                      ) : (
-                        <Badge variant="secondary">Inactive</Badge>
-                      )}
-                    </div>
-                    
-                    <p className="text-sm text-muted-foreground mb-3">{service.description}</p>
-                    
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <DollarSign className="w-4 h-4" />
-                        ${service.price}
+            {services.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>No services found. Add your first service to get started.</p>
+              </div>
+            ) : (
+              services.map((service) => (
+                <div key={service.id} className="p-4 border rounded-lg">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="font-medium">{service.name}</h3>
+                        <Badge variant="outline">
+                          {service.category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        </Badge>
+                        {service.is_active ? (
+                          <Badge className="bg-green-100 text-green-700">Active</Badge>
+                        ) : (
+                          <Badge variant="secondary">Inactive</Badge>
+                        )}
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
-                        {service.duration} min
+                      
+                      <p className="text-sm text-muted-foreground mb-3">{service.description}</p>
+                      
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <DollarSign className="w-4 h-4" />
+                          ${service.default_cost || 0}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-4 h-4" />
+                          {service.duration_minutes} min
+                        </div>
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-2 mt-2">
-                      <Tag className="w-4 h-4 text-muted-foreground" />
-                      {service.tags.map(tag => (
-                        <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>
-                      ))}
+                    <div className="flex items-center gap-2">
+                      <Switch 
+                        checked={service.is_active}
+                        onCheckedChange={(checked) => handleToggleStatus(service.id, checked)}
+                      />
+                      <Dialog open={editingServiceId === service.id} onOpenChange={(open) => !open && setEditingServiceId(null)}>
+                        <DialogTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => setEditingServiceId(service.id)}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl">
+                          <DialogHeader>
+                            <DialogTitle>Edit Service</DialogTitle>
+                          </DialogHeader>
+                          <ServiceForm 
+                            serviceId={editingServiceId || undefined}
+                            onSave={handleUpdateService}
+                            onCancel={() => setEditingServiceId(null)}
+                          />
+                        </DialogContent>
+                      </Dialog>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleDeleteService(service.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Switch 
-                      checked={service.active}
-                      onCheckedChange={() => toggleServiceStatus(service.id)}
-                    />
-                    <Dialog open={editingService?.id === service.id} onOpenChange={(open) => !open && setEditingService(null)}>
-                      <DialogTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => setEditingService(service)}
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                          <DialogTitle>Edit Service</DialogTitle>
-                        </DialogHeader>
-                        <ServiceForm 
-                          service={editingService || undefined}
-                          onSave={updateService}
-                          onCancel={() => setEditingService(null)}
-                        />
-                      </DialogContent>
-                    </Dialog>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => deleteService(service.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </CardContent>
       </Card>
