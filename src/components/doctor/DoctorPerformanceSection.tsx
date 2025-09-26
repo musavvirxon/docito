@@ -53,23 +53,13 @@ const DoctorPerformanceSection = ({ doctorProfile, stats }: DoctorPerformanceSec
     );
   }
 
-  return (
-    <div className="space-y-6">
-      {/* Performance Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Appointments</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
   // Create fallback stats with default values
   const safeStats = {
     totalAppointments: displayStats.totalAppointments || 0,
     totalPatients: displayStats.totalPatients || 0,
     averageRating: displayStats.averageRating || 0,
     totalReviews: (displayStats as any).totalReviews || (displayStats as any).numReviews || 0,
-    monthlyRevenue: (displayStats as any).monthlyRevenue || displayStats.totalRevenue || 0,
+    monthlyRevenue: (displayStats as any).monthlyRevenue || (displayStats as any).totalRevenue || 0,
     completionRate: (displayStats as any).completionRate || 96,
     monthlyGrowth: (displayStats as any).monthlyGrowth || 12,
     patientGrowth: (displayStats as any).patientGrowth || 8,
