@@ -69,25 +69,25 @@ const DoctorDashboard = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
-          <p className="text-sm text-muted-foreground mt-2">If this takes too long, please refresh the page</p>
+          <p className="text-sm text-muted-foreground mt-2">Setting up your doctor profile...</p>
         </div>
       </div>
     );
   }
 
-  // Allow dashboard access even without complete doctor profile
+  // Show error state but allow partial dashboard access
   if (error && !doctorProfile) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center max-w-md">
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="text-center max-w-md p-6 bg-card border border-border rounded-lg">
           <div className="mb-4">
-            <h2 className="text-xl font-semibold text-destructive mb-2">Dashboard Loading Error</h2>
+            <h2 className="text-xl font-semibold text-destructive mb-2">Dashboard Loading Issue</h2>
             <p className="text-muted-foreground mb-4">
-              {error || 'Unable to load your doctor profile. This might be because your doctor account is not fully set up.'}
+              {error || 'Unable to load your doctor profile. Let us set up your account.'}
             </p>
           </div>
           <div className="space-y-2">
@@ -103,10 +103,10 @@ const DoctorDashboard = () => {
             </Button>
             <Button 
               variant="ghost" 
-              onClick={() => window.location.reload()} 
+              onClick={() => navigate('/')} 
               className="w-full"
             >
-              Refresh Page
+              Go to Home
             </Button>
           </div>
         </div>

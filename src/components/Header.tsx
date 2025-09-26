@@ -36,8 +36,8 @@ const Header = () => {
         <nav className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <div className="bg-yellow-400 rounded-full w-8 h-8 flex items-center justify-center mr-2">
-              <span className="text-foreground font-bold text-lg">Z</span>
+            <div className="bg-primary rounded-full w-8 h-8 flex items-center justify-center mr-2">
+              <span className="text-primary-foreground font-bold text-lg">Z</span>
             </div>
             <span className="text-xl font-semibold text-foreground">Zocdoc</span>
           </div>
@@ -115,7 +115,7 @@ const Header = () => {
                 </Button>
                 
                 <Button 
-                  className="bg-yellow-400 text-foreground hover:bg-yellow-500 font-medium text-sm h-9 px-4"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 font-medium text-sm h-9 px-4"
                   onClick={() => navigate('/auth')}
                 >
                   Sign up

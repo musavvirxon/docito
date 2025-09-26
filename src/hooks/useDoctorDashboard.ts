@@ -68,17 +68,17 @@ export const useDoctorDashboard = () => {
   const [retryCount, setRetryCount] = useState(0);
 
   const fetchDoctorProfile = async () => {
-    if (!user || profile?.role !== 'doctor') return;
+    if (!user || profile?.role !== 'doctor') {
+      setLoading(false);
+      return;
+    }
 
     try {
       setError(null);
+      console.log('Fetching doctor profile for user:', user.id);
       
-      // Use timeout to prevent endless loading
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Request timeout')), 10000)
-      );
-
-      const queryPromise = supabase
+      // First try to get existing doctor profile
+      const { data: existingDoctor, error: fetchError } = await supabase
         .from('doctors')
         .select(`
           *,
@@ -96,52 +96,63 @@ export const useDoctorDashboard = () => {
           )
         `)
         .eq('user_id', user.id)
-        .maybeSingle(); // Use maybeSingle to handle cases where no doctor record exists
+        .maybeSingle();
 
-      const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
+      if (fetchError) {
+        console.error('Fetch error:', fetchError);
+        throw fetchError;
+      }
 
-      if (error) {
-        if (error.code === 'PGRST116' || !data) {
-          // No doctor profile exists, create one
-          const { data: newDoctor, error: createError } = await supabase
-            .from('doctors')
-            .insert({
-              user_id: user.id,
-              specialty: 'General Practice',
-              verified: false,
-              accepts_new_patients: true
-            })
-            .select(`
-              *,
-              profiles:user_id (
-                full_name,
-                email,
-                avatar_url,
-                phone
-              ),
-              practices:practice_id (
-                name,
-                city,
-                country,
-                verified
-              )
-            `)
-            .single();
+      if (existingDoctor) {
+        console.log('Found existing doctor profile:', existingDoctor);
+        setDoctorProfile(existingDoctor);
+        return;
+      }
 
-          if (createError) throw createError;
-          setDoctorProfile(newDoctor);
-          return;
-        }
-        throw error;
+      // No doctor profile exists, create one
+      console.log('Creating new doctor profile for user:', user.id);
+      const { data: newDoctor, error: createError } = await supabase
+        .from('doctors')
+        .insert({
+          user_id: user.id,
+          specialty: 'General Practice',
+          verified: false,
+          accepts_new_patients: true,
+          bio: '',
+          average_rating: 0,
+          num_reviews: 0,
+          weighted_rating: 0,
+          appointment_count: 0
+        })
+        .select(`
+          *,
+          profiles:user_id (
+            full_name,
+            email,
+            avatar_url,
+            phone
+          ),
+          practices:practice_id (
+            name,
+            city,
+            country,
+            verified
+          )
+        `)
+        .single();
+
+      if (createError) {
+        console.error('Create error:', createError);
+        throw createError;
       }
       
-      if (data) {
-        setDoctorProfile(data);
-      }
+      console.log('Created new doctor profile:', newDoctor);
+      setDoctorProfile(newDoctor);
+      
     } catch (err: any) {
-      console.error('Error fetching doctor profile:', err);
+      console.error('Error in fetchDoctorProfile:', err);
       setError(err.message || 'Failed to load doctor profile');
-      toast.error(`Error loading doctor profile: ${err.message}`);
+      toast.error(`Failed to load doctor profile: ${err.message}`);
     }
   };
 
