@@ -165,18 +165,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (error) throw error;
       
-      // If user is immediately confirmed (development/testing), redirect them
-      if (data.user && !data.user.email_confirmed_at) {
-        toast.success('Account created successfully! Please check your email to verify your account.');
-      } else if (data.user && userData.role === 'doctor') {
-        toast.success('Doctor account created! Redirecting to complete your profile...');
-        // Auto-redirect to doctor setup after successful signup
-        setTimeout(() => {
-          window.location.href = '/doctor-signup';
-        }, 1500);
-      } else {
-        toast.success('Account created successfully!');
+      // For doctors, create a basic doctor profile entry
+      if (userData.role === 'doctor' && data.user) {
+        await supabase
+          .from('doctors')
+          .insert({
+            user_id: data.user.id,
+            specialty: 'General Practice', // Default specialty
+            verified: false,
+            accepts_new_patients: true
+          });
       }
+      
+      toast.success('Account created successfully! Please check your email to verify your account.');
+      return {};
       
       return {};
     } catch (error: any) {

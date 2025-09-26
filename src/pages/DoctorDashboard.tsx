@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bell, Settings, User, Calendar, BarChart3, Search, Briefcase, MapPin, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText } from "lucide-react";
+import { Bell, Settings, User, Calendar, BarChart3, Search, Briefcase, MapPin, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +47,26 @@ const DoctorDashboard = () => {
     navigate('/');
   };
 
+  // Calculate profile completion
+  const calculateProfileCompletion = () => {
+    if (!doctorProfile) return 0;
+    
+    const fields = [
+      doctorProfile.bio,
+      doctorProfile.license_number,
+      doctorProfile.consultation_fee,
+      profile?.avatar_url,
+      profile?.date_of_birth,
+      profile?.phone
+    ];
+    
+    const completedFields = fields.filter(field => field && field !== '').length;
+    return Math.round((completedFields / fields.length) * 100);
+  };
+
+  const profileCompletion = calculateProfileCompletion();
+  const isProfileIncomplete = profileCompletion < 80;
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -59,7 +79,8 @@ const DoctorDashboard = () => {
     );
   }
 
-  if (error || !doctorProfile) {
+  // Allow dashboard access even without complete doctor profile
+  if (error && !doctorProfile) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center max-w-md">
@@ -221,9 +242,9 @@ const DoctorDashboard = () => {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Complete your profile to get more bookings</span>
-                    <span className="font-medium">{stats.profileCompletion}%</span>
+                    <span className="font-medium">{profileCompletion}%</span>
                   </div>
-                  <Progress value={stats.profileCompletion} className="h-2" />
+                  <Progress value={profileCompletion} className="h-2" />
                 </div>
               </CardHeader>
             </Card>
@@ -236,7 +257,7 @@ const DoctorDashboard = () => {
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalAppointments}</div>
+                  <div className="text-2xl font-bold">{stats?.totalAppointments || 0}</div>
                   <p className="text-xs text-muted-foreground">All time bookings</p>
                 </CardContent>
               </Card>
@@ -247,7 +268,7 @@ const DoctorDashboard = () => {
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalPatients}</div>
+                  <div className="text-2xl font-bold">{stats?.totalPatients || 0}</div>
                   <p className="text-xs text-muted-foreground">Unique patients served</p>
                 </CardContent>
               </Card>
@@ -258,8 +279,8 @@ const DoctorDashboard = () => {
                   <BarChart3 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{stats.averageRating.toFixed(1)}</div>
-                  <p className="text-xs text-muted-foreground">Based on {stats.numReviews} reviews</p>
+                  <div className="text-2xl font-bold">{(stats?.averageRating || 0).toFixed(1)}</div>
+                  <p className="text-xs text-muted-foreground">Based on {stats?.numReviews || 0} reviews</p>
                 </CardContent>
               </Card>
 
@@ -411,6 +432,33 @@ const DoctorDashboard = () => {
 
           {/* Main Content */}
           <main className="flex-1 p-6">
+            {/* Profile Completion Banner */}
+            {isProfileIncomplete && (
+              <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <AlertCircle className="h-5 w-5 text-amber-600" />
+                    <div>
+                      <h3 className="font-medium text-amber-800">
+                        Complete Your Profile ({profileCompletion}%)
+                      </h3>
+                      <p className="text-sm text-amber-700">
+                        Complete your profile to verify your account and start accepting patients.
+                      </p>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={() => navigate('/doctor-signup')}
+                    variant="outline"
+                    size="sm"
+                    className="border-amber-300 text-amber-700 hover:bg-amber-100"
+                  >
+                    Complete Profile
+                  </Button>
+                </div>
+              </div>
+            )}
+            
             {renderContent()}
           </main>
         </div>
