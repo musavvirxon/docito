@@ -213,18 +213,18 @@ const DoctorDashboard = () => {
 
             {/* Verification Status (for independent doctors) */}
             {doctorStatus === "independent" && !doctorProfile.verified && (
-              <Card className="border-amber-200 bg-amber-50">
+              <Card className="border-destructive/20 bg-destructive/5">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-amber-800">
-                    <Badge variant="outline" className="bg-amber-100 text-amber-700">
+                  <CardTitle className="flex items-center gap-2 text-destructive">
+                    <Badge variant="outline" className="bg-destructive/10 text-destructive">
                       Verification Pending
                     </Badge>
                   </CardTitle>
-                  <p className="text-amber-700">
+                  <p className="text-destructive/80">
                     To go public and appear in search results, your verification must be completed.
                   </p>
                   <div className="flex gap-2 mt-4">
-                    <Button size="sm" className="bg-amber-600 hover:bg-amber-700" onClick={() => navigate('/doctor-signup')}>
+                    <Button size="sm" variant="destructive" onClick={() => navigate('/doctor-signup')}>
                       Complete Profile
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => setActiveSection("profile")}>
@@ -434,15 +434,15 @@ const DoctorDashboard = () => {
           <main className="flex-1 p-6">
             {/* Profile Completion Banner */}
             {isProfileIncomplete && (
-              <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="mb-6 p-4 bg-secondary border border-border rounded-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <AlertCircle className="h-5 w-5 text-amber-600" />
+                    <AlertCircle className="h-5 w-5 text-primary" />
                     <div>
-                      <h3 className="font-medium text-amber-800">
+                      <h3 className="font-medium text-foreground">
                         Complete Your Profile ({profileCompletion}%)
                       </h3>
-                      <p className="text-sm text-amber-700">
+                      <p className="text-sm text-muted-foreground">
                         Complete your profile to verify your account and start accepting patients.
                       </p>
                     </div>
@@ -451,7 +451,6 @@ const DoctorDashboard = () => {
                     onClick={() => navigate('/doctor-signup')}
                     variant="outline"
                     size="sm"
-                    className="border-amber-300 text-amber-700 hover:bg-amber-100"
                   >
                     Complete Profile
                   </Button>
