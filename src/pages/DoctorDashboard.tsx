@@ -114,6 +114,34 @@ const DoctorDashboard = () => {
     );
   }
 
+  // Add safety check for doctorProfile
+  if (!loading && !doctorProfile) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="text-center max-w-md p-6 bg-card border border-border rounded-lg">
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold text-destructive mb-2">Profile Setup Required</h2>
+            <p className="text-muted-foreground mb-4">
+              Your doctor profile needs to be set up. Let's complete your profile.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <Button onClick={retryFetch} className="w-full">
+              Try Again
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/doctor-signup')} 
+              className="w-full"
+            >
+              Complete Profile Setup
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const sidebarItems = doctorStatus === "independent" 
     ? [
         { id: "dashboard", label: "Dashboard", icon: Home },
@@ -150,7 +178,7 @@ const DoctorDashboard = () => {
       case "services":
         return <DoctorServicesSection />;
       case "assigned-services":
-        return <DoctorServicesSection readOnly={true} assignedServices={doctorProfile.practices?.name ? ["Clinic Services"] : []} />;
+        return <DoctorServicesSection readOnly={true} assignedServices={doctorProfile?.practices?.name ? ["Clinic Services"] : []} />;
       case "schedule":
         navigate("/doctor-schedule-settings");
         return null;
@@ -178,7 +206,7 @@ const DoctorDashboard = () => {
         return (
           <div className="space-y-6">
             {/* Clinic Profile Card (for clinic members) */}
-            {doctorStatus === "clinic-member" && doctorProfile.practices && (
+            {doctorStatus === "clinic-member" && doctorProfile?.practices && (
               <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -188,8 +216,8 @@ const DoctorDashboard = () => {
                       </div>
                       <div>
                         <CardTitle className="flex items-center gap-2">
-                          {doctorProfile.practices.name}
-                          {doctorProfile.practices.verified && (
+                          {doctorProfile?.practices?.name}
+                          {doctorProfile?.practices?.verified && (
                             <Badge variant="secondary" className="bg-green-100 text-green-700">
                               Verified
                             </Badge>
@@ -197,7 +225,7 @@ const DoctorDashboard = () => {
                         </CardTitle>
                         <p className="text-muted-foreground flex items-center gap-1">
                           <MapPin className="w-4 h-4" />
-                          {doctorProfile.practices.city}, {doctorProfile.practices.country}
+                          {doctorProfile?.practices?.city}, {doctorProfile?.practices?.country}
                         </p>
                       </div>
                     </div>
@@ -212,7 +240,7 @@ const DoctorDashboard = () => {
             )}
 
             {/* Verification Status (for independent doctors) */}
-            {doctorStatus === "independent" && !doctorProfile.verified && (
+            {doctorStatus === "independent" && doctorProfile && !doctorProfile.verified && (
               <Card className="border-destructive/20 bg-destructive/5">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-destructive">
@@ -414,8 +442,8 @@ const DoctorDashboard = () => {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="text-lg font-semibold">Welcome back, {doctorProfile.profiles?.full_name || 'Doctor'}</h1>
-                  <p className="text-sm text-muted-foreground">{doctorProfile.specialty}</p>
+                  <h1 className="text-lg font-semibold">Welcome back, {doctorProfile?.profiles?.full_name || 'Doctor'}</h1>
+                  <p className="text-sm text-muted-foreground">{doctorProfile?.specialty || 'General Practice'}</p>
                 </div>
               </div>
               
