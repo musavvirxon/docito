@@ -179,8 +179,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       toast.success('Account created successfully! Please check your email to verify your account.');
       return {};
-      
-      return {};
     } catch (error: any) {
       toast.error(error.message || 'Failed to create account');
       return { error };

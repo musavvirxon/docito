@@ -61,13 +61,7 @@ const Auth = () => {
       });
       
       if (!error) {
-        // For doctors, redirect to dashboard immediately
-        if (signUpRole === 'doctor') {
-          navigate('/dashboard');
-        } else {
-          // Switch to sign in tab for other roles
-          setActiveTab("signin");
-        }
+        navigate('/dashboard');
       }
     } catch (error) {
       console.error('Sign up error:', error);

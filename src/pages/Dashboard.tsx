@@ -10,10 +10,10 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex items-center gap-2">
-          <Loader2 className="w-5 h-5 animate-spin" />
-          <span>Loading...</span>
+          <Loader2 className="w-5 h-5 animate-spin text-primary" />
+          <span className="text-muted-foreground">Loading...</span>
         </div>
       </div>
     );
@@ -25,10 +25,10 @@ const Dashboard = () => {
 
   if (!profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
-          <p>Setting up your profile...</p>
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Setting up your profile...</p>
         </div>
       </div>
     );

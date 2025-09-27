@@ -71,8 +71,8 @@ const DoctorDashboard = () => {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+          <p className="mt-4 text-foreground">Loading dashboard...</p>
           <p className="text-sm text-muted-foreground mt-2">Setting up your doctor profile...</p>
         </div>
       </div>
@@ -290,7 +290,7 @@ const DoctorDashboard = () => {
                   <BarChart3 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">${stats.totalRevenue.toLocaleString()}</div>
+                  <div className="text-2xl font-bold">${(stats?.totalRevenue || 0).toLocaleString()}</div>
                   <p className="text-xs text-muted-foreground">Total earnings</p>
                 </CardContent>
               </Card>
