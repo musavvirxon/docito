@@ -31,14 +31,19 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDoctorDashboard } from "@/hooks/useDoctorDashboard";
 import { authApi } from "@/lib/api/supabase-api";
+import QuickActionModals from "@/components/doctor/QuickActionModals";
 
 type DoctorStatus = "independent" | "clinic-member";
 
 const DoctorDashboard = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
-  const { doctorProfile, stats, recentAppointments, todaysAppointments, loading, error, retryFetch } = useDoctorDashboard();
+  const { doctorProfile, stats, upcomingAppointments, recentAppointments, todaysAppointments, loading, error, retryFetch } = useDoctorDashboard();
   const [activeSection, setActiveSection] = useState("dashboard");
+  const [quickActionModal, setQuickActionModal] = useState<{
+    isOpen: boolean;
+    action: 'schedule' | 'procedures' | 'settings' | 'block-time' | null;
+  }>({ isOpen: false, action: null });
 
   const doctorStatus: DoctorStatus = doctorProfile?.practice_id ? "clinic-member" : "independent";
   
@@ -186,7 +191,11 @@ const DoctorDashboard = () => {
         navigate("/doctor-procedures");
         return null;
       case "calendar":
-        return <DoctorCalendarSection doctorStatus={doctorStatus} todaysAppointments={todaysAppointments} />;
+        return <DoctorCalendarSection 
+          doctorStatus={doctorStatus} 
+          todaysAppointments={todaysAppointments}
+          upcomingAppointments={upcomingAppointments}
+        />;
       case "performance":
         return <DoctorPerformanceSection doctorProfile={doctorProfile} stats={stats} />;
       case "clinic-finder":
@@ -324,15 +333,15 @@ const DoctorDashboard = () => {
               </Card>
             </div>
 
-            {/* Recent Activity */}
+            {/* Upcoming Activity */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Recent Appointments</CardTitle>
+                  <CardTitle>Upcoming Appointments</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {recentAppointments.length > 0 ? (
-                    recentAppointments.map((appointment) => (
+                  {upcomingAppointments.length > 0 ? (
+                    upcomingAppointments.slice(0, 3).map((appointment) => (
                       <div key={appointment.id} className="flex items-center space-x-4">
                         <Avatar className="h-8 w-8">
                           <AvatarFallback>
@@ -347,9 +356,8 @@ const DoctorDashboard = () => {
                           </p>
                         </div>
                         <Badge variant="outline" className={
-                          appointment.status === 'completed' ? 'bg-green-100 text-green-700' :
                           appointment.status === 'confirmed' ? 'bg-blue-100 text-blue-700' :
-                          appointment.status === 'canceled' ? 'bg-red-100 text-red-700' :
+                          appointment.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
                           'bg-gray-100 text-gray-700'
                         }>
                           {appointment.status}
@@ -357,7 +365,11 @@ const DoctorDashboard = () => {
                       </div>
                     ))
                   ) : (
-                    <p className="text-muted-foreground text-sm">No recent appointments</p>
+                    <div className="text-center py-8">
+                      <Calendar className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                      <p className="text-muted-foreground text-sm">No upcoming appointments</p>
+                      <p className="text-xs text-muted-foreground">Your schedule is clear</p>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -370,7 +382,7 @@ const DoctorDashboard = () => {
                   <Button 
                     className="w-full justify-start" 
                     variant="outline"
-                    onClick={() => setActiveSection("calendar")}
+                    onClick={() => setQuickActionModal({ isOpen: true, action: 'schedule' })}
                   >
                     <Calendar className="w-4 h-4 mr-2" />
                     View Today's Schedule ({todaysAppointments.length})
@@ -378,7 +390,7 @@ const DoctorDashboard = () => {
                   <Button 
                     className="w-full justify-start" 
                     variant="outline"
-                    onClick={() => navigate("/doctor-schedule-settings")}
+                    onClick={() => setActiveSection("calendar")}
                   >
                     <Clock className="w-4 h-4 mr-2" />
                     Manage Schedule
@@ -386,12 +398,12 @@ const DoctorDashboard = () => {
                   <Button 
                     className="w-full justify-start" 
                     variant="outline"
-                    onClick={() => navigate("/doctor-procedures")}
+                    onClick={() => setQuickActionModal({ isOpen: true, action: 'procedures' })}
                   >
                     <Briefcase className="w-4 h-4 mr-2" />
-                    Update Procedures
+                    Quick Add Service
                   </Button>
-                  {doctorStatus === "independent" && (
+                  {!doctorProfile?.practice_id && doctorStatus === "independent" ? (
                     <Button 
                       className="w-full justify-start" 
                       variant="outline"
@@ -399,6 +411,15 @@ const DoctorDashboard = () => {
                     >
                       <Search className="w-4 h-4 mr-2" />
                       Find Clinics
+                    </Button>
+                  ) : (
+                    <Button 
+                      className="w-full justify-start" 
+                      variant="outline"
+                      onClick={() => setQuickActionModal({ isOpen: true, action: 'block-time' })}
+                    >
+                      <Clock className="w-4 h-4 mr-2" />
+                      Block Time
                     </Button>
                   )}
                 </CardContent>
@@ -443,7 +464,12 @@ const DoctorDashboard = () => {
                 <SidebarTrigger />
                 <div>
                   <h1 className="text-lg font-semibold">Welcome back, {doctorProfile?.profiles?.full_name || 'Doctor'}</h1>
-                  <p className="text-sm text-muted-foreground">{doctorProfile?.specialty || 'General Practice'}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {doctorProfile?.specialty && doctorProfile.specialty !== 'General Practice' 
+                      ? doctorProfile.specialty 
+                      : 'Specialty - Not Provided'
+                    }
+                  </p>
                 </div>
               </div>
               
@@ -488,6 +514,13 @@ const DoctorDashboard = () => {
             
             {renderContent()}
           </main>
+          
+          <QuickActionModals
+            isOpen={quickActionModal.isOpen}
+            action={quickActionModal.action}
+            onClose={() => setQuickActionModal({ isOpen: false, action: null })}
+            doctorProfile={doctorProfile}
+          />
         </div>
       </div>
     </SidebarProvider>

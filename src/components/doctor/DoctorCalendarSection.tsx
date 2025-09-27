@@ -17,6 +17,14 @@ interface DoctorCalendarSectionProps {
     patient_name?: string;
     status: string;
   }[];
+  upcomingAppointments?: {
+    id: string;
+    appointment_date: string;
+    start_time: string;
+    end_time: string;
+    patient_name?: string;
+    status: string;
+  }[];
 }
 
 interface TimeSlot {
@@ -35,7 +43,7 @@ interface WorkingHours {
   };
 }
 
-const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [] }: DoctorCalendarSectionProps) => {
+const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcomingAppointments = [] }: DoctorCalendarSectionProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [workingHours, setWorkingHours] = useState<WorkingHours>({
     monday: { enabled: true, start: "09:00", end: "17:00" },

@@ -40,6 +40,16 @@ interface DoctorProfile {
   };
 }
 
+interface UpcomingAppointment {
+  id: string;
+  appointment_date: string;
+  start_time: string;
+  end_time: string;
+  status: string;
+  patient_name?: string;
+  notes?: string;
+}
+
 interface RecentAppointment {
   id: string;
   appointment_date: string;
@@ -61,6 +71,7 @@ export const useDoctorDashboard = () => {
     numReviews: 0,
     profileCompletion: 0,
   });
+  const [upcomingAppointments, setUpcomingAppointments] = useState<UpcomingAppointment[]>([]);
   const [recentAppointments, setRecentAppointments] = useState<RecentAppointment[]>([]);
   const [todaysAppointments, setTodaysAppointments] = useState<RecentAppointment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -160,12 +171,35 @@ export const useDoctorDashboard = () => {
     if (!user || !doctorProfile) return;
 
     try {
-      // Use timeout for appointments fetch
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Appointments fetch timeout')), 8000)
-      );
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Fetch upcoming appointments (including today and future)
+      const { data: upcomingData, error: upcomingError } = await supabase
+        .from('appointments')
+        .select(`
+          id,
+          appointment_date,
+          start_time,
+          end_time,
+          status,
+          notes,
+          profiles:patient_id (
+            full_name
+          )
+        `)
+        .eq('doctor_id', doctorProfile.id)
+        .gte('appointment_date', today)
+        .in('status', ['pending', 'confirmed'])
+        .order('appointment_date', { ascending: true })
+        .order('start_time', { ascending: true })
+        .limit(5);
 
-      const queryPromise = supabase
+      if (upcomingError) {
+        console.error('Error fetching upcoming appointments:', upcomingError);
+      }
+
+      // Fetch recent appointments for statistics
+      const { data: recentData, error: recentError } = await supabase
         .from('appointments')
         .select(`
           id,
@@ -181,27 +215,28 @@ export const useDoctorDashboard = () => {
         .eq('doctor_id', doctorProfile.id)
         .order('appointment_date', { ascending: false })
         .order('start_time', { ascending: false })
-        .limit(10);
+        .limit(5);
 
-      const { data: appointments, error: appointmentsError } = await Promise.race([queryPromise, timeoutPromise]) as any;
+      if (recentError) {
+        console.error('Error fetching recent appointments:', recentError);
+      }
 
-      if (appointmentsError) throw appointmentsError;
+      const formatAppointments = (appointments: any[]) => 
+        (appointments || []).map(apt => ({
+          id: apt.id,
+          appointment_date: apt.appointment_date,
+          start_time: apt.start_time,
+          end_time: apt.end_time,
+          status: apt.status,
+          notes: apt.notes,
+          patient_name: (apt.profiles as any)?.full_name || 'Unknown Patient'
+        }));
 
-      const formattedAppointments = (appointments || []).map(apt => ({
-        id: apt.id,
-        appointment_date: apt.appointment_date,
-        start_time: apt.start_time,
-        end_time: apt.end_time,
-        status: apt.status,
-        notes: apt.notes,
-        patient_name: (apt.profiles as any)?.full_name || 'Unknown Patient'
-      }));
+      setUpcomingAppointments(formatAppointments(upcomingData || []));
+      setRecentAppointments(formatAppointments(recentData || []));
 
-      setRecentAppointments(formattedAppointments.slice(0, 3));
-
-      // Filter today's appointments
-      const today = new Date().toISOString().split('T')[0];
-      const todaysApts = formattedAppointments.filter(apt => 
+      // Filter today's appointments from upcoming
+      const todaysApts = formatAppointments(upcomingData || []).filter(apt => 
         apt.appointment_date === today
       );
       setTodaysAppointments(todaysApts);
@@ -209,6 +244,7 @@ export const useDoctorDashboard = () => {
     } catch (err: any) {
       console.error('Error fetching appointments:', err);
       // Don't set error for appointments - it's not critical for dashboard loading
+      setUpcomingAppointments([]);
       setRecentAppointments([]);
       setTodaysAppointments([]);
     }
@@ -352,6 +388,7 @@ export const useDoctorDashboard = () => {
   return {
     doctorProfile,
     stats,
+    upcomingAppointments,
     recentAppointments,
     todaysAppointments,
     loading,
