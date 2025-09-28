@@ -27,6 +27,9 @@ import DoctorSettingsSection from "@/components/doctor/DoctorSettingsSection";
 import AssignedPatientsSection from "@/components/doctor/AssignedPatientsSection";
 import InternalMessagingSection from "@/components/doctor/InternalMessagingSection";
 import TreatmentPlanningSection from "@/components/doctor/TreatmentPlanningSection";
+import DoctorScheduleSettingsSection from "@/components/doctor/DoctorScheduleSettingsSection";
+import DoctorProceduresSection from "@/components/doctor/DoctorProceduresSection";
+import DoctorProcedureLibrarySection from "@/components/doctor/DoctorProcedureLibrarySection";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDoctorDashboard } from "@/hooks/useDoctorDashboard";
@@ -185,9 +188,9 @@ const DoctorDashboard = () => {
       case "assigned-services":
         return <DoctorServicesSection readOnly={true} assignedServices={doctorProfile?.practices?.name ? ["Clinic Services"] : []} />;
       case "schedule":
-        return <div className="p-6"><h2 className="text-2xl font-bold mb-4">Schedule Settings</h2><p>Schedule settings component will be loaded here</p></div>;
+        return <DoctorScheduleSettingsSection />;
       case "procedures":
-        return <div className="p-6"><h2 className="text-2xl font-bold mb-4">Procedures</h2><p>Procedures component will be loaded here</p></div>;
+        return <DoctorProceduresSection />;
       case "calendar":
         return <DoctorCalendarSection 
           doctorStatus={doctorStatus} 
@@ -203,7 +206,7 @@ const DoctorDashboard = () => {
       case "messages":
         return <InternalMessagingSection />;
       case "procedure-library":
-        return <div className="p-6"><h2 className="text-2xl font-bold mb-4">Procedure Library</h2><p>Procedure library component will be loaded here</p></div>;
+        return <DoctorProcedureLibrarySection />;
       case "treatment-planning":
         return <TreatmentPlanningSection />;
       case "settings":
