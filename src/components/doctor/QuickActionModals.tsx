@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import ScheduleModal from "./ScheduleModal";
+import BlockTimeModal from "./BlockTimeModal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,9 +17,18 @@ interface QuickActionModalsProps {
   action: 'schedule' | 'procedures' | 'settings' | 'block-time' | null;
   onClose: () => void;
   doctorProfile?: any;
+  appointments?: Array<{
+    id: string;
+    appointment_date: string;
+    start_time: string;
+    end_time: string;
+    status: string;
+    patient_name?: string;
+    notes?: string;
+  }>;
 }
 
-const QuickActionModals = ({ isOpen, action, onClose, doctorProfile }: QuickActionModalsProps) => {
+const QuickActionModals = ({ isOpen, action, onClose, doctorProfile, appointments = [] }: QuickActionModalsProps) => {
   const { updateProfile } = useDoctorProfile();
   const { addService } = useDoctorServices();
   
@@ -207,81 +218,24 @@ const QuickActionModals = ({ isOpen, action, onClose, doctorProfile }: QuickActi
         );
 
       case 'block-time':
-        return (
-          <>
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Clock className="w-5 h-5" />
-                Block Time
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="block_start">Start Time</Label>
-                  <Input
-                    id="block_start"
-                    type="time"
-                    value={formData.block_start}
-                    onChange={(e) => setFormData(prev => ({ ...prev, block_start: e.target.value }))}
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="block_end">End Time</Label>
-                  <Input
-                    id="block_end"
-                    type="time"
-                    value={formData.block_end}
-                    onChange={(e) => setFormData(prev => ({ ...prev, block_end: e.target.value }))}
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <Label htmlFor="block_reason">Reason (Optional)</Label>
-                <Input
-                  id="block_reason"
-                  value={formData.block_reason}
-                  onChange={(e) => setFormData(prev => ({ ...prev, block_reason: e.target.value }))}
-                  placeholder="e.g., Lunch break, Personal appointment"
-                />
-              </div>
-              
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={onClose}>Cancel</Button>
-                <Button onClick={handleBlockTime}>Block Time</Button>
-              </div>
-            </div>
-          </>
-        );
+        return <BlockTimeModal isOpen={isOpen} onClose={onClose} />;
 
       case 'schedule':
-        return (
-          <>
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Calendar className="w-5 h-5" />
-                Schedule Quick View
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="text-center">
-                <p className="text-muted-foreground">
-                  Your schedule for today and upcoming appointments
-                </p>
-              </div>
-              <div className="flex justify-center">
-                <Button onClick={onClose}>View Full Calendar</Button>
-              </div>
-            </div>
-          </>
-        );
+        return <ScheduleModal isOpen={isOpen} onClose={onClose} appointments={appointments} />;
 
       default:
         return null;
     }
   };
+
+  // For schedule and block-time actions, return the dedicated modals
+  if (action === 'schedule') {
+    return <ScheduleModal isOpen={isOpen} onClose={onClose} appointments={appointments} />;
+  }
+  
+  if (action === 'block-time') {
+    return <BlockTimeModal isOpen={isOpen} onClose={onClose} />;
+  }
 
   return (
     <Dialog open={isOpen && action !== null} onOpenChange={onClose}>

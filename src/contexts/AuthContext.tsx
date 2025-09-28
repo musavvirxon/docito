@@ -155,7 +155,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: userData.role === 'doctor' 
+            ? `${window.location.origin}/doctor-dashboard`
+            : `${window.location.origin}/dashboard`,
           data: {
             full_name: userData.fullName || email,
             role: userData.role || 'patient'

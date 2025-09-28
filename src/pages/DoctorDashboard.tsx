@@ -185,11 +185,9 @@ const DoctorDashboard = () => {
       case "assigned-services":
         return <DoctorServicesSection readOnly={true} assignedServices={doctorProfile?.practices?.name ? ["Clinic Services"] : []} />;
       case "schedule":
-        navigate("/doctor-schedule-settings");
-        return null;
+        return <div className="p-6"><h2 className="text-2xl font-bold mb-4">Schedule Settings</h2><p>Schedule settings component will be loaded here</p></div>;
       case "procedures":
-        navigate("/doctor-procedures");
-        return null;
+        return <div className="p-6"><h2 className="text-2xl font-bold mb-4">Procedures</h2><p>Procedures component will be loaded here</p></div>;
       case "calendar":
         return <DoctorCalendarSection 
           doctorStatus={doctorStatus} 
@@ -205,8 +203,7 @@ const DoctorDashboard = () => {
       case "messages":
         return <InternalMessagingSection />;
       case "procedure-library":
-        navigate("/procedure-library");
-        return null;
+        return <div className="p-6"><h2 className="text-2xl font-bold mb-4">Procedure Library</h2><p>Procedure library component will be loaded here</p></div>;
       case "treatment-planning":
         return <TreatmentPlanningSection />;
       case "settings":
@@ -520,6 +517,7 @@ const DoctorDashboard = () => {
             action={quickActionModal.action}
             onClose={() => setQuickActionModal({ isOpen: false, action: null })}
             doctorProfile={doctorProfile}
+            appointments={[...upcomingAppointments, ...todaysAppointments]}
           />
         </div>
       </div>

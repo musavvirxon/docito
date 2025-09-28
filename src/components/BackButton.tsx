@@ -1,24 +1,30 @@
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+
 interface BackButtonProps {
   className?: string;
-  defaultRoute?: string;
+  fallbackPath?: string;
 }
+
 const BackButton = ({
   className = "",
-  defaultRoute = "/patient-dashboard"
+  fallbackPath
 }: BackButtonProps) => {
   const navigate = useNavigate();
-  const location = useLocation();
+  const { profile } = useAuth();
+  
   const handleBack = () => {
-    // Check if there's browser history to go back to
-    if (window.history.length > 1 && document.referrer) {
-      navigate(-1);
-    } else {
-      // If no history or accessed directly, go to default route
-      navigate(defaultRoute);
-    }
+    // Get the correct dashboard path based on user role
+    const getDashboardPath = () => {
+      if (profile?.role === 'doctor') return '/doctor-dashboard';
+      if (profile?.role === 'admin') return '/admin-dashboard';
+      return '/patient-dashboard';
+    };
+
+    const targetPath = fallbackPath || getDashboardPath();
+    navigate(targetPath);
   };
   return (
     <Button 
