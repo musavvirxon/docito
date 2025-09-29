@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import ScheduleModal from "./ScheduleModal";
+import TodaysScheduleModal from "./TodaysScheduleModal";
 import BlockTimeModal from "./BlockTimeModal";
+import AddServiceModal from "./AddServiceModal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,21 +15,13 @@ import { toast } from "sonner";
 
 interface QuickActionModalsProps {
   isOpen: boolean;
-  action: 'schedule' | 'procedures' | 'settings' | 'block-time' | null;
+  action: 'schedule' | 'procedures' | 'settings' | 'block-time' | 'add-service' | null;
   onClose: () => void;
   doctorProfile?: any;
-  appointments?: Array<{
-    id: string;
-    appointment_date: string;
-    start_time: string;
-    end_time: string;
-    status: string;
-    patient_name?: string;
-    notes?: string;
-  }>;
+  todaysAppointments?: any[];
 }
 
-const QuickActionModals = ({ isOpen, action, onClose, doctorProfile, appointments = [] }: QuickActionModalsProps) => {
+const QuickActionModals = ({ isOpen, action, onClose, doctorProfile, todaysAppointments = [] }: QuickActionModalsProps) => {
   const { updateProfile } = useDoctorProfile();
   const { addService } = useDoctorServices();
   
@@ -221,7 +214,10 @@ const QuickActionModals = ({ isOpen, action, onClose, doctorProfile, appointment
         return <BlockTimeModal isOpen={isOpen} onClose={onClose} />;
 
       case 'schedule':
-        return <ScheduleModal isOpen={isOpen} onClose={onClose} appointments={appointments} />;
+        return <TodaysScheduleModal isOpen={isOpen} onClose={onClose} appointments={todaysAppointments} />;
+      
+      case 'add-service':
+        return <AddServiceModal isOpen={isOpen} onClose={onClose} />;
 
       default:
         return null;
@@ -230,7 +226,11 @@ const QuickActionModals = ({ isOpen, action, onClose, doctorProfile, appointment
 
   // For schedule and block-time actions, return the dedicated modals
   if (action === 'schedule') {
-    return <ScheduleModal isOpen={isOpen} onClose={onClose} appointments={appointments} />;
+    return <TodaysScheduleModal isOpen={isOpen} onClose={onClose} appointments={todaysAppointments} />;
+  }
+  
+  if (action === 'add-service') {
+    return <AddServiceModal isOpen={isOpen} onClose={onClose} />;
   }
   
   if (action === 'block-time') {

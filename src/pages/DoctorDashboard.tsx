@@ -45,7 +45,7 @@ const DoctorDashboard = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
   const [quickActionModal, setQuickActionModal] = useState<{
     isOpen: boolean;
-    action: 'schedule' | 'procedures' | 'settings' | 'block-time' | null;
+    action: 'schedule' | 'procedures' | 'settings' | 'block-time' | 'add-service' | null;
   }>({ isOpen: false, action: null });
 
   const doctorStatus: DoctorStatus = doctorProfile?.practice_id ? "clinic-member" : "independent";
@@ -520,7 +520,7 @@ const DoctorDashboard = () => {
             action={quickActionModal.action}
             onClose={() => setQuickActionModal({ isOpen: false, action: null })}
             doctorProfile={doctorProfile}
-            appointments={[...upcomingAppointments, ...todaysAppointments]}
+            todaysAppointments={todaysAppointments}
           />
         </div>
       </div>

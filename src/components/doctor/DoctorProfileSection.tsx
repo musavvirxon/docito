@@ -189,7 +189,19 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
               </AvatarFallback>
             </Avatar>
             <div className="space-y-2">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={() => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = (e) => {
+                  const file = (e.target as HTMLInputElement)?.files?.[0];
+                  if (file) {
+                    // In a real app, upload to Supabase storage
+                    toast.success('Photo upload feature coming soon');
+                  }
+                };
+                input.click();
+              }}>
                 <Upload className="w-4 h-4 mr-2" />
                 Upload Photo
               </Button>
@@ -347,13 +359,25 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
               <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
               <p className="text-sm font-medium mb-1">Medical License</p>
               <p className="text-xs text-muted-foreground mb-2">Upload license document</p>
-              <Button variant="outline" size="sm">Choose File</Button>
+              <Button variant="outline" size="sm" onClick={() => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.pdf,.jpg,.jpeg,.png';
+                input.onchange = () => toast.success('Document upload feature coming soon');
+                input.click();
+              }}>Choose File</Button>
             </div>
             <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
               <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
               <p className="text-sm font-medium mb-1">Professional ID</p>
               <p className="text-xs text-muted-foreground mb-2">Government issued ID</p>
-              <Button variant="outline" size="sm">Choose File</Button>
+              <Button variant="outline" size="sm" onClick={() => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.pdf,.jpg,.jpeg,.png';
+                input.onchange = () => toast.success('Document upload feature coming soon');
+                input.click();
+              }}>Choose File</Button>
             </div>
           </div>
           
