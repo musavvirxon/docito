@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Upload, CheckCircle, AlertCircle, Clock } from "lucide-react";
-import { useDoctorProfile } from "@/hooks/useDoctorProfile";
+import { useDoctorData } from "@/contexts/DoctorDataContext";
 import { toast } from "sonner";
 
 interface DoctorProfileSectionProps {
@@ -40,8 +40,9 @@ interface DoctorProfileSectionProps {
 }
 
 const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSectionProps) => {
-  const { profile, loading, updateProfile, profileCompletion } = useDoctorProfile();
+  const { doctorProfile: profile, loading, updateProfile, stats } = useDoctorData();
   const doctorProfile = propProfile || profile;
+  const profileCompletion = stats.profileCompletion;
   
   const [formData, setFormData] = useState({
     specialty: '',

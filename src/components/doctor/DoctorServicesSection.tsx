@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Edit, Trash2, DollarSign, Clock } from "lucide-react";
-import { useDoctorServices } from "@/hooks/useDoctorServices";
+import { useDoctorData } from "@/contexts/DoctorDataContext";
 
 interface DoctorServicesSectionProps {
   readOnly?: boolean;
@@ -26,7 +26,7 @@ interface ServiceFormData {
 }
 
 const DoctorServicesSection = ({ readOnly = false, assignedServices }: DoctorServicesSectionProps) => {
-  const { services, loading, addService, updateService, deleteService, toggleServiceStatus } = useDoctorServices();
+  const { services, loading, addService, updateService, deleteService } = useDoctorData();
   const [isAddingService, setIsAddingService] = useState(false);
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
 
@@ -34,7 +34,7 @@ const DoctorServicesSection = ({ readOnly = false, assignedServices }: DoctorSer
 
   const handleToggleStatus = async (serviceId: string, active: boolean) => {
     if (readOnly) return;
-    await toggleServiceStatus(serviceId, active);
+    await updateService(serviceId, { is_active: active });
   };
 
   const handleDeleteService = async (serviceId: string) => {

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Bell, Settings, User, Calendar, BarChart3, Search, Briefcase, MapPin, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2 } from "lucide-react";
+import { DoctorDataProvider, useDoctorData } from "@/contexts/DoctorDataContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,10 +39,10 @@ import QuickActionModals from "@/components/doctor/QuickActionModals";
 
 type DoctorStatus = "independent" | "clinic-member";
 
-const DoctorDashboard = () => {
+const DoctorDashboardContent = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
-  const { doctorProfile, stats, upcomingAppointments, recentAppointments, todaysAppointments, loading, error, retryFetch } = useDoctorDashboard();
+  const { doctorProfile, stats, upcomingAppointments, recentAppointments, todaysAppointments, loading, refreshAll } = useDoctorData();
   const [activeSection, setActiveSection] = useState("dashboard");
   const [quickActionModal, setQuickActionModal] = useState<{
     isOpen: boolean;
@@ -87,19 +88,19 @@ const DoctorDashboard = () => {
     );
   }
 
-  // Show error state but allow partial dashboard access
-  if (error && !doctorProfile) {
+  // Show minimal interface for partial access
+  if (!doctorProfile) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center max-w-md p-6 bg-card border border-border rounded-lg">
           <div className="mb-4">
-            <h2 className="text-xl font-semibold text-destructive mb-2">Dashboard Loading Issue</h2>
+            <h2 className="text-xl font-semibold text-destructive mb-2">Setting Up Profile</h2>
             <p className="text-muted-foreground mb-4">
-              {error || 'Unable to load your doctor profile. Let us set up your account.'}
+              Unable to load your doctor profile. Let us set up your account.
             </p>
           </div>
           <div className="space-y-2">
-            <Button onClick={retryFetch} className="w-full">
+            <Button onClick={refreshAll} className="w-full">
               Retry Loading
             </Button>
             <Button 
@@ -134,7 +135,7 @@ const DoctorDashboard = () => {
             </p>
           </div>
           <div className="space-y-2">
-            <Button onClick={retryFetch} className="w-full">
+            <Button onClick={refreshAll} className="w-full">
               Try Again
             </Button>
             <Button 
@@ -525,6 +526,14 @@ const DoctorDashboard = () => {
         </div>
       </div>
     </SidebarProvider>
+  );
+};
+
+const DoctorDashboard = () => {
+  return (
+    <DoctorDataProvider>
+      <DoctorDashboardContent />
+    </DoctorDataProvider>
   );
 };
 
