@@ -13,8 +13,7 @@ import { Clock, Calendar as CalendarIcon, Plus, Trash2, Save, AlertCircle, Loade
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useDoctorData } from '@/contexts/DoctorDataContext';
 
 interface WorkingHours {
   enabled: boolean;
@@ -46,9 +45,8 @@ interface ScheduleSettings {
 
 const DoctorScheduleSettingsSection = () => {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { scheduleSettings: contextScheduleSettings, updateScheduleSettings, scheduleLoading, refreshSchedule } = useDoctorData();
   const [isSaving, setIsSaving] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
 
   // Default settings for new doctors
@@ -73,6 +71,7 @@ const DoctorScheduleSettingsSection = () => {
     breaks: []
   };
 
+  // Convert context data to local format
   const [scheduleSettings, setScheduleSettings] = useState<ScheduleSettings>({
     workingDays: {
       monday: defaultWorkingHours,
@@ -97,20 +96,10 @@ const DoctorScheduleSettingsSection = () => {
     sunday: 'Sunday'
   };
 
+  // Sync with context schedule settings
   useEffect(() => {
-    if (user) {
-      fetchScheduleSettings();
-    }
-  }, [user]);
-
-  const fetchScheduleSettings = async () => {
-    if (!user) return;
-
-    try {
-      setIsLoading(true);
-      // In a real app, this would fetch from a schedule_settings table
-      // For now, we'll use default settings
-      setScheduleSettings({
+    if (contextScheduleSettings?.working_days) {
+      const convertedSettings: ScheduleSettings = {
         workingDays: {
           monday: defaultWorkingHours,
           tuesday: defaultWorkingHours,
@@ -120,20 +109,28 @@ const DoctorScheduleSettingsSection = () => {
           saturday: defaultWeekendHours,
           sunday: defaultWeekendHours,
         },
-        defaultBufferTime: 15,
-        holidays: []
+        defaultBufferTime: contextScheduleSettings.buffer_time || 15,
+        holidays: (contextScheduleSettings.holidays || []).map((h: string) => new Date(h))
+      };
+
+      Object.keys(contextScheduleSettings.working_days).forEach(day => {
+        const dayData = contextScheduleSettings.working_days[day];
+        convertedSettings.workingDays[day as keyof typeof convertedSettings.workingDays] = {
+          enabled: dayData.enabled,
+          startTime: dayData.start_time,
+          endTime: dayData.end_time,
+          breaks: (dayData.breaks || []).map((b: any, idx: number) => ({
+            id: idx.toString(),
+            name: b.name || 'Break',
+            startTime: b.start_time,
+            endTime: b.end_time
+          }))
+        };
       });
-    } catch (error) {
-      console.error('Error fetching schedule settings:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load schedule settings",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+
+      setScheduleSettings(convertedSettings);
     }
-  };
+  }, [contextScheduleSettings]);
 
   const updateWorkingDay = (day: keyof typeof scheduleSettings.workingDays, updates: Partial<WorkingHours>) => {
     setScheduleSettings(prev => ({
@@ -191,21 +188,44 @@ const DoctorScheduleSettingsSection = () => {
   };
 
   const handleSave = async () => {
-    if (!user) return;
-
     setIsSaving(true);
     try {
-      // In a real app, this would save to schedule_settings table
-      // For now, we'll just simulate saving
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      console.log('Schedule settings saved:', scheduleSettings);
-      
-      toast({
-        title: "Schedule Updated",
-        description: "Your schedule settings have been saved successfully.",
+      // Convert local format back to context format
+      const convertedSettings = {
+        working_days: {} as any,
+        buffer_time: scheduleSettings.defaultBufferTime,
+        holidays: scheduleSettings.holidays.map(h => h.toISOString().split('T')[0])
+      };
+
+      Object.keys(scheduleSettings.workingDays).forEach(day => {
+        const dayData = scheduleSettings.workingDays[day as keyof typeof scheduleSettings.workingDays];
+        convertedSettings.working_days[day] = {
+          enabled: dayData.enabled,
+          start_time: dayData.startTime,
+          end_time: dayData.endTime,
+          breaks: dayData.breaks.map(b => ({
+            name: b.name,
+            start_time: b.startTime,
+            end_time: b.endTime
+          }))
+        };
       });
+
+      const result = await updateScheduleSettings(convertedSettings);
+      
+      if (result.success) {
+        toast({
+          title: "Schedule Updated",
+          description: "Your schedule settings have been saved successfully and will reflect across the calendar.",
+        });
+        
+        // Refresh schedule data to ensure calendar is updated
+        await refreshSchedule();
+      } else {
+        throw new Error(result.error || 'Failed to save');
+      }
     } catch (error) {
+      console.error('Error saving schedule:', error);
       toast({
         title: "Error",
         description: "Failed to save schedule settings. Please try again.",
@@ -224,7 +244,7 @@ const DoctorScheduleSettingsSection = () => {
     }
   }
 
-  if (isLoading) {
+  if (scheduleLoading) {
     return (
       <div className="flex items-center justify-center py-8">
         <div className="text-center">

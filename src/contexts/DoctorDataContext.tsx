@@ -1,5 +1,6 @@
 import React, { createContext, useContext } from 'react';
 import { useDoctorIntegration } from '@/hooks/useDoctorIntegration';
+import { useScheduleSettings } from '@/hooks/useScheduleSettings';
 
 interface DoctorDataContextType {
   // Profile
@@ -31,9 +32,11 @@ interface DoctorDataContextType {
   loading: boolean;
   refreshAll: () => Promise<void>;
   
-  // Legacy compatibility
+  // Schedule settings
   scheduleSettings: any;
   updateScheduleSettings: (settings: any) => Promise<{ success?: boolean; error?: string }>;
+  scheduleLoading: boolean;
+  refreshSchedule: () => Promise<void>;
 }
 
 const DoctorDataContext = createContext<DoctorDataContextType | undefined>(undefined);
@@ -48,13 +51,17 @@ export const useDoctorData = () => {
 
 export const DoctorDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const doctorData = useDoctorIntegration();
+  const scheduleData = useScheduleSettings();
 
   const value = {
     ...doctorData,
     // Legacy compatibility
     refreshAll: doctorData.refreshAllData,
-    scheduleSettings: null,
-    updateScheduleSettings: async () => ({ success: true }),
+    // Schedule settings integration
+    scheduleSettings: scheduleData.scheduleSettings,
+    updateScheduleSettings: scheduleData.updateScheduleSettings,
+    scheduleLoading: scheduleData.loading,
+    refreshSchedule: scheduleData.refetch,
   };
 
   return (

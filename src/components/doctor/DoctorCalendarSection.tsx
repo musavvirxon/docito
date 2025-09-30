@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, Plus, Settings } from "lucide-react";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { useDoctorData } from "@/contexts/DoctorDataContext";
+import { toast } from "sonner";
 
 interface DoctorCalendarSectionProps {
   doctorStatus: "independent" | "clinic-member";
@@ -44,6 +46,7 @@ interface WorkingHours {
 }
 
 const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcomingAppointments = [] }: DoctorCalendarSectionProps) => {
+  const { scheduleSettings, updateScheduleSettings, scheduleLoading } = useDoctorData();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [workingHours, setWorkingHours] = useState<WorkingHours>({
     monday: { enabled: true, start: "09:00", end: "17:00" },
@@ -54,12 +57,36 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
     saturday: { enabled: false, start: "09:00", end: "13:00" },
     sunday: { enabled: false, start: "09:00", end: "13:00" }
   });
+
+  // Sync with schedule settings from context
+  useEffect(() => {
+    if (scheduleSettings?.working_days) {
+      const newWorkingHours: WorkingHours = {};
+      Object.keys(scheduleSettings.working_days).forEach(day => {
+        const daySettings = scheduleSettings.working_days[day];
+        newWorkingHours[day] = {
+          enabled: daySettings.enabled,
+          start: daySettings.start_time,
+          end: daySettings.end_time
+        };
+      });
+      setWorkingHours(newWorkingHours);
+    }
+  }, [scheduleSettings]);
   
-  // Convert today's appointments to time slots
+  // Convert today's appointments to time slots based on working hours
   const generateTimeSlots = (): TimeSlot[] => {
     const slots: TimeSlot[] = [];
-    const startHour = 9;
-    const endHour = 17;
+    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const today = dayNames[new Date().getDay()];
+    const todaySchedule = workingHours[today];
+    
+    if (!todaySchedule || !todaySchedule.enabled) {
+      return slots; // Return empty if day is disabled
+    }
+    
+    const [startHour] = todaySchedule.start.split(':').map(Number);
+    const [endHour] = todaySchedule.end.split(':').map(Number);
     
     for (let hour = startHour; hour < endHour; hour++) {
       const timeString = `${hour.toString().padStart(2, '0')}:00`;
@@ -85,7 +112,12 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
     return slots;
   };
 
-  const [timeSlots] = useState<TimeSlot[]>(generateTimeSlots());
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(generateTimeSlots());
+
+  // Regenerate time slots when working hours or appointments change
+  useEffect(() => {
+    setTimeSlots(generateTimeSlots());
+  }, [workingHours, todaysAppointments]);
 
   const [slotDuration, setSlotDuration] = useState("60");
   const [bufferTime, setBufferTime] = useState("15");
@@ -113,6 +145,31 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
         [field]: value
       }
     }));
+  };
+
+  const handleSaveAvailability = async () => {
+    // Convert local state to schedule settings format
+    const updatedWorkingDays: any = {};
+    Object.keys(workingHours).forEach(day => {
+      updatedWorkingDays[day] = {
+        enabled: workingHours[day].enabled,
+        start_time: workingHours[day].start,
+        end_time: workingHours[day].end,
+        breaks: scheduleSettings?.working_days?.[day]?.breaks || []
+      };
+    });
+
+    const result = await updateScheduleSettings({
+      ...scheduleSettings,
+      working_days: updatedWorkingDays,
+      buffer_time: parseInt(bufferTime)
+    });
+
+    if (result.success) {
+      toast.success("Availability settings saved successfully");
+    } else {
+      toast.error("Failed to save availability settings");
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -328,7 +385,9 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
             </div>
           </div>
 
-          <Button>Save Availability Settings</Button>
+          <Button onClick={handleSaveAvailability} disabled={scheduleLoading}>
+            {scheduleLoading ? "Saving..." : "Save Availability Settings"}
+          </Button>
         </CardContent>
       </Card>
     </div>
