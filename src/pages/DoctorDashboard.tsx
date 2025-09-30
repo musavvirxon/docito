@@ -33,7 +33,6 @@ import DoctorProceduresSection from "@/components/doctor/DoctorProceduresSection
 import DoctorProcedureLibrarySection from "@/components/doctor/DoctorProcedureLibrarySection";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useDoctorDashboard } from "@/hooks/useDoctorDashboard";
 import { authApi } from "@/lib/api/supabase-api";
 import QuickActionModals from "@/components/doctor/QuickActionModals";
 

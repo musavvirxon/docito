@@ -425,17 +425,25 @@ export const useDoctorIntegration = () => {
     }
   }, [fetchDoctorProfile, fetchServices, fetchAppointments, fetchTreatmentPlans, calculateStats]);
 
-  // Real-time subscriptions for data sync
+  // Real-time subscriptions for data sync with debouncing
   useEffect(() => {
     if (!doctorProfile) return;
+
+    let debounceTimer: NodeJS.Timeout;
+    const triggerRefresh = () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        setRefreshTrigger(prev => prev + 1);
+      }, 1000); // Debounce for 1 second
+    };
 
     const channels = [
       // Profile changes
       supabase
         .channel('doctor-profile-changes')
         .on('postgres_changes', 
-          { event: '*', schema: 'public', table: 'doctors', filter: `id=eq.${doctorProfile.id}` },
-          () => setRefreshTrigger(prev => prev + 1)
+          { event: 'UPDATE', schema: 'public', table: 'doctors', filter: `id=eq.${doctorProfile.id}` },
+          triggerRefresh
         )
         .subscribe(),
 
@@ -444,7 +452,7 @@ export const useDoctorIntegration = () => {
         .channel('doctor-services-changes')
         .on('postgres_changes', 
           { event: '*', schema: 'public', table: 'procedures', filter: `dentist_id=eq.${doctorProfile.id}` },
-          () => setRefreshTrigger(prev => prev + 1)
+          triggerRefresh
         )
         .subscribe(),
 
@@ -453,24 +461,59 @@ export const useDoctorIntegration = () => {
         .channel('doctor-appointments-changes')
         .on('postgres_changes', 
           { event: '*', schema: 'public', table: 'appointments', filter: `doctor_id=eq.${doctorProfile.id}` },
-          () => setRefreshTrigger(prev => prev + 1)
+          triggerRefresh
         )
         .subscribe()
     ];
 
     return () => {
+      clearTimeout(debounceTimer);
       channels.forEach(channel => supabase.removeChannel(channel));
     };
   }, [doctorProfile]);
 
-  // Initial load and refresh trigger
+  // Initial load only - do not include refreshAllData in dependencies to prevent loops
   useEffect(() => {
-    if (user && profile?.role === 'doctor') {
-      refreshAllData();
-    } else {
-      setLoading(false);
-    }
-  }, [user, profile, refreshTrigger, refreshAllData]);
+    let mounted = true;
+    
+    const loadInitialData = async () => {
+      if (user && profile?.role === 'doctor' && mounted) {
+        await refreshAllData();
+      } else if (mounted) {
+        setLoading(false);
+      }
+    };
+    
+    loadInitialData();
+    
+    return () => {
+      mounted = false;
+    };
+  }, [user, profile]);
+  
+  // Handle refresh trigger separately without calling refreshAllData
+  useEffect(() => {
+    if (!doctorProfile || refreshTrigger === 0) return;
+    
+    let mounted = true;
+    
+    const handleRefresh = async () => {
+      if (!mounted) return;
+      
+      // Fetch only the changed data, not everything
+      await Promise.all([
+        fetchServices(),
+        fetchAppointments(),
+        calculateStats()
+      ]);
+    };
+    
+    handleRefresh();
+    
+    return () => {
+      mounted = false;
+    };
+  }, [refreshTrigger]);
 
   return {
     // Data
