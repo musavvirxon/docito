@@ -66,15 +66,34 @@ export const useScheduleSettings = () => {
     try {
       setLoading(true);
       
-      // For now, load from localStorage as a fallback
-      // In the future, this would connect to a schedule_settings table
-      const saved = localStorage.getItem(`schedule_settings_${user.id}`);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setScheduleSettings(parsed);
+      // Get doctor profile first
+      const { data: doctorData, error: doctorError } = await supabase
+        .from('doctors')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (doctorError) throw doctorError;
+
+      // Fetch schedule settings from backend
+      const { data, error } = await supabase
+        .from('schedule_settings')
+        .select('*')
+        .eq('doctor_id', doctorData.id)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') throw error;
+
+      if (data) {
+        setScheduleSettings({
+          working_days: (data.working_days as unknown) as Record<string, WorkingHours>,
+          buffer_time: data.buffer_time,
+          holidays: data.holidays || []
+        });
       }
     } catch (error) {
       console.error('Error loading schedule settings:', error);
+      toast.error('Failed to load schedule settings');
     } finally {
       setLoading(false);
     }
@@ -86,10 +105,30 @@ export const useScheduleSettings = () => {
     try {
       setSaving(true);
       
-      // Save to localStorage for now
-      localStorage.setItem(`schedule_settings_${user.id}`, JSON.stringify(newSettings));
+      // Get doctor profile first
+      const { data: doctorData, error: doctorError } = await supabase
+        .from('doctors')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (doctorError) throw doctorError;
+
+      // Upsert schedule settings to backend
+      const { error } = await supabase
+        .from('schedule_settings')
+        .upsert({
+          doctor_id: doctorData.id,
+          working_days: newSettings.working_days as any,
+          buffer_time: newSettings.buffer_time,
+          holidays: newSettings.holidays || []
+        } as any, {
+          onConflict: 'doctor_id'
+        });
+
+      if (error) throw error;
+
       setScheduleSettings(newSettings);
-      
       toast.success('Schedule settings saved successfully');
       return { success: true };
     } catch (error: any) {

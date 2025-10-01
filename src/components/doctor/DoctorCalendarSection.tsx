@@ -74,22 +74,34 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
     }
   }, [scheduleSettings]);
   
+  const [slotDuration, setSlotDuration] = useState("60");
+  const [bufferTime, setBufferTime] = useState("15");
+
   // Convert today's appointments to time slots based on working hours
   const generateTimeSlots = (): TimeSlot[] => {
     const slots: TimeSlot[] = [];
     const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    const today = dayNames[new Date().getDay()];
-    const todaySchedule = workingHours[today];
+    const selectedDayName = selectedDate ? dayNames[selectedDate.getDay()] : dayNames[new Date().getDay()];
+    const daySchedule = workingHours[selectedDayName];
     
-    if (!todaySchedule || !todaySchedule.enabled) {
+    if (!daySchedule || !daySchedule.enabled) {
       return slots; // Return empty if day is disabled
     }
     
-    const [startHour] = todaySchedule.start.split(':').map(Number);
-    const [endHour] = todaySchedule.end.split(':').map(Number);
+    // Parse start and end times with minutes
+    const [startHour, startMinute] = daySchedule.start.split(':').map(Number);
+    const [endHour, endMinute] = daySchedule.end.split(':').map(Number);
     
-    for (let hour = startHour; hour < endHour; hour++) {
-      const timeString = `${hour.toString().padStart(2, '0')}:00`;
+    const startMinutes = startHour * 60 + startMinute;
+    const endMinutes = endHour * 60 + endMinute;
+    const slotDurationMinutes = parseInt(slotDuration);
+    
+    // Generate slots based on slot duration
+    for (let minutes = startMinutes; minutes < endMinutes; minutes += slotDurationMinutes) {
+      const hour = Math.floor(minutes / 60);
+      const minute = minutes % 60;
+      const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+      
       const appointment = todaysAppointments.find(apt => apt.start_time === timeString);
       
       if (appointment) {
@@ -102,7 +114,7 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
         });
       } else {
         slots.push({
-          id: `slot-${hour}`,
+          id: `slot-${minutes}`,
           time: timeString,
           status: "available"
         });
@@ -112,15 +124,12 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
     return slots;
   };
 
-  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(generateTimeSlots());
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
 
-  // Regenerate time slots when working hours or appointments change
+  // Regenerate time slots when working hours, appointments, or selected date changes
   useEffect(() => {
     setTimeSlots(generateTimeSlots());
-  }, [workingHours, todaysAppointments]);
-
-  const [slotDuration, setSlotDuration] = useState("60");
-  const [bufferTime, setBufferTime] = useState("15");
+  }, [workingHours, todaysAppointments, selectedDate, slotDuration]);
 
   const days = [
     { key: "monday", label: "Monday" },
@@ -132,9 +141,12 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
     { key: "sunday", label: "Sunday" }
   ];
 
-  const timeOptions = Array.from({ length: 24 }, (_, i) => {
-    const hour = i.toString().padStart(2, '0');
-    return { value: `${hour}:00`, label: `${hour}:00` };
+  const timeOptions = Array.from({ length: 96 }, (_, i) => {
+    const totalMinutes = i * 15; // 15-minute intervals
+    const hour = Math.floor(totalMinutes / 60);
+    const minute = totalMinutes % 60;
+    const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+    return { value: timeString, label: timeString };
   });
 
   const updateWorkingHours = (day: string, field: string, value: string | boolean) => {

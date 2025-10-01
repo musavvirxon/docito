@@ -789,6 +789,51 @@ export type Database = {
           },
         ]
       }
+      schedule_settings: {
+        Row: {
+          buffer_time: number | null
+          created_at: string | null
+          doctor_id: string
+          holidays: string[] | null
+          id: string
+          updated_at: string | null
+          working_days: Json
+        }
+        Insert: {
+          buffer_time?: number | null
+          created_at?: string | null
+          doctor_id: string
+          holidays?: string[] | null
+          id?: string
+          updated_at?: string | null
+          working_days?: Json
+        }
+        Update: {
+          buffer_time?: number | null
+          created_at?: string | null
+          doctor_id?: string
+          holidays?: string[] | null
+          id?: string
+          updated_at?: string | null
+          working_days?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_settings_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: true
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedule_settings_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: true
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       treatment_plan_procedures: {
         Row: {
           appointment_id: string | null
