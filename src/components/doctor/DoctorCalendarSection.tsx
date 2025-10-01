@@ -35,6 +35,7 @@ interface TimeSlot {
   patient?: string;
   service?: string;
   status: "available" | "booked" | "blocked";
+  reason?: string; // Reason for being blocked/unavailable
 }
 
 interface WorkingHours {
@@ -72,10 +73,37 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
       });
       setWorkingHours(newWorkingHours);
     }
+    
+    // Sync buffer time
+    if (scheduleSettings?.buffer_time) {
+      setBufferTime(scheduleSettings.buffer_time.toString());
+    }
   }, [scheduleSettings]);
   
   const [slotDuration, setSlotDuration] = useState("60");
   const [bufferTime, setBufferTime] = useState("15");
+
+  // Check if a time is within a break period
+  const isTimeInBreak = (timeMinutes: number, breaks: any[]): { inBreak: boolean; breakName?: string } => {
+    for (const breakTime of breaks) {
+      const [breakStartHour, breakStartMinute] = breakTime.start_time.split(':').map(Number);
+      const [breakEndHour, breakEndMinute] = breakTime.end_time.split(':').map(Number);
+      const breakStartMinutes = breakStartHour * 60 + breakStartMinute;
+      const breakEndMinutes = breakEndHour * 60 + breakEndMinute;
+      
+      if (timeMinutes >= breakStartMinutes && timeMinutes < breakEndMinutes) {
+        return { inBreak: true, breakName: breakTime.name || 'Break' };
+      }
+    }
+    return { inBreak: false };
+  };
+
+  // Check if selected date is a holiday
+  const isHoliday = (date: Date | undefined): boolean => {
+    if (!date || !scheduleSettings?.holidays) return false;
+    const dateStr = date.toISOString().split('T')[0];
+    return scheduleSettings.holidays.includes(dateStr);
+  };
 
   // Convert today's appointments to time slots based on working hours
   const generateTimeSlots = (): TimeSlot[] => {
@@ -84,8 +112,13 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
     const selectedDayName = selectedDate ? dayNames[selectedDate.getDay()] : dayNames[new Date().getDay()];
     const daySchedule = workingHours[selectedDayName];
     
+    // Check if it's a holiday
+    if (isHoliday(selectedDate)) {
+      return slots; // Return empty - will show holiday message in UI
+    }
+    
     if (!daySchedule || !daySchedule.enabled) {
-      return slots; // Return empty if day is disabled
+      return slots; // Return empty if day is disabled - will show closed message in UI
     }
     
     // Parse start and end times with minutes
@@ -95,12 +128,29 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
     const startMinutes = startHour * 60 + startMinute;
     const endMinutes = endHour * 60 + endMinute;
     const slotDurationMinutes = parseInt(slotDuration);
+    const bufferMinutes = parseInt(bufferTime);
+    
+    // Get breaks for this day
+    const breaks = scheduleSettings?.working_days?.[selectedDayName]?.breaks || [];
     
     // Generate slots based on slot duration
-    for (let minutes = startMinutes; minutes < endMinutes; minutes += slotDurationMinutes) {
+    for (let minutes = startMinutes; minutes < endMinutes; minutes += slotDurationMinutes + bufferMinutes) {
       const hour = Math.floor(minutes / 60);
       const minute = minutes % 60;
       const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+      
+      // Check if this time is during a break
+      const breakCheck = isTimeInBreak(minutes, breaks);
+      
+      if (breakCheck.inBreak) {
+        slots.push({
+          id: `break-${minutes}`,
+          time: timeString,
+          status: "blocked",
+          reason: `Break: ${breakCheck.breakName}`
+        });
+        continue;
+      }
       
       const appointment = todaysAppointments.find(apt => apt.start_time === timeString);
       
@@ -246,27 +296,50 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
                   })}
                 </h3>
                 
-                <div className="space-y-2">
-                  {timeSlots.map((slot) => (
-                    <div
-                      key={slot.id}
-                      className={`p-3 rounded-lg border ${getStatusColor(slot.status)} flex justify-between items-center`}
-                    >
-                      <div>
-                        <div className="font-medium">{slot.time}</div>
-                        {slot.patient && (
-                          <div className="text-sm">
-                            <div>{slot.patient}</div>
-                            <div className="text-muted-foreground">{slot.service}</div>
-                          </div>
-                        )}
+                {isHoliday(selectedDate) ? (
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <Badge variant="outline" className="bg-red-100 text-red-700 border-red-200 mb-2">
+                      Holiday / Day Off
+                    </Badge>
+                    <p className="text-muted-foreground">No appointments scheduled</p>
+                  </div>
+                ) : !workingHours[selectedDate ? ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][selectedDate.getDay()] : 'monday']?.enabled ? (
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <Badge variant="outline" className="bg-gray-100 text-gray-700 border-gray-200 mb-2">
+                      Not a Working Day
+                    </Badge>
+                    <p className="text-muted-foreground">Office is closed</p>
+                  </div>
+                ) : timeSlots.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <p className="text-muted-foreground">No time slots available</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {timeSlots.map((slot) => (
+                      <div
+                        key={slot.id}
+                        className={`p-3 rounded-lg border ${getStatusColor(slot.status)} flex justify-between items-center`}
+                      >
+                        <div>
+                          <div className="font-medium">{slot.time}</div>
+                          {slot.patient && (
+                            <div className="text-sm">
+                              <div>{slot.patient}</div>
+                              <div className="text-muted-foreground">{slot.service}</div>
+                            </div>
+                          )}
+                          {slot.reason && (
+                            <div className="text-sm text-muted-foreground">{slot.reason}</div>
+                          )}
+                        </div>
+                        <Badge variant="outline" className={getStatusColor(slot.status)}>
+                          {slot.status}
+                        </Badge>
                       </div>
-                      <Badge variant="outline" className={getStatusColor(slot.status)}>
-                        {slot.status}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>
