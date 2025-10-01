@@ -1,19 +1,27 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Star, Calendar } from "lucide-react";
+import { StarRating } from "@/components/ui/star-rating";
+import { Calendar, MapPin } from "lucide-react";
 import { useBookingAuth } from "@/hooks/useBookingAuth";
-import { useDoctors } from "@/hooks/useDoctors";
 import { useEffect, useState } from "react";
+import { doctorApi } from "@/lib/api/supabase-api";
+import { useNavigate } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const TopSpecialistsSection = () => {
   const { handleBookingClick } = useBookingAuth();
-  const { getTopRatedDoctors, loading } = useDoctors();
+  const navigate = useNavigate();
   const [specialists, setSpecialists] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchTopDoctors = async () => {
-      const topDoctors = await getTopRatedDoctors(6);
-      setSpecialists(topDoctors);
+      setLoading(true);
+      const result = await doctorApi.fetchTopDoctorsBySpecialty(6);
+      if ('success' in result && result.success) {
+        setSpecialists(result.data);
+      }
+      setLoading(false);
     };
     
     fetchTopDoctors();
@@ -29,9 +37,10 @@ const TopSpecialistsSection = () => {
       specialty: "Cardiologist",
       degree: "MD, PhD",
       country: "United States",
-      region: "New York, NY",
+      city: "New York",
       rating: 4.9,
-      biography: "Dr. Johnson is a board-certified cardiologist with over 15 years of experience in treating cardiovascular diseases. She specializes in preventive cardiology and advanced heart failure management."
+      reviewCount: 87,
+      biography: "Dr. Johnson is a board-certified cardiologist with over 15 years of experience in treating cardiovascular diseases."
     },
     {
       id: 2,
@@ -41,9 +50,10 @@ const TopSpecialistsSection = () => {
       specialty: "Neurologist",
       degree: "MD",
       country: "Canada",
-      region: "Toronto, ON",
+      city: "Toronto",
       rating: 4.8,
-      biography: "Dr. Chen specializes in neurological disorders and has extensive experience in treating patients with epilepsy, multiple sclerosis, and Parkinson's disease."
+      reviewCount: 65,
+      biography: "Dr. Chen specializes in neurological disorders with extensive experience in treating epilepsy and Parkinson's disease."
     },
     {
       id: 3,
@@ -53,9 +63,10 @@ const TopSpecialistsSection = () => {
       specialty: "Dermatologist",
       degree: "MD, FAAD",
       country: "United States",
-      region: "Los Angeles, CA",
+      city: "Los Angeles",
       rating: 4.9,
-      biography: "Dr. Rodriguez is a leading dermatologist specializing in cosmetic and medical dermatology. She has pioneered several innovative treatments for skin cancer."
+      reviewCount: 92,
+      biography: "Dr. Rodriguez is a leading dermatologist specializing in cosmetic and medical dermatology."
     },
     {
       id: 4,
@@ -65,9 +76,10 @@ const TopSpecialistsSection = () => {
       specialty: "Orthopedist",
       degree: "MD, MS",
       country: "United Kingdom",
-      region: "London, England",
+      city: "London",
       rating: 4.7,
-      biography: "Dr. Thompson is an orthopedic surgeon with expertise in joint replacement and sports medicine. He has performed over 2,000 successful surgeries."
+      reviewCount: 58,
+      biography: "Dr. Thompson is an orthopedic surgeon with expertise in joint replacement and sports medicine."
     },
     {
       id: 5,
@@ -77,9 +89,10 @@ const TopSpecialistsSection = () => {
       specialty: "Pediatrician",
       degree: "MD, MPH",
       country: "Australia",
-      region: "Sydney, NSW",
+      city: "Sydney",
       rating: 4.8,
-      biography: "Dr. Wang is a dedicated pediatrician with a focus on child development and preventive care. She has been caring for children for over 12 years."
+      reviewCount: 74,
+      biography: "Dr. Wang is a dedicated pediatrician with a focus on child development and preventive care."
     },
     {
       id: 6,
@@ -89,9 +102,10 @@ const TopSpecialistsSection = () => {
       specialty: "Psychiatrist",
       degree: "MD, PhD",
       country: "United States",
-      region: "Chicago, IL",
+      city: "Chicago",
       rating: 4.9,
-      biography: "Dr. Mitchell specializes in adult psychiatry and has extensive experience in treating anxiety, depression, and bipolar disorder using both therapy and medication."
+      reviewCount: 81,
+      biography: "Dr. Mitchell specializes in adult psychiatry with extensive experience in treating anxiety and depression."
     }
   ];
 
@@ -103,9 +117,9 @@ const TopSpecialistsSection = () => {
         firstName: doctor.profiles?.full_name?.split(' ')[0] || "Doctor",
         lastName: doctor.profiles?.full_name?.split(' ').slice(1).join(' ') || "",
         specialty: doctor.specialty,
-        degree: "MD", // Default degree since not in current schema
+        degree: "MD",
         country: doctor.practices?.country || "United States",
-        region: `${doctor.practices?.city || "City"}, ${doctor.practices?.country || "Country"}`,
+        city: doctor.practices?.city || "City",
         rating: doctor.weighted_rating || doctor.average_rating || 4.8,
         reviewCount: doctor.num_reviews || 0,
         biography: doctor.bio || "Experienced medical professional dedicated to providing quality healthcare."
@@ -121,56 +135,71 @@ const TopSpecialistsSection = () => {
           {loading ? (
             // Loading skeleton
             Array.from({ length: 6 }).map((_, index) => (
-              <Card key={index} className="hover:shadow-lg transition-shadow cursor-pointer">
+              <Card key={index} className="overflow-hidden">
                 <CardContent className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-20 h-20 rounded-full bg-muted animate-pulse"></div>
-                    <div className="flex-1">
-                      <div className="h-5 bg-muted rounded animate-pulse mb-2"></div>
-                      <div className="h-4 bg-muted rounded animate-pulse mb-2 w-3/4"></div>
-                      <div className="h-3 bg-muted rounded animate-pulse mb-2 w-1/2"></div>
-                      <div className="h-3 bg-muted rounded animate-pulse w-2/3"></div>
+                  <div className="flex items-start space-x-4 mb-4">
+                    <Skeleton className="w-20 h-20 rounded-full" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-5 w-3/4" />
+                      <Skeleton className="h-4 w-1/2" />
+                      <Skeleton className="h-3 w-2/3" />
                     </div>
                   </div>
-                  <div className="h-12 bg-muted rounded animate-pulse mt-4"></div>
+                  <Skeleton className="h-16 w-full mb-4" />
+                  <Skeleton className="h-10 w-full" />
                 </CardContent>
               </Card>
             ))
           ) : (
             displaySpecialists.map((specialist) => (
-            <Card key={specialist.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Card 
+              key={specialist.id} 
+              className="overflow-hidden transition-all duration-200 hover:shadow-lg hover:scale-[1.02] cursor-pointer group"
+            >
               <CardContent className="p-6">
-                <div className="flex items-start space-x-4">
+                <div className="flex items-start space-x-4 mb-4">
                   <img
                     src={specialist.photo}
                     alt={`Dr. ${specialist.firstName} ${specialist.lastName}`}
-                    className="w-20 h-20 rounded-full object-cover"
+                    className="w-20 h-20 rounded-full object-cover ring-2 ring-primary/10 transition-all group-hover:ring-primary/30"
                   />
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-foreground">
+                  <div className="flex-1 min-w-0">
+                    <h3 
+                      className="text-lg font-semibold text-foreground mb-1 cursor-pointer hover:text-primary transition-colors truncate"
+                      onClick={() => navigate(`/doctors/${specialist.id}`)}
+                    >
                       Dr. {specialist.firstName} {specialist.lastName}
                     </h3>
-                    <p className="text-primary font-medium">{specialist.specialty}</p>
-                    <p className="text-sm text-muted-foreground">{specialist.degree}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {specialist.region}, {specialist.country}
+                    <p 
+                      className="text-primary font-medium cursor-pointer hover:underline truncate"
+                      onClick={() => navigate(`/doctors/${specialist.id}`)}
+                    >
+                      {specialist.specialty}
                     </p>
-                    <div className="flex items-center mt-2">
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <span className="ml-1 text-sm font-medium">⭐ {specialist.rating.toFixed(2)}</span>
-                      <span className="ml-2 text-xs text-muted-foreground">
-                        Based on {specialist.reviewCount} reviews
-                      </span>
+                    <p className="text-sm text-muted-foreground truncate">{specialist.degree}</p>
+                    <div className="flex items-center mt-1 text-sm text-muted-foreground">
+                      <MapPin className="w-3 h-3 mr-1 flex-shrink-0" />
+                      <span className="truncate">{specialist.city}, {specialist.country}</span>
                     </div>
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground mt-4 line-clamp-3 mb-4">
+                
+                <div className="mb-3">
+                  <StarRating 
+                    rating={specialist.rating} 
+                    reviewCount={specialist.reviewCount}
+                    size="sm"
+                  />
+                </div>
+                
+                <p className="text-sm text-muted-foreground line-clamp-2 mb-4 min-h-[2.5rem]">
                   {specialist.biography}
                 </p>
+                
                 <Button 
                   onClick={() => handleBookingClick(specialist.id.toString(), `Dr. ${specialist.firstName} ${specialist.lastName}`)}
                   size="sm" 
-                  className="w-full"
+                  className="w-full transition-all hover:shadow-md"
                 >
                   <Calendar className="w-4 h-4 mr-2" />
                   Book Appointment

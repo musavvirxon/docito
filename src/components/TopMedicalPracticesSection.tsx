@@ -1,19 +1,25 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Star, MapPin, Building2 } from "lucide-react";
+import { StarRating } from "@/components/ui/star-rating";
+import { MapPin, Building2, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { usePractices } from "@/hooks/usePractices";
 import { useEffect, useState } from "react";
+import { practiceApi } from "@/lib/api/supabase-api";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const TopMedicalPracticesSection = () => {
   const navigate = useNavigate();
-  const { getTopRatedPractices, loading } = usePractices();
   const [practices, setPractices] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchTopPractices = async () => {
-      const topPractices = await getTopRatedPractices(6);
-      setPractices(topPractices);
+      setLoading(true);
+      const result = await practiceApi.fetchTopPracticesByCountry(6);
+      if ('success' in result && result.success) {
+        setPractices(result.data);
+      }
+      setLoading(false);
     };
     
     fetchTopPractices();
@@ -26,60 +32,72 @@ const TopMedicalPracticesSection = () => {
       photo: "https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=400&h=250&fit=crop",
       name: "Mount Sinai Hospital",
       type: "Hospital",
-      location: "New York, NY",
-      specialties: ["Cardiology", "Neurology", "Oncology", "Emergency Medicine"],
+      city: "New York",
+      country: "United States",
+      specialties: ["Cardiology", "Neurology", "Oncology"],
       rating: 4.8,
-      description: "Leading academic medical center providing comprehensive care with state-of-the-art facilities and renowned specialists across multiple medical disciplines."
+      reviewCount: 142,
+      description: "Leading academic medical center providing comprehensive care with state-of-the-art facilities."
     },
     {
       id: 2,
       photo: "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?w=400&h=250&fit=crop",
-      name: "Beverly Hills Medical Center",
+      name: "Beverly Hills Medical",
       type: "Private Practice",
-      location: "Beverly Hills, CA",
-      specialties: ["Plastic Surgery", "Dermatology", "Internal Medicine"],
+      city: "Los Angeles",
+      country: "United States",
+      specialties: ["Plastic Surgery", "Dermatology"],
       rating: 4.9,
-      description: "Exclusive private medical practice offering personalized healthcare services with luxury amenities and concierge medicine approach."
+      reviewCount: 98,
+      description: "Exclusive private medical practice offering personalized healthcare services with luxury amenities."
     },
     {
       id: 3,
       photo: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=400&h=250&fit=crop",
-      name: "Toronto General Hospital",
+      name: "Toronto General",
       type: "Hospital",
-      location: "Toronto, ON",
-      specialties: ["Transplant Surgery", "Cardiac Care", "ICU", "Research"],
+      city: "Toronto",
+      country: "Canada",
+      specialties: ["Transplant", "Cardiac Care", "ICU"],
       rating: 4.7,
-      description: "Canada's premier teaching hospital and research institute, known for breakthrough medical innovations and exceptional patient care."
+      reviewCount: 156,
+      description: "Canada's premier teaching hospital and research institute known for breakthrough innovations."
     },
     {
       id: 4,
       photo: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=250&fit=crop",
-      name: "Westside Family Clinic",
-      type: "Clinic",
-      location: "Seattle, WA",
-      specialties: ["Family Medicine", "Pediatrics", "Women's Health"],
+      name: "Royal London Hospital",
+      type: "Hospital",
+      city: "London",
+      country: "United Kingdom",
+      specialties: ["Emergency", "Surgery", "Pediatrics"],
       rating: 4.6,
-      description: "Community-focused clinic providing comprehensive primary care services for families with a warm, welcoming environment."
+      reviewCount: 189,
+      description: "Historic hospital providing comprehensive emergency and specialized medical services."
     },
     {
       id: 5,
       photo: "https://images.unsplash.com/photo-1512678080530-7760d81faba6?w=400&h=250&fit=crop",
-      name: "London Eye Specialist Center",
-      type: "Private Practice",
-      location: "London, UK",
-      specialties: ["Ophthalmology", "LASIK Surgery", "Retinal Care"],
-      rating: 4.9,
-      description: "Leading eye care center with cutting-edge technology and world-renowned ophthalmologists specializing in complex eye conditions."
+      name: "Sydney Medical Center",
+      type: "Medical Center",
+      city: "Sydney",
+      country: "Australia",
+      specialties: ["General Medicine", "Diagnostics"],
+      rating: 4.8,
+      reviewCount: 124,
+      description: "Modern medical facility with advanced diagnostic equipment and experienced specialists."
     },
     {
       id: 6,
       photo: "https://images.unsplash.com/photo-1632833239869-a37e3a5806d2?w=400&h=250&fit=crop",
-      name: "Sydney Children's Hospital",
-      type: "Hospital",
-      location: "Sydney, NSW",
-      specialties: ["Pediatric Surgery", "Neonatology", "Child Psychology"],
-      rating: 4.8,
-      description: "Specialized children's hospital providing comprehensive pediatric care with child-friendly facilities and expert medical staff."
+      name: "Tokyo Health Clinic",
+      type: "Clinic",
+      city: "Tokyo",
+      country: "Japan",
+      specialties: ["Family Medicine", "Preventive Care"],
+      rating: 4.9,
+      reviewCount: 167,
+      description: "Comprehensive health clinic focused on preventive care and family wellness."
     }
   ];
 
@@ -89,9 +107,10 @@ const TopMedicalPracticesSection = () => {
         id: practice.id,
         photo: practice.logo_url || "https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=400&h=250&fit=crop",
         name: practice.name,
-        type: "Medical Practice", // Default type since not in current schema
-        location: `${practice.city || "City"}, ${practice.country || "Country"}`,
-        specialties: ["General Medicine"], // Default specialties since not in current schema
+        type: "Medical Practice",
+        city: practice.city || "City",
+        country: practice.country || "Country",
+        specialties: ["General Medicine"],
         rating: practice.weighted_rating || practice.average_rating || 4.7,
         reviewCount: practice.num_reviews || 0,
         description: practice.description || "Professional healthcare facility providing comprehensive medical services."
@@ -107,88 +126,87 @@ const TopMedicalPracticesSection = () => {
           {loading ? (
             // Loading skeleton
             Array.from({ length: 6 }).map((_, index) => (
-              <Card key={index} className="hover:shadow-lg transition-shadow cursor-pointer overflow-hidden">
-                <div className="aspect-video overflow-hidden">
-                  <div className="w-full h-full bg-muted animate-pulse"></div>
-                </div>
-                <CardContent className="p-6">
-                  <div className="space-y-3">
-                    <div>
-                      <div className="h-5 bg-muted rounded animate-pulse mb-2"></div>
-                      <div className="h-4 bg-muted rounded animate-pulse mb-2 w-3/4"></div>
-                      <div className="h-4 bg-muted rounded animate-pulse w-1/2"></div>
-                    </div>
-                    <div className="h-4 bg-muted rounded animate-pulse w-1/4"></div>
-                    <div className="flex flex-wrap gap-1">
-                      <div className="h-6 bg-muted rounded animate-pulse w-20"></div>
-                      <div className="h-6 bg-muted rounded animate-pulse w-16"></div>
-                    </div>
-                    <div className="h-12 bg-muted rounded animate-pulse w-full"></div>
+              <Card key={index} className="overflow-hidden">
+                <Skeleton className="aspect-video w-full" />
+                <CardContent className="p-6 space-y-3">
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-4 w-2/3" />
+                  <div className="flex gap-2">
+                    <Skeleton className="h-6 w-20" />
+                    <Skeleton className="h-6 w-24" />
                   </div>
+                  <Skeleton className="h-16 w-full" />
+                  <Skeleton className="h-10 w-full" />
                 </CardContent>
               </Card>
             ))
           ) : (
             displayPractices.map((practice) => (
-            <Card key={practice.id} className="hover:shadow-lg transition-shadow cursor-pointer overflow-hidden">
-              <div className="aspect-video overflow-hidden">
+            <Card 
+              key={practice.id} 
+              className="overflow-hidden transition-all duration-200 hover:shadow-xl hover:scale-[1.02] cursor-pointer group"
+            >
+              <div className="aspect-video overflow-hidden relative">
                 <img
                   src={practice.photo}
                   alt={practice.name}
-                  className="w-full h-full object-cover transition-transform hover:scale-105"
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </div>
               <CardContent className="p-6">
                 <div className="space-y-3">
                   <div>
-                    <h3 className="text-lg font-semibold text-foreground">
+                    <h3 
+                      className="text-lg font-semibold text-foreground mb-1 cursor-pointer group-hover:text-primary transition-colors line-clamp-1"
+                      onClick={() => navigate(`/practices/${practice.id}`)}
+                    >
                       {practice.name}
                     </h3>
-                    <p className="text-primary font-medium">{practice.type}</p>
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <MapPin className="w-4 h-4 mr-1" />
-                      {practice.location}
+                    <p className="text-sm font-medium text-primary/80">{practice.type}</p>
+                    <div className="flex items-center text-sm text-muted-foreground mt-1">
+                      <MapPin className="w-3 h-3 mr-1 flex-shrink-0" />
+                      <span className="truncate">{practice.city}, {practice.country}</span>
                     </div>
                   </div>
                   
-                  <div className="flex items-center">
-                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    <span className="ml-1 text-sm font-medium">⭐ {practice.rating.toFixed(2)}</span>
-                    <span className="ml-2 text-xs text-muted-foreground">
-                      Based on {practice.reviewCount} reviews
-                    </span>
+                  <StarRating 
+                    rating={practice.rating} 
+                    reviewCount={practice.reviewCount}
+                    size="sm"
+                  />
+                  
+                  <div className="flex flex-wrap gap-1.5 min-h-[28px]">
+                    {practice.specialties.slice(0, 2).map((specialty, index) => (
+                      <span 
+                        key={index}
+                        className="text-xs bg-primary/10 text-primary px-2.5 py-1 rounded-full font-medium"
+                      >
+                        {specialty}
+                      </span>
+                    ))}
+                    {practice.specialties.length > 2 && (
+                      <span className="text-xs text-muted-foreground px-2 py-1 font-medium">
+                        +{practice.specialties.length - 2}
+                      </span>
+                    )}
                   </div>
                   
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap gap-1">
-                      {practice.specialties.slice(0, 3).map((specialty, index) => (
-                        <span 
-                          key={index}
-                          className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full"
-                        >
-                          {specialty}
-                        </span>
-                      ))}
-                      {practice.specialties.length > 3 && (
-                        <span className="text-xs text-muted-foreground px-2 py-1">
-                          +{practice.specialties.length - 3} more
-                        </span>
-                      )}
-                    </div>
-                    
-                    <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
-                      {practice.description}
-                    </p>
-                    <Button 
-                      onClick={() => navigate(`/practices/${practice.id}`)}
-                      variant="outline"
-                      size="sm" 
-                      className="w-full"
-                    >
-                      <Building2 className="w-4 h-4 mr-2" />
-                      View Practice
-                    </Button>
-                  </div>
+                  <p className="text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]">
+                    {practice.description}
+                  </p>
+                  
+                  <Button 
+                    onClick={() => navigate(`/practices/${practice.id}`)}
+                    variant="outline"
+                    size="sm" 
+                    className="w-full transition-all hover:bg-primary hover:text-primary-foreground hover:shadow-md group/btn"
+                  >
+                    <Building2 className="w-4 h-4 mr-2" />
+                    View Practice
+                    <ArrowRight className="w-4 h-4 ml-auto opacity-0 -translate-x-2 group-hover/btn:opacity-100 group-hover/btn:translate-x-0 transition-all" />
+                  </Button>
                 </div>
               </CardContent>
             </Card>

@@ -131,6 +131,52 @@ export const doctorApi = {
     }
   },
 
+  async fetchTopDoctorsBySpecialty(limit: number = 6) {
+    try {
+      // Get all doctors first
+      const { data: allDoctors, error } = await supabase
+        .from('doctors')
+        .select(`
+          *,
+          profiles:user_id (
+            full_name,
+            avatar_url,
+            email
+          ),
+          practices:practice_id (
+            name,
+            city,
+            country,
+            logo_url
+          )
+        `)
+        .eq('verified', true)
+        .eq('accepts_new_patients', true)
+        .order('weighted_rating', { ascending: false });
+
+      if (error) throw error;
+
+      // Group by specialty and pick top doctor from each
+      const specialtyMap = new Map<string, any>();
+      allDoctors?.forEach(doctor => {
+        const specialty = doctor.specialty;
+        if (!specialtyMap.has(specialty) || 
+            (specialtyMap.get(specialty).weighted_rating || 0) < (doctor.weighted_rating || 0)) {
+          specialtyMap.set(specialty, doctor);
+        }
+      });
+
+      // Get top N doctors from different specialties
+      const diverseDoctors = Array.from(specialtyMap.values())
+        .sort((a, b) => (b.weighted_rating || 0) - (a.weighted_rating || 0))
+        .slice(0, limit);
+
+      return { data: diverseDoctors, success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to fetch top doctors by specialty');
+    }
+  },
+
   async searchDoctors(searchTerm: string, location?: string, specialty?: string) {
     try {
       let query = supabase
@@ -603,6 +649,41 @@ export const doctorDashboardApi = {
       };
     } catch (error: any) {
       return handleApiError(error, 'Failed to fetch performance stats');
+    }
+  }
+};
+
+// Practice API
+export const practiceApi = {
+  async fetchTopPracticesByCountry(limit: number = 6) {
+    try {
+      // Get all verified practices
+      const { data: allPractices, error } = await supabase
+        .from('practices')
+        .select('*')
+        .eq('verified', true)
+        .order('weighted_rating', { ascending: false });
+
+      if (error) throw error;
+
+      // Group by country and pick top practice from each
+      const countryMap = new Map<string, any>();
+      allPractices?.forEach(practice => {
+        const country = practice.country || 'Unknown';
+        if (!countryMap.has(country) || 
+            (countryMap.get(country).weighted_rating || 0) < (practice.weighted_rating || 0)) {
+          countryMap.set(country, practice);
+        }
+      });
+
+      // Get top N practices from different countries
+      const diversePractices = Array.from(countryMap.values())
+        .sort((a, b) => (b.weighted_rating || 0) - (a.weighted_rating || 0))
+        .slice(0, limit);
+
+      return { data: diversePractices, success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to fetch top practices by country');
     }
   }
 };
