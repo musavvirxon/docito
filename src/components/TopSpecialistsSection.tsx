@@ -31,19 +31,29 @@ const TopSpecialistsSection = () => {
   const emptyStateMessage = "No specialists available at the moment. Please check back later.";
 
   // Transform real data to match component interface
-  const displaySpecialists = specialists.map((doctor) => ({
-    id: doctor.id,
-    photo: doctor.profiles?.avatar_url || "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=150&h=150&fit=crop&crop=face",
-    firstName: doctor.profiles?.full_name?.split(' ')[0] || "Doctor",
-    lastName: doctor.profiles?.full_name?.split(' ').slice(1).join(' ') || "",
-    specialty: doctor.specialty,
-    degree: "MD",
-    country: doctor.practices?.country || "United States",
-    city: doctor.practices?.city || "City",
-    rating: doctor.weighted_rating || doctor.average_rating || 4.8,
-    reviewCount: doctor.num_reviews || 0,
-    biography: doctor.bio || "Experienced medical professional dedicated to providing quality healthcare."
-  }));
+  const displaySpecialists = specialists.map((doctor) => {
+    // Generate specialty-based avatar if no profile photo
+    const avatarUrl = doctor.profiles?.avatar_url || 
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(doctor.specialty)}&background=random&size=150`;
+    
+    // Use full name from profile, or generate from specialty
+    const fullName = doctor.profiles?.full_name || `${doctor.specialty} Specialist`;
+    const nameParts = fullName.split(' ');
+    
+    return {
+      id: doctor.id,
+      photo: avatarUrl,
+      firstName: nameParts[0] || doctor.specialty,
+      lastName: nameParts.slice(1).join(' ') || "Specialist",
+      specialty: doctor.specialty,
+      degree: "MD",
+      country: doctor.practices?.country || "Not specified",
+      city: doctor.practices?.city || "Not specified",
+      rating: doctor.weighted_rating || doctor.average_rating || 0,
+      reviewCount: doctor.num_reviews || 0,
+      biography: doctor.bio || "Experienced medical professional dedicated to providing quality healthcare."
+    };
+  });
 
   return (
     <section className="py-16 bg-background">
@@ -91,6 +101,7 @@ const TopSpecialistsSection = () => {
                     <h3 
                       className="text-lg font-semibold text-foreground mb-1 cursor-pointer hover:text-primary transition-colors truncate"
                       onClick={() => navigate(`/doctors/${specialist.id}`)}
+                      title={`Dr. ${specialist.firstName} ${specialist.lastName}`}
                     >
                       Dr. {specialist.firstName} {specialist.lastName}
                     </h3>
@@ -108,13 +119,21 @@ const TopSpecialistsSection = () => {
                   </div>
                 </div>
                 
-                <div className="mb-3">
-                  <StarRating 
-                    rating={specialist.rating} 
-                    reviewCount={specialist.reviewCount}
-                    size="sm"
-                  />
-                </div>
+                {specialist.rating > 0 && (
+                  <div className="mb-3">
+                    <StarRating 
+                      rating={specialist.rating} 
+                      reviewCount={specialist.reviewCount}
+                      size="sm"
+                    />
+                  </div>
+                )}
+                
+                {specialist.rating === 0 && (
+                  <div className="mb-3">
+                    <p className="text-xs text-muted-foreground">No reviews yet</p>
+                  </div>
+                )}
                 
                 <p className="text-sm text-muted-foreground line-clamp-2 mb-4 min-h-[2.5rem]">
                   {specialist.biography}

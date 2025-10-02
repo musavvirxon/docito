@@ -29,18 +29,31 @@ const TopMedicalPracticesSection = () => {
   const emptyStateMessage = "No medical practices available at the moment. Please check back later.";
 
   // Transform real data to match component interface
-  const displayPractices = practices.map((practice) => ({
-    id: practice.id,
-    photo: practice.logo_url || "https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=400&h=250&fit=crop",
-    name: practice.name,
-    type: "Medical Practice",
-    city: practice.city || "City",
-    country: practice.country || "Country",
-    specialties: ["General Medicine"],
-    rating: practice.weighted_rating || practice.average_rating || 4.7,
-    reviewCount: practice.num_reviews || 0,
-    description: practice.description || "Professional healthcare facility providing comprehensive medical services."
-  }));
+  const displayPractices = practices.map((practice) => {
+    // Generate practice-based image if no logo
+    const imageUrl = practice.logo_url || 
+      `https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=400&h=250&fit=crop&auto=format`;
+    
+    // Extract specialties from name/description if available
+    const specialties = practice.name?.includes('Cardiology') ? ['Cardiology'] :
+                       practice.name?.includes('Vision') || practice.name?.includes('Eye') ? ['Ophthalmology'] :
+                       practice.name?.includes('Dental') || practice.name?.includes('Dentist') ? ['Dentistry'] :
+                       practice.name?.includes('Pediatric') ? ['Pediatrics'] :
+                       ['General Medicine'];
+    
+    return {
+      id: practice.id,
+      photo: imageUrl,
+      name: practice.name,
+      type: "Medical Practice",
+      city: practice.city || "Not specified",
+      country: practice.country || "Not specified",
+      specialties: specialties,
+      rating: practice.weighted_rating || practice.average_rating || 0,
+      reviewCount: practice.num_reviews || 0,
+      description: practice.description || "Professional healthcare facility providing comprehensive medical services."
+    };
+  });
 
   return (
     <section className="py-16 bg-muted/30">
@@ -101,27 +114,33 @@ const TopMedicalPracticesSection = () => {
                     </div>
                   </div>
                   
-                  <StarRating 
-                    rating={practice.rating} 
-                    reviewCount={practice.reviewCount}
-                    size="sm"
-                  />
+                  {practice.rating > 0 ? (
+                    <StarRating 
+                      rating={practice.rating} 
+                      reviewCount={practice.reviewCount}
+                      size="sm"
+                    />
+                  ) : (
+                    <p className="text-xs text-muted-foreground">No reviews yet</p>
+                  )}
                   
-                  <div className="flex flex-wrap gap-1.5 min-h-[28px]">
-                    {practice.specialties.slice(0, 2).map((specialty, index) => (
-                      <span 
-                        key={index}
-                        className="text-xs bg-primary/10 text-primary px-2.5 py-1 rounded-full font-medium"
-                      >
-                        {specialty}
-                      </span>
-                    ))}
-                    {practice.specialties.length > 2 && (
-                      <span className="text-xs text-muted-foreground px-2 py-1 font-medium">
-                        +{practice.specialties.length - 2}
-                      </span>
-                    )}
-                  </div>
+                  {practice.specialties.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 min-h-[28px]">
+                      {practice.specialties.slice(0, 2).map((specialty, index) => (
+                        <span 
+                          key={index}
+                          className="text-xs bg-primary/10 text-primary px-2.5 py-1 rounded-full font-medium"
+                        >
+                          {specialty}
+                        </span>
+                      ))}
+                      {practice.specialties.length > 2 && (
+                        <span className="text-xs text-muted-foreground px-2 py-1 font-medium">
+                          +{practice.specialties.length - 2}
+                        </span>
+                      )}
+                    </div>
+                  )}
                   
                   <p className="text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]">
                     {practice.description}
