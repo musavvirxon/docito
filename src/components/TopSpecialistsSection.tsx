@@ -27,104 +27,23 @@ const TopSpecialistsSection = () => {
     fetchTopDoctors();
   }, []);
 
-  // Fallback to sample data if no real data available
-  const fallbackSpecialists = [
-    {
-      id: 1,
-      photo: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=150&h=150&fit=crop&crop=face",
-      firstName: "Sarah",
-      lastName: "Johnson",
-      specialty: "Cardiologist",
-      degree: "MD, PhD",
-      country: "United States",
-      city: "New York",
-      rating: 4.9,
-      reviewCount: 87,
-      biography: "Dr. Johnson is a board-certified cardiologist with over 15 years of experience in treating cardiovascular diseases."
-    },
-    {
-      id: 2,
-      photo: "https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=150&h=150&fit=crop&crop=face",
-      firstName: "Michael",
-      lastName: "Chen",
-      specialty: "Neurologist",
-      degree: "MD",
-      country: "Canada",
-      city: "Toronto",
-      rating: 4.8,
-      reviewCount: 65,
-      biography: "Dr. Chen specializes in neurological disorders with extensive experience in treating epilepsy and Parkinson's disease."
-    },
-    {
-      id: 3,
-      photo: "https://images.unsplash.com/photo-1594824388597-250d30062d0d?w=150&h=150&fit=crop&crop=face",
-      firstName: "Emily",
-      lastName: "Rodriguez",
-      specialty: "Dermatologist",
-      degree: "MD, FAAD",
-      country: "United States",
-      city: "Los Angeles",
-      rating: 4.9,
-      reviewCount: 92,
-      biography: "Dr. Rodriguez is a leading dermatologist specializing in cosmetic and medical dermatology."
-    },
-    {
-      id: 4,
-      photo: "https://images.unsplash.com/photo-1628260412297-a3377e45006f?w=150&h=150&fit=crop&crop=face",
-      firstName: "David",
-      lastName: "Thompson",
-      specialty: "Orthopedist",
-      degree: "MD, MS",
-      country: "United Kingdom",
-      city: "London",
-      rating: 4.7,
-      reviewCount: 58,
-      biography: "Dr. Thompson is an orthopedic surgeon with expertise in joint replacement and sports medicine."
-    },
-    {
-      id: 5,
-      photo: "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?w=150&h=150&fit=crop&crop=face",
-      firstName: "Lisa",
-      lastName: "Wang",
-      specialty: "Pediatrician",
-      degree: "MD, MPH",
-      country: "Australia",
-      city: "Sydney",
-      rating: 4.8,
-      reviewCount: 74,
-      biography: "Dr. Wang is a dedicated pediatrician with a focus on child development and preventive care."
-    },
-    {
-      id: 6,
-      photo: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=150&h=150&fit=crop&crop=face",
-      firstName: "James",
-      lastName: "Mitchell",
-      specialty: "Psychiatrist",
-      degree: "MD, PhD",
-      country: "United States",
-      city: "Chicago",
-      rating: 4.9,
-      reviewCount: 81,
-      biography: "Dr. Mitchell specializes in adult psychiatry with extensive experience in treating anxiety and depression."
-    }
-  ];
+  // Empty state message when no data
+  const emptyStateMessage = "No specialists available at the moment. Please check back later.";
 
   // Transform real data to match component interface
-  const displaySpecialists = specialists.length > 0 
-    ? specialists.map((doctor) => ({
-        id: doctor.id,
-        photo: doctor.profiles?.avatar_url || "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=150&h=150&fit=crop&crop=face",
-        firstName: doctor.profiles?.full_name?.split(' ')[0] || "Doctor",
-        lastName: doctor.profiles?.full_name?.split(' ').slice(1).join(' ') || "",
-        specialty: doctor.specialty,
-        degree: "MD",
-        country: doctor.practices?.country || "United States",
-        city: doctor.practices?.city || "City",
-        rating: doctor.weighted_rating || doctor.average_rating || 4.8,
-        reviewCount: doctor.num_reviews || 0,
-        biography: doctor.bio || "Experienced medical professional dedicated to providing quality healthcare."
-      }))
-    : fallbackSpecialists;
+  const displaySpecialists = specialists.map((doctor) => ({
+    id: doctor.id,
+    photo: doctor.profiles?.avatar_url || "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=150&h=150&fit=crop&crop=face",
+    firstName: doctor.profiles?.full_name?.split(' ')[0] || "Doctor",
+    lastName: doctor.profiles?.full_name?.split(' ').slice(1).join(' ') || "",
+    specialty: doctor.specialty,
+    degree: "MD",
+    country: doctor.practices?.country || "United States",
+    city: doctor.practices?.city || "City",
+    rating: doctor.weighted_rating || doctor.average_rating || 4.8,
+    reviewCount: doctor.num_reviews || 0,
+    biography: doctor.bio || "Experienced medical professional dedicated to providing quality healthcare."
+  }));
 
   return (
     <section className="py-16 bg-background">
@@ -150,11 +69,16 @@ const TopSpecialistsSection = () => {
                 </CardContent>
               </Card>
             ))
+          ) : displaySpecialists.length === 0 ? (
+            // Empty state
+            <div className="col-span-full text-center py-12">
+              <p className="text-muted-foreground text-lg">{emptyStateMessage}</p>
+            </div>
           ) : (
             displaySpecialists.map((specialist) => (
             <Card 
               key={specialist.id} 
-              className="overflow-hidden transition-all duration-200 hover:shadow-lg hover:scale-[1.02] cursor-pointer group"
+              className="overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-[1.03] cursor-pointer group border-border/50"
             >
               <CardContent className="p-6">
                 <div className="flex items-start space-x-4 mb-4">
@@ -197,11 +121,11 @@ const TopSpecialistsSection = () => {
                 </p>
                 
                 <Button 
-                  onClick={() => handleBookingClick(specialist.id.toString(), `Dr. ${specialist.firstName} ${specialist.lastName}`)}
+                  onClick={() => navigate(`/doctors/${specialist.id}`)}
                   size="sm" 
-                  className="w-full transition-all hover:shadow-md"
+                  className="w-full transition-all duration-300 hover:shadow-lg group-hover:scale-105"
                 >
-                  <Calendar className="w-4 h-4 mr-2" />
+                  <Calendar className="w-4 h-4 mr-2 transition-transform group-hover:rotate-12" />
                   Book Appointment
                 </Button>
               </CardContent>

@@ -25,97 +25,22 @@ const TopMedicalPracticesSection = () => {
     fetchTopPractices();
   }, []);
 
-  // Fallback practices if no real data available
-  const fallbackPractices = [
-    {
-      id: 1,
-      photo: "https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=400&h=250&fit=crop",
-      name: "Mount Sinai Hospital",
-      type: "Hospital",
-      city: "New York",
-      country: "United States",
-      specialties: ["Cardiology", "Neurology", "Oncology"],
-      rating: 4.8,
-      reviewCount: 142,
-      description: "Leading academic medical center providing comprehensive care with state-of-the-art facilities."
-    },
-    {
-      id: 2,
-      photo: "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?w=400&h=250&fit=crop",
-      name: "Beverly Hills Medical",
-      type: "Private Practice",
-      city: "Los Angeles",
-      country: "United States",
-      specialties: ["Plastic Surgery", "Dermatology"],
-      rating: 4.9,
-      reviewCount: 98,
-      description: "Exclusive private medical practice offering personalized healthcare services with luxury amenities."
-    },
-    {
-      id: 3,
-      photo: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=400&h=250&fit=crop",
-      name: "Toronto General",
-      type: "Hospital",
-      city: "Toronto",
-      country: "Canada",
-      specialties: ["Transplant", "Cardiac Care", "ICU"],
-      rating: 4.7,
-      reviewCount: 156,
-      description: "Canada's premier teaching hospital and research institute known for breakthrough innovations."
-    },
-    {
-      id: 4,
-      photo: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=250&fit=crop",
-      name: "Royal London Hospital",
-      type: "Hospital",
-      city: "London",
-      country: "United Kingdom",
-      specialties: ["Emergency", "Surgery", "Pediatrics"],
-      rating: 4.6,
-      reviewCount: 189,
-      description: "Historic hospital providing comprehensive emergency and specialized medical services."
-    },
-    {
-      id: 5,
-      photo: "https://images.unsplash.com/photo-1512678080530-7760d81faba6?w=400&h=250&fit=crop",
-      name: "Sydney Medical Center",
-      type: "Medical Center",
-      city: "Sydney",
-      country: "Australia",
-      specialties: ["General Medicine", "Diagnostics"],
-      rating: 4.8,
-      reviewCount: 124,
-      description: "Modern medical facility with advanced diagnostic equipment and experienced specialists."
-    },
-    {
-      id: 6,
-      photo: "https://images.unsplash.com/photo-1632833239869-a37e3a5806d2?w=400&h=250&fit=crop",
-      name: "Tokyo Health Clinic",
-      type: "Clinic",
-      city: "Tokyo",
-      country: "Japan",
-      specialties: ["Family Medicine", "Preventive Care"],
-      rating: 4.9,
-      reviewCount: 167,
-      description: "Comprehensive health clinic focused on preventive care and family wellness."
-    }
-  ];
+  // Empty state message when no data
+  const emptyStateMessage = "No medical practices available at the moment. Please check back later.";
 
   // Transform real data to match component interface
-  const displayPractices = practices.length > 0 
-    ? practices.map((practice) => ({
-        id: practice.id,
-        photo: practice.logo_url || "https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=400&h=250&fit=crop",
-        name: practice.name,
-        type: "Medical Practice",
-        city: practice.city || "City",
-        country: practice.country || "Country",
-        specialties: ["General Medicine"],
-        rating: practice.weighted_rating || practice.average_rating || 4.7,
-        reviewCount: practice.num_reviews || 0,
-        description: practice.description || "Professional healthcare facility providing comprehensive medical services."
-      }))
-    : fallbackPractices;
+  const displayPractices = practices.map((practice) => ({
+    id: practice.id,
+    photo: practice.logo_url || "https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=400&h=250&fit=crop",
+    name: practice.name,
+    type: "Medical Practice",
+    city: practice.city || "City",
+    country: practice.country || "Country",
+    specialties: ["General Medicine"],
+    rating: practice.weighted_rating || practice.average_rating || 4.7,
+    reviewCount: practice.num_reviews || 0,
+    description: practice.description || "Professional healthcare facility providing comprehensive medical services."
+  }));
 
   return (
     <section className="py-16 bg-muted/30">
@@ -141,11 +66,16 @@ const TopMedicalPracticesSection = () => {
                 </CardContent>
               </Card>
             ))
+          ) : displayPractices.length === 0 ? (
+            // Empty state
+            <div className="col-span-full text-center py-12">
+              <p className="text-muted-foreground text-lg">{emptyStateMessage}</p>
+            </div>
           ) : (
             displayPractices.map((practice) => (
             <Card 
               key={practice.id} 
-              className="overflow-hidden transition-all duration-200 hover:shadow-xl hover:scale-[1.02] cursor-pointer group"
+              className="overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-[1.03] cursor-pointer group border-border/50"
             >
               <div className="aspect-video overflow-hidden relative">
                 <img
@@ -201,11 +131,11 @@ const TopMedicalPracticesSection = () => {
                     onClick={() => navigate(`/practices/${practice.id}`)}
                     variant="outline"
                     size="sm" 
-                    className="w-full transition-all hover:bg-primary hover:text-primary-foreground hover:shadow-md group/btn"
+                    className="w-full transition-all duration-300 hover:bg-primary hover:text-primary-foreground hover:shadow-lg group/btn border-primary/20"
                   >
-                    <Building2 className="w-4 h-4 mr-2" />
+                    <Building2 className="w-4 h-4 mr-2 transition-transform group-hover/btn:scale-110" />
                     View Practice
-                    <ArrowRight className="w-4 h-4 ml-auto opacity-0 -translate-x-2 group-hover/btn:opacity-100 group-hover/btn:translate-x-0 transition-all" />
+                    <ArrowRight className="w-4 h-4 ml-auto opacity-0 -translate-x-2 group-hover/btn:opacity-100 group-hover/btn:translate-x-0 transition-all duration-300" />
                   </Button>
                 </div>
               </CardContent>
