@@ -9,6 +9,11 @@ import { Calendar, Clock, Plus, Settings } from "lucide-react";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { useDoctorData } from "@/contexts/DoctorDataContext";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import BlockTimeModal from "./BlockTimeModal";
+import SetAvailabilityModal from "./SetAvailabilityModal";
+import ManualBookAppointmentModal from "./ManualBookAppointmentModal";
+import GoogleCalendarSyncModal from "./GoogleCalendarSyncModal";
 
 interface DoctorCalendarSectionProps {
   doctorStatus: "independent" | "clinic-member";
@@ -49,6 +54,15 @@ interface WorkingHours {
 const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcomingAppointments = [] }: DoctorCalendarSectionProps) => {
   const { scheduleSettings, updateScheduleSettings, scheduleLoading } = useDoctorData();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [doctorId, setDoctorId] = useState<string | null>(null);
+  const [practiceId, setPracticeId] = useState<string | null>(null);
+  
+  // Modal states
+  const [isBlockTimeOpen, setIsBlockTimeOpen] = useState(false);
+  const [isSetAvailabilityOpen, setIsSetAvailabilityOpen] = useState(false);
+  const [isBookAppointmentOpen, setIsBookAppointmentOpen] = useState(false);
+  const [isGoogleSyncOpen, setIsGoogleSyncOpen] = useState(false);
+  
   const [workingHours, setWorkingHours] = useState<WorkingHours>({
     monday: { enabled: true, start: "09:00", end: "17:00" },
     tuesday: { enabled: true, start: "09:00", end: "17:00" },
@@ -58,6 +72,27 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
     saturday: { enabled: false, start: "09:00", end: "13:00" },
     sunday: { enabled: false, start: "09:00", end: "13:00" }
   });
+
+  // Fetch doctor ID and practice ID on mount
+  useEffect(() => {
+    const fetchDoctorInfo = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from('doctors')
+          .select('id, practice_id')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (data) {
+          setDoctorId(data.id);
+          setPracticeId(data.practice_id);
+        }
+      }
+    };
+    
+    fetchDoctorInfo();
+  }, []);
 
   // Sync with schedule settings from context
   useEffect(() => {
@@ -351,20 +386,36 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
             <CardTitle>Quick Actions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Button className="w-full justify-start" variant="outline">
+            <Button 
+              className="w-full justify-start" 
+              variant="outline"
+              onClick={() => setIsBlockTimeOpen(true)}
+            >
               <Plus className="w-4 h-4 mr-2" />
               Block Time
             </Button>
-            <Button className="w-full justify-start" variant="outline">
+            <Button 
+              className="w-full justify-start" 
+              variant="outline"
+              onClick={() => setIsSetAvailabilityOpen(true)}
+            >
               <Clock className="w-4 h-4 mr-2" />
               Set Availability
             </Button>
-            <Button className="w-full justify-start" variant="outline">
+            <Button 
+              className="w-full justify-start" 
+              variant="outline"
+              onClick={() => setIsBookAppointmentOpen(true)}
+            >
               <Calendar className="w-4 h-4 mr-2" />
               Book Appointment
             </Button>
             {doctorStatus === "independent" && (
-              <Button className="w-full justify-start" variant="outline">
+              <Button 
+                className="w-full justify-start" 
+                variant="outline"
+                onClick={() => setIsGoogleSyncOpen(true)}
+              >
                 <Settings className="w-4 h-4 mr-2" />
                 Sync Google Calendar
               </Button>
@@ -372,6 +423,34 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
           </CardContent>
         </Card>
       </div>
+
+      {/* Modals */}
+      {doctorId && (
+        <>
+          <BlockTimeModal 
+            isOpen={isBlockTimeOpen} 
+            onClose={() => setIsBlockTimeOpen(false)} 
+          />
+          <SetAvailabilityModal 
+            isOpen={isSetAvailabilityOpen} 
+            onClose={() => setIsSetAvailabilityOpen(false)}
+            doctorId={doctorId}
+            onSuccess={() => toast.success("Calendar updated")}
+          />
+          <ManualBookAppointmentModal
+            isOpen={isBookAppointmentOpen}
+            onClose={() => setIsBookAppointmentOpen(false)}
+            doctorId={doctorId}
+            practiceId={practiceId || undefined}
+            onSuccess={() => toast.success("Appointment booked")}
+          />
+          <GoogleCalendarSyncModal
+            isOpen={isGoogleSyncOpen}
+            onClose={() => setIsGoogleSyncOpen(false)}
+            doctorId={doctorId}
+          />
+        </>
+      )}
 
       {/* Availability Settings */}
       <Card>

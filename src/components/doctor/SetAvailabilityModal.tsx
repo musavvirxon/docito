@@ -1,57 +1,34 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { Clock } from "lucide-react";
 
-interface BlockTimeModalProps {
+interface SetAvailabilityModalProps {
   isOpen: boolean;
   onClose: () => void;
+  doctorId: string;
+  onSuccess?: () => void;
 }
 
-const BlockTimeModal = ({ isOpen, onClose }: BlockTimeModalProps) => {
+const SetAvailabilityModal = ({ isOpen, onClose, doctorId, onSuccess }: SetAvailabilityModalProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [reason, setReason] = useState("");
-  const [blockType, setBlockType] = useState("personal");
-
+  const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
-  const [doctorId, setDoctorId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchDoctorId = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase
-          .from('doctors')
-          .select('id')
-          .eq('user_id', user.id)
-          .single();
-        
-        if (data) setDoctorId(data.id);
-      }
-    };
-    
-    if (isOpen) fetchDoctorId();
-  }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!selectedDate || !startTime || !endTime) {
       toast.error("Please fill in all required fields");
-      return;
-    }
-
-    if (!doctorId) {
-      toast.error("Doctor profile not found");
       return;
     }
 
@@ -64,30 +41,30 @@ const BlockTimeModal = ({ isOpen, onClose }: BlockTimeModalProps) => {
 
     try {
       const { error } = await supabase
-        .from('blocked_times')
+        .from('availability_overrides')
         .insert({
           doctor_id: doctorId,
-          blocked_date: format(selectedDate, 'yyyy-MM-dd'),
+          override_date: format(selectedDate, 'yyyy-MM-dd'),
           start_time: startTime,
           end_time: endTime,
-          block_type: blockType,
-          reason: reason || null
+          is_available: true,
+          notes: notes || null
         });
 
       if (error) throw error;
 
-      toast.success("Time blocked successfully");
+      toast.success("Availability set successfully");
+      onSuccess?.();
       onClose();
       
       // Reset form
       setSelectedDate(new Date());
       setStartTime("");
       setEndTime("");
-      setReason("");
-      setBlockType("personal");
+      setNotes("");
     } catch (error: any) {
-      console.error('Error blocking time:', error);
-      toast.error(error.message || "Failed to block time");
+      console.error('Error setting availability:', error);
+      toast.error(error.message || "Failed to set availability");
     } finally {
       setLoading(false);
     }
@@ -97,7 +74,10 @@ const BlockTimeModal = ({ isOpen, onClose }: BlockTimeModalProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Block Time</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Clock className="w-5 h-5" />
+            Set Custom Availability
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -115,23 +95,14 @@ const BlockTimeModal = ({ isOpen, onClose }: BlockTimeModalProps) => {
 
             <div className="space-y-4">
               <div>
-                <Label htmlFor="blockType">Block Type</Label>
-                <Select value={blockType} onValueChange={setBlockType}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="personal">Personal Time</SelectItem>
-                    <SelectItem value="meeting">Meeting</SelectItem>
-                    <SelectItem value="break">Break</SelectItem>
-                    <SelectItem value="unavailable">Unavailable</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label className="text-sm text-muted-foreground">
+                  Override your regular schedule for this specific date
+                </Label>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="startTime">Start Time</Label>
+                  <Label htmlFor="startTime">Available From</Label>
                   <Input
                     id="startTime"
                     type="time"
@@ -141,7 +112,7 @@ const BlockTimeModal = ({ isOpen, onClose }: BlockTimeModalProps) => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="endTime">End Time</Label>
+                  <Label htmlFor="endTime">Available To</Label>
                   <Input
                     id="endTime"
                     type="time"
@@ -153,24 +124,30 @@ const BlockTimeModal = ({ isOpen, onClose }: BlockTimeModalProps) => {
               </div>
 
               <div>
-                <Label htmlFor="reason">Reason (Optional)</Label>
+                <Label htmlFor="notes">Notes (Optional)</Label>
                 <Textarea
-                  id="reason"
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  placeholder="Why are you blocking this time?"
-                  className="min-h-[80px]"
+                  id="notes"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="e.g., Extended hours for special clinic"
+                  className="min-h-[100px]"
                 />
               </div>
             </div>
           </div>
 
-          <div className="flex gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1" disabled={loading}>
+          <div className="flex gap-2 pt-4 border-t">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onClose} 
+              className="flex-1"
+              disabled={loading}
+            >
               Cancel
             </Button>
             <Button type="submit" className="flex-1" disabled={loading}>
-              {loading ? "Blocking..." : "Block Time"}
+              {loading ? "Setting..." : "Set Availability"}
             </Button>
           </div>
         </form>
@@ -179,4 +156,4 @@ const BlockTimeModal = ({ isOpen, onClose }: BlockTimeModalProps) => {
   );
 };
 
-export default BlockTimeModal;
+export default SetAvailabilityModal;
