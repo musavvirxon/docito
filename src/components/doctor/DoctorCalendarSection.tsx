@@ -14,6 +14,7 @@ import BlockTimeModal from "./BlockTimeModal";
 import SetAvailabilityModal from "./SetAvailabilityModal";
 import ManualBookAppointmentModal from "./ManualBookAppointmentModal";
 import GoogleCalendarSyncModal from "./GoogleCalendarSyncModal";
+import TimeSlotCard from "./TimeSlotCard";
 
 interface DoctorCalendarSectionProps {
   doctorStatus: "independent" | "clinic-member";
@@ -63,6 +64,14 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
   const [isBookAppointmentOpen, setIsBookAppointmentOpen] = useState(false);
   const [isGoogleSyncOpen, setIsGoogleSyncOpen] = useState(false);
   
+  // Prefilled modal data from slot clicks
+  const [prefilledModalDate, setPrefilledModalDate] = useState<Date | undefined>();
+  const [prefilledModalTime, setPrefilledModalTime] = useState<string>("");
+  
+  // Blocked times and overrides
+  const [blockedTimes, setBlockedTimes] = useState<any[]>([]);
+  const [availabilityOverrides, setAvailabilityOverrides] = useState<any[]>([]);
+  
   const [workingHours, setWorkingHours] = useState<WorkingHours>({
     monday: { enabled: true, start: "09:00", end: "17:00" },
     tuesday: { enabled: true, start: "09:00", end: "17:00" },
@@ -73,7 +82,7 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
     sunday: { enabled: false, start: "09:00", end: "13:00" }
   });
 
-  // Fetch doctor ID and practice ID on mount
+  // Fetch doctor info, blocked times, and overrides
   useEffect(() => {
     const fetchDoctorInfo = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -87,12 +96,39 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
         if (data) {
           setDoctorId(data.id);
           setPracticeId(data.practice_id);
+          fetchBlockedTimes(data.id);
+          fetchAvailabilityOverrides(data.id);
         }
       }
     };
     
     fetchDoctorInfo();
   }, []);
+
+  const fetchBlockedTimes = async (doctorIdParam: string) => {
+    const { data } = await supabase
+      .from('blocked_times')
+      .select('*')
+      .eq('doctor_id', doctorIdParam);
+    
+    if (data) setBlockedTimes(data);
+  };
+
+  const fetchAvailabilityOverrides = async (doctorIdParam: string) => {
+    const { data } = await supabase
+      .from('availability_overrides')
+      .select('*')
+      .eq('doctor_id', doctorIdParam);
+    
+    if (data) setAvailabilityOverrides(data);
+  };
+
+  const refetchCalendarData = () => {
+    if (doctorId) {
+      fetchBlockedTimes(doctorId);
+      fetchAvailabilityOverrides(doctorId);
+    }
+  };
 
   // Sync with schedule settings from context
   useEffect(() => {
@@ -117,6 +153,15 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
   
   const [slotDuration, setSlotDuration] = useState("60");
   const [bufferTime, setBufferTime] = useState("15");
+
+  // Check if time is blocked
+  const isTimeBlocked = (date: Date, timeStr: string): { blocked: boolean; reason?: string } => {
+    const dateStr = date.toISOString().split('T')[0];
+    const blocked = blockedTimes.find(
+      bt => bt.blocked_date === dateStr && bt.start_time <= timeStr && bt.end_time > timeStr
+    );
+    return blocked ? { blocked: true, reason: blocked.reason || `Blocked: ${blocked.block_type}` } : { blocked: false };
+  };
 
   // Check if a time is within a break period
   const isTimeInBreak = (timeMinutes: number, breaks: any[]): { inBreak: boolean; breakName?: string } => {
@@ -174,9 +219,20 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
       const minute = minutes % 60;
       const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
       
+      // Check if time is blocked
+      const blockedCheck = isTimeBlocked(selectedDate || new Date(), timeString);
+      if (blockedCheck.blocked) {
+        slots.push({
+          id: `blocked-${minutes}`,
+          time: timeString,
+          status: "blocked",
+          reason: blockedCheck.reason
+        });
+        continue;
+      }
+      
       // Check if this time is during a break
       const breakCheck = isTimeInBreak(minutes, breaks);
-      
       if (breakCheck.inBreak) {
         slots.push({
           id: `break-${minutes}`,
@@ -211,10 +267,10 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
 
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
 
-  // Regenerate time slots when working hours, appointments, or selected date changes
+  // Regenerate time slots when working hours, appointments, selected date, or blocked times change
   useEffect(() => {
     setTimeSlots(generateTimeSlots());
-  }, [workingHours, todaysAppointments, selectedDate, slotDuration]);
+  }, [workingHours, todaysAppointments, selectedDate, slotDuration, blockedTimes, availabilityOverrides]);
 
   const days = [
     { key: "monday", label: "Monday" },
@@ -352,26 +408,25 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
                 ) : (
                   <div className="space-y-2">
                     {timeSlots.map((slot) => (
-                      <div
+                      <TimeSlotCard
                         key={slot.id}
-                        className={`p-3 rounded-lg border ${getStatusColor(slot.status)} flex justify-between items-center`}
-                      >
-                        <div>
-                          <div className="font-medium">{slot.time}</div>
-                          {slot.patient && (
-                            <div className="text-sm">
-                              <div>{slot.patient}</div>
-                              <div className="text-muted-foreground">{slot.service}</div>
-                            </div>
-                          )}
-                          {slot.reason && (
-                            <div className="text-sm text-muted-foreground">{slot.reason}</div>
-                          )}
-                        </div>
-                        <Badge variant="outline" className={getStatusColor(slot.status)}>
-                          {slot.status}
-                        </Badge>
-                      </div>
+                        slot={slot}
+                        onBlockTime={(time) => {
+                          setPrefilledModalDate(selectedDate);
+                          setPrefilledModalTime(time);
+                          setIsBlockTimeOpen(true);
+                        }}
+                        onBookAppointment={(time) => {
+                          setPrefilledModalDate(selectedDate);
+                          setPrefilledModalTime(time);
+                          setIsBookAppointmentOpen(true);
+                        }}
+                        onSetAvailability={(time) => {
+                          setPrefilledModalDate(selectedDate);
+                          setPrefilledModalTime(time);
+                          setIsSetAvailabilityOpen(true);
+                        }}
+                      />
                     ))}
                   </div>
                 )}
@@ -429,20 +484,46 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
         <>
           <BlockTimeModal 
             isOpen={isBlockTimeOpen} 
-            onClose={() => setIsBlockTimeOpen(false)} 
+            onClose={() => {
+              setIsBlockTimeOpen(false);
+              setPrefilledModalDate(undefined);
+              setPrefilledModalTime("");
+            }}
+            prefilledDate={prefilledModalDate}
+            prefilledTime={prefilledModalTime}
+            onSuccess={() => {
+              refetchCalendarData();
+              toast.success("Time blocked successfully");
+            }}
           />
           <SetAvailabilityModal 
             isOpen={isSetAvailabilityOpen} 
-            onClose={() => setIsSetAvailabilityOpen(false)}
+            onClose={() => {
+              setIsSetAvailabilityOpen(false);
+              setPrefilledModalDate(undefined);
+              setPrefilledModalTime("");
+            }}
             doctorId={doctorId}
-            onSuccess={() => toast.success("Calendar updated")}
+            onSuccess={() => {
+              refetchCalendarData();
+              toast.success("Availability updated");
+            }}
           />
           <ManualBookAppointmentModal
             isOpen={isBookAppointmentOpen}
-            onClose={() => setIsBookAppointmentOpen(false)}
+            onClose={() => {
+              setIsBookAppointmentOpen(false);
+              setPrefilledModalDate(undefined);
+              setPrefilledModalTime("");
+            }}
             doctorId={doctorId}
             practiceId={practiceId || undefined}
-            onSuccess={() => toast.success("Appointment booked")}
+            prefilledDate={prefilledModalDate}
+            prefilledTime={prefilledModalTime}
+            onSuccess={() => {
+              refetchCalendarData();
+              toast.success("Appointment booked");
+            }}
           />
           <GoogleCalendarSyncModal
             isOpen={isGoogleSyncOpen}

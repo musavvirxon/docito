@@ -18,11 +18,21 @@ interface ManualBookAppointmentModalProps {
   doctorId: string;
   practiceId?: string;
   onSuccess?: () => void;
+  prefilledDate?: Date;
+  prefilledTime?: string;
 }
 
-const ManualBookAppointmentModal = ({ isOpen, onClose, doctorId, practiceId, onSuccess }: ManualBookAppointmentModalProps) => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [startTime, setStartTime] = useState("");
+const ManualBookAppointmentModal = ({ 
+  isOpen, 
+  onClose, 
+  doctorId, 
+  practiceId, 
+  onSuccess, 
+  prefilledDate, 
+  prefilledTime 
+}: ManualBookAppointmentModalProps) => {
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(prefilledDate || new Date());
+  const [startTime, setStartTime] = useState(prefilledTime || "");
   const [endTime, setEndTime] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
@@ -41,8 +51,10 @@ const ManualBookAppointmentModal = ({ isOpen, onClose, doctorId, practiceId, onS
   useEffect(() => {
     if (isOpen) {
       fetchPatients();
+      if (prefilledDate) setSelectedDate(prefilledDate);
+      if (prefilledTime) setStartTime(prefilledTime);
     }
-  }, [isOpen]);
+  }, [isOpen, prefilledDate, prefilledTime]);
 
   const fetchPatients = async () => {
     try {
@@ -87,12 +99,47 @@ const ManualBookAppointmentModal = ({ isOpen, onClose, doctorId, practiceId, onS
     try {
       let patientId = selectedPatientId;
 
-      // If booking for new patient, create a temporary patient entry
-      // Note: In production, you'd want to create a proper patient account
+      // If booking for new patient, create a guest profile first
       if (!useExisting) {
-        // For now, we'll use a placeholder UUID for manual bookings
-        // In production, you'd create a proper patient profile
-        patientId = "00000000-0000-0000-0000-000000000000"; // Placeholder
+        // Create a guest patient profile with auth bypass
+        const guestEmail = email || `guest_${Date.now()}@manual.booking`;
+        
+        // First create auth user (guest)
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: guestEmail,
+          password: Math.random().toString(36).slice(-12) + "Aa1!", // Random secure password
+          options: {
+            data: {
+              full_name: `${firstName} ${lastName}`,
+              role: 'patient'
+            }
+          }
+        });
+
+        if (authError) throw authError;
+        if (!authData.user) throw new Error("Failed to create patient profile");
+        
+        patientId = authData.user.id;
+        
+        // Update profile with phone
+        await supabase
+          .from('profiles')
+          .update({ phone })
+          .eq('user_id', patientId);
+      }
+
+      // Validate slot availability
+      const { data: conflicts } = await supabase
+        .from('appointments')
+        .select('id')
+        .eq('doctor_id', doctorId)
+        .eq('appointment_date', format(selectedDate, 'yyyy-MM-dd'))
+        .neq('status', 'canceled')
+        .or(`and(start_time.lte.${startTime},end_time.gt.${startTime}),and(start_time.lt.${endTime},end_time.gte.${endTime}),and(start_time.gte.${startTime},end_time.lte.${endTime})`);
+
+      if (conflicts && conflicts.length > 0) {
+        toast.error("This time slot conflicts with an existing appointment");
+        return;
       }
 
       const { error } = await supabase
@@ -104,7 +151,7 @@ const ManualBookAppointmentModal = ({ isOpen, onClose, doctorId, practiceId, onS
           appointment_date: format(selectedDate, 'yyyy-MM-dd'),
           start_time: startTime,
           end_time: endTime,
-          notes: useExisting ? notes : `Manual booking: ${firstName} ${lastName}\nPhone: ${phone}\nEmail: ${email || 'N/A'}\n${notes}`,
+          notes: useExisting ? notes : `${notes}`,
           status: 'confirmed'
         });
 

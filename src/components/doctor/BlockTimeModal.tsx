@@ -13,11 +13,14 @@ import { format } from "date-fns";
 interface BlockTimeModalProps {
   isOpen: boolean;
   onClose: () => void;
+  prefilledDate?: Date;
+  prefilledTime?: string;
+  onSuccess?: () => void;
 }
 
-const BlockTimeModal = ({ isOpen, onClose }: BlockTimeModalProps) => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [startTime, setStartTime] = useState("");
+const BlockTimeModal = ({ isOpen, onClose, prefilledDate, prefilledTime, onSuccess }: BlockTimeModalProps) => {
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(prefilledDate || new Date());
+  const [startTime, setStartTime] = useState(prefilledTime || "");
   const [endTime, setEndTime] = useState("");
   const [reason, setReason] = useState("");
   const [blockType, setBlockType] = useState("personal");
@@ -39,8 +42,12 @@ const BlockTimeModal = ({ isOpen, onClose }: BlockTimeModalProps) => {
       }
     };
     
-    if (isOpen) fetchDoctorId();
-  }, [isOpen]);
+    if (isOpen) {
+      fetchDoctorId();
+      if (prefilledDate) setSelectedDate(prefilledDate);
+      if (prefilledTime) setStartTime(prefilledTime);
+    }
+  }, [isOpen, prefilledDate, prefilledTime]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,6 +70,21 @@ const BlockTimeModal = ({ isOpen, onClose }: BlockTimeModalProps) => {
     setLoading(true);
 
     try {
+      // Check for conflicts with existing appointments
+      const { data: conflicts } = await supabase
+        .from('appointments')
+        .select('id')
+        .eq('doctor_id', doctorId)
+        .eq('appointment_date', format(selectedDate, 'yyyy-MM-dd'))
+        .neq('status', 'canceled')
+        .or(`and(start_time.lte.${startTime},end_time.gt.${startTime}),and(start_time.lt.${endTime},end_time.gte.${endTime}),and(start_time.gte.${startTime},end_time.lte.${endTime})`);
+
+      if (conflicts && conflicts.length > 0) {
+        toast.error("Cannot block time - conflicts with existing appointment(s)");
+        setLoading(false);
+        return;
+      }
+
       const { error } = await supabase
         .from('blocked_times')
         .insert({
@@ -77,6 +99,7 @@ const BlockTimeModal = ({ isOpen, onClose }: BlockTimeModalProps) => {
       if (error) throw error;
 
       toast.success("Time blocked successfully");
+      onSuccess?.();
       onClose();
       
       // Reset form
