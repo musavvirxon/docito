@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, Plus, Settings } from "lucide-react";
+import { Calendar, Clock, Plus, Settings, Stethoscope } from "lucide-react";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { useDoctorData } from "@/contexts/DoctorDataContext";
 import { toast } from "sonner";
@@ -15,6 +15,8 @@ import SetAvailabilityModal from "./SetAvailabilityModal";
 import ManualBookAppointmentModal from "./ManualBookAppointmentModal";
 import GoogleCalendarSyncModal from "./GoogleCalendarSyncModal";
 import TimeSlotCard from "./TimeSlotCard";
+import { useProcedures } from "@/hooks/useProcedures";
+import { useTimeSlots } from "@/hooks/useTimeSlots";
 
 interface DoctorCalendarSectionProps {
   doctorStatus: "independent" | "clinic-member";
@@ -35,15 +37,6 @@ interface DoctorCalendarSectionProps {
   }[];
 }
 
-interface TimeSlot {
-  id: string;
-  time: string;
-  patient?: string;
-  service?: string;
-  status: "available" | "booked" | "blocked";
-  reason?: string; // Reason for being blocked/unavailable
-}
-
 interface WorkingHours {
   [key: string]: {
     enabled: boolean;
@@ -54,9 +47,13 @@ interface WorkingHours {
 
 const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcomingAppointments = [] }: DoctorCalendarSectionProps) => {
   const { scheduleSettings, updateScheduleSettings, scheduleLoading } = useDoctorData();
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const { procedures } = useProcedures();
+  
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [doctorId, setDoctorId] = useState<string | null>(null);
   const [practiceId, setPracticeId] = useState<string | null>(null);
+  const [selectedProcedureId, setSelectedProcedureId] = useState<string>("");
+  const [bufferTime, setBufferTime] = useState(15);
   
   // Modal states
   const [isBlockTimeOpen, setIsBlockTimeOpen] = useState(false);
@@ -68,10 +65,6 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
   const [prefilledModalDate, setPrefilledModalDate] = useState<Date | undefined>();
   const [prefilledModalTime, setPrefilledModalTime] = useState<string>("");
   
-  // Blocked times and overrides
-  const [blockedTimes, setBlockedTimes] = useState<any[]>([]);
-  const [availabilityOverrides, setAvailabilityOverrides] = useState<any[]>([]);
-  
   const [workingHours, setWorkingHours] = useState<WorkingHours>({
     monday: { enabled: true, start: "09:00", end: "17:00" },
     tuesday: { enabled: true, start: "09:00", end: "17:00" },
@@ -81,8 +74,20 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
     saturday: { enabled: false, start: "09:00", end: "13:00" },
     sunday: { enabled: false, start: "09:00", end: "13:00" }
   });
+  
+  // Get selected procedure duration
+  const selectedProcedure = procedures.find(p => p.id === selectedProcedureId);
+  const procedureDuration = selectedProcedure?.duration_minutes || 30;
+  
+  // Use the new time slots hook
+  const { timeSlots, loading: slotsLoading, refetch } = useTimeSlots({
+    doctorId,
+    selectedDate,
+    procedureDuration,
+    bufferTime
+  });
 
-  // Fetch doctor info, blocked times, and overrides
+  // Fetch doctor info
   useEffect(() => {
     const fetchDoctorInfo = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -96,39 +101,12 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
         if (data) {
           setDoctorId(data.id);
           setPracticeId(data.practice_id);
-          fetchBlockedTimes(data.id);
-          fetchAvailabilityOverrides(data.id);
         }
       }
     };
     
     fetchDoctorInfo();
   }, []);
-
-  const fetchBlockedTimes = async (doctorIdParam: string) => {
-    const { data } = await supabase
-      .from('blocked_times')
-      .select('*')
-      .eq('doctor_id', doctorIdParam);
-    
-    if (data) setBlockedTimes(data);
-  };
-
-  const fetchAvailabilityOverrides = async (doctorIdParam: string) => {
-    const { data } = await supabase
-      .from('availability_overrides')
-      .select('*')
-      .eq('doctor_id', doctorIdParam);
-    
-    if (data) setAvailabilityOverrides(data);
-  };
-
-  const refetchCalendarData = () => {
-    if (doctorId) {
-      fetchBlockedTimes(doctorId);
-      fetchAvailabilityOverrides(doctorId);
-    }
-  };
 
   // Sync with schedule settings from context
   useEffect(() => {
@@ -147,130 +125,16 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
     
     // Sync buffer time
     if (scheduleSettings?.buffer_time) {
-      setBufferTime(scheduleSettings.buffer_time.toString());
+      setBufferTime(scheduleSettings.buffer_time);
     }
   }, [scheduleSettings]);
-  
-  const [slotDuration, setSlotDuration] = useState("60");
-  const [bufferTime, setBufferTime] = useState("15");
-
-  // Check if time is blocked
-  const isTimeBlocked = (date: Date, timeStr: string): { blocked: boolean; reason?: string } => {
-    const dateStr = date.toISOString().split('T')[0];
-    const blocked = blockedTimes.find(
-      bt => bt.blocked_date === dateStr && bt.start_time <= timeStr && bt.end_time > timeStr
-    );
-    return blocked ? { blocked: true, reason: blocked.reason || `Blocked: ${blocked.block_type}` } : { blocked: false };
-  };
-
-  // Check if a time is within a break period
-  const isTimeInBreak = (timeMinutes: number, breaks: any[]): { inBreak: boolean; breakName?: string } => {
-    for (const breakTime of breaks) {
-      const [breakStartHour, breakStartMinute] = breakTime.start_time.split(':').map(Number);
-      const [breakEndHour, breakEndMinute] = breakTime.end_time.split(':').map(Number);
-      const breakStartMinutes = breakStartHour * 60 + breakStartMinute;
-      const breakEndMinutes = breakEndHour * 60 + breakEndMinute;
-      
-      if (timeMinutes >= breakStartMinutes && timeMinutes < breakEndMinutes) {
-        return { inBreak: true, breakName: breakTime.name || 'Break' };
-      }
-    }
-    return { inBreak: false };
-  };
 
   // Check if selected date is a holiday
-  const isHoliday = (date: Date | undefined): boolean => {
-    if (!date || !scheduleSettings?.holidays) return false;
+  const isHoliday = (date: Date): boolean => {
+    if (!scheduleSettings?.holidays) return false;
     const dateStr = date.toISOString().split('T')[0];
     return scheduleSettings.holidays.includes(dateStr);
   };
-
-  // Convert today's appointments to time slots based on working hours
-  const generateTimeSlots = (): TimeSlot[] => {
-    const slots: TimeSlot[] = [];
-    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    const selectedDayName = selectedDate ? dayNames[selectedDate.getDay()] : dayNames[new Date().getDay()];
-    const daySchedule = workingHours[selectedDayName];
-    
-    // Check if it's a holiday
-    if (isHoliday(selectedDate)) {
-      return slots; // Return empty - will show holiday message in UI
-    }
-    
-    if (!daySchedule || !daySchedule.enabled) {
-      return slots; // Return empty if day is disabled - will show closed message in UI
-    }
-    
-    // Parse start and end times with minutes
-    const [startHour, startMinute] = daySchedule.start.split(':').map(Number);
-    const [endHour, endMinute] = daySchedule.end.split(':').map(Number);
-    
-    const startMinutes = startHour * 60 + startMinute;
-    const endMinutes = endHour * 60 + endMinute;
-    const slotDurationMinutes = parseInt(slotDuration);
-    const bufferMinutes = parseInt(bufferTime);
-    
-    // Get breaks for this day
-    const breaks = scheduleSettings?.working_days?.[selectedDayName]?.breaks || [];
-    
-    // Generate slots based on slot duration
-    for (let minutes = startMinutes; minutes < endMinutes; minutes += slotDurationMinutes + bufferMinutes) {
-      const hour = Math.floor(minutes / 60);
-      const minute = minutes % 60;
-      const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-      
-      // Check if time is blocked
-      const blockedCheck = isTimeBlocked(selectedDate || new Date(), timeString);
-      if (blockedCheck.blocked) {
-        slots.push({
-          id: `blocked-${minutes}`,
-          time: timeString,
-          status: "blocked",
-          reason: blockedCheck.reason
-        });
-        continue;
-      }
-      
-      // Check if this time is during a break
-      const breakCheck = isTimeInBreak(minutes, breaks);
-      if (breakCheck.inBreak) {
-        slots.push({
-          id: `break-${minutes}`,
-          time: timeString,
-          status: "blocked",
-          reason: `Break: ${breakCheck.breakName}`
-        });
-        continue;
-      }
-      
-      const appointment = todaysAppointments.find(apt => apt.start_time === timeString);
-      
-      if (appointment) {
-        slots.push({
-          id: appointment.id,
-          time: timeString,
-          patient: appointment.patient_name,
-          service: "Consultation",
-          status: appointment.status === 'confirmed' ? "booked" : appointment.status as any
-        });
-      } else {
-        slots.push({
-          id: `slot-${minutes}`,
-          time: timeString,
-          status: "available"
-        });
-      }
-    }
-    
-    return slots;
-  };
-
-  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
-
-  // Regenerate time slots when working hours, appointments, selected date, or blocked times change
-  useEffect(() => {
-    setTimeSlots(generateTimeSlots());
-  }, [workingHours, todaysAppointments, selectedDate, slotDuration, blockedTimes, availabilityOverrides]);
 
   const days = [
     { key: "monday", label: "Monday" },
@@ -315,24 +179,13 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
     const result = await updateScheduleSettings({
       ...scheduleSettings,
       working_days: updatedWorkingDays,
-      buffer_time: parseInt(bufferTime)
+      buffer_time: bufferTime
     });
 
     if (result.success) {
       toast.success("Availability settings saved successfully");
     } else {
       toast.error("Failed to save availability settings");
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "booked":
-        return "bg-blue-100 text-blue-700 border-blue-200";
-      case "blocked":
-        return "bg-red-100 text-red-700 border-red-200";
-      default:
-        return "bg-green-100 text-green-700 border-green-200";
     }
   };
 
@@ -369,17 +222,43 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
             <CardTitle>Schedule Overview</CardTitle>
           </CardHeader>
           <CardContent>
+            {/* Procedure Selector */}
+            <div className="mb-6 p-4 bg-muted/50 rounded-lg">
+              <Label className="flex items-center gap-2 mb-2">
+                <Stethoscope className="h-4 w-4" />
+                Select Procedure/Service
+              </Label>
+              <Select value={selectedProcedureId} onValueChange={setSelectedProcedureId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a procedure to see available time slots" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">Standard Appointment (30 min)</SelectItem>
+                  {procedures.map((procedure) => (
+                    <SelectItem key={procedure.id} value={procedure.id}>
+                      {procedure.name} ({procedure.duration_minutes} min)
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedProcedure && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  Duration: {procedureDuration} minutes + {bufferTime} minutes buffer
+                </p>
+              )}
+            </div>
+            
             <div className="flex gap-6">
               <CalendarComponent
                 mode="single"
                 selected={selectedDate}
-                onSelect={setSelectedDate}
+                onSelect={(date) => date && setSelectedDate(date)}
                 className="rounded-md border"
               />
               
               <div className="flex-1">
                 <h3 className="font-medium mb-4">
-                  {selectedDate?.toLocaleDateString('en-US', { 
+                  {selectedDate.toLocaleDateString('en-US', { 
                     weekday: 'long', 
                     year: 'numeric', 
                     month: 'long', 
@@ -387,29 +266,29 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
                   })}
                 </h3>
                 
-                {isHoliday(selectedDate) ? (
+                {slotsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <p className="text-muted-foreground">Loading slots...</p>
+                  </div>
+                ) : isHoliday(selectedDate) ? (
                   <div className="flex flex-col items-center justify-center py-8 text-center">
-                    <Badge variant="outline" className="bg-red-100 text-red-700 border-red-200 mb-2">
+                    <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30 mb-2">
                       Holiday / Day Off
                     </Badge>
                     <p className="text-muted-foreground">No appointments scheduled</p>
                   </div>
-                ) : !workingHours[selectedDate ? ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][selectedDate.getDay()] : 'monday']?.enabled ? (
+                ) : timeSlots.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-8 text-center">
-                    <Badge variant="outline" className="bg-gray-100 text-gray-700 border-gray-200 mb-2">
+                    <Badge variant="outline" className="bg-muted text-muted-foreground border-border mb-2">
                       Not a Working Day
                     </Badge>
                     <p className="text-muted-foreground">Office is closed</p>
                   </div>
-                ) : timeSlots.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-8 text-center">
-                    <p className="text-muted-foreground">No time slots available</p>
-                  </div>
                 ) : (
-                  <div className="space-y-2">
-                    {timeSlots.map((slot) => (
+                  <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2">
+                    {timeSlots.map((slot, index) => (
                       <TimeSlotCard
-                        key={slot.id}
+                        key={`${slot.time}-${index}`}
                         slot={slot}
                         onBlockTime={(time) => {
                           setPrefilledModalDate(selectedDate);
@@ -420,11 +299,6 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
                           setPrefilledModalDate(selectedDate);
                           setPrefilledModalTime(time);
                           setIsBookAppointmentOpen(true);
-                        }}
-                        onSetAvailability={(time) => {
-                          setPrefilledModalDate(selectedDate);
-                          setPrefilledModalTime(time);
-                          setIsSetAvailabilityOpen(true);
                         }}
                       />
                     ))}
@@ -492,7 +366,7 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
             prefilledDate={prefilledModalDate}
             prefilledTime={prefilledModalTime}
             onSuccess={() => {
-              refetchCalendarData();
+              refetch();
               toast.success("Time blocked successfully");
             }}
           />
@@ -505,7 +379,7 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
             }}
             doctorId={doctorId}
             onSuccess={() => {
-              refetchCalendarData();
+              refetch();
               toast.success("Availability updated");
             }}
           />
@@ -521,7 +395,7 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
             prefilledDate={prefilledModalDate}
             prefilledTime={prefilledModalTime}
             onSuccess={() => {
-              refetchCalendarData();
+              refetch();
               toast.success("Appointment booked");
             }}
           />
@@ -540,38 +414,23 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
           <p className="text-muted-foreground">Configure your working hours and appointment settings</p>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Slot Settings */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <Label htmlFor="slotDuration">Appointment Slot Duration</Label>
-              <Select value={slotDuration} onValueChange={setSlotDuration}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="15">15 minutes</SelectItem>
-                  <SelectItem value="30">30 minutes</SelectItem>
-                  <SelectItem value="45">45 minutes</SelectItem>
-                  <SelectItem value="60">60 minutes</SelectItem>
-                  <SelectItem value="90">90 minutes</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <Label htmlFor="bufferTime">Buffer Time Between Appointments</Label>
-              <Select value={bufferTime} onValueChange={setBufferTime}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="0">No buffer</SelectItem>
-                  <SelectItem value="15">15 minutes</SelectItem>
-                  <SelectItem value="30">30 minutes</SelectItem>
-                  <SelectItem value="45">45 minutes</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          {/* Buffer Time Setting */}
+          <div>
+            <Label htmlFor="bufferTime">Buffer Time Between Appointments</Label>
+            <Select value={bufferTime.toString()} onValueChange={(v) => setBufferTime(parseInt(v))}>
+              <SelectTrigger className="w-full md:w-64">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">No buffer</SelectItem>
+                <SelectItem value="15">15 minutes</SelectItem>
+                <SelectItem value="30">30 minutes</SelectItem>
+                <SelectItem value="45">45 minutes</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-muted-foreground mt-1">
+              Time added between appointments for preparation
+            </p>
           </div>
 
           {/* Working Hours */}
