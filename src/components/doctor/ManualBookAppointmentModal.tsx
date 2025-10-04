@@ -101,31 +101,29 @@ const ManualBookAppointmentModal = ({
 
       // If booking for new patient, create a guest profile first
       if (!useExisting) {
-        // Create a guest patient profile with auth bypass
+        // Create a guest patient profile WITHOUT switching auth sessions
+        // This creates a profile entry that can be claimed later
         const guestEmail = email || `guest_${Date.now()}@manual.booking`;
+        const tempUserId = crypto.randomUUID();
         
-        // First create auth user (guest)
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: guestEmail,
-          password: Math.random().toString(36).slice(-12) + "Aa1!", // Random secure password
-          options: {
-            data: {
-              full_name: `${firstName} ${lastName}`,
-              role: 'patient'
-            }
-          }
-        });
-
-        if (authError) throw authError;
-        if (!authData.user) throw new Error("Failed to create patient profile");
-        
-        patientId = authData.user.id;
-        
-        // Update profile with phone
-        await supabase
+        // Insert directly into profiles table as a guest patient
+        // No auth.signUp() to avoid session switching
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .update({ phone })
-          .eq('user_id', patientId);
+          .insert({
+            user_id: tempUserId,
+            full_name: `${firstName} ${lastName}`,
+            email: guestEmail,
+            phone: phone,
+            role: 'patient'
+          })
+          .select()
+          .single();
+
+        if (profileError) throw profileError;
+        if (!profileData) throw new Error("Failed to create guest patient profile");
+        
+        patientId = profileData.user_id;
       }
 
       // Validate slot availability
