@@ -62,7 +62,7 @@ export const useTimeSlots = ({
     fetchData();
   }, [doctorId, selectedDate]);
 
-  // Generate time slots based on schedule
+  // Generate time slots based on schedule with proper logic
   const timeSlots = useMemo(() => {
     if (scheduleLoading || loading) return [];
 
@@ -74,74 +74,107 @@ export const useTimeSlots = ({
     }
 
     const slots: TimeSlot[] = [];
-    const slotDuration = procedureDuration + bufferTime;
     const startMinutes = timeToMinutes(daySchedule.start_time);
     const endMinutes = timeToMinutes(daySchedule.end_time);
+    
+    let currentTime = startMinutes;
 
-    // Generate slots in 15-minute intervals
-    for (let minutes = startMinutes; minutes + slotDuration <= endMinutes; minutes += 15) {
-      const slotStart = minutesToTime(minutes);
-      const slotEnd = minutesToTime(minutes + slotDuration);
+    while (currentTime < endMinutes) {
+      const slotStartMinutes = currentTime;
+      const procedureEndMinutes = currentTime + procedureDuration;
+      const bufferEndMinutes = procedureEndMinutes + bufferTime;
 
-      // Check if slot is in a break
-      const isBreak = daySchedule.breaks?.some((breakTime: any) => {
+      // Can't fit procedure in remaining time
+      if (procedureEndMinutes > endMinutes) {
+        break;
+      }
+
+      const slotStart = minutesToTime(slotStartMinutes);
+      const slotEnd = minutesToTime(procedureEndMinutes);
+      const bufferEnd = minutesToTime(bufferEndMinutes);
+
+      // Check if slot overlaps with any break
+      const overlappingBreak = daySchedule.breaks?.find((breakTime: any) => {
         const breakStart = timeToMinutes(breakTime.start_time);
         const breakEnd = timeToMinutes(breakTime.end_time);
-        return timesOverlap(minutes, minutes + slotDuration, breakStart, breakEnd);
+        return timesOverlap(slotStartMinutes, bufferEndMinutes, breakStart, breakEnd);
       });
 
-      if (isBreak) {
-        slots.push({
-          time: slotStart,
-          endTime: slotEnd,
-          status: 'break',
-          reason: 'Break Time'
-        });
+      if (overlappingBreak) {
+        // Skip to end of break
+        const breakEnd = timeToMinutes(overlappingBreak.end_time);
+        
+        // Add break indicator slot
+        const breakStart = timeToMinutes(overlappingBreak.start_time);
+        if (currentTime <= breakStart) {
+          slots.push({
+            time: minutesToTime(breakStart),
+            endTime: minutesToTime(breakEnd),
+            status: 'break',
+            reason: overlappingBreak.name || 'Break Time'
+          });
+        }
+        
+        currentTime = breakEnd;
         continue;
       }
 
-      // Check if slot is blocked
-      const blocked = blockedTimes.find((bt) => {
+      // Check if slot overlaps with blocked time
+      const overlappingBlock = blockedTimes.find((bt) => {
         const blockStart = timeToMinutes(bt.start_time);
         const blockEnd = timeToMinutes(bt.end_time);
-        return timesOverlap(minutes, minutes + slotDuration, blockStart, blockEnd);
+        return timesOverlap(slotStartMinutes, bufferEndMinutes, blockStart, blockEnd);
       });
 
-      if (blocked) {
+      if (overlappingBlock) {
+        // Skip to end of blocked time
+        const blockEnd = timeToMinutes(overlappingBlock.end_time);
+        
         slots.push({
           time: slotStart,
-          endTime: slotEnd,
+          endTime: minutesToTime(blockEnd),
           status: 'blocked',
-          reason: blocked.reason || 'Blocked'
+          reason: overlappingBlock.reason || 'Blocked'
         });
+        
+        currentTime = blockEnd;
         continue;
       }
 
-      // Check if slot is booked
-      const appointment = appointments.find((apt) => {
+      // Check if slot overlaps with an appointment
+      const overlappingAppointment = appointments.find((apt) => {
         const aptStart = timeToMinutes(apt.start_time);
         const aptEnd = timeToMinutes(apt.end_time);
-        return timesOverlap(minutes, minutes + slotDuration, aptStart, aptEnd);
+        return timesOverlap(slotStartMinutes, procedureEndMinutes, aptStart, aptEnd);
       });
 
-      if (appointment) {
+      if (overlappingAppointment) {
+        // Skip to end of appointment
+        const aptEnd = timeToMinutes(overlappingAppointment.end_time);
+        
         slots.push({
           time: slotStart,
-          endTime: slotEnd,
+          endTime: minutesToTime(aptEnd),
           status: 'booked',
-          patient: appointment.profiles?.full_name || 'Patient',
-          service: appointment.procedures?.name || 'Appointment',
-          appointmentId: appointment.id
+          patient: overlappingAppointment.profiles?.full_name || 'Patient',
+          service: overlappingAppointment.procedures?.name || 'Appointment',
+          appointmentId: overlappingAppointment.id
         });
+        
+        currentTime = aptEnd;
         continue;
       }
 
-      // Available slot
+      // Available slot - include buffer visualization
       slots.push({
         time: slotStart,
-        endTime: slotEnd,
-        status: 'available'
+        endTime: bufferTime > 0 ? bufferEnd : slotEnd,
+        status: 'available',
+        reason: bufferTime > 0 ? `${procedureDuration}min + ${bufferTime}min buffer` : undefined
       });
+
+      // Move to next slot (after buffer)
+      currentTime = bufferEndMinutes;
     }
 
     return slots;
