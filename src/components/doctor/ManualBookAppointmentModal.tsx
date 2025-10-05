@@ -30,8 +30,6 @@ const ManualBookAppointmentModal = ({
   prefilledTime
 }: ManualBookAppointmentModalProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(prefilledDate || new Date());
-  const [startTime, setStartTime] = useState(prefilledTime || "");
-  const [endTime, setEndTime] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -49,9 +47,8 @@ const ManualBookAppointmentModal = ({
     if (isOpen) {
       fetchPatients();
       if (prefilledDate) setSelectedDate(prefilledDate);
-      if (prefilledTime) setStartTime(prefilledTime);
     }
-  }, [isOpen, prefilledDate, prefilledTime]);
+  }, [isOpen, prefilledDate]);
   const fetchPatients = async () => {
     try {
       const {
@@ -66,12 +63,8 @@ const ManualBookAppointmentModal = ({
   };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedDate || !startTime || !endTime) {
-      toast.error("Please fill in date and time");
-      return;
-    }
-    if (startTime >= endTime) {
-      toast.error("End time must be after start time");
+    if (!selectedDate || !prefilledTime) {
+      toast.error("Please select a valid time slot");
       return;
     }
     if (useExisting && !selectedPatientId) {
@@ -110,14 +103,12 @@ const ManualBookAppointmentModal = ({
         patientId = profileData.user_id;
       }
 
-      // Validate slot availability
-      const {
-        data: conflicts
-      } = await supabase.from('appointments').select('id').eq('doctor_id', doctorId).eq('appointment_date', format(selectedDate, 'yyyy-MM-dd')).neq('status', 'canceled').or(`and(start_time.lte.${startTime},end_time.gt.${startTime}),and(start_time.lt.${endTime},end_time.gte.${endTime}),and(start_time.gte.${startTime},end_time.lte.${endTime})`);
-      if (conflicts && conflicts.length > 0) {
-        toast.error("This time slot conflicts with an existing appointment");
-        return;
-      }
+      // Calculate end time (default 30 min slot)
+      const startTime = prefilledTime;
+      const [hours, minutes] = startTime.split(':').map(Number);
+      const endDate = new Date();
+      endDate.setHours(hours, minutes + 30, 0, 0);
+      const endTime = `${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}`;
       const {
         error
       } = await supabase.from('appointments').insert({
@@ -144,8 +135,6 @@ const ManualBookAppointmentModal = ({
   };
   const resetForm = () => {
     setSelectedDate(new Date());
-    setStartTime("");
-    setEndTime("");
     setNotes("");
     setUseExisting(true);
     setSelectedPatientId("");
@@ -217,21 +206,24 @@ const ManualBookAppointmentModal = ({
 
           <Separator />
 
-          {/* Date & Time Selection */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <Label>Appointment Date</Label>
-              <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} className="rounded-md border" disabled={date => date < new Date()} />
-            </div>
+          {/* Selected Slot Info */}
+          <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+            <h3 className="font-medium text-sm">Selected Time Slot</h3>
+            <p className="text-sm text-muted-foreground">
+              {selectedDate && format(selectedDate, 'EEEE, MMMM d, yyyy')} at {prefilledTime || 'Not selected'}
+            </p>
+          </div>
 
-            <div className="space-y-4">
-              
-
-              <div>
-                <Label htmlFor="notes">Notes (Optional)</Label>
-                <Textarea id="notes" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Appointment notes, reason for visit, etc." className="min-h-[120px]" />
-              </div>
-            </div>
+          {/* Notes Section */}
+          <div className="space-y-2">
+            <Label htmlFor="notes">Appointment Notes</Label>
+            <Textarea 
+              id="notes" 
+              value={notes} 
+              onChange={e => setNotes(e.target.value)} 
+              placeholder="Reason for visit, symptoms, special instructions, etc." 
+              className="min-h-[140px]" 
+            />
           </div>
 
           <div className="flex gap-2 pt-4 border-t">
