@@ -81,26 +81,25 @@ const ManualBookAppointmentModal = ({
 
       // If booking for new patient, create a guest profile first
       if (!useExisting) {
-        // Create a guest patient profile WITHOUT switching auth sessions
-        // This creates a profile entry that can be claimed later
+        // Create a guest patient profile using secure database function
         const guestEmail = email || `guest_${Date.now()}@manual.booking`;
-        const tempUserId = crypto.randomUUID();
+        const fullName = `${firstName} ${lastName}`;
 
-        // Insert directly into profiles table as a guest patient
-        // No auth.signUp() to avoid session switching
-        const {
-          data: profileData,
-          error: profileError
-        } = await supabase.from('profiles').insert({
-          user_id: tempUserId,
-          full_name: `${firstName} ${lastName}`,
-          email: guestEmail,
-          phone: phone,
-          role: 'patient'
-        }).select().single();
+        const { data: result, error: profileError } = await supabase
+          .rpc('create_guest_patient_profile', {
+            p_full_name: fullName,
+            p_email: guestEmail,
+            p_phone: phone || null
+          });
+        
         if (profileError) throw profileError;
-        if (!profileData) throw new Error("Failed to create guest patient profile");
-        patientId = profileData.user_id;
+        
+        const resultData = result as { success: boolean; user_id?: string; error?: string };
+        if (!resultData || !resultData.success) {
+          throw new Error(resultData?.error || "Failed to create guest patient profile");
+        }
+        
+        patientId = resultData.user_id!;
       }
 
       // Calculate end time (default 30 min slot)

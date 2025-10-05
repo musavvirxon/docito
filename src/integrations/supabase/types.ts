@@ -1272,6 +1272,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      create_guest_patient_profile: {
+        Args: { p_email: string; p_full_name: string; p_phone?: string }
+        Returns: Json
+      }
       fetch_available_slots: {
         Args: {
           date_from: string
