@@ -79,27 +79,32 @@ const ManualBookAppointmentModal = ({
     try {
       let patientId = selectedPatientId;
 
-      // If booking for new patient, create a guest profile first
+      // If booking for new patient, create or find patient profile
       if (!useExisting) {
-        // Create a guest patient profile using secure database function
-        const guestEmail = email || `guest_${Date.now()}@manual.booking`;
         const fullName = `${firstName} ${lastName}`;
+        const trimmedEmail = email?.trim() || null;
+        const trimmedPhone = phone?.trim() || null;
 
         const { data: result, error: profileError } = await supabase
-          .rpc('create_guest_patient_profile', {
+          .rpc('create_or_get_patient_profile', {
             p_full_name: fullName,
-            p_email: guestEmail,
-            p_phone: phone || null
+            p_email: trimmedEmail,
+            p_phone: trimmedPhone
           });
         
         if (profileError) throw profileError;
         
-        const resultData = result as { success: boolean; user_id?: string; error?: string };
+        const resultData = result as { success: boolean; user_id?: string; error?: string; is_existing?: boolean };
         if (!resultData || !resultData.success) {
-          throw new Error(resultData?.error || "Failed to create guest patient profile");
+          throw new Error(resultData?.error || "Failed to find/create patient profile");
         }
         
         patientId = resultData.user_id!;
+        
+        // Show appropriate message
+        if (resultData.is_existing) {
+          toast.info("Booking for existing patient");
+        }
       }
 
       // Calculate end time (default 30 min slot)

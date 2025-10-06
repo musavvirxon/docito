@@ -69,6 +69,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "appointment_procedures_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "patient_all_appointments"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "appointment_procedures_procedure_id_fkey"
             columns: ["procedure_id"]
             isOneToOne: false
@@ -1042,6 +1049,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "treatment_plan_procedures_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "patient_all_appointments"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "treatment_plan_procedures_consent_form_id_fkey"
             columns: ["consent_form_id"]
             isOneToOne: false
@@ -1214,6 +1228,43 @@ export type Database = {
           },
         ]
       }
+      patient_all_appointments: {
+        Row: {
+          appointment_date: string | null
+          created_at: string | null
+          doctor_id: string | null
+          end_time: string | null
+          id: string | null
+          notes: string | null
+          patient_id: string | null
+          practice_id: string | null
+          start_time: string | null
+          status: Database["public"]["Enums"]["appointment_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       add_medication_to_treatment_plan: {
@@ -1273,6 +1324,10 @@ export type Database = {
         Returns: boolean
       }
       create_guest_patient_profile: {
+        Args: { p_email: string; p_full_name: string; p_phone?: string }
+        Returns: Json
+      }
+      create_or_get_patient_profile: {
         Args: { p_email: string; p_full_name: string; p_phone?: string }
         Returns: Json
       }

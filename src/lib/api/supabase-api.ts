@@ -256,48 +256,72 @@ export const doctorApi = {
 export const appointmentApi = {
   async fetchAppointments(userId: string, userRole: 'patient' | 'doctor') {
     try {
-      let query = supabase
-        .from('appointments')
-        .select(`
-          *,
-          doctor:doctors(
-            id,
-            specialty,
-            user_id,
-            profiles:user_id (
-              full_name,
-              avatar_url
-            )
-          ),
-          practice:practices(
-            id,
-            name,
-            address,
-            phone
-          )
-        `);
-
       if (userRole === 'patient') {
-        query = query.eq('patient_id', userId);
+        // Use unified view for patients - includes appointments matched by email/phone
+        const { data, error } = await supabase
+          .from('patient_all_appointments')
+          .select(`
+            *,
+            doctor:doctors(
+              id,
+              specialty,
+              user_id,
+              profiles:user_id (
+                full_name,
+                avatar_url
+              )
+            ),
+            practice:practices(
+              id,
+              name,
+              address,
+              phone
+            )
+          `)
+          .order('appointment_date', { ascending: true })
+          .order('start_time', { ascending: true });
+
+        if (error) throw error;
+        return { data: data || [], success: true };
       } else {
-        // For doctors, find appointments where doctor_id matches their doctor record
+        // For doctors, use regular appointments table
         const { data: doctorData } = await supabase
           .from('doctors')
           .select('id')
           .eq('user_id', userId)
           .single();
 
-        if (doctorData) {
-          query = query.eq('doctor_id', doctorData.id);
+        if (!doctorData) {
+          return { data: [], success: true };
         }
+
+        const { data, error } = await supabase
+          .from('appointments')
+          .select(`
+            *,
+            doctor:doctors(
+              id,
+              specialty,
+              user_id,
+              profiles:user_id (
+                full_name,
+                avatar_url
+              )
+            ),
+            practice:practices(
+              id,
+              name,
+              address,
+              phone
+            )
+          `)
+          .eq('doctor_id', doctorData.id)
+          .order('appointment_date', { ascending: true })
+          .order('start_time', { ascending: true });
+
+        if (error) throw error;
+        return { data: data || [], success: true };
       }
-
-      const { data, error } = await query
-        .order('appointment_date', { ascending: true })
-        .order('start_time', { ascending: true });
-
-      if (error) throw error;
-      return { data: data || [], success: true };
     } catch (error: any) {
       return handleApiError(error, 'Failed to fetch appointments');
     }
