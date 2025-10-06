@@ -127,11 +127,12 @@ export const useTimeSlots = ({
       });
 
       if (overlappingBlock) {
-        // Skip to end of blocked time
+        // Use ACTUAL blocked time from database - never recalculate
+        const blockStart = timeToMinutes(overlappingBlock.start_time);
         const blockEnd = timeToMinutes(overlappingBlock.end_time);
         
         slots.push({
-          time: slotStart,
+          time: minutesToTime(blockStart),
           endTime: minutesToTime(blockEnd),
           status: 'blocked',
           reason: overlappingBlock.reason || 'Blocked'
@@ -149,11 +150,12 @@ export const useTimeSlots = ({
       });
 
       if (overlappingAppointment) {
-        // Skip to end of appointment
+        // Use ACTUAL appointment time from database - never recalculate
+        const aptStart = timeToMinutes(overlappingAppointment.start_time);
         const aptEnd = timeToMinutes(overlappingAppointment.end_time);
         
         slots.push({
-          time: slotStart,
+          time: minutesToTime(aptStart),
           endTime: minutesToTime(aptEnd),
           status: 'booked',
           patient: overlappingAppointment.profiles?.full_name || 'Patient',
@@ -165,15 +167,14 @@ export const useTimeSlots = ({
         continue;
       }
 
-      // Available slot - include buffer visualization
+      // Available slot - show only the actual appointment time (no buffer in display)
       slots.push({
         time: slotStart,
-        endTime: bufferTime > 0 ? bufferEnd : slotEnd,
-        status: 'available',
-        reason: bufferTime > 0 ? `${procedureDuration}min + ${bufferTime}min buffer` : undefined
+        endTime: slotEnd,
+        status: 'available'
       });
 
-      // Move to next slot (after buffer)
+      // Move to next slot (after buffer for spacing)
       currentTime = bufferEndMinutes;
     }
 

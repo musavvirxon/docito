@@ -241,11 +241,6 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
                   ))}
                 </SelectContent>
               </Select>
-              {selectedProcedure && (
-                <p className="text-sm text-muted-foreground mt-2">
-                  Duration: {procedureDuration} minutes + {bufferTime} minutes buffer
-                </p>
-              )}
             </div>
             
             <div className="flex gap-6">
