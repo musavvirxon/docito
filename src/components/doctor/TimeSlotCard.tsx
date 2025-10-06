@@ -29,38 +29,38 @@ const TimeSlotCard = ({ slot, onBlockTime, onBookAppointment }: TimeSlotCardProp
     switch (status) {
       case "available":
         return {
-          container: "bg-success text-white hover:bg-success/90 cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5",
-          badge: "bg-white/20 text-white border-white/30 font-medium",
+          container: "bg-green-500 text-white hover:bg-green-600 border-2 border-green-600 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02]",
+          badge: "bg-green-700 text-white border-green-800 font-medium",
           icon: CalendarPlus,
-          iconBg: "bg-white/20"
+          iconBg: "bg-green-600"
         };
       case "booked":
         return {
-          container: "bg-primary text-white shadow-md",
-          badge: "bg-white/20 text-white border-white/30 font-medium",
+          container: "bg-blue-500 text-white border-2 border-blue-600 shadow-md",
+          badge: "bg-blue-700 text-white border-blue-800 font-medium",
           icon: Clock,
-          iconBg: "bg-white/20"
+          iconBg: "bg-blue-600"
         };
       case "blocked":
         return {
-          container: "bg-destructive text-white shadow-md",
-          badge: "bg-white/20 text-white border-white/30 font-medium",
+          container: "bg-red-500 text-white border-2 border-red-600 shadow-md",
+          badge: "bg-red-700 text-white border-red-800 font-medium",
           icon: Ban,
-          iconBg: "bg-white/20"
+          iconBg: "bg-red-600"
         };
       case "break":
         return {
-          container: "bg-amber-500 text-white shadow-md",
-          badge: "bg-white/20 text-white border-white/30 font-medium",
+          container: "bg-orange-500 text-white border-2 border-orange-600 shadow-md",
+          badge: "bg-orange-700 text-white border-orange-800 font-medium",
           icon: Coffee,
-          iconBg: "bg-white/20"
+          iconBg: "bg-orange-600"
         };
       default:
         return {
-          container: "bg-muted text-foreground",
-          badge: "bg-background text-muted-foreground border-border",
+          container: "bg-gray-300 text-gray-700 border-2 border-gray-400",
+          badge: "bg-gray-400 text-gray-700 border-gray-500",
           icon: Clock,
-          iconBg: "bg-background"
+          iconBg: "bg-gray-400"
         };
     }
   };
@@ -92,12 +92,12 @@ const TimeSlotCard = ({ slot, onBlockTime, onBookAppointment }: TimeSlotCardProp
           statusStyle.iconBg,
           slot.status === "available" && "group-hover:scale-110 group-hover:shadow-md"
         )}>
-          <StatusIcon className="h-4 w-4" />
+          <StatusIcon className="h-4 w-4 text-white" />
         </div>
         
         <div className="flex-1">
           <div className="font-semibold text-sm flex items-center gap-2">
-            <Clock className="h-3.5 w-3.5 opacity-70" />
+            <Clock className="h-3.5 w-3.5 text-white opacity-90" />
             {slot.time} - {slot.endTime}
           </div>
           
@@ -140,9 +140,9 @@ const TimeSlotCard = ({ slot, onBlockTime, onBookAppointment }: TimeSlotCardProp
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-8 w-8 rounded-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-white/20 text-white"
+                className="h-8 w-8 rounded-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-green-600 text-white"
               >
-                <CalendarPlus className="h-4 w-4" />
+                <CalendarPlus className="h-4 w-4 text-white" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
