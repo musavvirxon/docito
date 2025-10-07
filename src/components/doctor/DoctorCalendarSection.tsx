@@ -389,9 +389,10 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
             practiceId={practiceId || undefined}
             prefilledDate={prefilledModalDate}
             prefilledTime={prefilledModalTime}
-            onSuccess={() => {
-              refetch();
-              toast.success("Appointment booked");
+            onSuccess={async () => {
+              console.log('🔄 Starting calendar refetch...');
+              await refetch();
+              console.log('✅ Calendar refetch result - slots updated');
             }}
           />
           <GoogleCalendarSyncModal

@@ -126,8 +126,14 @@ const ManualBookAppointmentModal = ({
         status: 'confirmed'
       });
       if (error) throw error;
+      
+      console.log('✅ Appointment created successfully');
+      console.log('📞 Calling refetch callback...');
+      
+      await onSuccess?.();
+      
+      console.log('✅ Refetch completed');
       toast.success("Appointment booked successfully");
-      onSuccess?.();
       onClose();
       resetForm();
     } catch (error: any) {

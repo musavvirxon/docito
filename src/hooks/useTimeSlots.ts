@@ -184,7 +184,9 @@ export const useTimeSlots = ({
   const refetch = async () => {
     if (!doctorId) return;
     
+    console.log('🔄 Refetching time slots data...');
     const dateString = format(selectedDate, 'yyyy-MM-dd');
+    
     const { data: appts } = await supabase
       .from('appointments')
       .select('*, profiles!appointments_patient_id_fkey(full_name), procedures(name)')
@@ -198,6 +200,8 @@ export const useTimeSlots = ({
       .eq('doctor_id', doctorId)
       .eq('blocked_date', dateString);
 
+    console.log(`✅ Fetched ${appts?.length || 0} appointments, ${blocked?.length || 0} blocked times`);
+    
     setAppointments(appts || []);
     setBlockedTimes(blocked || []);
   };
