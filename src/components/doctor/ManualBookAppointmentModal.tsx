@@ -75,9 +75,15 @@ const ManualBookAppointmentModal = ({
       toast.error("Please fill in patient details");
       return;
     }
+    
+    console.log('🚀 Starting appointment booking...');
     setLoading(true);
+
     try {
       let patientId = selectedPatientId;
+      let isNewPatient = false;
+      let isVerified = false;
+      let verificationToken = null;
 
       // If booking for new patient, create or find patient profile
       if (!useExisting) {
@@ -94,17 +100,25 @@ const ManualBookAppointmentModal = ({
         
         if (profileError) throw profileError;
         
-        const resultData = result as { success: boolean; user_id?: string; error?: string; is_existing?: boolean };
+        const resultData = result as { 
+          success: boolean; 
+          user_id?: string; 
+          error?: string; 
+          is_existing?: boolean;
+          is_verified?: boolean;
+          verification_token?: string;
+        };
+        
         if (!resultData || !resultData.success) {
           throw new Error(resultData?.error || "Failed to find/create patient profile");
         }
         
         patientId = resultData.user_id!;
+        isNewPatient = !resultData.is_existing;
+        isVerified = resultData.is_verified || false;
+        verificationToken = resultData.verification_token;
         
-        // Show appropriate message
-        if (resultData.is_existing) {
-          toast.info("Booking for existing patient");
-        }
+        console.log('Patient profile:', { patientId, isNewPatient, isVerified });
       }
 
       // Calculate end time (default 30 min slot)
@@ -113,31 +127,80 @@ const ManualBookAppointmentModal = ({
       const endDate = new Date();
       endDate.setHours(hours, minutes + 30, 0, 0);
       const endTime = `${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}`;
-      const {
-        error
-      } = await supabase.from('appointments').insert({
-        doctor_id: doctorId,
-        patient_id: patientId,
-        practice_id: practiceId || null,
-        appointment_date: format(selectedDate, 'yyyy-MM-dd'),
-        start_time: startTime,
-        end_time: endTime,
-        notes: useExisting ? notes : `${notes}`,
-        status: 'confirmed'
-      });
-      if (error) throw error;
+
+      // Create appointment
+      const { data: appointment, error: appointmentError } = await supabase
+        .from('appointments')
+        .insert({
+          doctor_id: doctorId,
+          patient_id: patientId,
+          practice_id: practiceId || null,
+          appointment_date: format(selectedDate, 'yyyy-MM-dd'),
+          start_time: startTime,
+          end_time: endTime,
+          notes: notes,
+          status: 'confirmed'
+        })
+        .select()
+        .single();
+
+      if (appointmentError) throw appointmentError;
       
-      console.log('✅ Appointment created successfully');
-      console.log('📞 Calling refetch callback...');
-      
+      console.log('✅ Appointment created:', appointment);
+
+      // Send SMS if new unverified patient with phone
+      if (isNewPatient && !isVerified && phone && verificationToken) {
+        console.log('📱 Sending SMS to new patient...');
+        
+        const { data: doctorProfile } = await supabase
+          .from('doctors')
+          .select('user_id')
+          .eq('id', doctorId)
+          .single();
+
+        if (doctorProfile) {
+          const { data: doctorUserProfile } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('user_id', doctorProfile.user_id)
+            .single();
+
+          const doctorName = doctorUserProfile?.full_name || 'Your doctor';
+
+          const { data: smsResult, error: smsError } = await supabase
+            .rpc('send_patient_invitation_sms', {
+              p_patient_id: patientId,
+              p_phone: phone,
+              p_verification_token: verificationToken,
+              p_doctor_name: doctorName,
+              p_appointment_date: new Date(selectedDate).toISOString()
+            });
+
+          if (smsError) {
+            console.error('SMS error:', smsError);
+          } else {
+            console.log('✅ SMS queued:', smsResult);
+          }
+        }
+
+        toast.success("Appointment booked! Invitation SMS queued for patient.");
+      } else if (isNewPatient && !phone) {
+        toast.success("Appointment booked for new patient");
+      } else if (!isNewPatient) {
+        toast.success("Appointment booked for existing patient");
+      } else {
+        toast.success("Appointment booked successfully");
+      }
+
+      // Refresh calendar
+      console.log('📞 Calling onSuccess callback...');
       await onSuccess?.();
+      console.log('✅ Success callback completed');
       
-      console.log('✅ Refetch completed');
-      toast.success("Appointment booked successfully");
       onClose();
       resetForm();
     } catch (error: any) {
-      console.error('Error booking appointment:', error);
+      console.error('❌ Booking error:', error);
       toast.error(error.message || "Failed to book appointment");
     } finally {
       setLoading(false);

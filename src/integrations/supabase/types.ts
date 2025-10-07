@@ -806,10 +806,13 @@ export type Database = {
           full_name: string
           gender: Database["public"]["Enums"]["gender_type"] | null
           id: string
+          is_verified: boolean | null
           phone: string | null
           role: Database["public"]["Enums"]["user_role"]
+          token_expires_at: string | null
           updated_at: string | null
           user_id: string
+          verification_token: string | null
         }
         Insert: {
           address?: string | null
@@ -820,10 +823,13 @@ export type Database = {
           full_name: string
           gender?: Database["public"]["Enums"]["gender_type"] | null
           id?: string
+          is_verified?: boolean | null
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          token_expires_at?: string | null
           updated_at?: string | null
           user_id: string
+          verification_token?: string | null
         }
         Update: {
           address?: string | null
@@ -834,10 +840,13 @@ export type Database = {
           full_name?: string
           gender?: Database["public"]["Enums"]["gender_type"] | null
           id?: string
+          is_verified?: boolean | null
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          token_expires_at?: string | null
           updated_at?: string | null
           user_id?: string
+          verification_token?: string | null
         }
         Relationships: []
       }
@@ -994,6 +1003,47 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "doctors"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      sms_notifications: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          id: string
+          message: string
+          patient_id: string | null
+          phone: string
+          sent_at: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          message: string
+          patient_id?: string | null
+          phone: string
+          sent_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          message?: string
+          patient_id?: string | null
+          phone?: string
+          sent_at?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sms_notifications_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -1361,6 +1411,16 @@ export type Database = {
           recipient_user_id: string
           sender_user_id?: string
           title: string
+        }
+        Returns: Json
+      }
+      send_patient_invitation_sms: {
+        Args: {
+          p_appointment_date: string
+          p_doctor_name: string
+          p_patient_id: string
+          p_phone: string
+          p_verification_token: string
         }
         Returns: Json
       }
