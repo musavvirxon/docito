@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          badge_color: string | null
+          category: string | null
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          requirement_type: string | null
+          requirement_value: number | null
+          title: string
+        }
+        Insert: {
+          badge_color?: string | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          requirement_type?: string | null
+          requirement_value?: number | null
+          title: string
+        }
+        Update: {
+          badge_color?: string | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          requirement_type?: string | null
+          requirement_value?: number | null
+          title?: string
+        }
+        Relationships: []
+      }
       appointment_procedures: {
         Row: {
           appointment_id: string | null
@@ -1006,6 +1045,41 @@ export type Database = {
           },
         ]
       }
+      settings_audit_log: {
+        Row: {
+          changed_at: string | null
+          id: string
+          new_value: Json | null
+          old_value: Json | null
+          setting_type: string
+          user_id: string
+        }
+        Insert: {
+          changed_at?: string | null
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          setting_type: string
+          user_id: string
+        }
+        Update: {
+          changed_at?: string | null
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          setting_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "settings_audit_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       sms_notifications: {
         Row: {
           created_at: string | null
@@ -1242,6 +1316,55 @@ export type Database = {
           },
         ]
       }
+      user_achievements: {
+        Row: {
+          achievement_id: string
+          doctor_id: string
+          earned_at: string | null
+          id: string
+          is_claimed: boolean | null
+          progress: number | null
+        }
+        Insert: {
+          achievement_id: string
+          doctor_id: string
+          earned_at?: string | null
+          id?: string
+          is_claimed?: boolean | null
+          progress?: number | null
+        }
+        Update: {
+          achievement_id?: string
+          doctor_id?: string
+          earned_at?: string | null
+          id?: string
+          is_claimed?: boolean | null
+          progress?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_achievements_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_achievements_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       doctor_profiles_view: {
@@ -1354,6 +1477,10 @@ export type Database = {
         }
         Returns: Json
       }
+      calculate_avg_response_time: {
+        Args: { p_doctor_id: string }
+        Returns: number
+      }
       cancel_or_update_appointment: {
         Args: {
           appointment_id: string
@@ -1364,6 +1491,14 @@ export type Database = {
           new_status?: Database["public"]["Enums"]["appointment_status"]
         }
         Returns: Json
+      }
+      check_and_award_achievements: {
+        Args: { p_doctor_id: string }
+        Returns: {
+          achievement_id: string
+          newly_earned: boolean
+          title: string
+        }[]
       }
       check_user_access: {
         Args: {
@@ -1389,6 +1524,16 @@ export type Database = {
           procedure_duration?: number
         }
         Returns: Json
+      }
+      get_doctor_monthly_trends: {
+        Args: { p_doctor_id: string; p_months?: number }
+        Returns: {
+          appointments_count: number
+          month_date: string
+          month_name: string
+          new_patients: number
+          revenue: number
+        }[]
       }
       get_user_profile_by_uid: {
         Args: Record<PropertyKey, never>

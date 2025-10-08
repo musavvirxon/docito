@@ -4,6 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart3, TrendingUp, Users, Calendar, Star, DollarSign, Award } from "lucide-react";
 import { useDoctorPerformance } from "@/hooks/useDoctorPerformance";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface DoctorPerformanceSectionProps {
   doctorProfile: {
@@ -29,7 +30,9 @@ const DoctorPerformanceSection = ({ doctorProfile, stats }: DoctorPerformanceSec
     stats: performanceStats, 
     monthlyData, 
     topServices, 
-    recentReviews, 
+    recentReviews,
+    newAchievements,
+    earnedAchievements,
     loading,
     error 
   } = useDoctorPerformance();
@@ -69,6 +72,29 @@ const DoctorPerformanceSection = ({ doctorProfile, stats }: DoctorPerformanceSec
 
   return (
     <div className="space-y-6">
+      {/* New Achievement Notification */}
+      <AnimatePresence>
+        {newAchievements.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-6 rounded-lg shadow-lg"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                <Award className="w-10 h-10" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold">New Achievement Unlocked!</h3>
+                <p className="text-lg">{newAchievements[0].title}</p>
+                <p className="text-sm opacity-90">{newAchievements[0].description}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Performance Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
@@ -199,35 +225,37 @@ const DoctorPerformanceSection = ({ doctorProfile, stats }: DoctorPerformanceSec
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Award className="w-5 h-5" />
-                Achievements & Milestones
+                Achievements & Milestones ({earnedAchievements.length} Earned)
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center p-4 border rounded-lg">
-                  <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <Star className="w-6 h-6 text-yellow-600" />
-                  </div>
-                  <div className="font-medium">Top Rated</div>
-                  <div className="text-sm text-muted-foreground">4.8+ rating maintained</div>
+              {earnedAchievements.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Award className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p>Complete your first appointment to start earning achievements!</p>
                 </div>
-                
-                <div className="text-center p-4 border rounded-lg">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <Users className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <div className="font-medium">Patient Champion</div>
-                  <div className="text-sm text-muted-foreground">100+ patients served</div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {earnedAchievements.slice(0, 6).map((achievement) => (
+                    <motion.div
+                      key={achievement.id}
+                      whileHover={{ scale: 1.05 }}
+                      className={`text-center p-4 border-2 rounded-lg bg-${achievement.badge_color}-50 border-${achievement.badge_color}-200`}
+                    >
+                      <div className={`w-12 h-12 bg-${achievement.badge_color}-500 rounded-full flex items-center justify-center mx-auto mb-2`}>
+                        <Star className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="font-medium">{achievement.title}</div>
+                      <div className="text-sm text-muted-foreground">{achievement.description}</div>
+                      {achievement.earned_at && (
+                        <div className="text-xs text-muted-foreground mt-2">
+                          Earned {new Date(achievement.earned_at).toLocaleDateString()}
+                        </div>
+                      )}
+                    </motion.div>
+                  ))}
                 </div>
-                
-                <div className="text-center p-4 border rounded-lg">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <BarChart3 className="w-6 h-6 text-green-600" />
-                  </div>
-                  <div className="font-medium">Revenue Milestone</div>
-                  <div className="text-sm text-muted-foreground">$10K+ monthly revenue</div>
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

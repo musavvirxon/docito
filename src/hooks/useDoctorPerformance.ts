@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
 
 interface PerformanceStats {
   totalAppointments: number;
@@ -35,171 +36,201 @@ interface PatientReview {
   date: string;
 }
 
+interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  category: string;
+  badge_color: string;
+  earned_at?: string;
+  newly_earned?: boolean;
+}
+
 export const useDoctorPerformance = () => {
   const { user } = useAuth();
-  const [stats, setStats] = useState<PerformanceStats>({
-    totalAppointments: 0,
-    totalPatients: 0,
-    averageRating: 0,
-    totalReviews: 0,
-    monthlyRevenue: 0,
-    completionRate: 0,
-    averageSessionLength: 45,
-    responseTime: 12,
-    monthlyGrowth: 0,
-    patientGrowth: 0
-  });
-  const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
-  const [topServices, setTopServices] = useState<TopService[]>([]);
-  const [recentReviews, setRecentReviews] = useState<PatientReview[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [doctorId, setDoctorId] = useState<string | null>(null);
 
-  const fetchPerformanceData = async () => {
-    if (!user) return;
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Get doctor profile
-      const { data: doctorData } = await supabase
+  // Get doctor ID
+  useEffect(() => {
+    const getDoctorId = async () => {
+      if (!user) return;
+      
+      const { data } = await supabase
         .from('doctors')
-        .select('*')
+        .select('id')
         .eq('user_id', user.id)
         .single();
-
-      if (!doctorData) return;
-
-      // Get all appointments for stats calculation
-      const { data: appointments } = await supabase
-        .from('appointments')
-        .select(`
-          *,
-          profiles:patient_id (full_name)
-        `)
-        .eq('doctor_id', doctorData.id);
-
-      const appointmentsData = appointments || [];
-
-      // Calculate basic stats
-      const totalAppointments = appointmentsData.length;
-      const uniquePatients = new Set(appointmentsData.map(apt => apt.patient_id));
-      const totalPatients = uniquePatients.size;
-      const completedAppointments = appointmentsData.filter(apt => apt.status === 'completed');
-      const monthlyRevenue = completedAppointments.length * (doctorData.consultation_fee || 150);
-      const completionRate = totalAppointments > 0 ? (completedAppointments.length / totalAppointments) * 100 : 0;
-
-      // Calculate monthly data for the last 6 months
-      const monthlyStats: MonthlyData[] = [];
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       
-      for (let i = 5; i >= 0; i--) {
-        const date = new Date();
-        date.setMonth(date.getMonth() - i);
-        const monthStr = months[date.getMonth()];
-        const year = date.getFullYear();
-        const monthKey = `${year}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+      if (data) setDoctorId(data.id);
+    };
 
-        const monthAppointments = appointmentsData.filter(apt => 
-          apt.appointment_date.startsWith(monthKey)
-        );
-
-        const monthCompletedAppointments = monthAppointments.filter(apt => apt.status === 'completed');
-        const monthRevenue = monthCompletedAppointments.length * (doctorData.consultation_fee || 150);
-        const monthNewPatients = new Set(monthAppointments.map(apt => apt.patient_id)).size;
-
-        monthlyStats.push({
-          month: monthStr,
-          appointments: monthAppointments.length,
-          revenue: monthRevenue,
-          newPatients: monthNewPatients
-        });
-      }
-
-      // Calculate growth rates
-      const currentMonth = monthlyStats[monthlyStats.length - 1];
-      const previousMonth = monthlyStats[monthlyStats.length - 2];
-      const monthlyGrowth = previousMonth && previousMonth.appointments > 0 
-        ? ((currentMonth.appointments - previousMonth.appointments) / previousMonth.appointments) * 100
-        : 0;
-
-      const patientGrowth = previousMonth && previousMonth.newPatients > 0
-        ? ((currentMonth.newPatients - previousMonth.newPatients) / previousMonth.newPatients) * 100
-        : 0;
-
-      // Get top services from procedures
-      const { data: procedures } = await supabase
-        .from('procedures')
-        .select('name, default_cost')
-        .eq('dentist_id', doctorData.id)
-        .eq('is_active', true)
-        .limit(4);
-
-      const topServicesData: TopService[] = (procedures || []).map((proc, index) => ({
-        name: proc.name,
-        bookings: Math.floor(Math.random() * 50) + 10, // Mock data for now
-        revenue: (Math.floor(Math.random() * 50) + 10) * (proc.default_cost || 150)
-      }));
-
-      // Mock recent reviews (in real app, you'd have a reviews table)
-      const mockReviews: PatientReview[] = [
-        {
-          patient_name: "Sarah M.",
-          rating: 5,
-          comment: "Excellent care and very thorough examination.",
-          date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toLocaleDateString()
-        },
-        {
-          patient_name: "John D.",
-          rating: 5,
-          comment: "Dr. " + (doctorData?.id || 'Doctor') + " is very knowledgeable and caring.",
-          date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toLocaleDateString()
-        },
-        {
-          patient_name: "Emily R.",
-          rating: 4,
-          comment: "Great experience, would recommend to others.",
-          date: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toLocaleDateString()
-        }
-      ];
-
-      setStats({
-        totalAppointments,
-        totalPatients,
-        averageRating: doctorData.average_rating || 0,
-        totalReviews: doctorData.num_reviews || 0,
-        monthlyRevenue,
-        completionRate,
-        averageSessionLength: 45, // Mock data
-        responseTime: 12, // Mock data
-        monthlyGrowth,
-        patientGrowth
-      });
-
-      setMonthlyData(monthlyStats);
-      setTopServices(topServicesData);
-      setRecentReviews(mockReviews);
-
-    } catch (err: any) {
-      console.error('Error fetching performance data:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchPerformanceData();
+    getDoctorId();
   }, [user]);
 
+  // Fetch performance data with React Query for real-time updates
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['doctor-performance', doctorId],
+    queryFn: async () => {
+      if (!doctorId) throw new Error('No doctor ID');
+
+      // Fetch all data in parallel
+      const [
+        appointmentsData,
+        trendsData,
+        responseTimeData,
+        achievementsData,
+        earnedAchievementsData,
+        proceduresData,
+        doctorData
+      ] = await Promise.all([
+        // Get appointments for stats
+        supabase
+          .from('appointments')
+          .select('*')
+          .eq('doctor_id', doctorId),
+        
+        // Get monthly trends
+        supabase.rpc('get_doctor_monthly_trends', {
+          p_doctor_id: doctorId,
+          p_months: 6
+        }),
+        
+        // Get response time
+        supabase.rpc('calculate_avg_response_time', {
+          p_doctor_id: doctorId
+        }),
+        
+        // Check for new achievements
+        supabase.rpc('check_and_award_achievements', {
+          p_doctor_id: doctorId
+        }),
+        
+        // Get earned achievements
+        supabase
+          .from('user_achievements')
+          .select('*, achievements(*)')
+          .eq('doctor_id', doctorId)
+          .order('earned_at', { ascending: false }),
+        
+        // Get procedures for services
+        supabase
+          .from('procedures')
+          .select('id, name, default_cost, price')
+          .eq('dentist_id', doctorId)
+          .eq('is_active', true)
+          .limit(4),
+        
+        // Get doctor data
+        supabase
+          .from('doctors')
+          .select('average_rating, num_reviews, consultation_fee')
+          .eq('id', doctorId)
+          .single()
+      ]);
+
+      const appointments = appointmentsData.data || [];
+      const trends = trendsData.data || [];
+      const responseTime = responseTimeData.data || 12;
+      const newAchievements = (achievementsData.data || []).filter((a: any) => a.newly_earned);
+      const earnedAchievements = earnedAchievementsData.data || [];
+      const procedures = proceduresData.data || [];
+      const doctor = doctorData.data;
+
+      // Calculate stats
+      const completedAppointments = appointments.filter((a: any) => a.status === 'completed');
+      const uniquePatients = new Set(appointments.map((a: any) => a.patient_id));
+      const consultationFee = doctor?.consultation_fee || 150;
+      const totalRevenue = completedAppointments.length * consultationFee;
+
+      const completionRate = appointments.length > 0 
+        ? (completedAppointments.length / appointments.length) * 100 
+        : 0;
+
+      // Calculate growth rates
+      const currentMonth = trends[0];
+      const previousMonth = trends[1];
+      const monthlyGrowth = previousMonth && previousMonth.appointments_count > 0
+        ? ((currentMonth.appointments_count - previousMonth.appointments_count) / previousMonth.appointments_count) * 100
+        : 0;
+      const patientGrowth = previousMonth && previousMonth.new_patients > 0
+        ? ((currentMonth.new_patients - previousMonth.new_patients) / previousMonth.new_patients) * 100
+        : 0;
+
+      // Format top services
+      const topServices = procedures.map((proc: any) => ({
+        name: proc.name,
+        bookings: appointments.filter((a: any) => a.procedure_id === proc.id).length,
+        revenue: appointments
+          .filter((a: any) => a.procedure_id === proc.id && a.status === 'completed')
+          .length * (proc.price || proc.default_cost || consultationFee)
+      }));
+
+      return {
+        stats: {
+          totalAppointments: appointments.length,
+          totalPatients: uniquePatients.size,
+          averageRating: doctor?.average_rating || 0,
+          totalReviews: doctor?.num_reviews || 0,
+          monthlyRevenue: totalRevenue,
+          completionRate,
+          averageSessionLength: 45,
+          responseTime,
+          monthlyGrowth,
+          patientGrowth
+        },
+        monthlyData: trends.map((t: any) => ({
+          month: t.month_name,
+          appointments: t.appointments_count,
+          revenue: t.revenue,
+          newPatients: t.new_patients
+        })),
+        topServices,
+        recentReviews: [],
+        newAchievements: newAchievements.map((a: any) => ({
+          id: a.achievement_id,
+          title: a.title,
+          description: '',
+          icon: '',
+          category: '',
+          badge_color: '',
+          newly_earned: a.newly_earned
+        })) as Achievement[],
+        earnedAchievements: earnedAchievements.map((ua: any) => ({
+          id: ua.achievement_id,
+          title: ua.achievements?.title || '',
+          description: ua.achievements?.description || '',
+          icon: ua.achievements?.icon || '',
+          category: ua.achievements?.category || '',
+          badge_color: ua.achievements?.badge_color || 'blue',
+          earned_at: ua.earned_at
+        })) as Achievement[]
+      };
+    },
+    enabled: !!doctorId,
+    refetchInterval: 60000 // Refetch every minute for real-time updates
+  });
+
   return {
-    stats,
-    monthlyData,
-    topServices,
-    recentReviews,
-    loading,
-    error,
-    refreshData: fetchPerformanceData
+    stats: data?.stats || {
+      totalAppointments: 0,
+      totalPatients: 0,
+      averageRating: 0,
+      totalReviews: 0,
+      monthlyRevenue: 0,
+      completionRate: 0,
+      averageSessionLength: 45,
+      responseTime: 12,
+      monthlyGrowth: 0,
+      patientGrowth: 0
+    },
+    monthlyData: data?.monthlyData || [],
+    topServices: data?.topServices || [],
+    recentReviews: data?.recentReviews || [],
+    newAchievements: data?.newAchievements || [],
+    earnedAchievements: data?.earnedAchievements || [],
+    loading: isLoading,
+    error: error?.message || null,
+    refreshData: refetch
   };
 };

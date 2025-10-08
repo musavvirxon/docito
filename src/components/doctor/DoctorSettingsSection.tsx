@@ -7,42 +7,47 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Eye, EyeOff, Settings, Bell, Calendar, Shield, Trash2, RefreshCw } from "lucide-react";
+import { Eye, EyeOff, Settings, Bell, Calendar, Shield, Trash2, RefreshCw, Loader2 } from "lucide-react";
+import { useSettings } from "@/hooks/useSettings";
 
 const DoctorSettingsSection = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ current: '', new: '', confirm: '' });
   
-  const [notifications, setNotifications] = useState({
-    emailBookings: true,
-    emailReminders: true,
-    emailCancellations: true,
-    smsBookings: false,
-    smsReminders: true,
-    smsCancellations: true,
-    pushNotifications: true
-  });
+  const {
+    loading,
+    saving,
+    accountSettings,
+    notifications,
+    calendarSync,
+    privacySettings,
+    updateAccountSettings,
+    updateNotificationSettings,
+    updateCalendarSync,
+    updatePrivacySettings,
+    changePassword
+  } = useSettings();
 
-  const [calendarSync, setCalendarSync] = useState({
-    googleCalendar: false,
-    outlookCalendar: false,
-    appleCalendar: false
-  });
-
-  const updateNotificationSetting = (key: string, value: boolean) => {
-    setNotifications(prev => ({
-      ...prev,
-      [key]: value
-    }));
+  const handlePasswordChange = async () => {
+    if (passwordForm.new !== passwordForm.confirm) {
+      return;
+    }
+    
+    const result = await changePassword(passwordForm.current, passwordForm.new);
+    if (result.success) {
+      setPasswordForm({ current: '', new: '', confirm: '' });
+    }
   };
 
-  const updateCalendarSync = (key: string, value: boolean) => {
-    setCalendarSync(prev => ({
-      ...prev,
-      [key]: value
-    }));
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -75,32 +80,47 @@ const DoctorSettingsSection = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="email">Email Address</Label>
-                  <Input id="email" type="email" defaultValue="dr.sarah@example.com" />
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    value={accountSettings.email}
+                    onChange={(e) => updateAccountSettings({ email: e.target.value })}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="phone">Phone Number</Label>
-                  <Input id="phone" defaultValue="+1 (555) 123-4567" />
+                  <Input 
+                    id="phone"
+                    value={accountSettings.phone}
+                    onChange={(e) => updateAccountSettings({ phone: e.target.value })}
+                  />
                 </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="timezone">Timezone</Label>
-                  <Select defaultValue="est">
+                  <Select 
+                    value={accountSettings.timezone}
+                    onValueChange={(value) => updateAccountSettings({ timezone: value })}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="est">Eastern Standard Time</SelectItem>
-                      <SelectItem value="cst">Central Standard Time</SelectItem>
-                      <SelectItem value="mst">Mountain Standard Time</SelectItem>
-                      <SelectItem value="pst">Pacific Standard Time</SelectItem>
+                      <SelectItem value="America/New_York">Eastern Standard Time</SelectItem>
+                      <SelectItem value="America/Chicago">Central Standard Time</SelectItem>
+                      <SelectItem value="America/Denver">Mountain Standard Time</SelectItem>
+                      <SelectItem value="America/Los_Angeles">Pacific Standard Time</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label htmlFor="language">Language</Label>
-                  <Select defaultValue="en">
+                  <Select 
+                    value={accountSettings.language}
+                    onValueChange={(value) => updateAccountSettings({ language: value })}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -113,7 +133,10 @@ const DoctorSettingsSection = () => {
                 </div>
               </div>
 
-              <Button>Save Changes</Button>
+              <Button disabled={saving}>
+                {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                Save Changes
+              </Button>
             </CardContent>
           </Card>
 
@@ -129,7 +152,10 @@ const DoctorSettingsSection = () => {
                   <div className="font-medium">Profile Visibility</div>
                   <div className="text-sm text-muted-foreground">Show your profile in doctor search results</div>
                 </div>
-                <Switch defaultChecked />
+                <Switch 
+                  checked={privacySettings.profileVisibility}
+                  onCheckedChange={(checked) => updatePrivacySettings({ profileVisibility: checked })}
+                />
               </div>
               
               <div className="flex items-center justify-between">
@@ -172,7 +198,7 @@ const DoctorSettingsSection = () => {
                     </div>
                     <Switch 
                       checked={notifications.emailBookings}
-                      onCheckedChange={(checked) => updateNotificationSetting('emailBookings', checked)}
+                      onCheckedChange={(checked) => updateNotificationSettings({ emailBookings: checked })}
                     />
                   </div>
                   
@@ -183,7 +209,7 @@ const DoctorSettingsSection = () => {
                     </div>
                     <Switch 
                       checked={notifications.emailReminders}
-                      onCheckedChange={(checked) => updateNotificationSetting('emailReminders', checked)}
+                      onCheckedChange={(checked) => updateNotificationSettings({ emailReminders: checked })}
                     />
                   </div>
                   
@@ -194,7 +220,7 @@ const DoctorSettingsSection = () => {
                     </div>
                     <Switch 
                       checked={notifications.emailCancellations}
-                      onCheckedChange={(checked) => updateNotificationSetting('emailCancellations', checked)}
+                      onCheckedChange={(checked) => updateNotificationSettings({ emailCancellations: checked })}
                     />
                   </div>
                 </div>
@@ -211,7 +237,7 @@ const DoctorSettingsSection = () => {
                     </div>
                     <Switch 
                       checked={notifications.smsBookings}
-                      onCheckedChange={(checked) => updateNotificationSetting('smsBookings', checked)}
+                      onCheckedChange={(checked) => updateNotificationSettings({ smsBookings: checked })}
                     />
                   </div>
                   
@@ -222,7 +248,7 @@ const DoctorSettingsSection = () => {
                     </div>
                     <Switch 
                       checked={notifications.smsReminders}
-                      onCheckedChange={(checked) => updateNotificationSetting('smsReminders', checked)}
+                      onCheckedChange={(checked) => updateNotificationSettings({ smsReminders: checked })}
                     />
                   </div>
                   
@@ -233,7 +259,7 @@ const DoctorSettingsSection = () => {
                     </div>
                     <Switch 
                       checked={notifications.smsCancellations}
-                      onCheckedChange={(checked) => updateNotificationSetting('smsCancellations', checked)}
+                      onCheckedChange={(checked) => updateNotificationSettings({ smsCancellations: checked })}
                     />
                   </div>
                 </div>
@@ -249,7 +275,7 @@ const DoctorSettingsSection = () => {
                   </div>
                   <Switch 
                     checked={notifications.pushNotifications}
-                    onCheckedChange={(checked) => updateNotificationSetting('pushNotifications', checked)}
+                    onCheckedChange={(checked) => updateNotificationSettings({ pushNotifications: checked })}
                   />
                 </div>
               </div>
@@ -285,6 +311,7 @@ const DoctorSettingsSection = () => {
                   <Switch 
                     checked={calendarSync.googleCalendar}
                     onCheckedChange={(checked) => updateCalendarSync('googleCalendar', checked)}
+                    disabled={saving}
                   />
                 </div>
 
@@ -355,6 +382,8 @@ const DoctorSettingsSection = () => {
                     id="currentPassword" 
                     type={showCurrentPassword ? "text" : "password"}
                     placeholder="Enter current password"
+                    value={passwordForm.current}
+                    onChange={(e) => setPasswordForm(prev => ({ ...prev, current: e.target.value }))}
                   />
                   <Button
                     type="button"
