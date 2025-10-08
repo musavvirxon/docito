@@ -15,12 +15,20 @@ interface BlockTimeModalProps {
   onClose: () => void;
   prefilledDate?: Date;
   prefilledTime?: string;
+  preselectedSlot?: {
+    date: Date;
+    time: string;
+  };
   onSuccess?: () => void;
 }
 
-const BlockTimeModal = ({ isOpen, onClose, prefilledDate, prefilledTime, onSuccess }: BlockTimeModalProps) => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(prefilledDate || new Date());
-  const [startTime, setStartTime] = useState(prefilledTime || "");
+const BlockTimeModal = ({ isOpen, onClose, prefilledDate, prefilledTime, preselectedSlot, onSuccess }: BlockTimeModalProps) => {
+  const isSlotMode = !!preselectedSlot;
+  const initialDate = preselectedSlot?.date || prefilledDate || new Date();
+  const initialTime = preselectedSlot?.time || prefilledTime || "";
+  
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(initialDate);
+  const [startTime, setStartTime] = useState(initialTime);
   const [endTime, setEndTime] = useState("");
   const [reason, setReason] = useState("");
   const [blockType, setBlockType] = useState("personal");
@@ -44,10 +52,24 @@ const BlockTimeModal = ({ isOpen, onClose, prefilledDate, prefilledTime, onSucce
     
     if (isOpen) {
       fetchDoctorId();
-      if (prefilledDate) setSelectedDate(prefilledDate);
-      if (prefilledTime) setStartTime(prefilledTime);
+      
+      if (preselectedSlot) {
+        setSelectedDate(preselectedSlot.date);
+        setStartTime(preselectedSlot.time);
+        // Calculate end time (30 min slot)
+        const [hours, minutes] = preselectedSlot.time.split(':').map(Number);
+        const endDate = new Date();
+        endDate.setHours(hours, minutes + 30, 0, 0);
+        setEndTime(`${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}`);
+      } else if (prefilledDate) {
+        setSelectedDate(prefilledDate);
+      }
+      
+      if (prefilledTime && !preselectedSlot) {
+        setStartTime(prefilledTime);
+      }
     }
-  }, [isOpen, prefilledDate, prefilledTime]);
+  }, [isOpen, prefilledDate, prefilledTime, preselectedSlot]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,19 +146,19 @@ const BlockTimeModal = ({ isOpen, onClose, prefilledDate, prefilledTime, onSucce
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <Label>Select Date</Label>
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={setSelectedDate}
-                className="rounded-md border"
-                disabled={(date) => date < new Date()}
-              />
-            </div>
-
+          {isSlotMode ? (
+            // Slot mode - show read-only slot info
             <div className="space-y-4">
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="text-sm text-muted-foreground mb-2">Selected Slot:</p>
+                <p className="font-medium text-lg">
+                  {selectedDate && format(selectedDate, 'EEEE, MMMM d, yyyy')}
+                </p>
+                <p className="font-medium text-lg">
+                  {startTime} - {endTime}
+                </p>
+              </div>
+
               <div>
                 <Label htmlFor="blockType">Block Type</Label>
                 <Select value={blockType} onValueChange={setBlockType}>
@@ -152,41 +174,83 @@ const BlockTimeModal = ({ isOpen, onClose, prefilledDate, prefilledTime, onSucce
                 </Select>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="startTime">Start Time</Label>
-                  <Input
-                    id="startTime"
-                    type="time"
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="endTime">End Time</Label>
-                  <Input
-                    id="endTime"
-                    type="time"
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
               <div>
                 <Label htmlFor="reason">Reason (Optional)</Label>
                 <Textarea
                   id="reason"
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  placeholder="Why are you blocking this time?"
-                  className="min-h-[80px]"
+                  placeholder="e.g., Staff meeting, Lunch break"
+                  className="min-h-[100px]"
                 />
               </div>
             </div>
-          </div>
+          ) : (
+            // Manual mode - show date/time pickers
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label>Select Date</Label>
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={setSelectedDate}
+                  className="rounded-md border"
+                  disabled={(date) => date < new Date()}
+                />
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="blockType">Block Type</Label>
+                  <Select value={blockType} onValueChange={setBlockType}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="personal">Personal Time</SelectItem>
+                      <SelectItem value="meeting">Meeting</SelectItem>
+                      <SelectItem value="break">Break</SelectItem>
+                      <SelectItem value="unavailable">Unavailable</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="startTime">Start Time</Label>
+                    <Input
+                      id="startTime"
+                      type="time"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="endTime">End Time</Label>
+                    <Input
+                      id="endTime"
+                      type="time"
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="reason">Reason (Optional)</Label>
+                  <Textarea
+                    id="reason"
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    placeholder="Why are you blocking this time?"
+                    className="min-h-[80px]"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="flex gap-2 pt-4">
             <Button type="button" variant="outline" onClick={onClose} className="flex-1" disabled={loading}>
