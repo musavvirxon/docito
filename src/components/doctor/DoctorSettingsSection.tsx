@@ -9,13 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Eye, EyeOff, Settings, Bell, Calendar, Shield, Trash2, RefreshCw, Loader2 } from "lucide-react";
 import { useSettings } from "@/hooks/useSettings";
+import { SecuritySettings } from "../dashboard/SecuritySettings";
 
 const DoctorSettingsSection = () => {
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [passwordForm, setPasswordForm] = useState({ current: '', new: '', confirm: '' });
-  
   const {
     loading,
     saving,
@@ -29,17 +25,6 @@ const DoctorSettingsSection = () => {
     updatePrivacySettings,
     changePassword
   } = useSettings();
-
-  const handlePasswordChange = async () => {
-    if (passwordForm.new !== passwordForm.confirm) {
-      return;
-    }
-    
-    const result = await changePassword(passwordForm.current, passwordForm.new);
-    if (result.success) {
-      setPasswordForm({ current: '', new: '', confirm: '' });
-    }
-  };
 
   if (loading) {
     return (
@@ -365,158 +350,7 @@ const DoctorSettingsSection = () => {
         </TabsContent>
 
         <TabsContent value="security" className="space-y-6">
-          {/* Change Password */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="w-5 h-5" />
-                Change Password
-              </CardTitle>
-              <p className="text-muted-foreground">Update your account password</p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="currentPassword">Current Password</Label>
-                <div className="relative">
-                  <Input 
-                    id="currentPassword" 
-                    type={showCurrentPassword ? "text" : "password"}
-                    placeholder="Enter current password"
-                    value={passwordForm.current}
-                    onChange={(e) => setPasswordForm(prev => ({ ...prev, current: e.target.value }))}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2"
-                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  >
-                    {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </Button>
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="newPassword">New Password</Label>
-                <div className="relative">
-                  <Input 
-                    id="newPassword" 
-                    type={showNewPassword ? "text" : "password"}
-                    placeholder="Enter new password"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2"
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                  >
-                    {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </Button>
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                <div className="relative">
-                  <Input 
-                    id="confirmPassword" 
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Confirm new password"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
-                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </Button>
-                </div>
-              </div>
-
-              <Button>Update Password</Button>
-            </CardContent>
-          </Card>
-
-          {/* Security Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Security Settings</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-medium">Two-Factor Authentication</div>
-                  <div className="text-sm text-muted-foreground">Add an extra layer of security to your account</div>
-                </div>
-                <Button variant="outline">Enable 2FA</Button>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-medium">Login Notifications</div>
-                  <div className="text-sm text-muted-foreground">Get notified of new device logins</div>
-                </div>
-                <Switch defaultChecked />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-medium">Session Timeout</div>
-                  <div className="text-sm text-muted-foreground">Automatically log out after inactivity</div>
-                </div>
-                <Select defaultValue="30">
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="15">15 minutes</SelectItem>
-                    <SelectItem value="30">30 minutes</SelectItem>
-                    <SelectItem value="60">1 hour</SelectItem>
-                    <SelectItem value="120">2 hours</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Delete Account */}
-          <Card className="border-destructive/20">
-            <CardHeader>
-              <CardTitle className="text-destructive flex items-center gap-2">
-                <Trash2 className="w-5 h-5" />
-                Delete Account
-              </CardTitle>
-              <p className="text-muted-foreground">
-                Permanently delete your account and all associated data. This action cannot be undone.
-              </p>
-            </CardHeader>
-            <CardContent>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive">Delete Account</Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete your account 
-                      and remove your data from our servers.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                      Delete Account
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </CardContent>
-          </Card>
+          <SecuritySettings />
         </TabsContent>
       </Tabs>
     </div>

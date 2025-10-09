@@ -74,38 +74,55 @@ export const useSettings = () => {
       try {
         setLoading(true);
 
+        // Fetch fresh profile data with settings
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (profileError) throw profileError;
+
         // Load account settings from profile
         setAccountSettings({
-          email: profile.email || '',
-          phone: profile.phone || '',
-          timezone: (profile as any).timezone || 'America/New_York',
-          language: (profile as any).language || 'en'
+          email: profileData.email || '',
+          phone: profileData.phone || '',
+          timezone: profileData.timezone || 'America/New_York',
+          language: profileData.language || 'en'
         });
 
-        // Load notification settings (stored in JSONB column or separate table)
-        const notifSettings = (profile as any).notification_settings;
-        if (notifSettings) {
-          setNotifications(prev => ({ ...prev, ...notifSettings }));
-        }
-
-        // Load calendar sync status
-        const { data: calendarData } = await supabase
-          .from('google_calendar_sync')
-          .select('sync_enabled')
-          .eq('doctor_id', user.id)
-          .maybeSingle();
-
-        if (calendarData) {
-          setCalendarSync(prev => ({
-            ...prev,
-            googleCalendar: calendarData.sync_enabled
-          }));
+        // Load notification settings
+        if (profileData.notification_settings) {
+          setNotifications(profileData.notification_settings as unknown as NotificationSettings);
         }
 
         // Load privacy settings
-        const privacyData = (profile as any).privacy_settings;
-        if (privacyData) {
-          setPrivacySettings(prev => ({ ...prev, ...privacyData }));
+        if (profileData.privacy_settings) {
+          setPrivacySettings(profileData.privacy_settings as unknown as PrivacySettings);
+        }
+
+        // Load calendar sync status (only if user is a doctor)
+        if (profile.role === 'doctor') {
+          const { data: doctorData } = await supabase
+            .from('doctors')
+            .select('id')
+            .eq('user_id', user.id)
+            .single();
+
+          if (doctorData) {
+            const { data: calendarData } = await supabase
+              .from('google_calendar_sync')
+              .select('sync_enabled')
+              .eq('doctor_id', doctorData.id)
+              .maybeSingle();
+
+            if (calendarData) {
+              setCalendarSync(prev => ({
+                ...prev,
+                googleCalendar: calendarData.sync_enabled
+              }));
+            }
+          }
         }
 
       } catch (error: any) {

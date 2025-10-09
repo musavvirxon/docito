@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_activity: {
+        Row: {
+          activity_type: string
+          created_at: string | null
+          device_info: string | null
+          id: string
+          ip_address: unknown | null
+          location: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string | null
+          device_info?: string | null
+          id?: string
+          ip_address?: unknown | null
+          location?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string | null
+          device_info?: string | null
+          id?: string
+          ip_address?: unknown | null
+          location?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      account_requests: {
+        Row: {
+          completed_at: string | null
+          id: string
+          notes: string | null
+          request_type: string
+          requested_at: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          id?: string
+          notes?: string | null
+          request_type: string
+          requested_at?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          id?: string
+          notes?: string | null
+          request_type?: string
+          requested_at?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       achievements: {
         Row: {
           badge_color: string | null
@@ -846,8 +909,12 @@ export type Database = {
           gender: Database["public"]["Enums"]["gender_type"] | null
           id: string
           is_verified: boolean | null
+          language: string | null
+          notification_settings: Json | null
           phone: string | null
+          privacy_settings: Json | null
           role: Database["public"]["Enums"]["user_role"]
+          timezone: string | null
           token_expires_at: string | null
           updated_at: string | null
           user_id: string
@@ -863,8 +930,12 @@ export type Database = {
           gender?: Database["public"]["Enums"]["gender_type"] | null
           id?: string
           is_verified?: boolean | null
+          language?: string | null
+          notification_settings?: Json | null
           phone?: string | null
+          privacy_settings?: Json | null
           role?: Database["public"]["Enums"]["user_role"]
+          timezone?: string | null
           token_expires_at?: string | null
           updated_at?: string | null
           user_id: string
@@ -880,8 +951,12 @@ export type Database = {
           gender?: Database["public"]["Enums"]["gender_type"] | null
           id?: string
           is_verified?: boolean | null
+          language?: string | null
+          notification_settings?: Json | null
           phone?: string | null
+          privacy_settings?: Json | null
           role?: Database["public"]["Enums"]["user_role"]
+          timezone?: string | null
           token_expires_at?: string | null
           updated_at?: string | null
           user_id?: string
@@ -1539,6 +1614,15 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      log_account_activity: {
+        Args: {
+          p_activity_type: string
+          p_device_info?: string
+          p_ip_address?: unknown
+          p_user_agent?: string
+        }
+        Returns: Json
+      }
       mark_notification_as_read: {
         Args: { notification_id: string }
         Returns: Json
@@ -1546,6 +1630,10 @@ export type Database = {
       refresh_all_ratings: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      request_account_action: {
+        Args: { p_notes?: string; p_request_type: string }
+        Returns: Json
       }
       send_notification_to_user: {
         Args: {
