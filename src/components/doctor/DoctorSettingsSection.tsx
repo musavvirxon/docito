@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Eye, EyeOff, Settings, Bell, Calendar, Shield, Trash2, RefreshCw, Loader2 } from "lucide-react";
 import { useSettings } from "@/hooks/useSettings";
 import { SecuritySettings } from "../dashboard/SecuritySettings";
+import { toast } from "sonner";
 
 const DoctorSettingsSection = () => {
   const {
@@ -25,6 +26,77 @@ const DoctorSettingsSection = () => {
     updatePrivacySettings,
     changePassword
   } = useSettings();
+
+  // Local state for pending changes
+  const [localAccountSettings, setLocalAccountSettings] = useState(accountSettings);
+  const [localNotifications, setLocalNotifications] = useState(notifications);
+  const [localPrivacySettings, setLocalPrivacySettings] = useState(privacySettings);
+  const [hasAccountChanges, setHasAccountChanges] = useState(false);
+  const [hasNotificationChanges, setHasNotificationChanges] = useState(false);
+  const [hasPrivacyChanges, setHasPrivacyChanges] = useState(false);
+
+  // Update local state when backend data loads
+  useEffect(() => {
+    setLocalAccountSettings(accountSettings);
+  }, [accountSettings]);
+
+  useEffect(() => {
+    setLocalNotifications(notifications);
+  }, [notifications]);
+
+  useEffect(() => {
+    setLocalPrivacySettings(privacySettings);
+  }, [privacySettings]);
+
+  // Check for changes
+  const checkAccountChanges = (newSettings: typeof accountSettings) => {
+    setHasAccountChanges(
+      JSON.stringify(newSettings) !== JSON.stringify(accountSettings)
+    );
+  };
+
+  const checkNotificationChanges = (newSettings: typeof notifications) => {
+    setHasNotificationChanges(
+      JSON.stringify(newSettings) !== JSON.stringify(notifications)
+    );
+  };
+
+  const checkPrivacyChanges = (newSettings: typeof privacySettings) => {
+    setHasPrivacyChanges(
+      JSON.stringify(newSettings) !== JSON.stringify(privacySettings)
+    );
+  };
+
+  // Save handlers
+  const handleSaveAccountSettings = async () => {
+    try {
+      await updateAccountSettings(localAccountSettings);
+      setHasAccountChanges(false);
+      toast.success("Account settings saved successfully");
+    } catch (error) {
+      toast.error("Failed to save account settings");
+    }
+  };
+
+  const handleSaveNotifications = async () => {
+    try {
+      await updateNotificationSettings(localNotifications);
+      setHasNotificationChanges(false);
+      toast.success("Notification preferences saved successfully");
+    } catch (error) {
+      toast.error("Failed to save notification preferences");
+    }
+  };
+
+  const handleSavePrivacySettings = async () => {
+    try {
+      await updatePrivacySettings(localPrivacySettings);
+      setHasPrivacyChanges(false);
+      toast.success("Privacy settings saved successfully");
+    } catch (error) {
+      toast.error("Failed to save privacy settings");
+    }
+  };
 
   if (loading) {
     return (
@@ -68,16 +140,24 @@ const DoctorSettingsSection = () => {
                   <Input 
                     id="email" 
                     type="email" 
-                    value={accountSettings.email}
-                    onChange={(e) => updateAccountSettings({ email: e.target.value })}
+                    value={localAccountSettings.email}
+                    onChange={(e) => {
+                      const newSettings = { ...localAccountSettings, email: e.target.value };
+                      setLocalAccountSettings(newSettings);
+                      checkAccountChanges(newSettings);
+                    }}
                   />
                 </div>
                 <div>
                   <Label htmlFor="phone">Phone Number</Label>
                   <Input 
                     id="phone"
-                    value={accountSettings.phone}
-                    onChange={(e) => updateAccountSettings({ phone: e.target.value })}
+                    value={localAccountSettings.phone}
+                    onChange={(e) => {
+                      const newSettings = { ...localAccountSettings, phone: e.target.value };
+                      setLocalAccountSettings(newSettings);
+                      checkAccountChanges(newSettings);
+                    }}
                   />
                 </div>
               </div>
@@ -86,8 +166,12 @@ const DoctorSettingsSection = () => {
                 <div>
                   <Label htmlFor="timezone">Timezone</Label>
                   <Select 
-                    value={accountSettings.timezone}
-                    onValueChange={(value) => updateAccountSettings({ timezone: value })}
+                    value={localAccountSettings.timezone}
+                    onValueChange={(value) => {
+                      const newSettings = { ...localAccountSettings, timezone: value };
+                      setLocalAccountSettings(newSettings);
+                      checkAccountChanges(newSettings);
+                    }}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -103,8 +187,12 @@ const DoctorSettingsSection = () => {
                 <div>
                   <Label htmlFor="language">Language</Label>
                   <Select 
-                    value={accountSettings.language}
-                    onValueChange={(value) => updateAccountSettings({ language: value })}
+                    value={localAccountSettings.language}
+                    onValueChange={(value) => {
+                      const newSettings = { ...localAccountSettings, language: value };
+                      setLocalAccountSettings(newSettings);
+                      checkAccountChanges(newSettings);
+                    }}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -118,7 +206,7 @@ const DoctorSettingsSection = () => {
                 </div>
               </div>
 
-              <Button disabled={saving}>
+              <Button onClick={handleSaveAccountSettings} disabled={saving || !hasAccountChanges}>
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                 Save Changes
               </Button>
@@ -138,8 +226,12 @@ const DoctorSettingsSection = () => {
                   <div className="text-sm text-muted-foreground">Show your profile in doctor search results</div>
                 </div>
                 <Switch 
-                  checked={privacySettings.profileVisibility}
-                  onCheckedChange={(checked) => updatePrivacySettings({ profileVisibility: checked })}
+                  checked={localPrivacySettings.profileVisibility}
+                  onCheckedChange={(checked) => {
+                    const newSettings = { ...localPrivacySettings, profileVisibility: checked };
+                    setLocalPrivacySettings(newSettings);
+                    checkPrivacyChanges(newSettings);
+                  }}
                 />
               </div>
               
@@ -148,7 +240,14 @@ const DoctorSettingsSection = () => {
                   <div className="font-medium">Share Analytics Data</div>
                   <div className="text-sm text-muted-foreground">Help improve our platform with anonymous usage data</div>
                 </div>
-                <Switch defaultChecked />
+                <Switch 
+                  checked={localPrivacySettings.shareAnalytics}
+                  onCheckedChange={(checked) => {
+                    const newSettings = { ...localPrivacySettings, shareAnalytics: checked };
+                    setLocalPrivacySettings(newSettings);
+                    checkPrivacyChanges(newSettings);
+                  }}
+                />
               </div>
               
               <div className="flex items-center justify-between">
@@ -156,8 +255,20 @@ const DoctorSettingsSection = () => {
                   <div className="font-medium">Marketing Communications</div>
                   <div className="text-sm text-muted-foreground">Receive updates about new features and tips</div>
                 </div>
-                <Switch />
+                <Switch 
+                  checked={localPrivacySettings.marketingCommunications}
+                  onCheckedChange={(checked) => {
+                    const newSettings = { ...localPrivacySettings, marketingCommunications: checked };
+                    setLocalPrivacySettings(newSettings);
+                    checkPrivacyChanges(newSettings);
+                  }}
+                />
               </div>
+
+              <Button onClick={handleSavePrivacySettings} disabled={saving || !hasPrivacyChanges}>
+                {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                Save Privacy Settings
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
@@ -182,8 +293,12 @@ const DoctorSettingsSection = () => {
                       <div className="text-sm text-muted-foreground">Get notified when patients book appointments</div>
                     </div>
                     <Switch 
-                      checked={notifications.emailBookings}
-                      onCheckedChange={(checked) => updateNotificationSettings({ emailBookings: checked })}
+                      checked={localNotifications.emailBookings}
+                      onCheckedChange={(checked) => {
+                        const newSettings = { ...localNotifications, emailBookings: checked };
+                        setLocalNotifications(newSettings);
+                        checkNotificationChanges(newSettings);
+                      }}
                     />
                   </div>
                   
@@ -193,8 +308,12 @@ const DoctorSettingsSection = () => {
                       <div className="text-sm text-muted-foreground">Reminders about upcoming appointments</div>
                     </div>
                     <Switch 
-                      checked={notifications.emailReminders}
-                      onCheckedChange={(checked) => updateNotificationSettings({ emailReminders: checked })}
+                      checked={localNotifications.emailReminders}
+                      onCheckedChange={(checked) => {
+                        const newSettings = { ...localNotifications, emailReminders: checked };
+                        setLocalNotifications(newSettings);
+                        checkNotificationChanges(newSettings);
+                      }}
                     />
                   </div>
                   
@@ -204,8 +323,12 @@ const DoctorSettingsSection = () => {
                       <div className="text-sm text-muted-foreground">Get notified when patients cancel appointments</div>
                     </div>
                     <Switch 
-                      checked={notifications.emailCancellations}
-                      onCheckedChange={(checked) => updateNotificationSettings({ emailCancellations: checked })}
+                      checked={localNotifications.emailCancellations}
+                      onCheckedChange={(checked) => {
+                        const newSettings = { ...localNotifications, emailCancellations: checked };
+                        setLocalNotifications(newSettings);
+                        checkNotificationChanges(newSettings);
+                      }}
                     />
                   </div>
                 </div>
@@ -221,8 +344,12 @@ const DoctorSettingsSection = () => {
                       <div className="text-sm text-muted-foreground">Text notifications for new bookings</div>
                     </div>
                     <Switch 
-                      checked={notifications.smsBookings}
-                      onCheckedChange={(checked) => updateNotificationSettings({ smsBookings: checked })}
+                      checked={localNotifications.smsBookings}
+                      onCheckedChange={(checked) => {
+                        const newSettings = { ...localNotifications, smsBookings: checked };
+                        setLocalNotifications(newSettings);
+                        checkNotificationChanges(newSettings);
+                      }}
                     />
                   </div>
                   
@@ -232,8 +359,12 @@ const DoctorSettingsSection = () => {
                       <div className="text-sm text-muted-foreground">SMS reminders before appointments</div>
                     </div>
                     <Switch 
-                      checked={notifications.smsReminders}
-                      onCheckedChange={(checked) => updateNotificationSettings({ smsReminders: checked })}
+                      checked={localNotifications.smsReminders}
+                      onCheckedChange={(checked) => {
+                        const newSettings = { ...localNotifications, smsReminders: checked };
+                        setLocalNotifications(newSettings);
+                        checkNotificationChanges(newSettings);
+                      }}
                     />
                   </div>
                   
@@ -243,8 +374,12 @@ const DoctorSettingsSection = () => {
                       <div className="text-sm text-muted-foreground">SMS alerts for cancellations</div>
                     </div>
                     <Switch 
-                      checked={notifications.smsCancellations}
-                      onCheckedChange={(checked) => updateNotificationSettings({ smsCancellations: checked })}
+                      checked={localNotifications.smsCancellations}
+                      onCheckedChange={(checked) => {
+                        const newSettings = { ...localNotifications, smsCancellations: checked };
+                        setLocalNotifications(newSettings);
+                        checkNotificationChanges(newSettings);
+                      }}
                     />
                   </div>
                 </div>
@@ -259,13 +394,20 @@ const DoctorSettingsSection = () => {
                     <div className="text-sm text-muted-foreground">Real-time notifications in your browser</div>
                   </div>
                   <Switch 
-                    checked={notifications.pushNotifications}
-                    onCheckedChange={(checked) => updateNotificationSettings({ pushNotifications: checked })}
+                    checked={localNotifications.pushNotifications}
+                    onCheckedChange={(checked) => {
+                      const newSettings = { ...localNotifications, pushNotifications: checked };
+                      setLocalNotifications(newSettings);
+                      checkNotificationChanges(newSettings);
+                    }}
                   />
                 </div>
               </div>
 
-              <Button>Save Notification Preferences</Button>
+              <Button onClick={handleSaveNotifications} disabled={saving || !hasNotificationChanges}>
+                {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                Save Notification Preferences
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
