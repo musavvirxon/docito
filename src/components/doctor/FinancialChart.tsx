@@ -16,6 +16,11 @@ interface FinancialChartProps {
 export const FinancialChart = ({ earningsHistory }: FinancialChartProps) => {
   const [chartType, setChartType] = useState<'line' | 'bar'>('line');
 
+  const hasData = earningsHistory.length > 0;
+  const displayData = hasData ? earningsHistory : [
+    { date: 'No Data', earnings: 0, appointments: 0 }
+  ];
+
   return (
     <Card>
       <CardHeader>
@@ -40,16 +45,33 @@ export const FinancialChart = ({ earningsHistory }: FinancialChartProps) => {
         </div>
       </CardHeader>
       <CardContent>
+        {!hasData && (
+          <div className="text-center py-8 text-muted-foreground">
+            <p className="text-sm">No financial data available yet</p>
+            <p className="text-xs mt-1">Complete appointments to see earnings history</p>
+          </div>
+        )}
         <ResponsiveContainer width="100%" height={300}>
           {chartType === 'line' ? (
-            <LineChart data={earningsHistory}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
+            <LineChart data={displayData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis 
+                dataKey="date" 
+                stroke="hsl(var(--muted-foreground))"
+                tick={{ fill: 'hsl(var(--muted-foreground))' }}
+              />
+              <YAxis 
+                stroke="hsl(var(--muted-foreground))"
+                tick={{ fill: 'hsl(var(--muted-foreground))' }}
+              />
               <Tooltip 
-                formatter={(value: number) => `$${value.toLocaleString()}`}
+                formatter={(value: number) => hasData ? `$${value.toLocaleString()}` : '0'}
                 labelStyle={{ color: 'hsl(var(--foreground))' }}
-                contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                contentStyle={{ 
+                  backgroundColor: 'hsl(var(--background))', 
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: '8px'
+                }}
               />
               <Legend />
               <Line 
@@ -58,17 +80,29 @@ export const FinancialChart = ({ earningsHistory }: FinancialChartProps) => {
                 stroke="hsl(var(--primary))" 
                 strokeWidth={2}
                 name="Earnings ($)"
+                dot={hasData}
               />
             </LineChart>
           ) : (
-            <BarChart data={earningsHistory}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
+            <BarChart data={displayData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis 
+                dataKey="date" 
+                stroke="hsl(var(--muted-foreground))"
+                tick={{ fill: 'hsl(var(--muted-foreground))' }}
+              />
+              <YAxis 
+                stroke="hsl(var(--muted-foreground))"
+                tick={{ fill: 'hsl(var(--muted-foreground))' }}
+              />
               <Tooltip 
-                formatter={(value: number) => `$${value.toLocaleString()}`}
+                formatter={(value: number) => hasData ? `$${value.toLocaleString()}` : '0'}
                 labelStyle={{ color: 'hsl(var(--foreground))' }}
-                contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                contentStyle={{ 
+                  backgroundColor: 'hsl(var(--background))', 
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: '8px'
+                }}
               />
               <Legend />
               <Bar dataKey="earnings" fill="hsl(var(--primary))" name="Earnings ($)" />

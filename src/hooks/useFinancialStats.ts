@@ -176,24 +176,40 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
       const platformCommission = totalEarnings * platformCommissionRate;
       const netEarnings = totalEarnings - platformCommission;
 
-      // Earnings history by date
+      // Earnings history by date - ensure we have entries for all dates in range
       const earningsHistoryMap: Record<string, { earnings: number; appointments: number }> = {};
+      
+      // Initialize all dates in range with 0
+      let currentDate = new Date(defaultFrom);
+      while (currentDate <= defaultTo) {
+        const dateKey = format(currentDate, 'MMM dd');
+        earningsHistoryMap[dateKey] = { earnings: 0, appointments: 0 };
+        currentDate = new Date(currentDate.setDate(currentDate.getDate() + 1));
+      }
+      
+      // Fill in actual data
       completedAppointments.forEach((apt: any) => {
         const date = format(new Date(apt.appointment_date), 'MMM dd');
         const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
         
-        if (!earningsHistoryMap[date]) {
-          earningsHistoryMap[date] = { earnings: 0, appointments: 0 };
+        if (earningsHistoryMap[date]) {
+          earningsHistoryMap[date].earnings += procPrice;
+          earningsHistoryMap[date].appointments++;
         }
-        earningsHistoryMap[date].earnings += procPrice;
-        earningsHistoryMap[date].appointments++;
       });
 
-      const earningsHistory: EarningsHistory[] = Object.entries(earningsHistoryMap).map(([date, data]) => ({
-        date,
-        earnings: data.earnings,
-        appointments: data.appointments
-      }));
+      const earningsHistory: EarningsHistory[] = Object.entries(earningsHistoryMap)
+        .map(([date, data]) => ({
+          date,
+          earnings: data.earnings,
+          appointments: data.appointments
+        }))
+        .sort((a, b) => {
+          // Sort by date chronologically
+          const dateA = new Date(a.date + ' ' + new Date().getFullYear());
+          const dateB = new Date(b.date + ' ' + new Date().getFullYear());
+          return dateA.getTime() - dateB.getTime();
+        });
 
       // Service earnings
       const serviceEarningsMap: Record<string, any> = {};
@@ -266,25 +282,40 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
         };
       });
 
-      // Mock payout records (in real app, would come from payments table)
-      const payoutRecords: PayoutRecord[] = [
-        {
-          id: '1',
-          amount: netEarnings * 0.8,
-          status: 'completed',
-          date: format(subDays(new Date(), 15), 'yyyy-MM-dd'),
-          paymentMethod: 'Bank Transfer',
-          referenceId: 'PAY-' + Math.random().toString(36).substr(2, 9).toUpperCase()
-        },
-        {
-          id: '2',
-          amount: netEarnings * 0.2,
-          status: 'pending',
-          date: format(new Date(), 'yyyy-MM-dd'),
-          paymentMethod: 'Bank Transfer',
-          referenceId: 'PAY-' + Math.random().toString(36).substr(2, 9).toUpperCase()
-        }
-      ];
+      // Calculate payout records from completed appointments
+      // Group payouts by month
+      const payoutMap: Record<string, { amount: number; appointments: string[] }> = {};
+      
+      allAppointments
+        .filter((a: any) => a.status === 'completed')
+        .forEach((apt: any) => {
+          const monthKey = format(new Date(apt.appointment_date), 'yyyy-MM');
+          const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
+          const netAmount = procPrice * (1 - platformCommissionRate);
+          
+          if (!payoutMap[monthKey]) {
+            payoutMap[monthKey] = { amount: 0, appointments: [] };
+          }
+          payoutMap[monthKey].amount += netAmount;
+          payoutMap[monthKey].appointments.push(apt.id);
+        });
+
+      const payoutRecords: PayoutRecord[] = Object.entries(payoutMap)
+        .map(([monthKey, data], index) => {
+          const monthDate = new Date(monthKey + '-01');
+          const isPastMonth = monthDate < startOfMonth(new Date());
+          
+          return {
+            id: monthKey,
+            amount: data.amount,
+            status: isPastMonth ? 'completed' : 'pending',
+            date: format(monthDate, 'yyyy-MM-dd'),
+            paymentMethod: 'Bank Transfer',
+            referenceId: 'PAY-' + monthKey.replace('-', '')
+          } as PayoutRecord;
+        })
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 12); // Last 12 months
 
       // Financial insights
       const cancelledAppointments = appointments.filter((a: any) => a.status === 'cancelled');

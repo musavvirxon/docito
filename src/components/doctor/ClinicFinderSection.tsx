@@ -4,15 +4,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, MapPin, Star, Users, Building2, Phone, Mail, Globe, Clock, Loader2 } from "lucide-react";
-import { useClinics, useClinicJoinRequests, useRequestToJoinClinic, useCancelJoinRequest } from "@/hooks/useClinics";
+import { Search, MapPin, Star, Users, Building2, Phone, Mail, Globe, Clock, Loader2, Filter } from "lucide-react";
+import { useClinics, useClinicJoinRequests, useRequestToJoinClinic, useCancelJoinRequest, Clinic } from "@/hooks/useClinics";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { ClinicDetailModal } from "./ClinicDetailModal";
+import { useDebounce } from "@/hooks/use-debounce";
 
 const ClinicFinderSection = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState("");
+  const [selectedRating, setSelectedRating] = useState<number | null>(null);
+  const [selectedClinic, setSelectedClinic] = useState<Clinic | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { user, profile } = useAuth();
+  
+  // Debounce search query for better performance
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   
   // Get doctor ID
   const [doctorId, setDoctorId] = useState<string | null>(null);
@@ -31,7 +39,7 @@ const ClinicFinderSection = () => {
     getDoctorId();
   }, [user]);
 
-  const { data: clinics, isLoading } = useClinics(searchQuery, selectedSpecialty);
+  const { data: clinics, isLoading, error } = useClinics(debouncedSearchQuery, selectedSpecialty);
   const { data: joinRequests } = useClinicJoinRequests(doctorId || '');
   const requestToJoinMutation = useRequestToJoinClinic();
   const cancelRequestMutation = useCancelJoinRequest();
@@ -68,16 +76,22 @@ const ClinicFinderSection = () => {
     if (!clinics) return [];
     
     return clinics.filter(clinic => {
-      const matchesSearch = !searchQuery || 
-        clinic.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        clinic.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        clinic.address.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesRating = selectedRating === null || clinic.average_rating >= selectedRating;
       
-      const matchesSpecialty = !selectedSpecialty || selectedSpecialty === "All Specialties";
-      
-      return matchesSearch && matchesSpecialty;
+      return matchesRating;
     });
-  }, [clinics, searchQuery, selectedSpecialty]);
+  }, [clinics, selectedRating]);
+
+  const handleViewDetails = (clinic: Clinic) => {
+    setSelectedClinic(clinic);
+    setIsModalOpen(true);
+  };
+
+  const handleJoinFromModal = () => {
+    if (selectedClinic && doctorId) {
+      handleJoinRequest(selectedClinic.id);
+    }
+  };
 
   const renderActionButton = (clinicId: string) => {
     const status = getRequestStatus(clinicId);
@@ -114,11 +128,14 @@ const ClinicFinderSection = () => {
     }
   };
 
-  if (isLoading) {
+  if (error) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
+      <Card className="p-6">
+        <div className="text-center">
+          <p className="text-destructive mb-4">Failed to load clinics. {error.message}</p>
+          <Button onClick={() => window.location.reload()}>Try Again</Button>
+        </div>
+      </Card>
     );
   }
 
@@ -136,24 +153,32 @@ const ClinicFinderSection = () => {
           </p>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <Input
-                placeholder="Search by clinic name, city, or ZIP code..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full"
-              />
+          <div className="space-y-4">
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <Input
+                  placeholder="Search by clinic name, city, or address..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full"
+                />
+              </div>
             </div>
-            <select
-              value={selectedSpecialty}
-              onChange={(e) => setSelectedSpecialty(e.target.value)}
-              className="px-3 py-2 border border-border rounded-md bg-background"
-            >
-              {specialties.map(specialty => (
-                <option key={specialty} value={specialty}>{specialty}</option>
-              ))}
-            </select>
+            
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Filters:</span>
+              <select
+                value={selectedRating || ''}
+                onChange={(e) => setSelectedRating(e.target.value ? Number(e.target.value) : null)}
+                className="px-3 py-2 border border-border rounded-md bg-background"
+              >
+                <option value="">All Ratings</option>
+                <option value="4.5">4.5+ Stars</option>
+                <option value="4">4+ Stars</option>
+                <option value="3">3+ Stars</option>
+              </select>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -232,7 +257,14 @@ const ClinicFinderSection = () => {
                     </div>
                   </div>
 
-                  <div className="ml-6">
+                  <div className="ml-6 flex flex-col gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleViewDetails(clinic)}
+                    >
+                      View Details
+                    </Button>
                     {renderActionButton(clinic.id)}
                   </div>
                 </div>
@@ -296,6 +328,16 @@ const ClinicFinderSection = () => {
           </CardContent>
         </Card>
       )}
+      
+      {/* Clinic Detail Modal */}
+      <ClinicDetailModal
+        clinic={selectedClinic}
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        onJoinRequest={handleJoinFromModal}
+        requestStatus={selectedClinic ? getRequestStatus(selectedClinic.id) : 'none'}
+        isSubmitting={requestToJoinMutation.isPending}
+      />
     </div>
   );
 };

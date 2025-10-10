@@ -30,8 +30,8 @@ export function useClinics(searchQuery?: string, specialty?: string) {
         .order('verified', { ascending: false })
         .order('average_rating', { ascending: false });
 
-      if (searchQuery) {
-        query = query.or(`name.ilike.%${searchQuery}%,city.ilike.%${searchQuery}%,address.ilike.%${searchQuery}%`);
+      if (searchQuery && searchQuery.trim()) {
+        query = query.or(`name.ilike.%${searchQuery}%,city.ilike.%${searchQuery}%,address.ilike.%${searchQuery}%,country.ilike.%${searchQuery}%`);
       }
 
       const { data, error } = await query;
