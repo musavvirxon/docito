@@ -31,6 +31,7 @@ import TreatmentPlanningSection from "@/components/doctor/TreatmentPlanningSecti
 import DoctorScheduleSettingsSection from "@/components/doctor/DoctorScheduleSettingsSection";
 import DoctorProceduresSection from "@/components/doctor/DoctorProceduresSection";
 import DoctorProcedureLibrarySection from "@/components/doctor/DoctorProcedureLibrarySection";
+import { DoctorFinancialStatsSection } from "@/components/doctor/DoctorFinancialStatsSection";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/lib/api/supabase-api";
@@ -161,6 +162,7 @@ const DoctorDashboardContent = () => {
         { id: "treatment-planning", label: "Treatment Planning", icon: Calendar },
         { id: "calendar", label: "Calendar", icon: Calendar },
         { id: "performance", label: "Performance", icon: BarChart3 },
+        { id: "financial-stats", label: "Financial Stats", icon: BarChart3 },
         { id: "clinic-finder", label: "Clinic Finder", icon: Search },
         { id: "settings", label: "Settings", icon: Settings },
       ]
@@ -176,6 +178,7 @@ const DoctorDashboardContent = () => {
         { id: "calendar", label: "Calendar", icon: Calendar },
         { id: "messages", label: "Messages", icon: MessageSquare },
         { id: "performance", label: "Performance", icon: BarChart3 },
+        { id: "financial-stats", label: "Financial Stats", icon: BarChart3 },
         { id: "settings", label: "Settings", icon: Settings },
       ];
 
@@ -199,6 +202,8 @@ const DoctorDashboardContent = () => {
         />;
       case "performance":
         return <DoctorPerformanceSection doctorProfile={doctorProfile} stats={stats} />;
+      case "financial-stats":
+        return <DoctorFinancialStatsSection />;
       case "clinic-finder":
         return <ClinicFinderSection />;
       case "assigned-patients":

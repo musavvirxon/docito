@@ -1,0 +1,359 @@
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
+import { format, subDays, startOfMonth, endOfMonth } from 'date-fns';
+
+interface FinancialStats {
+  totalEarnings: number;
+  earningsThisMonth: number;
+  earningsThisWeek: number;
+  unpaidEarnings: number;
+  payoutsProcessed: number;
+  nextPayoutDate: string | null;
+  platformCommission: number;
+  netEarnings: number;
+}
+
+interface EarningsHistory {
+  date: string;
+  earnings: number;
+  appointments: number;
+}
+
+interface ServiceEarnings {
+  serviceId: string;
+  serviceName: string;
+  bookings: number;
+  totalRevenue: number;
+  avgRevenue: number;
+  avgDuration: number;
+}
+
+interface PayoutRecord {
+  id: string;
+  amount: number;
+  status: 'pending' | 'completed' | 'failed';
+  date: string;
+  paymentMethod: string;
+  referenceId: string;
+}
+
+interface PendingPayment {
+  appointmentId: string;
+  patientName: string;
+  serviceName: string;
+  amount: number;
+  date: string;
+  status: string;
+}
+
+interface PatientEarnings {
+  patientId: string;
+  patientName: string;
+  totalPaid: number;
+  appointmentCount: number;
+  lastVisit: string;
+}
+
+export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
+  const { user } = useAuth();
+  const [doctorId, setDoctorId] = useState<string | null>(null);
+  
+  const defaultFrom = dateFrom || subDays(new Date(), 30);
+  const defaultTo = dateTo || new Date();
+
+  useEffect(() => {
+    const getDoctorId = async () => {
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from('doctors')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (data) setDoctorId(data.id);
+    };
+
+    getDoctorId();
+  }, [user]);
+
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['financial-stats', doctorId, format(defaultFrom, 'yyyy-MM-dd'), format(defaultTo, 'yyyy-MM-dd')],
+    queryFn: async () => {
+      if (!doctorId) throw new Error('No doctor ID');
+
+      const [
+        appointmentsData,
+        allAppointmentsData,
+        proceduresData,
+        doctorData,
+        profilesData
+      ] = await Promise.all([
+        supabase
+          .from('appointments')
+          .select('*, procedures(name, price, default_cost)')
+          .eq('doctor_id', doctorId)
+          .gte('appointment_date', format(defaultFrom, 'yyyy-MM-dd'))
+          .lte('appointment_date', format(defaultTo, 'yyyy-MM-dd'))
+          .order('appointment_date', { ascending: false }),
+        
+        supabase
+          .from('appointments')
+          .select('*, procedures(name, price, default_cost)')
+          .eq('doctor_id', doctorId),
+        
+        supabase
+          .from('procedures')
+          .select('id, name, default_cost, price, duration_minutes')
+          .eq('dentist_id', doctorId)
+          .eq('is_active', true),
+        
+        supabase
+          .from('doctors')
+          .select('consultation_fee, practice_id')
+          .eq('id', doctorId)
+          .single(),
+
+        supabase
+          .from('profiles')
+          .select('user_id, full_name')
+      ]);
+
+      const appointments = appointmentsData.data || [];
+      const allAppointments = allAppointmentsData.data || [];
+      const procedures = proceduresData.data || [];
+      const doctor = doctorData.data;
+      const profiles = profilesData.data || [];
+      const consultationFee = doctor?.consultation_fee || 150;
+      const platformCommissionRate = 0.15; // 15% platform fee
+
+      // Calculate earnings
+      const completedAppointments = appointments.filter((a: any) => a.status === 'completed');
+      const pendingAppointments = appointments.filter((a: any) => a.status === 'pending' || a.status === 'confirmed');
+      
+      const totalEarnings = allAppointments
+        .filter((a: any) => a.status === 'completed')
+        .reduce((sum: number, apt: any) => {
+          const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
+          return sum + procPrice;
+        }, 0);
+
+      const earningsInRange = completedAppointments.reduce((sum: number, apt: any) => {
+        const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
+        return sum + procPrice;
+      }, 0);
+
+      const unpaidEarnings = pendingAppointments.reduce((sum: number, apt: any) => {
+        const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
+        return sum + procPrice;
+      }, 0);
+
+      const thisMonthStart = startOfMonth(new Date());
+      const thisMonthEnd = endOfMonth(new Date());
+      const earningsThisMonth = allAppointments
+        .filter((a: any) => {
+          const date = new Date(a.appointment_date);
+          return a.status === 'completed' && date >= thisMonthStart && date <= thisMonthEnd;
+        })
+        .reduce((sum: number, apt: any) => {
+          const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
+          return sum + procPrice;
+        }, 0);
+
+      const weekAgo = subDays(new Date(), 7);
+      const earningsThisWeek = allAppointments
+        .filter((a: any) => {
+          const date = new Date(a.appointment_date);
+          return a.status === 'completed' && date >= weekAgo;
+        })
+        .reduce((sum: number, apt: any) => {
+          const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
+          return sum + procPrice;
+        }, 0);
+
+      const platformCommission = totalEarnings * platformCommissionRate;
+      const netEarnings = totalEarnings - platformCommission;
+
+      // Earnings history by date
+      const earningsHistoryMap: Record<string, { earnings: number; appointments: number }> = {};
+      completedAppointments.forEach((apt: any) => {
+        const date = format(new Date(apt.appointment_date), 'MMM dd');
+        const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
+        
+        if (!earningsHistoryMap[date]) {
+          earningsHistoryMap[date] = { earnings: 0, appointments: 0 };
+        }
+        earningsHistoryMap[date].earnings += procPrice;
+        earningsHistoryMap[date].appointments++;
+      });
+
+      const earningsHistory: EarningsHistory[] = Object.entries(earningsHistoryMap).map(([date, data]) => ({
+        date,
+        earnings: data.earnings,
+        appointments: data.appointments
+      }));
+
+      // Service earnings
+      const serviceEarningsMap: Record<string, any> = {};
+      procedures.forEach((proc: any) => {
+        serviceEarningsMap[proc.id] = {
+          serviceId: proc.id,
+          serviceName: proc.name,
+          bookings: 0,
+          totalRevenue: 0,
+          avgDuration: proc.duration_minutes || 30
+        };
+      });
+
+      completedAppointments.forEach((apt: any) => {
+        if (apt.procedure_id && serviceEarningsMap[apt.procedure_id]) {
+          const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
+          serviceEarningsMap[apt.procedure_id].bookings++;
+          serviceEarningsMap[apt.procedure_id].totalRevenue += procPrice;
+        }
+      });
+
+      const serviceEarnings: ServiceEarnings[] = Object.values(serviceEarningsMap)
+        .map((service: any) => ({
+          ...service,
+          avgRevenue: service.bookings > 0 ? service.totalRevenue / service.bookings : 0
+        }))
+        .filter((service: any) => service.bookings > 0)
+        .sort((a, b) => b.totalRevenue - a.totalRevenue);
+
+      // Patient earnings
+      const patientEarningsMap: Record<string, any> = {};
+      completedAppointments.forEach((apt: any) => {
+        const patientProfile = profiles.find((p: any) => p.user_id === apt.patient_id);
+        const patientName = patientProfile?.full_name || 'Unknown Patient';
+        const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
+        
+        if (!patientEarningsMap[apt.patient_id]) {
+          patientEarningsMap[apt.patient_id] = {
+            patientId: apt.patient_id,
+            patientName,
+            totalPaid: 0,
+            appointmentCount: 0,
+            lastVisit: apt.appointment_date
+          };
+        }
+        
+        patientEarningsMap[apt.patient_id].totalPaid += procPrice;
+        patientEarningsMap[apt.patient_id].appointmentCount++;
+        
+        if (new Date(apt.appointment_date) > new Date(patientEarningsMap[apt.patient_id].lastVisit)) {
+          patientEarningsMap[apt.patient_id].lastVisit = apt.appointment_date;
+        }
+      });
+
+      const patientEarnings: PatientEarnings[] = Object.values(patientEarningsMap)
+        .sort((a: any, b: any) => b.totalPaid - a.totalPaid);
+
+      // Pending payments
+      const pendingPayments: PendingPayment[] = pendingAppointments.map((apt: any) => {
+        const patientProfile = profiles.find((p: any) => p.user_id === apt.patient_id);
+        const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
+        
+        return {
+          appointmentId: apt.id,
+          patientName: patientProfile?.full_name || 'Unknown Patient',
+          serviceName: apt.procedures?.name || 'Consultation',
+          amount: procPrice,
+          date: apt.appointment_date,
+          status: apt.status
+        };
+      });
+
+      // Mock payout records (in real app, would come from payments table)
+      const payoutRecords: PayoutRecord[] = [
+        {
+          id: '1',
+          amount: netEarnings * 0.8,
+          status: 'completed',
+          date: format(subDays(new Date(), 15), 'yyyy-MM-dd'),
+          paymentMethod: 'Bank Transfer',
+          referenceId: 'PAY-' + Math.random().toString(36).substr(2, 9).toUpperCase()
+        },
+        {
+          id: '2',
+          amount: netEarnings * 0.2,
+          status: 'pending',
+          date: format(new Date(), 'yyyy-MM-dd'),
+          paymentMethod: 'Bank Transfer',
+          referenceId: 'PAY-' + Math.random().toString(36).substr(2, 9).toUpperCase()
+        }
+      ];
+
+      // Financial insights
+      const cancelledAppointments = appointments.filter((a: any) => a.status === 'cancelled');
+      const refundRate = appointments.length > 0 ? (cancelledAppointments.length / appointments.length) * 100 : 0;
+      
+      const mostProfitableService = serviceEarnings[0] || null;
+      const busiestDays = earningsHistory
+        .sort((a, b) => b.earnings - a.earnings)
+        .slice(0, 3);
+
+      const totalHours = completedAppointments.reduce((sum: number, apt: any) => {
+        return sum + (apt.procedures?.duration_minutes || 30) / 60;
+      }, 0);
+      const revenuePerHour = totalHours > 0 ? earningsInRange / totalHours : 0;
+
+      return {
+        stats: {
+          totalEarnings,
+          earningsThisMonth,
+          earningsThisWeek,
+          unpaidEarnings,
+          payoutsProcessed: payoutRecords.filter(p => p.status === 'completed').length,
+          nextPayoutDate: format(new Date(new Date().setDate(new Date().getDate() + 15)), 'MMM dd, yyyy'),
+          platformCommission,
+          netEarnings
+        },
+        earningsHistory,
+        serviceEarnings,
+        patientEarnings,
+        pendingPayments,
+        payoutRecords,
+        insights: {
+          refundRate,
+          mostProfitableService,
+          busiestDays,
+          revenuePerHour,
+          totalHours
+        }
+      };
+    },
+    enabled: !!doctorId,
+    refetchInterval: 60000
+  });
+
+  return {
+    stats: data?.stats || {
+      totalEarnings: 0,
+      earningsThisMonth: 0,
+      earningsThisWeek: 0,
+      unpaidEarnings: 0,
+      payoutsProcessed: 0,
+      nextPayoutDate: null,
+      platformCommission: 0,
+      netEarnings: 0
+    },
+    earningsHistory: data?.earningsHistory || [],
+    serviceEarnings: data?.serviceEarnings || [],
+    patientEarnings: data?.patientEarnings || [],
+    pendingPayments: data?.pendingPayments || [],
+    payoutRecords: data?.payoutRecords || [],
+    insights: data?.insights || {
+      refundRate: 0,
+      mostProfitableService: null,
+      busiestDays: [],
+      revenuePerHour: 0,
+      totalHours: 0
+    },
+    loading: isLoading,
+    error: error?.message || null,
+    refreshData: refetch
+  };
+};
