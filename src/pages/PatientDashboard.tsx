@@ -38,12 +38,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAppointments } from "@/hooks/useAppointments";
 import { useMedicalRecords } from "@/hooks/useMedicalRecords";
 import { useMedicationReminders } from "@/hooks/useMedicationReminders";
+import { usePatientDashboard } from "@/hooks/usePatientDashboard";
 import { RealTimeProcedureNotification } from "@/components/appointment/RealTimeProcedureNotification";
 import { MedicationReminderDashboard } from "@/components/medication/MedicationReminderDashboard";
+import { PatientSettingsPanel } from "@/components/patient/PatientSettingsPanel";
 import SearchBar from "@/components/patient/SearchBar";
 import SearchResults from "@/components/patient/SearchResults";
 import { useDoctors } from "@/hooks/useDoctors";
 import { usePractices } from "@/hooks/usePractices";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Appointment {
   id: string;
@@ -68,85 +71,39 @@ const PatientDashboard = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
   const { 
     getPendingRemindersCount, 
     getOverdueRemindersCount 
   } = useMedicationReminders();
+  
+  const { stats, loading: dashboardLoading } = usePatientDashboard();
+  const { appointments, loading: appointmentsLoading, cancelAppointment } = useAppointments();
+  const { records, loading: recordsLoading, addMedicalRecord } = useMedicalRecords();
 
-  // Mock appointment data - would come from API
-  const mockAppointments: Appointment[] = [
-    {
-      id: '1',
-      doctorName: 'Dr. Sarah Johnson',
-      doctorSpecialty: 'Cardiologist',
-      doctorImage: '/placeholder.svg',
-      procedure: 'Consultation',
-      date: addDays(new Date(), 2),
-      time: '10:00 AM',
-      duration: 30,
-      status: 'confirmed',
-      confirmationCode: 'APT-2024-001234',
-      location: 'Downtown Medical Center',
-      fee: 200,
-      canCancel: true,
-      canReschedule: true
-    },
-    {
-      id: '2',
-      doctorName: 'Dr. Michael Chen',
-      doctorSpecialty: 'Neurologist',
-      doctorImage: '/placeholder.svg',
-      procedure: 'Follow-up Visit',
-      date: addDays(new Date(), 7),
-      time: '2:30 PM',
-      duration: 45,
-      status: 'pending',
-      confirmationCode: 'APT-2024-001235',
-      location: 'Metro Health Clinic',
-      fee: 300,
-      canCancel: true,
-      canReschedule: false
-    },
-    {
-      id: '3',
-      doctorName: 'Dr. Emily Rodriguez',
-      doctorSpecialty: 'Dermatologist',
-      doctorImage: '/placeholder.svg',
-      procedure: 'Skin Examination',
-      date: addDays(new Date(), -5),
-      time: '11:00 AM',
-      duration: 30,
-      status: 'completed',
-      confirmationCode: 'APT-2024-001230',
-      location: 'Skin Care Specialists',
-      fee: 150,
-      treatmentPlanId: 'tp-123',
-      canCancel: false,
-      canReschedule: false
-    },
-    {
-      id: '4',
-      doctorName: 'Dr. James Wilson',
-      doctorSpecialty: 'Family Medicine',
-      doctorImage: '/placeholder.svg',
-      procedure: 'Annual Checkup',
-      date: addDays(new Date(), -15),
-      time: '9:00 AM',
-      duration: 60,
-      status: 'completed',
-      confirmationCode: 'APT-2024-001225',
-      location: 'Family Health Center',
-      fee: 250,
-      canCancel: false,
-      canReschedule: false
-    }
-  ];
+  // Transform appointments from backend to component format
+  const transformedAppointments: Appointment[] = (appointments || []).map((apt: any) => ({
+    id: apt.id,
+    doctorName: apt.doctor?.profiles?.full_name || 'Doctor',
+    doctorSpecialty: apt.doctor?.specialty || '',
+    doctorImage: apt.doctor?.profiles?.avatar_url,
+    procedure: apt.notes || 'Consultation',
+    date: new Date(apt.appointment_date),
+    time: apt.start_time,
+    duration: 30,
+    status: apt.status,
+    confirmationCode: `APT-${apt.id.slice(0, 8)}`,
+    location: apt.practice?.name || 'Medical Center',
+    fee: 200,
+    canCancel: apt.status === 'pending' || apt.status === 'confirmed',
+    canReschedule: apt.status === 'pending',
+  }));
 
-  const upcomingAppointments = mockAppointments.filter(apt => 
+  const upcomingAppointments = transformedAppointments.filter(apt => 
     isFuture(apt.date) || isToday(apt.date)
   ).sort((a, b) => a.date.getTime() - b.date.getTime());
 
-  const pastAppointments = mockAppointments.filter(apt => 
+  const pastAppointments = transformedAppointments.filter(apt => 
     isPast(apt.date) && !isToday(apt.date)
   ).sort((a, b) => b.date.getTime() - a.date.getTime());
 
@@ -179,11 +136,14 @@ const PatientDashboard = () => {
     }
   };
 
-  const handleCancelAppointment = (appointmentId: string) => {
-    toast({
-      title: "Appointment Cancelled",
-      description: "Your appointment has been cancelled successfully.",
-    });
+  const handleCancelAppointment = async (appointmentId: string) => {
+    const result = await cancelAppointment(appointmentId);
+    if (result.success) {
+      toast({
+        title: "Appointment Cancelled",
+        description: "Your appointment has been cancelled successfully.",
+      });
+    }
   };
 
   const handleRescheduleAppointment = (appointmentId: string) => {
@@ -555,38 +515,60 @@ const PatientDashboard = () => {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold">Medical Records</h2>
-              <Button>
+              <Button onClick={() => navigate('/upload-record')}>
                 <Plus className="w-4 h-4 mr-2" />
                 Upload Record
               </Button>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3, 4, 5, 6].map((item) => (
-                <Card key={item} className="cursor-pointer hover:shadow-md transition-shadow">
-                  <CardContent className="p-4">
-                    <div className="flex items-center space-x-3 mb-3">
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <FileText className="w-5 h-5 text-blue-600" />
+            {recordsLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-[180px]" />
+                ))}
+              </div>
+            ) : records.length === 0 ? (
+              <Card className="border-dashed">
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <FileText className="w-12 h-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium text-muted-foreground mb-2">No medical records yet</h3>
+                  <p className="text-sm text-muted-foreground mb-4">Upload your first medical record to get started</p>
+                  <Button onClick={() => navigate('/upload-record')}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Upload Record
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {records.map((record: any) => (
+                  <Card key={record.id} className="cursor-pointer hover:shadow-md transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                          <FileText className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <h3 className="font-medium">{record.title}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {format(new Date(record.record_date), 'MMM d, yyyy')}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-medium">Lab Report {item}</h3>
-                        <p className="text-sm text-muted-foreground">Dec {item}, 2023</p>
+                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                        {record.description || 'No description available'}
+                      </p>
+                      <div className="flex justify-between items-center">
+                        <Badge variant="outline">{record.record_type}</Badge>
+                        <Button variant="ghost" size="sm">
+                          View
+                        </Button>
                       </div>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Blood work results from recent checkup
-                    </p>
-                    <div className="flex justify-between items-center">
-                      <Badge variant="outline">Lab Result</Badge>
-                      <Button variant="ghost" size="sm">
-                        View
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         );
 
@@ -594,28 +576,27 @@ const PatientDashboard = () => {
         return <PatientSearchSection />;
 
       case "settings":
-        return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold">Settings</h2>
-            <p className="text-muted-foreground">Settings will be implemented here</p>
-          </div>
-        );
+        return <PatientSettingsPanel />;
 
       default:
         return (
           <div className="space-y-6">
             {/* Welcome Section */}
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border">
-              <h2 className="text-2xl font-bold mb-2">Welcome back, John!</h2>
-              <p className="text-muted-foreground">Here's your health overview for today.</p>
-            </div>
+            {dashboardLoading ? (
+              <Skeleton className="h-[100px] w-full" />
+            ) : (
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border">
+                <h2 className="text-2xl font-bold mb-2">Welcome back, {profile?.full_name || 'Patient'}!</h2>
+                <p className="text-muted-foreground">Here's your health overview for today.</p>
+              </div>
+            )}
 
             {/* Upcoming Appointments Alert */}
-            {upcomingAppointments.length > 0 && (
+            {stats.nextAppointment && (
               <Alert className="border-green-200 bg-green-50">
                 <Calendar className="h-4 w-4" />
                 <AlertDescription>
-                  <span className="font-medium">Next appointment:</span> {upcomingAppointments[0].doctorName} on {format(upcomingAppointments[0].date, 'MMMM d')} at {upcomingAppointments[0].time}
+                  <span className="font-medium">Next appointment:</span> {stats.nextAppointment.doctor?.profiles?.full_name} on {format(new Date(stats.nextAppointment.appointment_date), 'MMMM d')} at {stats.nextAppointment.start_time}
                   <Button 
                     size="sm" 
                     variant="outline" 
@@ -629,52 +610,60 @@ const PatientDashboard = () => {
             )}
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Upcoming Appointments</CardTitle>
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{upcomingAppointments.length}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {upcomingAppointments.length > 0 
-                      ? `Next: ${format(upcomingAppointments[0].date, 'MMM d')}`
-                      : 'No upcoming appointments'
-                    }
-                  </p>
-                </CardContent>
-              </Card>
+            {dashboardLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-[120px]" />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Upcoming Appointments</CardTitle>
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{stats.upcomingAppointmentsCount}</div>
+                    <p className="text-xs text-muted-foreground">
+                      {stats.nextAppointment 
+                        ? `Next: ${format(new Date(stats.nextAppointment.appointment_date), 'MMM d')}`
+                        : 'No upcoming appointments'
+                      }
+                    </p>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Medical Records</CardTitle>
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">24</div>
-                  <p className="text-xs text-muted-foreground">Total documents</p>
-                </CardContent>
-              </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Medical Records</CardTitle>
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{stats.medicalRecordsCount}</div>
+                    <p className="text-xs text-muted-foreground">Total documents</p>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Medication Reminders</CardTitle>
-                  <Pill className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{getPendingRemindersCount()}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {getPendingRemindersCount() === 1 ? 'Pending reminder' : 'Pending reminders'}
-                  </p>
-                  {getOverdueRemindersCount() > 0 && (
-                    <Badge variant="destructive" className="text-xs mt-1">
-                      {getOverdueRemindersCount()} overdue
-                    </Badge>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Medication Reminders</CardTitle>
+                    <Pill className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{stats.pendingReminders}</div>
+                    <p className="text-xs text-muted-foreground">
+                      {stats.pendingReminders === 1 ? 'Pending reminder' : 'Pending reminders'}
+                    </p>
+                    {getOverdueRemindersCount() > 0 && (
+                      <Badge variant="destructive" className="text-xs mt-1">
+                        {getOverdueRemindersCount()} overdue
+                      </Badge>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
 
             {/* Real-time Notifications */}
             <RealTimeProcedureNotification />
@@ -693,28 +682,32 @@ const PatientDashboard = () => {
                   </Button>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {pastAppointments.slice(0, 3).map((appointment) => (
-                    <div key={appointment.id} className="flex items-center space-x-4">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={appointment.doctorImage} />
-                        <AvatarFallback>{appointment.doctorName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 space-y-1">
-                        <p className="text-sm font-medium">{appointment.doctorName}</p>
-                        <p className="text-xs text-muted-foreground">
-                          <Clock className="w-3 h-3 inline mr-1" />
-                          {format(appointment.date, 'MMM d, yyyy')}
-                        </p>
+                  {dashboardLoading ? (
+                    <>
+                      <Skeleton className="h-16 w-full" />
+                      <Skeleton className="h-16 w-full" />
+                    </>
+                  ) : stats.recentAppointments.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">No recent appointments</p>
+                  ) : (
+                    stats.recentAppointments.map((appointment: any) => (
+                      <div key={appointment.id} className="flex items-center space-x-4">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={appointment.doctor?.profiles?.avatar_url} />
+                          <AvatarFallback>{appointment.doctor?.profiles?.full_name?.split(' ').map((n: string) => n[0]).join('') || 'D'}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 space-y-1">
+                          <p className="text-sm font-medium">{appointment.doctor?.profiles?.full_name || 'Doctor'}</p>
+                          <p className="text-xs text-muted-foreground">
+                            <Clock className="w-3 h-3 inline mr-1" />
+                            {format(new Date(appointment.appointment_date), 'MMM d, yyyy')}
+                          </p>
+                        </div>
+                        <Badge variant="outline" className={getStatusColor(appointment.status)}>
+                          {appointment.status}
+                        </Badge>
                       </div>
-                      <Badge variant="outline" className={getStatusColor(appointment.status)}>
-                        {appointment.status}
-                      </Badge>
-                    </div>
-                  ))}
-                  {pastAppointments.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      No appointment history yet
-                    </p>
+                    ))
                   )}
                 </CardContent>
               </Card>

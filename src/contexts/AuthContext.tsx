@@ -14,6 +14,10 @@ interface Profile {
   gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
   avatar_url?: string;
   address?: string;
+  notification_settings?: any;
+  privacy_settings?: any;
+  timezone?: string;
+  language?: string;
   created_at: string;
   updated_at: string;
 }
