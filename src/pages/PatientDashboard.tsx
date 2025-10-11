@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { Bell, Settings, User, Calendar, FileText, Search, Plus, Clock, MapPin, Phone, Download, Eye, X, RotateCcw, AlertCircle, CheckCircle, Star, Pill, Activity } from "lucide-react";
+import { Bell, Settings, User, Calendar, FileText, Search, Plus, Clock, MapPin, Phone, Download, Eye, X, RotateCcw, AlertCircle, CheckCircle, Star, Pill, Activity, LogOut } from "lucide-react";
+import { NotificationDropdown } from "@/components/NotificationDropdown";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -71,7 +79,7 @@ const PatientDashboard = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const { 
     getPendingRemindersCount, 
     getOverdueRemindersCount 
@@ -412,7 +420,7 @@ const PatientDashboard = () => {
           <div className="space-y-8">
             <div className="flex items-center justify-between">
               <h2 className="text-3xl font-bold">My Appointments</h2>
-              <Button onClick={() => navigate('/search-results')} className="bg-primary hover:bg-primary/90">
+              <Button onClick={() => setActiveSection('search')} className="bg-primary hover:bg-primary/90">
                 <Plus className="w-4 h-4 mr-2" />
                 Book New Appointment
               </Button>
@@ -447,7 +455,7 @@ const PatientDashboard = () => {
                       <Calendar className="w-12 h-12 text-muted-foreground mb-4" />
                       <h3 className="text-lg font-medium text-muted-foreground mb-2">No upcoming appointments</h3>
                       <p className="text-sm text-muted-foreground mb-4">Book your next appointment to get started</p>
-                      <Button onClick={() => navigate('/find-doctors')}>
+                      <Button onClick={() => setActiveSection('search')}>
                         <Plus className="w-4 h-4 mr-2" />
                         Book Appointment
                       </Button>
@@ -721,7 +729,7 @@ const PatientDashboard = () => {
                     <Button 
                       variant="outline" 
                       className="h-20 flex-col"
-                      onClick={() => navigate('/find-doctors')}
+                      onClick={() => setActiveSection('search')}
                     >
                       <Calendar className="w-6 h-6 mb-2" />
                       Book Appointment
@@ -806,13 +814,39 @@ const PatientDashboard = () => {
               </div>
               
               <div className="flex items-center gap-4">
-                <Button variant="ghost" size="sm">
-                  <Bell className="w-4 h-4" />
-                </Button>
-                <Avatar>
-                  <AvatarImage src="/placeholder.svg" />
-                  <AvatarFallback>JD</AvatarFallback>
-                </Avatar>
+                <NotificationDropdown />
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={profile?.avatar_url} alt={profile?.full_name} />
+                        <AvatarFallback>
+                          {profile?.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end">
+                    <DropdownMenuItem onClick={() => setActiveSection('dashboard')}>
+                      <User className="mr-2 h-4 w-4" />
+                      <span>My Profile</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/notifications')}>
+                      <Bell className="mr-2 h-4 w-4" />
+                      <span>Notifications</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setActiveSection('settings')}>
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={signOut}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </header>
