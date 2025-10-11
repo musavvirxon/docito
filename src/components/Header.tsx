@@ -83,6 +83,10 @@ const Header = () => {
                       <User className="mr-2 h-4 w-4" />
                       <span>My Profile</span>
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/notifications')}>
+                      <BellIcon className="mr-2 h-4 w-4" />
+                      <span>Notifications</span>
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate('/patient-dashboard')}>
                       <Settings className="mr-2 h-4 w-4" />
                       <span>Settings</span>
