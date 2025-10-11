@@ -775,6 +775,7 @@ export type Database = {
       practices: {
         Row: {
           address: string | null
+          admin_id: string | null
           appointment_count: number | null
           average_rating: number | null
           city: string | null
@@ -792,6 +793,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          admin_id?: string | null
           appointment_count?: number | null
           average_rating?: number | null
           city?: string | null
@@ -809,6 +811,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          admin_id?: string | null
           appointment_count?: number | null
           average_rating?: number | null
           city?: string | null
@@ -1703,6 +1706,10 @@ export type Database = {
           new_patients: number
           revenue: number
         }[]
+      }
+      get_practice_stats: {
+        Args: { p_practice_id: string }
+        Returns: Json
       }
       get_user_profile_by_uid: {
         Args: Record<PropertyKey, never>

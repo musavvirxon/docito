@@ -5,19 +5,22 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Building2, Users, Calendar, BarChart3, Stethoscope, CreditCard, 
   MapPin, MessageCircle, Settings, AlertCircle, Upload, CheckCircle,
-  X, TrendingUp, Star, Clock, DollarSign, UserPlus, Eye
+  X, TrendingUp, Star, Clock, DollarSign, UserPlus, Eye, Loader2
 } from "lucide-react";
 import { InviteProviderModal } from "@/components/dashboard/InviteProviderModal";
 import { AddServiceModal } from "@/components/dashboard/AddServiceModal";
 import { InviteStaffModal } from "@/components/dashboard/InviteStaffModal";
 import { AddLocationModal } from "@/components/dashboard/AddLocationModal";
 import { SettingsPanel } from "@/components/dashboard/SettingsPanel";
+import { useAdminDashboard } from "@/hooks/useAdminDashboard";
+import { format } from "date-fns";
 
 const AdminDashboard = () => {
-  const [verificationStatus] = useState<"pending" | "approved" | "rejected">("pending");
+  const { practice, stats, doctors, appointments, services, loading, error, refreshData } = useAdminDashboard();
   const [activeTab, setActiveTab] = useState("overview");
   
   // Modal states
@@ -27,16 +30,18 @@ const AdminDashboard = () => {
   const [addLocationOpen, setAddLocationOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
+  const verificationStatus: "pending" | "approved" | "rejected" = practice?.verified ? "approved" : "pending";
+
   const metrics = [
-    { label: "Total Bookings", value: "247", icon: Calendar, trend: "+12%" },
-    { label: "Total Patients", value: "189", icon: Users, trend: "+8%" },
-    { label: "Revenue This Month", value: "$12,450", icon: DollarSign, trend: "+15%" },
-    { label: "Clinic Rating", value: "4.8", icon: Star, trend: "+0.2" },
-    { label: "Pending Invites", value: "3", icon: UserPlus, trend: "" },
-    { label: "Locations", value: "2", icon: MapPin, trend: "" },
+    { label: "Total Bookings", value: stats.totalBookings.toString(), icon: Calendar, trend: "" },
+    { label: "Total Patients", value: stats.totalPatients.toString(), icon: Users, trend: "" },
+    { label: "Revenue This Month", value: `$${stats.totalRevenue.toLocaleString()}`, icon: DollarSign, trend: "" },
+    { label: "Clinic Rating", value: stats.clinicRating.toFixed(1), icon: Star, trend: "" },
+    { label: "Pending Invites", value: stats.pendingInvites.toString(), icon: UserPlus, trend: "" },
+    { label: "Locations", value: stats.locations.toString(), icon: MapPin, trend: "" },
   ];
 
-  const getVerificationStatusColor = (status: string) => {
+  const getVerificationStatusColor = (status: "pending" | "approved" | "rejected") => {
     switch (status) {
       case "approved": return "bg-green-100 text-green-800 border-green-200";
       case "rejected": return "bg-red-100 text-red-800 border-red-200";
@@ -44,13 +49,56 @@ const AdminDashboard = () => {
     }
   };
 
-  const getVerificationMessage = (status: string) => {
+  const getVerificationMessage = (status: "pending" | "approved" | "rejected") => {
     switch (status) {
       case "approved": return "Your practice is verified and live! Patients can now find and book with you.";
       case "rejected": return "Verification failed. Please review the requirements and resubmit your documents.";
       default: return "To go public and appear in search results, your verification must be completed.";
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-muted/20 flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+          <span className="text-muted-foreground">Loading dashboard...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-muted/20 flex items-center justify-center">
+        <Card className="max-w-md">
+          <CardContent className="p-6 text-center">
+            <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Failed to load dashboard</h3>
+            <p className="text-muted-foreground mb-4">{error}</p>
+            <Button onClick={refreshData}>Try Again</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!practice) {
+    return (
+      <div className="min-h-screen bg-muted/20 flex items-center justify-center">
+        <Card className="max-w-md">
+          <CardContent className="p-6 text-center">
+            <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No Practice Found</h3>
+            <p className="text-muted-foreground mb-4">
+              You need to be associated with a practice to access this dashboard.
+            </p>
+            <Button onClick={refreshData}>Refresh</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-muted/20">
@@ -60,7 +108,7 @@ const AdminDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-foreground">Practice Dashboard</h1>
-              <p className="text-muted-foreground">Sunset Medical Center</p>
+              <p className="text-muted-foreground">{practice.name}</p>
             </div>
             <div className="flex items-center gap-4">
               <Button variant="outline" size="sm">
@@ -83,8 +131,6 @@ const AdminDashboard = () => {
               <div className="flex-shrink-0">
                 {verificationStatus === "approved" ? (
                   <CheckCircle className="h-6 w-6 text-green-600" />
-                ) : verificationStatus === "rejected" ? (
-                  <X className="h-6 w-6 text-red-600" />
                 ) : (
                   <AlertCircle className="h-6 w-6 text-yellow-600" />
                 )}
@@ -160,20 +206,29 @@ const AdminDashboard = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {[1, 2, 3].map((item) => (
-                      <div key={item} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                        <div>
-                          <p className="font-medium">John Smith</p>
-                          <p className="text-sm text-muted-foreground">General Checkup</p>
+                  {appointments.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Calendar className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                      <p>No appointments scheduled</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {appointments.slice(0, 3).map((apt) => (
+                        <div key={apt.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                          <div>
+                            <p className="font-medium">{apt.patient_name}</p>
+                            <p className="text-sm text-muted-foreground">{apt.doctor_name}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-medium">
+                              {format(new Date(apt.appointment_date), 'MMM dd')}, {apt.start_time}
+                            </p>
+                            <Badge variant="outline" className="capitalize">{apt.status}</Badge>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-sm font-medium">Today, 2:30 PM</p>
-                          <Badge variant="outline">Confirmed</Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -213,43 +268,55 @@ const AdminDashboard = () => {
               </Button>
             </div>
             
-            <div className="grid gap-4">
-              {[
-                { name: "Dr. Sarah Johnson", specialty: "Cardiologist", patients: 45, rating: 4.9, status: "Active" },
-                { name: "Dr. Michael Chen", specialty: "Dermatologist", patients: 38, rating: 4.8, status: "Active" },
-                { name: "Dr. Emily Rodriguez", specialty: "Pediatrician", patients: 52, rating: 4.9, status: "Vacation" },
-              ].map((provider, index) => (
-                <Card key={index}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                          <Stethoscope className="h-6 w-6 text-primary" />
+            {doctors.length === 0 ? (
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <Stethoscope className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <h3 className="text-lg font-semibold mb-2">No Providers Yet</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Invite doctors to join your practice to get started
+                  </p>
+                  <Button onClick={() => setInviteProviderOpen(true)}>
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Invite First Provider
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-4">
+                {doctors.map((provider) => (
+                  <Card key={provider.id}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                            <Stethoscope className="h-6 w-6 text-primary" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold">{provider.profiles?.full_name || 'Unknown'}</h3>
+                            <p className="text-sm text-muted-foreground">{provider.specialty}</p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="font-semibold">{provider.name}</h3>
-                          <p className="text-sm text-muted-foreground">{provider.specialty}</p>
+                        <div className="flex items-center gap-6">
+                          <div className="text-center">
+                            <p className="text-lg font-semibold">{provider.num_reviews || 0}</p>
+                            <p className="text-xs text-muted-foreground">Reviews</p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-lg font-semibold">{provider.average_rating.toFixed(1)}</p>
+                            <p className="text-xs text-muted-foreground">Rating</p>
+                          </div>
+                          <Badge variant={provider.verified ? "default" : "secondary"}>
+                            {provider.verified ? "Verified" : "Pending"}
+                          </Badge>
+                          <Button variant="outline" size="sm">Edit</Button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-6">
-                        <div className="text-center">
-                          <p className="text-lg font-semibold">{provider.patients}</p>
-                          <p className="text-xs text-muted-foreground">Patients</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-lg font-semibold">{provider.rating}</p>
-                          <p className="text-xs text-muted-foreground">Rating</p>
-                        </div>
-                        <Badge variant={provider.status === "Active" ? "default" : "secondary"}>
-                          {provider.status}
-                        </Badge>
-                        <Button variant="outline" size="sm">Edit</Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="locations" className="space-y-6">
@@ -323,36 +390,48 @@ const AdminDashboard = () => {
               <Button onClick={() => setAddServiceOpen(true)}>Add New Service</Button>
             </div>
             
-            <div className="grid gap-4">
-              {[
-                { name: "General Consultation", price: "$150", duration: "30 min", providers: "All" },
-                { name: "Cardiology Consultation", price: "$200", duration: "45 min", providers: "Dr. Johnson" },
-                { name: "Skin Examination", price: "$120", duration: "20 min", providers: "Dr. Chen" },
-                { name: "Pediatric Checkup", price: "$100", duration: "30 min", providers: "Dr. Rodriguez" },
-              ].map((service, index) => (
-                <Card key={index}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-semibold">{service.name}</h3>
-                        <p className="text-sm text-muted-foreground">Available with: {service.providers}</p>
-                      </div>
-                      <div className="flex items-center gap-6">
-                        <div className="text-center">
-                          <p className="font-semibold">{service.price}</p>
-                          <p className="text-xs text-muted-foreground">Price</p>
+            {services.length === 0 ? (
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <Stethoscope className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <h3 className="text-lg font-semibold mb-2">No Services Yet</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Add services and treatments offered at your practice
+                  </p>
+                  <Button onClick={() => setAddServiceOpen(true)}>
+                    Add First Service
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-4">
+                {services.map((service) => (
+                  <Card key={service.id}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-semibold">{service.name}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Available with: {service.doctor_name}
+                          </p>
                         </div>
-                        <div className="text-center">
-                          <p className="font-semibold">{service.duration}</p>
-                          <p className="text-xs text-muted-foreground">Duration</p>
+                        <div className="flex items-center gap-6">
+                          <div className="text-center">
+                            <p className="font-semibold">${service.price || 0}</p>
+                            <p className="text-xs text-muted-foreground">Price</p>
+                          </div>
+                          <div className="text-center">
+                            <p className="font-semibold">{service.duration_minutes} min</p>
+                            <p className="text-xs text-muted-foreground">Duration</p>
+                          </div>
+                          <Button variant="outline" size="sm">Edit</Button>
                         </div>
-                        <Button variant="outline" size="sm">Edit</Button>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="staff" className="space-y-6">
