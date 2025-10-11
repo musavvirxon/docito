@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { ChevronDown, User, LogOut } from "lucide-react";
+import { ChevronDown, User, LogOut, Settings, Bell as BellIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { NotificationDropdown } from "@/components/NotificationDropdown";
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -64,6 +65,8 @@ const Header = () => {
                   Dashboard
                 </Button>
                 
+                <NotificationDropdown />
+                
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-9 w-9 rounded-full">
@@ -78,7 +81,11 @@ const Header = () => {
                   <DropdownMenuContent className="w-56" align="end">
                     <DropdownMenuItem onClick={() => navigate('/dashboard')}>
                       <User className="mr-2 h-4 w-4" />
-                      <span>Dashboard</span>
+                      <span>My Profile</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/patient-dashboard')}>
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={signOut}>

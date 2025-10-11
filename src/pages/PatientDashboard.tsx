@@ -447,7 +447,7 @@ const PatientDashboard = () => {
                       <Calendar className="w-12 h-12 text-muted-foreground mb-4" />
                       <h3 className="text-lg font-medium text-muted-foreground mb-2">No upcoming appointments</h3>
                       <p className="text-sm text-muted-foreground mb-4">Book your next appointment to get started</p>
-                      <Button onClick={() => navigate('/search-results')}>
+                      <Button onClick={() => navigate('/find-doctors')}>
                         <Plus className="w-4 h-4 mr-2" />
                         Book Appointment
                       </Button>
@@ -721,7 +721,7 @@ const PatientDashboard = () => {
                     <Button 
                       variant="outline" 
                       className="h-20 flex-col"
-                      onClick={() => navigate('/search-results')}
+                      onClick={() => navigate('/find-doctors')}
                     >
                       <Calendar className="w-6 h-6 mb-2" />
                       Book Appointment
