@@ -106,14 +106,14 @@ export const useAdminDashboard = () => {
         console.log('Found practice:', practiceData);
         setPractice(practiceData);
       } else {
-        console.log('No practice found for admin, creating placeholder');
-        // No practice exists for this admin
+        console.log('No practice found for admin - setup required');
+        // No practice exists - this is OK, user needs to complete setup
         setPractice(null);
       }
     } catch (err: any) {
       console.error('Error in fetchPractice:', err);
       setError(err.message || 'Failed to load practice');
-      toast.error(`Failed to load practice: ${err.message}`);
+      // Don't show toast for missing practice - that's expected for new admins
     }
   };
 

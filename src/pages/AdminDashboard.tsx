@@ -16,6 +16,7 @@ import { AddServiceModal } from "@/components/dashboard/AddServiceModal";
 import { InviteStaffModal } from "@/components/dashboard/InviteStaffModal";
 import { AddLocationModal } from "@/components/dashboard/AddLocationModal";
 import { SettingsPanel } from "@/components/dashboard/SettingsPanel";
+import { CreateClinicModal } from "@/components/dashboard/CreateClinicModal";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
 import { format } from "date-fns";
 
@@ -29,6 +30,7 @@ const AdminDashboard = () => {
   const [inviteStaffOpen, setInviteStaffOpen] = useState(false);
   const [addLocationOpen, setAddLocationOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [createClinicOpen, setCreateClinicOpen] = useState(false);
 
   const verificationStatus: "pending" | "approved" | "rejected" = practice?.verified ? "approved" : "pending";
 
@@ -86,16 +88,48 @@ const AdminDashboard = () => {
   if (!practice) {
     return (
       <div className="min-h-screen bg-muted/20 flex items-center justify-center">
-        <Card className="max-w-md">
-          <CardContent className="p-6 text-center">
-            <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Practice Found</h3>
-            <p className="text-muted-foreground mb-4">
-              You need to be associated with a practice to access this dashboard.
+        <Card className="max-w-2xl mx-auto">
+          <CardContent className="p-8 text-center">
+            <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+              <Building2 className="w-8 h-8 text-primary" />
+            </div>
+            <h3 className="text-2xl font-bold mb-3">Welcome to Your Admin Dashboard!</h3>
+            <p className="text-muted-foreground mb-6 text-base">
+              Let's set up your clinic information so you can start managing your doctors and appointments.
             </p>
-            <Button onClick={refreshData}>Refresh</Button>
+            <div className="bg-muted/50 rounded-lg p-6 mb-6 text-left">
+              <p className="text-sm font-medium mb-4">You'll need to provide:</p>
+              <ul className="space-y-3">
+                <li className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
+                  Clinic name and description
+                </li>
+                <li className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
+                  Location and contact information
+                </li>
+                <li className="flex items-center gap-2 text-sm">
+                  <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
+                  Operating details
+                </li>
+              </ul>
+            </div>
+            <Button 
+              size="lg" 
+              onClick={() => setCreateClinicOpen(true)}
+              className="w-full sm:w-auto"
+            >
+              <Building2 className="w-4 h-4 mr-2" />
+              Create Clinic Profile
+            </Button>
           </CardContent>
         </Card>
+        
+        <CreateClinicModal
+          open={createClinicOpen}
+          onOpenChange={setCreateClinicOpen}
+          onSuccess={refreshData}
+        />
       </div>
     );
   }
