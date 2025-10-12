@@ -2,6 +2,8 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useInactivityTimer } from '@/hooks/useInactivityTimer';
+import { InactivityWarningModal } from '@/components/InactivityWarningModal';
 
 interface Profile {
   id: string;
@@ -48,6 +50,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const signOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      // Clear all state
+      setUser(null);
+      setProfile(null);
+      setSession(null);
+      
+      // Clear any cached data
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      toast.success('Successfully signed out!');
+      
+      // Redirect to home page
+      window.location.href = '/';
+    } catch (error: any) {
+      toast.error('Failed to sign out');
+      // Even if there's an error, clear local state and redirect
+      setUser(null);
+      setProfile(null);
+      setSession(null);
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = '/';
+    }
+  };
+
+  // Inactivity timer - only active when user is logged in
+  const { showWarning, countdown, stayLoggedIn } = useInactivityTimer({
+    onInactive: async () => {
+      toast.info('You have been logged out due to inactivity');
+      await signOut();
+    },
+    inactivityTime: user ? 15 * 60 * 1000 : Infinity, // 15 minutes when logged in, never timeout when logged out
+    warningTime: 60 * 1000, // 1 minute warning
+  });
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -191,20 +233,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
-      setUser(null);
-      setProfile(null);
-      setSession(null);
-      
-      toast.success('Successfully signed out!');
-    } catch (error: any) {
-      toast.error('Failed to sign out');
-    }
-  };
 
   const updateProfile = async (updates: Partial<Profile>) => {
     try {
@@ -239,5 +267,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     updateProfile,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+      {user && (
+        <InactivityWarningModal
+          open={showWarning}
+          countdown={countdown}
+          onStayLoggedIn={stayLoggedIn}
+        />
+      )}
+    </AuthContext.Provider>
+  );
 };
