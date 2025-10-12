@@ -21,7 +21,10 @@ import { useAdminDashboard } from "@/hooks/useAdminDashboard";
 import { format } from "date-fns";
 
 const AdminDashboard = () => {
-  const { practice, stats, doctors, appointments, services, loading, error, refreshData } = useAdminDashboard();
+  const { 
+    practice, stats, doctors, appointments, services, staff, locations, 
+    patients, payments, messages, metrics, loading, error, refreshData 
+  } = useAdminDashboard();
   const [activeTab, setActiveTab] = useState("overview");
   
   // Modal states
@@ -34,7 +37,7 @@ const AdminDashboard = () => {
 
   const verificationStatus: "pending" | "approved" | "rejected" = practice?.verified ? "approved" : "pending";
 
-  const metrics = [
+  const dashboardMetrics = [
     { label: "Total Bookings", value: stats.totalBookings.toString(), icon: Calendar, trend: "" },
     { label: "Total Patients", value: stats.totalPatients.toString(), icon: Users, trend: "" },
     { label: "Revenue This Month", value: `$${stats.totalRevenue.toLocaleString()}`, icon: DollarSign, trend: "" },
@@ -193,7 +196,7 @@ const AdminDashboard = () => {
 
         {/* Metrics Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {metrics.map((metric, index) => {
+          {dashboardMetrics.map((metric, index) => {
             const Icon = metric.icon;
             return (
               <Card key={index}>
@@ -274,20 +277,29 @@ const AdminDashboard = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {[1, 2, 3].map((item) => (
-                      <div key={item} className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
-                        <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                          <Users className="h-4 w-4" />
+                  {messages.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <MessageCircle className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                      <p>No recent messages</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {messages.map((msg) => (
+                        <div key={msg.id} className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                          <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                            <Users className="h-4 w-4" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">{msg.sender_name}</p>
+                            <p className="text-sm text-muted-foreground">{msg.message}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {format(new Date(msg.created_at), 'MMM dd, h:mm a')}
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex-1">
-                          <p className="font-medium text-sm">Dr. Sarah Johnson</p>
-                          <p className="text-sm text-muted-foreground">New patient inquiry about...</p>
-                          <p className="text-xs text-muted-foreground mt-1">2 hours ago</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -362,60 +374,57 @@ const AdminDashboard = () => {
               </Button>
             </div>
 
-            <div className="grid gap-6">
-              {[
-                {
-                  name: "Main Office - Downtown",
-                  address: "123 Medical Center Dr, City, ST 12345",
-                  phone: "(555) 123-4567",
-                  providers: 3,
-                  status: "Active",
-                  photos: 4
-                },
-                {
-                  name: "West Side Clinic",
-                  address: "456 Healthcare Blvd, City, ST 12346", 
-                  phone: "(555) 123-4568",
-                  providers: 2,
-                  status: "Active",
-                  photos: 6
-                }
-              ].map((location, index) => (
-                <Card key={index}>
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="text-lg font-semibold">{location.name}</h3>
-                          <Badge variant="outline">{location.status}</Badge>
+            {locations.length === 0 ? (
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <MapPin className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <h3 className="text-lg font-semibold mb-2">No Locations Yet</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Add your practice locations to help patients find you
+                  </p>
+                  <Button onClick={() => setAddLocationOpen(true)}>
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Add First Location
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-6">
+                {locations.map((location) => (
+                  <Card key={location.id}>
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="text-lg font-semibold">{location.name}</h3>
+                            {location.is_primary && (
+                              <Badge variant="outline">Primary</Badge>
+                            )}
+                          </div>
+                          <p className="text-muted-foreground mb-2">{location.address}</p>
+                          <p className="text-muted-foreground mb-4">{location.phone}</p>
+                          
+                          <div className="flex items-center gap-6 text-sm">
+                            <div className="flex items-center gap-1">
+                              <Upload className="h-4 w-4" />
+                              <span>{location.photo_urls.length} Photos</span>
+                            </div>
+                          </div>
                         </div>
-                        <p className="text-muted-foreground mb-2">{location.address}</p>
-                        <p className="text-muted-foreground mb-4">{location.phone}</p>
                         
-                        <div className="flex items-center gap-6 text-sm">
-                          <div className="flex items-center gap-1">
-                            <Users className="h-4 w-4" />
-                            <span>{location.providers} Providers</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Upload className="h-4 w-4" />
-                            <span>{location.photos} Photos</span>
-                          </div>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm">Edit</Button>
+                          <Button variant="outline" size="sm">
+                            <Upload className="h-4 w-4 mr-1" />
+                            Photos
+                          </Button>
                         </div>
                       </div>
-                      
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm">Edit</Button>
-                        <Button variant="outline" size="sm">
-                          <Upload className="h-4 w-4 mr-1" />
-                          Photos
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="services" className="space-y-6">
@@ -474,36 +483,46 @@ const AdminDashboard = () => {
               <Button onClick={() => setInviteStaffOpen(true)}>Invite Staff Member</Button>
             </div>
             
-            <div className="grid gap-4">
-              {[
-                { name: "Jennifer Wilson", role: "Nurse", department: "Cardiology", status: "Active" },
-                { name: "Mark Thompson", role: "Receptionist", department: "Front Desk", status: "Active" },
-                { name: "Lisa Martinez", role: "Dental Hygienist", department: "Dental", status: "Part-time" },
-                { name: "David Brown", role: "Manager", department: "Administration", status: "Active" },
-              ].map((staff, index) => (
-                <Card key={index}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-secondary/20 rounded-full flex items-center justify-center">
-                          <Users className="h-5 w-5" />
+            {staff.length === 0 ? (
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <Users className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <h3 className="text-lg font-semibold mb-2">No Staff Members Yet</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Add staff members to help manage your practice
+                  </p>
+                  <Button onClick={() => setInviteStaffOpen(true)}>
+                    Invite First Staff Member
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-4">
+                {staff.map((member) => (
+                  <Card key={member.id}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 bg-secondary/20 rounded-full flex items-center justify-center">
+                            <Users className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold">{member.full_name}</h3>
+                            <p className="text-sm text-muted-foreground">{member.role} • {member.department}</p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="font-semibold">{staff.name}</h3>
-                          <p className="text-sm text-muted-foreground">{staff.role} • {staff.department}</p>
+                        <div className="flex items-center gap-4">
+                          <Badge variant={member.status === 'active' ? "default" : "secondary"}>
+                            {member.status}
+                          </Badge>
+                          <Button variant="outline" size="sm">Edit</Button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <Badge variant={staff.status === "Active" ? "default" : "secondary"}>
-                          {staff.status}
-                        </Badge>
-                        <Button variant="outline" size="sm">Edit</Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="patients" className="space-y-6">
@@ -515,32 +534,39 @@ const AdminDashboard = () => {
               </div>
             </div>
             
-            <Card>
-              <CardContent className="p-0">
-                <div className="border-b p-4 bg-muted/50">
-                  <div className="grid grid-cols-4 gap-4 font-medium text-sm">
-                    <div>Patient Name</div>
-                    <div>Last Visit</div>
-                    <div>Provider</div>
-                    <div>Status</div>
-                  </div>
-                </div>
-                {[
-                  { name: "Alice Johnson", lastVisit: "2024-01-15", provider: "Dr. Johnson", status: "Active" },
-                  { name: "Bob Smith", lastVisit: "2024-01-10", provider: "Dr. Chen", status: "Follow-up" },
-                  { name: "Carol Davis", lastVisit: "2024-01-08", provider: "Dr. Rodriguez", status: "Active" },
-                ].map((patient, index) => (
-                  <div key={index} className="grid grid-cols-4 gap-4 p-4 border-b hover:bg-muted/30 cursor-pointer">
-                    <div className="font-medium">{patient.name}</div>
-                    <div className="text-muted-foreground">{patient.lastVisit}</div>
-                    <div className="text-muted-foreground">{patient.provider}</div>
-                    <div>
-                      <Badge variant="outline">{patient.status}</Badge>
+            {patients.length === 0 ? (
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <Users className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <p className="text-muted-foreground">No patients yet</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="p-0">
+                  <div className="border-b p-4 bg-muted/50">
+                    <div className="grid grid-cols-4 gap-4 font-medium text-sm">
+                      <div>Patient Name</div>
+                      <div>Last Visit</div>
+                      <div>Provider</div>
+                      <div>Status</div>
                     </div>
                   </div>
-                ))}
-              </CardContent>
-            </Card>
+                  {patients.map((patient) => (
+                    <div key={patient.id} className="grid grid-cols-4 gap-4 p-4 border-b hover:bg-muted/30 cursor-pointer">
+                      <div className="font-medium">{patient.full_name}</div>
+                      <div className="text-muted-foreground">
+                        {format(new Date(patient.last_visit), 'MMM dd, yyyy')}
+                      </div>
+                      <div className="text-muted-foreground">{patient.doctor_name}</div>
+                      <div>
+                        <Badge variant="outline">{patient.status}</Badge>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="billing" className="space-y-6">
@@ -561,19 +587,19 @@ const AdminDashboard = () => {
                   <div className="space-y-4">
                     <div className="flex justify-between">
                       <span>Total Revenue (This Month)</span>
-                      <span className="font-semibold">$12,450</span>
+                      <span className="font-semibold">${stats.totalRevenue.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Pending Payments</span>
-                      <span className="font-semibold text-yellow-600">$2,100</span>
+                      <span className="font-semibold text-yellow-600">
+                        ${payments.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0).toFixed(2)}
+                      </span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Insurance Claims</span>
-                      <span className="font-semibold">$8,200</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Direct Payments</span>
-                      <span className="font-semibold">$4,250</span>
+                      <span>Completed Payments</span>
+                      <span className="font-semibold text-green-600">
+                        ${payments.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0).toFixed(2)}
+                      </span>
                     </div>
                   </div>
                 </CardContent>
@@ -584,26 +610,31 @@ const AdminDashboard = () => {
                   <CardTitle>Recent Transactions</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {[
-                      { patient: "John Doe", amount: "$150", status: "Paid", date: "Today" },
-                      { patient: "Jane Smith", amount: "$200", status: "Pending", date: "Yesterday" },
-                      { patient: "Mike Wilson", amount: "$100", status: "Paid", date: "2 days ago" },
-                    ].map((transaction, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                        <div>
-                          <p className="font-medium">{transaction.patient}</p>
-                          <p className="text-sm text-muted-foreground">{transaction.date}</p>
+                  {payments.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <CreditCard className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                      <p>No transactions yet</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {payments.slice(0, 3).map((payment) => (
+                        <div key={payment.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                          <div>
+                            <p className="font-medium">{payment.patient_name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {format(new Date(payment.created_at), 'MMM dd, yyyy')}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-semibold">${payment.amount.toFixed(2)}</p>
+                            <Badge variant={payment.status === 'paid' ? "default" : "outline"}>
+                              {payment.status}
+                            </Badge>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-semibold">{transaction.amount}</p>
-                          <Badge variant={transaction.status === "Paid" ? "default" : "outline"}>
-                            {transaction.status}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -643,20 +674,20 @@ const AdminDashboard = () => {
                       <span>Average Rating</span>
                       <div className="flex items-center gap-2">
                         <Star className="h-4 w-4 text-yellow-500" />
-                        <span className="font-semibold">4.8</span>
+                        <span className="font-semibold">{metrics.averageRating.toFixed(1)}</span>
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
                       <span>Patient Retention</span>
-                      <span className="font-semibold text-green-600">92%</span>
+                      <span className="font-semibold text-green-600">{metrics.patientRetention}%</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span>Avg. Wait Time</span>
-                      <span className="font-semibold">12 min</span>
+                      <span className="font-semibold">{metrics.avgWaitTime} min</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span>No-show Rate</span>
-                      <span className="font-semibold text-red-600">5%</span>
+                      <span className="font-semibold text-red-600">{metrics.noShowRate}%</span>
                     </div>
                   </div>
                 </CardContent>
