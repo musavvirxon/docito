@@ -10,12 +10,14 @@ export const useInactivityTimer = ({
   onInactive,
   inactivityTime = 15 * 60 * 1000, // 15 minutes default
   warningTime = 60 * 1000, // 1 minute warning default
-}: UseInactivityTimerProps) => {
+  enabled = true, // New prop to control if timer is active
+}: UseInactivityTimerProps & { enabled?: boolean }) => {
   const [showWarning, setShowWarning] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const warningTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const hasLoggedOutRef = useRef(false);
 
   const clearTimers = () => {
     if (timeoutRef.current) {
@@ -48,18 +50,24 @@ export const useInactivityTimer = ({
   };
 
   const resetTimer = () => {
+    if (!enabled) return;
+    
     clearTimers();
     setShowWarning(false);
     setCountdown(0);
+    hasLoggedOutRef.current = false;
 
     // Set warning timer
     warningTimeoutRef.current = setTimeout(() => {
+      if (hasLoggedOutRef.current) return;
       setShowWarning(true);
       startCountdown();
     }, inactivityTime - warningTime);
 
     // Set logout timer
     timeoutRef.current = setTimeout(() => {
+      if (hasLoggedOutRef.current) return;
+      hasLoggedOutRef.current = true;
       onInactive();
     }, inactivityTime);
   };
@@ -69,6 +77,11 @@ export const useInactivityTimer = ({
   };
 
   useEffect(() => {
+    if (!enabled) {
+      clearTimers();
+      return;
+    }
+
     // Activity events to monitor
     const events = [
       'mousedown',
@@ -81,7 +94,7 @@ export const useInactivityTimer = ({
 
     // Reset timer on any activity
     const handleActivity = () => {
-      if (!showWarning) {
+      if (!showWarning && !hasLoggedOutRef.current) {
         resetTimer();
       }
     };
@@ -91,8 +104,10 @@ export const useInactivityTimer = ({
       document.addEventListener(event, handleActivity, { passive: true });
     });
 
-    // Start initial timer
-    resetTimer();
+    // Start initial timer only if enabled
+    if (enabled) {
+      resetTimer();
+    }
 
     // Cleanup
     return () => {
@@ -102,7 +117,7 @@ export const useInactivityTimer = ({
       });
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showWarning, inactivityTime, warningTime]);
+  }, [enabled, showWarning, inactivityTime, warningTime]);
 
   return {
     showWarning,

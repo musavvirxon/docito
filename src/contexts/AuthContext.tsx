@@ -84,11 +84,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Inactivity timer - only active when user is logged in
   const { showWarning, countdown, stayLoggedIn } = useInactivityTimer({
     onInactive: async () => {
+      if (!user) return; // Don't logout if no user
       toast.info('You have been logged out due to inactivity');
       await signOut();
     },
-    inactivityTime: user ? 15 * 60 * 1000 : Infinity, // 15 minutes when logged in, never timeout when logged out
+    inactivityTime: 15 * 60 * 1000, // 15 minutes
     warningTime: 60 * 1000, // 1 minute warning
+    enabled: !!user && !loading, // Only enable when user is logged in and not loading
   });
 
   const fetchProfile = async (userId: string) => {
