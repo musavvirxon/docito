@@ -13,7 +13,7 @@ import { useBookingAuth } from "@/hooks/useBookingAuth";
 
 const FindDoctors = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [specialty, setSpecialty] = useState<string>("");
+  const [specialty, setSpecialty] = useState<string>("all");
   const [location, setLocation] = useState("");
   const [minRating, setMinRating] = useState<number>(0);
   
@@ -28,7 +28,7 @@ const FindDoctors = () => {
       doctorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       doctor.specialty?.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesSpecialty = !specialty || doctor.specialty === specialty;
+    const matchesSpecialty = specialty === "all" || doctor.specialty === specialty;
     const matchesRating = doctor.average_rating >= minRating;
     
     return matchesSearch && matchesSpecialty && matchesRating;
@@ -66,7 +66,7 @@ const FindDoctors = () => {
                   <SelectValue placeholder="All Specialties" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Specialties</SelectItem>
+                  <SelectItem value="all">All Specialties</SelectItem>
                   {specialties.map(spec => (
                     <SelectItem key={spec} value={spec}>{spec}</SelectItem>
                   ))}
