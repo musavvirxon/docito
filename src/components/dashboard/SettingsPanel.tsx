@@ -224,22 +224,17 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
     }
   };
 
-  const updateRolePermissions = async (roleId: string, permissions: string[]) => {
-    try {
-      const { error } = await supabase
-        .from('staff_roles')
-        .update({ permissions })
-        .eq('id', roleId);
-
-      if (error) throw error;
-      
-      setStaffRoles(staffRoles.map(role => 
-        role.id === roleId ? { ...role, permissions } : role
-      ));
-    } catch (err: any) {
-      console.error('Error updating permissions:', err);
-      toast.error("Failed to update permissions");
-    }
+  const togglePermission = (roleId: string, permission: string) => {
+    setStaffRoles(staffRoles.map(role => {
+      if (role.id === roleId) {
+        const hasPermission = role.permissions.includes(permission);
+        const newPermissions = hasPermission
+          ? role.permissions.filter(p => p !== permission)
+          : [...role.permissions, permission];
+        return { ...role, permissions: newPermissions };
+      }
+      return role;
+    }));
   };
 
   const handleSave = async () => {
@@ -284,6 +279,16 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
         });
 
       if (settingsError) throw settingsError;
+
+      // Update staff role permissions
+      for (const role of staffRoles) {
+        const { error: roleError } = await supabase
+          .from('staff_roles')
+          .update({ permissions: role.permissions })
+          .eq('id', role.id);
+
+        if (roleError) throw roleError;
+      }
 
       toast.success("Settings saved successfully");
       onOpenChange(false);
@@ -488,22 +493,26 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {staffRoles.map((role) => (
-                    <div key={role.id} className="space-y-2">
+                    <div key={role.id} className="space-y-3">
                       <h4 className="font-medium">{role.role_name}</h4>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-2 gap-3">
                         {["booking", "patients", "billing", "staff", "reports", "settings"].map((permission) => (
-                          <div key={permission} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`${role.id}-${permission}`}
-                              checked={role.permissions.includes(permission)}
-                              onCheckedChange={(checked) => {
-                                const newPermissions = checked
-                                  ? [...role.permissions, permission]
-                                  : role.permissions.filter(p => p !== permission);
-                                updateRolePermissions(role.id, newPermissions);
-                              }}
-                            />
-                            <Label htmlFor={`${role.id}-${permission}`} className="capitalize cursor-pointer">
+                          <div 
+                            key={permission} 
+                            className="flex items-center space-x-2 group"
+                          >
+                            <div className="relative">
+                              <Checkbox
+                                id={`${role.id}-${permission}`}
+                                checked={role.permissions.includes(permission)}
+                                onCheckedChange={() => togglePermission(role.id, permission)}
+                                className="transition-all duration-200 data-[state=checked]:animate-scale-in data-[state=unchecked]:animate-fade-out"
+                              />
+                            </div>
+                            <Label 
+                              htmlFor={`${role.id}-${permission}`} 
+                              className="capitalize cursor-pointer select-none transition-colors duration-150 group-hover:text-primary"
+                            >
                               {permission}
                             </Label>
                           </div>
