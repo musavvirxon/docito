@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +13,9 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Upload, Building2, Users, Calendar, CreditCard, Bell, Palette, MapPin, X } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Upload, Building2, Users, Calendar, CreditCard, Bell, MapPin, X, Loader2, Trash2 } from "lucide-react";
+import { useFileUpload } from "@/hooks/useFileUpload";
 
 interface SettingsPanelProps {
   open: boolean;
@@ -24,60 +29,288 @@ const timezones = [
 
 const currencies = ["USD", "EUR", "GBP", "CAD", "AUD", "JPY"];
 
-const mockLocations = [
-  { id: "1", name: "Main Office - Downtown", status: "Active" },
-  { id: "2", name: "West Side Clinic", status: "Active" }
-];
+interface PracticeData {
+  id: string;
+  name: string;
+  legal_business_name?: string;
+  business_registration_number?: string;
+  country?: string;
+  logo_url?: string;
+}
 
-const staffRoles = [
-  { role: "Admin", permissions: ["booking", "patients", "billing", "staff", "reports", "settings"] },
-  { role: "Doctor", permissions: ["booking", "patients", "reports"] },
-  { role: "Nurse", permissions: ["booking", "patients"] },
-  { role: "Receptionist", permissions: ["booking"] }
-];
+interface PracticeSettings {
+  tagline?: string;
+  timezone: string;
+  default_duration_minutes: number;
+  max_appointments_per_day: number;
+  cancellation_notice_hours: number;
+  buffer_time_minutes: number;
+  payments_enabled: boolean;
+  currency: string;
+  stripe_connected: boolean;
+  paypal_connected: boolean;
+  email_booking_confirm: boolean;
+  sms_booking_confirm: boolean;
+  email_reminders: boolean;
+  sms_reminders: boolean;
+  reminder_hours_before: number;
+  primary_color: string;
+}
+
+interface Location {
+  id: string;
+  name: string;
+  address?: string;
+  city?: string;
+  phone?: string;
+  is_primary: boolean;
+}
+
+interface StaffRole {
+  id: string;
+  role_name: string;
+  permissions: string[];
+}
 
 export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
+  const { user } = useAuth();
+  const { uploadFile, uploading } = useFileUpload();
   const [activeTab, setActiveTab] = useState("general");
-  const [settings, setSettings] = useState({
-    // General Info
-    practiceName: "Sunset Medical Center",
-    tagline: "Caring for your health and wellness",
-    registrationNumber: "MD-12345-2024",
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  
+  const [practice, setPractice] = useState<PracticeData | null>(null);
+  const [settings, setSettings] = useState<PracticeSettings>({
     timezone: "America/New_York",
-    country: "United States",
-    
-    // Booking Settings
-    defaultDuration: "30",
-    maxPerDay: "20",
-    cancellationHours: "24",
-    bufferTime: "15",
-    
-    // Payment Settings
-    paymentsEnabled: true,
+    default_duration_minutes: 30,
+    max_appointments_per_day: 20,
+    cancellation_notice_hours: 24,
+    buffer_time_minutes: 15,
+    payments_enabled: false,
     currency: "USD",
-    
-    // Notifications
-    emailBookingConfirm: true,
-    smsBookingConfirm: false,
-    emailReminders: true,
-    smsReminders: true,
-    reminderTiming: "24",
-    
-    // Branding
-    primaryColor: "#0ea5e9"
+    stripe_connected: false,
+    paypal_connected: false,
+    email_booking_confirm: true,
+    sms_booking_confirm: false,
+    email_reminders: true,
+    sms_reminders: true,
+    reminder_hours_before: 24,
+    primary_color: "#0ea5e9"
   });
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [staffRoles, setStaffRoles] = useState<StaffRole[]>([]);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
 
-  const [uploadedLogo, setUploadedLogo] = useState<File | null>(null);
-  const [uploadedFavicon, setUploadedFavicon] = useState<File | null>(null);
+  useEffect(() => {
+    if (open && user) {
+      loadData();
+    }
+  }, [open, user]);
 
-  const updateSetting = (key: string, value: any) => {
+  const loadData = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      // Load practice
+      const { data: practiceData, error: practiceError } = await supabase
+        .from('practices')
+        .select('id, name, legal_business_name, business_registration_number, country, logo_url')
+        .eq('admin_id', user.id)
+        .single();
+
+      if (practiceError) throw practiceError;
+      setPractice(practiceData);
+
+      if (practiceData) {
+        // Load practice settings
+        const { data: settingsData, error: settingsError } = await supabase
+          .from('practice_settings')
+          .select('*')
+          .eq('practice_id', practiceData.id)
+          .maybeSingle();
+
+        if (settingsError && settingsError.code !== 'PGRST116') throw settingsError;
+        
+        if (settingsData) {
+          setSettings({
+            tagline: settingsData.tagline || '',
+            timezone: settingsData.timezone || 'America/New_York',
+            default_duration_minutes: settingsData.default_duration_minutes || 30,
+            max_appointments_per_day: settingsData.max_appointments_per_day || 20,
+            cancellation_notice_hours: settingsData.cancellation_notice_hours || 24,
+            buffer_time_minutes: settingsData.buffer_time_minutes || 15,
+            payments_enabled: settingsData.payments_enabled || false,
+            currency: settingsData.currency || 'USD',
+            stripe_connected: settingsData.stripe_connected || false,
+            paypal_connected: settingsData.paypal_connected || false,
+            email_booking_confirm: settingsData.email_booking_confirm ?? true,
+            sms_booking_confirm: settingsData.sms_booking_confirm || false,
+            email_reminders: settingsData.email_reminders ?? true,
+            sms_reminders: settingsData.sms_reminders ?? true,
+            reminder_hours_before: settingsData.reminder_hours_before || 24,
+            primary_color: settingsData.primary_color || '#0ea5e9'
+          });
+        }
+
+        // Load locations
+        const { data: locationsData, error: locationsError } = await supabase
+          .from('practice_locations')
+          .select('id, name, address, city, phone, is_primary')
+          .eq('practice_id', practiceData.id)
+          .order('is_primary', { ascending: false });
+
+        if (locationsError) throw locationsError;
+        setLocations(locationsData || []);
+
+        // Load staff roles
+        const { data: rolesData, error: rolesError } = await supabase
+          .from('staff_roles')
+          .select('*')
+          .eq('practice_id', practiceData.id)
+          .order('role_name');
+
+        if (rolesError) throw rolesError;
+        const mappedRoles = (rolesData || []).map(role => ({
+          id: role.id,
+          role_name: role.role_name,
+          permissions: Array.isArray(role.permissions) ? role.permissions as string[] : []
+        }));
+        setStaffRoles(mappedRoles);
+      }
+    } catch (err: any) {
+      console.error('Error loading settings:', err);
+      toast.error("Failed to load settings");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateSetting = (key: keyof PracticeSettings, value: any) => {
     setSettings(prev => ({ ...prev, [key]: value }));
   };
 
-  const handleSave = () => {
-    console.log("Save settings:", settings);
-    onOpenChange(false);
+  const handleLogoUpload = async (file: File) => {
+    if (!practice) return;
+
+    try {
+      const result = await uploadFile(file, 'practice-logos', `${practice.id}_logo`);
+      if (result) {
+        setLogoFile(file);
+        toast.success("Logo uploaded successfully");
+      }
+    } catch (err: any) {
+      console.error('Error uploading logo:', err);
+      toast.error("Failed to upload logo");
+    }
   };
+
+  const handleDeleteLocation = async (locationId: string) => {
+    if (!confirm("Are you sure you want to delete this location?")) return;
+
+    try {
+      const { error } = await supabase
+        .from('practice_locations')
+        .delete()
+        .eq('id', locationId);
+
+      if (error) throw error;
+      
+      setLocations(locations.filter(loc => loc.id !== locationId));
+      toast.success("Location deleted successfully");
+    } catch (err: any) {
+      console.error('Error deleting location:', err);
+      toast.error("Failed to delete location");
+    }
+  };
+
+  const updateRolePermissions = async (roleId: string, permissions: string[]) => {
+    try {
+      const { error } = await supabase
+        .from('staff_roles')
+        .update({ permissions })
+        .eq('id', roleId);
+
+      if (error) throw error;
+      
+      setStaffRoles(staffRoles.map(role => 
+        role.id === roleId ? { ...role, permissions } : role
+      ));
+    } catch (err: any) {
+      console.error('Error updating permissions:', err);
+      toast.error("Failed to update permissions");
+    }
+  };
+
+  const handleSave = async () => {
+    if (!practice) return;
+
+    setSaving(true);
+    try {
+      // Update practice basic info
+      const { error: practiceError } = await supabase
+        .from('practices')
+        .update({
+          business_registration_number: practice.business_registration_number,
+          country: practice.country,
+        })
+        .eq('id', practice.id);
+
+      if (practiceError) throw practiceError;
+
+      // Upsert practice settings
+      const { error: settingsError } = await supabase
+        .from('practice_settings')
+        .upsert({
+          practice_id: practice.id,
+          tagline: settings.tagline,
+          timezone: settings.timezone,
+          default_duration_minutes: settings.default_duration_minutes,
+          max_appointments_per_day: settings.max_appointments_per_day,
+          cancellation_notice_hours: settings.cancellation_notice_hours,
+          buffer_time_minutes: settings.buffer_time_minutes,
+          payments_enabled: settings.payments_enabled,
+          currency: settings.currency,
+          stripe_connected: settings.stripe_connected,
+          paypal_connected: settings.paypal_connected,
+          email_booking_confirm: settings.email_booking_confirm,
+          sms_booking_confirm: settings.sms_booking_confirm,
+          email_reminders: settings.email_reminders,
+          sms_reminders: settings.sms_reminders,
+          reminder_hours_before: settings.reminder_hours_before,
+          primary_color: settings.primary_color
+        }, {
+          onConflict: 'practice_id'
+        });
+
+      if (settingsError) throw settingsError;
+
+      toast.success("Settings saved successfully");
+      onOpenChange(false);
+    } catch (err: any) {
+      console.error('Error saving settings:', err);
+      toast.error(err.message || "Failed to save settings");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Practice Settings</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 p-6">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-32 w-full" />
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -108,19 +341,15 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="practiceName">Practice Name</Label>
-                      <Input
-                        id="practiceName"
-                        value={settings.practiceName}
-                        onChange={(e) => updateSetting("practiceName", e.target.value)}
-                      />
+                      <Label>Practice Name</Label>
+                      <Input value={practice?.name || ''} disabled />
                     </div>
                     <div>
                       <Label htmlFor="registrationNumber">Registration Number</Label>
                       <Input
                         id="registrationNumber"
-                        value={settings.registrationNumber}
-                        onChange={(e) => updateSetting("registrationNumber", e.target.value)}
+                        value={practice?.business_registration_number || ''}
+                        onChange={(e) => setPractice(prev => prev ? {...prev, business_registration_number: e.target.value} : null)}
                       />
                     </div>
                   </div>
@@ -129,9 +358,10 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                     <Label htmlFor="tagline">Tagline</Label>
                     <Textarea
                       id="tagline"
-                      value={settings.tagline}
+                      value={settings.tagline || ''}
                       onChange={(e) => updateSetting("tagline", e.target.value)}
                       rows={2}
+                      placeholder="Your practice's tagline or motto"
                     />
                   </div>
 
@@ -144,9 +374,7 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                         </SelectTrigger>
                         <SelectContent>
                           {timezones.map((tz) => (
-                            <SelectItem key={tz} value={tz}>
-                              {tz}
-                            </SelectItem>
+                            <SelectItem key={tz} value={tz}>{tz}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -155,35 +383,49 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                       <Label htmlFor="country">Country</Label>
                       <Input
                         id="country"
-                        value={settings.country}
-                        onChange={(e) => updateSetting("country", e.target.value)}
+                        value={practice?.country || ''}
+                        onChange={(e) => setPractice(prev => prev ? {...prev, country: e.target.value} : null)}
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <div>
-                      <Label>Practice Logo</Label>
-                      <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
-                        {uploadedLogo ? (
-                          <div className="flex items-center justify-between p-2 bg-muted rounded">
-                            <span className="text-sm">{uploadedLogo.name}</span>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setUploadedLogo(null)}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ) : (
-                          <div>
-                            <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
-                            <p className="mt-2 text-sm text-muted-foreground">Upload logo</p>
-                          </div>
-                        )}
-                      </div>
+                  <div className="space-y-2">
+                    <Label>Practice Logo</Label>
+                    <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+                      {logoFile || practice?.logo_url ? (
+                        <div className="flex items-center justify-between p-2 bg-muted rounded">
+                          <span className="text-sm">{logoFile?.name || 'Current logo'}</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setLogoFile(null)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            id="logo-upload"
+                            onChange={(e) => e.target.files?.[0] && handleLogoUpload(e.target.files[0])}
+                            disabled={uploading}
+                          />
+                          <Label htmlFor="logo-upload" className="cursor-pointer">
+                            {uploading ? (
+                              <Loader2 className="mx-auto h-8 w-8 text-muted-foreground animate-spin" />
+                            ) : (
+                              <>
+                                <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
+                                <p className="mt-2 text-sm text-muted-foreground">Upload logo</p>
+                              </>
+                            )}
+                          </Label>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -199,19 +441,39 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {mockLocations.map((location) => (
-                    <div key={location.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h4 className="font-medium">{location.name}</h4>
-                        <Badge variant="outline">{location.status}</Badge>
+                  {locations.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No locations added yet. Add your first location to get started.
+                    </p>
+                  ) : (
+                    locations.map((location) => (
+                      <div key={location.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-medium">{location.name}</h4>
+                            {location.is_primary && (
+                              <Badge variant="default">Primary</Badge>
+                            )}
+                          </div>
+                          {location.address && (
+                            <p className="text-sm text-muted-foreground">
+                              {location.address}, {location.city}
+                            </p>
+                          )}
+                          {location.phone && (
+                            <p className="text-sm text-muted-foreground">{location.phone}</p>
+                          )}
+                        </div>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleDeleteLocation(location.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm">Edit</Button>
-                        <Button variant="outline" size="sm">Delete</Button>
-                      </div>
-                    </div>
-                  ))}
-                  <Button className="w-full">Add New Location</Button>
+                    ))
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -225,18 +487,23 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {staffRoles.map((roleData) => (
-                    <div key={roleData.role} className="space-y-2">
-                      <h4 className="font-medium">{roleData.role}</h4>
+                  {staffRoles.map((role) => (
+                    <div key={role.id} className="space-y-2">
+                      <h4 className="font-medium">{role.role_name}</h4>
                       <div className="grid grid-cols-2 gap-2">
                         {["booking", "patients", "billing", "staff", "reports", "settings"].map((permission) => (
                           <div key={permission} className="flex items-center space-x-2">
                             <Checkbox
-                              id={`${roleData.role}-${permission}`}
-                              checked={roleData.permissions.includes(permission)}
-                              disabled
+                              id={`${role.id}-${permission}`}
+                              checked={role.permissions.includes(permission)}
+                              onCheckedChange={(checked) => {
+                                const newPermissions = checked
+                                  ? [...role.permissions, permission]
+                                  : role.permissions.filter(p => p !== permission);
+                                updateRolePermissions(role.id, newPermissions);
+                              }}
                             />
-                            <Label htmlFor={`${roleData.role}-${permission}`} className="capitalize">
+                            <Label htmlFor={`${role.id}-${permission}`} className="capitalize cursor-pointer">
                               {permission}
                             </Label>
                           </div>
@@ -260,7 +527,10 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="defaultDuration">Default Appointment Duration (minutes)</Label>
-                      <Select value={settings.defaultDuration} onValueChange={(value) => updateSetting("defaultDuration", value)}>
+                      <Select 
+                        value={settings.default_duration_minutes.toString()} 
+                        onValueChange={(value) => updateSetting("default_duration_minutes", parseInt(value))}
+                      >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -277,8 +547,8 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                       <Input
                         id="maxPerDay"
                         type="number"
-                        value={settings.maxPerDay}
-                        onChange={(e) => updateSetting("maxPerDay", e.target.value)}
+                        value={settings.max_appointments_per_day}
+                        onChange={(e) => updateSetting("max_appointments_per_day", parseInt(e.target.value))}
                       />
                     </div>
                   </div>
@@ -289,8 +559,8 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                       <Input
                         id="cancellationHours"
                         type="number"
-                        value={settings.cancellationHours}
-                        onChange={(e) => updateSetting("cancellationHours", e.target.value)}
+                        value={settings.cancellation_notice_hours}
+                        onChange={(e) => updateSetting("cancellation_notice_hours", parseInt(e.target.value))}
                       />
                     </div>
                     <div>
@@ -298,8 +568,8 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                       <Input
                         id="bufferTime"
                         type="number"
-                        value={settings.bufferTime}
-                        onChange={(e) => updateSetting("bufferTime", e.target.value)}
+                        value={settings.buffer_time_minutes}
+                        onChange={(e) => updateSetting("buffer_time_minutes", parseInt(e.target.value))}
                       />
                     </div>
                   </div>
@@ -322,12 +592,12 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                       <p className="text-sm text-muted-foreground">Allow patients to pay online</p>
                     </div>
                     <Switch
-                      checked={settings.paymentsEnabled}
-                      onCheckedChange={(checked) => updateSetting("paymentsEnabled", checked)}
+                      checked={settings.payments_enabled}
+                      onCheckedChange={(checked) => updateSetting("payments_enabled", checked)}
                     />
                   </div>
 
-                  {settings.paymentsEnabled && (
+                  {settings.payments_enabled && (
                     <>
                       <div>
                         <Label htmlFor="currency">Currency</Label>
@@ -337,21 +607,20 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                           </SelectTrigger>
                           <SelectContent>
                             {currencies.map((currency) => (
-                              <SelectItem key={currency} value={currency}>
-                                {currency}
-                              </SelectItem>
+                              <SelectItem key={currency} value={currency}>{currency}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       </div>
 
                       <div className="space-y-2">
-                        <Button variant="outline" className="w-full">
-                          Connect Stripe
+                        <Button variant="outline" className="w-full" disabled>
+                          {settings.stripe_connected ? "✓ Stripe Connected" : "Connect Stripe"}
                         </Button>
-                        <Button variant="outline" className="w-full">
-                          Connect PayPal
+                        <Button variant="outline" className="w-full" disabled>
+                          {settings.paypal_connected ? "✓ PayPal Connected" : "Connect PayPal"}
                         </Button>
+                        <p className="text-xs text-muted-foreground">Payment integration coming soon</p>
                       </div>
                     </>
                   )}
@@ -374,15 +643,15 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                       <div className="flex items-center justify-between">
                         <Label>Email Confirmations</Label>
                         <Switch
-                          checked={settings.emailBookingConfirm}
-                          onCheckedChange={(checked) => updateSetting("emailBookingConfirm", checked)}
+                          checked={settings.email_booking_confirm}
+                          onCheckedChange={(checked) => updateSetting("email_booking_confirm", checked)}
                         />
                       </div>
                       <div className="flex items-center justify-between">
                         <Label>SMS Confirmations</Label>
                         <Switch
-                          checked={settings.smsBookingConfirm}
-                          onCheckedChange={(checked) => updateSetting("smsBookingConfirm", checked)}
+                          checked={settings.sms_booking_confirm}
+                          onCheckedChange={(checked) => updateSetting("sms_booking_confirm", checked)}
                         />
                       </div>
                     </div>
@@ -394,22 +663,25 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                       <div className="flex items-center justify-between">
                         <Label>Email Reminders</Label>
                         <Switch
-                          checked={settings.emailReminders}
-                          onCheckedChange={(checked) => updateSetting("emailReminders", checked)}
+                          checked={settings.email_reminders}
+                          onCheckedChange={(checked) => updateSetting("email_reminders", checked)}
                         />
                       </div>
                       <div className="flex items-center justify-between">
                         <Label>SMS Reminders</Label>
                         <Switch
-                          checked={settings.smsReminders}
-                          onCheckedChange={(checked) => updateSetting("smsReminders", checked)}
+                          checked={settings.sms_reminders}
+                          onCheckedChange={(checked) => updateSetting("sms_reminders", checked)}
                         />
                       </div>
                     </div>
 
                     <div>
                       <Label htmlFor="reminderTiming">Send Reminders (hours before)</Label>
-                      <Select value={settings.reminderTiming} onValueChange={(value) => updateSetting("reminderTiming", value)}>
+                      <Select 
+                        value={settings.reminder_hours_before.toString()} 
+                        onValueChange={(value) => updateSetting("reminder_hours_before", parseInt(value))}
+                      >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -428,11 +700,18 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
           </div>
 
           <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>
-              Save Settings
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Settings"
+              )}
             </Button>
           </div>
         </Tabs>

@@ -898,6 +898,83 @@ export type Database = {
           },
         ]
       }
+      practice_settings: {
+        Row: {
+          buffer_time_minutes: number | null
+          cancellation_notice_hours: number | null
+          created_at: string
+          currency: string | null
+          default_duration_minutes: number | null
+          email_booking_confirm: boolean | null
+          email_reminders: boolean | null
+          id: string
+          max_appointments_per_day: number | null
+          payments_enabled: boolean | null
+          paypal_connected: boolean | null
+          practice_id: string
+          primary_color: string | null
+          reminder_hours_before: number | null
+          sms_booking_confirm: boolean | null
+          sms_reminders: boolean | null
+          stripe_connected: boolean | null
+          tagline: string | null
+          timezone: string | null
+          updated_at: string
+        }
+        Insert: {
+          buffer_time_minutes?: number | null
+          cancellation_notice_hours?: number | null
+          created_at?: string
+          currency?: string | null
+          default_duration_minutes?: number | null
+          email_booking_confirm?: boolean | null
+          email_reminders?: boolean | null
+          id?: string
+          max_appointments_per_day?: number | null
+          payments_enabled?: boolean | null
+          paypal_connected?: boolean | null
+          practice_id: string
+          primary_color?: string | null
+          reminder_hours_before?: number | null
+          sms_booking_confirm?: boolean | null
+          sms_reminders?: boolean | null
+          stripe_connected?: boolean | null
+          tagline?: string | null
+          timezone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          buffer_time_minutes?: number | null
+          cancellation_notice_hours?: number | null
+          created_at?: string
+          currency?: string | null
+          default_duration_minutes?: number | null
+          email_booking_confirm?: boolean | null
+          email_reminders?: boolean | null
+          id?: string
+          max_appointments_per_day?: number | null
+          payments_enabled?: boolean | null
+          paypal_connected?: boolean | null
+          practice_id?: string
+          primary_color?: string | null
+          reminder_hours_before?: number | null
+          sms_booking_confirm?: boolean | null
+          sms_reminders?: boolean | null
+          stripe_connected?: boolean | null
+          tagline?: string | null
+          timezone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_settings_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: true
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       practice_staff: {
         Row: {
           created_at: string
@@ -1520,6 +1597,41 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      staff_roles: {
+        Row: {
+          created_at: string
+          id: string
+          permissions: Json
+          practice_id: string
+          role_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          permissions?: Json
+          practice_id: string
+          role_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          permissions?: Json
+          practice_id?: string
+          role_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_roles_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
           },
         ]
       }
