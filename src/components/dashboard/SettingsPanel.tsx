@@ -78,6 +78,11 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
   const [activeTab, setActiveTab] = useState("general");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingGeneral, setSavingGeneral] = useState(false);
+  const [savingPermissions, setSavingPermissions] = useState(false);
+  const [savingBooking, setSavingBooking] = useState(false);
+  const [savingPayments, setSavingPayments] = useState(false);
+  const [savingNotifications, setSavingNotifications] = useState(false);
   
   const [practice, setPractice] = useState<PracticeData | null>(null);
   const [settings, setSettings] = useState<PracticeSettings>({
@@ -237,10 +242,10 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
     }));
   };
 
-  const handleSave = async () => {
+  const handleSaveGeneral = async () => {
     if (!practice) return;
 
-    setSaving(true);
+    setSavingGeneral(true);
     try {
       // Update practice basic info
       const { error: practiceError } = await supabase
@@ -253,33 +258,33 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
 
       if (practiceError) throw practiceError;
 
-      // Upsert practice settings
+      // Update tagline and timezone in settings
       const { error: settingsError } = await supabase
         .from('practice_settings')
         .upsert({
           practice_id: practice.id,
           tagline: settings.tagline,
           timezone: settings.timezone,
-          default_duration_minutes: settings.default_duration_minutes,
-          max_appointments_per_day: settings.max_appointments_per_day,
-          cancellation_notice_hours: settings.cancellation_notice_hours,
-          buffer_time_minutes: settings.buffer_time_minutes,
-          payments_enabled: settings.payments_enabled,
-          currency: settings.currency,
-          stripe_connected: settings.stripe_connected,
-          paypal_connected: settings.paypal_connected,
-          email_booking_confirm: settings.email_booking_confirm,
-          sms_booking_confirm: settings.sms_booking_confirm,
-          email_reminders: settings.email_reminders,
-          sms_reminders: settings.sms_reminders,
-          reminder_hours_before: settings.reminder_hours_before,
-          primary_color: settings.primary_color
         }, {
           onConflict: 'practice_id'
         });
 
       if (settingsError) throw settingsError;
 
+      toast.success("General settings saved successfully");
+    } catch (err: any) {
+      console.error('Error saving general settings:', err);
+      toast.error(err.message || "Failed to save general settings");
+    } finally {
+      setSavingGeneral(false);
+    }
+  };
+
+  const handleSavePermissions = async () => {
+    if (!practice) return;
+
+    setSavingPermissions(true);
+    try {
       // Update staff role permissions
       for (const role of staffRoles) {
         const { error: roleError } = await supabase
@@ -290,13 +295,97 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
         if (roleError) throw roleError;
       }
 
-      toast.success("Settings saved successfully");
-      onOpenChange(false);
+      toast.success("Permissions saved successfully");
     } catch (err: any) {
-      console.error('Error saving settings:', err);
-      toast.error(err.message || "Failed to save settings");
+      console.error('Error saving permissions:', err);
+      toast.error(err.message || "Failed to save permissions");
     } finally {
-      setSaving(false);
+      setSavingPermissions(false);
+    }
+  };
+
+  const handleSaveBooking = async () => {
+    if (!practice) return;
+
+    setSavingBooking(true);
+    try {
+      const { error } = await supabase
+        .from('practice_settings')
+        .upsert({
+          practice_id: practice.id,
+          default_duration_minutes: settings.default_duration_minutes,
+          max_appointments_per_day: settings.max_appointments_per_day,
+          cancellation_notice_hours: settings.cancellation_notice_hours,
+          buffer_time_minutes: settings.buffer_time_minutes,
+        }, {
+          onConflict: 'practice_id'
+        });
+
+      if (error) throw error;
+
+      toast.success("Booking settings saved successfully");
+    } catch (err: any) {
+      console.error('Error saving booking settings:', err);
+      toast.error(err.message || "Failed to save booking settings");
+    } finally {
+      setSavingBooking(false);
+    }
+  };
+
+  const handleSavePayments = async () => {
+    if (!practice) return;
+
+    setSavingPayments(true);
+    try {
+      const { error } = await supabase
+        .from('practice_settings')
+        .upsert({
+          practice_id: practice.id,
+          payments_enabled: settings.payments_enabled,
+          currency: settings.currency,
+          stripe_connected: settings.stripe_connected,
+          paypal_connected: settings.paypal_connected,
+        }, {
+          onConflict: 'practice_id'
+        });
+
+      if (error) throw error;
+
+      toast.success("Payment settings saved successfully");
+    } catch (err: any) {
+      console.error('Error saving payment settings:', err);
+      toast.error(err.message || "Failed to save payment settings");
+    } finally {
+      setSavingPayments(false);
+    }
+  };
+
+  const handleSaveNotifications = async () => {
+    if (!practice) return;
+
+    setSavingNotifications(true);
+    try {
+      const { error } = await supabase
+        .from('practice_settings')
+        .upsert({
+          practice_id: practice.id,
+          email_booking_confirm: settings.email_booking_confirm,
+          sms_booking_confirm: settings.sms_booking_confirm,
+          email_reminders: settings.email_reminders,
+          sms_reminders: settings.sms_reminders,
+          reminder_hours_before: settings.reminder_hours_before,
+        }, {
+          onConflict: 'practice_id'
+        });
+
+      if (error) throw error;
+
+      toast.success("Notification settings saved successfully");
+    } catch (err: any) {
+      console.error('Error saving notification settings:', err);
+      toast.error(err.message || "Failed to save notification settings");
+    } finally {
+      setSavingNotifications(false);
     }
   };
 
@@ -435,6 +524,19 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                   </div>
                 </CardContent>
               </Card>
+              
+              <div className="flex justify-end pt-4">
+                <Button onClick={handleSaveGeneral} disabled={savingGeneral}>
+                  {savingGeneral ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
+                </Button>
+              </div>
             </TabsContent>
 
             <TabsContent value="locations" className="space-y-6">
@@ -522,6 +624,19 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                   ))}
                 </CardContent>
               </Card>
+              
+              <div className="flex justify-end pt-4">
+                <Button onClick={handleSavePermissions} disabled={savingPermissions}>
+                  {savingPermissions ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
+                </Button>
+              </div>
             </TabsContent>
 
             <TabsContent value="booking" className="space-y-6">
@@ -584,6 +699,19 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                   </div>
                 </CardContent>
               </Card>
+              
+              <div className="flex justify-end pt-4">
+                <Button onClick={handleSaveBooking} disabled={savingBooking}>
+                  {savingBooking ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
+                </Button>
+              </div>
             </TabsContent>
 
             <TabsContent value="payments" className="space-y-6">
@@ -635,6 +763,19 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                   )}
                 </CardContent>
               </Card>
+              
+              <div className="flex justify-end pt-4">
+                <Button onClick={handleSavePayments} disabled={savingPayments}>
+                  {savingPayments ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
+                </Button>
+              </div>
             </TabsContent>
 
             <TabsContent value="notifications" className="space-y-6">
@@ -705,22 +846,25 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                   </div>
                 </CardContent>
               </Card>
+              
+              <div className="flex justify-end pt-4">
+                <Button onClick={handleSaveNotifications} disabled={savingNotifications}>
+                  {savingNotifications ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
+                </Button>
+              </div>
             </TabsContent>
           </div>
 
           <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
-            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave} disabled={saving}>
-              {saving ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                "Save Settings"
-              )}
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Close
             </Button>
           </div>
         </Tabs>
