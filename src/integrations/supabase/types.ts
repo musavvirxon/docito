@@ -955,56 +955,107 @@ export type Database = {
         Row: {
           address: string | null
           admin_id: string | null
+          agrees_to_terms: boolean | null
+          agrees_to_updates: boolean | null
           appointment_count: number | null
           average_rating: number | null
+          business_owner: string | null
+          business_registration_number: string | null
           city: string | null
           country: string | null
           created_at: string | null
           description: string | null
           email: string | null
+          how_heard_about_us: string | null
           id: string
+          legal_business_name: string | null
           logo_url: string | null
           name: string
           num_reviews: number | null
+          operating_hours: Json | null
           phone: string | null
+          practice_size: string | null
+          practice_type: string | null
+          services_offered: string[] | null
+          specialties: string[] | null
+          state: string | null
+          tax_id: string | null
+          verification_status: string | null
           verified: boolean | null
+          website: string | null
           weighted_rating: number | null
+          year_established: number | null
+          zip_code: string | null
         }
         Insert: {
           address?: string | null
           admin_id?: string | null
+          agrees_to_terms?: boolean | null
+          agrees_to_updates?: boolean | null
           appointment_count?: number | null
           average_rating?: number | null
+          business_owner?: string | null
+          business_registration_number?: string | null
           city?: string | null
           country?: string | null
           created_at?: string | null
           description?: string | null
           email?: string | null
+          how_heard_about_us?: string | null
           id?: string
+          legal_business_name?: string | null
           logo_url?: string | null
           name: string
           num_reviews?: number | null
+          operating_hours?: Json | null
           phone?: string | null
+          practice_size?: string | null
+          practice_type?: string | null
+          services_offered?: string[] | null
+          specialties?: string[] | null
+          state?: string | null
+          tax_id?: string | null
+          verification_status?: string | null
           verified?: boolean | null
+          website?: string | null
           weighted_rating?: number | null
+          year_established?: number | null
+          zip_code?: string | null
         }
         Update: {
           address?: string | null
           admin_id?: string | null
+          agrees_to_terms?: boolean | null
+          agrees_to_updates?: boolean | null
           appointment_count?: number | null
           average_rating?: number | null
+          business_owner?: string | null
+          business_registration_number?: string | null
           city?: string | null
           country?: string | null
           created_at?: string | null
           description?: string | null
           email?: string | null
+          how_heard_about_us?: string | null
           id?: string
+          legal_business_name?: string | null
           logo_url?: string | null
           name?: string
           num_reviews?: number | null
+          operating_hours?: Json | null
           phone?: string | null
+          practice_size?: string | null
+          practice_type?: string | null
+          services_offered?: string[] | null
+          specialties?: string[] | null
+          state?: string | null
+          tax_id?: string | null
+          verification_status?: string | null
           verified?: boolean | null
+          website?: string | null
           weighted_rating?: number | null
+          year_established?: number | null
+          zip_code?: string | null
         }
         Relationships: []
       }
@@ -1712,6 +1763,62 @@ export type Database = {
             columns: ["doctor_id"]
             isOneToOne: false
             referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      verification_documents: {
+        Row: {
+          created_at: string
+          document_type: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          id: string
+          practice_id: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          document_type: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+          practice_id: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          document_type?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          practice_id?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_documents_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
             referencedColumns: ["id"]
           },
         ]

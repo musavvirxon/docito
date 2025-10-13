@@ -16,7 +16,9 @@ import { AddServiceModal } from "@/components/dashboard/AddServiceModal";
 import { InviteStaffModal } from "@/components/dashboard/InviteStaffModal";
 import { AddLocationModal } from "@/components/dashboard/AddLocationModal";
 import { SettingsPanel } from "@/components/dashboard/SettingsPanel";
-import { CreateClinicModal } from "@/components/dashboard/CreateClinicModal";
+import { ComprehensiveRegistrationModal } from "@/components/dashboard/ComprehensiveRegistrationModal";
+import { VerificationDocumentsModal } from "@/components/dashboard/VerificationDocumentsModal";
+import { ViewRequirementsModal } from "@/components/dashboard/ViewRequirementsModal";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
 import { format } from "date-fns";
 
@@ -34,6 +36,8 @@ const AdminDashboard = () => {
   const [addLocationOpen, setAddLocationOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [createClinicOpen, setCreateClinicOpen] = useState(false);
+  const [verificationDocsOpen, setVerificationDocsOpen] = useState(false);
+  const [requirementsOpen, setRequirementsOpen] = useState(false);
 
   const verificationStatus: "pending" | "approved" | "rejected" = practice?.verified ? "approved" : "pending";
 
@@ -128,7 +132,7 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
         
-        <CreateClinicModal
+        <ComprehensiveRegistrationModal
           open={createClinicOpen}
           onOpenChange={setCreateClinicOpen}
           onSuccess={refreshData}
@@ -182,11 +186,13 @@ const AdminDashboard = () => {
                 <p className="text-sm mb-3">{getVerificationMessage(verificationStatus)}</p>
                 {verificationStatus === "pending" && (
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline">
+                    <Button size="sm" variant="outline" onClick={() => setVerificationDocsOpen(true)}>
                       <Upload className="h-4 w-4 mr-2" />
                       Upload Documents
                     </Button>
-                    <Button size="sm" variant="outline">View Requirements</Button>
+                    <Button size="sm" variant="outline" onClick={() => setRequirementsOpen(true)}>
+                      View Requirements
+                    </Button>
                   </div>
                 )}
               </div>
@@ -714,10 +720,24 @@ const AdminDashboard = () => {
         open={addLocationOpen} 
         onOpenChange={setAddLocationOpen} 
       />
-      <SettingsPanel 
-        open={settingsOpen} 
-        onOpenChange={setSettingsOpen} 
+      <SettingsPanel
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
       />
+
+      {practice && (
+        <>
+          <VerificationDocumentsModal
+            open={verificationDocsOpen}
+            onOpenChange={setVerificationDocsOpen}
+            practiceId={practice.id}
+          />
+          <ViewRequirementsModal
+            open={requirementsOpen}
+            onOpenChange={setRequirementsOpen}
+          />
+        </>
+      )}
     </div>
   );
 };
