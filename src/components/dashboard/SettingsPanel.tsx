@@ -14,8 +14,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Upload, Building2, Users, Calendar, CreditCard, Bell, MapPin, X, Loader2, Trash2 } from "lucide-react";
+import { Upload, Building2, Users, Calendar, CreditCard, Bell, MapPin, X, Loader2, Trash2, Shield } from "lucide-react";
 import { useFileUpload } from "@/hooks/useFileUpload";
+import DoctorRestrictionsSettings from "./DoctorRestrictionsSettings";
 
 interface SettingsPanelProps {
   open: boolean;
@@ -414,10 +415,11 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="locations">Locations</TabsTrigger>
             <TabsTrigger value="permissions">Permissions</TabsTrigger>
+            <TabsTrigger value="restrictions">Restrictions</TabsTrigger>
             <TabsTrigger value="booking">Booking</TabsTrigger>
             <TabsTrigger value="payments">Payments</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
@@ -637,6 +639,10 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                   )}
                 </Button>
               </div>
+            </TabsContent>
+
+            <TabsContent value="restrictions" className="space-y-6">
+              {practice && <DoctorRestrictionsSettings practiceId={practice.id} />}
             </TabsContent>
 
             <TabsContent value="booking" className="space-y-6">

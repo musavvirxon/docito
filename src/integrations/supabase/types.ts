@@ -898,6 +898,47 @@ export type Database = {
           },
         ]
       }
+      practice_restrictions: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          practice_id: string
+          procedure_restriction: Json | null
+          specialty_restriction: Json | null
+          updated_at: string
+          working_hours_restriction: Json | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          practice_id: string
+          procedure_restriction?: Json | null
+          specialty_restriction?: Json | null
+          updated_at?: string
+          working_hours_restriction?: Json | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          practice_id?: string
+          procedure_restriction?: Json | null
+          specialty_restriction?: Json | null
+          updated_at?: string
+          working_hours_restriction?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_restrictions_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: true
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       practice_settings: {
         Row: {
           buffer_time_minutes: number | null
