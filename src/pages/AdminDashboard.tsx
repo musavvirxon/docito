@@ -9,11 +9,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Building2, Users, Calendar, BarChart3, Stethoscope, CreditCard, 
   MapPin, MessageCircle, Settings, AlertCircle, Upload, CheckCircle,
-  X, TrendingUp, Star, Clock, DollarSign, UserPlus, Eye, Loader2
+  X, TrendingUp, Star, Clock, DollarSign, UserPlus, Eye, Loader2, Mail
 } from "lucide-react";
 import { InviteProviderModal } from "@/components/dashboard/InviteProviderModal";
 import { AddServiceModal } from "@/components/dashboard/AddServiceModal";
 import { InviteStaffModal } from "@/components/dashboard/InviteStaffModal";
+import PendingInvitationsSection from "@/components/dashboard/PendingInvitationsSection";
 import { AddLocationModal } from "@/components/dashboard/AddLocationModal";
 import { SettingsPanel } from "@/components/dashboard/SettingsPanel";
 import { ComprehensiveRegistrationModal } from "@/components/dashboard/ComprehensiveRegistrationModal";
@@ -512,9 +513,16 @@ const AdminDashboard = () => {
           <TabsContent value="staff" className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold">Staff Management</h2>
-              <Button onClick={() => setInviteStaffOpen(true)}>Invite Staff Member</Button>
+              <Button onClick={() => setInviteStaffOpen(true)}>
+                <Mail className="h-4 w-4 mr-2" />
+                Invite Staff Member
+              </Button>
             </div>
             
+            {/* Pending Invitations */}
+            {practice && <PendingInvitationsSection practiceId={practice.id} />}
+            
+            {/* Active Staff */}
             {staff.length === 0 ? (
               <Card>
                 <CardContent className="p-12 text-center">
@@ -524,16 +532,20 @@ const AdminDashboard = () => {
                     Add staff members to help manage your practice
                   </p>
                   <Button onClick={() => setInviteStaffOpen(true)}>
+                    <Mail className="h-4 w-4 mr-2" />
                     Invite First Staff Member
                   </Button>
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid gap-4">
-                {staff.map((member) => (
-                  <Card key={member.id}>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Active Staff Members ({staff.length})</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4">
+                    {staff.map((member) => (
+                      <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex items-center gap-4">
                           <div className="w-10 h-10 bg-secondary/20 rounded-full flex items-center justify-center">
                             <Users className="h-5 w-5" />
@@ -550,10 +562,10 @@ const AdminDashboard = () => {
                           <Button variant="outline" size="sm">Edit</Button>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             )}
           </TabsContent>
 
@@ -739,8 +751,9 @@ const AdminDashboard = () => {
         onOpenChange={setAddServiceOpen} 
       />
       <InviteStaffModal 
-        open={inviteStaffOpen} 
-        onOpenChange={setInviteStaffOpen} 
+        open={inviteStaffOpen}
+        onOpenChange={setInviteStaffOpen}
+        practiceId={practice?.id || ''}
       />
       <AddLocationModal 
         open={addLocationOpen} 
