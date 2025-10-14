@@ -17,12 +17,15 @@ import { InviteStaffModal } from "@/components/dashboard/InviteStaffModal";
 import { AddLocationModal } from "@/components/dashboard/AddLocationModal";
 import { SettingsPanel } from "@/components/dashboard/SettingsPanel";
 import { ComprehensiveRegistrationModal } from "@/components/dashboard/ComprehensiveRegistrationModal";
-import { VerificationDocumentsModal } from "@/components/dashboard/VerificationDocumentsModal";
 import { ViewRequirementsModal } from "@/components/dashboard/ViewRequirementsModal";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
 import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const { 
     practice, stats, doctors, appointments, services, staff, locations, 
     patients, payments, messages, metrics, loading, error, refreshData 
@@ -36,10 +39,8 @@ const AdminDashboard = () => {
   const [addLocationOpen, setAddLocationOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [createClinicOpen, setCreateClinicOpen] = useState(false);
-  const [verificationDocsOpen, setVerificationDocsOpen] = useState(false);
   const [requirementsOpen, setRequirementsOpen] = useState(false);
-
-  const verificationStatus: "pending" | "approved" | "rejected" = practice?.verified ? "approved" : "pending";
+  const [verificationStatus, setVerificationStatus] = useState<string>("pending");
 
   const dashboardMetrics = [
     { label: "Total Bookings", value: stats.totalBookings.toString(), icon: Calendar, trend: "" },
@@ -50,19 +51,42 @@ const AdminDashboard = () => {
     { label: "Locations", value: stats.locations.toString(), icon: MapPin, trend: "" },
   ];
 
-  const getVerificationStatusColor = (status: "pending" | "approved" | "rejected") => {
+  // Fetch verification status
+  useEffect(() => {
+    const fetchVerificationStatus = async () => {
+      if (!practice?.id) return;
+      
+      const { data, error } = await supabase
+        .from("practice_verification" as any)
+        .select("status")
+        .eq("practice_id", practice.id)
+        .maybeSingle();
+      
+      if (!error && data) {
+        setVerificationStatus((data as any).status);
+      } else {
+        setVerificationStatus("pending");
+      }
+    };
+    
+    fetchVerificationStatus();
+  }, [practice?.id]);
+
+  const getVerificationStatusColor = (status: string) => {
     switch (status) {
-      case "approved": return "bg-green-100 text-green-800 border-green-200";
+      case "verified": return "bg-green-100 text-green-800 border-green-200";
       case "rejected": return "bg-red-100 text-red-800 border-red-200";
+      case "under_review": return "bg-blue-100 text-blue-800 border-blue-200";
       default: return "bg-yellow-100 text-yellow-800 border-yellow-200";
     }
   };
 
-  const getVerificationMessage = (status: "pending" | "approved" | "rejected") => {
+  const getVerificationMessage = (status: string) => {
     switch (status) {
-      case "approved": return "Your practice is verified and live! Patients can now find and book with you.";
+      case "verified": return "Your practice is verified and live! Patients can now find and book with you.";
       case "rejected": return "Verification failed. Please review the requirements and resubmit your documents.";
-      default: return "To go public and appear in search results, your verification must be completed.";
+      case "under_review": return "Your verification is under review. We'll notify you once the review is complete (2-3 business days).";
+      default: return "To go public and appear in search results, your practice verification must be completed.";
     }
   };
 
@@ -170,8 +194,10 @@ const AdminDashboard = () => {
           <CardContent className="p-4">
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0">
-                {verificationStatus === "approved" ? (
+                {verificationStatus === "verified" ? (
                   <CheckCircle className="h-6 w-6 text-green-600" />
+                ) : verificationStatus === "rejected" ? (
+                  <X className="h-6 w-6 text-red-600" />
                 ) : (
                   <AlertCircle className="h-6 w-6 text-yellow-600" />
                 )}
@@ -180,15 +206,15 @@ const AdminDashboard = () => {
                 <div className="flex items-center gap-2 mb-2">
                   <h3 className="font-semibold">Verification Status:</h3>
                   <Badge variant="outline" className={getVerificationStatusColor(verificationStatus)}>
-                    {verificationStatus.charAt(0).toUpperCase() + verificationStatus.slice(1)}
+                    {verificationStatus.replace("_", " ").toUpperCase()}
                   </Badge>
                 </div>
                 <p className="text-sm mb-3">{getVerificationMessage(verificationStatus)}</p>
-                {verificationStatus === "pending" && (
+                {(verificationStatus === "pending" || verificationStatus === "rejected") && (
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => setVerificationDocsOpen(true)}>
-                      <Upload className="h-4 w-4 mr-2" />
-                      Upload Documents
+                    <Button size="sm" onClick={() => navigate("/dashboard/verify")}>
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      {verificationStatus === "rejected" ? "Resubmit Verification" : "Verify Practice"}
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => setRequirementsOpen(true)}>
                       View Requirements
@@ -726,17 +752,10 @@ const AdminDashboard = () => {
       />
 
       {practice && (
-        <>
-          <VerificationDocumentsModal
-            open={verificationDocsOpen}
-            onOpenChange={setVerificationDocsOpen}
-            practiceId={practice.id}
-          />
-          <ViewRequirementsModal
-            open={requirementsOpen}
-            onOpenChange={setRequirementsOpen}
-          />
-        </>
+        <ViewRequirementsModal
+          open={requirementsOpen}
+          onOpenChange={setRequirementsOpen}
+        />
       )}
     </div>
   );
