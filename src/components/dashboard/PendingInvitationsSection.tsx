@@ -1,9 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Phone, Clock, Send, XCircle, Loader2 } from 'lucide-react';
+import { Mail, Phone, Clock, Send, XCircle, Loader2, Copy, Check } from 'lucide-react';
 import { usePracticeInvitations } from '@/hooks/usePracticeInvitations';
 import { formatDistance } from 'date-fns';
+import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 interface PendingInvitationsSectionProps {
   practiceId: string;
@@ -11,10 +13,31 @@ interface PendingInvitationsSectionProps {
 
 const PendingInvitationsSection = ({ practiceId }: PendingInvitationsSectionProps) => {
   const { invitations, loading, resendInvitation, cancelInvitation } = usePracticeInvitations(practiceId);
+  const { toast } = useToast();
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const pendingInvitations = invitations.filter(
     (inv) => inv.status === 'pending' || inv.status === 'awaitingSignup'
   );
+
+  const copyInviteLink = async (token: string, invitationId: string) => {
+    const inviteLink = `${window.location.origin}/accept-invite/${token}`;
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setCopiedId(invitationId);
+      toast({
+        title: 'Link Copied',
+        description: 'Invitation link copied to clipboard',
+      });
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to copy link',
+        variant: 'destructive',
+      });
+    }
+  };
 
   if (loading) {
     return (
@@ -89,6 +112,20 @@ const PendingInvitationsSection = ({ practiceId }: PendingInvitationsSectionProp
                 </div>
 
                 <div className="flex gap-2">
+                  {invitation.invite_token && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => copyInviteLink(invitation.invite_token!, invitation.id)}
+                    >
+                      {copiedId === invitation.id ? (
+                        <Check className="w-4 h-4 mr-1" />
+                      ) : (
+                        <Copy className="w-4 h-4 mr-1" />
+                      )}
+                      {copiedId === invitation.id ? 'Copied' : 'Copy Link'}
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     variant="outline"

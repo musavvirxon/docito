@@ -38,15 +38,23 @@ export const usePracticeInvitations = (practiceId?: string) => {
         .eq('practice_id', practiceId)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setInvitations(data as any[] as PracticeInvitation[]);
+      if (error) {
+        console.error('Error fetching invitations:', error);
+        // Don't show error if table doesn't exist yet (during initial setup)
+        if (!error.message?.includes('does not exist')) {
+          toast({
+            title: 'Error',
+            description: 'Failed to load invitations',
+            variant: 'destructive',
+          });
+        }
+        setInvitations([]);
+      } else {
+        setInvitations((data as any[]) || []);
+      }
     } catch (error: any) {
       console.error('Error fetching invitations:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load invitations',
-        variant: 'destructive',
-      });
+      setInvitations([]);
     } finally {
       setLoading(false);
     }
