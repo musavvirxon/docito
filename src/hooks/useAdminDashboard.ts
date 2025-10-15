@@ -23,6 +23,7 @@ interface Practice {
   country?: string;
   logo_url?: string;
   verified: boolean;
+  verification_status?: string;
   average_rating: number;
   num_reviews: number;
   admin_id?: string;

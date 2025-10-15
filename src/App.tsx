@@ -33,6 +33,7 @@ const FindDoctors = lazy(() => import("./pages/FindDoctors"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const PracticeVerification = lazy(() => import("./pages/PracticeVerification"));
+const AdminProfileSettings = lazy(() => import("./pages/AdminProfileSettings"));
 
 const queryClient = new QueryClient();
 
@@ -70,6 +71,7 @@ const App = () => (
               <Route path="/find-doctors" element={<FindDoctors />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/dashboard/verify" element={<PracticeVerification />} />
+              <Route path="/admin/profile-settings" element={<AdminProfileSettings />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

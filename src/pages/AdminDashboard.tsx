@@ -51,7 +51,9 @@ const AdminDashboard = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [createClinicOpen, setCreateClinicOpen] = useState(false);
   const [requirementsOpen, setRequirementsOpen] = useState(false);
-  const [verificationStatus, setVerificationStatus] = useState<string>("pending");
+
+  // Get verification status from practice data
+  const verificationStatus = practice?.verification_status || 'pending';
 
   const dashboardMetrics = [
     { label: "Total Bookings", value: stats.totalBookings.toString(), icon: Calendar, trend: "" },
@@ -61,27 +63,6 @@ const AdminDashboard = () => {
     { label: "Pending Invites", value: stats.pendingInvites.toString(), icon: UserPlus, trend: "" },
     { label: "Locations", value: stats.locations.toString(), icon: MapPin, trend: "" },
   ];
-
-  // Fetch verification status
-  useEffect(() => {
-    const fetchVerificationStatus = async () => {
-      if (!practice?.id) return;
-      
-      const { data, error } = await supabase
-        .from("practice_verification" as any)
-        .select("status")
-        .eq("practice_id", practice.id)
-        .maybeSingle();
-      
-      if (!error && data) {
-        setVerificationStatus((data as any).status);
-      } else {
-        setVerificationStatus("pending");
-      }
-    };
-    
-    fetchVerificationStatus();
-  }, [practice?.id]);
 
   const getVerificationStatusColor = (status: string) => {
     switch (status) {
@@ -184,37 +165,52 @@ const AdminDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-foreground">Practice Dashboard</h1>
-              <p className="text-muted-foreground">{practice.name || "Unnamed Practice"}</p>
+              <p className="text-muted-foreground">
+                {verificationStatus === "verified" 
+                  ? (practice.name || "Unnamed Practice")
+                  : "Unverified Practice"}
+              </p>
             </div>
             <div className="flex items-center gap-4">
-              <Button variant="outline" size="sm">
-                <Eye className="h-4 w-4 mr-2" />
-                Preview Public Profile
-              </Button>
+              {verificationStatus === "verified" && (
+                <Button variant="outline" size="sm">
+                  <Eye className="h-4 w-4 mr-2" />
+                  Preview Public Profile
+                </Button>
+              )}
               
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <User className="h-4 w-4 mr-2" />
-                    Account
-                    <ChevronDown className="h-4 w-4 ml-2" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem onClick={() => setSettingsOpen(true)}>
-                    <Settings className="h-4 w-4 mr-2" />
-                    Account Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem 
-                    onClick={() => signOut()}
-                    className="text-destructive focus:text-destructive"
-                  >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Log Out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {verificationStatus === "verified" && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <User className="h-4 w-4 mr-2" />
+                      Profile
+                      <ChevronDown className="h-4 w-4 ml-2" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem onClick={() => navigate('/admin/profile-settings')}>
+                      <User className="h-4 w-4 mr-2" />
+                      Profile Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSettingsOpen(true)}>
+                      <Building2 className="h-4 w-4 mr-2" />
+                      Practice Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={async () => {
+                        await signOut();
+                        navigate('/');
+                      }}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
           </div>
         </div>
