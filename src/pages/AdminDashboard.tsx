@@ -9,7 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Building2, Users, Calendar, BarChart3, Stethoscope, CreditCard, 
   MapPin, MessageCircle, Settings, AlertCircle, Upload, CheckCircle,
-  X, TrendingUp, Star, Clock, DollarSign, UserPlus, Eye, Loader2, Mail
+  X, TrendingUp, Star, Clock, DollarSign, UserPlus, Eye, Loader2, Mail,
+  LogOut, ChevronDown, User
 } from "lucide-react";
 import { InviteProviderModal } from "@/components/dashboard/InviteProviderModal";
 import { AddServiceModal } from "@/components/dashboard/AddServiceModal";
@@ -24,9 +25,18 @@ import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
   const { 
     practice, stats, doctors, appointments, services, staff, locations, 
     patients, payments, messages, metrics, loading, error, refreshData 
@@ -174,16 +184,37 @@ const AdminDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-foreground">Practice Dashboard</h1>
-              <p className="text-muted-foreground">{practice.name}</p>
+              <p className="text-muted-foreground">{practice.name || "Unnamed Practice"}</p>
             </div>
             <div className="flex items-center gap-4">
               <Button variant="outline" size="sm">
                 <Eye className="h-4 w-4 mr-2" />
                 Preview Public Profile
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
-                <Settings className="h-4 w-4" />
-              </Button>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <User className="h-4 w-4 mr-2" />
+                    Account
+                    <ChevronDown className="h-4 w-4 ml-2" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={() => setSettingsOpen(true)}>
+                    <Settings className="h-4 w-4 mr-2" />
+                    Account Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={() => signOut()}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Log Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
