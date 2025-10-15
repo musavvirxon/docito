@@ -20,7 +20,9 @@ import { AddLocationModal } from "@/components/dashboard/AddLocationModal";
 import { SettingsPanel } from "@/components/dashboard/SettingsPanel";
 import { ComprehensiveRegistrationModal } from "@/components/dashboard/ComprehensiveRegistrationModal";
 import { ViewRequirementsModal } from "@/components/dashboard/ViewRequirementsModal";
+import VerificationSuccessModal from "@/components/dashboard/VerificationSuccessModal";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
+import { useVerificationStatus } from "@/hooks/useVerificationStatus";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -51,9 +53,23 @@ const AdminDashboard = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [createClinicOpen, setCreateClinicOpen] = useState(false);
   const [requirementsOpen, setRequirementsOpen] = useState(false);
+  const [verificationModalOpen, setVerificationModalOpen] = useState(false);
 
   // Get verification status from practice data
   const verificationStatus = practice?.verification_status || 'pending';
+  const { shouldShowModal, markModalAsShown } = useVerificationStatus(practice?.id);
+
+  // Show verification success modal once when verified
+  useEffect(() => {
+    if (shouldShowModal()) {
+      setVerificationModalOpen(true);
+    }
+  }, [practice?.id, verificationStatus]);
+
+  const handleVerificationModalClose = () => {
+    markModalAsShown();
+    setVerificationModalOpen(false);
+  };
 
   const dashboardMetrics = [
     { label: "Total Bookings", value: stats.totalBookings.toString(), icon: Calendar, trend: "" },
@@ -284,13 +300,17 @@ const AdminDashboard = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 mb-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="providers">Providers</TabsTrigger>
-            <TabsTrigger value="services">Services</TabsTrigger>
-            <TabsTrigger value="staff">Staff</TabsTrigger>
-            <TabsTrigger value="locations">Locations</TabsTrigger>
-            <TabsTrigger value="patients">Patients</TabsTrigger>
-            <TabsTrigger value="billing">Billing</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            {verificationStatus === "verified" && (
+              <>
+                <TabsTrigger value="providers">Providers</TabsTrigger>
+                <TabsTrigger value="services">Services</TabsTrigger>
+                <TabsTrigger value="staff">Staff</TabsTrigger>
+                <TabsTrigger value="locations">Locations</TabsTrigger>
+                <TabsTrigger value="patients">Patients</TabsTrigger>
+                <TabsTrigger value="billing">Billing</TabsTrigger>
+                <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              </>
+            )}
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -797,6 +817,13 @@ const AdminDashboard = () => {
           onOpenChange={setRequirementsOpen}
         />
       )}
+
+      {/* Verification Success Modal */}
+      <VerificationSuccessModal
+        open={verificationModalOpen}
+        onOpenChange={handleVerificationModalClose}
+        practiceName={practice?.name || "Your Practice"}
+      />
     </div>
   );
 };
