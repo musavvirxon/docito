@@ -1,33 +1,29 @@
-import Header from "@/components/Header";
-import HeroSection from "@/components/HeroSection";
+import ModernNavbar from "@/components/home/ModernNavbar";
+import ModernHeroSection from "@/components/home/ModernHeroSection";
+import ValuePropositionSection from "@/components/home/ValuePropositionSection";
+import SpecialtiesGrid from "@/components/home/SpecialtiesGrid";
 import TopSpecialistsSection from "@/components/TopSpecialistsSection";
-import TopMedicalPracticesSection from "@/components/TopMedicalPracticesSection";
-import FeaturesSection from "@/components/FeaturesSection";
-import AppSection from "@/components/AppSection";
-import PracticeSection from "@/components/PracticeSection";
-import HealthSystemsSection from "@/components/HealthSystemsSection";
-import CitiesSection from "@/components/CitiesSection";
-import CareersSection from "@/components/CareersSection";
-import VisitReasonsSection from "@/components/VisitReasonsSection";
-import Footer from "@/components/Footer";
+import HowItWorksSection from "@/components/home/HowItWorksSection";
+import FeaturesGrid from "@/components/home/FeaturesGrid";
+import StatsCounter from "@/components/home/StatsCounter";
+import CTASection from "@/components/home/CTASection";
+import ModernFooter from "@/components/home/ModernFooter";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      <main className="pt-0">
-        <HeroSection />
+      <ModernNavbar />
+      <main>
+        <ModernHeroSection />
+        <ValuePropositionSection />
+        <SpecialtiesGrid />
         <TopSpecialistsSection />
-        <TopMedicalPracticesSection />
-        <FeaturesSection />
-        <AppSection />
-        <PracticeSection />
-        <HealthSystemsSection />
-        <CitiesSection />
-        <CareersSection />
-        <VisitReasonsSection />
+        <HowItWorksSection />
+        <FeaturesGrid />
+        <StatsCounter />
+        <CTASection />
       </main>
-      <Footer />
+      <ModernFooter />
     </div>
   );
 };
