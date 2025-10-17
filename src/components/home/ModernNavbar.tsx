@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import ThemeToggle from "./ThemeToggle";
 
 const ModernNavbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -33,7 +34,7 @@ const ModernNavbar = () => {
       animate={{ y: 0 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "bg-background/80 backdrop-blur-xl shadow-lg border-b border-border"
+          ? "bg-background/80 backdrop-blur-xl shadow-lg border-b border-border dark:shadow-[0_4px_20px_rgba(59,130,246,0.1)]"
           : "bg-transparent"
       }`}
     >
@@ -68,6 +69,7 @@ const ModernNavbar = () => {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden lg:flex items-center space-x-4">
+            <ThemeToggle />
             {user ? (
               <>
                 <Button
@@ -79,7 +81,7 @@ const ModernNavbar = () => {
                 </Button>
                 <Button
                   onClick={signOut}
-                  className="bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(243,75%,59%)] text-primary-foreground hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-lg dark:hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:scale-105 transition-all duration-300"
                 >
                   Sign Out
                 </Button>
@@ -95,9 +97,9 @@ const ModernNavbar = () => {
                 </Button>
                 <Button
                   onClick={() => navigate("/auth")}
-                  className="bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(243,75%,59%)] text-primary-foreground hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-lg dark:hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:scale-105 transition-all duration-300"
                 >
-                  Get Started
+                  Schedule Demo
                 </Button>
               </>
             )}
@@ -134,6 +136,9 @@ const ModernNavbar = () => {
                 </a>
               ))}
               <div className="pt-4 space-y-3">
+                <div className="flex justify-center mb-3">
+                  <ThemeToggle />
+                </div>
                 {user ? (
                   <>
                     <Button
@@ -151,7 +156,7 @@ const ModernNavbar = () => {
                         signOut();
                         setIsMobileMenuOpen(false);
                       }}
-                      className="w-full bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(243,75%,59%)] text-primary-foreground"
+                      className="w-full bg-primary text-primary-foreground"
                     >
                       Sign Out
                     </Button>
@@ -173,9 +178,9 @@ const ModernNavbar = () => {
                         navigate("/auth");
                         setIsMobileMenuOpen(false);
                       }}
-                      className="w-full bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(243,75%,59%)] text-primary-foreground"
+                      className="w-full bg-primary text-primary-foreground"
                     >
-                      Get Started
+                      Schedule Demo
                     </Button>
                   </>
                 )}

@@ -1,8 +1,9 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { CreditCard, Calendar, FileText, Microscope, BarChart3, ArrowDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ChevronDown, CreditCard, Calendar, FileText, BarChart3 } from "lucide-react";
 import ProminentSearchBar from "./ProminentSearchBar";
 import SearchResults from "@/components/patient/SearchResults";
-import { useState } from "react";
 import { useDoctors } from "@/hooks/useDoctors";
 import { usePractices } from "@/hooks/usePractices";
 import { useBookingAuth } from "@/hooks/useBookingAuth";
@@ -64,87 +65,72 @@ const ModernHeroSection = () => {
     }
   };
 
-  const features = [
-    { icon: CreditCard, label: "Payments" },
-    { icon: Calendar, label: "Appointments" },
-    { icon: FileText, label: "History" },
-    { icon: Microscope, label: "Procedures" },
-    { icon: BarChart3, label: "Analytics" },
-  ];
-
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-[hsl(221,83%,53%)] via-[hsl(243,75%,59%)] to-[hsl(271,76%,53%)] pt-32 pb-20">
-      {/* Animated Background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            rotate: [0, 90, 0],
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute top-1/4 left-1/4 w-96 h-96 bg-[hsl(186,94%,65%)]/20 rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{
-            scale: [1.2, 1, 1.2],
-            rotate: [90, 0, 90],
-          }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[hsl(243,75%,59%)]/20 rounded-full blur-3xl"
-        />
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 via-slate-50 to-gray-100 dark:from-gray-900 dark:via-blue-950 dark:to-slate-900">
+      {/* Subtle Grid Pattern */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px] dark:bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)]" />
+      
+      {/* Minimal Geometric Accents */}
+      <div className="absolute inset-0 overflow-hidden opacity-30 dark:opacity-20">
+        <div className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/20 dark:bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-accent/20 dark:bg-accent/10 rounded-full blur-3xl" />
       </div>
 
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="max-w-6xl mx-auto">
-          {/* Logo Animation */}
+      {/* Content */}
+      <div className="relative z-10 container mx-auto px-4 py-20">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-center space-y-8 max-w-5xl mx-auto"
+        >
+          {/* Professional Logo */}
           <motion.div
-            initial={{ scale: 0, opacity: 0 }}
+            initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="flex justify-center mb-8"
+            className="flex justify-center mb-6"
           >
-            <div className="relative w-20 h-20">
-              <div className="absolute inset-0 bg-gradient-to-br from-[hsl(186,94%,85%)] to-[hsl(217,91%,60%)] rounded-2xl animate-pulse"></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-4xl">D</span>
-              </div>
+            <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-lg dark:shadow-[0_0_30px_rgba(59,130,246,0.3)]">
+              <span className="text-primary-foreground font-bold text-3xl">D</span>
             </div>
           </motion.div>
 
           {/* Search Bar - PROMINENT */}
           <ProminentSearchBar onSearch={handleSearch} searching={searching} />
 
-          {/* Badge */}
+          {/* Professional Badge */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.5 }}
-            className="flex justify-center mb-6"
+            className="inline-flex items-center space-x-2 bg-primary/10 dark:bg-primary/5 backdrop-blur-sm border border-primary/20 rounded-full px-6 py-2"
           >
-            <div className="inline-flex items-center space-x-2 bg-background/10 backdrop-blur-md border border-white/20 rounded-full px-6 py-2">
-              <span className="text-2xl">🚀</span>
-              <span className="text-primary-foreground font-semibold">First Ever Complete Medical Platform</span>
-            </div>
+            <span className="text-primary font-semibold">Professional Medical Platform</span>
           </motion.div>
 
-          {/* Headline */}
+          {/* Main Headline */}
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.5 }}
-            className="text-5xl md:text-6xl lg:text-7xl font-bold text-center text-primary-foreground mb-6"
+            className="text-5xl md:text-7xl font-bold text-foreground leading-tight tracking-tight"
           >
-            Your All-in-One Medical &<br />Dental Platform
+            Complete Healthcare
+            <br />
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Management Solution
+            </span>
           </motion.h1>
 
           {/* Description */}
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1, duration: 0.5 }}
-            className="text-xl md:text-2xl text-center text-primary-foreground/90 mb-8 max-w-3xl mx-auto"
+            transition={{ delay: 1.0, duration: 0.5 }}
+            className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto"
           >
-            The first platform that handles payments, appointments, medical history, and analytics — all in one
+            Integrated payments, scheduling, records, and analytics for medical professionals
           </motion.p>
 
           {/* Feature Pills */}
@@ -152,41 +138,28 @@ const ModernHeroSection = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.2, duration: 0.5 }}
-            className="flex flex-wrap justify-center gap-4 mb-12"
+            className="flex flex-wrap justify-center gap-4"
           >
-            {features.map((feature, index) => (
-              <motion.div
-                key={feature.label}
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 1.2 + index * 0.1, duration: 0.3 }}
-                className="flex items-center space-x-2 bg-background/10 backdrop-blur-md border border-white/20 rounded-full px-5 py-3 hover:bg-background/20 transition-all duration-300 hover:scale-105"
-              >
-                <feature.icon className="w-5 h-5 text-primary-foreground" />
-                <span className="text-primary-foreground font-medium">{feature.label}</span>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          {/* Stats */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.5, duration: 0.5 }}
-            className="flex flex-wrap justify-center gap-8 mb-12 text-primary-foreground"
-          >
-            <div className="text-center">
-              <div className="text-3xl font-bold">10K+</div>
-              <div className="text-sm text-primary-foreground/80">Doctors</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold">1M+</div>
-              <div className="text-sm text-primary-foreground/80">Patients</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold">4.9★</div>
-              <div className="text-sm text-primary-foreground/80">Rating</div>
-            </div>
+            {[
+              { icon: CreditCard, label: "Payment Processing" },
+              { icon: Calendar, label: "Scheduling" },
+              { icon: FileText, label: "Records" },
+              { icon: BarChart3, label: "Analytics" }
+            ].map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <motion.div
+                  key={feature.label}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 1.2 + index * 0.1 }}
+                  className="flex items-center space-x-2 bg-card/80 dark:bg-slate-800/80 backdrop-blur-sm border border-border dark:border-slate-700 dark:hover:border-primary/50 rounded-full px-6 py-3 transition-all duration-300 hover:shadow-lg dark:hover:shadow-[0_0_20px_rgba(59,130,246,0.2)]"
+                >
+                  <Icon className="w-5 h-5 text-primary" />
+                  <span className="text-foreground font-medium">{feature.label}</span>
+                </motion.div>
+              );
+            })}
           </motion.div>
 
           {/* Scroll Indicator */}
@@ -194,17 +167,17 @@ const ModernHeroSection = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 2, duration: 0.5 }}
-            className="flex justify-center"
+            className="flex justify-center pt-8"
           >
             <motion.div
               animate={{ y: [0, 10, 0] }}
               transition={{ duration: 2, repeat: Infinity }}
               className="cursor-pointer"
             >
-              <ArrowDown className="w-8 h-8 text-primary-foreground/60" />
+              <ChevronDown className="w-8 h-8 text-muted-foreground" />
             </motion.div>
           </motion.div>
-        </div>
+        </motion.div>
 
         {/* Search Results */}
         {showResults && (

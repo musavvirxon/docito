@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Search, Star, Calendar, Heart } from "lucide-react";
+import { Search, Star, Calendar, Check } from "lucide-react";
 
 const HowItWorksSection = () => {
   const steps = [
@@ -7,34 +7,30 @@ const HowItWorksSection = () => {
       number: 1,
       icon: Search,
       title: "Search",
-      description: "Find doctors by specialty, location, or insurance",
-      color: "from-[hsl(var(--primary))] to-[hsl(186,94%,65%)]",
+      description: "Find healthcare providers by specialty and location",
     },
     {
       number: 2,
       icon: Star,
       title: "Review",
-      description: "Read verified reviews and compare doctors",
-      color: "from-[hsl(186,94%,65%)] to-[hsl(243,75%,59%)]",
+      description: "Compare credentials and verified reviews",
     },
     {
       number: 3,
       icon: Calendar,
       title: "Book",
-      description: "Schedule appointments instantly online",
-      color: "from-[hsl(243,75%,59%)] to-[hsl(271,76%,53%)]",
+      description: "Schedule consultations instantly online",
     },
     {
       number: 4,
-      icon: Heart,
+      icon: Check,
       title: "Care",
-      description: "Get the healthcare you deserve",
-      color: "from-[hsl(271,76%,53%)] to-[hsl(var(--primary))]",
+      description: "Receive professional healthcare services",
     },
   ];
 
   return (
-    <section className="py-24 bg-background">
+    <section className="py-24 bg-muted dark:bg-gray-900">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -43,10 +39,10 @@ const HowItWorksSection = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            Healthcare Made Simple
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
+            Platform Capabilities
           </h2>
-          <p className="text-xl text-muted-foreground">Book in 4 Easy Steps</p>
+          <p className="text-xl text-muted-foreground">Book consultations in 4 steps</p>
         </motion.div>
 
         <div className="relative max-w-6xl mx-auto">
@@ -59,20 +55,20 @@ const HowItWorksSection = () => {
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.2, duration: 0.5 }}
-                  whileHover={{ scale: 1.1 }}
+                  whileHover={{ scale: 1.05 }}
                   className="flex flex-col items-center relative"
                 >
-                  <div className={`w-20 h-20 rounded-full bg-gradient-to-br ${step.color} flex items-center justify-center shadow-xl mb-4 group cursor-pointer`}>
-                    <step.icon className="w-10 h-10 text-primary-foreground" />
+                  <div className="w-20 h-20 rounded-full bg-primary/10 dark:bg-primary/20 border-2 border-primary flex items-center justify-center shadow-lg dark:shadow-[0_0_20px_rgba(59,130,246,0.3)] mb-4 group cursor-pointer">
+                    <step.icon className="w-10 h-10 text-primary" />
                   </div>
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-lg">
                     <span className="text-primary-foreground font-bold text-sm">{step.number}</span>
                   </div>
                   <h3 className="text-xl font-bold text-foreground mb-2">{step.title}</h3>
                   <p className="text-sm text-muted-foreground text-center max-w-[200px]">{step.description}</p>
                 </motion.div>
                 {index < steps.length - 1 && (
-                  <div className={`flex-1 h-1 bg-gradient-to-r ${step.color} mx-4 mt-10`}></div>
+                  <div className="flex-1 h-0.5 bg-border dark:bg-slate-700 mx-4 mt-10"></div>
                 )}
               </div>
             ))}
@@ -89,8 +85,8 @@ const HowItWorksSection = () => {
                 transition={{ delay: index * 0.1, duration: 0.5 }}
                 className="flex items-start space-x-4"
               >
-                <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${step.color} flex items-center justify-center shadow-xl flex-shrink-0 relative`}>
-                  <step.icon className="w-8 h-8 text-primary-foreground" />
+                <div className="w-16 h-16 rounded-full bg-primary/10 dark:bg-primary/20 border-2 border-primary flex items-center justify-center shadow-lg dark:shadow-[0_0_20px_rgba(59,130,246,0.3)] flex-shrink-0 relative">
+                  <step.icon className="w-8 h-8 text-primary" />
                   <div className="absolute -top-2 -left-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
                     <span className="text-primary-foreground font-bold text-xs">{step.number}</span>
                   </div>

@@ -6,50 +6,42 @@ const FeaturesGrid = () => {
   const features = [
     {
       icon: CheckCircle2,
-      title: "Verified Doctors",
+      title: "Verified Providers",
       description: "All healthcare providers are thoroughly verified and licensed",
     },
     {
       icon: Clock,
       title: "24/7 Availability",
-      description: "Book appointments anytime, anywhere, on any device",
+      description: "Book consultations anytime, anywhere, on any device",
     },
     {
       icon: Star,
-      title: "Real Reviews",
-      description: "Authentic patient reviews to help you make informed decisions",
+      title: "Verified Reviews",
+      description: "Authentic reviews to help make informed decisions",
     },
     {
       icon: Zap,
       title: "Instant Booking",
-      description: "Get confirmed appointments in seconds, not days",
+      description: "Confirmed consultations in seconds, not days",
     },
     {
       icon: Globe,
       title: "Global Network",
-      description: "Access healthcare providers in 50+ countries worldwide",
+      description: "Healthcare providers in multiple countries worldwide",
     },
     {
       icon: Shield,
-      title: "Secure & Private",
-      description: "Your medical data is encrypted and HIPAA compliant",
+      title: "HIPAA Compliant",
+      description: "Medical data encrypted and HIPAA compliant",
     },
   ];
 
   return (
-    <section className="py-24 bg-gradient-to-br from-[hsl(221,83%,53%)] via-[hsl(243,75%,59%)] to-[hsl(271,76%,53%)] relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-          transition={{ duration: 15, repeat: Infinity }}
-          className="absolute top-0 left-0 w-96 h-96 bg-white/10 rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{ scale: [1.2, 1, 1.2], opacity: [0.3, 0.5, 0.3] }}
-          transition={{ duration: 20, repeat: Infinity }}
-          className="absolute bottom-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl"
-        />
+    <section className="py-24 bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 dark:from-slate-900 dark:via-blue-950 dark:to-gray-900 relative overflow-hidden">
+      {/* Subtle Background Effects */}
+      <div className="absolute inset-0 overflow-hidden opacity-30 dark:opacity-20">
+        <div className="absolute top-0 left-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
@@ -60,11 +52,11 @@ const FeaturesGrid = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-primary-foreground mb-4">
-            Why Choose Docito?
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
+            Platform Capabilities
           </h2>
-          <p className="text-xl text-primary-foreground/80">
-            Trusted by millions for quality healthcare
+          <p className="text-xl text-muted-foreground">
+            Professional tools for modern healthcare
           </p>
         </motion.div>
 
@@ -78,16 +70,15 @@ const FeaturesGrid = () => {
               transition={{ delay: index * 0.1, duration: 0.5 }}
               whileHover={{ y: -5 }}
             >
-              <Card className="relative overflow-hidden p-8 h-full bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition-all duration-300">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"></div>
+              <Card className="relative overflow-hidden p-8 h-full bg-card/80 dark:bg-slate-800/80 backdrop-blur-sm border-2 border-border dark:border-slate-700 hover:border-primary/50 dark:hover:border-primary/50 transition-all duration-300 dark:hover:shadow-[0_0_30px_rgba(59,130,246,0.2)]">
                 <div className="relative z-10">
-                  <div className="inline-flex p-3 rounded-xl bg-gradient-to-br from-primary-foreground/20 to-primary-foreground/5 mb-4">
-                    <feature.icon className="w-8 h-8 text-primary-foreground" />
+                  <div className="inline-flex p-3 rounded-xl bg-primary/10 dark:bg-primary/20 mb-4 shadow-lg dark:shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+                    <feature.icon className="w-8 h-8 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold text-primary-foreground mb-3">
+                  <h3 className="text-xl font-bold text-foreground mb-3">
                     {feature.title}
                   </h3>
-                  <p className="text-primary-foreground/80">{feature.description}</p>
+                  <p className="text-muted-foreground">{feature.description}</p>
                 </div>
               </Card>
             </motion.div>
