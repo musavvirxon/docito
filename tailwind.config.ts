@@ -68,6 +68,11 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				}
 			},
+			boxShadow: {
+				'glow-blue': '0 0 15px rgba(37, 99, 235, 0.4)',
+				'glow-blue-lg': '0 0 30px rgba(37, 99, 235, 0.6)',
+				'glow-blue-sharp': '0 0 20px rgba(37, 99, 235, 0.5), 0 0 40px rgba(37, 99, 235, 0.3)',
+			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',

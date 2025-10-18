@@ -22,7 +22,7 @@ const SpecialtiesGrid = () => {
   };
 
   return (
-    <section id="specialties" className="py-24 bg-background dark:bg-slate-900">
+    <section id="specialties" className="py-24 bg-background dark:bg-background">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -51,7 +51,7 @@ const SpecialtiesGrid = () => {
                 onClick={() => handleSpecialtyClick(specialty.name)}
                 className="relative group cursor-pointer"
               >
-                <div className="bg-card dark:bg-slate-800 rounded-2xl p-8 h-full flex flex-col items-center justify-center text-center border-2 border-border dark:border-slate-700 hover:border-primary/50 dark:hover:border-primary/50 transition-all duration-300 shadow-lg hover:shadow-xl dark:hover:shadow-[0_0_30px_rgba(59,130,246,0.2)]">
+                <div className="bg-card dark:bg-card rounded-2xl p-8 h-full flex flex-col items-center justify-center text-center border-2 border-border dark:border-border hover:border-primary/50 dark:hover:border-primary transition-all duration-300 shadow-lg hover:shadow-xl dark:hover:shadow-glow-blue">
                   <div className="relative z-10 mb-4">
                     <div className="w-16 h-16 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                       <Icon className={`w-8 h-8 ${specialty.color}`} />

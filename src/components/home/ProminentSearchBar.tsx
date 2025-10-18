@@ -31,7 +31,7 @@ const ProminentSearchBar = ({ onSearch, searching }: ProminentSearchBarProps) =>
       transition={{ delay: 0.3, duration: 0.6 }}
       className="w-full max-w-5xl mx-auto mb-12"
     >
-      <div className="bg-background rounded-2xl shadow-2xl p-2 border-2 border-border hover:border-primary/30 transition-all duration-300">
+      <div className="bg-background rounded-2xl shadow-2xl p-2 border-2 border-input dark:border-border hover:border-primary/30 dark:hover:border-primary/50 transition-all duration-300">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
           {/* Specialty Input */}
           <div className="relative group">
@@ -41,7 +41,7 @@ const ProminentSearchBar = ({ onSearch, searching }: ProminentSearchBarProps) =>
               value={specialty}
               onChange={(e) => setSpecialty(e.target.value)}
               onKeyPress={handleKeyPress}
-              className="h-14 pl-12 border-0 bg-transparent focus-visible:ring-2 focus-visible:ring-primary text-base"
+              className="h-14 pl-12 border-2 border-transparent dark:border-border bg-transparent focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary text-base dark:text-foreground"
             />
           </div>
 
@@ -53,7 +53,7 @@ const ProminentSearchBar = ({ onSearch, searching }: ProminentSearchBarProps) =>
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               onKeyPress={handleKeyPress}
-              className="h-14 pl-12 border-0 bg-transparent focus-visible:ring-2 focus-visible:ring-primary text-base"
+              className="h-14 pl-12 border-2 border-transparent dark:border-border bg-transparent focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary text-base dark:text-foreground"
             />
           </div>
 
@@ -65,7 +65,7 @@ const ProminentSearchBar = ({ onSearch, searching }: ProminentSearchBarProps) =>
               value={insurance}
               onChange={(e) => setInsurance(e.target.value)}
               onKeyPress={handleKeyPress}
-              className="h-14 pl-12 border-0 bg-transparent focus-visible:ring-2 focus-visible:ring-primary text-base"
+              className="h-14 pl-12 border-2 border-transparent dark:border-border bg-transparent focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-primary text-base dark:text-foreground"
             />
           </div>
 
@@ -73,7 +73,8 @@ const ProminentSearchBar = ({ onSearch, searching }: ProminentSearchBarProps) =>
           <Button
             onClick={handleSearch}
             disabled={searching}
-            className="h-14 bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(243,75%,59%)] text-primary-foreground text-base font-semibold hover:shadow-xl hover:scale-105 transition-all duration-300"
+            variant="default"
+            className="h-14 text-base font-semibold hover:scale-105 transition-all duration-300"
           >
             {searching ? (
               "Searching..."

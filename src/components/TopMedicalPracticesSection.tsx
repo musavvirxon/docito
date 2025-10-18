@@ -56,9 +56,12 @@ const TopMedicalPracticesSection = () => {
   });
 
   return (
-    <section className="py-16 bg-muted/30">
+    <section className="py-24 bg-muted/30 dark:bg-muted/5">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-foreground mb-12 text-center">Top Medical Practices</h2>
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">Leading Medical Practices</h2>
+          <p className="text-lg text-muted-foreground">Trusted healthcare institutions</p>
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading ? (
@@ -88,7 +91,7 @@ const TopMedicalPracticesSection = () => {
             displayPractices.map((practice) => (
             <Card 
               key={practice.id} 
-              className="overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-[1.03] cursor-pointer group border-border/50"
+              className="overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] cursor-pointer group border-2 border-border dark:border-border hover:border-primary/30 dark:hover:border-primary dark:hover:shadow-glow-blue"
             >
               <div className="aspect-video overflow-hidden relative">
                 <img
@@ -148,9 +151,9 @@ const TopMedicalPracticesSection = () => {
                   
                   <Button 
                     onClick={() => navigate(`/practices/${practice.id}`)}
-                    variant="outline"
+                    variant="secondary"
                     size="sm" 
-                    className="w-full transition-all duration-300 hover:bg-primary hover:text-primary-foreground hover:shadow-lg group/btn border-primary/20"
+                    className="w-full transition-all duration-300 group/btn"
                   >
                     <Building2 className="w-4 h-4 mr-2 transition-transform group-hover/btn:scale-110" />
                     View Practice

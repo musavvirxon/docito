@@ -4,6 +4,7 @@ import ModernHeroSection from "@/components/home/ModernHeroSection";
 import ValuePropositionSection from "@/components/home/ValuePropositionSection";
 import SpecialtiesGrid from "@/components/home/SpecialtiesGrid";
 import TopSpecialistsSection from "@/components/TopSpecialistsSection";
+import TopMedicalPracticesSection from "@/components/TopMedicalPracticesSection";
 import HowItWorksSection from "@/components/home/HowItWorksSection";
 import FeaturesGrid from "@/components/home/FeaturesGrid";
 import CTASection from "@/components/home/CTASection";
@@ -19,6 +20,7 @@ const Index = () => {
           <ValuePropositionSection />
           <SpecialtiesGrid />
           <TopSpecialistsSection />
+          <TopMedicalPracticesSection />
           <HowItWorksSection />
           <FeaturesGrid />
           <CTASection />

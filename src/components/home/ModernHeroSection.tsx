@@ -66,14 +66,14 @@ const ModernHeroSection = () => {
   };
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 via-slate-50 to-gray-100 dark:from-gray-900 dark:via-blue-950 dark:to-slate-900">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-gray-100 dark:from-[#030712] dark:via-[#0A0F1E] dark:to-[#030712]">
       {/* Subtle Grid Pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px] dark:bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] dark:bg-[linear-gradient(to_right,#3b82f610_1px,transparent_1px),linear-gradient(to_bottom,#3b82f610_1px,transparent_1px)] dark:bg-[size:32px_32px]" />
       
       {/* Minimal Geometric Accents */}
-      <div className="absolute inset-0 overflow-hidden opacity-30 dark:opacity-20">
-        <div className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/20 dark:bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-accent/20 dark:bg-accent/10 rounded-full blur-3xl" />
+      <div className="absolute inset-0 overflow-hidden opacity-20 dark:opacity-10">
+        <div className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/20 dark:bg-primary/5 rounded-none dark:rounded-full" />
+        <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-accent/20 dark:bg-primary/5 rounded-none dark:rounded-full" />
       </div>
 
       {/* Content */}
@@ -91,7 +91,7 @@ const ModernHeroSection = () => {
             transition={{ duration: 0.5 }}
             className="flex justify-center mb-6"
           >
-            <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-lg dark:shadow-[0_0_30px_rgba(59,130,246,0.3)]">
+            <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-xl border-2 border-primary/20 dark:border-primary/30 dark:shadow-glow-blue-sharp">
               <span className="text-primary-foreground font-bold text-3xl">D</span>
             </div>
           </motion.div>
@@ -104,9 +104,9 @@ const ModernHeroSection = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.5 }}
-            className="inline-flex items-center space-x-2 bg-primary/10 dark:bg-primary/5 backdrop-blur-sm border border-primary/20 rounded-full px-6 py-2"
+            className="inline-flex items-center space-x-2 bg-primary/10 dark:bg-primary/5 backdrop-blur-sm border-2 border-primary/30 dark:border-primary/30 rounded-full px-6 py-2"
           >
-            <span className="text-primary font-semibold">Professional Medical Platform</span>
+            <span className="text-primary dark:text-primary font-semibold">Professional Medical Platform</span>
           </motion.div>
 
           {/* Main Headline */}
@@ -153,7 +153,7 @@ const ModernHeroSection = () => {
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 1.2 + index * 0.1 }}
-                  className="flex items-center space-x-2 bg-card/80 dark:bg-slate-800/80 backdrop-blur-sm border border-border dark:border-slate-700 dark:hover:border-primary/50 rounded-full px-6 py-3 transition-all duration-300 hover:shadow-lg dark:hover:shadow-[0_0_20px_rgba(59,130,246,0.2)]"
+                  className="flex items-center space-x-2 bg-card/80 dark:bg-card/80 backdrop-blur-sm border-2 border-input dark:border-border dark:hover:border-primary rounded-full px-6 py-3 transition-all duration-300 hover:shadow-lg dark:hover:shadow-glow-blue"
                 >
                   <Icon className="w-5 h-5 text-primary" />
                   <span className="text-foreground font-medium">{feature.label}</span>

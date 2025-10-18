@@ -7,11 +7,11 @@ const CTASection = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="py-32 relative overflow-hidden bg-gradient-to-br from-primary via-secondary to-accent dark:from-blue-950 dark:via-slate-900 dark:to-gray-900">
+    <section className="py-32 relative overflow-hidden bg-gradient-to-br from-primary via-secondary to-accent dark:from-[#030712] dark:via-[#0A0F1E] dark:to-[#030712]">
       {/* Subtle Background Effects */}
-      <div className="absolute inset-0 overflow-hidden opacity-20 dark:opacity-10">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-white/20 dark:bg-primary/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/20 dark:bg-accent/20 rounded-full blur-3xl" />
+      <div className="absolute inset-0 overflow-hidden opacity-20 dark:opacity-5">
+        <div className="absolute top-0 left-0 w-96 h-96 bg-white/20 dark:bg-primary/10 rounded-none dark:rounded-full" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/20 dark:bg-primary/10 rounded-none dark:rounded-full" />
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
@@ -37,7 +37,7 @@ const CTASection = () => {
               <Button
                 size="lg"
                 onClick={() => navigate("/auth")}
-                className="bg-background text-foreground hover:bg-background/90 shadow-2xl text-lg px-8 py-6 h-auto dark:shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+                className="text-lg px-8 py-6 h-auto"
               >
                 Schedule Demo
                 <ArrowRight className="ml-2 w-5 h-5" />
@@ -46,9 +46,9 @@ const CTASection = () => {
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 size="lg"
-                variant="outline"
+                variant="secondary"
                 onClick={() => navigate("/doctors")}
-                className="bg-transparent border-2 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 backdrop-blur-sm text-lg px-8 py-6 h-auto"
+                className="text-lg px-8 py-6 h-auto"
               >
                 Learn More
               </Button>
