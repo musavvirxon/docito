@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ThemeToggle from "./ThemeToggle";
+import { Logo } from "@/components/Logo";
 
 const ModernNavbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -41,16 +42,8 @@ const ModernNavbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3 group">
-            <div className="relative w-10 h-10">
-              <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(243,75%,59%)] rounded-xl transform group-hover:scale-110 transition-transform duration-300"></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-xl">D</span>
-              </div>
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(243,75%,59%)] bg-clip-text text-transparent">
-              Docito
-            </span>
+          <Link to="/" className="flex items-center hover:opacity-80 transition-opacity duration-200" aria-label="Go to homepage">
+            <Logo variant="full" width={160} height={44} />
           </Link>
 
           {/* Desktop Navigation */}

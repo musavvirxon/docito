@@ -1,5 +1,6 @@
 import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Logo } from "@/components/Logo";
 
 const ModernFooter = () => {
   const platformLinks = [
@@ -42,11 +43,8 @@ const ModernFooter = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
           {/* Brand Column */}
           <div className="lg:col-span-2">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(243,75%,59%)] rounded-xl flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-xl">D</span>
-              </div>
-              <span className="text-2xl font-bold">Docito</span>
+            <div className="mb-4">
+              <Logo variant="full" width={140} height={39} />
             </div>
             <p className="text-sm text-slate-400 dark:text-slate-500 mb-6 max-w-md">
               Professional Medical Platform. Enterprise-grade healthcare management with secure booking, digital records, and comprehensive analytics for medical professionals.

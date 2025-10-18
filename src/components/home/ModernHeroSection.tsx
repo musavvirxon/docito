@@ -7,6 +7,7 @@ import SearchResults from "@/components/patient/SearchResults";
 import { useDoctors } from "@/hooks/useDoctors";
 import { usePractices } from "@/hooks/usePractices";
 import { useBookingAuth } from "@/hooks/useBookingAuth";
+import { Logo } from "@/components/Logo";
 
 const ModernHeroSection = () => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -89,11 +90,9 @@ const ModernHeroSection = () => {
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="flex justify-center mb-6"
+            className="flex justify-center mb-8"
           >
-            <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-xl border-2 border-primary/20 dark:border-primary/30 dark:shadow-glow-blue-sharp">
-              <span className="text-primary-foreground font-bold text-3xl">D</span>
-            </div>
+            <Logo variant="full" width={240} height={67} className="md:w-[280px] md:h-[78px]" />
           </motion.div>
 
           {/* Search Bar - PROMINENT */}
