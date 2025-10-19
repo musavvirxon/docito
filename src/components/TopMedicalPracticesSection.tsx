@@ -17,7 +17,24 @@ const TopMedicalPracticesSection = () => {
       setLoading(true);
       const result = await practiceApi.fetchTopPracticesByCountry(6);
       if ('success' in result && result.success) {
-        setPractices(result.data);
+        // Filter out demo data
+        const cleanData = (result.data || []).filter((practice: any) => {
+          const name = practice.name || '';
+          const location = practice.city || '';
+          const country = practice.country || '';
+          
+          return (
+            name &&
+            !name.includes('Vision Care Specialists') &&
+            !name.includes('Heart & Soul') &&
+            !name.includes('Demo') &&
+            !name.includes('Test') &&
+            !name.includes('Sample') &&
+            location !== 'Not specified' &&
+            country !== 'Not specified'
+          );
+        });
+        setPractices(cleanData);
       }
       setLoading(false);
     };
@@ -136,19 +153,21 @@ const TopMedicalPracticesSection = () => {
     const isLarge = size === 'large';
     
     return (
-      <Card className="overflow-hidden border-2 border-dashed border-gray-300 dark:border-slate-600 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700">
-        <CardContent className={`h-full flex flex-col items-center justify-center text-center ${isLarge ? 'p-8 min-h-[500px]' : 'p-6 min-h-[300px]'}`}>
-          <Building2 className={`${isLarge ? 'w-16 h-16' : 'w-12 h-12'} text-gray-400 dark:text-gray-500 mb-${isLarge ? '4' : '3'}`} />
-          <h3 className={`${isLarge ? 'text-xl' : 'text-lg'} font-bold text-gray-700 dark:text-gray-300 mb-2`}>
-            {isLarge ? 'Featured Practice Spot' : 'Your Practice Here'}
+      <Card className={`overflow-hidden border-2 border-dashed ${isLarge ? 'border-cyan-300 dark:border-slate-600' : 'border-gray-400 dark:border-slate-600'} bg-gradient-to-br ${isLarge ? 'from-cyan-50 to-blue-50 dark:from-slate-800 dark:to-slate-700' : 'from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-700'} hover:border-cyan-500 dark:hover:border-cyan-500 transition-all`}>
+        <CardContent className={`h-full flex flex-col items-center justify-center text-center ${isLarge ? 'p-10 min-h-[500px]' : 'p-6 min-h-[300px]'}`}>
+          <div className={`${isLarge ? 'w-24 h-24' : 'w-16 h-16'} rounded-full ${isLarge ? 'bg-cyan-100 dark:bg-cyan-900/30' : 'bg-gray-200 dark:bg-slate-700'} flex items-center justify-center mb-${isLarge ? '6' : '4'}`}>
+            <Building2 className={`${isLarge ? 'w-12 h-12 text-cyan-600 dark:text-cyan-400' : 'w-8 h-8 text-gray-600 dark:text-gray-400'}`} />
+          </div>
+          <h3 className={`${isLarge ? 'text-2xl' : 'text-lg'} font-bold text-gray-800 dark:text-gray-200 mb-${isLarge ? '3' : '2'}`}>
+            {isLarge ? 'Premium Practice Spot' : 'Your Practice Here'}
           </h3>
-          <p className={`${isLarge ? 'text-base' : 'text-sm'} text-gray-600 dark:text-gray-400 mb-${isLarge ? '6' : '4'}`}>
-            {isLarge ? 'This could be your practice' : 'Join our network'}
+          <p className={`${isLarge ? 'text-base' : 'text-sm'} text-gray-600 dark:text-gray-400 mb-${isLarge ? '6' : '4'} ${isLarge ? 'max-w-sm' : ''}`}>
+            {isLarge ? 'Showcase your medical practice to thousands of potential patients. Get featured placement and premium visibility.' : 'Join our network of leading healthcare providers'}
           </p>
           <Button
             onClick={() => navigate('/register-practice')}
             size={isLarge ? 'default' : 'sm'}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className={`${isLarge ? 'px-8 py-4 text-lg font-bold bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-600 shadow-lg hover:shadow-xl' : 'bg-gray-600 hover:bg-gray-700 dark:bg-slate-600 dark:hover:bg-slate-500'} text-white`}
           >
             {isLarge ? 'Register Practice' : 'Learn More'}
           </Button>
@@ -215,6 +234,41 @@ const TopMedicalPracticesSection = () => {
               ))}
             </div>
           </>
+        )}
+        
+        {/* If no practices at all */}
+        {!loading && displayPractices.length === 0 && (
+          <div className="text-center mt-8 p-12 bg-cyan-50 dark:bg-slate-800 rounded-2xl max-w-3xl mx-auto">
+            <div className="w-32 h-32 rounded-full bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center mx-auto mb-6">
+              <Building2 className="w-16 h-16 text-cyan-600 dark:text-cyan-400" />
+            </div>
+            
+            <h3 className="text-3xl font-bold mb-4 text-gray-900 dark:text-slate-100">
+              Be a Founding Practice
+            </h3>
+            
+            <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
+              Join Docito as one of our first featured medical practices. 
+              Get premium exposure, attract more patients, and grow your practice with our platform.
+            </p>
+            
+            <div className="flex gap-4 justify-center flex-wrap">
+              <Button
+                onClick={() => navigate('/register-practice')}
+                className="px-8 py-4 bg-cyan-600 text-white rounded-lg font-bold hover:bg-cyan-700 text-lg shadow-lg"
+              >
+                Register Your Practice
+              </Button>
+              
+              <Button
+                onClick={() => navigate('/contact')}
+                variant="outline"
+                className="px-8 py-4 bg-white dark:bg-slate-700 text-cyan-600 dark:text-cyan-400 border-2 border-cyan-600 dark:border-cyan-500 rounded-lg font-bold hover:bg-cyan-50 dark:hover:bg-slate-600 text-lg"
+              >
+                Contact Sales
+              </Button>
+            </div>
+          </div>
         )}
       </div>
     </section>
