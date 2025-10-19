@@ -21,6 +21,15 @@ const ModernHeroSection = () => {
     if (!specialty.trim() && !location.trim()) return;
 
     setSearching(true);
+    
+    // Scroll to results section
+    setTimeout(() => {
+      const resultsSection = document.getElementById('search-results');
+      if (resultsSection) {
+        resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+
     try {
       const [doctorsResults, practicesResults] = await Promise.all([
         searchDoctors(specialty, location),
@@ -178,9 +187,10 @@ const ModernHeroSection = () => {
           </motion.div>
         </motion.div>
 
-        {/* Search Results */}
+        {/* Search Results Section */}
         {showResults && (
           <motion.div
+            id="search-results"
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             className="mt-12"
