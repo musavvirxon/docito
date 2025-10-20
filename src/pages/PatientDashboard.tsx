@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Bell, Settings, User, Calendar, FileText, Search, Plus, Clock, MapPin, Phone, Download, Eye, X, RotateCcw, AlertCircle, CheckCircle, Star, Pill, Activity, LogOut } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
 import {
   DropdownMenu,
@@ -173,49 +174,94 @@ const PatientDashboard = () => {
     });
   };
 
-  // Patient Search Section Component
+  // Patient Search Section Component with filters
   const PatientSearchSection = () => {
+    const [searchParams, setSearchParams] = useState({ specialty: '', location: '', insurance: '' });
+    const [filters, setFilters] = useState({
+      providerType: 'all',
+      availableToday: true, // Default ON
+      acceptingNewPatients: false,
+      acceptsInsurance: false,
+      videoConsultation: false
+    });
+    const [showFilters, setShowFilters] = useState(false);
     const [searchResults, setSearchResults] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const { searchDoctors } = useDoctors();
     const { searchPractices } = usePractices();
 
-    const handleSearch = async (results: any[]) => {
+    const handleSearch = async (e?: React.FormEvent) => {
+      e?.preventDefault();
       setIsLoading(true);
       
       try {
-        if (results && results.length > 0) {
-          // Transform results to match the SearchResult interface from patient/SearchResults
-          const transformedResults = results.map(result => ({
-            id: result.id,
-            type: result.type,
-            name: result.name,
-            specialty: result.specialty,
-            location: result.location,
-            rating: result.rating,
-            reviewCount: result.reviewCount,
-            availability: result.availability,
-            acceptsInsurance: result.acceptsInsurance,
-            acceptsNewPatients: result.acceptsNewPatients,
-            distance: result.distance,
-            image: result.image,
-            bio: result.bio,
-            experience: result.experience,
-            languages: result.languages,
-            practiceName: result.practiceName,
-            degree: result.degree,
-            consultationFee: result.consultationFee,
-            practiceType: result.practiceType,
-            description: result.description,
-            specialties: result.specialties,
-            doctorCount: result.doctorCount,
-            logoUrl: result.logoUrl,
-            affiliatedPractice: result.affiliatedPractice
-          }));
-          setSearchResults(transformedResults);
-        } else {
-          setSearchResults([]);
+        const results: any[] = [];
+        
+        // Search doctors if needed
+        if (filters.providerType === 'all' || filters.providerType === 'doctors') {
+          const doctors = await searchDoctors(
+            searchParams.specialty,
+            searchParams.location,
+            searchParams.specialty
+          );
+          
+          if (doctors) {
+            // Filter out demo data
+            const cleanDoctors = doctors.filter((doc: any) => {
+              const name = doc.profiles?.full_name || '';
+              const location = doc.profiles?.location || '';
+              return name && 
+                !name.toLowerCase().includes('specialist') &&
+                !name.includes('Dr. Doctor') &&
+                location &&
+                location !== 'Not specified';
+            });
+            
+            results.push(...cleanDoctors.map((doc: any) => ({
+              id: doc.id,
+              type: 'doctor',
+              name: doc.profiles?.full_name,
+              specialty: doc.specialty,
+              location: doc.profiles?.location,
+              rating: doc.average_rating,
+              reviewCount: doc.num_reviews,
+              image: doc.profiles?.avatar_url
+            })));
+          }
         }
+        
+        // Search practices if needed
+        if (filters.providerType === 'all' || filters.providerType === 'practices') {
+          const practices = await searchPractices(
+            searchParams.location,
+            searchParams.specialty
+          );
+          
+          if (practices) {
+            // Filter out demo data
+            const cleanPractices = practices.filter((practice: any) => {
+              const name = practice.name || '';
+              const location = practice.location || '';
+              return name &&
+                !name.includes('Vision Care') &&
+                !name.includes('Heart & Soul') &&
+                location &&
+                location !== 'Not specified';
+            });
+            
+            results.push(...cleanPractices.map((practice: any) => ({
+              id: practice.id,
+              type: 'practice',
+              name: practice.name,
+              location: practice.location,
+              rating: practice.average_rating,
+              reviewCount: practice.num_reviews,
+              logoUrl: practice.logo_url
+            })));
+          }
+        }
+        
+        setSearchResults(results);
       } catch (error) {
         console.error('Search error:', error);
         setSearchResults([]);
@@ -238,22 +284,120 @@ const PatientDashboard = () => {
       navigate(`/practices/${result.id}`);
     };
 
-    const handleFavorite = (result: any) => {
-      toast({
-        title: "Added to Favorites",
-        description: `${result.name} has been added to your favorites.`,
-      });
+    const toggleFilter = (filterName: keyof typeof filters) => {
+      setFilters(prev => ({ ...prev, [filterName]: !prev[filterName] }));
     };
 
     return (
       <div className="space-y-6">
         <h2 className="text-3xl font-bold">Find Healthcare Providers</h2>
         
-        <SearchBar 
-          onSearch={handleSearch}
-          showResultsInline={true}
-          className="max-w-4xl"
-        />
+        <Card>
+          <CardContent className="p-6">
+            <form onSubmit={handleSearch} className="space-y-4">
+              <div className="grid md:grid-cols-4 gap-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input
+                    placeholder="Specialty or name"
+                    value={searchParams.specialty}
+                    onChange={(e) => setSearchParams({ ...searchParams, specialty: e.target.value })}
+                    className="pl-10"
+                  />
+                </div>
+                
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input
+                    placeholder="Location"
+                    value={searchParams.location}
+                    onChange={(e) => setSearchParams({ ...searchParams, location: e.target.value })}
+                    className="pl-10"
+                  />
+                </div>
+                
+                <Input
+                  placeholder="Insurance (optional)"
+                  value={searchParams.insurance}
+                  onChange={(e) => setSearchParams({ ...searchParams, insurance: e.target.value })}
+                />
+                
+                <Button type="submit">Search</Button>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowFilters(!showFilters)}
+                >
+                  <Search className="w-4 h-4 mr-2" />
+                  Filters
+                </Button>
+                {searchResults.length > 0 && (
+                  <span className="text-sm text-muted-foreground">
+                    {searchResults.length} results found
+                  </span>
+                )}
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+        
+        {showFilters && (
+          <Card>
+            <CardContent className="p-6 space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Provider Type</label>
+                <div className="flex gap-2">
+                  {['all', 'doctors', 'practices'].map(type => (
+                    <Button
+                      key={type}
+                      variant={filters.providerType === type ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setFilters({ ...filters, providerType: type })}
+                    >
+                      {type}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Availability</label>
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm">Available Today</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => toggleFilter('availableToday')}
+                    className={filters.availableToday ? 'bg-primary text-primary-foreground' : ''}
+                  >
+                    {filters.availableToday ? 'ON' : 'OFF'}
+                  </Button>
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm">Accepting New Patients</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => toggleFilter('acceptingNewPatients')}
+                    className={filters.acceptingNewPatients ? 'bg-primary text-primary-foreground' : ''}
+                  >
+                    {filters.acceptingNewPatients ? 'ON' : 'OFF'}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {isLoading && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Searching...</p>
+          </div>
+        )}
 
         {searchResults.length > 0 && (
           <SearchResults
@@ -261,8 +405,14 @@ const PatientDashboard = () => {
             isLoading={isLoading}
             onBookAppointment={handleBookAppointment}
             onViewPractice={handleViewPractice}
-            onFavorite={handleFavorite}
+            onFavorite={(result) => toast({ title: "Added to Favorites" })}
           />
+        )}
+        
+        {!isLoading && searchResults.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No results found</p>
+          </div>
         )}
       </div>
     );

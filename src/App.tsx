@@ -20,7 +20,6 @@ const DoctorSignUp = lazy(() => import("./pages/DoctorSignUp"));
 const DoctorDashboard = lazy(() => import("./pages/DoctorDashboard"));
 const PatientDashboard = lazy(() => import("./pages/PatientDashboard"));
 const CategorySearch = lazy(() => import("./pages/CategorySearch"));
-const SearchResults = lazy(() => import("./pages/SearchResults"));
 const DoctorProfile = lazy(() => import("./pages/DoctorProfile"));
 const ProcedureLibrary = lazy(() => import("./pages/ProcedureLibrary"));
 const TreatmentPlanning = lazy(() => import("./pages/TreatmentPlanning"));
@@ -61,7 +60,6 @@ const App = () => (
               <Route path="/doctor-procedures" element={<DoctorProcedures />} />
               <Route path="/patient-dashboard" element={<PatientDashboard />} />
               <Route path="/search/:category" element={<CategorySearch />} />
-              <Route path="/search-results" element={<SearchResults />} />
               <Route path="/doctor/:id" element={<DoctorProfile />} />
               <Route path="/procedure-library" element={<ProcedureLibrary />} />
               <Route path="/treatment-planning" element={<TreatmentPlanning />} />

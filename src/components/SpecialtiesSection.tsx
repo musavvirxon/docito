@@ -13,10 +13,20 @@ const SpecialtiesSection = () => {
   ];
   
   const handleSpecialtyClick = (specialtyName: string) => {
-    // Navigate to search results with specialty pre-filled
-    const params = new URLSearchParams();
-    params.set('specialty', specialtyName);
-    navigate(`/search-results?${params.toString()}`);
+    // Scroll to search results section on homepage
+    const resultsSection = document.getElementById('search-results');
+    if (resultsSection) {
+      resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    
+    // Trigger search with specialty pre-filled
+    window.dispatchEvent(new CustomEvent('homepage-search', { 
+      detail: {
+        specialty: specialtyName,
+        location: '',
+        insurance: ''
+      }
+    }));
   };
 
   return (
