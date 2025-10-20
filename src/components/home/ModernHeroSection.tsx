@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, CreditCard, Calendar, FileText, BarChart3 } from "lucide-react";
@@ -16,6 +16,17 @@ const ModernHeroSection = () => {
   const { searchDoctors } = useDoctors();
   const { searchPractices } = usePractices();
   const { handleBookingClick } = useBookingAuth();
+
+  // Listen for specialty search events from SpecialtiesGrid
+  useEffect(() => {
+    const handleSpecialtySearch = (event: CustomEvent) => {
+      const { specialty, location, insurance } = event.detail;
+      handleSearch(specialty, location, insurance);
+    };
+
+    window.addEventListener('homepage-search', handleSpecialtySearch as EventListener);
+    return () => window.removeEventListener('homepage-search', handleSpecialtySearch as EventListener);
+  }, []);
 
   const handleSearch = async (specialty: string, location: string, insurance: string) => {
     if (!specialty.trim() && !location.trim()) return;
