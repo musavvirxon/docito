@@ -35,14 +35,16 @@ const Dashboard = () => {
   }
 
   // Route to appropriate dashboard based on user role
+  // This component now primarily handles the /dashboard catch-all
+  // but individual dashboards have their own routes too
   switch (profile.role) {
     case 'doctor':
-      return <DoctorDashboard />;
+      return <Navigate to="/doctor-dashboard" replace />;
     case 'admin':
-      return <AdminDashboard />;
+      return <Navigate to="/admin-dashboard" replace />;
     case 'patient':
     default:
-      return <PatientDashboard />;
+      return <Navigate to="/patient-dashboard" replace />;
   }
 };
 

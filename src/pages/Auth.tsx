@@ -24,15 +24,26 @@ const Auth = () => {
   const [signUpFullName, setSignUpFullName] = useState("");
   const [signUpRole, setSignUpRole] = useState<string>("patient");
   
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUp, user, profile } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated based on role
   useEffect(() => {
-    if (user) {
-      navigate('/dashboard');
+    if (user && profile) {
+      switch (profile.role) {
+        case 'doctor':
+          navigate('/doctor-dashboard');
+          break;
+        case 'admin':
+          navigate('/admin-dashboard');
+          break;
+        case 'patient':
+        default:
+          navigate('/patient-dashboard');
+          break;
+      }
     }
-  }, [user, navigate]);
+  }, [user, profile, navigate]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +52,8 @@ const Auth = () => {
     try {
       const { error } = await signIn(signInEmail, signInPassword);
       if (!error) {
-        navigate('/dashboard');
+        // Auth context will handle redirect based on role
+        // No manual navigation needed here
       }
     } catch (error) {
       console.error('Sign in error:', error);
@@ -61,7 +73,8 @@ const Auth = () => {
       });
       
       if (!error) {
-        navigate('/dashboard');
+        // Auth context will handle redirect based on role
+        // No manual navigation needed here
       }
     } catch (error) {
       console.error('Sign up error:', error);

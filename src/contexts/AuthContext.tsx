@@ -88,7 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       toast.info('You have been logged out due to inactivity');
       await signOut();
     },
-    inactivityTime: 15 * 60 * 1000, // 15 minutes
+    inactivityTime: 30 * 60 * 1000, // 30 minutes (configurable)
     warningTime: 60 * 1000, // 1 minute warning
     enabled: !!user && !loading, // Only enable when user is logged in and not loading
   });
@@ -199,16 +199,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signUp = async (email: string, password: string, userData: any = {}) => {
     try {
+      const role = userData.role || 'patient';
+      
+      // Set redirect URL based on role
+      let redirectUrl = `${window.location.origin}/patient-dashboard`;
+      if (role === 'doctor') {
+        redirectUrl = `${window.location.origin}/doctor-dashboard`;
+      } else if (role === 'admin') {
+        redirectUrl = `${window.location.origin}/admin-dashboard`;
+      }
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: userData.role === 'doctor' 
-            ? `${window.location.origin}/doctor-dashboard`
-            : `${window.location.origin}/dashboard`,
+          emailRedirectTo: redirectUrl,
           data: {
             full_name: userData.fullName || email,
-            role: userData.role || 'patient'
+            role: role
           }
         }
       });
@@ -216,7 +224,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) throw error;
       
       // For doctors, create a basic doctor profile entry
-      if (userData.role === 'doctor' && data.user) {
+      if (role === 'doctor' && data.user) {
         await supabase
           .from('doctors')
           .insert({
@@ -227,7 +235,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
       }
       
-      toast.success('Account created successfully! Please check your email to verify your account.');
+      toast.success('Account created successfully!');
       return {};
     } catch (error: any) {
       toast.error(error.message || 'Failed to create account');
