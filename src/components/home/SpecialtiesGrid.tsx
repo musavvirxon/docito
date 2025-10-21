@@ -1,14 +1,15 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { Heart, Smile, Users, Pill, Brain, Eye, Activity, Bone, Baby } from "lucide-react";
+import { Heart, Users, Pill, Brain, Eye, Activity, Bone, Baby } from "lucide-react";
 import { cn } from "@/lib/utils";
+import toothIcon from "@/assets/tooth-icon.png";
 
 const SpecialtiesGrid = () => {
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
 
   const specialties = [
     { name: "Cardiology", icon: Heart, color: "text-red-500" },
-    { name: "Dentist", icon: Smile, color: "text-cyan-500" },
+    { name: "Dentist", icon: toothIcon, color: "text-cyan-500", isImage: true },
     { name: "OB-GYN", icon: Users, color: "text-purple-500" },
     { name: "Dermatology", icon: Pill, color: "text-orange-500" },
     { name: "Psychiatry", icon: Brain, color: "text-indigo-500" },
@@ -57,7 +58,7 @@ const SpecialtiesGrid = () => {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
           {specialties.map((specialty, index) => {
-            const Icon = specialty.icon;
+            const IconComponent = specialty.isImage ? null : specialty.icon;
             return (
               <motion.div
                 key={specialty.name}
@@ -82,7 +83,11 @@ const SpecialtiesGrid = () => {
                         ? "bg-primary/20 dark:bg-primary/30"
                         : "bg-primary/10 dark:bg-primary/20"
                     )}>
-                      <Icon className={`w-8 h-8 ${specialty.color}`} />
+                      {specialty.isImage ? (
+                        <img src={specialty.icon as string} alt={specialty.name} className="w-8 h-8" />
+                      ) : (
+                        IconComponent && <IconComponent className={`w-8 h-8 ${specialty.color}`} />
+                      )}
                     </div>
                   </div>
                   <h3 className="text-lg font-semibold text-foreground relative z-10">
