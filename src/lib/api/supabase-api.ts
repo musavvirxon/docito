@@ -330,15 +330,28 @@ export const appointmentApi = {
   async bookAppointment(appointmentData: {
     doctor_id: string;
     patient_id: string;
+    practice_id?: string;
     appointment_date: string;
     start_time: string;
     end_time: string;
     notes?: string;
   }) {
     try {
-      const { data, error } = await supabase.functions.invoke('create_appointment', {
-        body: appointmentData
-      });
+      // Insert appointment directly
+      const { data, error } = await supabase
+        .from('appointments')
+        .insert({
+          doctor_id: appointmentData.doctor_id,
+          patient_id: appointmentData.patient_id,
+          practice_id: appointmentData.practice_id || null,
+          appointment_date: appointmentData.appointment_date,
+          start_time: appointmentData.start_time,
+          end_time: appointmentData.end_time,
+          notes: appointmentData.notes || null,
+          status: 'confirmed'
+        })
+        .select()
+        .single();
 
       if (error) throw error;
       toast.success('Appointment booked successfully!');

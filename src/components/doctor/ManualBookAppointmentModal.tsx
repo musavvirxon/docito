@@ -148,6 +148,45 @@ const ManualBookAppointmentModal = ({
       
       console.log('✅ Appointment created:', appointment);
 
+      // Send real-time notifications
+      const appointmentDate = new Date(selectedDate).toLocaleDateString('en-US', { 
+        month: 'short', day: 'numeric', year: 'numeric' 
+      });
+
+      // Get doctor details
+      const { data: doctorData } = await supabase
+        .from('doctors')
+        .select('user_id, profiles:user_id(full_name)')
+        .eq('id', doctorId)
+        .single();
+
+      const doctorName = doctorData?.profiles?.full_name || 'Doctor';
+
+      // Notify patient about the appointment
+      await supabase.from('real_time_notifications').insert([{
+        recipient_user_id: patientId,
+        notification_type: 'appointment_booked',
+        title: 'Appointment Confirmed',
+        message: `Your appointment with ${doctorName} has been scheduled for ${appointmentDate} at ${startTime}`,
+        data: { appointment_id: appointment.id, appointment_date: selectedDate.toISOString() }
+      }]);
+
+      // Notify doctor (current user)
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (currentUser) {
+        const patientName = isNewPatient 
+          ? `${firstName} ${lastName}`
+          : patients.find(p => p.id === patientId)?.full_name || 'Patient';
+
+        await supabase.from('real_time_notifications').insert([{
+          recipient_user_id: currentUser.id,
+          notification_type: 'appointment_created',
+          title: 'Appointment Booked',
+          message: `Appointment with ${patientName} scheduled for ${appointmentDate} at ${startTime}`,
+          data: { appointment_id: appointment.id, appointment_date: selectedDate.toISOString() }
+        }]);
+      }
+
       // Send SMS if new unverified patient with phone
       if (isNewPatient && !isVerified && phone && verificationToken) {
         console.log('📱 Sending SMS to new patient...');

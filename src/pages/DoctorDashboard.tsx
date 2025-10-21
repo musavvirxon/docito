@@ -36,13 +36,14 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/lib/api/supabase-api";
 import QuickActionModals from "@/components/doctor/QuickActionModals";
+import ThemeToggle from "@/components/home/ThemeToggle";
 
 type DoctorStatus = "independent" | "clinic-member";
 
 const DoctorDashboardContent = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
-  const { doctorProfile, stats, upcomingAppointments, recentAppointments, todaysAppointments, loading, refreshAll } = useDoctorData();
+  const { doctorProfile, stats, upcomingAppointments, recentAppointments, todaysAppointments, loading, refreshAll, scheduleSettings } = useDoctorData();
   const [activeSection, setActiveSection] = useState("dashboard");
   const [quickActionModal, setQuickActionModal] = useState<{
     isOpen: boolean;
@@ -56,21 +57,30 @@ const DoctorDashboardContent = () => {
     navigate('/');
   };
 
-  // Calculate profile completion
+  // Calculate profile completion dynamically
   const calculateProfileCompletion = () => {
     if (!doctorProfile) return 0;
     
-    const fields = [
-      doctorProfile.bio,
-      doctorProfile.license_number,
-      doctorProfile.consultation_fee,
-      profile?.avatar_url,
-      profile?.date_of_birth,
-      profile?.phone
-    ];
+    let completedCount = 0;
+    let totalCount = 10; // Total fields to check
     
-    const completedFields = fields.filter(field => field && field !== '').length;
-    return Math.round((completedFields / fields.length) * 100);
+    // Basic profile fields (6 fields)
+    if (doctorProfile.bio) completedCount++;
+    if (doctorProfile.license_number) completedCount++;
+    if (doctorProfile.consultation_fee) completedCount++;
+    if (profile?.avatar_url) completedCount++;
+    if (profile?.date_of_birth) completedCount++;
+    if (profile?.phone) completedCount++;
+    
+    // Professional fields (2 fields)
+    if (doctorProfile.specialty && doctorProfile.specialty !== 'General Practice') completedCount++;
+    if (stats && (stats as any).totalServices && (stats as any).totalServices > 0) completedCount++; // Has added services
+    
+    // Verification & practice (2 fields)
+    if (doctorProfile.verified || doctorProfile.practice_id) completedCount++;
+    if (scheduleSettings && scheduleSettings.working_days) completedCount++; // Schedule configured
+    
+    return Math.round((completedCount / totalCount) * 100);
   };
 
   const profileCompletion = calculateProfileCompletion();

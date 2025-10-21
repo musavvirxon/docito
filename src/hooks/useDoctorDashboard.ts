@@ -10,6 +10,7 @@ interface DoctorStats {
   averageRating: number;
   numReviews: number;
   profileCompletion: number;
+  totalServices: number;
 }
 
 interface DoctorProfile {
@@ -70,6 +71,7 @@ export const useDoctorDashboard = () => {
     averageRating: 0,
     numReviews: 0,
     profileCompletion: 0,
+    totalServices: 0
   });
   const [upcomingAppointments, setUpcomingAppointments] = useState<UpcomingAppointment[]>([]);
   const [recentAppointments, setRecentAppointments] = useState<RecentAppointment[]>([]);
@@ -288,6 +290,15 @@ export const useDoctorDashboard = () => {
       // Calculate profile completion
       const profileCompletion = calculateProfileCompletion(doctorProfile);
 
+      // Get total services count
+      const servicesPromise = supabase
+        .from('procedures')
+        .select('id', { count: 'exact', head: true })
+        .eq('dentist_id', doctorProfile.id)
+        .eq('is_active', true);
+
+      const { count: servicesCount } = await Promise.race([servicesPromise, timeoutPromise]) as any;
+
       setStats({
         totalPatients: uniquePatients.size,
         totalAppointments: doctorProfile.appointment_count || 0,
@@ -295,6 +306,7 @@ export const useDoctorDashboard = () => {
         averageRating: doctorProfile.average_rating || 0,
         numReviews: doctorProfile.num_reviews || 0,
         profileCompletion,
+        totalServices: servicesCount || 0
       });
 
     } catch (err: any) {
@@ -307,6 +319,7 @@ export const useDoctorDashboard = () => {
         averageRating: doctorProfile.average_rating || 0,
         numReviews: doctorProfile.num_reviews || 0,
         profileCompletion: calculateProfileCompletion(doctorProfile),
+        totalServices: 0
       });
     }
   };
