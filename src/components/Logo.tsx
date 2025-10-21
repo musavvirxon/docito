@@ -13,11 +13,10 @@ export const Logo = ({
   height, 
   className = '' 
 }: LogoProps) => {
-  const { theme } = useTheme();
+  const { appliedTheme } = useTheme();
   
   const getLogoPath = () => {
-    const themeMode = theme === 'dark' ? 'dark' : 'light';
-    return `/logos/logo-${variant}-${themeMode}.png`;
+    return `/logos/logo-${variant}-${appliedTheme}.png`;
   };
   
   const getDefaultDimensions = () => {

@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { RealTimeProvider } from "@/contexts/RealTimeContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import Index from "./pages/Index";
 
 // Lazy load non-critical pages to reduce initial bundle size
@@ -39,46 +40,25 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <RealTimeProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/signup" element={<SignUp />} />
-              <Route path="/practices" element={<Practices />} />
-              <Route path="/doctors" element={<Doctors />} />
-              <Route path="/register-practice" element={<RegisterPractice />} />
-              <Route path="/processing-practice" element={<ProcessingPractice />} />
-              <Route path="/admin-dashboard" element={<AdminDashboard />} />
-              <Route path="/doctor-signup" element={<DoctorSignUp />} />
-              <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
-              <Route path="/doctor-schedule-settings" element={<DoctorScheduleSettings />} />
-              <Route path="/doctor-procedures" element={<DoctorProcedures />} />
-              <Route path="/patient-dashboard" element={<PatientDashboard />} />
-              <Route path="/search/:category" element={<CategorySearch />} />
-              <Route path="/doctor/:id" element={<DoctorProfile />} />
-              <Route path="/procedure-library" element={<ProcedureLibrary />} />
-              <Route path="/treatment-planning" element={<TreatmentPlanning />} />
-              <Route path="/book-appointment/:doctorId" element={<AppointmentBooking />} />
-              <Route path="/booking-confirmation/:appointmentId" element={<BookingConfirmation />} />
-              <Route path="/verify/:token" element={<VerifyPatient />} />
-              <Route path="/find-doctors" element={<FindDoctors />} />
-              <Route path="/notifications" element={<Notifications />} />
-              <Route path="/dashboard/verify" element={<PracticeVerification />} />
-              <Route path="/admin/profile-settings" element={<AdminProfileSettings />} />
-              <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-      </RealTimeProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <RealTimeProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+              <Routes>
+                <Route path="/" element={<Index />} />
+...
+                <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+        </RealTimeProvider>
+      </AuthProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

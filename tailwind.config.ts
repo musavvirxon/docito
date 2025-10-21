@@ -73,6 +73,9 @@ export default {
 				'glow-blue-lg': '0 0 30px rgba(37, 99, 235, 0.6)',
 				'glow-blue-sharp': '0 0 20px rgba(37, 99, 235, 0.5), 0 0 40px rgba(37, 99, 235, 0.3)',
 			},
+			transitionProperty: {
+				'theme': 'background-color, border-color, color, box-shadow',
+			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',

@@ -1,15 +1,18 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
-type Theme = 'light' | 'dark';
+type ThemeMode = 'light' | 'dark' | 'auto';
+type AppliedTheme = 'light' | 'dark';
 
 interface ThemeContextType {
-  theme: Theme;
-  toggleTheme: () => void;
+  mode: ThemeMode;
+  appliedTheme: AppliedTheme;
+  setThemeMode: (mode: ThemeMode) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  theme: 'light',
-  toggleTheme: () => {},
+  mode: 'auto',
+  appliedTheme: 'light',
+  setThemeMode: () => {},
 });
 
 export const useTheme = () => useContext(ThemeContext);
@@ -19,50 +22,87 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider = ({ children }: ThemeProviderProps) => {
-  const getThemeBasedOnTime = (): Theme => {
+  const getSystemTheme = (): AppliedTheme => {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return 'light';
+  };
+
+  const getTimeBasedTheme = (): AppliedTheme => {
     const hour = new Date().getHours();
     return (hour >= 20 || hour < 6) ? 'dark' : 'light';
   };
 
-  const [theme, setTheme] = useState<Theme>(() => {
-    const saved = localStorage.getItem('docito-theme') as Theme | null;
-    return saved || getThemeBasedOnTime();
+  const getAutoTheme = (): AppliedTheme => {
+    // Try system preference first, fallback to time-based
+    const systemTheme = getSystemTheme();
+    return systemTheme || getTimeBasedTheme();
+  };
+
+  const [mode, setMode] = useState<ThemeMode>(() => {
+    const saved = localStorage.getItem('docito-theme-mode') as ThemeMode | null;
+    return saved || 'auto';
   });
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('docito-theme');
+  const [appliedTheme, setAppliedTheme] = useState<AppliedTheme>(() => {
+    if (mode === 'auto') {
+      return getAutoTheme();
+    }
+    return mode as AppliedTheme;
+  });
+
+  // Apply theme to document
+  const applyTheme = (themeMode: ThemeMode) => {
+    let newAppliedTheme: AppliedTheme;
     
-    if (!savedTheme) {
-      const autoTheme = getThemeBasedOnTime();
-      setTheme(autoTheme);
-      
-      // Check every minute for automatic theme switching
+    if (themeMode === 'auto') {
+      newAppliedTheme = getAutoTheme();
+    } else {
+      newAppliedTheme = themeMode as AppliedTheme;
+    }
+
+    document.documentElement.classList.remove('light', 'dark');
+    document.documentElement.classList.add(newAppliedTheme);
+    setAppliedTheme(newAppliedTheme);
+  };
+
+  // Watch for system theme changes when in auto mode
+  useEffect(() => {
+    if (mode === 'auto') {
+      const mq = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleChange = () => applyTheme('auto');
+      mq.addEventListener('change', handleChange);
+      return () => mq.removeEventListener('change', handleChange);
+    }
+  }, [mode]);
+
+  // Check every minute for time-based theme switching in auto mode
+  useEffect(() => {
+    if (mode === 'auto') {
       const interval = setInterval(() => {
-        if (!localStorage.getItem('docito-theme')) {
-          const newTheme = getThemeBasedOnTime();
-          if (newTheme !== theme) {
-            setTheme(newTheme);
-          }
+        const newTheme = getAutoTheme();
+        if (newTheme !== appliedTheme) {
+          applyTheme('auto');
         }
-      }, 60000);
+      }, 60000); // Check every minute
       
       return () => clearInterval(interval);
     }
-  }, [theme]);
+  }, [mode, appliedTheme]);
 
+  // Apply theme whenever mode changes
   useEffect(() => {
-    document.documentElement.classList.remove('light', 'dark');
-    document.documentElement.classList.add(theme);
-  }, [theme]);
+    applyTheme(mode);
+  }, [mode]);
 
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    localStorage.setItem('docito-theme', newTheme);
+  const setThemeMode = (newMode: ThemeMode) => {
+    setMode(newMode);
+    localStorage.setItem('docito-theme-mode', newMode);
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ mode, appliedTheme, setThemeMode }}>
       {children}
     </ThemeContext.Provider>
   );
