@@ -29,7 +29,6 @@ const BookingConfirmation = lazy(() => import("./pages/BookingConfirmation"));
 const DoctorScheduleSettings = lazy(() => import("./pages/DoctorScheduleSettings"));
 const DoctorProcedures = lazy(() => import("./pages/DoctorProcedures"));
 const VerifyPatient = lazy(() => import("./pages/VerifyPatient"));
-const FindDoctors = lazy(() => import("./pages/FindDoctors"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const PracticeVerification = lazy(() => import("./pages/PracticeVerification"));
@@ -69,7 +68,6 @@ const App = () => (
                 <Route path="/book-appointment/:doctorId" element={<AppointmentBooking />} />
                 <Route path="/booking-confirmation/:appointmentId" element={<BookingConfirmation />} />
                 <Route path="/verify/:token" element={<VerifyPatient />} />
-                <Route path="/find-doctors" element={<FindDoctors />} />
                 <Route path="/notifications" element={<Notifications />} />
                 <Route path="/dashboard/verify" element={<PracticeVerification />} />
                 <Route path="/admin/profile-settings" element={<AdminProfileSettings />} />

@@ -27,6 +27,7 @@ import { NotificationDropdown } from "@/components/NotificationDropdown";
 import { MedicationReminderDashboard } from "@/components/medication/MedicationReminderDashboard";
 import { PatientSettingsPanel } from "@/components/patient/PatientSettingsPanel";
 import ThemeToggle from "@/components/home/ThemeToggle";
+import DoctorSearchSection from "@/components/patient/DoctorSearchSection";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -273,7 +274,7 @@ const PatientDashboard = () => {
                     <Button
                       variant="outline"
                       className="justify-start"
-                      onClick={() => navigate("/find-doctors")}
+                      onClick={() => setActiveSection("find-doctors")}
                     >
                       <Plus className="mr-2 h-4 w-4" />
                       Book Appointment
@@ -356,7 +357,7 @@ const PatientDashboard = () => {
                     <Button
                       variant="link"
                       className="mt-2"
-                      onClick={() => navigate("/find-doctors")}
+                      onClick={() => setActiveSection("find-doctors")}
                     >
                       Book your first appointment
                     </Button>
@@ -385,23 +386,7 @@ const PatientDashboard = () => {
           )}
 
           {activeSection === "find-doctors" && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Find Doctors</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-muted-foreground">
-                  <Search className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>Search for doctors and specialists</p>
-                  <Button
-                    className="mt-4"
-                    onClick={() => navigate("/find-doctors")}
-                  >
-                    Go to Find Doctors
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <DoctorSearchSection />
           )}
 
           {activeSection === "settings" && (
