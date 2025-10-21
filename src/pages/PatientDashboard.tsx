@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAppointments } from "@/hooks/useAppointments";
 import { usePatientDashboard } from "@/hooks/usePatientDashboard";
@@ -10,38 +10,33 @@ import {
   LogOut,
   FileText,
   Pill,
-  Activity,
-  ChevronDown,
+  Home,
   Search,
   Plus,
   Clock,
-  Star,
   MapPin,
+  Menu,
+  X,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
 import { MedicationReminderDashboard } from "@/components/medication/MedicationReminderDashboard";
 import { PatientSettingsPanel } from "@/components/patient/PatientSettingsPanel";
 import ThemeToggle from "@/components/home/ThemeToggle";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 const PatientDashboard = () => {
   const { user, profile, signOut, loading: authLoading } = useAuth();
   const { stats, loading: statsLoading } = usePatientDashboard();
   const { appointments, loading: appointmentsLoading } = useAppointments();
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeSection, setActiveSection] = useState("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
 
   // Redirect if not authenticated or not a patient
   if (!authLoading && (!user || profile?.role !== 'patient')) {
@@ -59,65 +54,132 @@ const PatientDashboard = () => {
     );
   }
 
+  const navItems = [
+    { id: "dashboard", label: "Dashboard", icon: Home },
+    { id: "appointments", label: "My Appointments", icon: Calendar },
+    { id: "medications", label: "Medications", icon: Pill },
+    { id: "records", label: "Medical Records", icon: FileText },
+    { id: "find-doctors", label: "Find Doctors", icon: Search },
+    { id: "settings", label: "Settings", icon: Settings },
+  ];
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Top Navigation */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold flex items-center gap-2">
-              <Activity className="w-6 h-6 text-primary" />
-              Patient Dashboard
-            </h1>
+    <div className="flex min-h-screen bg-background">
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 w-64 bg-sidebar border-r border-sidebar-border transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <div className="flex flex-col h-full">
+          {/* User Profile Section */}
+          <div className="p-6 border-b border-sidebar-border">
+            <div className="flex items-center gap-3 mb-4">
+              <Avatar className="h-12 w-12">
+                <AvatarImage src={profile?.avatar_url} />
+                <AvatarFallback className="bg-primary text-primary-foreground">
+                  <User className="h-6 w-6" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sidebar-foreground truncate">
+                  {profile?.full_name || 'Patient'}
+                </p>
+                <p className="text-sm text-sidebar-foreground/60 truncate">
+                  {profile?.email}
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden"
+                onClick={() => setSidebarOpen(false)}
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
-            <NotificationDropdown />
-            
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={profile?.avatar_url} />
-                    <AvatarFallback>
-                      <User className="h-4 w-4" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="hidden md:inline">{profile?.full_name || 'Patient'}</span>
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={() => setActiveTab("settings")}>
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut} className="text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          {/* Navigation Items */}
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeSection === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setActiveSection(item.id);
+                    setSidebarOpen(false);
+                  }}
+                  className={cn(
+                    "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left",
+                    isActive
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent/50"
+                  )}
+                >
+                  <Icon className="h-5 w-5 flex-shrink-0" />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* Logout Button */}
+          <div className="p-4 border-t border-sidebar-border">
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent/50"
+              onClick={signOut}
+            >
+              <LogOut className="mr-3 h-5 w-5" />
+              Log Out
+            </Button>
           </div>
         </div>
-      </header>
+      </aside>
 
-      <main className="container mx-auto px-4 py-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="appointments">Appointments</TabsTrigger>
-            <TabsTrigger value="medications">Medications</TabsTrigger>
-            <TabsTrigger value="records">Records</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-          </TabsList>
+      {/* Overlay for mobile */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6">
-            {/* Stats Grid */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top Header */}
+        <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="flex h-16 items-center gap-4 px-4 lg:px-6">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            
+            <h1 className="text-xl font-semibold flex-1">
+              {navItems.find(item => item.id === activeSection)?.label || "Patient Dashboard"}
+            </h1>
+
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <NotificationDropdown />
+            </div>
+          </div>
+        </header>
+
+        {/* Content Area */}
+        <main className="flex-1 overflow-auto p-6">
+          {activeSection === "dashboard" && (
+            <div className="space-y-6">
+              {/* Stats Grid */}
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
@@ -191,38 +253,46 @@ const PatientDashboard = () => {
                   </div>
                 </CardContent>
               </Card>
-            </div>
+              </div>
 
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-3 md:grid-cols-3">
-                  <Button variant="outline" className="justify-start">
-                    <Search className="mr-2 h-4 w-4" />
-                    Find Doctors
-                  </Button>
-                  <Button variant="outline" className="justify-start">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Book Appointment
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="justify-start"
-                    onClick={() => setActiveTab("appointments")}
-                  >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    View Appointments
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Next Appointment Card */}
-            {stats?.nextAppointment && (
+              {/* Quick Actions */}
               <Card>
+                <CardHeader>
+                  <CardTitle>Quick Actions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <Button
+                      variant="outline"
+                      className="justify-start"
+                      onClick={() => setActiveSection("find-doctors")}
+                    >
+                      <Search className="mr-2 h-4 w-4" />
+                      Find Doctors
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="justify-start"
+                      onClick={() => navigate("/find-doctors")}
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Book Appointment
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="justify-start"
+                      onClick={() => setActiveSection("appointments")}
+                    >
+                      <Calendar className="mr-2 h-4 w-4" />
+                      View Appointments
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Next Appointment Card */}
+              {stats?.nextAppointment && (
+                <Card>
                 <CardHeader>
                   <CardTitle>Next Appointment</CardTitle>
                 </CardHeader>
@@ -241,14 +311,14 @@ const PatientDashboard = () => {
                       </div>
                     </div>
                     <Badge>{stats.nextAppointment.status}</Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
 
-          {/* Appointments Tab */}
-          <TabsContent value="appointments">
+          {activeSection === "appointments" && (
             <Card>
               <CardHeader>
                 <CardTitle>My Appointments</CardTitle>
@@ -283,22 +353,24 @@ const PatientDashboard = () => {
                   <div className="text-center py-8 text-muted-foreground">
                     <Calendar className="h-12 w-12 mx-auto mb-2 opacity-50" />
                     <p>No appointments scheduled</p>
-                    <Button variant="link" className="mt-2">
+                    <Button
+                      variant="link"
+                      className="mt-2"
+                      onClick={() => navigate("/find-doctors")}
+                    >
                       Book your first appointment
                     </Button>
                   </div>
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+          )}
 
-          {/* Medications Tab */}
-          <TabsContent value="medications">
+          {activeSection === "medications" && (
             <MedicationReminderDashboard />
-          </TabsContent>
+          )}
 
-          {/* Records Tab */}
-          <TabsContent value="records">
+          {activeSection === "records" && (
             <Card>
               <CardHeader>
                 <CardTitle>Medical Records</CardTitle>
@@ -310,14 +382,33 @@ const PatientDashboard = () => {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          )}
 
-          {/* Settings Tab */}
-          <TabsContent value="settings">
+          {activeSection === "find-doctors" && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Find Doctors</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 text-muted-foreground">
+                  <Search className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <p>Search for doctors and specialists</p>
+                  <Button
+                    className="mt-4"
+                    onClick={() => navigate("/find-doctors")}
+                  >
+                    Go to Find Doctors
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {activeSection === "settings" && (
             <PatientSettingsPanel />
-          </TabsContent>
-        </Tabs>
-      </main>
+          )}
+        </main>
+      </div>
     </div>
   );
 };
