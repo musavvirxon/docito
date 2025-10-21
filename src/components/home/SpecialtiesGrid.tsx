@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { Heart, Smile, Users, Pill, Brain, Eye, Activity, Bone, Baby } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const SpecialtiesGrid = () => {
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
@@ -68,17 +69,19 @@ const SpecialtiesGrid = () => {
                 onClick={() => handleSpecialtyClick(specialty.name)}
                 className="relative group cursor-pointer"
               >
-                <div className={`bg-card dark:bg-card rounded-2xl p-8 h-full flex flex-col items-center justify-center text-center border-2 transition-all duration-300 shadow-lg hover:shadow-xl dark:hover:shadow-glow-blue ${
+                <div className={cn(
+                  "bg-card dark:bg-card rounded-2xl p-8 h-full flex flex-col items-center justify-center text-center border-2 transition-all duration-300 shadow-lg hover:shadow-xl dark:hover:shadow-glow-blue",
                   selectedSpecialty === specialty.name 
-                    ? 'border-primary dark:border-primary shadow-2xl dark:shadow-glow-blue-lg scale-105' 
-                    : 'border-border dark:border-border hover:border-primary/50 dark:hover:border-primary'
-                }`}>
+                    ? "border-primary dark:border-primary shadow-2xl dark:shadow-glow-blue-lg scale-105" 
+                    : "border-border dark:border-border hover:border-primary/50 dark:hover:border-primary"
+                )}>
                   <div className="relative z-10 mb-4">
-                    <div className={`w-16 h-16 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 ${
+                    <div className={cn(
+                      "w-16 h-16 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300",
                       selectedSpecialty === specialty.name
-                        ? 'bg-primary/20 dark:bg-primary/30'
-                        : 'bg-primary/10 dark:bg-primary/20'
-                    }`}>
+                        ? "bg-primary/20 dark:bg-primary/30"
+                        : "bg-primary/10 dark:bg-primary/20"
+                    )}>
                       <Icon className={`w-8 h-8 ${specialty.color}`} />
                     </div>
                   </div>

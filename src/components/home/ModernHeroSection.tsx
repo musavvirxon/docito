@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, CreditCard, Calendar, FileText, BarChart3 } from "lucide-react";
@@ -17,18 +17,7 @@ const ModernHeroSection = () => {
   const { searchPractices } = usePractices();
   const { handleBookingClick } = useBookingAuth();
 
-  // Listen for specialty search events from SpecialtiesGrid
-  useEffect(() => {
-    const handleSpecialtySearch = (event: CustomEvent) => {
-      const { specialty, location, insurance } = event.detail;
-      handleSearch(specialty, location, insurance);
-    };
-
-    window.addEventListener('homepage-search', handleSpecialtySearch as EventListener);
-    return () => window.removeEventListener('homepage-search', handleSpecialtySearch as EventListener);
-  }, []);
-
-  const handleSearch = async (specialty: string, location: string, insurance: string) => {
+  const handleSearch = useCallback(async (specialty: string, location: string, insurance: string) => {
     if (!specialty.trim() && !location.trim()) return;
 
     setSearching(true);
@@ -84,7 +73,18 @@ const ModernHeroSection = () => {
     } finally {
       setSearching(false);
     }
-  };
+  }, [searchDoctors, searchPractices]);
+
+  // Listen for specialty search events from SpecialtiesGrid
+  useEffect(() => {
+    const handleSpecialtySearch = (event: CustomEvent) => {
+      const { specialty, location, insurance } = event.detail;
+      handleSearch(specialty, location, insurance);
+    };
+
+    window.addEventListener('homepage-search', handleSpecialtySearch as EventListener);
+    return () => window.removeEventListener('homepage-search', handleSpecialtySearch as EventListener);
+  }, [handleSearch]);
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-gray-100 dark:from-[#030712] dark:via-[#0A0F1E] dark:to-[#030712]">
