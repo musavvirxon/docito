@@ -23,12 +23,10 @@ const PatientDashboard = lazy(() => import("./pages/PatientDashboard"));
 const CategorySearch = lazy(() => import("./pages/CategorySearch"));
 const DoctorProfile = lazy(() => import("./pages/DoctorProfile"));
 const ProcedureLibrary = lazy(() => import("./pages/ProcedureLibrary"));
-const EnhancedProcedureLibrary = lazy(() => import("./components/doctor/EnhancedProcedureLibrary"));
 const TreatmentPlanning = lazy(() => import("./pages/TreatmentPlanning"));
 const AppointmentBooking = lazy(() => import("./pages/AppointmentBooking"));
 const BookingConfirmation = lazy(() => import("./pages/BookingConfirmation"));
 const DoctorScheduleSettings = lazy(() => import("./pages/DoctorScheduleSettings"));
-const DoctorProcedures = lazy(() => import("./pages/DoctorProcedures"));
 const VerifyPatient = lazy(() => import("./pages/VerifyPatient"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -60,12 +58,11 @@ const App = () => (
                 <Route path="/doctor-signup" element={<DoctorSignUp />} />
                 <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
                 <Route path="/doctor-schedule-settings" element={<DoctorScheduleSettings />} />
-                <Route path="/doctor-procedures" element={<DoctorProcedures />} />
+                <Route path="/doctor-procedures" element={<ProcedureLibrary />} />
+                <Route path="/procedure-library" element={<ProcedureLibrary />} />
                 <Route path="/patient-dashboard" element={<PatientDashboard />} />
                 <Route path="/search/:category" element={<CategorySearch />} />
                 <Route path="/doctor/:id" element={<DoctorProfile />} />
-          <Route path="/procedure-library" element={<ProcedureLibrary />} />
-          <Route path="/enhanced-procedure-library" element={<EnhancedProcedureLibrary />} />
                 <Route path="/treatment-planning" element={<TreatmentPlanning />} />
                 <Route path="/book-appointment/:doctorId" element={<AppointmentBooking />} />
                 <Route path="/booking-confirmation/:appointmentId" element={<BookingConfirmation />} />
