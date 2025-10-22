@@ -23,6 +23,7 @@ const PatientDashboard = lazy(() => import("./pages/PatientDashboard"));
 const CategorySearch = lazy(() => import("./pages/CategorySearch"));
 const DoctorProfile = lazy(() => import("./pages/DoctorProfile"));
 const ProcedureLibrary = lazy(() => import("./pages/ProcedureLibrary"));
+const EnhancedProcedureLibrary = lazy(() => import("./components/doctor/EnhancedProcedureLibrary"));
 const TreatmentPlanning = lazy(() => import("./pages/TreatmentPlanning"));
 const AppointmentBooking = lazy(() => import("./pages/AppointmentBooking"));
 const BookingConfirmation = lazy(() => import("./pages/BookingConfirmation"));
@@ -63,7 +64,8 @@ const App = () => (
                 <Route path="/patient-dashboard" element={<PatientDashboard />} />
                 <Route path="/search/:category" element={<CategorySearch />} />
                 <Route path="/doctor/:id" element={<DoctorProfile />} />
-                <Route path="/procedure-library" element={<ProcedureLibrary />} />
+          <Route path="/procedure-library" element={<ProcedureLibrary />} />
+          <Route path="/enhanced-procedure-library" element={<EnhancedProcedureLibrary />} />
                 <Route path="/treatment-planning" element={<TreatmentPlanning />} />
                 <Route path="/book-appointment/:doctorId" element={<AppointmentBooking />} />
                 <Route path="/booking-confirmation/:appointmentId" element={<BookingConfirmation />} />

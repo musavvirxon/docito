@@ -1262,6 +1262,39 @@ export type Database = {
           },
         ]
       }
+      procedure_templates: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          default_price: number | null
+          description: string | null
+          duration_minutes: number | null
+          id: string
+          is_active: boolean | null
+          name: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          default_price?: number | null
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          default_price?: number | null
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+        }
+        Relationships: []
+      }
       procedures: {
         Row: {
           category: Database["public"]["Enums"]["procedure_category"] | null
@@ -1276,6 +1309,7 @@ export type Database = {
           id: string
           informed_consent_template: string | null
           is_active: boolean | null
+          is_bookable: boolean | null
           name: string
           notes: string | null
           price: number | null
@@ -1297,6 +1331,7 @@ export type Database = {
           id?: string
           informed_consent_template?: string | null
           is_active?: boolean | null
+          is_bookable?: boolean | null
           name: string
           notes?: string | null
           price?: number | null
@@ -1318,6 +1353,7 @@ export type Database = {
           id?: string
           informed_consent_template?: string | null
           is_active?: boolean | null
+          is_bookable?: boolean | null
           name?: string
           notes?: string | null
           price?: number | null
@@ -1672,6 +1708,56 @@ export type Database = {
             columns: ["practice_id"]
             isOneToOne: false
             referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      treatment_plan_medications: {
+        Row: {
+          created_at: string | null
+          dosage: string
+          end_date: string
+          frequency: string
+          id: string
+          instructions: string | null
+          medication_name: string
+          notification_times: string[] | null
+          start_date: string
+          treatment_plan_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          dosage: string
+          end_date: string
+          frequency: string
+          id?: string
+          instructions?: string | null
+          medication_name: string
+          notification_times?: string[] | null
+          start_date: string
+          treatment_plan_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          dosage?: string
+          end_date?: string
+          frequency?: string
+          id?: string
+          instructions?: string | null
+          medication_name?: string
+          notification_times?: string[] | null
+          start_date?: string
+          treatment_plan_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "treatment_plan_medications_treatment_plan_id_fkey"
+            columns: ["treatment_plan_id"]
+            isOneToOne: false
+            referencedRelation: "treatment_plans"
             referencedColumns: ["id"]
           },
         ]

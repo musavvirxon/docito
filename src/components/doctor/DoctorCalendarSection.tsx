@@ -15,7 +15,6 @@ import SetAvailabilityModal from "./SetAvailabilityModal";
 import ManualBookAppointmentModal from "./ManualBookAppointmentModal";
 import GoogleCalendarSyncModal from "./GoogleCalendarSyncModal";
 import TimeSlotCard from "./TimeSlotCard";
-import { SlotSelectionModal } from "./SlotSelectionModal";
 import { useProcedures } from "@/hooks/useProcedures";
 import { useTimeSlots } from "@/hooks/useTimeSlots";
 
@@ -56,12 +55,11 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
   const [selectedProcedureId, setSelectedProcedureId] = useState<string>("");
   const [bufferTime, setBufferTime] = useState(15);
   
-  // Two-step modal flow state
-  const [modalFlow, setModalFlow] = useState<{
-    type: 'block' | 'book' | 'availability' | 'unblock' | null;
-    step: 'slot-selection' | 'details';
-    selectedSlot?: { date: Date; time: string };
-  }>({ type: null, step: 'slot-selection' });
+  // Direct modal state (no slot selection popup)
+  const [isBlockTimeOpen, setIsBlockTimeOpen] = useState(false);
+  const [isBookAppointmentOpen, setIsBookAppointmentOpen] = useState(false);
+  const [isAvailabilityOpen, setIsAvailabilityOpen] = useState(false);
+  const [selectedSlotForAction, setSelectedSlotForAction] = useState<{ date: Date; time: string } | null>(null);
   
   const [isGoogleSyncOpen, setIsGoogleSyncOpen] = useState(false);
   
@@ -286,18 +284,12 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
                         key={`${slot.time}-${index}`}
                         slot={slot}
                         onBlockTime={(time) => {
-                          setModalFlow({
-                            type: 'block',
-                            step: 'details',
-                            selectedSlot: { date: selectedDate, time }
-                          });
+                          setSelectedSlotForAction({ date: selectedDate, time });
+                          setIsBlockTimeOpen(true);
                         }}
                         onBookAppointment={(time) => {
-                          setModalFlow({
-                            type: 'book',
-                            step: 'details',
-                            selectedSlot: { date: selectedDate, time }
-                          });
+                          setSelectedSlotForAction({ date: selectedDate, time });
+                          setIsBookAppointmentOpen(true);
                         }}
                       />
                     ))}
@@ -317,7 +309,10 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
             <Button 
               className="w-full justify-start" 
               variant="outline"
-              onClick={() => setModalFlow({ type: 'block', step: 'slot-selection' })}
+              onClick={() => {
+                setSelectedSlotForAction(null);
+                setIsBlockTimeOpen(true);
+              }}
             >
               <Plus className="w-4 h-4 mr-2" />
               Block Time
@@ -325,7 +320,7 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
             <Button 
               className="w-full justify-start" 
               variant="outline"
-              onClick={() => setModalFlow({ type: 'availability', step: 'details' })}
+              onClick={() => setIsAvailabilityOpen(true)}
             >
               <Clock className="w-4 h-4 mr-2" />
               Set Availability
@@ -333,7 +328,10 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
             <Button 
               className="w-full justify-start" 
               variant="outline"
-              onClick={() => setModalFlow({ type: 'book', step: 'slot-selection' })}
+              onClick={() => {
+                setSelectedSlotForAction(null);
+                setIsBookAppointmentOpen(true);
+              }}
             >
               <Calendar className="w-4 h-4 mr-2" />
               Book Appointment
@@ -352,71 +350,55 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
         </Card>
       </div>
 
-      {/* Modals - Two-step flow */}
+      {/* Modals - Direct action (no slot selection popup) */}
       {doctorId && (
         <>
-          {/* Step 1: Slot Selection Modal */}
-          {modalFlow.step === 'slot-selection' && modalFlow.type !== 'availability' && (
-            <SlotSelectionModal
-              isOpen={true}
-              onClose={() => setModalFlow({ type: null, step: 'slot-selection' })}
-              doctorId={doctorId}
-              actionType={modalFlow.type as 'block' | 'book' | 'unblock'}
-              onSlotSelected={(date, time, slot) => {
-                setModalFlow({
-                  ...modalFlow,
-                  step: 'details',
-                  selectedSlot: { date, time }
-                });
-              }}
-            />
-          )}
+          {/* Block Time Modal */}
+          <BlockTimeModal 
+            isOpen={isBlockTimeOpen}
+            onClose={() => {
+              setIsBlockTimeOpen(false);
+              setSelectedSlotForAction(null);
+            }}
+            preselectedSlot={selectedSlotForAction}
+            onSuccess={async () => {
+              await refetch();
+              toast.success("Time blocked successfully");
+              setIsBlockTimeOpen(false);
+              setSelectedSlotForAction(null);
+            }}
+          />
           
-          {/* Step 2: Block Time Details */}
-          {modalFlow.type === 'block' && modalFlow.step === 'details' && (
-            <BlockTimeModal 
-              isOpen={true}
-              onClose={() => setModalFlow({ type: null, step: 'slot-selection' })}
-              preselectedSlot={modalFlow.selectedSlot}
-              onSuccess={async () => {
-                await refetch();
-                toast.success("Time blocked successfully");
-                setModalFlow({ type: null, step: 'slot-selection' });
-              }}
-            />
-          )}
+          {/* Book Appointment Modal */}
+          <ManualBookAppointmentModal
+            isOpen={isBookAppointmentOpen}
+            onClose={() => {
+              setIsBookAppointmentOpen(false);
+              setSelectedSlotForAction(null);
+            }}
+            doctorId={doctorId}
+            practiceId={practiceId || undefined}
+            prefilledDate={selectedSlotForAction?.date}
+            prefilledTime={selectedSlotForAction?.time}
+            onSuccess={async () => {
+              await refetch();
+              toast.success("Appointment booked successfully");
+              setIsBookAppointmentOpen(false);
+              setSelectedSlotForAction(null);
+            }}
+          />
           
-          {/* Step 2: Book Appointment Details */}
-          {modalFlow.type === 'book' && modalFlow.step === 'details' && (
-            <ManualBookAppointmentModal
-              isOpen={true}
-              onClose={() => setModalFlow({ type: null, step: 'slot-selection' })}
-              doctorId={doctorId}
-              practiceId={practiceId || undefined}
-              prefilledDate={modalFlow.selectedSlot?.date}
-              prefilledTime={modalFlow.selectedSlot?.time}
-              onSuccess={async () => {
-                console.log('🔄 Starting calendar refetch...');
-                await refetch();
-                console.log('✅ Calendar refetch result - slots updated');
-                setModalFlow({ type: null, step: 'slot-selection' });
-              }}
-            />
-          )}
-          
-          {/* Set Availability (no slot selection needed) */}
-          {modalFlow.type === 'availability' && modalFlow.step === 'details' && (
-            <SetAvailabilityModal 
-              isOpen={true}
-              onClose={() => setModalFlow({ type: null, step: 'slot-selection' })}
-              doctorId={doctorId}
-              onSuccess={async () => {
-                await refetch();
-                toast.success("Availability updated");
-                setModalFlow({ type: null, step: 'slot-selection' });
-              }}
-            />
-          )}
+          {/* Set Availability Modal */}
+          <SetAvailabilityModal 
+            isOpen={isAvailabilityOpen}
+            onClose={() => setIsAvailabilityOpen(false)}
+            doctorId={doctorId}
+            onSuccess={async () => {
+              await refetch();
+              toast.success("Availability updated");
+              setIsAvailabilityOpen(false);
+            }}
+          />
           
           <GoogleCalendarSyncModal
             isOpen={isGoogleSyncOpen}
