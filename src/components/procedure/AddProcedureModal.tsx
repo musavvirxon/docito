@@ -25,10 +25,10 @@ import { toast } from "sonner";
 import ToothSelector from "./ToothSelector";
 
 const formSchema = z.object({
-  name: z.string().optional(),
-  category: z.string().optional(),
-  type: z.string().optional(),
-  default_cost: z.number().optional(),
+  name: z.string().min(1, "Procedure name is required"),
+  category: z.string().min(1, "Category is required"),
+  type: z.string().min(1, "Type is required"),
+  default_cost: z.number().min(0, "Cost must be a positive number").refine(val => val !== undefined, "Cost is required"),
   notes: z.string().optional(),
   tooth_range: z.array(z.number()).optional(),
 });
@@ -55,23 +55,8 @@ const AddProcedureModal = ({ open, onOpenChange, onSuccess }: AddProcedureModalP
     },
   });
 
-  const categoryOptions = [
-    { value: "restorative", label: "Restorative" },
-    { value: "surgical", label: "Surgical" },
-    { value: "orthodontic", label: "Orthodontic" },
-    { value: "periodontal", label: "Periodontal" },
-    { value: "endodontic", label: "Endodontic" },
-    { value: "prosthodontic", label: "Prosthodontic" },
-    { value: "oral_surgery", label: "Oral Surgery" },
-    { value: "preventive", label: "Preventive" },
-    { value: "cosmetic", label: "Cosmetic" },
-    { value: "other", label: "Other" }
-  ];
-
-  const typeOptions = [
-    { value: "tooth_based", label: "Tooth-based" },
-    { value: "oral_cavity_region", label: "Oral Cavity Region" }
-  ];
+  const [categoryOptions, setCategoryOptions] = useState<{ value: string; label: string }[]>([]);
+  const [typeOptions, setTypeOptions] = useState<{ value: string; label: string }[]>([]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
@@ -198,7 +183,7 @@ const AddProcedureModal = ({ open, onOpenChange, onSuccess }: AddProcedureModalP
               name="default_cost"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Default Cost (USD)</FormLabel>
+                  <FormLabel>Default Cost (USD)*</FormLabel>
                   <FormControl>
                     <Input
                       type="number"

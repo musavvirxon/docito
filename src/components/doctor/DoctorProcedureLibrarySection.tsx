@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, Filter, Edit, Trash2, BookOpen, Loader2 } from "lucide-react";
+import { Plus, Search, Filter, Edit, Trash2, BookOpen, Loader2, Eye, EyeOff, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,27 +39,8 @@ const DoctorProcedureLibrarySection = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingProcedure, setEditingProcedure] = useState<Procedure | null>(null);
 
-  const categoryOptions = [
-    { value: "all", label: "All Categories" },
-    { value: "restorative", label: "Restorative" },
-    { value: "surgical", label: "Surgical" },
-    { value: "orthodontic", label: "Orthodontic" },
-    { value: "periodontal", label: "Periodontal" },
-    { value: "endodontic", label: "Endodontic" },
-    { value: "prosthodontic", label: "Prosthodontic" },
-    { value: "oral_surgery", label: "Oral Surgery" },
-    { value: "preventive", label: "Preventive" },
-    { value: "cosmetic", label: "Cosmetic" },
-    { value: "general", label: "General" },
-    { value: "other", label: "Other" }
-  ];
-
-  const typeOptions = [
-    { value: "all", label: "All Types" },
-    { value: "single_visit", label: "Single Visit" },
-    { value: "multi_visit", label: "Multi Visit" },
-    { value: "emergency", label: "Emergency" }
-  ];
+  const [categoryOptions, setCategoryOptions] = useState([{ value: "all", label: "All Categories" }]);
+  const [typeOptions, setTypeOptions] = useState([{ value: "all", label: "All Types" }]);
 
   useEffect(() => {
     fetchProcedures();
@@ -223,23 +204,6 @@ const DoctorProcedureLibrarySection = () => {
     }).format(amount);
   };
 
-  const getCategoryBadgeColor = (category: string) => {
-    const colors: Record<string, string> = {
-      restorative: "bg-blue-100 text-blue-800",
-      surgical: "bg-red-100 text-red-800",
-      orthodontic: "bg-green-100 text-green-800",
-      periodontal: "bg-purple-100 text-purple-800",
-      endodontic: "bg-orange-100 text-orange-800",
-      prosthodontic: "bg-cyan-100 text-cyan-800",
-      oral_surgery: "bg-red-100 text-red-800",
-      preventive: "bg-emerald-100 text-emerald-800",
-      cosmetic: "bg-pink-100 text-pink-800",
-      general: "bg-gray-100 text-gray-800",
-      other: "bg-gray-100 text-gray-800"
-    };
-    return colors[category] || colors.other;
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -316,12 +280,20 @@ const DoctorProcedureLibrarySection = () => {
           <CardTitle>Quick Actions</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4">
+          <div className="flex gap-4 flex-wrap">
             <Button onClick={handleEnableAllBooking} variant="outline">
               Enable All for Booking
             </Button>
             <Button onClick={handleDisableAllBooking} variant="outline">
               Disable All Booking
+            </Button>
+            <Button variant="outline" className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              Manage Categories
+            </Button>
+            <Button variant="outline" className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              Manage Types
             </Button>
           </div>
         </CardContent>
@@ -425,7 +397,7 @@ const DoctorProcedureLibrarySection = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge className={getCategoryBadgeColor(procedure.category)}>
+                      <Badge variant="secondary">
                         {categoryOptions.find(c => c.value === procedure.category)?.label || procedure.category}
                       </Badge>
                     </TableCell>
@@ -458,8 +430,9 @@ const DoctorProcedureLibrarySection = () => {
                             variant="outline"
                             size="sm"
                             onClick={() => handleToggleBookable(procedure.id, true)}
-                            className="hover:bg-orange-100"
+                            className="hover:bg-orange-100 flex items-center gap-1"
                           >
+                            <Eye className="w-4 h-4" />
                             Make Private
                           </Button>
                         ) : (
@@ -467,8 +440,9 @@ const DoctorProcedureLibrarySection = () => {
                             variant="outline"
                             size="sm"
                             onClick={() => handleToggleBookable(procedure.id, false)}
-                            className="hover:bg-green-100"
+                            className="hover:bg-green-100 flex items-center gap-1"
                           >
+                            <EyeOff className="w-4 h-4" />
                             Make Public
                           </Button>
                         )}
