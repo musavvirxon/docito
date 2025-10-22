@@ -68,44 +68,21 @@ const TreatmentPlanning = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      // Allow anonymous access - load sample data if not authenticated
       if (!user) {
-        // Load sample treatment plans for demonstration
-        const samplePlans = [
-          {
-            id: 'sample-1',
-            doctor_id: 'demo-dentist',
-            patient_id: 'demo-patient-1',
-            title: 'Comprehensive Oral Rehabilitation',
-            description: 'Complete treatment plan including cleanings, fillings, and crown placement',
-            status: 'published',
-            total_cost: 2800,
-            created_at: new Date().toISOString(),
-            published_at: new Date().toISOString(),
-            completed_at: null,
-            estimated_duration_weeks: 12,
-            estimated_completion_date: new Date(Date.now() + 84 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            priority: 'high',
-            updated_at: new Date().toISOString(),
-          },
-          {
-            id: 'sample-2',
-            doctor_id: 'demo-dentist',
-            patient_id: 'demo-patient-2',
-            title: 'Preventive Care Package',
-            description: 'Regular cleanings and preventive treatments',
-            status: 'in_progress',
-            total_cost: 450,
-            created_at: new Date().toISOString(),
-            published_at: new Date().toISOString(),
-            completed_at: null,
-            estimated_duration_weeks: 4,
-            estimated_completion_date: new Date(Date.now() + 28 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            priority: 'normal',
-            updated_at: new Date().toISOString(),
-          }
-        ];
-        setTreatmentPlans(samplePlans);
+        toast.error("Please sign in to view treatment plans");
+        setLoading(false);
+        return;
+      }
+
+      // First get doctor ID from user
+      const { data: doctorData } = await supabase
+        .from("doctors")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!doctorData) {
+        toast.error("Doctor profile not found");
         setLoading(false);
         return;
       }
@@ -113,7 +90,7 @@ const TreatmentPlanning = () => {
       const { data, error } = await supabase
         .from("treatment_plans")
         .select("*")
-        .eq("doctor_id", user.id)
+        .eq("doctor_id", doctorData.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -129,37 +106,39 @@ const TreatmentPlanning = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      // Create mock patient data for demonstration
-      const mockPatients = [
-        { id: 'demo-patient-1', name: 'John Smith', email: 'john@example.com' },
-        { id: 'demo-patient-2', name: 'Sarah Johnson', email: 'sarah@example.com' },
-        { id: 'demo-patient-3', name: 'Mike Wilson', email: 'mike@example.com' }
-      ];
-      
       if (!user) {
-        setPatients(mockPatients);
         return;
       }
 
-      // Get unique patient IDs from treatment plans
-      const { data: planData } = await supabase
-        .from("treatment_plans")
-        .select("patient_id")
-        .eq("doctor_id", user.id);
+      // Get unique patient IDs from appointments
+      const { data: doctorData } = await supabase
+        .from("doctors")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
 
-      if (planData && planData.length > 0) {
-        const patientIds = [...new Set(planData.map(p => p.patient_id))];
+      if (!doctorData) return;
+
+      const { data: appointments } = await supabase
+        .from("appointments")
+        .select("patient_id, profiles!inner(id, full_name, email)")
+        .eq("doctor_id", doctorData.id);
+
+      if (appointments && appointments.length > 0) {
+        const uniquePatients = Array.from(
+          new Map(
+            appointments.map((apt: any) => [
+              apt.profiles.id,
+              {
+                id: apt.profiles.id,
+                name: apt.profiles.full_name,
+                email: apt.profiles.email
+              }
+            ])
+          ).values()
+        );
         
-        // For now, we'll create mock patient data since we don't have a patients table
-        const userPatients = patientIds.map((id, index) => ({
-          id,
-          name: `Patient ${index + 1}`,
-          email: `patient${index + 1}@example.com`
-        }));
-        
-        setPatients([...mockPatients, ...userPatients]);
-      } else {
-        setPatients(mockPatients);
+        setPatients(uniquePatients as Patient[]);
       }
     } catch (error: any) {
       console.error("Error fetching patients:", error);

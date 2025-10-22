@@ -24,6 +24,7 @@ interface Procedure {
   notes?: string;
   tooth_range?: number[];
   is_active: boolean;
+  is_bookable?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -71,54 +72,21 @@ const ProcedureLibrary = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      // Allow anonymous access - load sample data if not authenticated
       if (!user) {
-        // Load sample procedures for demonstration
-        const sampleProcedures: Procedure[] = [
-          {
-            id: 'sample-1',
-            dentist_id: 'demo-dentist',
-            name: 'General Cleaning',
-            category: 'preventive',
-            type: 'tooth_based',
-            default_cost: 120,
-            duration_minutes: 30,
-            notes: 'Routine dental cleaning and examination',
-            tooth_range: [],
-            is_active: true,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-          {
-            id: 'sample-2',
-            dentist_id: 'demo-dentist',
-            name: 'Dental Filling',
-            category: 'restorative',
-            type: 'tooth_based',
-            default_cost: 180,
-            duration_minutes: 45,
-            notes: 'Composite or amalgam filling',
-            tooth_range: [],
-            is_active: true,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-          {
-            id: 'sample-3',
-            dentist_id: 'demo-dentist',
-            name: 'Root Canal',
-            category: 'endodontic',
-            type: 'tooth_based',
-            default_cost: 800,
-            duration_minutes: 90,
-            notes: 'Endodontic treatment for infected tooth',
-            tooth_range: [],
-            is_active: true,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          }
-        ];
-        setProcedures(sampleProcedures);
+        toast.error("Please sign in to view procedures");
+        setLoading(false);
+        return;
+      }
+
+      // First get doctor ID from user
+      const { data: doctorData } = await supabase
+        .from("doctors")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!doctorData) {
+        toast.error("Doctor profile not found");
         setLoading(false);
         return;
       }
@@ -126,7 +94,7 @@ const ProcedureLibrary = () => {
       const { data, error } = await supabase
         .from("procedures")
         .select("*")
-        .eq("dentist_id", user.id)
+        .eq("dentist_id", doctorData.id)
         .eq("is_active", true)
         .order("created_at", { ascending: false });
 
@@ -186,8 +154,19 @@ const ProcedureLibrary = () => {
         return;
       }
 
+      const { data: doctorData } = await supabase
+        .from("doctors")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!doctorData) {
+        toast.error("Doctor profile not found");
+        return;
+      }
+
       const duplicatedProcedure = {
-        dentist_id: user.id,
+        dentist_id: doctorData.id,
         name: `${procedure.name} (Copy)`,
         category: procedure.category as any,
         type: procedure.type as any,
@@ -208,6 +187,83 @@ const ProcedureLibrary = () => {
       toast.error("Failed to duplicate procedure: " + error.message);
     }
   };
+
+  const handleToggleBookable = async (id: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase
+        .from("procedures")
+        .update({ is_bookable: !currentStatus })
+        .eq("id", id);
+
+      if (error) throw error;
+      
+      toast.success(`Procedure ${!currentStatus ? 'enabled' : 'disabled'} for booking`);
+      fetchProcedures();
+    } catch (error: any) {
+      toast.error("Failed to update procedure: " + error.message);
+    }
+  };
+
+  const handleEnableAllBooking = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: doctorData } = await supabase
+        .from("doctors")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!doctorData) return;
+
+      const { error } = await supabase
+        .from("procedures")
+        .update({ is_bookable: true })
+        .eq("dentist_id", doctorData.id)
+        .eq("is_active", true);
+
+      if (error) throw error;
+      
+      toast.success("All procedures enabled for booking");
+      fetchProcedures();
+    } catch (error: any) {
+      toast.error("Failed to enable all procedures: " + error.message);
+    }
+  };
+
+  const handleDisableAllBooking = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: doctorData } = await supabase
+        .from("doctors")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!doctorData) return;
+
+      const { error } = await supabase
+        .from("procedures")
+        .update({ is_bookable: false })
+        .eq("dentist_id", doctorData.id)
+        .eq("is_active", true);
+
+      if (error) throw error;
+      
+      toast.success("All procedures disabled for booking");
+      fetchProcedures();
+    } catch (error: any) {
+      toast.error("Failed to disable all procedures: " + error.message);
+    }
+  };
+
+  const bookableProcedures = procedures.filter(p => p.is_bookable);
+  const averageFee = procedures.length > 0 
+    ? procedures.reduce((sum, p) => sum + (p.default_cost || 0), 0) / procedures.length 
+    : 0;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -276,6 +332,56 @@ const ProcedureLibrary = () => {
           Add Procedure
         </Button>
       </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Procedures</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{procedures.length}</div>
+            <p className="text-xs text-muted-foreground">Active procedures</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Bookable Services</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{bookableProcedures.length}</div>
+            <p className="text-xs text-muted-foreground">Available for online booking</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Average Fee</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">${averageFee.toFixed(0)}</div>
+            <p className="text-xs text-muted-foreground">Per procedure</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Actions */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4">
+            <Button onClick={handleEnableAllBooking} variant="outline">
+              Enable All for Booking
+            </Button>
+            <Button onClick={handleDisableAllBooking} variant="outline">
+              Disable All Booking
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Filters */}
       <Card className="mb-6">
@@ -356,7 +462,7 @@ const ProcedureLibrary = () => {
                   <TableHead>Category</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Default Cost</TableHead>
-                  <TableHead>Teeth</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -387,13 +493,9 @@ const ProcedureLibrary = () => {
                       {procedure.default_cost ? formatCurrency(procedure.default_cost) : "Not set"}
                     </TableCell>
                     <TableCell>
-                      {procedure.tooth_range && procedure.tooth_range.length > 0 ? (
-                        <div className="text-sm">
-                          {procedure.tooth_range.join(", ")}
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground">All teeth</span>
-                      )}
+                      <Badge variant={procedure.is_bookable ? "default" : "secondary"}>
+                        {procedure.is_bookable ? "Bookable" : "Private"}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -401,21 +503,24 @@ const ProcedureLibrary = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => setEditingProcedure(procedure)}
+                          title="Edit"
                         >
                           <Edit className="w-4 h-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDuplicateProcedure(procedure)}
+                          onClick={() => handleToggleBookable(procedure.id, procedure.is_bookable)}
+                          title={procedure.is_bookable ? "Make Private" : "Make Public"}
                         >
-                          <Copy className="w-4 h-4" />
+                          {procedure.is_bookable ? "🔓" : "🔒"}
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDeleteProcedure(procedure.id)}
                           className="text-destructive hover:text-destructive"
+                          title="Delete"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
