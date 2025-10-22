@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, Filter, Edit, Trash2, Copy, BookOpen, Loader2 } from "lucide-react";
+import { Plus, Search, Filter, Edit, Trash2, BookOpen, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { useProcedures } from "@/hooks/useProcedures";
+import AddProcedureModal from "@/components/procedure/AddProcedureModal";
+import EditProcedureModal from "@/components/procedure/EditProcedureModal";
 
 interface Procedure {
   id: string;
@@ -22,19 +23,21 @@ interface Procedure {
   notes?: string;
   tooth_range?: number[];
   is_active: boolean;
+  is_bookable?: boolean;
   created_at: string;
   updated_at: string;
 }
 
 const DoctorProcedureLibrarySection = () => {
   const { user } = useAuth();
-  const { createProcedure, loading: createLoading } = useProcedures();
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [filteredProcedures, setFilteredProcedures] = useState<Procedure[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingProcedure, setEditingProcedure] = useState<Procedure | null>(null);
 
   const categoryOptions = [
     { value: "all", label: "All Categories" },
@@ -59,136 +62,46 @@ const DoctorProcedureLibrarySection = () => {
   ];
 
   useEffect(() => {
-    fetchProcedureLibrary();
+    fetchProcedures();
   }, []);
 
   useEffect(() => {
     filterProcedures();
   }, [procedures, searchTerm, categoryFilter, typeFilter]);
 
-  const fetchProcedureLibrary = async () => {
+  const fetchProcedures = async () => {
     try {
       setLoading(true);
       
-      // Load sample procedures for demonstration
-      const sampleProcedures: Procedure[] = [
-        {
-          id: 'lib-1',
-          dentist_id: 'library',
-          name: 'Routine Dental Cleaning',
-          category: 'preventive',
-          type: 'single_visit',
-          default_cost: 120,
-          duration_minutes: 30,
-          notes: 'Routine dental cleaning and examination including scaling and polishing',
-          tooth_range: [],
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-        {
-          id: 'lib-2',
-          dentist_id: 'library',
-          name: 'Composite Filling',
-          category: 'restorative',
-          type: 'single_visit',
-          default_cost: 180,
-          duration_minutes: 45,
-          notes: 'White composite resin filling for cavities',
-          tooth_range: [],
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-        {
-          id: 'lib-3',
-          dentist_id: 'library',
-          name: 'Root Canal Treatment',
-          category: 'endodontic',
-          type: 'multi_visit',
-          default_cost: 800,
-          duration_minutes: 90,
-          notes: 'Endodontic treatment for infected or damaged tooth pulp',
-          tooth_range: [],
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-        {
-          id: 'lib-4',
-          dentist_id: 'library',
-          name: 'Tooth Extraction',
-          category: 'oral_surgery',
-          type: 'single_visit',
-          default_cost: 250,
-          duration_minutes: 30,
-          notes: 'Simple tooth extraction procedure',
-          tooth_range: [],
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-        {
-          id: 'lib-5',
-          dentist_id: 'library',
-          name: 'Dental Crown',
-          category: 'prosthodontic',
-          type: 'multi_visit',
-          default_cost: 1200,
-          duration_minutes: 60,
-          notes: 'Ceramic or porcelain crown for damaged teeth',
-          tooth_range: [],
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-        {
-          id: 'lib-6',
-          dentist_id: 'library',
-          name: 'Teeth Whitening',
-          category: 'cosmetic',
-          type: 'single_visit',
-          default_cost: 400,
-          duration_minutes: 60,
-          notes: 'Professional in-office teeth whitening treatment',
-          tooth_range: [],
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-        {
-          id: 'lib-7',
-          dentist_id: 'library',
-          name: 'Dental Implant',
-          category: 'oral_surgery',
-          type: 'multi_visit',
-          default_cost: 2500,
-          duration_minutes: 120,
-          notes: 'Surgical placement of dental implant and crown',
-          tooth_range: [],
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-        {
-          id: 'lib-8',
-          dentist_id: 'library',
-          name: 'Periodontal Scaling',
-          category: 'periodontal',
-          type: 'single_visit',
-          default_cost: 300,
-          duration_minutes: 60,
-          notes: 'Deep cleaning for gum disease treatment',
-          tooth_range: [],
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        }
-      ];
-      
-      setProcedures(sampleProcedures);
+      if (!user) {
+        toast.error("Please sign in to view procedures");
+        return;
+      }
+
+      // Get doctor ID from user
+      const { data: doctorData, error: doctorError } = await supabase
+        .from("doctors")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (doctorError || !doctorData) {
+        toast.error("Doctor profile not found");
+        return;
+      }
+
+      // Fetch doctor's procedures
+      const { data, error } = await supabase
+        .from("procedures")
+        .select("*")
+        .eq("dentist_id", doctorData.id)
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setProcedures(data || []);
     } catch (error: any) {
-      toast.error("Failed to load procedure library: " + error.message);
+      toast.error("Failed to load procedures: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -215,31 +128,91 @@ const DoctorProcedureLibrarySection = () => {
     setFilteredProcedures(filtered);
   };
 
-  const handleAddToMyProcedures = async (procedure: Procedure) => {
-    if (!user) {
-      toast.error("Please sign in to add procedures");
-      return;
-    }
-
-    if (!createProcedure) {
-      toast.error("Unable to add procedure at this time");
-      return;
-    }
+  const handleDeleteProcedure = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this procedure?")) return;
 
     try {
-      await createProcedure({
-        name: procedure.name,
-        description: procedure.notes || '',
-        category: procedure.category as any,
-        type: procedure.type as any,
-        default_cost: procedure.default_cost,
-        duration_minutes: procedure.duration_minutes || 30,
-        is_active: true
-      });
+      const { error } = await supabase
+        .from("procedures")
+        .update({ is_active: false })
+        .eq("id", id);
+
+      if (error) throw error;
       
-      toast.success(`${procedure.name} added to your procedures`);
+      toast.success("Procedure deleted successfully");
+      fetchProcedures();
     } catch (error: any) {
-      toast.error("Failed to add procedure: " + error.message);
+      toast.error("Failed to delete procedure: " + error.message);
+    }
+  };
+
+  const handleToggleBookable = async (id: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase
+        .from("procedures")
+        .update({ is_bookable: !currentStatus })
+        .eq("id", id);
+
+      if (error) throw error;
+      
+      toast.success(`Procedure ${!currentStatus ? 'enabled' : 'disabled'} for booking`);
+      fetchProcedures();
+    } catch (error: any) {
+      toast.error("Failed to update procedure: " + error.message);
+    }
+  };
+
+  const handleEnableAllBooking = async () => {
+    try {
+      if (!user) return;
+
+      const { data: doctorData } = await supabase
+        .from("doctors")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!doctorData) return;
+
+      const { error } = await supabase
+        .from("procedures")
+        .update({ is_bookable: true })
+        .eq("dentist_id", doctorData.id)
+        .eq("is_active", true);
+
+      if (error) throw error;
+      
+      toast.success("All procedures enabled for booking");
+      fetchProcedures();
+    } catch (error: any) {
+      toast.error("Failed to enable all procedures: " + error.message);
+    }
+  };
+
+  const handleDisableAllBooking = async () => {
+    try {
+      if (!user) return;
+
+      const { data: doctorData } = await supabase
+        .from("doctors")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!doctorData) return;
+
+      const { error } = await supabase
+        .from("procedures")
+        .update({ is_bookable: false })
+        .eq("dentist_id", doctorData.id)
+        .eq("is_active", true);
+
+      if (error) throw error;
+      
+      toast.success("All procedures disabled for booking");
+      fetchProcedures();
+    } catch (error: any) {
+      toast.error("Failed to disable all procedures: " + error.message);
     }
   };
 
@@ -278,6 +251,11 @@ const DoctorProcedureLibrarySection = () => {
     );
   }
 
+  const bookableProcedures = procedures.filter(p => p.is_bookable);
+  const averageFee = procedures.length > 0 
+    ? procedures.reduce((sum, p) => sum + (p.default_cost || 0), 0) / procedures.length 
+    : 0;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -285,12 +263,69 @@ const DoctorProcedureLibrarySection = () => {
           <div>
             <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
               <BookOpen className="w-6 h-6" />
-              Procedure Library
+              My Procedure Library
             </h2>
-            <p className="text-muted-foreground">Browse and add standard procedures to your practice</p>
+            <p className="text-muted-foreground">Manage your dental procedures and treatments</p>
           </div>
         </div>
+        <Button 
+          onClick={() => setShowAddModal(true)}
+          className="flex items-center gap-2"
+        >
+          <Plus className="w-4 h-4" />
+          Add Procedure
+        </Button>
       </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Procedures</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{procedures.length}</div>
+            <p className="text-xs text-muted-foreground">Active procedures</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Bookable Services</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{bookableProcedures.length}</div>
+            <p className="text-xs text-muted-foreground">Available for online booking</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Average Fee</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">${averageFee.toFixed(0)}</div>
+            <p className="text-xs text-muted-foreground">Per procedure</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4">
+            <Button onClick={handleEnableAllBooking} variant="outline">
+              Enable All for Booking
+            </Button>
+            <Button onClick={handleDisableAllBooking} variant="outline">
+              Disable All Booking
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Filters */}
       <Card>
@@ -352,23 +387,16 @@ const DoctorProcedureLibrarySection = () => {
       {/* Procedures Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Standard Procedures ({filteredProcedures.length})</CardTitle>
+          <CardTitle>Your Procedures ({filteredProcedures.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {filteredProcedures.length === 0 ? (
             <div className="text-center py-8">
               <BookOpen className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <p className="text-muted-foreground">No procedures found matching your criteria</p>
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setSearchTerm("");
-                  setCategoryFilter("all");
-                  setTypeFilter("all");
-                }}
-                className="mt-4"
-              >
-                Clear Filters
+              <p className="text-muted-foreground">No procedures found. Create your first procedure to get started.</p>
+              <Button onClick={() => setShowAddModal(true)} className="mt-4">
+                <Plus className="w-4 h-4 mr-2" />
+                Add First Procedure
               </Button>
             </div>
           ) : (
@@ -379,7 +407,7 @@ const DoctorProcedureLibrarySection = () => {
                   <TableHead>Category</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Default Cost</TableHead>
-                  <TableHead>Duration</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -410,23 +438,50 @@ const DoctorProcedureLibrarySection = () => {
                       {procedure.default_cost ? formatCurrency(procedure.default_cost) : "Not set"}
                     </TableCell>
                     <TableCell>
-                      {procedure.duration_minutes ? `${procedure.duration_minutes} min` : "Not set"}
+                      <Badge variant={procedure.is_bookable ? "default" : "secondary"}>
+                        {procedure.is_bookable ? "Bookable" : "Private"}
+                      </Badge>
                     </TableCell>
                     <TableCell>
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => handleAddToMyProcedures(procedure)}
-                        disabled={createLoading}
-                        className="flex items-center gap-1"
-                      >
-                        {createLoading ? (
-                          <Loader2 className="w-3 h-3 animate-spin" />
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditingProcedure(procedure)}
+                          className="hover:bg-primary/10"
+                        >
+                          <Edit className="w-4 h-4 mr-1" />
+                          Edit
+                        </Button>
+                        {procedure.is_bookable ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleToggleBookable(procedure.id, true)}
+                            className="hover:bg-orange-100"
+                          >
+                            Make Private
+                          </Button>
                         ) : (
-                          <Plus className="w-3 h-3" />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleToggleBookable(procedure.id, false)}
+                            className="hover:bg-green-100"
+                          >
+                            Make Public
+                          </Button>
                         )}
-                        Add to My Procedures
-                      </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteProcedure(procedure.id)}
+                          className="hover:bg-destructive/10 text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          Delete
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -435,6 +490,28 @@ const DoctorProcedureLibrarySection = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Modals */}
+      <AddProcedureModal
+        open={showAddModal}
+        onOpenChange={setShowAddModal}
+        onSuccess={() => {
+          setShowAddModal(false);
+          fetchProcedures();
+        }}
+      />
+
+      {editingProcedure && (
+        <EditProcedureModal
+          open={!!editingProcedure}
+          onOpenChange={(open) => !open && setEditingProcedure(null)}
+          procedure={editingProcedure}
+          onSuccess={() => {
+            setEditingProcedure(null);
+            fetchProcedures();
+          }}
+        />
+      )}
     </div>
   );
 };
