@@ -500,29 +500,41 @@ const ProcedureLibrary = () => {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
                           onClick={() => setEditingProcedure(procedure)}
-                          title="Edit"
+                          className="hover:bg-primary/10"
                         >
-                          <Edit className="w-4 h-4" />
+                          <Edit className="w-4 h-4 mr-1" />
+                          Edit
                         </Button>
+                        {procedure.is_bookable ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleToggleBookable(procedure.id, true)}
+                            className="hover:bg-orange-100"
+                          >
+                            Make Private
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleToggleBookable(procedure.id, false)}
+                            className="hover:bg-green-100"
+                          >
+                            Make Public
+                          </Button>
+                        )}
                         <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleToggleBookable(procedure.id, procedure.is_bookable)}
-                          title={procedure.is_bookable ? "Make Private" : "Make Public"}
-                        >
-                          {procedure.is_bookable ? "🔓" : "🔒"}
-                        </Button>
-                        <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
                           onClick={() => handleDeleteProcedure(procedure.id)}
-                          className="text-destructive hover:text-destructive"
-                          title="Delete"
+                          className="hover:bg-destructive/10 text-destructive"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          Delete
                         </Button>
                       </div>
                     </TableCell>
