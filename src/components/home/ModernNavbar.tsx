@@ -43,7 +43,7 @@ const ModernNavbar = () => {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center hover:opacity-80 transition-opacity duration-200" aria-label="Go to homepage">
-            <Logo variant="full" width={160} height={44} />
+            <Logo variant="horizontal" size="md" />
           </Link>
 
           {/* Desktop Navigation */}

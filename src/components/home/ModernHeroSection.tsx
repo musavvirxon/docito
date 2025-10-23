@@ -112,7 +112,7 @@ const ModernHeroSection = () => {
             transition={{ duration: 0.5 }}
             className="flex justify-center mb-8"
           >
-            <Logo variant="full" width={240} height={67} className="md:w-[280px] md:h-[78px]" />
+            <Logo variant="horizontal" size="xl" />
           </motion.div>
 
           {/* Search Bar - PROMINENT */}

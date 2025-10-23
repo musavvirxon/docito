@@ -44,7 +44,7 @@ const ModernFooter = () => {
           {/* Brand Column */}
           <div className="lg:col-span-2">
             <div className="mb-4">
-              <Logo variant="full" width={140} height={39} />
+              <Logo variant="horizontal" size="md" />
             </div>
             <p className="text-sm text-slate-400 dark:text-slate-500 mb-6 max-w-md">
               Professional Medical Platform. Enterprise-grade healthcare management with secure booking, digital records, and comprehensive analytics for medical professionals.
@@ -139,8 +139,11 @@ const ModernFooter = () => {
 
         {/* Bottom Bar */}
         <div className="border-t border-slate-800 dark:border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <div className="text-sm text-slate-500 dark:text-slate-600">
-            © 2025 Docito. All rights reserved. HIPAA Compliant.
+          <div className="text-sm text-slate-400 dark:text-slate-600 text-center md:text-left">
+            <div>© 2025 <span className="font-bold text-primary">Docito®</span> - All Rights Reserved</div>
+            <div className="text-xs text-slate-500 dark:text-slate-600 mt-1">
+              Docito is a registered trademark and brand of <span className="font-semibold">Artsy Developers Inc.</span>
+            </div>
           </div>
           <div className="flex flex-wrap justify-center gap-6">
             <Link to="/terms" className="text-xs text-slate-500 dark:text-slate-600 hover:text-primary dark:hover:text-primary transition-colors">
