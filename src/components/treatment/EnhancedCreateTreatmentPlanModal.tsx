@@ -209,12 +209,12 @@ const EnhancedCreateTreatmentPlanModal = ({
           patient_id: values.patient_id || null,
           title: values.title,
           notes: values.description,
-          status: values.patient_id ? "draft" : "template",
+          status: "draft",
           total_cost: totalCost,
           priority: values.priority,
         }])
         .select()
-        .single();
+        .maybeSingle();
 
       if (planError || !planData) throw planError;
 
