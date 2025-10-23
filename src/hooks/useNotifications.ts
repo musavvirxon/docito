@@ -32,18 +32,23 @@ export const useNotifications = () => {
         .order('created_at', { ascending: false })
         .limit(50);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching notifications:', error);
+        throw error;
+      }
       return data as Notification[];
     },
     enabled: !!user,
+    staleTime: 30000, // Cache for 30 seconds
+    refetchOnWindowFocus: true,
   });
 
   // Real-time subscription for new notifications
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
 
     const channel = supabase
-      .channel('notifications-changes')
+      .channel(`user-notifications-table-${user.id}`)
       .on(
         'postgres_changes',
         {
@@ -73,30 +78,34 @@ export const useNotifications = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, queryClient]);
+  }, [user?.id, queryClient]);
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
   const markAsReadMutation = useMutation({
     mutationFn: async (notificationId: string) => {
+      if (!user?.id) throw new Error('User not authenticated');
+      
       const { error } = await supabase
         .from('notifications')
         .update({ is_read: true })
-        .eq('id', notificationId);
+        .eq('id', notificationId)
+        .eq('user_id', user.id); // Ensure user can only mark their own notifications
 
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Error marking notification as read:', error);
       toast.error('Failed to mark notification as read');
     },
   });
 
   const markAllAsReadMutation = useMutation({
     mutationFn: async () => {
-      if (!user) return;
+      if (!user?.id) throw new Error('User not authenticated');
       
       const { error } = await supabase
         .from('notifications')
@@ -110,7 +119,8 @@ export const useNotifications = () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       toast.success('All notifications marked as read');
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Error marking all as read:', error);
       toast.error('Failed to mark all as read');
     },
   });

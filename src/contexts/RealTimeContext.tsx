@@ -41,7 +41,7 @@ export const RealTimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   // Fetch existing notifications
   const fetchNotifications = async () => {
-    if (!user) return;
+    if (!user?.id) return;
 
     try {
       const { data, error } = await supabase
@@ -52,23 +52,31 @@ export const RealTimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         .order('created_at', { ascending: false })
         .limit(50);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching real-time notifications:', error);
+        throw error;
+      }
       setNotifications(data || []);
     } catch (error: any) {
       console.error('Error fetching notifications:', error);
+      setNotifications([]);
     }
   };
 
   // Set up real-time subscription
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) {
+      setNotifications([]);
+      setIsConnected(false);
+      return;
+    }
 
     // Initial fetch
     fetchNotifications();
 
-    // Set up real-time subscription for new notifications
+    // Set up real-time subscription for new notifications - user-specific channel
     const notificationChannel = supabase
-      .channel('notifications')
+      .channel(`user-notifications-${user.id}`)
       .on(
         'postgres_changes',
         {
@@ -79,12 +87,15 @@ export const RealTimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         },
         (payload) => {
           const newNotification = payload.new as RealTimeNotification;
-          setNotifications(prev => [newNotification, ...prev]);
-          
-          // Show toast notification
-          toast.info(newNotification.title, {
-            description: newNotification.message,
-          });
+          // Only add if it's truly for this user
+          if (newNotification.recipient_user_id === user.id) {
+            setNotifications(prev => [newNotification, ...prev]);
+            
+            // Show toast notification
+            toast.info(newNotification.title, {
+              description: newNotification.message,
+            });
+          }
         }
       )
       .on(
@@ -97,40 +108,37 @@ export const RealTimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         },
         (payload) => {
           const updatedNotification = payload.new as RealTimeNotification;
-          setNotifications(prev =>
-            prev.map(n => n.id === updatedNotification.id ? updatedNotification : n)
-          );
+          // Only update if it's truly for this user
+          if (updatedNotification.recipient_user_id === user.id) {
+            setNotifications(prev =>
+              prev.map(n => n.id === updatedNotification.id ? updatedNotification : n)
+            );
+          }
         }
       )
       .subscribe((status) => {
         setIsConnected(status === 'SUBSCRIBED');
-      });
-
-    // Set up appointment_procedures subscription for procedure prescriptions
-    const appointmentProceduresChannel = supabase
-      .channel('appointment_procedures')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'appointment_procedures',
-        },
-        (payload) => {
-          // Broadcast appointment procedure changes to all connected clients
-          console.log('Appointment procedure updated:', payload);
+        if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+          console.error('Real-time notification channel error:', status);
         }
-      )
-      .subscribe();
+      });
 
     return () => {
       notificationChannel.unsubscribe();
-      appointmentProceduresChannel.unsubscribe();
     };
   }, [user]);
 
   const sendNotification = async (notification: Omit<RealTimeNotification, 'id' | 'created_at' | 'sender_user_id'>) => {
-    if (!user) return;
+    if (!user?.id) {
+      console.error('Cannot send notification: No user logged in');
+      return;
+    }
+
+    // Validate that recipient_user_id is provided
+    if (!notification.recipient_user_id) {
+      console.error('Cannot send notification: No recipient specified');
+      return;
+    }
 
     try {
       const { error } = await supabase
@@ -140,7 +148,10 @@ export const RealTimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           sender_user_id: user.id,
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error sending notification:', error);
+        throw error;
+      }
     } catch (error: any) {
       console.error('Error sending notification:', error);
       toast.error('Failed to send notification');
@@ -148,13 +159,19 @@ export const RealTimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const markAsRead = async (notificationId: string) => {
+    if (!user?.id) return;
+
     try {
       const { error } = await supabase
         .from('real_time_notifications')
         .update({ read_at: new Date().toISOString() })
-        .eq('id', notificationId);
+        .eq('id', notificationId)
+        .eq('recipient_user_id', user.id); // Ensure user can only mark their own notifications
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error marking notification as read:', error);
+        throw error;
+      }
 
       setNotifications(prev =>
         prev.filter(n => n.id !== notificationId)

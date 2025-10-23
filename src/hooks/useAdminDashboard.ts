@@ -478,25 +478,20 @@ export const useAdminDashboard = () => {
   };
 
   const fetchMessages = async () => {
-    if (!practice || doctors.length === 0) {
+    if (!practice || !user) {
       setMessages([]);
       return;
     }
 
     try {
-      const doctorUserIds = doctors.map(d => d.user_id).filter(Boolean);
-      if (doctorUserIds.length === 0) {
-        setMessages([]);
-        return;
-      }
-
+      // Only fetch notifications for the current admin user
       const { data, error } = await supabase
         .from('real_time_notifications')
         .select(`
           *,
           sender:profiles!real_time_notifications_sender_user_id_fkey(full_name)
         `)
-        .in('recipient_user_id', doctorUserIds)
+        .eq('recipient_user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(5);
 
