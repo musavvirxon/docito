@@ -1,5 +1,5 @@
 // Development configuration for quick testing and navigation
-export const DISABLE_VALIDATION = true;
+export const DISABLE_VALIDATION = false;
 
 // Dummy data for quick form filling
 export const DUMMY_DATA = {

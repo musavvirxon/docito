@@ -132,14 +132,6 @@ const SignUp = () => {
 
           {canFillDummy && (
             <div className="mb-6 text-center">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={fillDummyData}
-                className="bg-yellow-100 border-yellow-300 text-yellow-800 hover:bg-yellow-200"
-              >
-                🎭 Fill Dummy Data
-              </Button>
             </div>
           )}
 

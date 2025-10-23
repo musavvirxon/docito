@@ -11,7 +11,6 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useSimpleForm } from "@/hooks/useSimpleForm";
 import { useQuickNavigate } from "@/hooks/useQuickNavigate";
-import { DevBanner } from "@/components/DevBanner";
 
 const practiceTypes = [
   "Private Clinic",
@@ -112,8 +111,6 @@ const RegisterPractice = () => {
       <Header />
       
       <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <DevBanner onFillDummy={fillDummyData} showFillButton={canFillDummy} />
-        
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Register Your Practice</h1>
           <p className="text-muted-foreground">Join our trusted healthcare network and start attracting new patients today</p>

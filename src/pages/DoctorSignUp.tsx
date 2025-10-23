@@ -12,7 +12,6 @@ import { useState } from "react";
 import { Eye, EyeOff, Upload, Info, User, Briefcase, Building2, FileText, Settings, Shield } from "lucide-react";
 import { useSimpleForm } from "@/hooks/useSimpleForm";
 import { useQuickNavigate } from "@/hooks/useQuickNavigate";
-import { DevBanner } from "@/components/DevBanner";
 
 const DoctorSignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -140,8 +139,6 @@ const DoctorSignUp = () => {
       
       <div className="pt-24 pb-20">
         <div className="container mx-auto px-4 max-w-4xl">
-          <DevBanner onFillDummy={fillDummyData} showFillButton={canFillDummy} />
-          
           {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">

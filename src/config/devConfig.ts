@@ -1,12 +1,12 @@
 // Development configuration for bypassing validation and authentication
-export const BYPASS_VALIDATION = true;
+export const BYPASS_VALIDATION = false;
 
 // Development mode flags
 export const DEV_CONFIG = {
-  BYPASS_VALIDATION: true,
-  SKIP_AUTH_CHECKS: true,
-  ALLOW_EMPTY_FORMS: true,
-  AUTO_NAVIGATE: true,
+  BYPASS_VALIDATION: false,
+  SKIP_AUTH_CHECKS: false,
+  ALLOW_EMPTY_FORMS: false,
+  AUTO_NAVIGATE: false,
 };
 
 // Mock user data for development
