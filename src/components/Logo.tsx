@@ -20,37 +20,51 @@ export const Logo = ({
   const { appliedTheme } = useTheme();
   
   const getLogoPath = () => {
-    // Use icon variant for small sizes
+    // Icon variant - use icon sizes
     if (variant === 'icon') {
-      return `/logos/social/docito-social-square.png`;
+      const iconSizes: Record<string, string> = {
+        'sm': '64x64',
+        'md': '128x128',
+        'lg': '256x256',
+        'xl': '512x512'
+      };
+      return `/logos/icon/docito-logo-${iconSizes[size] || '128x128'}.png`;
     }
     
-    // For horizontal, vertical, and wordmark
-    const sizeMap: Record<string, string> = {
-      'sm': 'sm',
-      'md': 'md',
-      'lg': 'lg',
-      'xl': 'xl'
-    };
-    
-    const mappedSize = sizeMap[size] || 'md';
-    
-    // Use available logo files
+    // Horizontal variant - use size-specific files
     if (variant === 'horizontal') {
-      return `/logos/horizontal/docito-horizontal-xl.png`;
+      const sizeMap: Record<string, string> = {
+        'sm': 'sm',
+        'md': 'md',
+        'lg': 'lg',
+        'xl': '2xl'
+      };
+      return `/logos/horizontal/docito-horizontal-${sizeMap[size] || 'md'}.png`;
     }
     
+    // Vertical variant
     if (variant === 'vertical') {
-      return size === 'sm' || size === 'md' 
-        ? `/logos/vertical/docito-vertical-md.png`
-        : `/logos/vertical/docito-vertical-lg.png`;
+      const sizeMap: Record<string, string> = {
+        'sm': 'sm',
+        'md': 'md',
+        'lg': 'lg',
+        'xl': 'lg'
+      };
+      return `/logos/vertical/docito-vertical-${sizeMap[size] || 'md'}.png`;
     }
     
+    // Wordmark variant
     if (variant === 'wordmark') {
-      return `/logos/wordmark/docito-wordmark-${mappedSize}.png`;
+      const sizeMap: Record<string, string> = {
+        'sm': 'sm',
+        'md': 'md',
+        'lg': 'lg',
+        'xl': 'xl'
+      };
+      return `/logos/wordmark/docito-wordmark-${sizeMap[size] || 'md'}.png`;
     }
     
-    return `/logos/horizontal/docito-horizontal-xl.png`;
+    return `/logos/horizontal/docito-horizontal-md.png`;
   };
   
   const getDefaultDimensions = () => {
