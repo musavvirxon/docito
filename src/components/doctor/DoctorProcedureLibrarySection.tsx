@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, Filter, Edit, Trash2, BookOpen, Loader2, Eye, EyeOff, Settings } from "lucide-react";
+import { Plus, Search, Filter, Edit, Trash2, BookOpen, Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,8 +11,6 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import AddProcedureModal from "@/components/procedure/AddProcedureModal";
 import EditProcedureModal from "@/components/procedure/EditProcedureModal";
-import ManageCategoriesModal from "@/components/doctor/ManageCategoriesModal";
-import ManageTypesModal from "@/components/doctor/ManageTypesModal";
 
 interface Procedure {
   id: string;
@@ -40,45 +38,32 @@ const DoctorProcedureLibrarySection = () => {
   const [typeFilter, setTypeFilter] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingProcedure, setEditingProcedure] = useState<Procedure | null>(null);
-  const [showManageCategoriesModal, setShowManageCategoriesModal] = useState(false);
-  const [showManageTypesModal, setShowManageTypesModal] = useState(false);
 
-  const [categoryOptions, setCategoryOptions] = useState([{ value: "all", label: "All Categories" }]);
-  const [typeOptions, setTypeOptions] = useState([{ value: "all", label: "All Types" }]);
-  const [categories, setCategories] = useState<{ value: string; label: string }[]>([]);
-  const [types, setTypes] = useState<{ value: string; label: string }[]>([]);
+  // Valid enum values from database
+  const categories = [
+    { value: "general", label: "General" },
+    { value: "preventive", label: "Preventive" },
+    { value: "restorative", label: "Restorative" },
+    { value: "cosmetic", label: "Cosmetic" },
+    { value: "orthodontic", label: "Orthodontic" },
+    { value: "oral_surgery", label: "Oral Surgery" },
+    { value: "endodontic", label: "Endodontic" },
+    { value: "periodontic", label: "Periodontic" },
+  ];
+
+  const types = [
+    { value: "single_visit", label: "Single Visit" },
+    { value: "multi_visit", label: "Multi Visit" },
+    { value: "tooth_based", label: "Tooth Based" },
+    { value: "full_mouth", label: "Full Mouth" },
+  ];
+
+  const [categoryOptions] = useState([{ value: "all", label: "All Categories" }, ...categories]);
+  const [typeOptions] = useState([{ value: "all", label: "All Types" }, ...types]);
 
   useEffect(() => {
     fetchProcedures();
-    loadCategoriesAndTypes();
   }, []);
-
-  const loadCategoriesAndTypes = () => {
-    const savedCategories = localStorage.getItem('procedureCategories');
-    const savedTypes = localStorage.getItem('procedureTypes');
-    
-    if (savedCategories) {
-      const parsedCategories = JSON.parse(savedCategories);
-      setCategories(parsedCategories);
-      setCategoryOptions([{ value: "all", label: "All Categories" }, ...parsedCategories]);
-    }
-    
-    if (savedTypes) {
-      const parsedTypes = JSON.parse(savedTypes);
-      setTypes(parsedTypes);
-      setTypeOptions([{ value: "all", label: "All Types" }, ...parsedTypes]);
-    }
-  };
-
-  const handleCategoriesChange = (newCategories: { value: string; label: string }[]) => {
-    setCategories(newCategories);
-    setCategoryOptions([{ value: "all", label: "All Categories" }, ...newCategories]);
-  };
-
-  const handleTypesChange = (newTypes: { value: string; label: string }[]) => {
-    setTypes(newTypes);
-    setTypeOptions([{ value: "all", label: "All Types" }, ...newTypes]);
-  };
 
   useEffect(() => {
     filterProcedures();
@@ -321,22 +306,6 @@ const DoctorProcedureLibrarySection = () => {
             <Button onClick={handleDisableAllBooking} variant="outline">
               Disable All Booking
             </Button>
-            <Button 
-              variant="outline" 
-              className="flex items-center gap-2"
-              onClick={() => setShowManageCategoriesModal(true)}
-            >
-              <Settings className="w-4 h-4" />
-              Manage Categories
-            </Button>
-            <Button 
-              variant="outline" 
-              className="flex items-center gap-2"
-              onClick={() => setShowManageTypesModal(true)}
-            >
-              <Settings className="w-4 h-4" />
-              Manage Types
-            </Button>
           </div>
         </CardContent>
       </Card>
@@ -517,14 +486,6 @@ const DoctorProcedureLibrarySection = () => {
         }}
         categories={categories}
         types={types}
-        onOpenCategoryModal={() => {
-          setShowAddModal(false);
-          setShowManageCategoriesModal(true);
-        }}
-        onOpenTypeModal={() => {
-          setShowAddModal(false);
-          setShowManageTypesModal(true);
-        }}
       />
 
       {editingProcedure && (
@@ -540,30 +501,6 @@ const DoctorProcedureLibrarySection = () => {
           types={types}
         />
       )}
-
-      <ManageCategoriesModal
-        open={showManageCategoriesModal}
-        onOpenChange={(open) => {
-          setShowManageCategoriesModal(open);
-          if (!open && !showAddModal) {
-            loadCategoriesAndTypes();
-          }
-        }}
-        categories={categories}
-        onCategoriesChange={handleCategoriesChange}
-      />
-
-      <ManageTypesModal
-        open={showManageTypesModal}
-        onOpenChange={(open) => {
-          setShowManageTypesModal(open);
-          if (!open && !showAddModal) {
-            loadCategoriesAndTypes();
-          }
-        }}
-        types={types}
-        onTypesChange={handleTypesChange}
-      />
     </div>
   );
 };
