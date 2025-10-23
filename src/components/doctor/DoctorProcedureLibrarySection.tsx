@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, Filter, Edit, Trash2, BookOpen, Loader2, Eye, EyeOff } from "lucide-react";
+import { Plus, Search, Filter, Edit, Trash2, BookOpen, Loader2, Eye, EyeOff, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import AddProcedureModal from "@/components/procedure/AddProcedureModal";
 import EditProcedureModal from "@/components/procedure/EditProcedureModal";
+import ManageCategoriesModal from "@/components/doctor/ManageCategoriesModal";
+import ManageTypesModal from "@/components/doctor/ManageTypesModal";
 
 interface Procedure {
   id: string;
@@ -38,9 +40,11 @@ const DoctorProcedureLibrarySection = () => {
   const [typeFilter, setTypeFilter] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingProcedure, setEditingProcedure] = useState<Procedure | null>(null);
+  const [showManageCategoriesModal, setShowManageCategoriesModal] = useState(false);
+  const [showManageTypesModal, setShowManageTypesModal] = useState(false);
 
-  // Valid enum values from database
-  const categories = [
+  // Default enum values from database
+  const defaultCategories = [
     { value: "general", label: "General" },
     { value: "preventive", label: "Preventive" },
     { value: "restorative", label: "Restorative" },
@@ -51,19 +55,62 @@ const DoctorProcedureLibrarySection = () => {
     { value: "periodontic", label: "Periodontic" },
   ];
 
-  const types = [
+  const defaultTypes = [
     { value: "single_visit", label: "Single Visit" },
     { value: "multi_visit", label: "Multi Visit" },
     { value: "tooth_based", label: "Tooth Based" },
     { value: "full_mouth", label: "Full Mouth" },
   ];
 
-  const [categoryOptions] = useState([{ value: "all", label: "All Categories" }, ...categories]);
-  const [typeOptions] = useState([{ value: "all", label: "All Types" }, ...types]);
+  const [customCategories, setCustomCategories] = useState<{ value: string; label: string }[]>([]);
+  const [customTypes, setCustomTypes] = useState<{ value: string; label: string }[]>([]);
+  const [categories, setCategories] = useState<{ value: string; label: string }[]>([]);
+  const [types, setTypes] = useState<{ value: string; label: string }[]>([]);
+  const [categoryOptions, setCategoryOptions] = useState<{ value: string; label: string }[]>([]);
+  const [typeOptions, setTypeOptions] = useState<{ value: string; label: string }[]>([]);
 
   useEffect(() => {
     fetchProcedures();
+    loadCustomCategoriesAndTypes();
   }, []);
+
+  const loadCustomCategoriesAndTypes = () => {
+    const savedCustomCategories = localStorage.getItem('customProcedureCategories');
+    const savedCustomTypes = localStorage.getItem('customProcedureTypes');
+    
+    const parsedCustomCategories = savedCustomCategories ? JSON.parse(savedCustomCategories) : [];
+    const parsedCustomTypes = savedCustomTypes ? JSON.parse(savedCustomTypes) : [];
+    
+    setCustomCategories(parsedCustomCategories);
+    setCustomTypes(parsedCustomTypes);
+    
+    // Combine default and custom
+    const allCategories = [...defaultCategories, ...parsedCustomCategories];
+    const allTypes = [...defaultTypes, ...parsedCustomTypes];
+    
+    setCategories(allCategories);
+    setTypes(allTypes);
+    setCategoryOptions([{ value: "all", label: "All Categories" }, ...allCategories]);
+    setTypeOptions([{ value: "all", label: "All Types" }, ...allTypes]);
+  };
+
+  const handleCustomCategoriesChange = (newCustomCategories: { value: string; label: string }[]) => {
+    setCustomCategories(newCustomCategories);
+    localStorage.setItem('customProcedureCategories', JSON.stringify(newCustomCategories));
+    
+    const allCategories = [...defaultCategories, ...newCustomCategories];
+    setCategories(allCategories);
+    setCategoryOptions([{ value: "all", label: "All Categories" }, ...allCategories]);
+  };
+
+  const handleCustomTypesChange = (newCustomTypes: { value: string; label: string }[]) => {
+    setCustomTypes(newCustomTypes);
+    localStorage.setItem('customProcedureTypes', JSON.stringify(newCustomTypes));
+    
+    const allTypes = [...defaultTypes, ...newCustomTypes];
+    setTypes(allTypes);
+    setTypeOptions([{ value: "all", label: "All Types" }, ...allTypes]);
+  };
 
   useEffect(() => {
     filterProcedures();
@@ -306,6 +353,22 @@ const DoctorProcedureLibrarySection = () => {
             <Button onClick={handleDisableAllBooking} variant="outline">
               Disable All Booking
             </Button>
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-2"
+              onClick={() => setShowManageCategoriesModal(true)}
+            >
+              <Settings className="w-4 h-4" />
+              Manage Categories
+            </Button>
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-2"
+              onClick={() => setShowManageTypesModal(true)}
+            >
+              <Settings className="w-4 h-4" />
+              Manage Types
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -486,6 +549,14 @@ const DoctorProcedureLibrarySection = () => {
         }}
         categories={categories}
         types={types}
+        onOpenCategoryModal={() => {
+          setShowAddModal(false);
+          setShowManageCategoriesModal(true);
+        }}
+        onOpenTypeModal={() => {
+          setShowAddModal(false);
+          setShowManageTypesModal(true);
+        }}
       />
 
       {editingProcedure && (
@@ -501,6 +572,38 @@ const DoctorProcedureLibrarySection = () => {
           types={types}
         />
       )}
+
+      <ManageCategoriesModal
+        open={showManageCategoriesModal}
+        onOpenChange={(open) => {
+          setShowManageCategoriesModal(open);
+          if (!open) {
+            loadCustomCategoriesAndTypes();
+            if (showAddModal) {
+              setShowAddModal(true);
+            }
+          }
+        }}
+        categories={customCategories}
+        onCategoriesChange={handleCustomCategoriesChange}
+        defaultCategories={defaultCategories}
+      />
+
+      <ManageTypesModal
+        open={showManageTypesModal}
+        onOpenChange={(open) => {
+          setShowManageTypesModal(open);
+          if (!open) {
+            loadCustomCategoriesAndTypes();
+            if (showAddModal) {
+              setShowAddModal(true);
+            }
+          }
+        }}
+        types={customTypes}
+        onTypesChange={handleCustomTypesChange}
+        defaultTypes={defaultTypes}
+      />
     </div>
   );
 };

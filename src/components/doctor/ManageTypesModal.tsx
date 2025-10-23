@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { z } from "zod";
 
 interface Type {
   value: string;
@@ -17,9 +18,21 @@ interface ManageTypesModalProps {
   onOpenChange: (open: boolean) => void;
   types: Type[];
   onTypesChange: (types: Type[]) => void;
+  defaultTypes?: Type[];
 }
 
-const ManageTypesModal = ({ open, onOpenChange, types, onTypesChange }: ManageTypesModalProps) => {
+const typeSchema = z.object({
+  value: z.string().trim().min(1, "Type value is required").max(50, "Max 50 characters"),
+  label: z.string().trim().min(1, "Type label is required").max(100, "Max 100 characters")
+});
+
+const ManageTypesModal = ({ 
+  open, 
+  onOpenChange, 
+  types, 
+  onTypesChange,
+  defaultTypes = []
+}: ManageTypesModalProps) => {
   const [localTypes, setLocalTypes] = useState<Type[]>(types);
   const [newType, setNewType] = useState("");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -30,19 +43,31 @@ const ManageTypesModal = ({ open, onOpenChange, types, onTypesChange }: ManageTy
   }, [types]);
 
   const handleAddType = () => {
-    if (!newType.trim()) {
-      toast.error("Type name cannot be empty");
+    const trimmedValue = newType.trim().toLowerCase().replace(/\s+/g, '_');
+    const trimmedLabel = newType.trim();
+
+    try {
+      typeSchema.parse({ value: trimmedValue, label: trimmedLabel });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+        return;
+      }
+    }
+
+    // Check if exists in custom types
+    if (localTypes.some(type => type.value === trimmedValue)) {
+      toast.error("Type already exists in custom types");
       return;
     }
 
-    const typeValue = newType.toLowerCase().replace(/\s+/g, '_');
-    
-    if (localTypes.some(type => type.value === typeValue)) {
-      toast.error("Type already exists");
+    // Check if exists in default types
+    if (defaultTypes.some(type => type.value === trimmedValue)) {
+      toast.error("Type already exists in default types");
       return;
     }
 
-    const updatedTypes = [...localTypes, { value: typeValue, label: newType.trim() }];
+    const updatedTypes = [...localTypes, { value: trimmedValue, label: trimmedLabel }];
     setLocalTypes(updatedTypes);
     setNewType("");
     toast.success("Type added");
@@ -60,15 +85,22 @@ const ManageTypesModal = ({ open, onOpenChange, types, onTypesChange }: ManageTy
   };
 
   const handleSaveEdit = (index: number) => {
-    if (!editingValue.trim()) {
-      toast.error("Type name cannot be empty");
-      return;
+    const trimmedValue = editingValue.trim().toLowerCase().replace(/\s+/g, '_');
+    const trimmedLabel = editingValue.trim();
+
+    try {
+      typeSchema.parse({ value: trimmedValue, label: trimmedLabel });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+        return;
+      }
     }
 
     const updatedTypes = [...localTypes];
     updatedTypes[index] = {
-      value: editingValue.toLowerCase().replace(/\s+/g, '_'),
-      label: editingValue.trim()
+      value: trimmedValue,
+      label: trimmedLabel
     };
     setLocalTypes(updatedTypes);
     setEditingIndex(null);
@@ -83,7 +115,6 @@ const ManageTypesModal = ({ open, onOpenChange, types, onTypesChange }: ManageTy
 
   const handleSave = () => {
     onTypesChange(localTypes);
-    localStorage.setItem('procedureTypes', JSON.stringify(localTypes));
     toast.success("Types saved successfully");
     onOpenChange(false);
   };
@@ -94,20 +125,24 @@ const ManageTypesModal = ({ open, onOpenChange, types, onTypesChange }: ManageTy
         <DialogHeader>
           <DialogTitle>Manage Procedure Types</DialogTitle>
           <DialogDescription>
-            Add, edit, or remove procedure types for your practice.
+            Add custom types in addition to the default ones. Custom types can be edited or deleted.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Add New Type */}
           <div className="space-y-2">
-            <Label>Add New Type</Label>
+            <Label>Add Custom Type</Label>
+            <p className="text-sm text-muted-foreground">
+              Custom types will be saved to your browser and available across sessions.
+            </p>
             <div className="flex gap-2">
               <Input
                 placeholder="Enter type name..."
                 value={newType}
                 onChange={(e) => setNewType(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleAddType()}
+                maxLength={100}
               />
               <Button onClick={handleAddType}>
                 <Plus className="w-4 h-4 mr-2" />
@@ -116,13 +151,26 @@ const ManageTypesModal = ({ open, onOpenChange, types, onTypesChange }: ManageTy
             </div>
           </div>
 
-          {/* Existing Types */}
+          {/* Default Types (Read-only) */}
           <div className="space-y-2">
-            <Label>Existing Types ({localTypes.length})</Label>
-            <div className="space-y-2 max-h-[400px] overflow-y-auto border rounded-lg p-4">
+            <Label>Default Types ({defaultTypes.length})</Label>
+            <p className="text-sm text-muted-foreground">These types are built-in and cannot be modified.</p>
+            <div className="flex flex-wrap gap-2 border rounded-lg p-4 bg-muted/20">
+              {defaultTypes.map((type) => (
+                <Badge key={type.value} variant="secondary">
+                  {type.label}
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          {/* Custom Types (Editable) */}
+          <div className="space-y-2">
+            <Label>Custom Types ({localTypes.length})</Label>
+            <div className="space-y-2 max-h-[300px] overflow-y-auto border rounded-lg p-4">
               {localTypes.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">
-                  No types added yet. Add your first type above.
+                  No custom types added yet. Add your first type above.
                 </p>
               ) : (
                 localTypes.map((type, index) => (
@@ -134,6 +182,7 @@ const ManageTypesModal = ({ open, onOpenChange, types, onTypesChange }: ManageTy
                           onChange={(e) => setEditingValue(e.target.value)}
                           onKeyPress={(e) => e.key === 'Enter' && handleSaveEdit(index)}
                           className="flex-1"
+                          maxLength={100}
                         />
                         <Button size="sm" onClick={() => handleSaveEdit(index)}>
                           <Save className="w-4 h-4" />
@@ -145,7 +194,7 @@ const ManageTypesModal = ({ open, onOpenChange, types, onTypesChange }: ManageTy
                     ) : (
                       <>
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline">{type.label}</Badge>
+                          <Badge variant="default">{type.label}</Badge>
                           <span className="text-xs text-muted-foreground">({type.value})</span>
                         </div>
                         <div className="flex gap-2">

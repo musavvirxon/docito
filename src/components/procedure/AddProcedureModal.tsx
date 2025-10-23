@@ -40,6 +40,8 @@ interface AddProcedureModalProps {
   onSuccess: () => void;
   categories?: { value: string; label: string }[];
   types?: { value: string; label: string }[];
+  onOpenCategoryModal?: () => void;
+  onOpenTypeModal?: () => void;
 }
 
 const AddProcedureModal = ({ 
@@ -47,7 +49,9 @@ const AddProcedureModal = ({
   onOpenChange, 
   onSuccess,
   categories = [],
-  types = []
+  types = [],
+  onOpenCategoryModal,
+  onOpenTypeModal
 }: AddProcedureModalProps) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -155,6 +159,19 @@ const AddProcedureModal = ({
                             {option.label}
                           </SelectItem>
                         ))}
+                        {onOpenCategoryModal && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            className="w-full justify-start text-primary"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              onOpenCategoryModal();
+                            }}
+                          >
+                            + Add Category
+                          </Button>
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -180,6 +197,19 @@ const AddProcedureModal = ({
                             {option.label}
                           </SelectItem>
                         ))}
+                        {onOpenTypeModal && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            className="w-full justify-start text-primary"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              onOpenTypeModal();
+                            }}
+                          >
+                            + Add Type
+                          </Button>
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
