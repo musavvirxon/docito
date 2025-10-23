@@ -84,7 +84,7 @@ const SpecialtiesGrid = () => {
                         : "bg-primary/10 dark:bg-primary/20"
                     )}>
                       {specialty.isImage ? (
-                        <img src={specialty.icon as string} alt={specialty.name} className="w-8 h-8" />
+                        <img src={toothIcon} alt={specialty.name} className="w-8 h-8 object-contain" />
                       ) : (
                         IconComponent && <IconComponent className={`w-8 h-8 ${specialty.color}`} />
                       )}
