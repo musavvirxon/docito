@@ -48,9 +48,18 @@ interface EditProcedureModalProps {
   onOpenChange: (open: boolean) => void;
   procedure: Procedure;
   onSuccess: () => void;
+  categories?: { value: string; label: string }[];
+  types?: { value: string; label: string }[];
 }
 
-const EditProcedureModal = ({ open, onOpenChange, procedure, onSuccess }: EditProcedureModalProps) => {
+const EditProcedureModal = ({ 
+  open, 
+  onOpenChange, 
+  procedure, 
+  onSuccess,
+  categories = [],
+  types = []
+}: EditProcedureModalProps) => {
   const [loading, setLoading] = useState(false);
   const [selectedTeeth, setSelectedTeeth] = useState<number[]>(procedure.tooth_range || []);
 
@@ -78,8 +87,6 @@ const EditProcedureModal = ({ open, onOpenChange, procedure, onSuccess }: EditPr
     setSelectedTeeth(procedure.tooth_range || []);
   }, [procedure, form]);
 
-  const [categoryOptions, setCategoryOptions] = useState<{ value: string; label: string }[]>([]);
-  const [typeOptions, setTypeOptions] = useState<{ value: string; label: string }[]>([]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
@@ -146,7 +153,7 @@ const EditProcedureModal = ({ open, onOpenChange, procedure, onSuccess }: EditPr
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {categoryOptions.map((option) => (
+                        {categories.map((option) => (
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
                           </SelectItem>
@@ -171,7 +178,7 @@ const EditProcedureModal = ({ open, onOpenChange, procedure, onSuccess }: EditPr
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {typeOptions.map((option) => (
+                        {types.map((option) => (
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
                           </SelectItem>

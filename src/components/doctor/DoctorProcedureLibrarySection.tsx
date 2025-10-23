@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import AddProcedureModal from "@/components/procedure/AddProcedureModal";
 import EditProcedureModal from "@/components/procedure/EditProcedureModal";
+import ManageCategoriesModal from "@/components/doctor/ManageCategoriesModal";
+import ManageTypesModal from "@/components/doctor/ManageTypesModal";
 
 interface Procedure {
   id: string;
@@ -38,13 +40,45 @@ const DoctorProcedureLibrarySection = () => {
   const [typeFilter, setTypeFilter] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingProcedure, setEditingProcedure] = useState<Procedure | null>(null);
+  const [showManageCategoriesModal, setShowManageCategoriesModal] = useState(false);
+  const [showManageTypesModal, setShowManageTypesModal] = useState(false);
 
   const [categoryOptions, setCategoryOptions] = useState([{ value: "all", label: "All Categories" }]);
   const [typeOptions, setTypeOptions] = useState([{ value: "all", label: "All Types" }]);
+  const [categories, setCategories] = useState<{ value: string; label: string }[]>([]);
+  const [types, setTypes] = useState<{ value: string; label: string }[]>([]);
 
   useEffect(() => {
     fetchProcedures();
+    loadCategoriesAndTypes();
   }, []);
+
+  const loadCategoriesAndTypes = () => {
+    const savedCategories = localStorage.getItem('procedureCategories');
+    const savedTypes = localStorage.getItem('procedureTypes');
+    
+    if (savedCategories) {
+      const parsedCategories = JSON.parse(savedCategories);
+      setCategories(parsedCategories);
+      setCategoryOptions([{ value: "all", label: "All Categories" }, ...parsedCategories]);
+    }
+    
+    if (savedTypes) {
+      const parsedTypes = JSON.parse(savedTypes);
+      setTypes(parsedTypes);
+      setTypeOptions([{ value: "all", label: "All Types" }, ...parsedTypes]);
+    }
+  };
+
+  const handleCategoriesChange = (newCategories: { value: string; label: string }[]) => {
+    setCategories(newCategories);
+    setCategoryOptions([{ value: "all", label: "All Categories" }, ...newCategories]);
+  };
+
+  const handleTypesChange = (newTypes: { value: string; label: string }[]) => {
+    setTypes(newTypes);
+    setTypeOptions([{ value: "all", label: "All Types" }, ...newTypes]);
+  };
 
   useEffect(() => {
     filterProcedures();
@@ -287,11 +321,19 @@ const DoctorProcedureLibrarySection = () => {
             <Button onClick={handleDisableAllBooking} variant="outline">
               Disable All Booking
             </Button>
-            <Button variant="outline" className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-2"
+              onClick={() => setShowManageCategoriesModal(true)}
+            >
               <Settings className="w-4 h-4" />
               Manage Categories
             </Button>
-            <Button variant="outline" className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-2"
+              onClick={() => setShowManageTypesModal(true)}
+            >
               <Settings className="w-4 h-4" />
               Manage Types
             </Button>
@@ -473,6 +515,16 @@ const DoctorProcedureLibrarySection = () => {
           setShowAddModal(false);
           fetchProcedures();
         }}
+        categories={categories}
+        types={types}
+        onOpenCategoryModal={() => {
+          setShowAddModal(false);
+          setShowManageCategoriesModal(true);
+        }}
+        onOpenTypeModal={() => {
+          setShowAddModal(false);
+          setShowManageTypesModal(true);
+        }}
       />
 
       {editingProcedure && (
@@ -484,8 +536,34 @@ const DoctorProcedureLibrarySection = () => {
             setEditingProcedure(null);
             fetchProcedures();
           }}
+          categories={categories}
+          types={types}
         />
       )}
+
+      <ManageCategoriesModal
+        open={showManageCategoriesModal}
+        onOpenChange={(open) => {
+          setShowManageCategoriesModal(open);
+          if (!open && !showAddModal) {
+            loadCategoriesAndTypes();
+          }
+        }}
+        categories={categories}
+        onCategoriesChange={handleCategoriesChange}
+      />
+
+      <ManageTypesModal
+        open={showManageTypesModal}
+        onOpenChange={(open) => {
+          setShowManageTypesModal(open);
+          if (!open && !showAddModal) {
+            loadCategoriesAndTypes();
+          }
+        }}
+        types={types}
+        onTypesChange={handleTypesChange}
+      />
     </div>
   );
 };

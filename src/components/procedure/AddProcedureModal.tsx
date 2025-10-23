@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Dialog,
   DialogContent,
@@ -37,9 +38,22 @@ interface AddProcedureModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
+  categories?: { value: string; label: string }[];
+  types?: { value: string; label: string }[];
+  onOpenCategoryModal?: () => void;
+  onOpenTypeModal?: () => void;
 }
 
-const AddProcedureModal = ({ open, onOpenChange, onSuccess }: AddProcedureModalProps) => {
+const AddProcedureModal = ({ 
+  open, 
+  onOpenChange, 
+  onSuccess,
+  categories = [],
+  types = [],
+  onOpenCategoryModal,
+  onOpenTypeModal
+}: AddProcedureModalProps) => {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [selectedTeeth, setSelectedTeeth] = useState<number[]>([]);
 
@@ -140,11 +154,23 @@ const AddProcedureModal = ({ open, onOpenChange, onSuccess }: AddProcedureModalP
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {categoryOptions.map((option) => (
+                        {categories.map((option) => (
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
                           </SelectItem>
                         ))}
+                        {onOpenCategoryModal && (
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start text-primary"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              onOpenCategoryModal();
+                            }}
+                          >
+                            + Add Category
+                          </Button>
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -165,11 +191,23 @@ const AddProcedureModal = ({ open, onOpenChange, onSuccess }: AddProcedureModalP
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {typeOptions.map((option) => (
+                        {types.map((option) => (
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
                           </SelectItem>
                         ))}
+                        {onOpenTypeModal && (
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start text-primary"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              onOpenTypeModal();
+                            }}
+                          >
+                            + Add Type
+                          </Button>
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
