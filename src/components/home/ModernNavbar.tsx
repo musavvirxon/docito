@@ -25,7 +25,7 @@ const ModernNavbar = () => {
     { name: "Specialties", href: "#specialties" },
     { name: "Doctors", href: "#doctors" },
     { name: "Features", href: "#features" },
-    { name: "Analytics", href: "#analytics" },
+    { name: "About", href: "/about", isRoute: true },
     { name: "Contact", href: "#contact" },
   ];
 
@@ -49,14 +49,25 @@ const ModernNavbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
             {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors duration-200 relative group"
-              >
-                {link.name}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
-              </a>
+              link.isRoute ? (
+                <Link
+                  key={link.name}
+                  to={link.href}
+                  className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors duration-200 relative group"
+                >
+                  {link.name}
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                </Link>
+              ) : (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors duration-200 relative group"
+                >
+                  {link.name}
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                </a>
+              )
             ))}
           </div>
 
@@ -119,14 +130,25 @@ const ModernNavbar = () => {
           >
             <div className="container mx-auto px-4 py-6 space-y-4">
               {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="block text-base font-medium text-foreground hover:text-primary transition-colors"
-                >
-                  {link.name}
-                </a>
+                link.isRoute ? (
+                  <Link
+                    key={link.name}
+                    to={link.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block text-base font-medium text-foreground hover:text-primary transition-colors"
+                  >
+                    {link.name}
+                  </Link>
+                ) : (
+                  <a
+                    key={link.name}
+                    href={link.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block text-base font-medium text-foreground hover:text-primary transition-colors"
+                  >
+                    {link.name}
+                  </a>
+                )
               ))}
               <div className="pt-4 space-y-3">
                 <div className="flex justify-center mb-3">

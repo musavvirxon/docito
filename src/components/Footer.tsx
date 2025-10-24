@@ -35,18 +35,18 @@ const Footer = () => {
           <div>
             <h3 className="font-semibold mb-3 text-foreground">Company</h3>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">About Us</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Careers</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Contact</a></li>
+              <li><Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">About Us</Link></li>
+              <li><Link to="/legal" className="text-muted-foreground hover:text-primary transition-colors">Legal Center</Link></li>
+              <li><a href="mailto:info@docito.com" className="text-muted-foreground hover:text-primary transition-colors">Contact</a></li>
             </ul>
           </div>
 
           <div>
             <h3 className="font-semibold mb-3 text-foreground">Legal</h3>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Patents</a></li>
+              <li><Link to="/legal/terms-of-service" className="text-muted-foreground hover:text-primary transition-colors">Terms of Service</Link></li>
+              <li><Link to="/legal/privacy-policy" className="text-muted-foreground hover:text-primary transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/legal/cookie-policy" className="text-muted-foreground hover:text-primary transition-colors">Cookie Policy</Link></li>
             </ul>
           </div>
         </div>

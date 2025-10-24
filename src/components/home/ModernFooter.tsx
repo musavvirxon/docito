@@ -19,9 +19,10 @@ const ModernFooter = () => {
 
   const legalLinks = [
     { name: "About Us", href: "/about" },
-    { name: "Privacy Policy", href: "/privacy" },
-    { name: "Terms of Service", href: "/terms" },
-    { name: "Cookie Policy", href: "/cookies" },
+    { name: "Privacy Policy", href: "/legal/privacy-policy" },
+    { name: "Terms of Service", href: "/legal/terms-of-service" },
+    { name: "Cookie Policy", href: "/legal/cookie-policy" },
+    { name: "Legal Center", href: "/legal" },
   ];
 
   const socialLinks = [
@@ -146,17 +147,17 @@ const ModernFooter = () => {
             </div>
           </div>
           <div className="flex flex-wrap justify-center gap-6">
-            <Link to="/terms" className="text-xs text-slate-500 dark:text-slate-600 hover:text-primary dark:hover:text-primary transition-colors">
+            <Link to="/legal/terms-of-service" className="text-xs text-slate-500 dark:text-slate-600 hover:text-primary dark:hover:text-primary transition-colors">
               Terms
             </Link>
-            <Link to="/privacy" className="text-xs text-slate-500 dark:text-slate-600 hover:text-primary dark:hover:text-primary transition-colors">
+            <Link to="/legal/privacy-policy" className="text-xs text-slate-500 dark:text-slate-600 hover:text-primary dark:hover:text-primary transition-colors">
               Privacy
             </Link>
-            <Link to="/cookies" className="text-xs text-slate-500 dark:text-slate-600 hover:text-primary dark:hover:text-primary transition-colors">
+            <Link to="/legal/cookie-policy" className="text-xs text-slate-500 dark:text-slate-600 hover:text-primary dark:hover:text-primary transition-colors">
               Cookies
             </Link>
-            <Link to="/sitemap" className="text-xs text-slate-500 dark:text-slate-600 hover:text-primary dark:hover:text-primary transition-colors">
-              Sitemap
+            <Link to="/about" className="text-xs text-slate-500 dark:text-slate-600 hover:text-primary dark:hover:text-primary transition-colors">
+              About
             </Link>
           </div>
         </div>
