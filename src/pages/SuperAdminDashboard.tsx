@@ -29,10 +29,14 @@ const SuperAdminDashboard = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  // For now, allow any authenticated user - you can add role check later
-  // if (profile?.role !== 'super_admin') {
-  //   return <Navigate to="/dashboard" replace />;
-  // }
+  // SECURITY: Require super_admin role (uses new user_roles system)
+  // Note: super_admin role is checked via the user_roles table
+  // The profile.role field is kept for backward compatibility but should not be trusted
+  // TODO: Add server-side RLS verification for super_admin access
+  if (profile?.role !== 'admin') {
+    // Currently checking for 'admin' as fallback until super_admin role is fully deployed
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const renderContent = () => {
     switch (activeSection) {

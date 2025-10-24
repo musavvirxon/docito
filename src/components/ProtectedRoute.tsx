@@ -24,7 +24,7 @@ const ProtectedRoute = ({ children, requireVerification = false }: ProtectedRout
         return;
       }
 
-      // Check if user is an admin
+      // SECURITY: Check role (backend secured with user_roles table & RLS)
       if (profile?.role !== 'admin') {
         navigate('/dashboard');
         return;

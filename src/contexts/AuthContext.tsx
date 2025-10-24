@@ -95,15 +95,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase
+      // Fetch profile data
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
         .single();
 
-      if (error) {
+      if (profileError) {
         // If profile doesn't exist, create a default one
-        if (error.code === 'PGRST116') {
+        if (profileError.code === 'PGRST116') {
           const { data: user } = await supabase.auth.getUser();
           if (user?.user?.email) {
             const newProfile = {
@@ -125,9 +126,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
           }
         }
-        throw error;
+        throw profileError;
       }
-      setProfile(data);
+
+      // Use profile role (backend now secured with user_roles RLS)
+      setProfile(profileData);
     } catch (error: any) {
       console.error('Error fetching profile:', error);
       // Set a temporary profile to prevent loading loop

@@ -21,6 +21,24 @@ interface InvitationEmailRequest {
   platformUrl: string;
 }
 
+// Sanitize user input to prevent XSS
+const escapeHtml = (unsafe: string): string => {
+  if (!unsafe) return '';
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+};
+
+// Validate and sanitize inputs
+const validateInput = (input: string | undefined, maxLength: number = 500): string => {
+  if (!input) return '';
+  const trimmed = input.trim();
+  return escapeHtml(trimmed.substring(0, maxLength));
+};
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -39,23 +57,39 @@ const handler = async (req: Request): Promise<Response> => {
       platformUrl,
     }: InvitationEmailRequest = await req.json();
 
+    // Sanitize all user inputs
+    const safeName = validateInput(inviteeName, 100);
+    const safeClinic = validateInput(clinicName, 200);
+    const safeRole = validateInput(role, 50);
+    const safeInviter = validateInput(inviterName, 100);
+    const safeMessage = validateInput(customMessage, 500);
+    
+    // Validate email and token format
+    if (!to || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
+      throw new Error('Invalid email address');
+    }
+    
+    if (!inviteToken || inviteToken.length > 100) {
+      throw new Error('Invalid invitation token');
+    }
+
     const acceptLink = isExistingUser
-      ? `${platformUrl}/dashboard?invitation=${inviteToken}`
-      : `${platformUrl}/sign-up?invitation=${inviteToken}`;
+      ? `${platformUrl}/dashboard?invitation=${encodeURIComponent(inviteToken)}`
+      : `${platformUrl}/sign-up?invitation=${encodeURIComponent(inviteToken)}`;
 
     const emailHtml = isExistingUser
       ? `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h1 style="color: #0ea5e9; border-bottom: 2px solid #0ea5e9; padding-bottom: 10px;">
-            Invitation to Join ${clinicName}
+            Invitation to Join ${safeClinic}
           </h1>
           
-          <p>Hi ${inviteeName},</p>
+          <p>Hi ${safeName},</p>
           
-          <p><strong>${inviterName}</strong> from <strong>${clinicName}</strong> has invited you to join their practice as a <strong>${role}</strong>.</p>
+          <p><strong>${safeInviter}</strong> from <strong>${safeClinic}</strong> has invited you to join their practice as a <strong>${safeRole}</strong>.</p>
           
-          ${customMessage ? `<div style="background: #f8f9fa; padding: 15px; border-left: 4px solid #0ea5e9; margin: 20px 0;">
-            <p style="margin: 0; font-style: italic;">"${customMessage}"</p>
+          ${safeMessage ? `<div style="background: #f8f9fa; padding: 15px; border-left: 4px solid #0ea5e9; margin: 20px 0;">
+            <p style="margin: 0; font-style: italic;">${safeMessage}</p>
           </div>` : ''}
           
           <div style="margin: 30px 0; text-align: center;">
@@ -80,15 +114,15 @@ const handler = async (req: Request): Promise<Response> => {
       : `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h1 style="color: #0ea5e9; border-bottom: 2px solid #0ea5e9; padding-bottom: 10px;">
-            Welcome to ${clinicName}
+            Welcome to ${safeClinic}
           </h1>
           
-          <p>Hi ${inviteeName || 'there'},</p>
+          <p>Hi ${safeName || 'there'},</p>
           
-          <p><strong>${inviterName}</strong> from <strong>${clinicName}</strong> has invited you to join their practice as a <strong>${role}</strong>.</p>
+          <p><strong>${safeInviter}</strong> from <strong>${safeClinic}</strong> has invited you to join their practice as a <strong>${safeRole}</strong>.</p>
           
-          ${customMessage ? `<div style="background: #f8f9fa; padding: 15px; border-left: 4px solid #0ea5e9; margin: 20px 0;">
-            <p style="margin: 0; font-style: italic;">"${customMessage}"</p>
+          ${safeMessage ? `<div style="background: #f8f9fa; padding: 15px; border-left: 4px solid #0ea5e9; margin: 20px 0;">
+            <p style="margin: 0; font-style: italic;">${safeMessage}</p>
           </div>` : ''}
           
           <p>To accept this invitation, you'll need to create an account first.</p>
@@ -96,7 +130,7 @@ const handler = async (req: Request): Promise<Response> => {
           <div style="margin: 30px 0; text-align: center;">
             <a href="${acceptLink}" 
                style="background-color: #0ea5e9; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
-              Create Account & Join ${clinicName}
+              Create Account & Join ${safeClinic}
             </a>
           </div>
           
