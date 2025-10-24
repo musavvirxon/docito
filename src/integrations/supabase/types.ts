@@ -2006,6 +2006,30 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       verification_documents: {
         Row: {
           created_at: string
@@ -2234,6 +2258,17 @@ export type Database = {
       }
       get_practice_stats: { Args: { p_practice_id: string }; Returns: Json }
       get_user_profile_by_uid: { Args: never; Returns: Json }
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       log_account_activity: {
         Args: {
           p_activity_type: string
@@ -2306,6 +2341,7 @@ export type Database = {
       }
     }
     Enums: {
+      app_role: "patient" | "doctor" | "admin" | "staff" | "super_admin"
       appointment_status:
         | "pending"
         | "confirmed"
@@ -2471,6 +2507,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["patient", "doctor", "admin", "staff", "super_admin"],
       appointment_status: [
         "pending",
         "confirmed",
