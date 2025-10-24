@@ -2159,6 +2159,44 @@ export type Database = {
           },
         ]
       }
+      public_practice_locations: {
+        Row: {
+          city: string | null
+          country: string | null
+          id: string | null
+          is_primary: boolean | null
+          name: string | null
+          practice_id: string | null
+          state: string | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          id?: string | null
+          is_primary?: boolean | null
+          name?: string | null
+          practice_id?: string | null
+          state?: string | null
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          id?: string | null
+          is_primary?: boolean | null
+          name?: string | null
+          practice_id?: string | null
+          state?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_locations_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       add_medication_to_treatment_plan: {
