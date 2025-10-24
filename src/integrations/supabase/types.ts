@@ -20,7 +20,7 @@ export type Database = {
           created_at: string | null
           device_info: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           location: string | null
           user_agent: string | null
           user_id: string
@@ -30,7 +30,7 @@ export type Database = {
           created_at?: string | null
           device_info?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           location?: string | null
           user_agent?: string | null
           user_id: string
@@ -40,7 +40,7 @@ export type Database = {
           created_at?: string | null
           device_info?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           location?: string | null
           user_agent?: string | null
           user_id?: string
@@ -119,7 +119,7 @@ export type Database = {
       appointment_procedures: {
         Row: {
           appointment_id: string | null
-          consent_ip_address: unknown | null
+          consent_ip_address: unknown
           consent_signed_at: string | null
           created_at: string
           estimated_cost: number | null
@@ -134,7 +134,7 @@ export type Database = {
         }
         Insert: {
           appointment_id?: string | null
-          consent_ip_address?: unknown | null
+          consent_ip_address?: unknown
           consent_signed_at?: string | null
           created_at?: string
           estimated_cost?: number | null
@@ -149,7 +149,7 @@ export type Database = {
         }
         Update: {
           appointment_id?: string | null
-          consent_ip_address?: unknown | null
+          consent_ip_address?: unknown
           consent_signed_at?: string | null
           created_at?: string
           estimated_cost?: number | null
@@ -355,7 +355,7 @@ export type Database = {
           created_at: string | null
           digital_signature: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           patient_full_name: string | null
           patient_signature: string | null
           signed_at: string | null
@@ -368,7 +368,7 @@ export type Database = {
           created_at?: string | null
           digital_signature?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           patient_full_name?: string | null
           patient_signature?: string | null
           signed_at?: string | null
@@ -381,7 +381,7 @@ export type Database = {
           created_at?: string | null
           digital_signature?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           patient_full_name?: string | null
           patient_signature?: string | null
           signed_at?: string | null
@@ -2232,14 +2232,8 @@ export type Database = {
           revenue: number
         }[]
       }
-      get_practice_stats: {
-        Args: { p_practice_id: string }
-        Returns: Json
-      }
-      get_user_profile_by_uid: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      get_practice_stats: { Args: { p_practice_id: string }; Returns: Json }
+      get_user_profile_by_uid: { Args: never; Returns: Json }
       log_account_activity: {
         Args: {
           p_activity_type: string
@@ -2253,10 +2247,7 @@ export type Database = {
         Args: { notification_id: string }
         Returns: Json
       }
-      refresh_all_ratings: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      refresh_all_ratings: { Args: never; Returns: undefined }
       request_account_action: {
         Args: { p_notes?: string; p_request_type: string }
         Returns: Json
@@ -2293,18 +2284,9 @@ export type Database = {
         }
         Returns: Json
       }
-      update_appointment_counts: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      update_doctor_weighted_ratings: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      update_practice_weighted_ratings: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      update_appointment_counts: { Args: never; Returns: undefined }
+      update_doctor_weighted_ratings: { Args: never; Returns: undefined }
+      update_practice_weighted_ratings: { Args: never; Returns: undefined }
       update_user_role: {
         Args: {
           new_role: Database["public"]["Enums"]["user_role"]
