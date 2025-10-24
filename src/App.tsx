@@ -6,6 +6,7 @@ import { Suspense, lazy } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { RealTimeProvider } from "@/contexts/RealTimeContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import CookieConsentBanner from "@/components/CookieConsentBanner";
 import Index from "./pages/Index";
 
 // Lazy load non-critical pages to reduce initial bundle size
@@ -33,6 +34,10 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const PracticeVerification = lazy(() => import("./pages/PracticeVerification"));
 const AdminProfileSettings = lazy(() => import("./pages/AdminProfileSettings"));
 const SuperAdminDashboard = lazy(() => import("./pages/SuperAdminDashboard"));
+const Legal = lazy(() => import("./pages/Legal"));
+const LegalDetail = lazy(() => import("./pages/LegalDetail"));
+const About = lazy(() => import("./pages/About"));
+const LegalCMS = lazy(() => import("./pages/LegalCMS"));
 
 const queryClient = new QueryClient();
 
@@ -43,6 +48,7 @@ const App = () => (
         <RealTimeProvider>
           <Toaster />
           <Sonner />
+          <CookieConsentBanner />
           <BrowserRouter>
             <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
               <Routes>
@@ -71,6 +77,10 @@ const App = () => (
                 <Route path="/dashboard/verify" element={<PracticeVerification />} />
                 <Route path="/admin/profile-settings" element={<AdminProfileSettings />} />
                 <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
+                <Route path="/legal" element={<Legal />} />
+                <Route path="/legal/:slug" element={<LegalDetail />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/legal-cms" element={<LegalCMS />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

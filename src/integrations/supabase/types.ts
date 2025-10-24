@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      about_content: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_published: boolean | null
+          order_index: number | null
+          section_key: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_published?: boolean | null
+          order_index?: number | null
+          section_key: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_published?: boolean | null
+          order_index?: number | null
+          section_key?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       account_activity: {
         Row: {
           activity_type: string
@@ -399,6 +432,39 @@ export type Database = {
           },
         ]
       }
+      cookie_preferences: {
+        Row: {
+          analytics: boolean | null
+          created_at: string
+          essential: boolean | null
+          id: string
+          marketing: boolean | null
+          preferences: Json | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          analytics?: boolean | null
+          created_at?: string
+          essential?: boolean | null
+          id?: string
+          marketing?: boolean | null
+          preferences?: Json | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          analytics?: boolean | null
+          created_at?: string
+          essential?: boolean | null
+          id?: string
+          marketing?: boolean | null
+          preferences?: Json | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       doctors: {
         Row: {
           accepts_new_patients: boolean | null
@@ -518,6 +584,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      legal_pages: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_published: boolean | null
+          slug: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_published?: boolean | null
+          slug: string
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_published?: boolean | null
+          slug?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
       }
       medical_records: {
         Row: {
@@ -2005,6 +2113,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_policy_acceptances: {
+        Row: {
+          accepted_at: string
+          id: string
+          ip_address: unknown
+          policy_slug: string
+          policy_version: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          accepted_at?: string
+          id?: string
+          ip_address?: unknown
+          policy_slug: string
+          policy_version?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          accepted_at?: string
+          id?: string
+          ip_address?: unknown
+          policy_slug?: string
+          policy_version?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
