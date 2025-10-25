@@ -22,11 +22,12 @@ const ModernNavbar = () => {
   }, []);
 
   const navLinks = [
-    { name: "Specialties", href: "#specialties" },
-    { name: "Doctors", href: "#doctors" },
-    { name: "Features", href: "#features" },
+    { name: "Find Doctors", href: "/search-doctors", isRoute: true },
+    { name: "Specialties", href: "/browse-specialties", isRoute: true },
+    { name: "Practices", href: "/find-practices", isRoute: true },
+    { name: "Features", href: "/features", isRoute: true },
+    { name: "Help", href: "/help-center", isRoute: true },
     { name: "About", href: "/about", isRoute: true },
-    { name: "Contact", href: "#contact" },
   ];
 
   return (

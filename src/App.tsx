@@ -38,6 +38,12 @@ const Legal = lazy(() => import("./pages/Legal"));
 const LegalDetail = lazy(() => import("./pages/LegalDetail"));
 const About = lazy(() => import("./pages/About"));
 const LegalCMS = lazy(() => import("./pages/LegalCMS"));
+const SearchDoctors = lazy(() => import("./pages/SearchDoctors"));
+const BrowseSpecialties = lazy(() => import("./pages/BrowseSpecialties"));
+const FindPractices = lazy(() => import("./pages/FindPractices"));
+const Features = lazy(() => import("./pages/Features"));
+const HelpCenter = lazy(() => import("./pages/HelpCenter"));
+const Contact = lazy(() => import("./pages/Contact"));
 
 const queryClient = new QueryClient();
 
@@ -81,6 +87,12 @@ const App = () => (
                 <Route path="/legal/:slug" element={<LegalDetail />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/legal-cms" element={<LegalCMS />} />
+                <Route path="/search-doctors" element={<SearchDoctors />} />
+                <Route path="/browse-specialties" element={<BrowseSpecialties />} />
+                <Route path="/find-practices" element={<FindPractices />} />
+                <Route path="/features" element={<Features />} />
+                <Route path="/help-center" element={<HelpCenter />} />
+                <Route path="/contact" element={<Contact />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

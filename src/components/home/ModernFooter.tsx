@@ -4,17 +4,17 @@ import { Logo } from "@/components/Logo";
 
 const ModernFooter = () => {
   const platformLinks = [
-    { name: "Search Doctors", href: "/find-doctors" },
-    { name: "Browse Specialties", href: "/specialties" },
-    { name: "Find Practices", href: "/practices" },
-    { name: "Features", href: "#features" },
+    { name: "Search Doctors", href: "/search-doctors" },
+    { name: "Browse Specialties", href: "/browse-specialties" },
+    { name: "Find Practices", href: "/find-practices" },
+    { name: "Features", href: "/features" },
   ];
 
   const supportLinks = [
-    { name: "Help Center", href: "/help" },
+    { name: "Help Center", href: "/help-center" },
     { name: "Contact Us", href: "/contact" },
-    { name: "FAQs", href: "/faqs" },
-    { name: "Support", href: "/support" },
+    { name: "FAQs", href: "/help-center" },
+    { name: "Support", href: "/contact" },
   ];
 
   const legalLinks = [
