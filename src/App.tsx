@@ -44,6 +44,8 @@ const FindPractices = lazy(() => import("./pages/FindPractices"));
 const Features = lazy(() => import("./pages/Features"));
 const HelpCenter = lazy(() => import("./pages/HelpCenter"));
 const Contact = lazy(() => import("./pages/Contact"));
+const FAQs = lazy(() => import("./pages/FAQs"));
+const Support = lazy(() => import("./pages/Support"));
 
 const queryClient = new QueryClient();
 
@@ -93,6 +95,8 @@ const App = () => (
                 <Route path="/features" element={<Features />} />
                 <Route path="/help-center" element={<HelpCenter />} />
                 <Route path="/contact" element={<Contact />} />
+                <Route path="/faqs" element={<FAQs />} />
+                <Route path="/support" element={<Support />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

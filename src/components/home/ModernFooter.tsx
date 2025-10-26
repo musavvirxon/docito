@@ -13,8 +13,8 @@ const ModernFooter = () => {
   const supportLinks = [
     { name: "Help Center", href: "/help-center" },
     { name: "Contact Us", href: "/contact" },
-    { name: "FAQs", href: "/help-center" },
-    { name: "Support", href: "/contact" },
+    { name: "FAQs", href: "/faqs" },
+    { name: "Support", href: "/support" },
   ];
 
   const legalLinks = [

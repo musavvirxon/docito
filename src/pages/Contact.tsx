@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Logo } from '@/components/Logo';
 import Footer from '@/components/Footer';
-import { Mail, Phone, MapPin, Send, Clock } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, MessageSquare, Clock, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
@@ -43,7 +43,7 @@ export default function Contact() {
     {
       icon: Mail,
       title: 'Email Us',
-      value: 'support@docito.com',
+      value: 'support@docito.app',
       description: 'Send us an email anytime',
       color: 'from-blue-500 to-indigo-600'
     },
@@ -58,8 +58,15 @@ export default function Contact() {
       icon: MapPin,
       title: 'Visit Us',
       value: '123 Healthcare Ave, Medical District',
-      description: 'San Francisco, CA 94102',
+      description: 'Come visit our office',
       color: 'from-purple-500 to-pink-600'
+    },
+    {
+      icon: MessageSquare,
+      title: 'Live Chat',
+      value: 'Available 24/7',
+      description: 'Chat with our support team',
+      color: 'from-orange-500 to-red-600'
     }
   ];
 
@@ -89,18 +96,15 @@ export default function Contact() {
       </div>
 
       <div className="container mx-auto px-4 py-16">
-        <div className="grid md:grid-cols-3 gap-6 mb-16">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
           {contactMethods.map((method, index) => (
             <ContactMethodCard key={index} method={method} />
           ))}
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12">
-          <div>
-            <h2 className="text-3xl font-bold text-foreground mb-4">Send us a message</h2>
-            <p className="text-muted-foreground mb-8">
-              Fill out the form below and we'll get back to you as soon as possible.
-            </p>
+          <div className="bg-card rounded-2xl p-8 shadow-xl border border-border">
+            <h2 className="text-2xl font-bold text-foreground mb-6">Send us a Message</h2>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
@@ -192,54 +196,36 @@ export default function Contact() {
             </form>
           </div>
 
-          <div className="bg-card rounded-2xl p-8 border-2 border-border">
-            <h3 className="text-2xl font-bold text-foreground mb-6">Support Hours</h3>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground mb-6">Frequently Asked Questions</h2>
             
             <div className="space-y-4 mb-8">
-              <div className="flex items-start gap-3">
-                <Clock className="w-5 h-5 text-primary mt-0.5" />
-                <div>
-                  <p className="font-semibold text-foreground">Monday - Friday</p>
-                  <p className="text-muted-foreground">8:00 AM - 6:00 PM (EST)</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <Clock className="w-5 h-5 text-primary mt-0.5" />
-                <div>
-                  <p className="font-semibold text-foreground">Saturday</p>
-                  <p className="text-muted-foreground">10:00 AM - 4:00 PM (EST)</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <Clock className="w-5 h-5 text-muted-foreground mt-0.5" />
-                <div>
-                  <p className="font-semibold text-foreground">Sunday</p>
-                  <p className="text-muted-foreground">Closed</p>
-                </div>
-              </div>
+              <FAQItem
+                question="What are your support hours?"
+                answer="Our support team is available 24/7 via live chat and email. Phone support is available Monday-Friday, 8am-6pm EST."
+              />
+              <FAQItem
+                question="How quickly will I get a response?"
+                answer="We typically respond to all inquiries within 2-4 hours during business hours, and within 24 hours for messages received outside business hours."
+              />
+              <FAQItem
+                question="Do you offer emergency support?"
+                answer="Yes! For urgent technical issues or emergencies, please call our hotline at +1 (555) 123-4567 and press 1 for immediate assistance."
+              />
+              <FAQItem
+                question="Can I schedule a demo?"
+                answer="Absolutely! Click the 'Schedule Demo' button on our homepage or mention it in your message, and we'll set up a personalized demonstration."
+              />
             </div>
 
-            <div className="bg-primary/10 rounded-xl p-6">
-              <h4 className="font-bold text-foreground mb-3">Quick Links</h4>
-              <div className="space-y-2">
-                <button
-                  onClick={() => navigate('/help-center')}
-                  className="block text-primary hover:underline"
-                >
-                  Help Center →
-                </button>
-                <button
-                  onClick={() => navigate('/legal')}
-                  className="block text-primary hover:underline"
-                >
-                  Legal & Privacy →
-                </button>
-                <button
-                  onClick={() => navigate('/about')}
-                  className="block text-primary hover:underline"
-                >
-                  About Us →
-                </button>
+            <div className="bg-primary/10 rounded-xl p-6 border border-primary/20">
+              <Clock className="w-8 h-8 text-primary mb-4" />
+              <h3 className="text-lg font-bold text-foreground mb-2">Business Hours</h3>
+              <div className="space-y-1 text-sm text-muted-foreground">
+                <p>Monday - Friday: 8:00 AM - 6:00 PM EST</p>
+                <p>Saturday: 9:00 AM - 3:00 PM EST</p>
+                <p>Sunday: Closed</p>
+                <p className="text-primary font-semibold mt-2">Live chat available 24/7</p>
               </div>
             </div>
           </div>
@@ -255,13 +241,32 @@ function ContactMethodCard({ method }: any) {
   const Icon = method.icon;
 
   return (
-    <div className="bg-card rounded-xl p-6 shadow-lg border-2 border-border hover:border-primary transition-all">
-      <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${method.color} flex items-center justify-center mb-4`}>
+    <div className="bg-card rounded-xl p-6 shadow-lg border border-border hover:border-primary transition-all text-center">
+      <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${method.color} flex items-center justify-center mx-auto mb-4`}>
         <Icon className="w-7 h-7 text-white" />
       </div>
-      <h3 className="text-xl font-bold text-foreground mb-2">{method.title}</h3>
-      <p className="text-primary font-semibold mb-1">{method.value}</p>
+      <h3 className="text-lg font-bold text-foreground mb-2">{method.title}</h3>
+      <p className="text-primary font-semibold mb-2">{method.value}</p>
       <p className="text-sm text-muted-foreground">{method.description}</p>
+    </div>
+  );
+}
+
+function FAQItem({ question, answer }: { question: string; answer: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="bg-card rounded-lg p-4 border border-border">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between text-left"
+      >
+        <span className="font-semibold text-foreground">{question}</span>
+        <ChevronRight className={`w-5 h-5 text-muted-foreground transition-transform ${isOpen ? 'rotate-90' : ''}`} />
+      </button>
+      {isOpen && (
+        <p className="mt-3 text-sm text-muted-foreground">{answer}</p>
+      )}
     </div>
   );
 }
