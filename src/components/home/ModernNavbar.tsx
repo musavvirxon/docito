@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import ThemeToggle from "./ThemeToggle";
+
 import { Logo } from "@/components/Logo";
 
 const ModernNavbar = () => {
@@ -44,7 +44,7 @@ const ModernNavbar = () => {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center hover:opacity-80 transition-opacity duration-200" aria-label="Go to homepage">
-            <Logo variant="horizontal" size="md" />
+            <Logo variant="horizontal" size="sm" />
           </Link>
 
           {/* Desktop Navigation */}
@@ -74,7 +74,6 @@ const ModernNavbar = () => {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden lg:flex items-center space-x-4">
-            <ThemeToggle />
             {user ? (
               <>
                 <Button
@@ -152,9 +151,6 @@ const ModernNavbar = () => {
                 )
               ))}
               <div className="pt-4 space-y-3">
-                <div className="flex justify-center mb-3">
-                  <ThemeToggle />
-                </div>
                 {user ? (
                   <>
                     <Button

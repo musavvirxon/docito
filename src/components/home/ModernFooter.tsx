@@ -1,6 +1,7 @@
 import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Logo } from "@/components/Logo";
+import ThemeToggle from "./ThemeToggle";
 
 const ModernFooter = () => {
   const platformLinks = [
@@ -146,7 +147,7 @@ const ModernFooter = () => {
               Docito is a registered trademark and brand of <span className="font-semibold">Artsy Developers Inc.</span>
             </div>
           </div>
-          <div className="flex flex-wrap justify-center gap-6">
+          <div className="flex flex-wrap justify-center items-center gap-6">
             <Link to="/legal/terms-of-service" className="text-xs text-slate-500 dark:text-slate-600 hover:text-primary dark:hover:text-primary transition-colors">
               Terms
             </Link>
@@ -159,6 +160,9 @@ const ModernFooter = () => {
             <Link to="/about" className="text-xs text-slate-500 dark:text-slate-600 hover:text-primary dark:hover:text-primary transition-colors">
               About
             </Link>
+            <div className="ml-4">
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </div>

@@ -31,13 +31,13 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
 
   const getTimeBasedTheme = (): AppliedTheme => {
     const hour = new Date().getHours();
-    return (hour >= 20 || hour < 6) ? 'dark' : 'light';
+    // 7 AM (7) to 7 PM (19) is light mode, rest is dark
+    return (hour >= 7 && hour < 19) ? 'light' : 'dark';
   };
 
   const getAutoTheme = (): AppliedTheme => {
-    // Try system preference first, fallback to time-based
-    const systemTheme = getSystemTheme();
-    return systemTheme || getTimeBasedTheme();
+    // Use time-based theme for automatic mode
+    return getTimeBasedTheme();
   };
 
   const [mode, setMode] = useState<ThemeMode>(() => {
@@ -66,16 +66,6 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
     document.documentElement.classList.add(newAppliedTheme);
     setAppliedTheme(newAppliedTheme);
   };
-
-  // Watch for system theme changes when in auto mode
-  useEffect(() => {
-    if (mode === 'auto') {
-      const mq = window.matchMedia('(prefers-color-scheme: dark)');
-      const handleChange = () => applyTheme('auto');
-      mq.addEventListener('change', handleChange);
-      return () => mq.removeEventListener('change', handleChange);
-    }
-  }, [mode]);
 
   // Check every minute for time-based theme switching in auto mode
   useEffect(() => {

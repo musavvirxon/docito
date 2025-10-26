@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
+import { Logo } from "@/components/Logo";
 
 const Practices = () => {
   return (
@@ -12,22 +13,19 @@ const Practices = () => {
         <div className="container mx-auto px-4">
           <nav className="flex items-center justify-between h-16">
             <Link to="/" className="flex items-center">
-              <div className="bg-yellow-400 rounded-full w-8 h-8 flex items-center justify-center mr-2">
-                <span className="text-foreground font-bold text-lg">Z</span>
-              </div>
-              <span className="text-xl font-semibold text-foreground mr-2">Zocdoc</span>
-              <span className="text-muted-foreground">for Providers</span>
+              <Logo variant="horizontal" size="sm" />
+              <span className="ml-2 text-muted-foreground">for Providers</span>
             </Link>
             
             <div className="flex items-center space-x-6">
               <div className="hidden lg:flex items-center space-x-6">
-                <span className="text-foreground cursor-pointer">Solutions</span>
-                <span className="text-foreground cursor-pointer">Learn</span>
-                <span className="text-foreground cursor-pointer">Find care</span>
-                <span className="text-foreground cursor-pointer">Log in</span>
+                <Link to="/search-doctors" className="text-foreground hover:text-primary cursor-pointer">Find Doctors</Link>
+                <Link to="/browse-specialties" className="text-foreground hover:text-primary cursor-pointer">Specialties</Link>
+                <Link to="/features" className="text-foreground hover:text-primary cursor-pointer">Features</Link>
+                <Link to="/auth" className="text-foreground hover:text-primary cursor-pointer">Log in</Link>
               </div>
-              <Button className="bg-yellow-400 text-foreground hover:bg-yellow-500 font-medium">
-                Sign up
+              <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium">
+                <Link to="/register-practice">Sign up</Link>
               </Button>
             </div>
           </nav>
@@ -43,10 +41,10 @@ const Practices = () => {
                 The easiest way to grow your practice
               </h1>
               <p className="text-xl text-muted-foreground mb-8">
-                Zocdoc helps you bring in more new patients and keep them coming
+                Docito helps you bring in more new patients and keep them coming
                 back – while saving your practice valuable time.
               </p>
-              <Button asChild className="bg-white text-foreground border-2 border-border hover:bg-muted px-8 py-3 text-lg">
+              <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg">
                 <Link to="/register-practice">Get started</Link>
               </Button>
               <p className="text-sm text-muted-foreground mt-4">
@@ -71,10 +69,10 @@ const Practices = () => {
           </h2>
           
           <div className="grid lg:grid-cols-2 gap-12 mb-16">
-            <Card className="bg-yellow-400 text-foreground border-0">
+            <Card className="bg-primary text-primary-foreground border-0">
               <CardContent className="p-8">
                 <h3 className="text-2xl font-bold mb-4">
-                  Zocdoc is where patients find providers
+                  Docito is where patients find providers
                 </h3>
                 <div className="bg-white rounded-lg p-6 mb-6">
                   <div className="text-sm text-muted-foreground mb-4">
@@ -90,18 +88,18 @@ const Practices = () => {
             
             <div>
               <h3 className="text-2xl font-bold text-foreground mb-4">
-                Zocdoc Marketplace
+                Docito Marketplace
               </h3>
               <p className="text-muted-foreground mb-6">
-                List your practice on Zocdoc.com to reach millions of
+                List your practice on Docito to reach millions of
                 people searching for care each month. Pay only for
                 first-time new patient bookings.
               </p>
               <div className="space-x-4">
-                <Button className="bg-yellow-400 text-foreground hover:bg-yellow-500">
+                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
                   Get started
                 </Button>
-                <Button variant="ghost" className="text-foreground underline">
+                <Button variant="ghost" className="text-foreground underline hover:text-primary">
                   See how it works
                 </Button>
               </div>
@@ -114,7 +112,7 @@ const Practices = () => {
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center text-foreground mb-4">
-            Zocdoc Practice Solutions
+            Docito Practice Solutions
           </h2>
           <p className="text-xl text-center text-muted-foreground mb-16">
             Fully manage your private practice. Reach, manage, and keep patients with free and easy-to-use tools. Take payments, view stats, add your own custom services or treatments, store patient history, view stats of your providers and staff.
@@ -211,7 +209,7 @@ const Practices = () => {
           {/* Why you'll love Zocdoc Section */}
           <div className="mb-16">
             <h3 className="text-3xl font-bold text-center text-foreground mb-12">
-              Why you'll love Zocdoc
+              Why you'll love Docito
             </h3>
             
             <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -263,7 +261,7 @@ const Practices = () => {
                 <p className="text-muted-foreground mb-6">
                   Showcase your practice to the largest group of patients searching for care online. Only accept patients for the insurances and visit reasons you list.
                 </p>
-                <Button variant="ghost" className="text-foreground underline p-0">
+                <Button variant="ghost" className="text-foreground hover:text-primary underline p-0">
                   How Marketplace works
                 </Button>
               </div>
@@ -275,7 +273,7 @@ const Practices = () => {
                   Make it easy for patients to book with you online
                 </h4>
                 <p className="text-muted-foreground mb-6">
-                  Turn patient interest into bookings anywhere patients find you online – whether that's through search engines (such as Google), your website, or the Zocdoc Marketplace.
+                  Turn patient interest into bookings anywhere patients find you online – whether that's through search engines (such as Google), your website, or the Docito Marketplace.
                 </p>
               </div>
               
@@ -333,14 +331,14 @@ const Practices = () => {
       </section>
 
       {/* No Risk Section */}
-      <section className="py-20 bg-green-500 text-white">
+      <section className="py-20 bg-primary text-primary-foreground">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl font-bold mb-4">No risk to get started</h2>
           <p className="text-xl mb-12">No upfront fees or subscription costs.</p>
           
-          <Card className="max-w-4xl mx-auto bg-white text-foreground">
+          <Card className="max-w-4xl mx-auto bg-background text-foreground border-border">
             <CardHeader>
-              <CardTitle className="text-2xl text-left">Zocdoc Practice Solutions</CardTitle>
+              <CardTitle className="text-2xl text-left">Docito Practice Solutions</CardTitle>
               <hr className="my-4" />
             </CardHeader>
             <CardContent className="space-y-6 text-left">
