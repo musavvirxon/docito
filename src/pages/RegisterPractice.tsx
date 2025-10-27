@@ -11,6 +11,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useSimpleForm } from "@/hooks/useSimpleForm";
 import { useQuickNavigate } from "@/hooks/useQuickNavigate";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const practiceTypes = [
   "Private Clinic",
@@ -96,9 +98,48 @@ const RegisterPractice = () => {
   };
 
   const handlePracticeRegistration = async () => {
-    // Simulate registration process
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    window.location.href = "/processing-practice";
+    if (!formData.practiceName) {
+      toast.error("Please enter a practice name");
+      return;
+    }
+
+    try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("You must be logged in to register a practice");
+        return;
+      }
+
+      // Create minimal practice record
+      const { error } = await supabase
+        .from('practices')
+        .insert({
+          admin_id: user.id,
+          name: formData.practiceName,
+          practice_type: formData.practiceType || null,
+          practice_size: formData.practiceSize || null,
+          zip_code: formData.zipCode || null,
+          country: formData.country || "United States",
+          state: formData.state || null,
+          phone: formData.phoneNumber || null,
+          email: formData.email || null,
+          specialties: selectedSpecialties,
+          how_heard_about_us: formData.howDidYouHear || null,
+          agrees_to_updates: formData.agreeToMessages,
+          agrees_to_terms: formData.agreeToTerms,
+          verified: false,
+          verification_status: 'pending'
+        });
+
+      if (error) throw error;
+
+      toast.success("Practice created! You can now access your dashboard.");
+      window.location.href = "/dashboard";
+    } catch (error: any) {
+      console.error("Error creating practice:", error);
+      toast.error(error.message || "Failed to create practice");
+    }
   };
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -112,8 +153,8 @@ const RegisterPractice = () => {
       
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Register Your Practice</h1>
-          <p className="text-muted-foreground">Join our trusted healthcare network and start attracting new patients today</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Create Your Practice Profile</h1>
+          <p className="text-muted-foreground">Get started with basic information - you can complete verification later from your dashboard</p>
         </div>
 
         <form onSubmit={onSubmit} className="space-y-8">
@@ -128,12 +169,14 @@ const RegisterPractice = () => {
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <Label className="text-sm font-medium">Practice Name (Optional)</Label>
+                  <Label className="text-sm font-medium">Practice Name *</Label>
                   <Input 
                     placeholder="Enter practice name" 
                     value={formData.practiceName}
                     onChange={(e) => updateField('practiceName', e.target.value)}
+                    required
                   />
+                  <p className="text-xs text-muted-foreground mt-1">This is the only required field to get started</p>
                 </div>
 
                 <div>
@@ -361,13 +404,20 @@ const RegisterPractice = () => {
           {/* Section 5: Call to Action */}
           <Card>
             <CardContent className="pt-6">
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
+                <p className="text-sm text-blue-900 dark:text-blue-100">
+                  <strong>Quick Setup:</strong> Enter your practice name to create your account. 
+                  You can complete full verification (documents, business details) later from your dashboard.
+                </p>
+              </div>
+              
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button 
                   type="submit" 
                   className="flex-1 h-12 text-base font-medium"
                   disabled={isLoading}
                 >
-                  {isLoading ? "Registering..." : "Sign Up"}
+                  {isLoading ? "Creating Practice..." : "Create Practice & Continue"}
                 </Button>
                 <Button type="button" variant="outline" className="flex-1 h-12 text-base">
                   Request a Demo
@@ -376,7 +426,7 @@ const RegisterPractice = () => {
               
               <div className="text-center mt-4">
                 <p className="text-sm text-muted-foreground">
-                  Already have an account? <a href="#" className="text-primary hover:underline">Sign in</a>
+                  Already have an account? <a href="/auth" className="text-primary hover:underline">Sign in</a>
                 </p>
               </div>
             </CardContent>

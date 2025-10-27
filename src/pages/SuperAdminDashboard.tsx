@@ -8,6 +8,7 @@ import KPICards from "@/components/super-admin/KPICards";
 import AnalyticsCharts from "@/components/super-admin/AnalyticsCharts";
 import ManagementTable from "@/components/super-admin/ManagementTable";
 import ActivityFeed from "@/components/super-admin/ActivityFeed";
+import VerificationTable from "@/components/super-admin/VerificationTable";
 
 const SuperAdminDashboard = () => {
   const { user, profile, loading } = useAuth();
@@ -85,6 +86,11 @@ const SuperAdminDashboard = () => {
               <p className="text-muted-foreground mt-1">Manage all medical practices</p>
             </div>
             <ManagementTable title="All Practices" type="practices" />
+            
+            <div className="mt-8">
+              <h2 className="text-2xl font-bold text-foreground mb-4">Practice Verifications</h2>
+              <VerificationTable title="Pending Verifications" status="under_review" />
+            </div>
           </div>
         );
       
