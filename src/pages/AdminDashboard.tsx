@@ -71,6 +71,11 @@ const AdminDashboard = () => {
     setVerificationModalOpen(false);
   };
 
+  const handleVerificationSuccess = async () => {
+    await refreshData();
+    navigate("/dashboard/verify");
+  };
+
   const dashboardMetrics = [
     { label: "Total Bookings", value: stats.totalBookings.toString(), icon: Calendar, trend: "" },
     { label: "Total Patients", value: stats.totalPatients.toString(), icon: Users, trend: "" },
@@ -167,7 +172,9 @@ const AdminDashboard = () => {
         <ComprehensiveRegistrationModal
           open={createClinicOpen}
           onOpenChange={setCreateClinicOpen}
-          onSuccess={refreshData}
+          onSuccess={handleVerificationSuccess}
+          practiceId={practice?.id || ""}
+          existingPracticeData={practice}
         />
       </div>
     );
@@ -256,7 +263,7 @@ const AdminDashboard = () => {
                 <p className="text-sm mb-3">{getVerificationMessage(verificationStatus)}</p>
                 {(verificationStatus === "pending" || verificationStatus === "rejected") && (
                   <div className="flex gap-2">
-                    <Button size="sm" onClick={() => navigate("/dashboard/verify")}>
+                    <Button size="sm" onClick={() => setCreateClinicOpen(true)}>
                       <CheckCircle className="h-4 w-4 mr-2" />
                       {verificationStatus === "rejected" ? "Resubmit Verification" : "Verify Practice"}
                     </Button>

@@ -23,6 +23,8 @@ interface ComprehensiveRegistrationModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
+  practiceId: string;
+  existingPracticeData?: any;
 }
 
 const practiceTypes = [
@@ -50,7 +52,9 @@ const hearAboutOptions = [
 export function ComprehensiveRegistrationModal({ 
   open, 
   onOpenChange, 
-  onSuccess 
+  onSuccess,
+  practiceId,
+  existingPracticeData
 }: ComprehensiveRegistrationModalProps) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -59,32 +63,32 @@ export function ComprehensiveRegistrationModal({
 
   const [formData, setFormData] = useState({
     // Basic Information
-    name: "",
-    legalBusinessName: "",
-    practiceType: "",
-    practiceSize: "",
-    country: "United States",
-    state: "",
-    city: "",
-    zipCode: "",
-    address: "",
-    email: "",
-    phone: "",
-    website: "",
+    name: existingPracticeData?.name || "",
+    legalBusinessName: existingPracticeData?.legal_business_name || "",
+    practiceType: existingPracticeData?.practice_type || "",
+    practiceSize: existingPracticeData?.practice_size || "",
+    country: existingPracticeData?.country || "United States",
+    state: existingPracticeData?.state || "",
+    city: existingPracticeData?.city || "",
+    zipCode: existingPracticeData?.zip_code || "",
+    address: existingPracticeData?.address || "",
+    email: existingPracticeData?.email || "",
+    phone: existingPracticeData?.phone || "",
+    website: existingPracticeData?.website || "",
     
     // Business Information
-    businessRegistrationNumber: "",
-    taxId: "",
-    yearEstablished: "",
-    businessOwner: "",
-    description: "",
+    businessRegistrationNumber: existingPracticeData?.business_registration_number || "",
+    taxId: existingPracticeData?.tax_id || "",
+    yearEstablished: existingPracticeData?.year_established?.toString() || "",
+    businessOwner: existingPracticeData?.business_owner || "",
+    description: existingPracticeData?.description || "",
     
     // Specialties & Services
-    specialties: [] as string[],
+    specialties: existingPracticeData?.specialties || [] as string[],
     customSpecialty: "",
-    servicesOffered: [] as string[],
+    servicesOffered: existingPracticeData?.services_offered || [] as string[],
     customService: "",
-    operatingHours: {
+    operatingHours: existingPracticeData?.operating_hours || {
       monday: { start: "09:00", end: "17:00", enabled: true },
       tuesday: { start: "09:00", end: "17:00", enabled: true },
       wednesday: { start: "09:00", end: "17:00", enabled: true },
@@ -95,11 +99,11 @@ export function ComprehensiveRegistrationModal({
     },
     
     // Discovery
-    howHeardAboutUs: "",
+    howHeardAboutUs: existingPracticeData?.how_heard_about_us || "",
     
     // Agreements
-    agreesToUpdates: false,
-    agreesToTerms: false,
+    agreesToUpdates: existingPracticeData?.agrees_to_updates || false,
+    agreesToTerms: existingPracticeData?.agrees_to_terms || false,
   });
 
   const addSpecialty = (specialty: string) => {
@@ -127,12 +131,17 @@ export function ComprehensiveRegistrationModal({
       return;
     }
 
+    if (!formData.name || !formData.legalBusinessName || !formData.businessRegistrationNumber || !formData.taxId) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
     setLoading(true);
     try {
-      const { error } = await supabase
+      // Update practice with complete information
+      const { error: practiceError } = await supabase
         .from('practices')
-        .insert({
-          admin_id: user.id,
+        .update({
           name: formData.name,
           legal_business_name: formData.legalBusinessName,
           practice_type: formData.practiceType,
@@ -156,18 +165,49 @@ export function ComprehensiveRegistrationModal({
           how_heard_about_us: formData.howHeardAboutUs,
           agrees_to_updates: formData.agreesToUpdates,
           agrees_to_terms: formData.agreesToTerms,
-          verified: false,
-          verification_status: 'pending'
+        })
+        .eq('id', practiceId);
+
+      if (practiceError) throw practiceError;
+
+      // Create verification record
+      const { error: verificationError } = await supabase
+        .from('practice_verification' as any)
+        .insert({
+          practice_id: practiceId,
+          business_name: formData.name,
+          business_type: formData.practiceType,
+          practice_size: formData.practiceSize,
+          country: formData.country,
+          state: formData.state,
+          city: formData.city,
+          zip_code: formData.zipCode,
+          full_address: formData.address,
+          phone: formData.phone,
+          business_email: formData.email,
+          website_url: formData.website || null,
+          operating_hours: formData.operatingHours,
+          services_offered: formData.servicesOffered,
+          specialties: formData.specialties,
+          practice_description: formData.description,
+          status: 'pending',
+          submitted_at: new Date().toISOString()
         });
 
-      if (error) throw error;
+      if (verificationError) throw verificationError;
 
-      toast.success("Practice registered successfully! Please upload verification documents.");
+      // Update practice verification status
+      await supabase
+        .from('practices')
+        .update({ verification_status: 'pending' })
+        .eq('id', practiceId);
+
+      toast.success("Verification information submitted! You'll be redirected to upload required documents.");
       onOpenChange(false);
       onSuccess();
     } catch (err: any) {
-      console.error('Error registering practice:', err);
-      toast.error(err.message || "Failed to register practice");
+      console.error('Error submitting verification:', err);
+      toast.error(err.message || "Failed to submit verification");
     } finally {
       setLoading(false);
     }
@@ -565,9 +605,9 @@ export function ComprehensiveRegistrationModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Register Your Practice</DialogTitle>
+          <DialogTitle>Practice Verification - Complete Details</DialogTitle>
           <DialogDescription>
-            Step {currentStep} of {totalSteps} - Complete all required information
+            Step {currentStep} of {totalSteps} - Provide accurate information for verification
           </DialogDescription>
         </DialogHeader>
 
@@ -621,10 +661,10 @@ export function ComprehensiveRegistrationModal({
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Registering...
+                  Submitting...
                 </>
               ) : (
-                "Complete Registration"
+                "Submit for Verification"
               )}
             </Button>
           )}
