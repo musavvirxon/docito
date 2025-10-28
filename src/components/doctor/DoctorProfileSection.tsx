@@ -9,8 +9,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, CheckCircle, AlertCircle, Clock } from "lucide-react";
+import { Upload, CheckCircle, AlertCircle, Clock, FileCheck } from "lucide-react";
 import { useDoctorData } from "@/contexts/DoctorDataContext";
+import { useFileUpload } from "@/hooks/useFileUpload";
+import { useDoctorVerification } from "@/hooks/useDoctorVerification";
 import { toast } from "sonner";
 
 interface DoctorProfileSectionProps {
@@ -43,6 +45,8 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
   const { doctorProfile: profile, loading, updateProfile, stats } = useDoctorData();
   const doctorProfile = propProfile || profile;
   const profileCompletion = stats.profileCompletion;
+  const { uploadFile, uploading } = useFileUpload();
+  const { submitForVerification, isSubmitting } = useDoctorVerification();
   
   const [formData, setFormData] = useState({
     specialty: '',
@@ -56,6 +60,12 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
 
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(["English"]);
   const [selectedConsultationTypes, setSelectedConsultationTypes] = useState<string[]>(["In-person", "Video"]);
+  const [documents, setDocuments] = useState<{
+    medical_license?: File;
+    professional_id?: File;
+    medical_license_url?: string;
+    professional_id_url?: string;
+  }>({});
   
   useEffect(() => {
     if (doctorProfile) {
@@ -98,6 +108,54 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
     const result = await updateProfile(updates);
     if (result.success) {
       toast.success('Profile updated successfully');
+    }
+  };
+
+  const handleAvatarUpload = async (file: File) => {
+    if (!doctorProfile?.user_id) return;
+    
+    const result = await uploadFile(file, 'avatars', `${doctorProfile.user_id}/avatar-${Date.now()}.jpg`);
+    if (result) {
+      toast.success('Avatar uploaded successfully');
+      // Refresh profile to show new avatar
+    }
+  };
+
+  const handleDocumentUpload = (type: 'medical_license' | 'professional_id', file: File) => {
+    setDocuments(prev => ({ ...prev, [type]: file }));
+    toast.success(`${type === 'medical_license' ? 'Medical License' : 'Professional ID'} selected`);
+  };
+
+  const handleSubmitVerification = async () => {
+    if (!doctorProfile?.id) {
+      toast.error('Doctor profile not found');
+      return;
+    }
+
+    if (!formData.license_number) {
+      toast.error('License number is required for verification');
+      return;
+    }
+
+    if (!documents.medical_license && !documents.medical_license_url) {
+      toast.error('Medical license document is required');
+      return;
+    }
+
+    const result = await submitForVerification(doctorProfile.id, {
+      specialty: formData.specialty,
+      bio: formData.bio,
+      license_number: formData.license_number,
+      consultation_fee: formData.consultation_fee ? parseFloat(formData.consultation_fee) : 0,
+      years_experience: formData.years_experience,
+      languages: selectedLanguages,
+      consultation_types: selectedConsultationTypes,
+      documents,
+    });
+
+    if (result.success) {
+      // Clear documents after successful submission
+      setDocuments({});
     }
   };
 
@@ -190,21 +248,20 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
               </AvatarFallback>
             </Avatar>
             <div className="space-y-2">
-              <Button variant="outline" size="sm" onClick={() => {
+              <Button variant="outline" size="sm" disabled={uploading} onClick={() => {
                 const input = document.createElement('input');
                 input.type = 'file';
                 input.accept = 'image/*';
                 input.onchange = (e) => {
                   const file = (e.target as HTMLInputElement)?.files?.[0];
                   if (file) {
-                    // In a real app, upload to Supabase storage
-                    toast.success('Photo upload feature coming soon');
+                    handleAvatarUpload(file);
                   }
                 };
                 input.click();
               }}>
                 <Upload className="w-4 h-4 mr-2" />
-                Upload Photo
+                {uploading ? 'Uploading...' : 'Upload Photo'}
               </Button>
               <p className="text-sm text-muted-foreground">Professional headshot recommended</p>
             </div>
@@ -356,35 +413,67 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-              <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+            <div className={`border-2 border-dashed rounded-lg p-6 text-center ${
+              documents.medical_license ? 'border-green-500 bg-green-50' : 'border-border'
+            }`}>
+              {documents.medical_license ? (
+                <FileCheck className="w-8 h-8 mx-auto mb-2 text-green-600" />
+              ) : (
+                <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+              )}
               <p className="text-sm font-medium mb-1">Medical License</p>
-              <p className="text-xs text-muted-foreground mb-2">Upload license document</p>
-              <Button variant="outline" size="sm" onClick={() => {
+              <p className="text-xs text-muted-foreground mb-2">
+                {documents.medical_license ? documents.medical_license.name : 'Upload license document (PDF, JPG, PNG)'}
+              </p>
+              <Button variant="outline" size="sm" disabled={uploading} onClick={() => {
                 const input = document.createElement('input');
                 input.type = 'file';
                 input.accept = '.pdf,.jpg,.jpeg,.png';
-                input.onchange = () => toast.success('Document upload feature coming soon');
+                input.onchange = (e) => {
+                  const file = (e.target as HTMLInputElement)?.files?.[0];
+                  if (file) handleDocumentUpload('medical_license', file);
+                };
                 input.click();
-              }}>Choose File</Button>
+              }}>
+                {documents.medical_license ? 'Change File' : 'Choose File'}
+              </Button>
             </div>
-            <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-              <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+            <div className={`border-2 border-dashed rounded-lg p-6 text-center ${
+              documents.professional_id ? 'border-green-500 bg-green-50' : 'border-border'
+            }`}>
+              {documents.professional_id ? (
+                <FileCheck className="w-8 h-8 mx-auto mb-2 text-green-600" />
+              ) : (
+                <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+              )}
               <p className="text-sm font-medium mb-1">Professional ID</p>
-              <p className="text-xs text-muted-foreground mb-2">Government issued ID</p>
-              <Button variant="outline" size="sm" onClick={() => {
+              <p className="text-xs text-muted-foreground mb-2">
+                {documents.professional_id ? documents.professional_id.name : 'Government issued ID (PDF, JPG, PNG)'}
+              </p>
+              <Button variant="outline" size="sm" disabled={uploading} onClick={() => {
                 const input = document.createElement('input');
                 input.type = 'file';
                 input.accept = '.pdf,.jpg,.jpeg,.png';
-                input.onchange = () => toast.success('Document upload feature coming soon');
+                input.onchange = (e) => {
+                  const file = (e.target as HTMLInputElement)?.files?.[0];
+                  if (file) handleDocumentUpload('professional_id', file);
+                };
                 input.click();
-              }}>Choose File</Button>
+              }}>
+                {documents.professional_id ? 'Change File' : 'Choose File'}
+              </Button>
             </div>
           </div>
           
           <div className="flex gap-2">
-            <Button onClick={handleSaveChanges}>Save Changes</Button>
-            <Button variant="outline">Submit for Verification</Button>
+            <Button onClick={handleSaveChanges} disabled={isSubmitting}>Save Changes</Button>
+            <Button 
+              variant="default" 
+              onClick={handleSubmitVerification}
+              disabled={isSubmitting || uploading}
+            >
+              {isSubmitting ? 'Submitting...' : 'Submit for Verification'}
+            </Button>
           </div>
         </CardContent>
       </Card>

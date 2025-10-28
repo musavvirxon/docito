@@ -106,10 +106,7 @@ const SignUp = () => {
         <div className="container mx-auto px-4">
           <nav className="flex items-center justify-between h-16">
             <Link to="/" className="flex items-center">
-              <div className="bg-yellow-400 rounded-full w-8 h-8 flex items-center justify-center mr-2">
-                <span className="text-foreground font-bold text-lg">Z</span>
-              </div>
-              <span className="text-xl font-semibold text-foreground">Zocdoc</span>
+              <img src="/logos/horizontal/docito-horizontal-md.png" alt="Docito" className="h-8" />
             </Link>
           </nav>
         </div>

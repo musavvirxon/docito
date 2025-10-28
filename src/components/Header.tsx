@@ -36,12 +36,9 @@ const Header = () => {
       <div className="container mx-auto px-4">
         <nav className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center">
-            <div className="bg-primary rounded-full w-8 h-8 flex items-center justify-center mr-2">
-              <span className="text-primary-foreground font-bold text-lg">Z</span>
-            </div>
-            <span className="text-xl font-semibold text-foreground">Zocdoc</span>
-          </div>
+          <Link to="/" className="flex items-center">
+            <img src="/logos/horizontal/docito-horizontal-md.png" alt="Docito" className="h-8" />
+          </Link>
 
           {/* Navigation Links */}
           <div className="hidden lg:flex items-center space-x-6">
