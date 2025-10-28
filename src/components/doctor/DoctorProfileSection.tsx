@@ -13,6 +13,7 @@ import { Upload, CheckCircle, AlertCircle, Clock, FileCheck } from "lucide-react
 import { useDoctorData } from "@/contexts/DoctorDataContext";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { useDoctorVerification } from "@/hooks/useDoctorVerification";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface DoctorProfileSectionProps {
@@ -55,7 +56,8 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
     consultation_fee: '',
     years_experience: '',
     languages: ['English'],
-    consultation_types: ['In-person', 'Video']
+    consultation_types: ['In-person', 'Video'],
+    phone: ''
   });
 
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(["English"]);
@@ -76,7 +78,8 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
         consultation_fee: doctorProfile.consultation_fee?.toString() || '',
         years_experience: '5', // Default or from profile
         languages: ['English'], // Default or from profile
-        consultation_types: ['In-person', 'Video'] // Default or from profile
+        consultation_types: ['In-person', 'Video'], // Default or from profile
+        phone: doctorProfile.profiles?.phone || ''
       });
     }
   }, [doctorProfile]);
@@ -96,7 +99,20 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
   const consultationTypes = ["In-person", "Video", "Chat"];
 
   const handleSaveChanges = async () => {
-    if (!updateProfile) return;
+    if (!updateProfile || !doctorProfile?.user_id) return;
+
+    // Update phone in profiles table
+    if (formData.phone) {
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ phone: formData.phone })
+        .eq('user_id', doctorProfile.user_id);
+
+      if (profileError) {
+        toast.error('Failed to update phone number');
+        return;
+      }
+    }
 
     const updates = {
       specialty: formData.specialty,
@@ -363,9 +379,8 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
               <Input 
                 id="phone" 
                 placeholder="Phone number" 
-                value={doctorProfile.profiles?.phone || ''}
-                readOnly
-                className="bg-muted"
+                value={formData.phone || doctorProfile.profiles?.phone || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
               />
             </div>
           </div>

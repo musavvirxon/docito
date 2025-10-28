@@ -9,9 +9,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import { Eye, EyeOff, Upload, Info, User, Briefcase, Building2, FileText, Settings, Shield } from "lucide-react";
+import { Eye, EyeOff, Upload, Info, User, Briefcase, Building2, FileText, Settings, Shield, FileCheck } from "lucide-react";
 import { useSimpleForm } from "@/hooks/useSimpleForm";
 import { useQuickNavigate } from "@/hooks/useQuickNavigate";
+import { useFileUpload } from "@/hooks/useFileUpload";
+import { useDoctorVerification } from "@/hooks/useDoctorVerification";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const DoctorSignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -22,8 +26,14 @@ const DoctorSignUp = () => {
   const [clinicSearch, setClinicSearch] = useState("");
   const [selectedClinic, setSelectedClinic] = useState<any>(null);
   const [showManualClinic, setShowManualClinic] = useState(false);
+  const [avatar, setAvatar] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string>("");
+  const [medicalLicense, setMedicalLicense] = useState<File | null>(null);
+  const [professionalId, setProfessionalId] = useState<File | null>(null);
   
   const { navigateToDoctorDashboard } = useQuickNavigate();
+  const { uploadFile, uploading } = useFileUpload();
+  const { submitForVerification, isSubmitting } = useDoctorVerification();
   
   const {
     formData,
@@ -46,7 +56,8 @@ const DoctorSignUp = () => {
     experience: "",
     license: "",
     country: "",
-    region: ""
+    region: "",
+    bio: ""
   }, 'doctor');
 
   const specialties = [
@@ -122,10 +133,88 @@ const DoctorSignUp = () => {
     clinic.name.toLowerCase().includes(clinicSearch.toLowerCase())
   );
 
+  const handleAvatarUpload = (file: File) => {
+    setAvatar(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAvatarPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+    toast.success('Profile photo selected');
+  };
+
+  const handleDocumentUpload = (type: 'medical_license' | 'professional_id', file: File) => {
+    if (type === 'medical_license') {
+      setMedicalLicense(file);
+      toast.success('Medical license document selected');
+    } else {
+      setProfessionalId(file);
+      toast.success('Professional ID document selected');
+    }
+  };
+
   const handleDoctorSignUp = async () => {
-    // Simulate signup process
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    navigateToDoctorDashboard();
+    try {
+      // Create auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: `${formData.firstName} ${formData.lastName}`,
+            role: 'doctor'
+          }
+        }
+      });
+
+      if (authError) throw authError;
+      if (!authData.user) throw new Error('User creation failed');
+
+      // Upload avatar if provided
+      let avatar_url = '';
+      if (avatar) {
+        const avatarResult = await uploadFile(avatar, 'avatars', `${authData.user.id}/avatar-${Date.now()}.jpg`);
+        if (avatarResult) avatar_url = avatarResult.url;
+      }
+
+      // Create doctor profile
+      const { data: doctorData, error: doctorError } = await supabase
+        .from('doctors')
+        .insert({
+          user_id: authData.user.id,
+          specialty: formData.specialty || 'general',
+          bio: formData.bio,
+          license_number: formData.license,
+          consultation_fee: 0,
+        })
+        .select()
+        .single();
+
+      if (doctorError) throw doctorError;
+
+      // Submit for verification if documents provided
+      if (medicalLicense || professionalId) {
+        await submitForVerification(doctorData.id, {
+          specialty: formData.specialty || 'general',
+          bio: formData.bio || '',
+          license_number: formData.license || '',
+          consultation_fee: 0,
+          years_experience: formData.experience,
+          languages: selectedLanguages,
+          consultation_types: ['In-person', 'Video'],
+          documents: {
+            medical_license: medicalLicense || undefined,
+            professional_id: professionalId || undefined,
+          },
+        });
+      }
+
+      toast.success('Profile created successfully! Redirecting...');
+      setTimeout(() => navigateToDoctorDashboard(), 1500);
+    } catch (error: any) {
+      console.error('Error creating doctor profile:', error);
+      toast.error(error.message || 'Failed to create profile');
+    }
   };
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -585,6 +674,8 @@ const DoctorSignUp = () => {
                     id="bio" 
                     placeholder="Tell patients about your experience, approach to care, and what makes you unique..."
                     className="min-h-[100px]"
+                    value={formData.bio}
+                    onChange={(e) => updateField('bio', e.target.value)}
                   />
                   <p className="text-sm text-muted-foreground mt-1">300-500 characters recommended</p>
                 </div>
@@ -592,22 +683,103 @@ const DoctorSignUp = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label>Profile Photo</Label>
-                    <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-                      <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground mb-2">Upload your photo</p>
-                      <Button variant="outline" size="sm">
-                        Choose File
+                    <div className={`border-2 border-dashed rounded-lg p-6 text-center ${
+                      avatar ? 'border-green-500 bg-green-50' : 'border-border'
+                    }`}>
+                      {avatarPreview ? (
+                        <div className="space-y-2">
+                          <img src={avatarPreview} alt="Avatar preview" className="w-24 h-24 mx-auto rounded-full object-cover" />
+                          <FileCheck className="w-6 h-6 mx-auto text-green-600" />
+                        </div>
+                      ) : (
+                        <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                      )}
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {avatar ? avatar.name : 'Upload your photo'}
+                      </p>
+                      <Button 
+                        type="button"
+                        variant="outline" 
+                        size="sm"
+                        disabled={uploading}
+                        onClick={() => {
+                          const input = document.createElement('input');
+                          input.type = 'file';
+                          input.accept = 'image/*';
+                          input.onchange = (e) => {
+                            const file = (e.target as HTMLInputElement)?.files?.[0];
+                            if (file) handleAvatarUpload(file);
+                          };
+                          input.click();
+                        }}
+                      >
+                        {avatar ? 'Change File' : 'Choose File'}
                       </Button>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">Professional headshot recommended</p>
                   </div>
                   <div>
-                    <Label>License/Verification Documents</Label>
-                    <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-                      <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground mb-2">Upload documents</p>
-                      <Button variant="outline" size="sm">
-                        Choose Files
+                    <Label>Medical License Document</Label>
+                    <div className={`border-2 border-dashed rounded-lg p-6 text-center mb-3 ${
+                      medicalLicense ? 'border-green-500 bg-green-50' : 'border-border'
+                    }`}>
+                      {medicalLicense ? (
+                        <FileCheck className="w-8 h-8 mx-auto mb-2 text-green-600" />
+                      ) : (
+                        <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                      )}
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {medicalLicense ? medicalLicense.name : 'Upload medical license'}
+                      </p>
+                      <Button 
+                        type="button"
+                        variant="outline" 
+                        size="sm"
+                        disabled={uploading}
+                        onClick={() => {
+                          const input = document.createElement('input');
+                          input.type = 'file';
+                          input.accept = '.pdf,.jpg,.jpeg,.png';
+                          input.onchange = (e) => {
+                            const file = (e.target as HTMLInputElement)?.files?.[0];
+                            if (file) handleDocumentUpload('medical_license', file);
+                          };
+                          input.click();
+                        }}
+                      >
+                        {medicalLicense ? 'Change File' : 'Choose File'}
+                      </Button>
+                    </div>
+                    
+                    <Label>Professional ID</Label>
+                    <div className={`border-2 border-dashed rounded-lg p-6 text-center ${
+                      professionalId ? 'border-green-500 bg-green-50' : 'border-border'
+                    }`}>
+                      {professionalId ? (
+                        <FileCheck className="w-8 h-8 mx-auto mb-2 text-green-600" />
+                      ) : (
+                        <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                      )}
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {professionalId ? professionalId.name : 'Upload professional ID'}
+                      </p>
+                      <Button 
+                        type="button"
+                        variant="outline" 
+                        size="sm"
+                        disabled={uploading}
+                        onClick={() => {
+                          const input = document.createElement('input');
+                          input.type = 'file';
+                          input.accept = '.pdf,.jpg,.jpeg,.png';
+                          input.onchange = (e) => {
+                            const file = (e.target as HTMLInputElement)?.files?.[0];
+                            if (file) handleDocumentUpload('professional_id', file);
+                          };
+                          input.click();
+                        }}
+                      >
+                        {professionalId ? 'Change File' : 'Choose File'}
                       </Button>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">PDF or image files accepted</p>
@@ -699,8 +871,9 @@ const DoctorSignUp = () => {
                 <Button 
                   type="submit" 
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold"
+                  disabled={isLoading || isSubmitting || uploading}
                 >
-                  Create My Profile
+                  {isLoading || isSubmitting ? 'Creating Profile...' : 'Create My Profile'}
                 </Button>
 
                 <p className="text-center text-sm text-muted-foreground">
