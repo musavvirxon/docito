@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import SuperAdminSidebar from "@/components/super-admin/SuperAdminSidebar";
 import SuperAdminTopBar from "@/components/super-admin/SuperAdminTopBar";
 import KPICards from "@/components/super-admin/KPICards";
@@ -14,8 +15,40 @@ const SuperAdminDashboard = () => {
   const { user, profile, loading } = useAuth();
   const [activeSection, setActiveSection] = useState("dashboard");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState<boolean | null>(null);
+  const [checkingRole, setCheckingRole] = useState(true);
 
-  if (loading) {
+  useEffect(() => {
+    const checkSuperAdminRole = async () => {
+      if (!user) {
+        setCheckingRole(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase.rpc('has_role', {
+          _user_id: user.id,
+          _role: 'super_admin'
+        });
+
+        if (error) {
+          console.error('Error checking super admin role:', error);
+          setIsSuperAdmin(false);
+        } else {
+          setIsSuperAdmin(data === true);
+        }
+      } catch (error) {
+        console.error('Error checking super admin role:', error);
+        setIsSuperAdmin(false);
+      } finally {
+        setCheckingRole(false);
+      }
+    };
+
+    checkSuperAdminRole();
+  }, [user]);
+
+  if (loading || checkingRole) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex items-center gap-2">
@@ -30,12 +63,9 @@ const SuperAdminDashboard = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  // SECURITY: Require super_admin role (uses new user_roles system)
-  // Note: super_admin role is checked via the user_roles table
-  // The profile.role field is kept for backward compatibility but should not be trusted
-  // TODO: Add server-side RLS verification for super_admin access
-  if (profile?.role !== 'admin') {
-    // Currently checking for 'admin' as fallback until super_admin role is fully deployed
+  // SECURITY: Only users with super_admin role can access this dashboard
+  // Role is verified via the user_roles table in Supabase
+  if (isSuperAdmin !== true) {
     return <Navigate to="/dashboard" replace />;
   }
 
