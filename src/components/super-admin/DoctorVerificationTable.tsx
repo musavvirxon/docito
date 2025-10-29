@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, CheckCircle, XCircle, Clock, FileText } from "lucide-react";
+import { Eye, CheckCircle, XCircle, Clock, FileText, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -21,12 +21,12 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
-interface VerificationTableProps {
+interface DoctorVerificationTableProps {
   title: string;
   status?: "pending" | "under_review" | "verified" | "rejected" | "all";
 }
 
-const VerificationTable = ({ title, status = "all" }: VerificationTableProps) => {
+const DoctorVerificationTable = ({ title, status = "all" }: DoctorVerificationTableProps) => {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedVerification, setSelectedVerification] = useState<any>(null);
@@ -41,10 +41,15 @@ const VerificationTable = ({ title, status = "all" }: VerificationTableProps) =>
     setLoading(true);
     try {
       let query = supabase
-        .from("practice_verification" as any)
+        .from("doctor_verification" as any)
         .select(`
           *,
-          practices!inner(name, email, phone)
+          doctors!inner(
+            id,
+            specialty,
+            user_id,
+            profiles!doctors_user_id_fkey(full_name, email, phone)
+          )
         `)
         .order("submitted_at", { ascending: false })
         .limit(50);
@@ -57,7 +62,7 @@ const VerificationTable = ({ title, status = "all" }: VerificationTableProps) =>
       if (error) throw error;
       setData(result || []);
     } catch (error) {
-      console.error("Error fetching verifications:", error);
+      console.error("Error fetching doctor verifications:", error);
     } finally {
       setLoading(false);
     }
@@ -66,9 +71,9 @@ const VerificationTable = ({ title, status = "all" }: VerificationTableProps) =>
   const fetchDocuments = async (verificationId: string) => {
     try {
       const { data, error } = await supabase
-        .from("verification_documents" as any)
+        .from("doctor_verification_documents" as any)
         .select("*")
-        .eq("verification_id", verificationId);
+        .eq("doctor_verification_id", verificationId);
 
       if (error) throw error;
       setDocuments(data || []);
@@ -83,33 +88,67 @@ const VerificationTable = ({ title, status = "all" }: VerificationTableProps) =>
     setViewModalOpen(true);
   };
 
-  const handleUpdateStatus = async (verificationId: string, newStatus: string, practiceId: string) => {
+  const handleUpdateStatus = async (verificationId: string, newStatus: string, doctorId: string) => {
     try {
       // Update verification status
       const { error: verificationError } = await supabase
-        .from("practice_verification" as any)
-        .update({ status: newStatus })
+        .from("doctor_verification" as any)
+        .update({ 
+          status: newStatus,
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: (await supabase.auth.getUser()).data.user?.id
+        })
         .eq("id", verificationId);
 
       if (verificationError) throw verificationError;
 
-      // Update practice verification status
-      const { error: practiceError } = await supabase
-        .from("practices")
-        .update({ 
-          verification_status: newStatus,
-          verified: newStatus === "verified"
-        })
-        .eq("id", practiceId);
+      // Update doctor verified status
+      const { error: doctorError } = await supabase
+        .from("doctors")
+        .update({ verified: newStatus === "verified" })
+        .eq("id", doctorId);
 
-      if (practiceError) throw practiceError;
+      if (doctorError) throw doctorError;
 
-      toast.success(`Verification ${newStatus}`);
+      toast.success(`Doctor verification ${newStatus}`);
       fetchData();
       setViewModalOpen(false);
     } catch (error: any) {
       console.error("Error updating verification:", error);
       toast.error("Failed to update verification status");
+    }
+  };
+
+  const handleDelete = async (verificationId: string, doctorId: string) => {
+    if (!confirm("Are you sure you want to delete this verification request? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      // Delete the verification (documents will be cascade deleted)
+      const { error: deleteError } = await supabase
+        .from("doctor_verification" as any)
+        .delete()
+        .eq("id", verificationId);
+
+      if (deleteError) throw deleteError;
+
+      // Optionally delete the doctor profile as well
+      if (confirm("Do you also want to delete the doctor profile?")) {
+        const { error: doctorError } = await supabase
+          .from("doctors")
+          .delete()
+          .eq("id", doctorId);
+
+        if (doctorError) throw doctorError;
+      }
+
+      toast.success("Verification deleted successfully");
+      fetchData();
+      setViewModalOpen(false);
+    } catch (error: any) {
+      console.error("Error deleting verification:", error);
+      toast.error("Failed to delete verification");
     }
   };
 
@@ -162,9 +201,9 @@ const VerificationTable = ({ title, status = "all" }: VerificationTableProps) =>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Practice Name</TableHead>
-                <TableHead>Business Type</TableHead>
-                <TableHead>Location</TableHead>
+                <TableHead>Doctor Name</TableHead>
+                <TableHead>Specialty</TableHead>
+                <TableHead>License Number</TableHead>
                 <TableHead>Submitted</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -180,15 +219,17 @@ const VerificationTable = ({ title, status = "all" }: VerificationTableProps) =>
               ) : data.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    No verification submissions found
+                    No doctor verification submissions found
                   </TableCell>
                 </TableRow>
               ) : (
                 data.map((item: any) => (
                   <TableRow key={item.id}>
-                    <TableCell className="font-medium">{item.business_name || item.practices?.name}</TableCell>
-                    <TableCell>{item.business_type || "N/A"}</TableCell>
-                    <TableCell>{item.city}, {item.state}</TableCell>
+                    <TableCell className="font-medium">
+                      {item.full_name || item.doctors?.profiles?.full_name}
+                    </TableCell>
+                    <TableCell>{item.specialty || item.doctors?.specialty}</TableCell>
+                    <TableCell>{item.license_number || "N/A"}</TableCell>
                     <TableCell>
                       {item.submitted_at ? new Date(item.submitted_at).toLocaleDateString() : "N/A"}
                     </TableCell>
@@ -215,70 +256,53 @@ const VerificationTable = ({ title, status = "all" }: VerificationTableProps) =>
       <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Verification Details</DialogTitle>
+            <DialogTitle>Doctor Verification Details</DialogTitle>
             <DialogDescription>
-              Review practice verification information and documents
+              Review doctor verification information and documents
             </DialogDescription>
           </DialogHeader>
 
           {selectedVerification && (
             <div className="space-y-6">
-              {/* Business Information */}
+              {/* Doctor Information */}
               <div>
-                <h3 className="text-lg font-semibold mb-3">Business Information</h3>
+                <h3 className="text-lg font-semibold mb-3">Doctor Information</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-muted-foreground">Business Name</p>
-                    <p className="font-medium">{selectedVerification.business_name}</p>
+                    <p className="text-muted-foreground">Full Name</p>
+                    <p className="font-medium">{selectedVerification.full_name}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Business Type</p>
-                    <p className="font-medium">{selectedVerification.business_type}</p>
+                    <p className="text-muted-foreground">Specialty</p>
+                    <p className="font-medium">{selectedVerification.specialty}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Email</p>
-                    <p className="font-medium">{selectedVerification.business_email}</p>
+                    <p className="font-medium">{selectedVerification.email}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Phone</p>
                     <p className="font-medium">{selectedVerification.phone}</p>
                   </div>
-                  <div className="col-span-2">
-                    <p className="text-muted-foreground">Address</p>
-                    <p className="font-medium">{selectedVerification.full_address}</p>
-                    <p className="font-medium">
-                      {selectedVerification.city}, {selectedVerification.state} {selectedVerification.zip_code}
-                    </p>
+                  <div>
+                    <p className="text-muted-foreground">License Number</p>
+                    <p className="font-medium">{selectedVerification.license_number || "N/A"}</p>
                   </div>
+                  <div>
+                    <p className="text-muted-foreground">Years of Experience</p>
+                    <p className="font-medium">{selectedVerification.years_of_experience || "N/A"}</p>
+                  </div>
+                  {selectedVerification.medical_school && (
+                    <div className="col-span-2">
+                      <p className="text-muted-foreground">Medical School</p>
+                      <p className="font-medium">
+                        {selectedVerification.medical_school}
+                        {selectedVerification.graduation_year && ` (${selectedVerification.graduation_year})`}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
-
-              {/* Specialties & Services */}
-              {(selectedVerification.specialties?.length > 0 || selectedVerification.services_offered?.length > 0) && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">Specialties & Services</h3>
-                  {selectedVerification.specialties?.length > 0 && (
-                    <div className="mb-3">
-                      <p className="text-sm text-muted-foreground mb-2">Specialties</p>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedVerification.specialties.map((spec: string, idx: number) => (
-                          <Badge key={idx} variant="secondary">{spec}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {selectedVerification.services_offered?.length > 0 && (
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-2">Services</p>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedVerification.services_offered.map((service: string, idx: number) => (
-                          <Badge key={idx} variant="outline">{service}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
 
               {/* Documents */}
               <div>
@@ -314,7 +338,7 @@ const VerificationTable = ({ title, status = "all" }: VerificationTableProps) =>
               {/* Actions */}
               <div className="flex gap-3 pt-4 border-t">
                 <Button
-                  onClick={() => handleUpdateStatus(selectedVerification.id, "verified", selectedVerification.practice_id)}
+                  onClick={() => handleUpdateStatus(selectedVerification.id, "verified", selectedVerification.doctor_id)}
                   className="flex-1"
                   variant="default"
                 >
@@ -322,7 +346,7 @@ const VerificationTable = ({ title, status = "all" }: VerificationTableProps) =>
                   Approve Verification
                 </Button>
                 <Button
-                  onClick={() => handleUpdateStatus(selectedVerification.id, "rejected", selectedVerification.practice_id)}
+                  onClick={() => handleUpdateStatus(selectedVerification.id, "rejected", selectedVerification.doctor_id)}
                   className="flex-1"
                   variant="destructive"
                 >
@@ -330,24 +354,10 @@ const VerificationTable = ({ title, status = "all" }: VerificationTableProps) =>
                   Reject
                 </Button>
                 <Button
-                  onClick={async () => {
-                    if (!confirm("Are you sure you want to delete this verification? This cannot be undone.")) return;
-                    try {
-                      const { error } = await supabase
-                        .from("practice_verification" as any)
-                        .delete()
-                        .eq("id", selectedVerification.id);
-                      if (error) throw error;
-                      toast.success("Verification deleted");
-                      fetchData();
-                      setViewModalOpen(false);
-                    } catch (error: any) {
-                      toast.error("Failed to delete verification");
-                    }
-                  }}
+                  onClick={() => handleDelete(selectedVerification.id, selectedVerification.doctor_id)}
                   variant="outline"
                 >
-                  <XCircle className="w-4 h-4 mr-2" />
+                  <Trash2 className="w-4 h-4 mr-2" />
                   Delete
                 </Button>
               </div>
@@ -359,4 +369,4 @@ const VerificationTable = ({ title, status = "all" }: VerificationTableProps) =>
   );
 };
 
-export default VerificationTable;
+export default DoctorVerificationTable;

@@ -15,6 +15,7 @@ import AnalyticsCharts from "@/components/super-admin/AnalyticsCharts";
 import ManagementTable from "@/components/super-admin/ManagementTable";
 import ActivityFeed from "@/components/super-admin/ActivityFeed";
 import VerificationTable from "@/components/super-admin/VerificationTable";
+import DoctorVerificationTable from "@/components/super-admin/DoctorVerificationTable";
 
 const SuperAdminLogin = () => {
   const [email, setEmail] = useState("");
@@ -202,6 +203,11 @@ const SuperAdminDashboard = () => {
               <p className="text-muted-foreground mt-1">Manage all platform doctors</p>
             </div>
             <ManagementTable title="All Doctors" type="doctors" />
+            
+            <div className="mt-8">
+              <h2 className="text-2xl font-bold text-foreground mb-4">Doctor Verifications</h2>
+              <DoctorVerificationTable title="Pending Doctor Verifications" status="pending" />
+            </div>
           </div>
         );
       
