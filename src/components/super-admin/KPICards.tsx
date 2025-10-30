@@ -1,108 +1,85 @@
-import { TrendingUp, TrendingDown } from "lucide-react";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-
-interface KPI {
-  title: string;
-  value: number;
-  trend: number;
-  prefix?: string;
-  suffix?: string;
-}
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Users, Building2, Calendar, DollarSign, Loader2, Hospital, CheckCircle } from "lucide-react";
+import { useDashboardStats } from "@/hooks/useSuperAdminData";
 
 const KPICards = () => {
-  const [kpis, setKpis] = useState<KPI[]>([
-    { title: "Total Doctors", value: 0, trend: 0 },
-    { title: "Total Patients", value: 0, trend: 0 },
-    { title: "Total Practices", value: 0, trend: 0 },
-    { title: "Revenue", value: 0, trend: 0, prefix: "$" },
-    { title: "Appointments", value: 0, trend: 0 },
-    { title: "Payouts", value: 0, trend: 0, prefix: "$" },
-  ]);
+  const { data: stats, isLoading } = useDashboardStats();
 
-  useEffect(() => {
-    const fetchKPIs = async () => {
-      try {
-        // Fetch doctors count
-        const { count: doctorsCount } = await supabase
-          .from("doctors")
-          .select("*", { count: "exact", head: true });
+  if (isLoading) {
+    return (
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <Card key={i}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Loading...</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
 
-        // Fetch patients count
-        const { count: patientsCount } = await supabase
-          .from("profiles")
-          .select("*", { count: "exact", head: true })
-          .eq("role", "patient");
-
-        // Fetch practices count
-        const { count: practicesCount } = await supabase
-          .from("practices")
-          .select("*", { count: "exact", head: true });
-
-        // Fetch appointments count
-        const { count: appointmentsCount } = await supabase
-          .from("appointments")
-          .select("*", { count: "exact", head: true });
-
-        // Fetch payments sum
-        const { data: paymentsData } = await supabase
-          .from("payments")
-          .select("amount");
-        
-        const totalRevenue = paymentsData?.reduce((sum, p) => sum + (Number(p.amount) || 0), 0) || 0;
-
-        setKpis([
-          { title: "Total Doctors", value: doctorsCount || 0, trend: 4.3 },
-          { title: "Total Patients", value: patientsCount || 0, trend: 12.5 },
-          { title: "Total Practices", value: practicesCount || 0, trend: 2.1 },
-          { title: "Revenue", value: totalRevenue, trend: 8.7, prefix: "$" },
-          { title: "Appointments", value: appointmentsCount || 0, trend: 6.2 },
-          { title: "Payouts", value: totalRevenue * 0.85, trend: 5.4, prefix: "$" },
-        ]);
-      } catch (error) {
-        console.error("Error fetching KPIs:", error);
-      }
-    };
-
-    fetchKPIs();
-  }, []);
-
-  const formatValue = (kpi: KPI) => {
-    const value = kpi.value;
-    if (kpi.prefix === "$") {
-      return `$${value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-    }
-    return value.toLocaleString();
-  };
+  const kpis = [
+    {
+      title: "Total Patients",
+      value: stats?.totalPatients.toLocaleString() || "0",
+      subtitle: "Registered users",
+      icon: Users,
+      color: "text-blue-500",
+    },
+    {
+      title: "Total Clinics",
+      value: stats?.totalClinics.toLocaleString() || "0",
+      subtitle: `${stats?.verifiedClinics || 0} verified`,
+      icon: Building2,
+      color: "text-green-500",
+    },
+    {
+      title: "Total Doctors",
+      value: stats?.totalDoctors.toLocaleString() || "0",
+      subtitle: `${stats?.verifiedDoctors || 0} verified`,
+      icon: Hospital,
+      color: "text-purple-500",
+    },
+    {
+      title: "Total Appointments",
+      value: stats?.totalAppointments.toLocaleString() || "0",
+      subtitle: `${stats?.completedAppointments || 0} completed`,
+      icon: Calendar,
+      color: "text-orange-500",
+    },
+    {
+      title: "Total Revenue",
+      value: `$${(stats?.totalRevenue || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      subtitle: "All time earnings",
+      icon: DollarSign,
+      color: "text-emerald-500",
+    },
+    {
+      title: "Pending Verifications",
+      value: ((stats?.pendingClinics || 0) + (stats?.pendingDoctors || 0)).toString(),
+      subtitle: `${stats?.pendingClinics || 0} clinics, ${stats?.pendingDoctors || 0} doctors`,
+      icon: CheckCircle,
+      color: "text-yellow-500",
+    },
+  ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {kpis.map((kpi, index) => (
-        <div
-          key={index}
-          className="bg-card border-2 border-border rounded-lg p-6 hover:border-primary transition-all duration-200 dark:hover:shadow-glow-blue border-t-4"
-        >
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground font-medium">{kpi.title}</p>
-            <p className="text-4xl font-bold text-foreground">{formatValue(kpi)}</p>
-            <div className="flex items-center gap-2">
-              {kpi.trend >= 0 ? (
-                <TrendingUp className="w-4 h-4 text-green-500" />
-              ) : (
-                <TrendingDown className="w-4 h-4 text-destructive" />
-              )}
-              <span
-                className={`text-sm font-medium ${
-                  kpi.trend >= 0 ? "text-green-500" : "text-destructive"
-                }`}
-              >
-                {kpi.trend >= 0 ? "+" : ""}
-                {kpi.trend}%
-              </span>
-              <span className="text-xs text-muted-foreground">vs last month</span>
-            </div>
-          </div>
-        </div>
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {kpis.map((kpi) => (
+        <Card key={kpi.title} className="hover:shadow-lg transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{kpi.title}</CardTitle>
+            <kpi.icon className={`h-5 w-5 ${kpi.color}`} />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{kpi.value}</div>
+            <p className="text-xs text-muted-foreground mt-1">{kpi.subtitle}</p>
+          </CardContent>
+        </Card>
       ))}
     </div>
   );

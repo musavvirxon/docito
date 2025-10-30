@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useInactivityTimer } from "@/hooks/useInactivityTimer";
+import { InactivityWarningModal } from "@/components/InactivityWarningModal";
 import SuperAdminSidebar from "@/components/super-admin/SuperAdminSidebar";
 import SuperAdminTopBar from "@/components/super-admin/SuperAdminTopBar";
 import KPICards from "@/components/super-admin/KPICards";
@@ -144,10 +146,27 @@ const SuperAdminLogin = () => {
 
 const SuperAdminDashboard = () => {
   const { user, profile, loading } = useAuth();
+  const { toast } = useToast();
   const [activeSection, setActiveSection] = useState("dashboard");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState<boolean | null>(null);
   const [checkingRole, setCheckingRole] = useState(true);
+
+  // Inactivity timer - auto logout after 30 minutes
+  const handleInactive = async () => {
+    await supabase.auth.signOut();
+    toast({
+      title: "Session expired",
+      description: "You have been logged out due to inactivity",
+    });
+  };
+
+  const { showWarning, countdown, stayLoggedIn } = useInactivityTimer({
+    onInactive: handleInactive,
+    inactivityTime: 30 * 60 * 1000, // 30 minutes
+    warningTime: 60 * 1000, // 1 minute warning
+    enabled: !!user && isSuperAdmin === true,
+  });
 
   useEffect(() => {
     const checkSuperAdminRole = async () => {
@@ -334,28 +353,37 @@ const SuperAdminDashboard = () => {
   };
 
   return (
-    <div className="flex min-h-screen w-full bg-background">
-      <SuperAdminSidebar
-        activeSection={activeSection}
-        onSectionChange={setActiveSection}
-        collapsed={sidebarCollapsed}
-        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-      />
-      
-      <div className="flex-1 flex flex-col">
-        <SuperAdminTopBar />
+    <>
+      <div className="flex min-h-screen w-full bg-background">
+        <SuperAdminSidebar
+          activeSection={activeSection}
+          onSectionChange={setActiveSection}
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+        />
         
-        <main className="flex-1 p-8 overflow-auto">
-          {renderContent()}
-        </main>
-        
-        <footer className="border-t border-border py-4 px-8">
-          <p className="text-sm text-muted-foreground">
-            © 2025 Docito Admin Platform
-          </p>
-        </footer>
+        <div className="flex-1 flex flex-col">
+          <SuperAdminTopBar />
+          
+          <main className="flex-1 p-8 overflow-auto">
+            {renderContent()}
+          </main>
+          
+          <footer className="border-t border-border py-4 px-8">
+            <p className="text-sm text-muted-foreground">
+              © 2025 Docito Admin Platform - Secure Access Only
+            </p>
+          </footer>
+        </div>
       </div>
-    </div>
+
+      {/* Inactivity Warning Modal */}
+      <InactivityWarningModal
+        open={showWarning}
+        countdown={countdown}
+        onStayLoggedIn={stayLoggedIn}
+      />
+    </>
   );
 };
 
