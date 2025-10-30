@@ -21,24 +21,46 @@ const SuperAdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   const { toast } = useToast();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Authentication failed",
-          description: error.message,
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
         });
+
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Sign up failed",
+            description: error.message,
+          });
+        } else {
+          toast({
+            title: "Account created",
+            description: "You can now sign in with your credentials",
+          });
+          setIsSignUp(false);
+        }
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Authentication failed",
+            description: error.message,
+          });
+        }
       }
     } catch (error) {
       toast({
@@ -59,11 +81,11 @@ const SuperAdminLogin = () => {
             Super Admin Access
           </CardTitle>
           <CardDescription className="text-center">
-            Platform Owner Login - Authorized Personnel Only
+            {isSignUp ? "Create Super Admin Account" : "Platform Owner Login"} - Authorized Personnel Only
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -96,12 +118,23 @@ const SuperAdminLogin = () => {
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
+                  {isSignUp ? "Creating account..." : "Signing in..."}
                 </>
               ) : (
-                "Sign In"
+                isSignUp ? "Create Account" : "Sign In"
               )}
             </Button>
+            <div className="text-center mt-4">
+              <Button
+                type="button"
+                variant="link"
+                onClick={() => setIsSignUp(!isSignUp)}
+                disabled={loading}
+                className="text-sm"
+              >
+                {isSignUp ? "Already have an account? Sign in" : "Need to create an account? Sign up"}
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
