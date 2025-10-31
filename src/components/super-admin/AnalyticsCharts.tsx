@@ -1,37 +1,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { useRevenueData, useAppointmentVolumeData, useSignupData } from "@/hooks/useSuperAdminData";
+import { Loader2 } from "lucide-react";
 
 interface AnalyticsChartsProps {
   showAll?: boolean;
 }
 
-const revenueData = [
-  { month: "Jan", revenue: 45000, target: 40000 },
-  { month: "Feb", revenue: 52000, target: 45000 },
-  { month: "Mar", revenue: 48000, target: 50000 },
-  { month: "Apr", revenue: 61000, target: 55000 },
-  { month: "May", revenue: 55000, target: 60000 },
-  { month: "Jun", revenue: 67000, target: 65000 },
-];
-
-const appointmentData = [
-  { day: "Mon", appointments: 120 },
-  { day: "Tue", appointments: 145 },
-  { day: "Wed", appointments: 132 },
-  { day: "Thu", appointments: 158 },
-  { day: "Fri", appointments: 165 },
-  { day: "Sat", appointments: 98 },
-  { day: "Sun", appointments: 75 },
-];
-
-const signupData = [
-  { week: "W1", doctors: 12, patients: 45 },
-  { week: "W2", doctors: 15, patients: 52 },
-  { week: "W3", doctors: 18, patients: 61 },
-  { week: "W4", doctors: 14, patients: 58 },
-];
-
 const AnalyticsCharts = ({ showAll = false }: AnalyticsChartsProps) => {
+  const { data: revenueData, isLoading: revenueLoading } = useRevenueData();
+  const { data: appointmentData, isLoading: appointmentLoading } = useAppointmentVolumeData();
+  const { data: signupData, isLoading: signupLoading } = useSignupData();
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -41,7 +20,12 @@ const AnalyticsCharts = ({ showAll = false }: AnalyticsChartsProps) => {
             <CardTitle className="text-lg font-semibold">Revenue Growth</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+            {revenueLoading ? (
+              <div className="flex items-center justify-center h-[300px]">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
               <LineChart data={revenueData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis dataKey="month" className="text-muted-foreground" />
@@ -71,6 +55,7 @@ const AnalyticsCharts = ({ showAll = false }: AnalyticsChartsProps) => {
                 />
               </LineChart>
             </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
 
@@ -80,7 +65,12 @@ const AnalyticsCharts = ({ showAll = false }: AnalyticsChartsProps) => {
             <CardTitle className="text-lg font-semibold">Appointment Volume</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+            {appointmentLoading ? (
+              <div className="flex items-center justify-center h-[300px]">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
               <BarChart data={appointmentData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis dataKey="day" className="text-muted-foreground" />
@@ -95,6 +85,7 @@ const AnalyticsCharts = ({ showAll = false }: AnalyticsChartsProps) => {
                 <Bar dataKey="appointments" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -105,7 +96,12 @@ const AnalyticsCharts = ({ showAll = false }: AnalyticsChartsProps) => {
             <CardTitle className="text-lg font-semibold">User Signups</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+            {signupLoading ? (
+              <div className="flex items-center justify-center h-[300px]">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
               <AreaChart data={signupData}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis dataKey="week" className="text-muted-foreground" />
@@ -136,6 +132,7 @@ const AnalyticsCharts = ({ showAll = false }: AnalyticsChartsProps) => {
                 />
               </AreaChart>
             </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
       )}

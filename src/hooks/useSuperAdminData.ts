@@ -213,3 +213,108 @@ export function useAllPractices() {
     staleTime: 30000,
   });
 }
+
+// Analytics data hooks
+export function useRevenueData() {
+  return useQuery({
+    queryKey: ['revenue-analytics'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('payments')
+        .select('amount, created_at, status')
+        .eq('status', 'completed')
+        .gte('created_at', new Date(new Date().setMonth(new Date().getMonth() - 6)).toISOString());
+
+      if (error) throw error;
+
+      // Group by month
+      const monthlyData = (data || []).reduce((acc: any, payment: any) => {
+        const month = new Date(payment.created_at).toLocaleDateString('en-US', { month: 'short' });
+        if (!acc[month]) {
+          acc[month] = { month, revenue: 0, target: 0 };
+        }
+        acc[month].revenue += Number(payment.amount || 0);
+        return acc;
+      }, {});
+
+      // Convert to array and add targets (10% above revenue for demo)
+      return Object.values(monthlyData).map((item: any) => ({
+        ...item,
+        target: Math.round(item.revenue * 0.9),
+      }));
+    },
+    staleTime: 60000,
+  });
+}
+
+export function useAppointmentVolumeData() {
+  return useQuery({
+    queryKey: ['appointment-volume'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('appointment_date, status')
+        .gte('appointment_date', new Date(new Date().setDate(new Date().getDate() - 7)).toISOString().split('T')[0]);
+
+      if (error) throw error;
+
+      // Group by day of week
+      const dayData = (data || []).reduce((acc: any, apt: any) => {
+        const day = new Date(apt.appointment_date).toLocaleDateString('en-US', { weekday: 'short' });
+        if (!acc[day]) {
+          acc[day] = { day, appointments: 0 };
+        }
+        acc[day].appointments += 1;
+        return acc;
+      }, {});
+
+      // Ensure all days are present
+      const daysOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      return daysOrder.map(day => dayData[day] || { day, appointments: 0 });
+    },
+    staleTime: 60000,
+  });
+}
+
+export function useSignupData() {
+  return useQuery({
+    queryKey: ['signup-analytics'],
+    queryFn: async () => {
+      const fourWeeksAgo = new Date(new Date().setDate(new Date().getDate() - 28));
+
+      const [doctorsResult, patientsResult] = await Promise.all([
+        supabase
+          .from('doctors')
+          .select('created_at')
+          .gte('created_at', fourWeeksAgo.toISOString()),
+        supabase
+          .from('profiles')
+          .select('created_at')
+          .eq('role', 'patient')
+          .gte('created_at', fourWeeksAgo.toISOString()),
+      ]);
+
+      // Group by week
+      const weeklyData: any = {};
+      
+      (doctorsResult.data || []).forEach((doc: any) => {
+        const weekNum = Math.floor((new Date().getTime() - new Date(doc.created_at).getTime()) / (7 * 24 * 60 * 60 * 1000));
+        const week = `W${4 - weekNum}`;
+        if (!weeklyData[week]) weeklyData[week] = { week, doctors: 0, patients: 0 };
+        weeklyData[week].doctors += 1;
+      });
+
+      (patientsResult.data || []).forEach((patient: any) => {
+        const weekNum = Math.floor((new Date().getTime() - new Date(patient.created_at).getTime()) / (7 * 24 * 60 * 60 * 1000));
+        const week = `W${4 - weekNum}`;
+        if (!weeklyData[week]) weeklyData[week] = { week, doctors: 0, patients: 0 };
+        weeklyData[week].patients += 1;
+      });
+
+      // Ensure all 4 weeks are present
+      const weeks = ['W1', 'W2', 'W3', 'W4'];
+      return weeks.map(week => weeklyData[week] || { week, doctors: 0, patients: 0 });
+    },
+    staleTime: 60000,
+  });
+}

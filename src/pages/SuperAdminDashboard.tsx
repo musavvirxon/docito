@@ -18,6 +18,7 @@ import ManagementTable from "@/components/super-admin/ManagementTable";
 import ActivityFeed from "@/components/super-admin/ActivityFeed";
 import VerificationTable from "@/components/super-admin/VerificationTable";
 import DoctorVerificationTable from "@/components/super-admin/DoctorVerificationTable";
+import SuperAdminSettingsPanel from "@/components/super-admin/SuperAdminSettingsPanel";
 
 const SuperAdminLogin = () => {
   const [email, setEmail] = useState("");
@@ -330,9 +331,7 @@ const SuperAdminDashboard = () => {
               <h1 className="text-3xl font-bold text-foreground">System Settings</h1>
               <p className="text-muted-foreground mt-1">Configure platform settings</p>
             </div>
-            <div className="bg-card border-2 border-border rounded-lg p-8">
-              <p className="text-muted-foreground">Settings panel coming soon...</p>
-            </div>
+            <SuperAdminSettingsPanel />
           </div>
         );
       
