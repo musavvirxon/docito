@@ -4,14 +4,16 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
+import { useTranslation } from 'react-i18next';
 import { Logo } from "@/components/Logo";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const ModernNavbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation('common');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -74,6 +76,7 @@ const ModernNavbar = () => {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden lg:flex items-center space-x-4">
+            <LanguageSwitcher />
             {user ? (
               <>
                 <Button
@@ -81,13 +84,13 @@ const ModernNavbar = () => {
                   onClick={() => navigate("/dashboard")}
                   className="text-sm font-medium"
                 >
-                  Dashboard
+                  {t('navigation.dashboard')}
                 </Button>
                 <Button
                   onClick={signOut}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-lg dark:hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:scale-105 transition-all duration-300"
                 >
-                  Sign Out
+                  {t('navigation.logout')}
                 </Button>
               </>
             ) : (
@@ -97,13 +100,13 @@ const ModernNavbar = () => {
                   onClick={() => navigate("/auth")}
                   className="text-sm font-medium"
                 >
-                  Sign In
+                  {t('navigation.login')}
                 </Button>
                 <Button
                   onClick={() => navigate("/auth")}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-lg dark:hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:scale-105 transition-all duration-300"
                 >
-                  Schedule Demo
+                  {t('navigation.register')}
                 </Button>
               </>
             )}

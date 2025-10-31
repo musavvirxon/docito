@@ -34,6 +34,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const PracticeVerification = lazy(() => import("./pages/PracticeVerification"));
 const AdminProfileSettings = lazy(() => import("./pages/AdminProfileSettings"));
 const SuperAdminDashboard = lazy(() => import("./pages/SuperAdminDashboard"));
+const TranslationManagement = lazy(() => import("./pages/TranslationManagement"));
 const Legal = lazy(() => import("./pages/Legal"));
 const LegalDetail = lazy(() => import("./pages/LegalDetail"));
 const About = lazy(() => import("./pages/About"));
@@ -85,6 +86,7 @@ const App = () => (
                 <Route path="/dashboard/verify" element={<PracticeVerification />} />
                 <Route path="/admin/profile-settings" element={<AdminProfileSettings />} />
                 <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
+                <Route path="/admin/translations" element={<TranslationManagement />} />
                 <Route path="/legal" element={<Legal />} />
                 <Route path="/legal/:slug" element={<LegalDetail />} />
                 <Route path="/about" element={<About />} />

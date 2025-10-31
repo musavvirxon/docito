@@ -1820,6 +1820,164 @@ export type Database = {
           },
         ]
       }
+      translation_glossary: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          enforce: boolean | null
+          id: string
+          term: string
+          translations: Json
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          enforce?: boolean | null
+          id?: string
+          term: string
+          translations?: Json
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          enforce?: boolean | null
+          id?: string
+          term?: string
+          translations?: Json
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      translation_history: {
+        Row: {
+          change_reason: string | null
+          changed_by: string | null
+          created_at: string | null
+          environment: string | null
+          id: string
+          language: string
+          new_text: string | null
+          previous_text: string | null
+          translation_key_id: string | null
+        }
+        Insert: {
+          change_reason?: string | null
+          changed_by?: string | null
+          created_at?: string | null
+          environment?: string | null
+          id?: string
+          language: string
+          new_text?: string | null
+          previous_text?: string | null
+          translation_key_id?: string | null
+        }
+        Update: {
+          change_reason?: string | null
+          changed_by?: string | null
+          created_at?: string | null
+          environment?: string | null
+          id?: string
+          language?: string
+          new_text?: string | null
+          previous_text?: string | null
+          translation_key_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "translation_history_translation_key_id_fkey"
+            columns: ["translation_key_id"]
+            isOneToOne: false
+            referencedRelation: "translation_keys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      translation_keys: {
+        Row: {
+          context: string | null
+          created_at: string | null
+          id: string
+          key: string
+          last_updated: string | null
+          module: string
+          source_text: string
+          status: Json | null
+          translations: Json | null
+          updated_by: string | null
+          version: number | null
+        }
+        Insert: {
+          context?: string | null
+          created_at?: string | null
+          id?: string
+          key: string
+          last_updated?: string | null
+          module: string
+          source_text: string
+          status?: Json | null
+          translations?: Json | null
+          updated_by?: string | null
+          version?: number | null
+        }
+        Update: {
+          context?: string | null
+          created_at?: string | null
+          id?: string
+          key?: string
+          last_updated?: string | null
+          module?: string
+          source_text?: string
+          status?: Json | null
+          translations?: Json | null
+          updated_by?: string | null
+          version?: number | null
+        }
+        Relationships: []
+      }
+      translation_memory: {
+        Row: {
+          confidence_score: number | null
+          created_at: string | null
+          id: string
+          last_used: string | null
+          module: string | null
+          source_language: string
+          source_text: string
+          target_language: string
+          target_text: string
+          usage_count: number | null
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          last_used?: string | null
+          module?: string | null
+          source_language?: string
+          source_text: string
+          target_language: string
+          target_text: string
+          usage_count?: number | null
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          last_used?: string | null
+          module?: string | null
+          source_language?: string
+          source_text?: string
+          target_language?: string
+          target_text?: string
+          usage_count?: number | null
+        }
+        Relationships: []
+      }
       treatment_plan_medications: {
         Row: {
           created_at: string | null

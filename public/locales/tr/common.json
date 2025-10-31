@@ -1,0 +1,55 @@
+{
+  "siteName": "Docito",
+  "tagline": "Yakınınızdaki en iyi doktorları bulun ve randevu alın",
+  "navigation": {
+    "home": "Ana Sayfa",
+    "doctors": "Doktorlar",
+    "practices": "Tıbbi Kurumlar",
+    "specialties": "Uzmanlıklar",
+    "about": "Hakkımızda",
+    "contact": "İletişim",
+    "login": "Giriş Yap",
+    "register": "Kayıt Ol",
+    "dashboard": "Kontrol Paneli",
+    "logout": "Çıkış Yap"
+  },
+  "buttons": {
+    "search": "Ara",
+    "bookNow": "Şimdi Rezervasyon Yap",
+    "viewProfile": "Profili Görüntüle",
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "submit": "Gönder",
+    "back": "Geri",
+    "next": "İleri",
+    "finish": "Bitir",
+    "close": "Kapat",
+    "confirm": "Onayla"
+  },
+  "form": {
+    "email": "E-posta",
+    "password": "Şifre",
+    "confirmPassword": "Şifreyi Onayla",
+    "name": "Ad",
+    "phone": "Telefon",
+    "address": "Adres",
+    "city": "Şehir",
+    "country": "Ülke",
+    "specialty": "Uzmanlık",
+    "message": "Mesaj"
+  },
+  "status": {
+    "pending": "Beklemede",
+    "confirmed": "Onaylandı",
+    "completed": "Tamamlandı",
+    "cancelled": "İptal Edildi"
+  },
+  "footer": {
+    "copyright": "© 2025 Docito. Tüm hakları saklıdır.",
+    "privacy": "Gizlilik Politikası",
+    "terms": "Kullanım Şartları",
+    "contact": "Bize Ulaşın"
+  }
+}

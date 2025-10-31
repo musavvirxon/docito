@@ -1,0 +1,55 @@
+{
+  "siteName": "Docito",
+  "tagline": "ابحث واحجز أفضل الأطباء بالقرب منك",
+  "navigation": {
+    "home": "الرئيسية",
+    "doctors": "الأطباء",
+    "practices": "المؤسسات الطبية",
+    "specialties": "التخصصات",
+    "about": "من نحن",
+    "contact": "اتصل بنا",
+    "login": "تسجيل الدخول",
+    "register": "التسجيل",
+    "dashboard": "لوحة التحكم",
+    "logout": "تسجيل الخروج"
+  },
+  "buttons": {
+    "search": "بحث",
+    "bookNow": "احجز الآن",
+    "viewProfile": "عرض الملف الشخصي",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "edit": "تحرير",
+    "delete": "حذف",
+    "submit": "إرسال",
+    "back": "رجوع",
+    "next": "التالي",
+    "finish": "إنهاء",
+    "close": "إغلاق",
+    "confirm": "تأكيد"
+  },
+  "form": {
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "name": "الاسم",
+    "phone": "الهاتف",
+    "address": "العنوان",
+    "city": "المدينة",
+    "country": "البلد",
+    "specialty": "التخصص",
+    "message": "الرسالة"
+  },
+  "status": {
+    "pending": "قيد الانتظار",
+    "confirmed": "مؤكد",
+    "completed": "مكتمل",
+    "cancelled": "ملغى"
+  },
+  "footer": {
+    "copyright": "© 2025 Docito. جميع الحقوق محفوظة.",
+    "privacy": "سياسة الخصوصية",
+    "terms": "شروط الخدمة",
+    "contact": "اتصل بنا"
+  }
+}

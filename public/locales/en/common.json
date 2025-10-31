@@ -1,0 +1,55 @@
+{
+  "siteName": "Docito",
+  "tagline": "Find and book top doctors near you",
+  "navigation": {
+    "home": "Home",
+    "doctors": "Doctors",
+    "practices": "Medical Practices",
+    "specialties": "Specialties",
+    "about": "About Us",
+    "contact": "Contact",
+    "login": "Login",
+    "register": "Register",
+    "dashboard": "Dashboard",
+    "logout": "Logout"
+  },
+  "buttons": {
+    "search": "Search",
+    "bookNow": "Book Now",
+    "viewProfile": "View Profile",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "submit": "Submit",
+    "back": "Back",
+    "next": "Next",
+    "finish": "Finish",
+    "close": "Close",
+    "confirm": "Confirm"
+  },
+  "form": {
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "name": "Name",
+    "phone": "Phone",
+    "address": "Address",
+    "city": "City",
+    "country": "Country",
+    "specialty": "Specialty",
+    "message": "Message"
+  },
+  "status": {
+    "pending": "Pending",
+    "confirmed": "Confirmed",
+    "completed": "Completed",
+    "cancelled": "Cancelled"
+  },
+  "footer": {
+    "copyright": "© 2025 Docito. All rights reserved.",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "contact": "Contact Us"
+  }
+}

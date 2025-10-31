@@ -1,0 +1,55 @@
+{
+  "siteName": "Docito",
+  "tagline": "Eng yaxshi shifokorlarni toping va ro'yxatdan o'ting",
+  "navigation": {
+    "home": "Bosh sahifa",
+    "doctors": "Shifokorlar",
+    "practices": "Tibbiy muassasalar",
+    "specialties": "Mutaxassisliklar",
+    "about": "Biz haqimizda",
+    "contact": "Aloqa",
+    "login": "Kirish",
+    "register": "Ro'yxatdan o'tish",
+    "dashboard": "Boshqaruv paneli",
+    "logout": "Chiqish"
+  },
+  "buttons": {
+    "search": "Qidirish",
+    "bookNow": "Ro'yxatdan o'tish",
+    "viewProfile": "Profilni ko'rish",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "edit": "Tahrirlash",
+    "delete": "O'chirish",
+    "submit": "Yuborish",
+    "back": "Orqaga",
+    "next": "Keyingi",
+    "finish": "Tugatish",
+    "close": "Yopish",
+    "confirm": "Tasdiqlash"
+  },
+  "form": {
+    "email": "Elektron pochta",
+    "password": "Parol",
+    "confirmPassword": "Parolni tasdiqlang",
+    "name": "Ism",
+    "phone": "Telefon",
+    "address": "Manzil",
+    "city": "Shahar",
+    "country": "Mamlakat",
+    "specialty": "Mutaxassislik",
+    "message": "Xabar"
+  },
+  "status": {
+    "pending": "Kutilmoqda",
+    "confirmed": "Tasdiqlangan",
+    "completed": "Tugallangan",
+    "cancelled": "Bekor qilingan"
+  },
+  "footer": {
+    "copyright": "© 2025 Docito. Barcha huquqlar himoyalangan.",
+    "privacy": "Maxfiylik siyosati",
+    "terms": "Foydalanish shartlari",
+    "contact": "Biz bilan bog'laning"
+  }
+}
