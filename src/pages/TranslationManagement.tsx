@@ -1,44 +1,60 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, Search, Download, Upload, Globe, Save, CheckCircle } from 'lucide-react';
+import { Loader2, Globe, Save, Plus, Eye, FileText, Settings } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { useTranslations, TranslationKey } from '@/hooks/useTranslations';
+import { Label } from '@/components/ui/label';
 import { languages } from '@/i18n/config';
 import { useToast } from '@/hooks/use-toast';
 
+interface PageContent {
+  pageKey: string;
+  pageName: string;
+  translations: {
+    [key: string]: {
+      label: string;
+      texts: {
+        [lang: string]: string;
+      };
+    };
+  };
+  seo: {
+    [lang: string]: {
+      title: string;
+      description: string;
+      keywords: string;
+      slug: string;
+    };
+  };
+}
+
+const pages = [
+  { key: 'home', name: 'Home Page', route: 'home-page' },
+  { key: 'doctors', name: 'Doctors Page', route: 'doctors' },
+  { key: 'doctor-profile', name: 'Doctor Profile', route: 'doctor-profile' },
+  { key: 'practices', name: 'Practices Page', route: 'practices' },
+  { key: 'about', name: 'About Us', route: 'about' },
+  { key: 'contact', name: 'Contact', route: 'contact' },
+  { key: 'faq', name: 'FAQ', route: 'faq' },
+  { key: 'patient-dashboard', name: 'Patient Dashboard', route: 'patient-dashboard' },
+  { key: 'doctor-dashboard', name: 'Doctor Dashboard', route: 'doctor-dashboard' },
+  { key: 'auth', name: 'Auth Pages', route: 'auth' },
+];
+
 const TranslationManagement = () => {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [isSuperAdmin, setIsSuperAdmin] = useState<boolean | null>(null);
-  const [translations, setTranslations] = useState<TranslationKey[]>([]);
-  const [filteredTranslations, setFilteredTranslations] = useState<TranslationKey[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedModule, setSelectedModule] = useState<string>('all');
+  const [selectedPage, setSelectedPage] = useState<string>('home');
   const [selectedLanguage, setSelectedLanguage] = useState('en');
+  const [pageContent, setPageContent] = useState<PageContent | null>(null);
+  const [loading, setLoading] = useState(false);
   const [editingKey, setEditingKey] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState('');
-  
-  const { loading, fetchTranslations, updateTranslation, autoTranslate, publishTranslations } = useTranslations();
 
   useEffect(() => {
     const checkSuperAdmin = async () => {
@@ -69,74 +85,158 @@ const TranslationManagement = () => {
   }, [user]);
 
   useEffect(() => {
-    if (isSuperAdmin) {
-      loadTranslations();
+    if (isSuperAdmin && selectedPage) {
+      loadPageContent();
     }
-  }, [isSuperAdmin]);
+  }, [isSuperAdmin, selectedPage]);
 
-  useEffect(() => {
-    filterTranslations();
-  }, [searchQuery, selectedModule, translations]);
+  const loadPageContent = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('page_translations' as any)
+        .select('*')
+        .eq('page_key', selectedPage)
+        .single();
 
-  const loadTranslations = async () => {
-    const data = await fetchTranslations();
-    setTranslations(data);
-    setFilteredTranslations(data);
-  };
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error loading page content:', error);
+      }
 
-  const filterTranslations = () => {
-    let filtered = [...translations];
-
-    if (selectedModule !== 'all') {
-      filtered = filtered.filter(t => t.module === selectedModule);
+      if (data) {
+        const typedData = data as any;
+        if (typedData && typeof typedData === 'object' && typedData.page_key) {
+          setPageContent({
+            pageKey: typedData.page_key as string,
+            pageName: typedData.page_name as string,
+            translations: typedData.translations || {},
+            seo: typedData.seo || {},
+          });
+        } else {
+          // Initialize empty page content
+          setPageContent({
+            pageKey: selectedPage,
+            pageName: pages.find(p => p.key === selectedPage)?.name || '',
+            translations: {},
+            seo: {},
+          });
+        }
+      } else {
+        // Initialize empty page content
+        setPageContent({
+          pageKey: selectedPage,
+          pageName: pages.find(p => p.key === selectedPage)?.name || '',
+          translations: {},
+          seo: {},
+        });
+      }
+    } catch (error) {
+      console.error('Error loading page content:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load page content',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
     }
-
-    if (searchQuery) {
-      filtered = filtered.filter(t => 
-        t.key.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.source_text.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (t.translations[selectedLanguage] || '').toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    setFilteredTranslations(filtered);
   };
 
-  const handleEdit = (translation: TranslationKey) => {
-    setEditingKey(translation.id);
-    setEditValue(translation.translations[selectedLanguage] || '');
-  };
-
-  const handleSave = async (keyId: string) => {
-    const success = await updateTranslation(keyId, selectedLanguage, editValue, 'draft');
-    if (success) {
-      setEditingKey(null);
-      loadTranslations();
-    }
-  };
-
-  const handleAutoTranslate = async (keyId: string) => {
-    const targetLangs = languages.map(l => l.code).filter(c => c !== 'en');
-    await autoTranslate(keyId, targetLangs);
-    loadTranslations();
-  };
-
-  const getStatusBadge = (status: string) => {
-    const statusColors = {
-      approved: 'bg-green-500',
-      draft: 'bg-yellow-500',
-      review: 'bg-blue-500',
-      auto: 'bg-purple-500',
+  const handleAddTextElement = () => {
+    if (!pageContent) return;
+    
+    const newKey = `${selectedPage}.element_${Object.keys(pageContent.translations).length + 1}`;
+    const newTranslations = { ...pageContent.translations };
+    newTranslations[newKey] = {
+      label: 'New Text Element',
+      texts: { en: '' },
     };
 
-    return (
-      <Badge className={statusColors[status as keyof typeof statusColors] || 'bg-gray-500'}>
-        {status}
-      </Badge>
-    );
+    setPageContent({
+      ...pageContent,
+      translations: newTranslations,
+    });
   };
 
-  const modules = ['all', 'common', 'home', 'doctors', 'patients', 'auth', 'dashboard'];
+  const handleUpdateText = (key: string, lang: string, value: string) => {
+    if (!pageContent) return;
+
+    const updated = { ...pageContent };
+    if (!updated.translations[key].texts) {
+      updated.translations[key].texts = {};
+    }
+    updated.translations[key].texts[lang] = value;
+    setPageContent(updated);
+  };
+
+  const handleUpdateLabel = (key: string, label: string) => {
+    if (!pageContent) return;
+
+    const updated = { ...pageContent };
+    updated.translations[key].label = label;
+    setPageContent(updated);
+  };
+
+  const handleUpdateSEO = (lang: string, field: string, value: string) => {
+    if (!pageContent) return;
+
+    const updated = { ...pageContent };
+    if (!updated.seo[lang]) {
+      updated.seo[lang] = { title: '', description: '', keywords: '', slug: '' };
+    }
+    updated.seo[lang] = { ...updated.seo[lang], [field]: value };
+    setPageContent(updated);
+  };
+
+  const handleSave = async () => {
+    if (!pageContent) return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('page_translations' as any)
+        .upsert({
+          page_key: pageContent.pageKey,
+          page_name: pageContent.pageName,
+          translations: pageContent.translations,
+          seo: pageContent.seo,
+          updated_at: new Date().toISOString(),
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Page translations saved successfully',
+      });
+
+      // Trigger language file generation
+      try {
+        await supabase.functions.invoke('generate-language-files', {
+          body: { pageKey: pageContent.pageKey },
+        });
+      } catch (funcError) {
+        console.log('Language file generation will be handled separately');
+      }
+    } catch (error) {
+      console.error('Error saving translations:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save translations',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteElement = (key: string) => {
+    if (!pageContent) return;
+
+    const updated = { ...pageContent };
+    delete updated.translations[key];
+    setPageContent(updated);
+  };
 
   if (isSuperAdmin === null) {
     return (
@@ -160,161 +260,183 @@ const TranslationManagement = () => {
         <div>
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
             <Globe className="w-8 h-8" />
-            Translation Management
+            Page Translation Manager
           </h1>
           <p className="text-muted-foreground mt-1">
-            Manage multilingual content across the platform
+            Edit page content and SEO for each language
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Download className="w-4 h-4 mr-2" />
-            Export
-          </Button>
-          <Button variant="outline" size="sm">
-            <Upload className="w-4 h-4 mr-2" />
-            Import
-          </Button>
-          <Button size="sm" onClick={() => publishTranslations(filteredTranslations.map(t => t.id), 'production')}>
-            <CheckCircle className="w-4 h-4 mr-2" />
-            Publish
-          </Button>
-        </div>
+        <Button onClick={handleSave} disabled={loading || !pageContent}>
+          <Save className="w-4 h-4 mr-2" />
+          Save All Changes
+        </Button>
       </div>
 
+      {/* Page Selector */}
       <Card>
         <CardHeader>
-          <CardTitle>Filters</CardTitle>
-          <CardDescription>Search and filter translations</CardDescription>
+          <CardTitle>Select Page to Edit</CardTitle>
+          <CardDescription>Choose a page to manage its translations and SEO</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search translations..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <Select value={selectedModule} onValueChange={setSelectedModule}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Module" />
-              </SelectTrigger>
-              <SelectContent>
-                {modules.map(module => (
-                  <SelectItem key={module} value={module}>
-                    {module.charAt(0).toUpperCase() + module.slice(1)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Language" />
-              </SelectTrigger>
-              <SelectContent>
-                {languages.map(lang => (
-                  <SelectItem key={lang.code} value={lang.code}>
-                    {lang.flag} {lang.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            {pages.map((page) => (
+              <Button
+                key={page.key}
+                variant={selectedPage === page.key ? 'default' : 'outline'}
+                className="h-auto flex-col py-4"
+                onClick={() => setSelectedPage(page.key)}
+              >
+                <FileText className="w-6 h-6 mb-2" />
+                <span className="text-sm font-medium">{page.name}</span>
+              </Button>
+            ))}
           </div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Translation Keys ({filteredTranslations.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-64">Key</TableHead>
-                  <TableHead>Source (EN)</TableHead>
-                  <TableHead>Translation ({selectedLanguage.toUpperCase()})</TableHead>
-                  <TableHead className="w-32">Status</TableHead>
-                  <TableHead className="w-48">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8">
-                      <Loader2 className="w-6 h-6 animate-spin mx-auto" />
-                    </TableCell>
-                  </TableRow>
-                ) : filteredTranslations.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                      No translations found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredTranslations.map((translation) => (
-                    <TableRow key={translation.id}>
-                      <TableCell className="font-mono text-xs">
-                        {translation.key}
-                      </TableCell>
-                      <TableCell className="max-w-xs truncate">
-                        {translation.source_text}
-                      </TableCell>
-                      <TableCell>
-                        {editingKey === translation.id ? (
-                          <Textarea
-                            value={editValue}
-                            onChange={(e) => setEditValue(e.target.value)}
-                            className="min-h-20"
-                          />
-                        ) : (
-                          <div className="max-w-xs truncate">
-                            {translation.translations[selectedLanguage] || (
-                              <span className="text-muted-foreground italic">Not translated</span>
-                            )}
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      ) : pageContent ? (
+        <Tabs value={selectedLanguage} onValueChange={setSelectedLanguage}>
+          <TabsList className="w-full justify-start overflow-x-auto flex-wrap h-auto">
+            {languages.map((lang) => (
+              <TabsTrigger key={lang.code} value={lang.code} className="gap-2">
+                <span>{lang.flag}</span>
+                <span>{lang.name}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          {languages.map((lang) => (
+            <TabsContent key={lang.code} value={lang.code} className="space-y-6">
+              {/* SEO Settings */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Settings className="w-5 h-5" />
+                    SEO Settings for {lang.name}
+                  </CardTitle>
+                  <CardDescription>
+                    Configure meta tags and URL for this page in {lang.name}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Page URL Slug</Label>
+                    <Input
+                      placeholder="e.g., home-page"
+                      value={pageContent.seo[lang.code]?.slug || ''}
+                      onChange={(e) => handleUpdateSEO(lang.code, 'slug', e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Full URL: /{lang.code}/{pageContent.seo[lang.code]?.slug || pages.find(p => p.key === selectedPage)?.route}
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Meta Title</Label>
+                    <Input
+                      placeholder="SEO page title (50-60 characters)"
+                      value={pageContent.seo[lang.code]?.title || ''}
+                      onChange={(e) => handleUpdateSEO(lang.code, 'title', e.target.value)}
+                      maxLength={60}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {pageContent.seo[lang.code]?.title?.length || 0}/60 characters
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Meta Description</Label>
+                    <Textarea
+                      placeholder="SEO description (150-160 characters)"
+                      value={pageContent.seo[lang.code]?.description || ''}
+                      onChange={(e) => handleUpdateSEO(lang.code, 'description', e.target.value)}
+                      maxLength={160}
+                      rows={3}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {pageContent.seo[lang.code]?.description?.length || 0}/160 characters
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Keywords (comma separated)</Label>
+                    <Input
+                      placeholder="healthcare, doctor, appointment"
+                      value={pageContent.seo[lang.code]?.keywords || ''}
+                      onChange={(e) => handleUpdateSEO(lang.code, 'keywords', e.target.value)}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Page Content */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Page Content in {lang.name}</CardTitle>
+                      <CardDescription>
+                        Edit all text elements on this page
+                      </CardDescription>
+                    </div>
+                    <Button onClick={handleAddTextElement} variant="outline" size="sm">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Text Element
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {Object.keys(pageContent.translations).length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No text elements yet. Click "Add Text Element" to start.
+                    </div>
+                  ) : (
+                    Object.entries(pageContent.translations).map(([key, value]) => (
+                      <Card key={key} className="border-2">
+                        <CardContent className="pt-6 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-sm font-mono text-muted-foreground">{key}</Label>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteElement(key)}
+                              className="text-destructive"
+                            >
+                              Delete
+                            </Button>
                           </div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {getStatusBadge(translation.status[selectedLanguage] || 'draft')}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          {editingKey === translation.id ? (
-                            <>
-                              <Button size="sm" onClick={() => handleSave(translation.id)}>
-                                <Save className="w-3 h-3" />
-                              </Button>
-                              <Button size="sm" variant="outline" onClick={() => setEditingKey(null)}>
-                                Cancel
-                              </Button>
-                            </>
-                          ) : (
-                            <>
-                              <Button size="sm" variant="outline" onClick={() => handleEdit(translation)}>
-                                Edit
-                              </Button>
-                              <Button size="sm" variant="ghost" onClick={() => handleAutoTranslate(translation.id)}>
-                                <Globe className="w-3 h-3" />
-                              </Button>
-                            </>
+                          <div className="space-y-2">
+                            <Label>Element Label (for identification)</Label>
+                            <Input
+                              placeholder="e.g., Hero Title, Button Text"
+                              value={value.label}
+                              onChange={(e) => handleUpdateLabel(key, e.target.value)}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Text Content</Label>
+                            <Textarea
+                              placeholder={`Enter text in ${lang.name}`}
+                              value={value.texts[lang.code] || ''}
+                              onChange={(e) => handleUpdateText(key, lang.code, e.target.value)}
+                              rows={3}
+                            />
+                          </div>
+                          {lang.code === 'en' && (
+                            <Badge variant="secondary">Source Language</Badge>
                           )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          ))}
+        </Tabs>
+      ) : null}
     </div>
   );
 };

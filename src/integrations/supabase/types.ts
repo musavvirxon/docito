@@ -822,6 +822,36 @@ export type Database = {
         }
         Relationships: []
       }
+      page_translations: {
+        Row: {
+          created_at: string
+          id: string
+          page_key: string
+          page_name: string
+          seo: Json
+          translations: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          page_key: string
+          page_name: string
+          seo?: Json
+          translations?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          page_key?: string
+          page_name?: string
+          seo?: Json
+          translations?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
