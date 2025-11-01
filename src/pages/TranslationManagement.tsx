@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Navigate } from 'react-router-dom';
-import { Loader2, Search, Filter, Download, Upload, Globe, Save, CheckCircle } from 'lucide-react';
+import { Loader2, Search, Download, Upload, Globe, Save, CheckCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -142,179 +140,181 @@ const TranslationManagement = () => {
 
   if (isSuperAdmin === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="flex items-center justify-center p-8">
         <Loader2 className="w-6 h-6 animate-spin text-primary" />
       </div>
     );
   }
 
   if (!isSuperAdmin) {
-    return <Navigate to="/dashboard" replace />;
+    return (
+      <div className="flex items-center justify-center p-8">
+        <p className="text-muted-foreground">Access denied. Super admin role required.</p>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-              <Globe className="w-8 h-8" />
-              Translation Management
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Manage multilingual content across the platform
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <Download className="w-4 h-4 mr-2" />
-              Export
-            </Button>
-            <Button variant="outline" size="sm">
-              <Upload className="w-4 h-4 mr-2" />
-              Import
-            </Button>
-            <Button size="sm" onClick={() => publishTranslations(filteredTranslations.map(t => t.id), 'production')}>
-              <CheckCircle className="w-4 h-4 mr-2" />
-              Publish
-            </Button>
-          </div>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+            <Globe className="w-8 h-8" />
+            Translation Management
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Manage multilingual content across the platform
+          </p>
         </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm">
+            <Download className="w-4 h-4 mr-2" />
+            Export
+          </Button>
+          <Button variant="outline" size="sm">
+            <Upload className="w-4 h-4 mr-2" />
+            Import
+          </Button>
+          <Button size="sm" onClick={() => publishTranslations(filteredTranslations.map(t => t.id), 'production')}>
+            <CheckCircle className="w-4 h-4 mr-2" />
+            Publish
+          </Button>
+        </div>
+      </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Filters</CardTitle>
-            <CardDescription>Search and filter translations</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search translations..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Filters</CardTitle>
+          <CardDescription>Search and filter translations</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search translations..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
               </div>
-              <Select value={selectedModule} onValueChange={setSelectedModule}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Module" />
-                </SelectTrigger>
-                <SelectContent>
-                  {modules.map(module => (
-                    <SelectItem key={module} value={module}>
-                      {module.charAt(0).toUpperCase() + module.slice(1)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Language" />
-                </SelectTrigger>
-                <SelectContent>
-                  {languages.map(lang => (
-                    <SelectItem key={lang.code} value={lang.code}>
-                      {lang.flag} {lang.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
-          </CardContent>
-        </Card>
+            <Select value={selectedModule} onValueChange={setSelectedModule}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Module" />
+              </SelectTrigger>
+              <SelectContent>
+                {modules.map(module => (
+                  <SelectItem key={module} value={module}>
+                    {module.charAt(0).toUpperCase() + module.slice(1)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Language" />
+              </SelectTrigger>
+              <SelectContent>
+                {languages.map(lang => (
+                  <SelectItem key={lang.code} value={lang.code}>
+                    {lang.flag} {lang.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Translation Keys ({filteredTranslations.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
+      <Card>
+        <CardHeader>
+          <CardTitle>Translation Keys ({filteredTranslations.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-64">Key</TableHead>
+                  <TableHead>Source (EN)</TableHead>
+                  <TableHead>Translation ({selectedLanguage.toUpperCase()})</TableHead>
+                  <TableHead className="w-32">Status</TableHead>
+                  <TableHead className="w-48">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
                   <TableRow>
-                    <TableHead className="w-64">Key</TableHead>
-                    <TableHead>Source (EN)</TableHead>
-                    <TableHead>Translation ({selectedLanguage.toUpperCase()})</TableHead>
-                    <TableHead className="w-32">Status</TableHead>
-                    <TableHead className="w-48">Actions</TableHead>
+                    <TableCell colSpan={5} className="text-center py-8">
+                      <Loader2 className="w-6 h-6 animate-spin mx-auto" />
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loading ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8">
-                        <Loader2 className="w-6 h-6 animate-spin mx-auto" />
+                ) : filteredTranslations.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      No translations found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredTranslations.map((translation) => (
+                    <TableRow key={translation.id}>
+                      <TableCell className="font-mono text-xs">
+                        {translation.key}
                       </TableCell>
-                    </TableRow>
-                  ) : filteredTranslations.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                        No translations found
+                      <TableCell className="max-w-xs truncate">
+                        {translation.source_text}
                       </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredTranslations.map((translation) => (
-                      <TableRow key={translation.id}>
-                        <TableCell className="font-mono text-xs">
-                          {translation.key}
-                        </TableCell>
-                        <TableCell className="max-w-xs truncate">
-                          {translation.source_text}
-                        </TableCell>
-                        <TableCell>
-                          {editingKey === translation.id ? (
-                            <Textarea
-                              value={editValue}
-                              onChange={(e) => setEditValue(e.target.value)}
-                              className="min-h-20"
-                            />
-                          ) : (
-                            <div className="max-w-xs truncate">
-                              {translation.translations[selectedLanguage] || (
-                                <span className="text-muted-foreground italic">Not translated</span>
-                              )}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {getStatusBadge(translation.status[selectedLanguage] || 'draft')}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            {editingKey === translation.id ? (
-                              <>
-                                <Button size="sm" onClick={() => handleSave(translation.id)}>
-                                  <Save className="w-3 h-3" />
-                                </Button>
-                                <Button size="sm" variant="outline" onClick={() => setEditingKey(null)}>
-                                  Cancel
-                                </Button>
-                              </>
-                            ) : (
-                              <>
-                                <Button size="sm" variant="outline" onClick={() => handleEdit(translation)}>
-                                  Edit
-                                </Button>
-                                <Button size="sm" variant="ghost" onClick={() => handleAutoTranslate(translation.id)}>
-                                  <Globe className="w-3 h-3" />
-                                </Button>
-                              </>
+                      <TableCell>
+                        {editingKey === translation.id ? (
+                          <Textarea
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            className="min-h-20"
+                          />
+                        ) : (
+                          <div className="max-w-xs truncate">
+                            {translation.translations[selectedLanguage] || (
+                              <span className="text-muted-foreground italic">Not translated</span>
                             )}
                           </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {getStatusBadge(translation.status[selectedLanguage] || 'draft')}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          {editingKey === translation.id ? (
+                            <>
+                              <Button size="sm" onClick={() => handleSave(translation.id)}>
+                                <Save className="w-3 h-3" />
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => setEditingKey(null)}>
+                                Cancel
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button size="sm" variant="outline" onClick={() => handleEdit(translation)}>
+                                Edit
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={() => handleAutoTranslate(translation.id)}>
+                                <Globe className="w-3 h-3" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

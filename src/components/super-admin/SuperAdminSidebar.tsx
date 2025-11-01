@@ -1,4 +1,4 @@
-import { Home, Stethoscope, Building2, Users, Calendar, CreditCard, BarChart3, Settings, FileText, ChevronLeft, ChevronRight } from "lucide-react";
+import { Home, Stethoscope, Building2, Users, Calendar, CreditCard, BarChart3, Settings, FileText, ChevronLeft, ChevronRight, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import ThemeToggle from "@/components/home/ThemeToggle";
@@ -18,6 +18,7 @@ const navItems = [
   { id: "appointments", label: "Appointments", icon: Calendar },
   { id: "payments", label: "Payments", icon: CreditCard },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
+  { id: "translations", label: "Translations", icon: Globe },
   { id: "settings", label: "Settings", icon: Settings },
   { id: "logs", label: "System Logs", icon: FileText },
 ];

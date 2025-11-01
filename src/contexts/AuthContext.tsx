@@ -11,6 +11,7 @@ interface Profile {
   full_name: string;
   email: string;
   role: 'patient' | 'doctor' | 'admin' | 'staff';
+  roles?: string[]; // Array of all roles from user_roles table
   phone?: string;
   date_of_birth?: string;
   gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
@@ -121,7 +122,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               .single();
               
             if (!createError && created) {
-              setProfile(created);
+              // Fetch user roles from user_roles table
+              const { data: userRoles } = await supabase
+                .from('user_roles')
+                .select('role')
+                .eq('user_id', userId);
+              
+              const roles = userRoles?.map(r => r.role) || [];
+              setProfile({ ...created, roles });
               return;
             }
           }
@@ -129,8 +137,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw profileError;
       }
 
-      // Use profile role (backend now secured with user_roles RLS)
-      setProfile(profileData);
+      // Fetch user roles from user_roles table
+      const { data: userRoles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId);
+      
+      const roles = userRoles?.map(r => r.role) || [];
+      
+      // Set profile with roles array
+      setProfile({ ...profileData, roles });
     } catch (error: any) {
       console.error('Error fetching profile:', error);
       // Set a temporary profile to prevent loading loop
@@ -140,6 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         full_name: 'Guest User',
         email: 'guest@example.com',
         role: 'patient',
+        roles: [],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });

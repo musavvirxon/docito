@@ -19,6 +19,7 @@ import ActivityFeed from "@/components/super-admin/ActivityFeed";
 import VerificationTable from "@/components/super-admin/VerificationTable";
 import DoctorVerificationTable from "@/components/super-admin/DoctorVerificationTable";
 import SuperAdminSettingsPanel from "@/components/super-admin/SuperAdminSettingsPanel";
+import TranslationManagement from "@/pages/TranslationManagement";
 
 const SuperAdminLogin = () => {
   const [email, setEmail] = useState("");
@@ -345,6 +346,9 @@ const SuperAdminDashboard = () => {
             <ActivityFeed showAll />
           </div>
         );
+      
+      case "translations":
+        return <TranslationManagement />;
       
       default:
         return null;

@@ -34,9 +34,13 @@ const Dashboard = () => {
     );
   }
 
-  // Route to appropriate dashboard based on user role
-  // This component now primarily handles the /dashboard catch-all
-  // but individual dashboards have their own routes too
+  // Route to appropriate dashboard based on user role from user_roles table
+  // Check for super_admin role first (highest priority)
+  if (profile.roles?.includes('super_admin')) {
+    return <Navigate to="/super-admin-dashboard" replace />;
+  }
+  
+  // Then check other roles
   switch (profile.role) {
     case 'doctor':
       return <Navigate to="/doctor-dashboard" replace />;
