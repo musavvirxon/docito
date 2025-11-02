@@ -2,6 +2,7 @@ import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from "luc
 import { Link } from "react-router-dom";
 import { Logo } from "@/components/Logo";
 import ThemeToggle from "./ThemeToggle";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const ModernFooter = () => {
   const platformLinks = [
@@ -160,7 +161,8 @@ const ModernFooter = () => {
             <Link to="/about" className="text-xs text-slate-500 dark:text-slate-600 hover:text-primary dark:hover:text-primary transition-colors">
               About
             </Link>
-            <div className="ml-4">
+            <div className="ml-4 flex items-center gap-2">
+              <LanguageSwitcher />
               <ThemeToggle />
             </div>
           </div>
