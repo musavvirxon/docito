@@ -68,7 +68,7 @@ const ModernFooter = () => {
 
           {/* Platform Links */}
           <div>
-            <h4 className="font-semibold text-lg mb-4 text-slate-100 dark:text-slate-100">Platform</h4>
+            <h3 className="font-semibold text-lg mb-4 text-slate-100 dark:text-slate-100">Platform</h3>
             <ul className="space-y-3">
               {platformLinks.map((link) => (
                 <li key={link.name}>
@@ -85,7 +85,7 @@ const ModernFooter = () => {
 
           {/* Support Links */}
           <div>
-            <h4 className="font-semibold text-lg mb-4 text-slate-100 dark:text-slate-100">Support</h4>
+            <h3 className="font-semibold text-lg mb-4 text-slate-100 dark:text-slate-100">Support</h3>
             <ul className="space-y-3">
               {supportLinks.map((link) => (
                 <li key={link.name}>
@@ -102,7 +102,7 @@ const ModernFooter = () => {
 
           {/* Legal Links */}
           <div>
-            <h4 className="font-semibold text-lg mb-4 text-slate-100 dark:text-slate-100">Legal</h4>
+            <h3 className="font-semibold text-lg mb-4 text-slate-100 dark:text-slate-100">Legal</h3>
             <ul className="space-y-3">
               {legalLinks.map((link) => (
                 <li key={link.name}>
