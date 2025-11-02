@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Heart, Users, Pill, Brain, Eye, Activity, Bone, Baby } from "lucide-react";
 import { cn } from "@/lib/utils";
 import toothIcon from "@/assets/tooth-icon.png";
+import toothIconWebP from "@/assets/tooth-icon.webp";
 
 const SpecialtiesGrid = () => {
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
@@ -84,15 +85,18 @@ const SpecialtiesGrid = () => {
                         : "bg-primary/10 dark:bg-primary/20"
                     )}>
                       {specialty.isImage ? (
-                        <img 
-                          src={toothIcon} 
-                          alt={specialty.name} 
-                          className="w-8 h-8 object-contain"
-                          width={32}
-                          height={32}
-                          loading="lazy"
-                          decoding="async"
-                        />
+                        <picture>
+                          <source srcSet={toothIconWebP} type="image/webp" />
+                          <img 
+                            src={toothIcon} 
+                            alt={specialty.name} 
+                            className="w-8 h-8 object-contain"
+                            width={32}
+                            height={32}
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </picture>
                       ) : (
                         IconComponent && <IconComponent className={`w-8 h-8 ${specialty.color}`} />
                       )}
