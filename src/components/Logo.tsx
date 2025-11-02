@@ -120,6 +120,9 @@ export const Logo = ({
       height={dimensions.height}
       className={`transition-opacity duration-300 ${onClick ? 'cursor-pointer hover:opacity-80' : ''} ${className}`}
       onClick={onClick}
+      loading={size === 'xl' ? 'eager' : 'lazy'}
+      fetchPriority={size === 'xl' ? 'high' : 'auto'}
+      decoding="async"
     />
   );
 };
