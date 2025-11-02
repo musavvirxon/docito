@@ -3,6 +3,7 @@ import { Search, MapPin, Shield, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 interface ProminentSearchBarProps {
   onSearch: (specialty: string, location: string, insurance: string) => void;
@@ -13,6 +14,7 @@ const ProminentSearchBar = ({ onSearch, searching }: ProminentSearchBarProps) =>
   const [specialty, setSpecialty] = useState("");
   const [location, setLocation] = useState("");
   const [insurance, setInsurance] = useState("");
+  const { t } = useTranslation('home');
 
   const handleSearch = () => {
     onSearch(specialty, location, insurance);
@@ -37,7 +39,7 @@ const ProminentSearchBar = ({ onSearch, searching }: ProminentSearchBarProps) =>
           <div className="relative group">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <Input
-              placeholder="Specialty or doctor name"
+              placeholder={t('search.specialty')}
               value={specialty}
               onChange={(e) => setSpecialty(e.target.value)}
               onKeyPress={handleKeyPress}
@@ -49,7 +51,7 @@ const ProminentSearchBar = ({ onSearch, searching }: ProminentSearchBarProps) =>
           <div className="relative group">
             <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <Input
-              placeholder="City or ZIP code"
+              placeholder={t('search.location')}
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               onKeyPress={handleKeyPress}
@@ -61,7 +63,7 @@ const ProminentSearchBar = ({ onSearch, searching }: ProminentSearchBarProps) =>
           <div className="relative group">
             <Shield className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <Input
-              placeholder="Insurance provider"
+              placeholder={t('search.insurance')}
               value={insurance}
               onChange={(e) => setInsurance(e.target.value)}
               onKeyPress={handleKeyPress}
@@ -77,10 +79,10 @@ const ProminentSearchBar = ({ onSearch, searching }: ProminentSearchBarProps) =>
             className="h-14 text-base font-semibold hover:scale-105 transition-all duration-300"
           >
             {searching ? (
-              "Searching..."
+              t('search.searching', 'Searching...')
             ) : (
               <>
-                Find Doctors
+                {t('search.searchButton')}
                 <ArrowRight className="ml-2 w-5 h-5" />
               </>
             )}

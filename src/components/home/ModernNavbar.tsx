@@ -6,6 +6,8 @@ import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from 'react-i18next';
 import { Logo } from "@/components/Logo";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import ThemeToggle from "./ThemeToggle";
 
 const ModernNavbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -74,7 +76,9 @@ const ModernNavbar = () => {
           </div>
 
           {/* Desktop Auth Buttons */}
-          <div className="hidden lg:flex items-center space-x-4">
+          <div className="hidden lg:flex items-center space-x-3">
+            <ThemeToggle />
+            <LanguageSwitcher />
             {user ? (
               <>
                 <Button
@@ -132,6 +136,10 @@ const ModernNavbar = () => {
             className="lg:hidden bg-background border-t border-border"
           >
             <div className="container mx-auto px-4 py-6 space-y-4">
+              <div className="flex items-center justify-between mb-4">
+                <ThemeToggle />
+                <LanguageSwitcher />
+              </div>
               {navLinks.map((link) => (
                 link.isRoute ? (
                   <Link

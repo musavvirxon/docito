@@ -1,1 +1,21 @@
-{}
+{
+  "hero": {
+    "badge": "Professional Medical Platform",
+    "title1": "Complete Healthcare",
+    "title2": "Management Solution",
+    "description": "Integrated payments, scheduling, records, and analytics for medical professionals",
+    "features": {
+      "payments": "Payment Processing",
+      "scheduling": "Scheduling",
+      "records": "Records",
+      "analytics": "Analytics"
+    }
+  },
+  "search": {
+    "specialty": "Specialty or Doctor Name",
+    "location": "City or Location",
+    "insurance": "Insurance Provider",
+    "searchButton": "Search Healthcare Providers",
+    "searching": "Searching..."
+  }
+}

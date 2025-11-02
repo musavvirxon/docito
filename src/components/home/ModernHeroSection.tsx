@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, CreditCard, Calendar, FileText, BarChart3 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import ProminentSearchBar from "./ProminentSearchBar";
 import SearchResults from "@/components/patient/SearchResults";
 import { useDoctors } from "@/hooks/useDoctors";
@@ -13,6 +14,7 @@ const ModernHeroSection = () => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [searching, setSearching] = useState(false);
+  const { t } = useTranslation('home');
   const { searchDoctors } = useDoctors();
   const { searchPractices } = usePractices();
   const { handleBookingClick } = useBookingAuth();
@@ -125,7 +127,7 @@ const ModernHeroSection = () => {
             transition={{ delay: 0.6, duration: 0.5 }}
             className="inline-flex items-center space-x-2 bg-primary/10 dark:bg-primary/5 backdrop-blur-sm border-2 border-primary/30 dark:border-primary/30 rounded-full px-6 py-2"
           >
-            <span className="text-primary dark:text-primary font-semibold">Professional Medical Platform</span>
+            <span className="text-primary dark:text-primary font-semibold">{t('hero.badge')}</span>
           </motion.div>
 
           {/* Main Headline */}
@@ -135,10 +137,10 @@ const ModernHeroSection = () => {
             transition={{ delay: 0.8, duration: 0.5 }}
             className="text-5xl md:text-7xl font-bold text-foreground leading-tight tracking-tight"
           >
-            Complete Healthcare
+            {t('hero.title1')}
             <br />
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Management Solution
+              {t('hero.title2')}
             </span>
           </motion.h1>
 
@@ -149,7 +151,7 @@ const ModernHeroSection = () => {
             transition={{ delay: 1.0, duration: 0.5 }}
             className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto"
           >
-            Integrated payments, scheduling, records, and analytics for medical professionals
+            {t('hero.description')}
           </motion.p>
 
           {/* Feature Pills */}
@@ -160,22 +162,22 @@ const ModernHeroSection = () => {
             className="flex flex-wrap justify-center gap-4"
           >
             {[
-              { icon: CreditCard, label: "Payment Processing" },
-              { icon: Calendar, label: "Scheduling" },
-              { icon: FileText, label: "Records" },
-              { icon: BarChart3, label: "Analytics" }
+              { icon: CreditCard, key: "payments" },
+              { icon: Calendar, key: "scheduling" },
+              { icon: FileText, key: "records" },
+              { icon: BarChart3, key: "analytics" }
             ].map((feature, index) => {
               const Icon = feature.icon;
               return (
                 <motion.div
-                  key={feature.label}
+                  key={feature.key}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 1.2 + index * 0.1 }}
                   className="flex items-center space-x-2 bg-card/80 dark:bg-card/80 backdrop-blur-sm border-2 border-input dark:border-border dark:hover:border-primary rounded-full px-6 py-3 transition-all duration-300 hover:shadow-lg dark:hover:shadow-glow-blue"
                 >
                   <Icon className="w-5 h-5 text-primary" />
-                  <span className="text-foreground font-medium">{feature.label}</span>
+                  <span className="text-foreground font-medium">{t(`hero.features.${feature.key}`)}</span>
                 </motion.div>
               );
             })}

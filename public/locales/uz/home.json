@@ -1,0 +1,21 @@
+{
+  "hero": {
+    "badge": "Professional tibbiyot platformasi",
+    "title1": "To'liq sog'liqni saqlash",
+    "title2": "boshqaruv tizimi",
+    "description": "Tibbiy mutaxassislar uchun integratsiyalashgan to'lovlar, rejalashtirish, yozuvlar va tahlil",
+    "features": {
+      "payments": "To'lovlarni qayta ishlash",
+      "scheduling": "Rejalashtirish",
+      "records": "Yozuvlar",
+      "analytics": "Tahlil"
+    }
+  },
+  "search": {
+    "specialty": "Mutaxassislik yoki shifokor nomi",
+    "location": "Shahar yoki manzil",
+    "insurance": "Sug'urta kompaniyasi",
+    "searchButton": "Tibbiyot xodimlarini qidirish",
+    "searching": "Qidirilmoqda..."
+  }
+}
