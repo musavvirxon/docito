@@ -167,7 +167,7 @@ const TopMedicalPracticesSection = () => {
           <Button
             onClick={() => navigate('/register-practice')}
             size={isLarge ? 'default' : 'sm'}
-            className={`${isLarge ? 'px-8 py-4 text-lg font-bold bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-600 shadow-lg hover:shadow-xl' : 'bg-gray-600 hover:bg-gray-700 dark:bg-slate-600 dark:hover:bg-slate-500'} text-white`}
+            className={`${isLarge ? 'px-8 py-4 text-lg font-bold bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 shadow-lg hover:shadow-xl' : 'bg-gray-600 hover:bg-gray-700 dark:bg-slate-600 dark:hover:bg-slate-500'} text-primary-foreground`}
           >
             {isLarge ? 'Register Practice' : 'Learn More'}
           </Button>
@@ -255,7 +255,7 @@ const TopMedicalPracticesSection = () => {
             <div className="flex gap-4 justify-center flex-wrap">
               <Button
                 onClick={() => navigate('/register-practice')}
-                className="px-8 py-4 bg-cyan-600 text-white rounded-lg font-bold hover:bg-cyan-700 text-lg shadow-lg"
+                className="px-8 py-4 bg-primary text-primary-foreground rounded-lg font-bold hover:bg-primary/90 text-lg shadow-lg"
               >
                 Register Your Practice
               </Button>
@@ -263,7 +263,7 @@ const TopMedicalPracticesSection = () => {
               <Button
                 onClick={() => navigate('/contact')}
                 variant="outline"
-                className="px-8 py-4 bg-white dark:bg-slate-700 text-cyan-600 dark:text-cyan-400 border-2 border-cyan-600 dark:border-cyan-500 rounded-lg font-bold hover:bg-cyan-50 dark:hover:bg-slate-600 text-lg"
+                className="px-8 py-4 bg-background text-foreground border-2 border-primary rounded-lg font-bold hover:bg-muted text-lg"
               >
                 Contact Sales
               </Button>
