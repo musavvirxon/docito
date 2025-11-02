@@ -212,7 +212,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       toast.success('Successfully signed in!');
       return {};
     } catch (error: any) {
-      toast.error(error.message || 'Failed to sign in');
+      // Generic error message to prevent account enumeration
+      toast.error('Invalid email or password. Please try again.');
       return { error };
     }
   };
@@ -258,7 +259,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       toast.success('Account created successfully!');
       return {};
     } catch (error: any) {
-      toast.error(error.message || 'Failed to create account');
+      // Generic error message to prevent information disclosure
+      toast.error('Unable to create account. Please check your details and try again.');
       return { error };
     }
   };

@@ -44,8 +44,8 @@ const AuthModal = ({ isOpen, onClose, userType = "patient", mode = "signin" }: A
       onClose();
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message,
+        title: "Sign Up Failed",
+        description: "Unable to create account. Please check your details and try again.",
         variant: "destructive",
       });
     } finally {
@@ -70,8 +70,8 @@ const AuthModal = ({ isOpen, onClose, userType = "patient", mode = "signin" }: A
       onClose();
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message,
+        title: "Sign In Failed",
+        description: "Invalid email or password. Please try again.",
         variant: "destructive",
       });
     } finally {

@@ -161,11 +161,24 @@ const TranslationManagement = () => {
   const handleUpdateText = (key: string, lang: string, value: string) => {
     if (!pageContent) return;
 
+    // Validate and sanitize input (max 5000 chars, no script tags)
+    const maxLength = 5000;
+    const trimmed = value.trim().substring(0, maxLength);
+    
+    if (/<script/i.test(trimmed)) {
+      toast({
+        title: 'Invalid Content',
+        description: 'Script tags are not allowed in translations',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     const updated = { ...pageContent };
     if (!updated.translations[key].texts) {
       updated.translations[key].texts = {};
     }
-    updated.translations[key].texts[lang] = value;
+    updated.translations[key].texts[lang] = trimmed;
     setPageContent(updated);
   };
 
@@ -180,11 +193,40 @@ const TranslationManagement = () => {
   const handleUpdateSEO = (lang: string, field: string, value: string) => {
     if (!pageContent) return;
 
+    // Validate SEO fields with appropriate length limits
+    const limits: Record<string, number> = {
+      metaTitle: 60,
+      title: 60,
+      metaDescription: 160,
+      description: 160,
+      keywords: 200,
+      slug: 100
+    };
+    
+    const maxLength = limits[field] || 200;
+    const trimmed = value.trim();
+    
+    if (trimmed.length > maxLength * 2) {
+      toast({
+        title: 'Warning',
+        description: `${field} exceeds recommended length. Maximum ${maxLength * 2} characters allowed.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    if (trimmed.length > maxLength) {
+      toast({
+        title: 'SEO Warning',
+        description: `${field} should be under ${maxLength} characters for optimal SEO`,
+      });
+    }
+
     const updated = { ...pageContent };
     if (!updated.seo[lang]) {
       updated.seo[lang] = { title: '', description: '', keywords: '', slug: '' };
     }
-    updated.seo[lang] = { ...updated.seo[lang], [field]: value };
+    updated.seo[lang] = { ...updated.seo[lang], [field]: trimmed.substring(0, maxLength * 2) };
     setPageContent(updated);
   };
 
