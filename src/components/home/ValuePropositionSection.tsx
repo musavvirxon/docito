@@ -1,41 +1,43 @@
 import { motion } from "framer-motion";
 import { CreditCard, Calendar, FileText, Activity, Users, Shield, BarChart3 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { useTranslation } from "react-i18next";
 
 const ValuePropositionSection = () => {
+  const { t } = useTranslation('home');
   const coreFeatures = [
     {
       icon: CreditCard,
-      title: "Payment Processing",
-      description: "Secure payment handling with multi-currency support",
+      title: t('valueProposition.paymentProcessing.title'),
+      description: t('valueProposition.paymentProcessing.description'),
     },
     {
       icon: Calendar,
-      title: "Scheduling Management",
-      description: "Real-time booking system with automated workflows",
+      title: t('valueProposition.schedulingManagement.title'),
+      description: t('valueProposition.schedulingManagement.description'),
     },
     {
       icon: FileText,
-      title: "Records Management",
-      description: "Complete digital health records system",
+      title: t('valueProposition.recordsManagement.title'),
+      description: t('valueProposition.recordsManagement.description'),
     },
   ];
 
   const additionalFeatures = [
     {
       icon: Activity,
-      title: "Procedure Library",
-      description: "Comprehensive medical procedure tracking",
+      title: t('valueProposition.procedureLibrary.title'),
+      description: t('valueProposition.procedureLibrary.description'),
     },
     {
       icon: Users,
-      title: "Referral Network",
-      description: "Professional referral management system",
+      title: t('valueProposition.referralNetwork.title'),
+      description: t('valueProposition.referralNetwork.description'),
     },
     {
       icon: Shield,
-      title: "Legal Compliance",
-      description: "Built-in HIPAA compliance and documentation",
+      title: t('valueProposition.legalCompliance.title'),
+      description: t('valueProposition.legalCompliance.description'),
     },
   ];
 
@@ -50,12 +52,12 @@ const ValuePropositionSection = () => {
           className="text-center mb-16"
         >
           <div className="inline-flex items-center space-x-2 bg-primary/10 dark:bg-primary/5 border-2 border-primary/30 dark:border-primary/30 rounded-full px-6 py-2 mb-6">
-            <span className="text-primary dark:text-primary font-semibold">Enterprise-Grade Platform</span>
+            <span className="text-primary dark:text-primary font-semibold">{t('valueProposition.badge')}</span>
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
-            Professional Tools
+            {t('valueProposition.title')}
             <br />
-            For Modern Healthcare
+            {t('valueProposition.subtitle')}
           </h2>
         </motion.div>
 
@@ -116,22 +118,22 @@ const ValuePropositionSection = () => {
               <div className="flex-1">
                 <div className="inline-flex items-center space-x-2 bg-primary/10 dark:bg-primary/20 rounded-full px-4 py-2 mb-4">
                   <BarChart3 className="w-5 h-5 text-primary" />
-                  <span className="text-primary font-semibold">Comprehensive Analytics Suite</span>
+                  <span className="text-primary font-semibold">{t('valueProposition.analytics.badge')}</span>
                 </div>
                 <h3 className="text-3xl font-bold text-foreground mb-4">
-                  Data-Driven Insights
+                  {t('valueProposition.analytics.title')}
                 </h3>
                 <p className="text-lg text-muted-foreground mb-6">
-                  Real-time dashboards, comprehensive reports, performance metrics, patient insights, revenue tracking, and appointment analytics.
+                  {t('valueProposition.analytics.description')}
                 </p>
                 <ul className="space-y-3">
                   {[
-                    "Real-time dashboard with live metrics",
-                    "Revenue tracking and forecasts",
-                    "Patient insights and demographics",
-                    "Appointment trends and patterns",
-                    "Performance metrics and efficiency",
-                    "Custom exportable reports",
+                    t('valueProposition.analytics.features.dashboard'),
+                    t('valueProposition.analytics.features.revenue'),
+                    t('valueProposition.analytics.features.insights'),
+                    t('valueProposition.analytics.features.trends'),
+                    t('valueProposition.analytics.features.performance'),
+                    t('valueProposition.analytics.features.reports'),
                   ].map((item, index) => (
                     <li key={index} className="flex items-center space-x-3">
                       <div className="w-2 h-2 rounded-full bg-primary"></div>
@@ -144,15 +146,15 @@ const ValuePropositionSection = () => {
                 <div className="bg-card dark:bg-card rounded-xl shadow-2xl dark:shadow-glow-blue p-6 border-2 border-border dark:border-border">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-4 bg-primary/5 dark:bg-primary/10 rounded-lg">
-                      <span className="text-sm font-medium text-foreground">Revenue Today</span>
+                      <span className="text-sm font-medium text-foreground">{t('valueProposition.analytics.stats.revenueToday')}</span>
                       <span className="text-xl font-bold text-primary">$12,450</span>
                     </div>
                     <div className="flex items-center justify-between p-4 bg-primary/5 dark:bg-primary/10 rounded-lg">
-                      <span className="text-sm font-medium text-foreground">Appointments</span>
+                      <span className="text-sm font-medium text-foreground">{t('valueProposition.analytics.stats.appointments')}</span>
                       <span className="text-xl font-bold text-primary">28</span>
                     </div>
                     <div className="flex items-center justify-between p-4 bg-primary/5 dark:bg-primary/10 rounded-lg">
-                      <span className="text-sm font-medium text-foreground">Active Patients</span>
+                      <span className="text-sm font-medium text-foreground">{t('valueProposition.analytics.stats.activePatients')}</span>
                       <span className="text-xl font-bold text-primary">1,247</span>
                     </div>
                   </div>

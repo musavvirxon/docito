@@ -6,8 +6,10 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { practiceApi } from "@/lib/api/supabase-api";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "react-i18next";
 
 const TopMedicalPracticesSection = () => {
+  const { t } = useTranslation('home');
   const navigate = useNavigate();
   const [practices, setPractices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -113,7 +115,7 @@ const TopMedicalPracticesSection = () => {
                 size="sm"
               />
             ) : (
-              <p className="text-xs text-muted-foreground">No reviews yet</p>
+              <p className="text-xs text-muted-foreground">{t('topPractices.noReviews')}</p>
             )}
             
             {isLarge && practice.specialties.length > 0 && (
@@ -140,7 +142,7 @@ const TopMedicalPracticesSection = () => {
               className="w-full transition-all duration-300 group/btn"
             >
               <Building2 className="w-4 h-4 mr-2 transition-transform group-hover/btn:scale-110" />
-              View Practice
+              {t('topPractices.viewPractice')}
               <ArrowRight className="w-4 h-4 ml-auto opacity-0 -translate-x-2 group-hover/btn:opacity-100 group-hover/btn:translate-x-0 transition-all duration-300" />
             </Button>
           </div>
@@ -159,17 +161,17 @@ const TopMedicalPracticesSection = () => {
             <Building2 className={`${isLarge ? 'w-12 h-12 text-cyan-600 dark:text-cyan-400' : 'w-8 h-8 text-gray-600 dark:text-gray-400'}`} />
           </div>
           <h3 className={`${isLarge ? 'text-2xl' : 'text-lg'} font-bold text-gray-800 dark:text-gray-200 mb-${isLarge ? '3' : '2'}`}>
-            {isLarge ? 'Premium Practice Spot' : 'Your Practice Here'}
+            {isLarge ? t('topPractices.emptySpot.premium.title') : t('topPractices.emptySpot.regular.title')}
           </h3>
           <p className={`${isLarge ? 'text-base' : 'text-sm'} text-gray-600 dark:text-gray-400 mb-${isLarge ? '6' : '4'} ${isLarge ? 'max-w-sm' : ''}`}>
-            {isLarge ? 'Showcase your medical practice to thousands of potential patients. Get featured placement and premium visibility.' : 'Join our network of leading healthcare providers'}
+            {isLarge ? t('topPractices.emptySpot.premium.description') : t('topPractices.emptySpot.regular.description')}
           </p>
           <Button
             onClick={() => navigate('/register-practice')}
             size={isLarge ? 'default' : 'sm'}
             className={`${isLarge ? 'px-8 py-4 text-lg font-bold bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90 shadow-lg hover:shadow-xl' : 'bg-gray-600 hover:bg-gray-700 dark:bg-slate-600 dark:hover:bg-slate-500'} text-primary-foreground`}
           >
-            {isLarge ? 'Register Practice' : 'Learn More'}
+            {isLarge ? t('topPractices.emptySpot.premium.button') : t('topPractices.emptySpot.regular.button')}
           </Button>
         </CardContent>
       </Card>
@@ -179,9 +181,9 @@ const TopMedicalPracticesSection = () => {
   return (
     <section className="py-24 bg-muted/30 dark:bg-muted/5">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">Leading Medical Practices</h2>
-          <p className="text-lg text-muted-foreground">Trusted healthcare institutions</p>
+          <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">{t('topPractices.title')}</h2>
+          <p className="text-lg text-muted-foreground">{t('topPractices.subtitle')}</p>
         </div>
         
         {loading ? (
@@ -244,12 +246,11 @@ const TopMedicalPracticesSection = () => {
             </div>
             
             <h3 className="text-3xl font-bold mb-4 text-gray-900 dark:text-slate-100">
-              Be a Founding Practice
+              {t('topPractices.beFounder.title')}
             </h3>
             
             <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
-              Join Docito as one of our first featured medical practices. 
-              Get premium exposure, attract more patients, and grow your practice with our platform.
+              {t('topPractices.beFounder.description')}
             </p>
             
             <div className="flex gap-4 justify-center flex-wrap">
@@ -257,7 +258,7 @@ const TopMedicalPracticesSection = () => {
                 onClick={() => navigate('/register-practice')}
                 className="px-8 py-4 bg-primary text-primary-foreground rounded-lg font-bold hover:bg-primary/90 text-lg shadow-lg"
               >
-                Register Your Practice
+                {t('topPractices.beFounder.registerButton')}
               </Button>
               
               <Button
@@ -265,7 +266,7 @@ const TopMedicalPracticesSection = () => {
                 variant="outline"
                 className="px-8 py-4 bg-background text-foreground border-2 border-primary rounded-lg font-bold hover:bg-muted text-lg"
               >
-                Contact Sales
+                {t('topPractices.beFounder.contactButton')}
               </Button>
             </div>
           </div>

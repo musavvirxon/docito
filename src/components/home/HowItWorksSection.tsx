@@ -1,31 +1,33 @@
 import { motion } from "framer-motion";
 import { Search, Star, Calendar, Check } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const HowItWorksSection = () => {
+  const { t } = useTranslation('home');
   const steps = [
     {
       number: 1,
       icon: Search,
-      title: "Search",
-      description: "Find healthcare providers by specialty and location",
+      title: t('howItWorks.steps.search.title'),
+      description: t('howItWorks.steps.search.description'),
     },
     {
       number: 2,
       icon: Star,
-      title: "Review",
-      description: "Compare credentials and verified reviews",
+      title: t('howItWorks.steps.review.title'),
+      description: t('howItWorks.steps.review.description'),
     },
     {
       number: 3,
       icon: Calendar,
-      title: "Book",
-      description: "Schedule consultations instantly online",
+      title: t('howItWorks.steps.book.title'),
+      description: t('howItWorks.steps.book.description'),
     },
     {
       number: 4,
       icon: Check,
-      title: "Care",
-      description: "Receive professional healthcare services",
+      title: t('howItWorks.steps.care.title'),
+      description: t('howItWorks.steps.care.description'),
     },
   ];
 
@@ -40,9 +42,9 @@ const HowItWorksSection = () => {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
-            Platform Capabilities
+            {t('howItWorks.title')}
           </h2>
-          <p className="text-xl text-muted-foreground">Book consultations in 4 steps</p>
+          <p className="text-xl text-muted-foreground">{t('howItWorks.subtitle')}</p>
         </motion.div>
 
         <div className="relative max-w-6xl mx-auto">

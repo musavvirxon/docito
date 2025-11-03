@@ -4,20 +4,22 @@ import { Heart, Users, Pill, Brain, Eye, Activity, Bone, Baby } from "lucide-rea
 import { cn } from "@/lib/utils";
 import toothIcon from "@/assets/tooth-icon.png";
 import toothIconWebP from "@/assets/tooth-icon.webp";
+import { useTranslation } from "react-i18next";
 
 const SpecialtiesGrid = () => {
+  const { t } = useTranslation('home');
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
 
   const specialties = [
-    { name: "Cardiology", icon: Heart, color: "text-red-500" },
-    { name: "Dentist", icon: toothIcon, color: "text-cyan-500", isImage: true },
-    { name: "OB-GYN", icon: Users, color: "text-purple-500" },
-    { name: "Dermatology", icon: Pill, color: "text-orange-500" },
-    { name: "Psychiatry", icon: Brain, color: "text-indigo-500" },
-    { name: "Ophthalmology", icon: Eye, color: "text-teal-500" },
-    { name: "Neurology", icon: Activity, color: "text-violet-500" },
-    { name: "Orthopedics", icon: Bone, color: "text-slate-500" },
-    { name: "Pediatrics", icon: Baby, color: "text-pink-500" },
+    { name: t('specialties.cardiology'), icon: Heart, color: "text-red-500" },
+    { name: t('specialties.dentist'), icon: toothIcon, color: "text-cyan-500", isImage: true },
+    { name: t('specialties.obGyn'), icon: Users, color: "text-purple-500" },
+    { name: t('specialties.dermatology'), icon: Pill, color: "text-orange-500" },
+    { name: t('specialties.psychiatry'), icon: Brain, color: "text-indigo-500" },
+    { name: t('specialties.ophthalmology'), icon: Eye, color: "text-teal-500" },
+    { name: t('specialties.neurology'), icon: Activity, color: "text-violet-500" },
+    { name: t('specialties.orthopedics'), icon: Bone, color: "text-slate-500" },
+    { name: t('specialties.pediatrics'), icon: Baby, color: "text-pink-500" },
   ];
 
   const handleSpecialtyClick = (specialtyName: string) => {
@@ -52,9 +54,9 @@ const SpecialtiesGrid = () => {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
-            Medical Specialties
+            {t('specialties.title')}
           </h2>
-          <p className="text-xl text-muted-foreground">Connect with certified specialists</p>
+          <p className="text-xl text-muted-foreground">{t('specialties.subtitle')}</p>
         </motion.div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">

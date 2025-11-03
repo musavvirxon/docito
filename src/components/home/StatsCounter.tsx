@@ -1,12 +1,14 @@
 import { motion, useInView, useMotionValue, useSpring } from "framer-motion";
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 const StatsCounter = () => {
+  const { t } = useTranslation('home');
   const stats = [
-    { value: 10000, suffix: "+", label: "Doctors" },
-    { value: 1000000, suffix: "+", label: "Patients" },
-    { value: 50, suffix: "+", label: "Countries" },
-    { value: 4.9, suffix: "/5", label: "Avg Rating", decimal: true },
+    { value: 10000, suffix: "+", label: t('stats.doctors') },
+    { value: 1000000, suffix: "+", label: t('stats.patients') },
+    { value: 50, suffix: "+", label: t('stats.countries') },
+    { value: 4.9, suffix: "/5", label: t('stats.avgRating'), decimal: true },
   ];
 
   return (

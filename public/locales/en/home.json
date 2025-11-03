@@ -17,5 +17,211 @@
     "insurance": "Insurance Provider",
     "searchButton": "Search Healthcare Providers",
     "searching": "Searching..."
+  },
+  "stats": {
+    "doctors": "Doctors",
+    "patients": "Patients",
+    "countries": "Countries",
+    "avgRating": "Avg Rating"
+  },
+  "valueProposition": {
+    "badge": "Enterprise-Grade Platform",
+    "title": "Professional Tools",
+    "subtitle": "For Modern Healthcare",
+    "paymentProcessing": {
+      "title": "Payment Processing",
+      "description": "Secure payment handling with multi-currency support"
+    },
+    "schedulingManagement": {
+      "title": "Scheduling Management",
+      "description": "Real-time booking system with automated workflows"
+    },
+    "recordsManagement": {
+      "title": "Records Management",
+      "description": "Complete digital health records system"
+    },
+    "procedureLibrary": {
+      "title": "Procedure Library",
+      "description": "Comprehensive medical procedure tracking"
+    },
+    "referralNetwork": {
+      "title": "Referral Network",
+      "description": "Professional referral management system"
+    },
+    "legalCompliance": {
+      "title": "Legal Compliance",
+      "description": "Built-in HIPAA compliance and documentation"
+    },
+    "analytics": {
+      "badge": "Comprehensive Analytics Suite",
+      "title": "Data-Driven Insights",
+      "description": "Real-time dashboards, comprehensive reports, performance metrics, patient insights, revenue tracking, and appointment analytics.",
+      "features": {
+        "dashboard": "Real-time dashboard with live metrics",
+        "revenue": "Revenue tracking and forecasts",
+        "insights": "Patient insights and demographics",
+        "trends": "Appointment trends and patterns",
+        "performance": "Performance metrics and efficiency",
+        "reports": "Custom exportable reports"
+      },
+      "stats": {
+        "revenueToday": "Revenue Today",
+        "appointments": "Appointments",
+        "activePatients": "Active Patients"
+      }
+    }
+  },
+  "specialties": {
+    "title": "Medical Specialties",
+    "subtitle": "Connect with certified specialists",
+    "cardiology": "Cardiology",
+    "dentist": "Dentist",
+    "obGyn": "OB-GYN",
+    "dermatology": "Dermatology",
+    "psychiatry": "Psychiatry",
+    "ophthalmology": "Ophthalmology",
+    "neurology": "Neurology",
+    "orthopedics": "Orthopedics",
+    "pediatrics": "Pediatrics"
+  },
+  "topSpecialists": {
+    "title": "Featured Specialists",
+    "bookAppointment": "Book Appointment",
+    "noReviews": "No reviews yet",
+    "featuredSpot": {
+      "title": "Featured Specialist Spot",
+      "description": "Join our network of top medical professionals and reach thousands of patients",
+      "button": "Join as Doctor"
+    },
+    "beFirst": {
+      "title": "Be the First Featured Specialist",
+      "description": "Join Docito and become one of our founding featured specialists. Get premium visibility and connect with patients from day one.",
+      "button": "Register Your Practice"
+    }
+  },
+  "topPractices": {
+    "title": "Leading Medical Practices",
+    "subtitle": "Trusted healthcare institutions",
+    "viewPractice": "View Practice",
+    "noReviews": "No reviews yet",
+    "emptySpot": {
+      "premium": {
+        "title": "Premium Practice Spot",
+        "description": "Showcase your medical practice to thousands of potential patients. Get featured placement and premium visibility.",
+        "button": "Register Practice"
+      },
+      "regular": {
+        "title": "Your Practice Here",
+        "description": "Join our network of leading healthcare providers",
+        "button": "Learn More"
+      }
+    },
+    "beFounder": {
+      "title": "Be a Founding Practice",
+      "description": "Join Docito as one of our first featured medical practices. Get premium exposure, attract more patients, and grow your practice with our platform.",
+      "registerButton": "Register Your Practice",
+      "contactButton": "Contact Sales"
+    }
+  },
+  "howItWorks": {
+    "title": "Platform Capabilities",
+    "subtitle": "Book consultations in 4 steps",
+    "steps": {
+      "search": {
+        "title": "Search",
+        "description": "Find healthcare providers by specialty and location"
+      },
+      "review": {
+        "title": "Review",
+        "description": "Compare credentials and verified reviews"
+      },
+      "book": {
+        "title": "Book",
+        "description": "Schedule consultations instantly online"
+      },
+      "care": {
+        "title": "Care",
+        "description": "Receive professional healthcare services"
+      }
+    }
+  },
+  "features": {
+    "title": "Platform Capabilities",
+    "subtitle": "Professional tools for modern healthcare",
+    "verifiedProviders": {
+      "title": "Verified Providers",
+      "description": "All healthcare providers are thoroughly verified and licensed"
+    },
+    "availability": {
+      "title": "24/7 Availability",
+      "description": "Book consultations anytime, anywhere, on any device"
+    },
+    "verifiedReviews": {
+      "title": "Verified Reviews",
+      "description": "Authentic reviews to help make informed decisions"
+    },
+    "instantBooking": {
+      "title": "Instant Booking",
+      "description": "Confirmed consultations in seconds, not days"
+    },
+    "globalNetwork": {
+      "title": "Global Network",
+      "description": "Healthcare providers in multiple countries worldwide"
+    },
+    "hipaaCompliant": {
+      "title": "HIPAA Compliant",
+      "description": "Medical data encrypted and HIPAA compliant"
+    }
+  },
+  "cta": {
+    "title": "Professional Healthcare Management",
+    "description": "Transform your practice with enterprise-grade tools and comprehensive patient management",
+    "scheduleDemoButton": "Schedule Demo",
+    "learnMoreButton": "Learn More",
+    "features": {
+      "hipaa": "HIPAA Compliant",
+      "security": "Enterprise Security",
+      "support": "24/7 Support"
+    }
+  },
+  "footer": {
+    "description": "Professional Medical Platform. Enterprise-grade healthcare management with secure booking, digital records, and comprehensive analytics for medical professionals.",
+    "platform": {
+      "title": "Platform",
+      "searchDoctors": "Search Doctors",
+      "browseSpecialties": "Browse Specialties",
+      "findPractices": "Find Practices",
+      "features": "Features"
+    },
+    "support": {
+      "title": "Support",
+      "helpCenter": "Help Center",
+      "contact": "Contact Us",
+      "faqs": "FAQs",
+      "support": "Support"
+    },
+    "legal": {
+      "title": "Legal",
+      "about": "About Us",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "cookies": "Cookie Policy",
+      "legalCenter": "Legal Center"
+    },
+    "contact": {
+      "email": "contact@docito.com",
+      "phone": "+1 (555) 123-4567",
+      "location": "San Francisco, CA"
+    },
+    "disclaimer": "Content provided is for informational purposes only. Not intended as medical advice, diagnosis, or treatment. Always consult healthcare providers directly for medical advice. Platform facilitates connections between patients and providers but does not provide medical services directly. HIPAA Compliant.",
+    "copyright": "All Rights Reserved",
+    "trademark": "Docito is a registered trademark and brand of",
+    "company": "Artsy Developers Inc.",
+    "links": {
+      "terms": "Terms",
+      "privacy": "Privacy",
+      "cookies": "Cookies",
+      "about": "About"
+    }
   }
 }

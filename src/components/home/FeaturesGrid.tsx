@@ -1,38 +1,40 @@
 import { motion } from "framer-motion";
 import { CheckCircle2, Clock, Star, Zap, Globe, Shield } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { useTranslation } from "react-i18next";
 
 const FeaturesGrid = () => {
+  const { t } = useTranslation('home');
   const features = [
     {
       icon: CheckCircle2,
-      title: "Verified Providers",
-      description: "All healthcare providers are thoroughly verified and licensed",
+      title: t('features.verifiedProviders.title'),
+      description: t('features.verifiedProviders.description'),
     },
     {
       icon: Clock,
-      title: "24/7 Availability",
-      description: "Book consultations anytime, anywhere, on any device",
+      title: t('features.availability.title'),
+      description: t('features.availability.description'),
     },
     {
       icon: Star,
-      title: "Verified Reviews",
-      description: "Authentic reviews to help make informed decisions",
+      title: t('features.verifiedReviews.title'),
+      description: t('features.verifiedReviews.description'),
     },
     {
       icon: Zap,
-      title: "Instant Booking",
-      description: "Confirmed consultations in seconds, not days",
+      title: t('features.instantBooking.title'),
+      description: t('features.instantBooking.description'),
     },
     {
       icon: Globe,
-      title: "Global Network",
-      description: "Healthcare providers in multiple countries worldwide",
+      title: t('features.globalNetwork.title'),
+      description: t('features.globalNetwork.description'),
     },
     {
       icon: Shield,
-      title: "HIPAA Compliant",
-      description: "Medical data encrypted and HIPAA compliant",
+      title: t('features.hipaaCompliant.title'),
+      description: t('features.hipaaCompliant.description'),
     },
   ];
 
@@ -53,10 +55,10 @@ const FeaturesGrid = () => {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
-            Platform Capabilities
+            {t('features.title')}
           </h2>
           <p className="text-xl text-muted-foreground">
-            Professional tools for modern healthcare
+            {t('features.subtitle')}
           </p>
         </motion.div>
 

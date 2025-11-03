@@ -7,8 +7,10 @@ import { useEffect, useState } from "react";
 import { doctorApi } from "@/lib/api/supabase-api";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "react-i18next";
 
 const TopSpecialistsSection = () => {
+  const { t } = useTranslation('home');
   const { handleBookingClick } = useBookingAuth();
   const navigate = useNavigate();
   const [specialists, setSpecialists] = useState<any[]>([]);
@@ -71,7 +73,7 @@ const TopSpecialistsSection = () => {
   return (
     <section className="py-16 bg-background">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-foreground mb-12 text-center">Featured Specialists</h2>
+        <h2 className="text-3xl font-bold text-foreground mb-12 text-center">{t('topSpecialists.title')}</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading ? (
@@ -135,9 +137,9 @@ const TopSpecialistsSection = () => {
                           size="sm"
                         />
                       </div>
-                    ) : (
+                      ) : (
                       <div className="mb-3">
-                        <p className="text-xs text-muted-foreground">No reviews yet</p>
+                        <p className="text-xs text-muted-foreground">{t('topSpecialists.noReviews')}</p>
                       </div>
                     )}
                     
@@ -151,7 +153,7 @@ const TopSpecialistsSection = () => {
                       className="w-full transition-all duration-300 hover:shadow-lg group-hover:scale-105"
                     >
                       <Calendar className="w-4 h-4 mr-2 transition-transform group-hover:rotate-12" />
-                      Book Appointment
+                      {t('topSpecialists.bookAppointment')}
                     </Button>
                   </CardContent>
                 </Card>
@@ -168,16 +170,16 @@ const TopSpecialistsSection = () => {
                       <UserPlus className="w-10 h-10 text-blue-600 dark:text-blue-400" />
                     </div>
                     <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
-                      Featured Specialist Spot
+                      {t('topSpecialists.featuredSpot.title')}
                     </h3>
                     <p className="text-gray-600 dark:text-gray-400 mb-6 text-sm max-w-xs">
-                      Join our network of top medical professionals and reach thousands of patients
+                      {t('topSpecialists.featuredSpot.description')}
                     </p>
                     <Button
                       onClick={() => navigate('/doctor-signup')}
                       className="bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 shadow-md hover:shadow-lg"
                     >
-                      Join as Doctor
+                      {t('topSpecialists.featuredSpot.button')}
                     </Button>
                   </CardContent>
                 </Card>
@@ -190,17 +192,16 @@ const TopSpecialistsSection = () => {
         {!loading && displaySpecialists.length === 0 && (
           <div className="text-center mt-8 p-8 bg-blue-50 dark:bg-slate-800 rounded-xl max-w-2xl mx-auto">
             <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-slate-100">
-              Be the First Featured Specialist
+              {t('topSpecialists.beFirst.title')}
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Join Docito and become one of our founding featured specialists. 
-              Get premium visibility and connect with patients from day one.
+              {t('topSpecialists.beFirst.description')}
             </p>
             <Button
               onClick={() => navigate('/doctor-signup')}
               className="px-8 py-4 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 text-lg"
             >
-              Register Your Practice
+              {t('topSpecialists.beFirst.button')}
             </Button>
           </div>
         )}
