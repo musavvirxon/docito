@@ -3,28 +3,31 @@ import { Link } from "react-router-dom";
 import { Logo } from "@/components/Logo";
 import ThemeToggle from "./ThemeToggle";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 
 const ModernFooter = () => {
+  const { t } = useTranslation("home");
+  
   const platformLinks = [
-    { name: "Search Doctors", href: "/search-doctors" },
-    { name: "Browse Specialties", href: "/browse-specialties" },
-    { name: "Find Practices", href: "/find-practices" },
-    { name: "Features", href: "/features" },
+    { name: t("footer.platform.searchDoctors"), href: "/search-doctors" },
+    { name: t("footer.platform.browseSpecialties"), href: "/browse-specialties" },
+    { name: t("footer.platform.findPractices"), href: "/find-practices" },
+    { name: t("footer.platform.features"), href: "/features" },
   ];
 
   const supportLinks = [
-    { name: "Help Center", href: "/help-center" },
-    { name: "Contact Us", href: "/contact" },
-    { name: "FAQs", href: "/faqs" },
-    { name: "Support", href: "/support" },
+    { name: t("footer.support.helpCenter"), href: "/help-center" },
+    { name: t("footer.support.contact"), href: "/contact" },
+    { name: t("footer.support.faqs"), href: "/faqs" },
+    { name: t("footer.support.support"), href: "/support" },
   ];
 
   const legalLinks = [
-    { name: "About Us", href: "/about" },
-    { name: "Privacy Policy", href: "/legal/privacy-policy" },
-    { name: "Terms of Service", href: "/legal/terms-of-service" },
-    { name: "Cookie Policy", href: "/legal/cookie-policy" },
-    { name: "Legal Center", href: "/legal" },
+    { name: t("footer.legal.about"), href: "/about" },
+    { name: t("footer.legal.privacy"), href: "/legal/privacy-policy" },
+    { name: t("footer.legal.terms"), href: "/legal/terms-of-service" },
+    { name: t("footer.legal.cookies"), href: "/legal/cookie-policy" },
+    { name: t("footer.legal.legalCenter"), href: "/legal" },
   ];
 
   const socialLinks = [
@@ -35,9 +38,9 @@ const ModernFooter = () => {
   ];
 
   const contactInfo = [
-    { icon: Mail, label: "contact@docito.com" },
-    { icon: Phone, label: "+1 (555) 123-4567" },
-    { icon: MapPin, label: "San Francisco, CA" },
+    { icon: Mail, label: t("footer.contact.email") },
+    { icon: Phone, label: t("footer.contact.phone") },
+    { icon: MapPin, label: t("footer.contact.location") },
   ];
 
   return (
@@ -50,7 +53,7 @@ const ModernFooter = () => {
               <Logo variant="horizontal" size="md" />
             </div>
             <p className="text-sm text-slate-400 dark:text-slate-500 mb-6 max-w-md">
-              Professional Medical Platform. Enterprise-grade healthcare management with secure booking, digital records, and comprehensive analytics for medical professionals.
+              {t("footer.description")}
             </p>
             <div className="flex space-x-4">
               {socialLinks.map((social) => (
@@ -68,7 +71,7 @@ const ModernFooter = () => {
 
           {/* Platform Links */}
           <div>
-            <h3 className="font-semibold text-lg mb-4 text-slate-100 dark:text-slate-100">Platform</h3>
+            <h3 className="font-semibold text-lg mb-4 text-slate-100 dark:text-slate-100">{t("footer.platform.title")}</h3>
             <ul className="space-y-3">
               {platformLinks.map((link) => (
                 <li key={link.name}>
@@ -85,7 +88,7 @@ const ModernFooter = () => {
 
           {/* Support Links */}
           <div>
-            <h3 className="font-semibold text-lg mb-4 text-slate-100 dark:text-slate-100">Support</h3>
+            <h3 className="font-semibold text-lg mb-4 text-slate-100 dark:text-slate-100">{t("footer.support.title")}</h3>
             <ul className="space-y-3">
               {supportLinks.map((link) => (
                 <li key={link.name}>
@@ -102,7 +105,7 @@ const ModernFooter = () => {
 
           {/* Legal Links */}
           <div>
-            <h3 className="font-semibold text-lg mb-4 text-slate-100 dark:text-slate-100">Legal</h3>
+            <h3 className="font-semibold text-lg mb-4 text-slate-100 dark:text-slate-100">{t("footer.legal.title")}</h3>
             <ul className="space-y-3">
               {legalLinks.map((link) => (
                 <li key={link.name}>
@@ -136,30 +139,30 @@ const ModernFooter = () => {
         {/* Disclaimer */}
         <div className="border-t border-slate-800 dark:border-gray-800 pt-8 mb-8">
           <p className="text-xs text-slate-400 dark:text-slate-500 leading-relaxed max-w-4xl">
-            <strong className="text-slate-300 dark:text-slate-400">Medical Disclaimer:</strong> Content provided is for informational purposes only. Not intended as medical advice, diagnosis, or treatment. Always consult healthcare providers directly for medical advice. Platform facilitates connections between patients and providers but does not provide medical services directly. HIPAA Compliant.
+            {t("footer.disclaimer")}
           </p>
         </div>
 
         {/* Bottom Bar */}
         <div className="border-t border-slate-800 dark:border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <div className="text-sm text-slate-400 dark:text-slate-500 text-center md:text-left">
-            <div>© 2025 <span className="font-bold text-primary">Docito®</span> - All Rights Reserved</div>
+            <div>© 2025 <span className="font-bold text-primary">Docito®</span> - {t("footer.copyright")}</div>
             <div className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-              Docito is a registered trademark and brand of <span className="font-semibold text-slate-300 dark:text-slate-400">Artsy Developers Inc.</span>
+              {t("footer.trademark")} <span className="font-semibold text-slate-300 dark:text-slate-400">{t("footer.company")}</span>
             </div>
           </div>
           <div className="flex flex-wrap justify-center items-center gap-6">
             <Link to="/legal/terms-of-service" className="text-xs text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors">
-              Terms
+              {t("footer.links.terms")}
             </Link>
             <Link to="/legal/privacy-policy" className="text-xs text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors">
-              Privacy
+              {t("footer.links.privacy")}
             </Link>
             <Link to="/legal/cookie-policy" className="text-xs text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors">
-              Cookies
+              {t("footer.links.cookies")}
             </Link>
             <Link to="/about" className="text-xs text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors">
-              About
+              {t("footer.links.about")}
             </Link>
             <div className="ml-4 flex items-center gap-2">
               <LanguageSwitcher />
