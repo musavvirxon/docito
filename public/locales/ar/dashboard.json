@@ -100,7 +100,8 @@
       "marketingEmails": "رسائل التسويق",
       "profileVisibility": "رؤية الملف الشخصي",
       "shareDataWithDoctors": "مشاركة البيانات مع الأطباء",
-      "showActivityStatus": "إظهار حالة النشاط"
+      "showActivityStatus": "إظهار حالة النشاط",
+      "instructions": "التعليمات"
     }
   },
   "doctor": {

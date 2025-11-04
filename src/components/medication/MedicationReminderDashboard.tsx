@@ -25,8 +25,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useTranslation } from "react-i18next";
 
 export const MedicationReminderDashboard = () => {
+  const { t } = useTranslation("dashboard");
   const {
     todaysReminders,
     upcomingReminders,
@@ -42,7 +44,7 @@ export const MedicationReminderDashboard = () => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    if (isToday(date)) return "Today";
+    if (isToday(date)) return t("patient.medications.todaysReminders");
     if (isTomorrow(date)) return "Tomorrow";
     if (isYesterday(date)) return "Yesterday";
     return format(date, "MMM d");
@@ -138,7 +140,7 @@ export const MedicationReminderDashboard = () => {
                     </span>
                     {overdueStatus && reminder.status === 'pending' && (
                       <Badge variant="outline" className="text-red-600 border-red-200 text-xs">
-                        Overdue
+                        {t("patient.medications.overdue")}
                       </Badge>
                     )}
                   </div>
@@ -146,7 +148,7 @@ export const MedicationReminderDashboard = () => {
 
                 {reminder.medications?.instructions && isExpanded && (
                   <div className="mt-2 p-2 bg-muted rounded text-sm">
-                    <strong>Instructions:</strong> {reminder.medications.instructions}
+                    <strong>{t("patient.settings.instructions")}:</strong> {reminder.medications.instructions}
                   </div>
                 )}
               </div>
@@ -161,7 +163,7 @@ export const MedicationReminderDashboard = () => {
                     className="bg-green-600 hover:bg-green-700 text-white"
                   >
                     <CheckCircle className="w-3 h-3 mr-1" />
-                    Taken
+                    {t("patient.medications.taken")}
                   </Button>
 
                   <DropdownMenu>
@@ -173,19 +175,19 @@ export const MedicationReminderDashboard = () => {
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => snoozeReminder(reminder.id, 15)}>
                         <RotateCcw className="w-3 h-3 mr-2" />
-                        Snooze 15 min
+                        {t("patient.medications.snooze")} 15 min
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => snoozeReminder(reminder.id, 30)}>
                         <RotateCcw className="w-3 h-3 mr-2" />
-                        Snooze 30 min
+                        {t("patient.medications.snooze")} 30 min
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => snoozeReminder(reminder.id, 60)}>
                         <RotateCcw className="w-3 h-3 mr-2" />
-                        Snooze 1 hour
+                        {t("patient.medications.snooze")} 1 hour
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => markReminderAsSkipped(reminder.id)}>
                         <XCircle className="w-3 h-3 mr-2" />
-                        Skip dose
+                        {t("patient.medications.markSkipped")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -229,7 +231,7 @@ export const MedicationReminderDashboard = () => {
                 <Bell className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Pending Today</p>
+                <p className="text-sm text-muted-foreground">{t("patient.medications.pending")}</p>
                 <p className="text-2xl font-bold">{getPendingCount()}</p>
               </div>
             </div>
@@ -243,7 +245,7 @@ export const MedicationReminderDashboard = () => {
                 <CheckCircle className="w-5 h-5 text-green-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Completed Today</p>
+                <p className="text-sm text-muted-foreground">{t("patient.medications.taken")}</p>
                 <p className="text-2xl font-bold">{getCompletedCount()}</p>
               </div>
             </div>
@@ -257,7 +259,7 @@ export const MedicationReminderDashboard = () => {
                 <Calendar className="w-5 h-5 text-purple-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Completion Rate</p>
+                <p className="text-sm text-muted-foreground">{t("patient.medications.completionRate")}</p>
                 <p className="text-2xl font-bold">{getCompletionPercentage()}%</p>
               </div>
             </div>
@@ -295,10 +297,10 @@ export const MedicationReminderDashboard = () => {
       <Tabs defaultValue="today" className="space-y-4">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="today">
-            Today ({todaysReminders.length})
+            {t("patient.medications.todaysReminders")} ({todaysReminders.length})
           </TabsTrigger>
           <TabsTrigger value="upcoming">
-            Upcoming ({upcomingReminders.length})
+            {t("patient.medications.upcomingReminders")} ({upcomingReminders.length})
           </TabsTrigger>
         </TabsList>
 
@@ -307,8 +309,8 @@ export const MedicationReminderDashboard = () => {
             <Card className="border-dashed">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Pill className="w-12 h-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium text-muted-foreground mb-2">No medications scheduled for today</h3>
-                <p className="text-sm text-muted-foreground">Your medication reminders will appear here</p>
+                <h3 className="text-lg font-medium text-muted-foreground mb-2">{t("patient.medications.noReminders")}</h3>
+                <p className="text-sm text-muted-foreground">{t("patient.medications.addFirst")}</p>
               </CardContent>
             </Card>
           ) : (
@@ -325,8 +327,8 @@ export const MedicationReminderDashboard = () => {
             <Card className="border-dashed">
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Calendar className="w-12 h-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium text-muted-foreground mb-2">No upcoming medications</h3>
-                <p className="text-sm text-muted-foreground">Your future medication reminders will appear here</p>
+                <h3 className="text-lg font-medium text-muted-foreground mb-2">{t("patient.medications.noReminders")}</h3>
+                <p className="text-sm text-muted-foreground">{t("patient.medications.addFirst")}</p>
               </CardContent>
             </Card>
           ) : (

@@ -100,7 +100,8 @@
       "marketingEmails": "Marketing Emails",
       "profileVisibility": "Profile Visibility",
       "shareDataWithDoctors": "Share Data with Doctors",
-      "showActivityStatus": "Show Activity Status"
+      "showActivityStatus": "Show Activity Status",
+      "instructions": "Instructions"
     }
   },
   "doctor": {

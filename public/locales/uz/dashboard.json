@@ -100,7 +100,8 @@
       "marketingEmails": "Marketing xabarlari",
       "profileVisibility": "Profil ko'rinishi",
       "shareDataWithDoctors": "Shifokorlar bilan ma'lumot almashish",
-      "showActivityStatus": "Faoliyat holatini ko'rsatish"
+      "showActivityStatus": "Faoliyat holatini ko'rsatish",
+      "instructions": "Ko'rsatmalar"
     }
   },
   "doctor": {

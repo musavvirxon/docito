@@ -18,8 +18,10 @@ import { useNavigate } from "react-router-dom";
 import { useBookingAuth } from "@/hooks/useBookingAuth";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 const DoctorSearchSection = () => {
+  const { t } = useTranslation("dashboard");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState<string>("all");
   const [selectedCountry, setSelectedCountry] = useState<string>("all");
@@ -89,9 +91,9 @@ const DoctorSearchSection = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-blue-600 to-accent bg-clip-text text-transparent animate-gradient">
-            Find a Doctor
+            {t("patient.findDoctors.title")}
           </h1>
-          <p className="text-muted-foreground mt-1">Search and book appointments with qualified healthcare professionals</p>
+          <p className="text-muted-foreground mt-1">{t("patient.findDoctors.subtitle")}</p>
         </div>
         <Button
           variant="outline"
@@ -100,7 +102,7 @@ const DoctorSearchSection = () => {
           className="gap-2"
         >
           <X className="h-4 w-4" />
-          Reset Filters
+          {t("patient.findDoctors.resetFilters")}
         </Button>
       </div>
 
@@ -112,7 +114,7 @@ const DoctorSearchSection = () => {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
-                placeholder="Search by doctor name or specialty..."
+                placeholder={t("patient.findDoctors.searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 h-12 text-base border-2 focus:border-primary transition-all"
@@ -132,16 +134,16 @@ const DoctorSearchSection = () => {
               </Button>
               
               <div className="flex items-center gap-2">
-                <Label className="text-sm">Sort by:</Label>
+                <Label className="text-sm">{t("patient.findDoctors.sortBy")}:</Label>
                 <Select value={sortBy} onValueChange={setSortBy}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="relevance">Relevance</SelectItem>
-                    <SelectItem value="rating">Highest Rated</SelectItem>
-                    <SelectItem value="experience">Most Experienced</SelectItem>
-                    <SelectItem value="price">Price: Low to High</SelectItem>
+                    <SelectItem value="relevance">{t("patient.findDoctors.relevance")}</SelectItem>
+                    <SelectItem value="rating">{t("patient.findDoctors.rating")}</SelectItem>
+                    <SelectItem value="experience">{t("patient.findDoctors.experience")}</SelectItem>
+                    <SelectItem value="price">{t("patient.findDoctors.price")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

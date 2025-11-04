@@ -100,7 +100,8 @@
       "marketingEmails": "Маркетинговые письма",
       "profileVisibility": "Видимость профиля",
       "shareDataWithDoctors": "Делиться данными с врачами",
-      "showActivityStatus": "Показывать статус активности"
+      "showActivityStatus": "Показывать статус активности",
+      "instructions": "Инструкции"
     }
   },
   "doctor": {

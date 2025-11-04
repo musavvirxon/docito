@@ -9,8 +9,10 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePatientSettings } from '@/hooks/usePatientSettings';
 import { Bell, Shield, User, Lock, Save } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export const PatientSettingsPanel = () => {
+  const { t } = useTranslation("dashboard");
   const {
     notificationSettings,
     privacySettings,
@@ -85,27 +87,27 @@ export const PatientSettingsPanel = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold">Settings</h2>
-        <p className="text-muted-foreground mt-2">Manage your account preferences and settings</p>
+        <h2 className="text-3xl font-bold">{t("patient.settings.title")}</h2>
+        <p className="text-muted-foreground mt-2">{t("patient.settings.subtitle")}</p>
       </div>
 
       <Tabs defaultValue="account" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="account">
             <User className="w-4 h-4 mr-2" />
-            Account
+            {t("patient.settings.account")}
           </TabsTrigger>
           <TabsTrigger value="notifications">
             <Bell className="w-4 h-4 mr-2" />
-            Notifications
+            {t("patient.settings.notifications")}
           </TabsTrigger>
           <TabsTrigger value="privacy">
             <Shield className="w-4 h-4 mr-2" />
-            Privacy
+            {t("patient.settings.privacy")}
           </TabsTrigger>
           <TabsTrigger value="security">
             <Lock className="w-4 h-4 mr-2" />
-            Security
+            {t("patient.settings.security")}
           </TabsTrigger>
         </TabsList>
 
