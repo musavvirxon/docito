@@ -240,7 +240,7 @@ const DoctorDashboardContent = () => {
                           {doctorProfile?.practices?.name}
                           {doctorProfile?.practices?.verified && (
                             <Badge variant="secondary" className="bg-green-100 text-green-700">
-                              Verified
+                              {t("doctor.clinic.verified")}
                             </Badge>
                           )}
                         </CardTitle>
@@ -252,7 +252,7 @@ const DoctorDashboardContent = () => {
                     </div>
                     <div className="text-right">
                       <Button variant="outline" size="sm">
-                        Request to Leave
+                        {t("doctor.clinic.requestToLeave")}
                       </Button>
                     </div>
                   </div>
@@ -266,18 +266,18 @@ const DoctorDashboardContent = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-destructive">
                     <Badge variant="outline" className="bg-destructive/10 text-destructive">
-                      Verification Pending
+                      {t("doctor.verification.pending")}
                     </Badge>
                   </CardTitle>
                   <p className="text-destructive/80">
-                    To go public and appear in search results, your verification must be completed.
+                    {t("doctor.verification.message")}
                   </p>
                   <div className="flex gap-2 mt-4">
                     <Button size="sm" variant="destructive" onClick={() => navigate('/doctor-signup')}>
-                      Complete Profile
+                      {t("doctor.verification.completeProfile")}
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => setActiveSection("profile")}>
-                      View Profile
+                      {t("doctor.verification.viewProfile")}
                     </Button>
                   </div>
                 </CardHeader>
@@ -287,10 +287,10 @@ const DoctorDashboardContent = () => {
             {/* Profile Completion Progress */}
             <Card>
               <CardHeader>
-                <CardTitle>Profile Completion</CardTitle>
+                <CardTitle>{t("doctor.profileCompletion.title")}</CardTitle>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>Complete your profile to get more bookings</span>
+                    <span>{t("doctor.profileCompletion.message")}</span>
                     <span className="font-medium">{profileCompletion}%</span>
                   </div>
                   <Progress value={profileCompletion} className="h-2" />
@@ -302,45 +302,45 @@ const DoctorDashboardContent = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Appointments</CardTitle>
+                  <CardTitle className="text-sm font-medium">{t("doctor.stats.totalAppointments")}</CardTitle>
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{stats?.totalAppointments || 0}</div>
-                  <p className="text-xs text-muted-foreground">All time bookings</p>
+                  <p className="text-xs text-muted-foreground">{t("doctor.stats.allTimeBookings")}</p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Patients</CardTitle>
+                  <CardTitle className="text-sm font-medium">{t("doctor.stats.totalPatients")}</CardTitle>
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{stats?.totalPatients || 0}</div>
-                  <p className="text-xs text-muted-foreground">Unique patients served</p>
+                  <p className="text-xs text-muted-foreground">{t("doctor.stats.uniquePatients")}</p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Average Rating</CardTitle>
+                  <CardTitle className="text-sm font-medium">{t("doctor.stats.averageRating")}</CardTitle>
                   <BarChart3 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{(stats?.averageRating || 0).toFixed(1)}</div>
-                  <p className="text-xs text-muted-foreground">Based on {stats?.numReviews || 0} reviews</p>
+                  <p className="text-xs text-muted-foreground">{t("doctor.stats.basedOnReviews", { count: stats?.numReviews || 0 })}</p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Revenue</CardTitle>
+                  <CardTitle className="text-sm font-medium">{t("doctor.stats.revenue")}</CardTitle>
                   <BarChart3 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">${(stats?.totalRevenue || 0).toLocaleString()}</div>
-                  <p className="text-xs text-muted-foreground">Total earnings</p>
+                  <p className="text-xs text-muted-foreground">{t("doctor.stats.totalEarnings")}</p>
                 </CardContent>
               </Card>
             </div>
@@ -349,7 +349,7 @@ const DoctorDashboardContent = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Upcoming Appointments</CardTitle>
+                  <CardTitle>{t("doctor.upcomingAppointments.title")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {upcomingAppointments.length > 0 ? (
@@ -379,8 +379,8 @@ const DoctorDashboardContent = () => {
                   ) : (
                     <div className="text-center py-8">
                       <Calendar className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                      <p className="text-muted-foreground text-sm">No upcoming appointments</p>
-                      <p className="text-xs text-muted-foreground">Your schedule is clear</p>
+                      <p className="text-muted-foreground text-sm">{t("doctor.upcomingAppointments.noAppointments")}</p>
+                      <p className="text-xs text-muted-foreground">{t("doctor.upcomingAppointments.scheduleIsClear")}</p>
                     </div>
                   )}
                 </CardContent>
@@ -388,7 +388,7 @@ const DoctorDashboardContent = () => {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Quick Actions</CardTitle>
+                  <CardTitle>{t("doctor.quickActions.title")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <Button 
@@ -397,7 +397,7 @@ const DoctorDashboardContent = () => {
                     onClick={() => setQuickActionModal({ isOpen: true, action: 'schedule' })}
                   >
                     <Calendar className="w-4 h-4 mr-2" />
-                    View Today's Schedule ({todaysAppointments.length})
+                    {t("doctor.todaysSchedule.viewFull")} ({todaysAppointments.length})
                   </Button>
                   <Button 
                     className="w-full justify-start" 
@@ -405,7 +405,7 @@ const DoctorDashboardContent = () => {
                     onClick={() => setActiveSection("calendar")}
                   >
                     <Clock className="w-4 h-4 mr-2" />
-                    Manage Schedule
+                    {t("doctor.quickActions.updateSettings")}
                   </Button>
                   <Button 
                     className="w-full justify-start" 
@@ -413,7 +413,7 @@ const DoctorDashboardContent = () => {
                     onClick={() => setQuickActionModal({ isOpen: true, action: 'procedures' })}
                   >
                     <Briefcase className="w-4 h-4 mr-2" />
-                    Quick Add Service
+                    {t("doctor.quickActions.addService")}
                   </Button>
                   {!doctorProfile?.practice_id && doctorStatus === "independent" ? (
                     <Button 
@@ -422,7 +422,7 @@ const DoctorDashboardContent = () => {
                       onClick={() => setActiveSection("clinic-finder")}
                     >
                       <Search className="w-4 h-4 mr-2" />
-                      Find Clinics
+                      {t("doctor.navigation.clinicFinder")}
                     </Button>
                   ) : (
                     <Button 
@@ -431,7 +431,7 @@ const DoctorDashboardContent = () => {
                       onClick={() => setQuickActionModal({ isOpen: true, action: 'block-time' })}
                     >
                       <Clock className="w-4 h-4 mr-2" />
-                      Block Time
+                      {t("doctor.quickActions.blockTime")}
                     </Button>
                   )}
                 </CardContent>
@@ -448,7 +448,7 @@ const DoctorDashboardContent = () => {
         <Sidebar className="border-r">
           <SidebarContent>
             <SidebarGroup>
-              <SidebarGroupLabel>Doctor Dashboard</SidebarGroupLabel>
+              <SidebarGroupLabel>{t("doctor.title")}</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {sidebarItems.map((item) => (
@@ -475,11 +475,11 @@ const DoctorDashboardContent = () => {
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <div>
-                  <h1 className="text-lg font-semibold">Welcome back, {doctorProfile?.profiles?.full_name || 'Doctor'}</h1>
+                  <h1 className="text-lg font-semibold">{t("doctor.dashboardContent.welcomeBack")}, {doctorProfile?.profiles?.full_name || 'Doctor'}</h1>
                   <p className="text-sm text-muted-foreground">
                     {doctorProfile?.specialty && doctorProfile.specialty !== 'General Practice' 
                       ? doctorProfile.specialty 
-                      : 'Specialty - Not Provided'
+                      : t("doctor.dashboardContent.specialtyNotProvided")
                     }
                   </p>
                 </div>
@@ -506,10 +506,10 @@ const DoctorDashboardContent = () => {
                     <AlertCircle className="h-5 w-5 text-primary" />
                     <div>
                       <h3 className="font-medium text-foreground">
-                        Complete Your Profile ({profileCompletion}%)
+                        {t("doctor.dashboardContent.completeProfileBanner", { completion: profileCompletion })}
                       </h3>
                       <p className="text-sm text-muted-foreground">
-                        Complete your profile to verify your account and start accepting patients.
+                        {t("doctor.dashboardContent.completeProfileMessage")}
                       </p>
                     </div>
                   </div>
@@ -518,7 +518,7 @@ const DoctorDashboardContent = () => {
                     variant="outline"
                     size="sm"
                   >
-                    Complete Profile
+                    {t("doctor.verification.completeProfile")}
                   </Button>
                 </div>
               </div>
