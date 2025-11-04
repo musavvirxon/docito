@@ -28,6 +28,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import ThemeToggle from '@/components/home/ThemeToggle';
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -195,6 +197,8 @@ const AdminDashboard = () => {
               </p>
             </div>
             <div className="flex items-center gap-4">
+              <ThemeToggle />
+              <LanguageSwitcher />
               {verificationStatus === "verified" && (
                 <Button variant="outline" size="sm">
                   <Eye className="h-4 w-4 mr-2" />

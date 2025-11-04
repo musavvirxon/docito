@@ -3,6 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import ThemeToggle from '@/components/home/ThemeToggle';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,6 +39,9 @@ const SuperAdminTopBar = () => {
 
         {/* Right Section */}
         <div className="flex items-center gap-4">
+          <ThemeToggle />
+          <LanguageSwitcher />
+          
           {/* Notifications */}
           <Button
             variant="ghost"

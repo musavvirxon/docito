@@ -12,6 +12,8 @@ import { useInactivityTimer } from "@/hooks/useInactivityTimer";
 import { InactivityWarningModal } from "@/components/InactivityWarningModal";
 import SuperAdminSidebar from "@/components/super-admin/SuperAdminSidebar";
 import SuperAdminTopBar from "@/components/super-admin/SuperAdminTopBar";
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import ThemeToggle from '@/components/home/ThemeToggle';
 import KPICards from "@/components/super-admin/KPICards";
 import AnalyticsCharts from "@/components/super-admin/AnalyticsCharts";
 import ManagementTable from "@/components/super-admin/ManagementTable";

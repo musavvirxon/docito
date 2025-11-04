@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Bell, Settings, User, Calendar, BarChart3, Search, Briefcase, MapPin, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2 } from "lucide-react";
 import { DoctorDataProvider, useDoctorData } from "@/contexts/DoctorDataContext";
 import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -486,6 +487,8 @@ const DoctorDashboardContent = () => {
               </div>
               
               <div className="flex items-center gap-4">
+                <ThemeToggle />
+                <LanguageSwitcher />
                 <Button variant="ghost" size="sm">
                   <Bell className="w-4 h-4" />
                 </Button>

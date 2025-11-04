@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAppointments } from "@/hooks/useAppointments";
 import { usePatientDashboard } from "@/hooks/usePatientDashboard";
 import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import {
   Calendar,
   Settings,
@@ -172,6 +173,7 @@ const PatientDashboard = () => {
 
             <div className="flex items-center gap-2">
               <ThemeToggle />
+              <LanguageSwitcher />
               <NotificationDropdown />
             </div>
           </div>
