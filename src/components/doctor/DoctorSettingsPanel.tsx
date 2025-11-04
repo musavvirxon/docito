@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { User, Bell, Calendar, Shield, Building } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,7 +14,8 @@ import { toast } from 'sonner';
 
 export function DoctorSettingsPanel() {
   const [activeTab, setActiveTab] = useState('account');
-  const { 
+  const { t } = useTranslation("dashboard");
+  const {
     accountSettings, 
     notifications, 
     calendarSync, 
