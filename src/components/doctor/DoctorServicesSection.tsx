@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Edit, Trash2, DollarSign, Clock } from "lucide-react";
 import { useDoctorData } from "@/contexts/DoctorDataContext";
+import { useTranslation } from "react-i18next";
 
 interface DoctorServicesSectionProps {
   readOnly?: boolean;
@@ -26,6 +27,7 @@ interface ServiceFormData {
 }
 
 const DoctorServicesSection = ({ readOnly = false, assignedServices }: DoctorServicesSectionProps) => {
+  const { t } = useTranslation("dashboard");
   const { services, loading, addService, updateService, deleteService } = useDoctorData();
   const [isAddingService, setIsAddingService] = useState(false);
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
@@ -39,7 +41,7 @@ const DoctorServicesSection = ({ readOnly = false, assignedServices }: DoctorSer
 
   const handleDeleteService = async (serviceId: string) => {
     if (readOnly) return;
-    if (confirm('Are you sure you want to delete this service?')) {
+    if (confirm(t("doctor.services.confirmDelete") || 'Are you sure you want to delete this service?')) {
       await deleteService(serviceId);
     }
   };
@@ -68,20 +70,20 @@ const DoctorServicesSection = ({ readOnly = false, assignedServices }: DoctorSer
     return (
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <Label htmlFor="serviceName">Service Name</Label>
+          <Label htmlFor="serviceName">{t("doctor.services.serviceName")}</Label>
           <Input
             id="serviceName"
             value={formData.name}
             onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-            placeholder="e.g., General Consultation"
+            placeholder={t("doctor.services.serviceNamePlaceholder")}
           />
         </div>
 
         <div>
-          <Label htmlFor="category">Category</Label>
+          <Label htmlFor="category">{t("doctor.services.category")}</Label>
           <Select value={formData.category} onValueChange={(value: any) => setFormData(prev => ({ ...prev, category: value }))}>
             <SelectTrigger>
-              <SelectValue placeholder="Select category" />
+              <SelectValue placeholder={t("doctor.services.selectCategory")} />
             </SelectTrigger>
             <SelectContent>
               {categories.map(category => (
@@ -94,19 +96,19 @@ const DoctorServicesSection = ({ readOnly = false, assignedServices }: DoctorSer
         </div>
 
         <div>
-          <Label htmlFor="description">Description</Label>
+          <Label htmlFor="description">{t("doctor.services.description")}</Label>
           <Textarea 
             id="description"
             value={formData.description}
             onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-            placeholder="Describe the service..."
+            placeholder={t("doctor.services.descriptionPlaceholder")}
             className="min-h-[80px]"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="price">Price ($)</Label>
+            <Label htmlFor="price">{t("doctor.services.price")}</Label>
             <Input 
               id="price"
               type="number"
@@ -116,7 +118,7 @@ const DoctorServicesSection = ({ readOnly = false, assignedServices }: DoctorSer
             />
           </div>
           <div>
-            <Label htmlFor="duration">Duration (minutes)</Label>
+            <Label htmlFor="duration">{t("doctor.services.duration")}</Label>
             <Select value={formData.duration_minutes.toString()} onValueChange={(value) => setFormData(prev => ({ ...prev, duration_minutes: Number(value) }))}>
               <SelectTrigger>
                 <SelectValue />
@@ -135,10 +137,10 @@ const DoctorServicesSection = ({ readOnly = false, assignedServices }: DoctorSer
 
         <div className="flex justify-between pt-4">
           <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
+            {t("doctor.services.cancel")}
           </Button>
           <Button type="submit">
-            {serviceId ? 'Update Service' : 'Add Service'}
+            {serviceId ? t("doctor.services.updateService") : t("doctor.services.addService")}
           </Button>
         </div>
       </form>
@@ -173,8 +175,8 @@ const DoctorServicesSection = ({ readOnly = false, assignedServices }: DoctorSer
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Assigned Services</CardTitle>
-            <p className="text-muted-foreground">Services assigned to you by the clinic</p>
+            <CardTitle>{t("doctor.services.assignedServices")}</CardTitle>
+            <p className="text-muted-foreground">{t("doctor.services.assignedServicesDesc")}</p>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -183,13 +185,13 @@ const DoctorServicesSection = ({ readOnly = false, assignedServices }: DoctorSer
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-medium">{serviceName}</h3>
-                      <p className="text-sm text-muted-foreground">Assigned by clinic administration</p>
+                      <p className="text-sm text-muted-foreground">{t("doctor.services.assignedByClinic")}</p>
                     </div>
-                    <Badge variant="secondary">Assigned</Badge>
+                    <Badge variant="secondary">{t("doctor.services.assigned")}</Badge>
                   </div>
                 </div>
               )) || (
-                <p className="text-muted-foreground">No services assigned yet.</p>
+                <p className="text-muted-foreground">{t("doctor.services.noServicesAssigned")}</p>
               )}
             </div>
           </CardContent>
@@ -204,19 +206,19 @@ const DoctorServicesSection = ({ readOnly = false, assignedServices }: DoctorSer
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>
-              <CardTitle>My Services</CardTitle>
-              <p className="text-muted-foreground">Manage the services you offer to patients</p>
+              <CardTitle>{t("doctor.services.title")}</CardTitle>
+              <p className="text-muted-foreground">{t("doctor.services.description")}</p>
             </div>
             <Dialog open={isAddingService} onOpenChange={setIsAddingService}>
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="w-4 h-4 mr-2" />
-                  Add Service
+                  {t("doctor.services.addService")}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-2xl">
                 <DialogHeader>
-                  <DialogTitle>Add New Service</DialogTitle>
+                  <DialogTitle>{t("doctor.services.addNewService")}</DialogTitle>
                 </DialogHeader>
                 <ServiceForm 
                   onSave={handleAddService}
@@ -230,7 +232,7 @@ const DoctorServicesSection = ({ readOnly = false, assignedServices }: DoctorSer
           <div className="space-y-4">
             {services.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                <p>No services found. Add your first service to get started.</p>
+                <p>{t("doctor.services.noServices")}</p>
               </div>
             ) : (
               services.map((service) => (
@@ -243,9 +245,9 @@ const DoctorServicesSection = ({ readOnly = false, assignedServices }: DoctorSer
                           {service.category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                         </Badge>
                         {service.is_active ? (
-                          <Badge className="bg-green-100 text-green-700">Active</Badge>
+                          <Badge className="bg-green-100 text-green-700">{t("doctor.services.active")}</Badge>
                         ) : (
-                          <Badge variant="secondary">Inactive</Badge>
+                          <Badge variant="secondary">{t("doctor.services.inactive")}</Badge>
                         )}
                       </div>
                       

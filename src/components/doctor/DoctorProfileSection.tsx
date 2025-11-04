@@ -15,6 +15,7 @@ import { useFileUpload } from "@/hooks/useFileUpload";
 import { useDoctorVerification } from "@/hooks/useDoctorVerification";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface DoctorProfileSectionProps {
   doctorProfile?: {
@@ -43,6 +44,7 @@ interface DoctorProfileSectionProps {
 }
 
 const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSectionProps) => {
+  const { t } = useTranslation("dashboard");
   const { doctorProfile: profile, loading, updateProfile, stats } = useDoctorData();
   const doctorProfile = propProfile || profile;
   const profileCompletion = stats.profileCompletion;
@@ -202,7 +204,7 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
   if (!doctorProfile) {
     return (
       <div className="text-center p-8">
-        <p className="text-muted-foreground">Doctor profile not found</p>
+        <p className="text-muted-foreground">{t("doctor.profile.description")}</p>
       </div>
     );
   }
@@ -219,9 +221,9 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
   const getVerificationBadge = () => {
     switch (verificationStatus) {
       case "verified":
-        return <Badge className="bg-green-100 text-green-700">Verified</Badge>;
+        return <Badge className="bg-green-100 text-green-700">{t("doctor.profile.verified")}</Badge>;
       default:
-        return <Badge className="bg-amber-100 text-amber-700">Pending Verification</Badge>;
+        return <Badge className="bg-amber-100 text-amber-700">{t("doctor.profile.pendingVerification")}</Badge>;
     }
   };
 
@@ -233,16 +235,16 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                Profile Completion
+                {t("doctor.profile.title")}
                 {getVerificationIcon()}
               </CardTitle>
-              <p className="text-muted-foreground">Complete your profile to get more visibility</p>
+              <p className="text-muted-foreground">{t("doctor.profile.description")}</p>
             </div>
             {getVerificationBadge()}
           </div>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Progress</span>
+                <span>{t("doctor.profile.progress")}</span>
                 <span className="font-medium">{profileCompletion}%</span>
               </div>
               <Progress value={profileCompletion} className="h-2" />
@@ -253,7 +255,7 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
       {/* Basic Information */}
       <Card>
         <CardHeader>
-          <CardTitle>Basic Information</CardTitle>
+          <CardTitle>{t("doctor.profile.basicInformation")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center space-x-6">
@@ -277,19 +279,19 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
                 input.click();
               }}>
                 <Upload className="w-4 h-4 mr-2" />
-                {uploading ? 'Uploading...' : 'Upload Photo'}
+                {uploading ? t("doctor.profile.uploading") : t("doctor.profile.uploadPhoto")}
               </Button>
-              <p className="text-sm text-muted-foreground">Professional headshot recommended</p>
+              <p className="text-sm text-muted-foreground">{t("doctor.profile.professionalHeadshot")}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <Label htmlFor="fullName">Full Name</Label>
+              <Label htmlFor="fullName">{t("doctor.profile.fullName")}</Label>
               <Input id="fullName" value={doctorProfile.profiles?.full_name || ''} readOnly className="bg-muted" />
             </div>
             <div>
-              <Label htmlFor="degree">Years of Experience</Label>
+              <Label htmlFor="degree">{t("doctor.profile.yearsExperience")}</Label>
               <Select value={formData.years_experience} onValueChange={(value) => setFormData(prev => ({ ...prev, years_experience: value }))}>
                 <SelectTrigger>
                   <SelectValue />
@@ -308,7 +310,7 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <Label htmlFor="specialty">Specialty *</Label>
+              <Label htmlFor="specialty">{t("doctor.profile.specialty")} *</Label>
               <Select value={formData.specialty.toLowerCase()} onValueChange={(value) => setFormData(prev => ({ ...prev, specialty: value }))}>
                 <SelectTrigger>
                   <SelectValue />
@@ -323,16 +325,16 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
               </Select>
             </div>
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("doctor.profile.email")}</Label>
               <Input id="email" value={doctorProfile.profiles?.email || ''} readOnly className="bg-muted" />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="bio">About Me / Bio</Label>
+            <Label htmlFor="bio">{t("doctor.profile.aboutMe")}</Label>
             <Textarea 
               id="bio" 
-              placeholder="Tell patients about your experience, approach to care, and what makes you unique..."
+              placeholder={t("doctor.profile.bioPlaceholder")}
               className="min-h-[100px]"
               value={formData.bio}
               onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
@@ -340,8 +342,8 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
           </div>
 
           <div>
-            <Label>Languages Spoken</Label>
-            <p className="text-sm text-muted-foreground mb-3">Select all languages you speak fluently</p>
+            <Label>{t("doctor.profile.languagesSpoken")}</Label>
+            <p className="text-sm text-muted-foreground mb-3">{t("doctor.profile.languagesDescription")}</p>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
               {languages.map((language) => (
                 <div key={language} className="flex items-center space-x-2">
@@ -361,24 +363,24 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
       {/* Professional Details */}
       <Card>
         <CardHeader>
-          <CardTitle>Professional Details</CardTitle>
+          <CardTitle>{t("doctor.profile.professionalDetails")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <Label htmlFor="license">Medical License Number</Label>
+              <Label htmlFor="license">{t("doctor.profile.medicalLicense")}</Label>
               <Input 
                 id="license" 
-                placeholder="License number" 
+                placeholder={t("doctor.profile.licenseNumber")}
                 value={formData.license_number}
                 onChange={(e) => setFormData(prev => ({ ...prev, license_number: e.target.value }))}
               />
             </div>
             <div>
-              <Label htmlFor="phone">Phone Number</Label>
+              <Label htmlFor="phone">{t("doctor.profile.phoneNumber")}</Label>
               <Input 
                 id="phone" 
-                placeholder="Phone number" 
+                placeholder={t("doctor.profile.phoneNumber")}
                 value={formData.phone || doctorProfile.profiles?.phone || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
               />
@@ -386,7 +388,7 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
           </div>
 
           <div>
-            <Label>Consultation Types Offered</Label>
+            <Label>{t("doctor.profile.consultationTypes")}</Label>
             <div className="flex space-x-4 mt-2">
               {consultationTypes.map((type) => (
                 <div key={type} className="flex items-center space-x-2">
@@ -403,7 +405,7 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <Label htmlFor="defaultPrice">Default Consultation Price</Label>
+              <Label htmlFor="defaultPrice">{t("doctor.profile.defaultPrice")}</Label>
               <Input 
                 id="defaultPrice" 
                 placeholder="150" 
@@ -413,7 +415,7 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
               />
             </div>
             <div>
-              <Label htmlFor="location">Primary Location</Label>
+              <Label htmlFor="location">{t("doctor.profile.primaryLocation")}</Label>
               <Input id="location" placeholder="City, State" 
                 defaultValue={doctorProfile.practices ? `${doctorProfile.practices.city}, ${doctorProfile.practices.country}` : ''} />
             </div>
@@ -424,7 +426,7 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
       {/* Verification Documents */}
       <Card>
         <CardHeader>
-          <CardTitle>Verification Documents</CardTitle>
+          <CardTitle>{t("doctor.profile.verificationDocuments")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -436,9 +438,9 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
               ) : (
                 <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
               )}
-              <p className="text-sm font-medium mb-1">Medical License</p>
+              <p className="text-sm font-medium mb-1">{t("doctor.profile.medicalLicenseDoc")}</p>
               <p className="text-xs text-muted-foreground mb-2">
-                {documents.medical_license ? documents.medical_license.name : 'Upload license document (PDF, JPG, PNG)'}
+                {documents.medical_license ? documents.medical_license.name : t("doctor.profile.uploadLicenseDoc")}
               </p>
               <Button variant="outline" size="sm" disabled={uploading} onClick={() => {
                 const input = document.createElement('input');
@@ -450,7 +452,7 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
                 };
                 input.click();
               }}>
-                {documents.medical_license ? 'Change File' : 'Choose File'}
+                {documents.medical_license ? t("doctor.profile.changeFile") : t("doctor.profile.chooseFile")}
               </Button>
             </div>
             <div className={`border-2 border-dashed rounded-lg p-6 text-center ${
