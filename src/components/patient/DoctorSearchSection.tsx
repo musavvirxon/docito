@@ -129,7 +129,7 @@ const DoctorSearchSection = () => {
                 className="gap-2"
               >
                 <Filter className="h-4 w-4" />
-                {showFilters ? "Hide Filters" : "Show Filters"}
+                {showFilters ? t("patient.findDoctors.hideFilters") : t("patient.findDoctors.showFilters")}
                 <ChevronDown className={cn("h-4 w-4 transition-transform", showFilters && "rotate-180")} />
               </Button>
               
@@ -161,13 +161,13 @@ const DoctorSearchSection = () => {
                 >
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t">
                     <div className="space-y-2">
-                      <Label>Specialty</Label>
+                      <Label>{t("patient.findDoctors.specialty")}</Label>
                       <Select value={selectedSpecialty} onValueChange={setSelectedSpecialty}>
                         <SelectTrigger>
-                          <SelectValue placeholder="All Specialties" />
+                          <SelectValue placeholder={t("patient.findDoctors.allSpecialties")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All Specialties</SelectItem>
+                          <SelectItem value="all">{t("patient.findDoctors.allSpecialties")}</SelectItem>
                           {specialties.map(spec => (
                             <SelectItem key={spec} value={spec}>{spec}</SelectItem>
                           ))}
@@ -176,13 +176,13 @@ const DoctorSearchSection = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Country</Label>
+                      <Label>{t("patient.findDoctors.country")}</Label>
                       <Select value={selectedCountry} onValueChange={setSelectedCountry}>
                         <SelectTrigger>
-                          <SelectValue placeholder="All Countries" />
+                          <SelectValue placeholder={t("patient.findDoctors.allCountries")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All Countries</SelectItem>
+                          <SelectItem value="all">{t("patient.findDoctors.allCountries")}</SelectItem>
                           {countries.map(country => (
                             <SelectItem key={country} value={country}>{country}</SelectItem>
                           ))}
@@ -191,13 +191,13 @@ const DoctorSearchSection = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Region/City</Label>
+                      <Label>{t("patient.findDoctors.regionCity")}</Label>
                       <Select value={selectedRegion} onValueChange={setSelectedRegion}>
                         <SelectTrigger>
-                          <SelectValue placeholder="All Regions" />
+                          <SelectValue placeholder={t("patient.findDoctors.allRegions")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All Regions</SelectItem>
+                          <SelectItem value="all">{t("patient.findDoctors.allRegions")}</SelectItem>
                           {regions.map(region => (
                             <SelectItem key={region} value={region}>{region}</SelectItem>
                           ))}
@@ -206,7 +206,7 @@ const DoctorSearchSection = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Minimum Rating: {minRating[0]}+ Stars</Label>
+                      <Label>{t("patient.findDoctors.minimumRating")}: {minRating[0]}+ {t("patient.findDoctors.stars")}</Label>
                       <Slider
                         value={minRating}
                         onValueChange={setMinRating}
@@ -229,11 +229,11 @@ const DoctorSearchSection = () => {
           {loading ? (
             <span className="flex items-center gap-2">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
-              Loading doctors...
+              {t("patient.findDoctors.loadingDoctors")}
             </span>
           ) : (
             <span className="font-medium">
-              {sortedDoctors.length} doctor{sortedDoctors.length !== 1 && 's'} found
+              {sortedDoctors.length} {sortedDoctors.length === 1 ? t("patient.findDoctors.doctorsFound") : t("patient.findDoctors.doctorsFoundPlural")} {t("patient.findDoctors.found")}
             </span>
           )}
         </p>
@@ -258,10 +258,10 @@ const DoctorSearchSection = () => {
         <Card>
           <CardContent className="p-12 text-center">
             <Stethoscope className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
-            <h3 className="text-xl font-semibold mb-2">No doctors found</h3>
-            <p className="text-muted-foreground mb-4">Try adjusting your filters or search criteria</p>
+            <h3 className="text-xl font-semibold mb-2">{t("patient.findDoctors.noDoctorsFound")}</h3>
+            <p className="text-muted-foreground mb-4">{t("patient.findDoctors.tryAdjustingFilters")}</p>
             <Button variant="outline" onClick={resetFilters}>
-              Reset All Filters
+              {t("patient.findDoctors.resetAllFilters")}
             </Button>
           </CardContent>
         </Card>
@@ -294,7 +294,7 @@ const DoctorSearchSection = () => {
                       <div className="flex items-center gap-1 mt-2">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                         <span className="text-sm font-semibold">{doctor.average_rating?.toFixed(1) || 'N/A'}</span>
-                        <span className="text-xs text-muted-foreground">({doctor.num_reviews || 0})</span>
+                        <span className="text-xs text-muted-foreground">({doctor.num_reviews || 0} {t("patient.findDoctors.reviews")})</span>
                       </div>
                     </div>
                   </div>
@@ -321,7 +321,7 @@ const DoctorSearchSection = () => {
                       <div className="flex items-center gap-2 text-sm">
                         <DollarSign className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                         <span className="font-medium text-primary">${doctor.consultation_fee}</span>
-                        <span className="text-muted-foreground">per visit</span>
+                        <span className="text-muted-foreground">{t("patient.findDoctors.perVisit")}</span>
                       </div>
                     )}
 
@@ -339,14 +339,14 @@ const DoctorSearchSection = () => {
                       onClick={() => handleBookingClick(doctor.id, doctor.profiles?.full_name)}
                     >
                       <Calendar className="w-4 h-4 mr-2" />
-                      Book Now
+                      {t("patient.findDoctors.bookNow")}
                     </Button>
                     <Button 
                       variant="outline"
                       onClick={() => handleViewProfile(doctor)}
                       className="group-hover:border-primary/50"
                     >
-                      View Profile
+                      {t("patient.findDoctors.viewProfile")}
                     </Button>
                   </div>
                 </CardContent>
@@ -360,7 +360,7 @@ const DoctorSearchSection = () => {
       <Dialog open={showProfileModal} onOpenChange={setShowProfileModal}>
         <DialogContent className="max-w-3xl max-h-[90vh]">
           <DialogHeader>
-            <DialogTitle>Doctor Profile</DialogTitle>
+            <DialogTitle>{t("patient.findDoctors.doctorProfile")}</DialogTitle>
           </DialogHeader>
           {selectedDoctor && (
             <ScrollArea className="max-h-[70vh] pr-4">
@@ -379,7 +379,7 @@ const DoctorSearchSection = () => {
                     <div className="flex items-center gap-1 mt-2">
                       <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                       <span className="text-lg font-semibold">{selectedDoctor.average_rating?.toFixed(1) || 'N/A'}</span>
-                      <span className="text-sm text-muted-foreground">({selectedDoctor.num_reviews || 0} reviews)</span>
+                      <span className="text-sm text-muted-foreground">({selectedDoctor.num_reviews || 0} {t("patient.findDoctors.reviews")})</span>
                     </div>
                   </div>
                 </div>
@@ -389,7 +389,7 @@ const DoctorSearchSection = () => {
                 {/* Practice Info */}
                 {selectedDoctor.practices && (
                   <div className="space-y-3">
-                    <h3 className="font-semibold text-lg">Practice Information</h3>
+                    <h3 className="font-semibold text-lg">{t("patient.findDoctors.practiceInformation")}</h3>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-muted-foreground" />
@@ -407,22 +407,22 @@ const DoctorSearchSection = () => {
                 {/* Bio */}
                 {selectedDoctor.bio && (
                   <div className="space-y-2">
-                    <h3 className="font-semibold text-lg">About</h3>
+                    <h3 className="font-semibold text-lg">{t("patient.findDoctors.about")}</h3>
                     <p className="text-muted-foreground">{selectedDoctor.bio}</p>
                   </div>
                 )}
 
                 {/* Experience */}
                 <div className="space-y-2">
-                  <h3 className="font-semibold text-lg">Experience</h3>
+                  <h3 className="font-semibold text-lg">{t("patient.findDoctors.experience")}</h3>
                   <div className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-green-600" />
-                    <span className="text-sm">{selectedDoctor.appointment_count || 0} appointments completed</span>
+                    <span className="text-sm">{selectedDoctor.appointment_count || 0} {t("patient.findDoctors.appointmentsCompleted")}</span>
                   </div>
                   {selectedDoctor.verified && (
                     <div className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-green-600" />
-                      <span className="text-sm">Verified Healthcare Professional</span>
+                      <span className="text-sm">{t("patient.findDoctors.verifiedHealthcareProfessional")}</span>
                     </div>
                   )}
                 </div>
@@ -430,7 +430,7 @@ const DoctorSearchSection = () => {
                 {/* Consultation Fee */}
                 {selectedDoctor.consultation_fee && (
                   <div className="space-y-2">
-                    <h3 className="font-semibold text-lg">Consultation Fee</h3>
+                    <h3 className="font-semibold text-lg">{t("patient.findDoctors.consultationFee")}</h3>
                     <p className="text-2xl font-bold text-primary">${selectedDoctor.consultation_fee}</p>
                   </div>
                 )}
@@ -445,7 +445,7 @@ const DoctorSearchSection = () => {
                   }}
                 >
                   <Calendar className="w-4 h-4 mr-2" />
-                  Book Appointment with Dr. {selectedDoctor.profiles?.full_name?.split(' ').pop()}
+                  {t("patient.findDoctors.bookAppointmentWith")} {selectedDoctor.profiles?.full_name?.split(' ').pop()}
                 </Button>
               </div>
             </ScrollArea>
