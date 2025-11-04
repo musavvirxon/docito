@@ -1,1 +1,123 @@
-{}
+{
+  "patient": {
+    "title": "Панель пациента",
+    "loading": "Загрузка панели...",
+    "navigation": {
+      "dashboard": "Панель",
+      "myAppointments": "Мои приемы",
+      "medications": "Лекарства",
+      "medicalRecords": "Медицинские записи",
+      "findDoctors": "Найти врачей",
+      "settings": "Настройки",
+      "logout": "Выйти"
+    },
+    "stats": {
+      "upcomingAppointments": "Предстоящие приемы",
+      "medicalRecords": "Медицинские записи",
+      "pendingReminders": "Ожидающие напоминания",
+      "nextAppointment": "Следующий прием",
+      "none": "Нет"
+    },
+    "quickActions": {
+      "title": "Быстрые действия",
+      "findDoctors": "Найти врачей",
+      "bookAppointment": "Записаться на прием",
+      "viewAppointments": "Просмотр приемов"
+    },
+    "nextAppointment": {
+      "title": "Следующий прием",
+      "location": "Детали местоположения"
+    },
+    "appointments": {
+      "title": "Мои приемы",
+      "noAppointments": "Нет запланированных приемов",
+      "bookFirst": "Запишитесь на первый прием",
+      "doctor": "Врач"
+    },
+    "records": {
+      "title": "Медицинские записи",
+      "noRecords": "Пока нет медицинских записей"
+    }
+  },
+  "doctor": {
+    "title": "Панель врача",
+    "loading": "Загрузка панели...",
+    "settingUp": "Настройка вашего профиля врача...",
+    "navigation": {
+      "dashboard": "Панель",
+      "myProfile": "Мой профиль",
+      "myServices": "Мои услуги",
+      "assignedServices": "Назначенные услуги",
+      "scheduleSettings": "Настройки расписания",
+      "procedureLibrary": "Библиотека процедур",
+      "treatmentPlanning": "Планирование лечения",
+      "myPatients": "Мои пациенты",
+      "calendar": "Календарь",
+      "messages": "Сообщения",
+      "performance": "Производительность",
+      "financialStats": "Финансовая статистика",
+      "clinicFinder": "Поиск клиник",
+      "settings": "Настройки",
+      "logout": "Выйти"
+    },
+    "clinic": {
+      "verified": "Проверено",
+      "requestToLeave": "Запрос на выход"
+    },
+    "verification": {
+      "pending": "Ожидание проверки",
+      "message": "Чтобы стать публичным и появиться в результатах поиска, ваша проверка должна быть завершена.",
+      "completeProfile": "Завершить профиль",
+      "viewProfile": "Просмотр профиля"
+    },
+    "profileCompletion": {
+      "title": "Заполнение профиля",
+      "message": "Заполните свой профиль, чтобы получить больше записей"
+    },
+    "stats": {
+      "totalAppointments": "Всего приемов",
+      "allTimeBookings": "Все записи за всё время",
+      "totalPatients": "Всего пациентов",
+      "uniquePatients": "Уникальных пациентов обслужено",
+      "averageRating": "Средний рейтинг",
+      "basedOnReviews": "На основе {{count}} отзывов",
+      "revenue": "Доход",
+      "totalEarnings": "Общий доход"
+    },
+    "upcomingAppointments": {
+      "title": "Предстоящие приемы",
+      "noAppointments": "Нет предстоящих приемов",
+      "scheduleIsClear": "Ваше расписание свободно"
+    },
+    "recentActivity": {
+      "title": "Недавняя активность",
+      "noActivity": "Нет недавней активности",
+      "startBuildingHistory": "Начните создавать историю активности"
+    },
+    "quickActions": {
+      "title": "Быстрые действия",
+      "setAvailability": "Установить доступность",
+      "manageProcedures": "Управление процедурами",
+      "addService": "Добавить услугу",
+      "blockTime": "Заблокировать время",
+      "updateSettings": "Обновить настройки"
+    },
+    "todaysSchedule": {
+      "title": "Расписание на сегодня",
+      "patients": "пациентов",
+      "viewFull": "Просмотр полного расписания",
+      "noAppointments": "Нет приемов сегодня",
+      "freeDay": "У вас свободный день!"
+    },
+    "profileSetup": {
+      "required": "Требуется настройка профиля",
+      "message": "Необходимо настроить профиль врача. Давайте завершим ваш профиль.",
+      "tryAgain": "Попробовать снова",
+      "completeSetup": "Завершить настройку профиля",
+      "goHome": "На главную",
+      "retryLoading": "Повторить загрузку",
+      "settingUp": "Настройка профиля",
+      "unableToLoad": "Не удается загрузить профиль врача. Давайте настроим вашу учетную запись."
+    }
+  }
+}

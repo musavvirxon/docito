@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAppointments } from "@/hooks/useAppointments";
 import { usePatientDashboard } from "@/hooks/usePatientDashboard";
+import { useTranslation } from "react-i18next";
 import {
   Calendar,
   Settings,
@@ -38,6 +39,7 @@ const PatientDashboard = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
+  const { t } = useTranslation("dashboard");
 
   // Redirect if not authenticated or not a patient
   if (!authLoading && (!user || profile?.role !== 'patient')) {
@@ -49,19 +51,19 @@ const PatientDashboard = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
-          <p className="text-muted-foreground">Loading dashboard...</p>
+          <p className="text-muted-foreground">{t("patient.loading")}</p>
         </div>
       </div>
     );
   }
 
   const navItems = [
-    { id: "dashboard", label: "Dashboard", icon: Home },
-    { id: "appointments", label: "My Appointments", icon: Calendar },
-    { id: "medications", label: "Medications", icon: Pill },
-    { id: "records", label: "Medical Records", icon: FileText },
-    { id: "find-doctors", label: "Find Doctors", icon: Search },
-    { id: "settings", label: "Settings", icon: Settings },
+    { id: "dashboard", label: t("patient.navigation.dashboard"), icon: Home },
+    { id: "appointments", label: t("patient.navigation.myAppointments"), icon: Calendar },
+    { id: "medications", label: t("patient.navigation.medications"), icon: Pill },
+    { id: "records", label: t("patient.navigation.medicalRecords"), icon: FileText },
+    { id: "find-doctors", label: t("patient.navigation.findDoctors"), icon: Search },
+    { id: "settings", label: t("patient.navigation.settings"), icon: Settings },
   ];
 
   return (
@@ -136,7 +138,7 @@ const PatientDashboard = () => {
               onClick={signOut}
             >
               <LogOut className="mr-3 h-5 w-5" />
-              Log Out
+              {t("patient.navigation.logout")}
             </Button>
           </div>
         </div>
@@ -165,7 +167,7 @@ const PatientDashboard = () => {
             </Button>
             
             <h1 className="text-xl font-semibold flex-1">
-              {navItems.find(item => item.id === activeSection)?.label || "Patient Dashboard"}
+              {navItems.find(item => item.id === activeSection)?.label || t("patient.title")}
             </h1>
 
             <div className="flex items-center gap-2">
@@ -186,7 +188,7 @@ const PatientDashboard = () => {
                   <div className="flex items-center justify-between">
                     <div className="space-y-2">
                       <p className="text-sm font-medium text-muted-foreground">
-                        Upcoming Appointments
+                        {t("patient.stats.upcomingAppointments")}
                       </p>
                       <p className="text-3xl font-bold">
                         {stats?.upcomingAppointmentsCount || 0}
@@ -204,7 +206,7 @@ const PatientDashboard = () => {
                   <div className="flex items-center justify-between">
                     <div className="space-y-2">
                       <p className="text-sm font-medium text-muted-foreground">
-                        Medical Records
+                        {t("patient.stats.medicalRecords")}
                       </p>
                       <p className="text-3xl font-bold">
                         {stats?.medicalRecordsCount || 0}
@@ -222,7 +224,7 @@ const PatientDashboard = () => {
                   <div className="flex items-center justify-between">
                     <div className="space-y-2">
                       <p className="text-sm font-medium text-muted-foreground">
-                        Pending Reminders
+                        {t("patient.stats.pendingReminders")}
                       </p>
                       <p className="text-3xl font-bold">
                         {stats?.pendingReminders || 0}
@@ -240,12 +242,12 @@ const PatientDashboard = () => {
                   <div className="flex items-center justify-between">
                     <div className="space-y-2">
                       <p className="text-sm font-medium text-muted-foreground">
-                        Next Appointment
+                        {t("patient.stats.nextAppointment")}
                       </p>
                       <p className="text-lg font-bold">
                         {stats?.nextAppointment
                           ? format(new Date(stats.nextAppointment.appointment_date), 'MMM dd')
-                          : 'None'}
+                          : t("patient.stats.none")}
                       </p>
                     </div>
                     <div className="p-3 rounded-full bg-yellow-50 dark:bg-yellow-950/30">
@@ -259,7 +261,7 @@ const PatientDashboard = () => {
               {/* Quick Actions */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Quick Actions</CardTitle>
+                  <CardTitle>{t("patient.quickActions.title")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-3 md:grid-cols-3">
@@ -269,7 +271,7 @@ const PatientDashboard = () => {
                       onClick={() => setActiveSection("find-doctors")}
                     >
                       <Search className="mr-2 h-4 w-4" />
-                      Find Doctors
+                      {t("patient.quickActions.findDoctors")}
                     </Button>
                     <Button
                       variant="outline"
@@ -277,7 +279,7 @@ const PatientDashboard = () => {
                       onClick={() => setActiveSection("find-doctors")}
                     >
                       <Plus className="mr-2 h-4 w-4" />
-                      Book Appointment
+                      {t("patient.quickActions.bookAppointment")}
                     </Button>
                     <Button
                       variant="outline"
@@ -285,7 +287,7 @@ const PatientDashboard = () => {
                       onClick={() => setActiveSection("appointments")}
                     >
                       <Calendar className="mr-2 h-4 w-4" />
-                      View Appointments
+                      {t("patient.quickActions.viewAppointments")}
                     </Button>
                   </div>
                 </CardContent>
@@ -295,7 +297,7 @@ const PatientDashboard = () => {
               {stats?.nextAppointment && (
                 <Card>
                 <CardHeader>
-                  <CardTitle>Next Appointment</CardTitle>
+                  <CardTitle>{t("patient.nextAppointment.title")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center gap-4">
@@ -308,7 +310,7 @@ const PatientDashboard = () => {
                       </p>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <MapPin className="h-4 w-4" />
-                        <span>Location details</span>
+                        <span>{t("patient.nextAppointment.location")}</span>
                       </div>
                     </div>
                     <Badge>{stats.nextAppointment.status}</Badge>
@@ -322,7 +324,7 @@ const PatientDashboard = () => {
           {activeSection === "appointments" && (
             <Card>
               <CardHeader>
-                <CardTitle>My Appointments</CardTitle>
+                <CardTitle>{t("patient.appointments.title")}</CardTitle>
               </CardHeader>
               <CardContent>
                 {appointmentsLoading ? (
@@ -340,7 +342,7 @@ const PatientDashboard = () => {
                       >
                         <div className="space-y-1">
                           <p className="font-medium">
-                            {apt.doctor?.profiles?.full_name || 'Doctor'}
+                            {apt.doctor?.profiles?.full_name || t("patient.appointments.doctor")}
                           </p>
                           <p className="text-sm text-muted-foreground">
                             {format(new Date(apt.appointment_date), 'MMM dd, yyyy')} at {apt.start_time}
@@ -353,13 +355,13 @@ const PatientDashboard = () => {
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <Calendar className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <p>No appointments scheduled</p>
+                    <p>{t("patient.appointments.noAppointments")}</p>
                     <Button
                       variant="link"
                       className="mt-2"
                       onClick={() => setActiveSection("find-doctors")}
                     >
-                      Book your first appointment
+                      {t("patient.appointments.bookFirst")}
                     </Button>
                   </div>
                 )}
@@ -374,12 +376,12 @@ const PatientDashboard = () => {
           {activeSection === "records" && (
             <Card>
               <CardHeader>
-                <CardTitle>Medical Records</CardTitle>
+                <CardTitle>{t("patient.records.title")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-center py-8 text-muted-foreground">
                   <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>No medical records yet</p>
+                  <p>{t("patient.records.noRecords")}</p>
                 </div>
               </CardContent>
             </Card>

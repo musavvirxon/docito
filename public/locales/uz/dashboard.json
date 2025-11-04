@@ -1,1 +1,123 @@
-{}
+{
+  "patient": {
+    "title": "Bemor paneli",
+    "loading": "Panel yuklanmoqda...",
+    "navigation": {
+      "dashboard": "Panel",
+      "myAppointments": "Mening uchrashuvlarim",
+      "medications": "Dorilar",
+      "medicalRecords": "Tibbiy yozuvlar",
+      "findDoctors": "Shifokorlarni topish",
+      "settings": "Sozlamalar",
+      "logout": "Chiqish"
+    },
+    "stats": {
+      "upcomingAppointments": "Kelgusi uchrashuvlar",
+      "medicalRecords": "Tibbiy yozuvlar",
+      "pendingReminders": "Kutilayotgan eslatmalar",
+      "nextAppointment": "Keyingi uchrashuv",
+      "none": "Yo'q"
+    },
+    "quickActions": {
+      "title": "Tezkor harakatlar",
+      "findDoctors": "Shifokorlarni topish",
+      "bookAppointment": "Uchrashuv belgilash",
+      "viewAppointments": "Uchrashuvlarni ko'rish"
+    },
+    "nextAppointment": {
+      "title": "Keyingi uchrashuv",
+      "location": "Manzil tafsilotlari"
+    },
+    "appointments": {
+      "title": "Mening uchrashuvlarim",
+      "noAppointments": "Rejalashtirilgan uchrashuvlar yo'q",
+      "bookFirst": "Birinchi uchrashuvingizni belgilang",
+      "doctor": "Shifokor"
+    },
+    "records": {
+      "title": "Tibbiy yozuvlar",
+      "noRecords": "Hozircha tibbiy yozuvlar yo'q"
+    }
+  },
+  "doctor": {
+    "title": "Shifokor paneli",
+    "loading": "Panel yuklanmoqda...",
+    "settingUp": "Shifokor profilingiz sozlanmoqda...",
+    "navigation": {
+      "dashboard": "Panel",
+      "myProfile": "Mening profilim",
+      "myServices": "Mening xizmatlarim",
+      "assignedServices": "Tayinlangan xizmatlar",
+      "scheduleSettings": "Jadval sozlamalari",
+      "procedureLibrary": "Protseduralar kutubxonasi",
+      "treatmentPlanning": "Davolash rejalashtirish",
+      "myPatients": "Mening bemorlarim",
+      "calendar": "Kalendar",
+      "messages": "Xabarlar",
+      "performance": "Natijalar",
+      "financialStats": "Moliyaviy statistika",
+      "clinicFinder": "Klinika qidirish",
+      "settings": "Sozlamalar",
+      "logout": "Chiqish"
+    },
+    "clinic": {
+      "verified": "Tasdiqlangan",
+      "requestToLeave": "Chiqish so'rovi"
+    },
+    "verification": {
+      "pending": "Tasdiqlash kutilmoqda",
+      "message": "Ommaviy bo'lish va qidiruv natijalarida ko'rinish uchun tasdiqlanishingiz kerak.",
+      "completeProfile": "Profilni to'ldirish",
+      "viewProfile": "Profilni ko'rish"
+    },
+    "profileCompletion": {
+      "title": "Profil to'ldirilishi",
+      "message": "Ko'proq band qilishlar olish uchun profilingizni to'ldiring"
+    },
+    "stats": {
+      "totalAppointments": "Jami uchrashuvlar",
+      "allTimeBookings": "Barcha vaqtdagi bandliklar",
+      "totalPatients": "Jami bemorlar",
+      "uniquePatients": "Xizmat ko'rsatilgan noyob bemorlar",
+      "averageRating": "O'rtacha reyting",
+      "basedOnReviews": "{{count}} sharhga asoslangan",
+      "revenue": "Daromad",
+      "totalEarnings": "Umumiy daromad"
+    },
+    "upcomingAppointments": {
+      "title": "Kelgusi uchrashuvlar",
+      "noAppointments": "Kelgusi uchrashuvlar yo'q",
+      "scheduleIsClear": "Jadvalingiz bo'sh"
+    },
+    "recentActivity": {
+      "title": "Oxirgi faoliyat",
+      "noActivity": "Oxirgi faoliyat yo'q",
+      "startBuildingHistory": "Faoliyat tarixini yaratishni boshlang"
+    },
+    "quickActions": {
+      "title": "Tezkor harakatlar",
+      "setAvailability": "Mavjudlikni o'rnatish",
+      "manageProcedures": "Protseduralarni boshqarish",
+      "addService": "Xizmat qo'shish",
+      "blockTime": "Vaqtni bloklash",
+      "updateSettings": "Sozlamalarni yangilash"
+    },
+    "todaysSchedule": {
+      "title": "Bugungi jadval",
+      "patients": "bemorlar",
+      "viewFull": "To'liq jadvalni ko'rish",
+      "noAppointments": "Bugun uchrashuvlar yo'q",
+      "freeDay": "Sizda erkin kun!"
+    },
+    "profileSetup": {
+      "required": "Profil sozlash talab qilinadi",
+      "message": "Shifokor profilingizni sozlash kerak. Keling, profilingizni to'ldiraylik.",
+      "tryAgain": "Qayta urinib ko'ring",
+      "completeSetup": "Profil sozlashni tugatish",
+      "goHome": "Bosh sahifaga",
+      "retryLoading": "Yuklanishni qayta urinish",
+      "settingUp": "Profil sozlanmoqda",
+      "unableToLoad": "Shifokor profilingizni yuklab bo'lmadi. Hisobingizni sozlaymiz."
+    }
+  }
+}

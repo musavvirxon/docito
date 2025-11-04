@@ -1,1 +1,123 @@
-{}
+{
+  "patient": {
+    "title": "لوحة المريض",
+    "loading": "جاري تحميل لوحة التحكم...",
+    "navigation": {
+      "dashboard": "لوحة التحكم",
+      "myAppointments": "مواعيدي",
+      "medications": "الأدوية",
+      "medicalRecords": "السجلات الطبية",
+      "findDoctors": "البحث عن أطباء",
+      "settings": "الإعدادات",
+      "logout": "تسجيل الخروج"
+    },
+    "stats": {
+      "upcomingAppointments": "المواعيد القادمة",
+      "medicalRecords": "السجلات الطبية",
+      "pendingReminders": "التذكيرات المعلقة",
+      "nextAppointment": "الموعد التالي",
+      "none": "لا يوجد"
+    },
+    "quickActions": {
+      "title": "إجراءات سريعة",
+      "findDoctors": "البحث عن أطباء",
+      "bookAppointment": "حجز موعد",
+      "viewAppointments": "عرض المواعيد"
+    },
+    "nextAppointment": {
+      "title": "الموعد التالي",
+      "location": "تفاصيل الموقع"
+    },
+    "appointments": {
+      "title": "مواعيدي",
+      "noAppointments": "لا توجد مواعيد مجدولة",
+      "bookFirst": "احجز موعدك الأول",
+      "doctor": "الطبيب"
+    },
+    "records": {
+      "title": "السجلات الطبية",
+      "noRecords": "لا توجد سجلات طبية بعد"
+    }
+  },
+  "doctor": {
+    "title": "لوحة الطبيب",
+    "loading": "جاري تحميل لوحة التحكم...",
+    "settingUp": "جاري إعداد ملف الطبيب الخاص بك...",
+    "navigation": {
+      "dashboard": "لوحة التحكم",
+      "myProfile": "ملفي الشخصي",
+      "myServices": "خدماتي",
+      "assignedServices": "الخدمات المعينة",
+      "scheduleSettings": "إعدادات الجدول",
+      "procedureLibrary": "مكتبة الإجراءات",
+      "treatmentPlanning": "تخطيط العلاج",
+      "myPatients": "مرضاي",
+      "calendar": "التقويم",
+      "messages": "الرسائل",
+      "performance": "الأداء",
+      "financialStats": "الإحصائيات المالية",
+      "clinicFinder": "البحث عن عيادة",
+      "settings": "الإعدادات",
+      "logout": "تسجيل الخروج"
+    },
+    "clinic": {
+      "verified": "تم التحقق",
+      "requestToLeave": "طلب المغادرة"
+    },
+    "verification": {
+      "pending": "التحقق قيد الانتظار",
+      "message": "للظهور علناً في نتائج البحث، يجب إكمال التحقق الخاص بك.",
+      "completeProfile": "إكمال الملف الشخصي",
+      "viewProfile": "عرض الملف الشخصي"
+    },
+    "profileCompletion": {
+      "title": "اكتمال الملف الشخصي",
+      "message": "أكمل ملفك الشخصي للحصول على المزيد من الحجوزات"
+    },
+    "stats": {
+      "totalAppointments": "إجمالي المواعيد",
+      "allTimeBookings": "جميع الحجوزات على الإطلاق",
+      "totalPatients": "إجمالي المرضى",
+      "uniquePatients": "المرضى الفريدين الذين تم خدمتهم",
+      "averageRating": "متوسط التقييم",
+      "basedOnReviews": "بناءً على {{count}} تقييم",
+      "revenue": "الإيرادات",
+      "totalEarnings": "إجمالي الأرباح"
+    },
+    "upcomingAppointments": {
+      "title": "المواعيد القادمة",
+      "noAppointments": "لا توجد مواعيد قادمة",
+      "scheduleIsClear": "جدولك خالٍ"
+    },
+    "recentActivity": {
+      "title": "النشاط الأخير",
+      "noActivity": "لا يوجد نشاط حديث",
+      "startBuildingHistory": "ابدأ في بناء تاريخ نشاطك"
+    },
+    "quickActions": {
+      "title": "إجراءات سريعة",
+      "setAvailability": "تعيين التوفر",
+      "manageProcedures": "إدارة الإجراءات",
+      "addService": "إضافة خدمة",
+      "blockTime": "حظر الوقت",
+      "updateSettings": "تحديث الإعدادات"
+    },
+    "todaysSchedule": {
+      "title": "جدول اليوم",
+      "patients": "مرضى",
+      "viewFull": "عرض الجدول الكامل",
+      "noAppointments": "لا توجد مواعيد اليوم",
+      "freeDay": "لديك يوم حر!"
+    },
+    "profileSetup": {
+      "required": "مطلوب إعداد الملف الشخصي",
+      "message": "يجب إعداد ملف الطبيب الخاص بك. دعنا نكمل ملفك الشخصي.",
+      "tryAgain": "حاول مرة أخرى",
+      "completeSetup": "إكمال إعداد الملف الشخصي",
+      "goHome": "الذهاب إلى الصفحة الرئيسية",
+      "retryLoading": "إعادة محاولة التحميل",
+      "settingUp": "جاري إعداد الملف الشخصي",
+      "unableToLoad": "غير قادر على تحميل ملف الطبيب الخاص بك. دعنا نقوم بإعداد حسابك."
+    }
+  }
+}

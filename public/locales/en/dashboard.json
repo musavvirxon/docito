@@ -1,1 +1,123 @@
-{}
+{
+  "patient": {
+    "title": "Patient Dashboard",
+    "loading": "Loading dashboard...",
+    "navigation": {
+      "dashboard": "Dashboard",
+      "myAppointments": "My Appointments",
+      "medications": "Medications",
+      "medicalRecords": "Medical Records",
+      "findDoctors": "Find Doctors",
+      "settings": "Settings",
+      "logout": "Log Out"
+    },
+    "stats": {
+      "upcomingAppointments": "Upcoming Appointments",
+      "medicalRecords": "Medical Records",
+      "pendingReminders": "Pending Reminders",
+      "nextAppointment": "Next Appointment",
+      "none": "None"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "findDoctors": "Find Doctors",
+      "bookAppointment": "Book Appointment",
+      "viewAppointments": "View Appointments"
+    },
+    "nextAppointment": {
+      "title": "Next Appointment",
+      "location": "Location details"
+    },
+    "appointments": {
+      "title": "My Appointments",
+      "noAppointments": "No appointments scheduled",
+      "bookFirst": "Book your first appointment",
+      "doctor": "Doctor"
+    },
+    "records": {
+      "title": "Medical Records",
+      "noRecords": "No medical records yet"
+    }
+  },
+  "doctor": {
+    "title": "Doctor Dashboard",
+    "loading": "Loading dashboard...",
+    "settingUp": "Setting up your doctor profile...",
+    "navigation": {
+      "dashboard": "Dashboard",
+      "myProfile": "My Profile",
+      "myServices": "My Services",
+      "assignedServices": "Assigned Services",
+      "scheduleSettings": "Schedule Settings",
+      "procedureLibrary": "Procedure Library",
+      "treatmentPlanning": "Treatment Planning",
+      "myPatients": "My Patients",
+      "calendar": "Calendar",
+      "messages": "Messages",
+      "performance": "Performance",
+      "financialStats": "Financial Stats",
+      "clinicFinder": "Clinic Finder",
+      "settings": "Settings",
+      "logout": "Log Out"
+    },
+    "clinic": {
+      "verified": "Verified",
+      "requestToLeave": "Request to Leave"
+    },
+    "verification": {
+      "pending": "Verification Pending",
+      "message": "To go public and appear in search results, your verification must be completed.",
+      "completeProfile": "Complete Profile",
+      "viewProfile": "View Profile"
+    },
+    "profileCompletion": {
+      "title": "Profile Completion",
+      "message": "Complete your profile to get more bookings"
+    },
+    "stats": {
+      "totalAppointments": "Total Appointments",
+      "allTimeBookings": "All time bookings",
+      "totalPatients": "Total Patients",
+      "uniquePatients": "Unique patients served",
+      "averageRating": "Average Rating",
+      "basedOnReviews": "Based on {{count}} reviews",
+      "revenue": "Revenue",
+      "totalEarnings": "Total earnings"
+    },
+    "upcomingAppointments": {
+      "title": "Upcoming Appointments",
+      "noAppointments": "No upcoming appointments",
+      "scheduleIsClear": "Your schedule is clear"
+    },
+    "recentActivity": {
+      "title": "Recent Activity",
+      "noActivity": "No recent activity",
+      "startBuildingHistory": "Start building your activity history"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "setAvailability": "Set Availability",
+      "manageProcedures": "Manage Procedures",
+      "addService": "Add Service",
+      "blockTime": "Block Time",
+      "updateSettings": "Update Settings"
+    },
+    "todaysSchedule": {
+      "title": "Today's Schedule",
+      "patients": "patients",
+      "viewFull": "View Full Schedule",
+      "noAppointments": "No appointments today",
+      "freeDay": "You have a free day!"
+    },
+    "profileSetup": {
+      "required": "Profile Setup Required",
+      "message": "Your doctor profile needs to be set up. Let's complete your profile.",
+      "tryAgain": "Try Again",
+      "completeSetup": "Complete Profile Setup",
+      "goHome": "Go to Home",
+      "retryLoading": "Retry Loading",
+      "settingUp": "Setting Up Profile",
+      "unableToLoad": "Unable to load your doctor profile. Let us set up your account."
+    }
+  }
+}

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Bell, Settings, User, Calendar, BarChart3, Search, Briefcase, MapPin, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2 } from "lucide-react";
 import { DoctorDataProvider, useDoctorData } from "@/contexts/DoctorDataContext";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +49,7 @@ const DoctorDashboardContent = () => {
     isOpen: boolean;
     action: 'schedule' | 'procedures' | 'settings' | 'block-time' | 'add-service' | null;
   }>({ isOpen: false, action: null });
+  const { t } = useTranslation("dashboard");
 
   const doctorStatus: DoctorStatus = doctorProfile?.practice_id ? "clinic-member" : "independent";
   
@@ -90,8 +92,8 @@ const DoctorDashboardContent = () => {
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-          <p className="mt-4 text-foreground">Loading dashboard...</p>
-          <p className="text-sm text-muted-foreground mt-2">Setting up your doctor profile...</p>
+          <p className="mt-4 text-foreground">{t("doctor.loading")}</p>
+          <p className="text-sm text-muted-foreground mt-2">{t("doctor.settingUp")}</p>
         </div>
       </div>
     );
@@ -103,28 +105,28 @@ const DoctorDashboardContent = () => {
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center max-w-md p-6 bg-card border border-border rounded-lg">
           <div className="mb-4">
-            <h2 className="text-xl font-semibold text-destructive mb-2">Setting Up Profile</h2>
+            <h2 className="text-xl font-semibold text-destructive mb-2">{t("doctor.profileSetup.settingUp")}</h2>
             <p className="text-muted-foreground mb-4">
-              Unable to load your doctor profile. Let us set up your account.
+              {t("doctor.profileSetup.unableToLoad")}
             </p>
           </div>
           <div className="space-y-2">
             <Button onClick={refreshAll} className="w-full">
-              Retry Loading
+              {t("doctor.profileSetup.retryLoading")}
             </Button>
             <Button 
               variant="outline" 
               onClick={() => navigate('/doctor-signup')} 
               className="w-full"
             >
-              Complete Profile Setup
+              {t("doctor.profileSetup.completeSetup")}
             </Button>
             <Button 
               variant="ghost" 
               onClick={() => navigate('/')} 
               className="w-full"
             >
-              Go to Home
+              {t("doctor.profileSetup.goHome")}
             </Button>
           </div>
         </div>
@@ -138,21 +140,21 @@ const DoctorDashboardContent = () => {
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center max-w-md p-6 bg-card border border-border rounded-lg">
           <div className="mb-4">
-            <h2 className="text-xl font-semibold text-destructive mb-2">Profile Setup Required</h2>
+            <h2 className="text-xl font-semibold text-destructive mb-2">{t("doctor.profileSetup.required")}</h2>
             <p className="text-muted-foreground mb-4">
-              Your doctor profile needs to be set up. Let's complete your profile.
+              {t("doctor.profileSetup.message")}
             </p>
           </div>
           <div className="space-y-2">
             <Button onClick={refreshAll} className="w-full">
-              Try Again
+              {t("doctor.profileSetup.tryAgain")}
             </Button>
             <Button 
               variant="outline" 
               onClick={() => navigate('/doctor-signup')} 
               className="w-full"
             >
-              Complete Profile Setup
+              {t("doctor.profileSetup.completeSetup")}
             </Button>
           </div>
         </div>
@@ -162,31 +164,31 @@ const DoctorDashboardContent = () => {
 
   const sidebarItems = doctorStatus === "independent" 
     ? [
-        { id: "dashboard", label: "Dashboard", icon: Home },
-        { id: "profile", label: "My Profile", icon: User },
-        { id: "services", label: "My Services", icon: Briefcase },
-        { id: "schedule", label: "Schedule Settings", icon: Clock },
-        { id: "procedure-library", label: "Procedure Library", icon: FileText },
-        { id: "treatment-planning", label: "Treatment Planning", icon: Calendar },
-        { id: "calendar", label: "Calendar", icon: Calendar },
-        { id: "performance", label: "Performance", icon: BarChart3 },
-        { id: "financial-stats", label: "Financial Stats", icon: BarChart3 },
-        { id: "clinic-finder", label: "Clinic Finder", icon: Search },
-        { id: "settings", label: "Settings", icon: Settings },
+        { id: "dashboard", label: t("doctor.navigation.dashboard"), icon: Home },
+        { id: "profile", label: t("doctor.navigation.myProfile"), icon: User },
+        { id: "services", label: t("doctor.navigation.myServices"), icon: Briefcase },
+        { id: "schedule", label: t("doctor.navigation.scheduleSettings"), icon: Clock },
+        { id: "procedure-library", label: t("doctor.navigation.procedureLibrary"), icon: FileText },
+        { id: "treatment-planning", label: t("doctor.navigation.treatmentPlanning"), icon: Calendar },
+        { id: "calendar", label: t("doctor.navigation.calendar"), icon: Calendar },
+        { id: "performance", label: t("doctor.navigation.performance"), icon: BarChart3 },
+        { id: "financial-stats", label: t("doctor.navigation.financialStats"), icon: BarChart3 },
+        { id: "clinic-finder", label: t("doctor.navigation.clinicFinder"), icon: Search },
+        { id: "settings", label: t("doctor.navigation.settings"), icon: Settings },
       ]
     : [
-        { id: "dashboard", label: "Dashboard", icon: Home },
-        { id: "profile", label: "My Profile", icon: User },
-        { id: "assigned-services", label: "Assigned Services", icon: Briefcase },
-        { id: "schedule", label: "Schedule Settings", icon: Clock },
-        { id: "procedure-library", label: "Procedure Library", icon: FileText },
-        { id: "treatment-planning", label: "Treatment Planning", icon: Calendar },
-        { id: "assigned-patients", label: "My Patients", icon: Users },
-        { id: "calendar", label: "Calendar", icon: Calendar },
-        { id: "messages", label: "Messages", icon: MessageSquare },
-        { id: "performance", label: "Performance", icon: BarChart3 },
-        { id: "financial-stats", label: "Financial Stats", icon: BarChart3 },
-        { id: "settings", label: "Settings", icon: Settings },
+        { id: "dashboard", label: t("doctor.navigation.dashboard"), icon: Home },
+        { id: "profile", label: t("doctor.navigation.myProfile"), icon: User },
+        { id: "assigned-services", label: t("doctor.navigation.assignedServices"), icon: Briefcase },
+        { id: "schedule", label: t("doctor.navigation.scheduleSettings"), icon: Clock },
+        { id: "procedure-library", label: t("doctor.navigation.procedureLibrary"), icon: FileText },
+        { id: "treatment-planning", label: t("doctor.navigation.treatmentPlanning"), icon: Calendar },
+        { id: "assigned-patients", label: t("doctor.navigation.myPatients"), icon: Users },
+        { id: "calendar", label: t("doctor.navigation.calendar"), icon: Calendar },
+        { id: "messages", label: t("doctor.navigation.messages"), icon: MessageSquare },
+        { id: "performance", label: t("doctor.navigation.performance"), icon: BarChart3 },
+        { id: "financial-stats", label: t("doctor.navigation.financialStats"), icon: BarChart3 },
+        { id: "settings", label: t("doctor.navigation.settings"), icon: Settings },
       ];
 
   const renderContent = () => {
