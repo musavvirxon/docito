@@ -11,6 +11,7 @@ import { PerformanceReviews } from "./PerformanceReviews";
 import { PerformanceTrends } from "./PerformanceTrends";
 import { subDays } from "date-fns";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface DoctorPerformanceSectionProps {
   doctorProfile: {
@@ -25,6 +26,7 @@ interface DoctorPerformanceSectionProps {
 }
 
 const DoctorPerformanceSection = ({ doctorProfile, stats: providedStats }: DoctorPerformanceSectionProps) => {
+  const { t } = useTranslation("dashboard");
   const [dateRange] = useState<{ from: Date; to: Date }>({
     from: subDays(new Date(), 30),
     to: new Date()
@@ -43,12 +45,12 @@ const DoctorPerformanceSection = ({ doctorProfile, stats: providedStats }: Docto
   } = useDoctorPerformance(dateRange.from, dateRange.to);
 
   const handleExport = () => {
-    toast.success('Export feature coming soon!');
+    toast.success(t("doctor.performance.exportComingSoon"));
   };
 
   const handleRefresh = () => {
     refreshData();
-    toast.success('Performance data refreshed');
+    toast.success(t("doctor.performance.dataRefreshed"));
   };
 
   if (loading) {
@@ -56,7 +58,7 @@ const DoctorPerformanceSection = ({ doctorProfile, stats: providedStats }: Docto
       <div className="flex items-center justify-center p-12">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading performance data...</p>
+          <p className="text-muted-foreground">{t("doctor.performance.loading")}</p>
         </div>
       </div>
     );
@@ -66,11 +68,11 @@ const DoctorPerformanceSection = ({ doctorProfile, stats: providedStats }: Docto
     return (
       <Card className="border-destructive">
         <CardContent className="py-12 text-center">
-          <p className="text-destructive font-medium mb-2">Error loading performance data</p>
+          <p className="text-destructive font-medium mb-2">{t("doctor.performance.errorLoading")}</p>
           <p className="text-muted-foreground text-sm mb-4">{error}</p>
           <Button onClick={handleRefresh} variant="outline">
             <RefreshCw className="w-4 h-4 mr-2" />
-            Try Again
+            {t("doctor.performance.tryAgain")}
           </Button>
         </CardContent>
       </Card>
@@ -84,17 +86,17 @@ const DoctorPerformanceSection = ({ doctorProfile, stats: providedStats }: Docto
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h2 className="text-2xl font-bold">Performance Analytics</h2>
-              <p className="text-muted-foreground">Comprehensive insights into your practice</p>
+              <h2 className="text-2xl font-bold">{t("doctor.performance.title")}</h2>
+              <p className="text-muted-foreground">{t("doctor.performance.description")}</p>
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={handleRefresh}>
                 <RefreshCw className="w-4 h-4 mr-2" />
-                Refresh
+                {t("doctor.performance.refresh")}
               </Button>
               <Button variant="outline" size="sm" onClick={handleExport}>
                 <Download className="w-4 h-4 mr-2" />
-                Export
+                {t("doctor.performance.export")}
               </Button>
             </div>
           </div>

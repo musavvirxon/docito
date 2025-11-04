@@ -14,6 +14,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useDoctorData } from '@/contexts/DoctorDataContext';
+import { useTranslation } from 'react-i18next';
 
 interface WorkingHours {
   enabled: boolean;
@@ -44,6 +45,7 @@ interface ScheduleSettings {
 }
 
 const DoctorScheduleSettingsSection = () => {
+  const { t } = useTranslation("dashboard");
   const { toast } = useToast();
   const { scheduleSettings: contextScheduleSettings, updateScheduleSettings, scheduleLoading, refreshSchedule } = useDoctorData();
   const [isSaving, setIsSaving] = useState(false);
@@ -215,8 +217,8 @@ const DoctorScheduleSettingsSection = () => {
       
       if (result.success) {
         toast({
-          title: "Schedule Updated",
-          description: "Your schedule settings have been saved successfully and will reflect across the calendar.",
+          title: t("doctor.schedule.scheduleUpdated"),
+          description: t("doctor.schedule.scheduleUpdatedDesc"),
         });
         
         // Refresh schedule data to ensure calendar is updated
@@ -227,8 +229,8 @@ const DoctorScheduleSettingsSection = () => {
     } catch (error) {
       console.error('Error saving schedule:', error);
       toast({
-        title: "Error",
-        description: "Failed to save schedule settings. Please try again.",
+        title: t("doctor.schedule.error"),
+        description: t("doctor.schedule.saveFailed"),
         variant: "destructive",
       });
     } finally {
@@ -249,7 +251,7 @@ const DoctorScheduleSettingsSection = () => {
       <div className="flex items-center justify-center py-8">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-          <p className="mt-4 text-foreground">Loading schedule settings...</p>
+          <p className="mt-4 text-foreground">{t("doctor.schedule.loading")}</p>
         </div>
       </div>
     );
@@ -259,8 +261,8 @@ const DoctorScheduleSettingsSection = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Schedule Settings</h2>
-          <p className="text-muted-foreground">Manage your working hours, breaks, and availability</p>
+          <h2 className="text-2xl font-bold text-foreground">{t("doctor.schedule.title")}</h2>
+          <p className="text-muted-foreground">{t("doctor.schedule.description")}</p>
         </div>
         <Button 
           onClick={handleSave} 
@@ -270,12 +272,12 @@ const DoctorScheduleSettingsSection = () => {
           {isSaving ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              Saving...
+              {t("doctor.schedule.saving")}
             </>
           ) : (
             <>
               <Save className="w-4 h-4" />
-              Save Settings
+              {t("doctor.schedule.saveSettings")}
             </>
           )}
         </Button>
@@ -288,7 +290,7 @@ const DoctorScheduleSettingsSection = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="w-5 h-5" />
-                Working Hours
+                {t("doctor.schedule.workingHours")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">

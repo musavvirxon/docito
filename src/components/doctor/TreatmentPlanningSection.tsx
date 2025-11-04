@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import EnhancedCreateTreatmentPlanModal from "@/components/treatment/EnhancedCreateTreatmentPlanModal";
 import EnhancedTreatmentPlanDetailModal from "@/components/treatment/EnhancedTreatmentPlanDetailModal";
 import MedicationManagementModal from "@/components/treatment/MedicationManagementModal";
+import { useTranslation } from "react-i18next";
 
 interface TreatmentPlan {
   id: string;
@@ -37,6 +38,7 @@ interface Patient {
 }
 
 const TreatmentPlanningSection = () => {
+  const { t } = useTranslation("dashboard");
   const { user } = useAuth();
   const [treatmentPlans, setTreatmentPlans] = useState<TreatmentPlan[]>([]);
   const [filteredPlans, setFilteredPlans] = useState<TreatmentPlan[]>([]);
@@ -252,7 +254,7 @@ const TreatmentPlanningSection = () => {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Loading treatment plans...</p>
+          <p>{t("doctor.treatmentPlanning.loading")}</p>
         </div>
       </div>
     );
@@ -262,13 +264,13 @@ const TreatmentPlanningSection = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Treatment Planning</h2>
-          <p className="text-muted-foreground">Create and manage patient treatment plans</p>
+          <h2 className="text-2xl font-bold">{t("doctor.treatmentPlanning.title")}</h2>
+          <p className="text-muted-foreground">{t("doctor.treatmentPlanning.description")}</p>
         </div>
         <Button 
           onClick={() => {
             if (!user) {
-              toast.error("Please sign in to create treatment plans");
+              toast.error(t("doctor.treatmentPlanning.signInRequired"));
               return;
             }
             setShowCreateModal(true);
@@ -276,7 +278,7 @@ const TreatmentPlanningSection = () => {
           className="flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
-          Create Treatment Plan
+          {t("doctor.treatmentPlanning.createPlan")}
         </Button>
       </div>
 

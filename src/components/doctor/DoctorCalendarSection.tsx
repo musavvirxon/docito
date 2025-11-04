@@ -17,6 +17,7 @@ import GoogleCalendarSyncModal from "./GoogleCalendarSyncModal";
 import TimeSlotCard from "./TimeSlotCard";
 import { useProcedures } from "@/hooks/useProcedures";
 import { useTimeSlots } from "@/hooks/useTimeSlots";
+import { useTranslation } from "react-i18next";
 
 interface DoctorCalendarSectionProps {
   doctorStatus: "independent" | "clinic-member";
@@ -46,6 +47,7 @@ interface WorkingHours {
 }
 
 const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcomingAppointments = [] }: DoctorCalendarSectionProps) => {
+  const { t } = useTranslation("dashboard");
   const { scheduleSettings, updateScheduleSettings, scheduleLoading } = useDoctorData();
   const { procedures } = useProcedures();
   
@@ -196,18 +198,18 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="w-5 h-5" />
-                {doctorStatus === "clinic-member" ? "Clinic Calendar" : "My Calendar"}
+                {doctorStatus === "clinic-member" ? t("doctor.calendar.clinicCalendar") : t("doctor.calendar.myCalendar")}
               </CardTitle>
               <p className="text-muted-foreground">
                 {doctorStatus === "clinic-member" 
-                  ? "View your schedule synced with clinic bookings"
-                  : "Manage your availability and appointments"
+                  ? t("doctor.calendar.clinicCalendarDesc")
+                  : t("doctor.calendar.myCalendarDesc")
                 }
               </p>
             </div>
             <Button>
               <Settings className="w-4 h-4 mr-2" />
-              Calendar Settings
+              {t("doctor.calendar.calendarSettings")}
             </Button>
           </div>
         </CardHeader>

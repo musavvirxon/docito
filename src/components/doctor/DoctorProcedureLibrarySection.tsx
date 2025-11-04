@@ -13,6 +13,7 @@ import AddProcedureModal from "@/components/procedure/AddProcedureModal";
 import EditProcedureModal from "@/components/procedure/EditProcedureModal";
 import ManageCategoriesModal from "@/components/doctor/ManageCategoriesModal";
 import ManageTypesModal from "@/components/doctor/ManageTypesModal";
+import { useTranslation } from "react-i18next";
 
 interface Procedure {
   id: string;
@@ -31,6 +32,7 @@ interface Procedure {
 }
 
 const DoctorProcedureLibrarySection = () => {
+  const { t } = useTranslation("dashboard");
   const { user } = useAuth();
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [filteredProcedures, setFilteredProcedures] = useState<Procedure[]>([]);
@@ -275,7 +277,7 @@ const DoctorProcedureLibrarySection = () => {
       <div className="flex items-center justify-center py-8">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-          <p className="mt-4 text-foreground">Loading procedure library...</p>
+          <p className="mt-4 text-foreground">{t("doctor.procedureLibrary.loading")}</p>
         </div>
       </div>
     );
@@ -293,9 +295,9 @@ const DoctorProcedureLibrarySection = () => {
           <div>
             <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
               <BookOpen className="w-6 h-6" />
-              My Procedure Library
+              {t("doctor.procedureLibrary.title")}
             </h2>
-            <p className="text-muted-foreground">Manage your dental procedures and treatments</p>
+            <p className="text-muted-foreground">{t("doctor.procedureLibrary.description")}</p>
           </div>
         </div>
         <Button 
@@ -303,7 +305,7 @@ const DoctorProcedureLibrarySection = () => {
           className="flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
-          Add Procedure
+          {t("doctor.procedureLibrary.addProcedure")}
         </Button>
       </div>
 

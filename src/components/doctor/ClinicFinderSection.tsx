@@ -10,8 +10,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { ClinicDetailModal } from "./ClinicDetailModal";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useTranslation } from "react-i18next";
 
 const ClinicFinderSection = () => {
+  const { t } = useTranslation("dashboard");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState("");
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
@@ -100,21 +102,21 @@ const ClinicFinderSection = () => {
       case "pending":
         return (
           <div className="space-y-2">
-            <Badge className="bg-amber-100 text-amber-700">Request Pending</Badge>
+            <Badge className="bg-amber-100 text-amber-700">{t("doctor.clinicFinder.requestPending")}</Badge>
             <Button 
               variant="outline" 
               size="sm" 
               onClick={() => cancelRequest(clinicId)}
               disabled={cancelRequestMutation.isPending}
             >
-              Cancel Request
+              {t("doctor.clinicFinder.cancelRequest")}
             </Button>
           </div>
         );
       case "accepted":
-        return <Badge className="bg-green-100 text-green-700">Request Accepted</Badge>;
+        return <Badge className="bg-green-100 text-green-700">{t("doctor.clinicFinder.requestAccepted")}</Badge>;
       case "rejected":
-        return <Badge variant="destructive">Request Rejected</Badge>;
+        return <Badge variant="destructive">{t("doctor.clinicFinder.requestRejected")}</Badge>;
       default:
         return (
           <Button 
@@ -122,7 +124,7 @@ const ClinicFinderSection = () => {
             disabled={requestToJoinMutation.isPending}
           >
             {requestToJoinMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-            Request to Join
+            {t("doctor.clinicFinder.requestToJoin")}
           </Button>
         );
     }
@@ -132,8 +134,8 @@ const ClinicFinderSection = () => {
     return (
       <Card className="p-6">
         <div className="text-center">
-          <p className="text-destructive mb-4">Failed to load clinics. {error.message}</p>
-          <Button onClick={() => window.location.reload()}>Try Again</Button>
+          <p className="text-destructive mb-4">{t("doctor.clinicFinder.failedToLoad")} {error.message}</p>
+          <Button onClick={() => window.location.reload()}>{t("doctor.clinicFinder.tryAgain")}</Button>
         </div>
       </Card>
     );
@@ -146,10 +148,10 @@ const ClinicFinderSection = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Search className="w-5 h-5" />
-            Find Clinics to Join
+            {t("doctor.clinicFinder.title")}
           </CardTitle>
           <p className="text-muted-foreground">
-            Search and apply to join established medical practices and clinics
+            {t("doctor.clinicFinder.description")}
           </p>
         </CardHeader>
         <CardContent>

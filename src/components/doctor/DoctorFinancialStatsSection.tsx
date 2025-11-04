@@ -13,8 +13,10 @@ import { FinancialInsights } from "./FinancialInsights";
 import { subDays } from "date-fns";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "react-i18next";
 
 export const DoctorFinancialStatsSection = () => {
+  const { t } = useTranslation("dashboard");
   const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
     from: subDays(new Date(), 30),
     to: new Date()
@@ -70,15 +72,15 @@ export const DoctorFinancialStatsSection = () => {
       a.href = url;
       a.download = `financial-report-${new Date().toISOString().split('T')[0]}.csv`;
       a.click();
-      toast.success('CSV exported successfully');
+      toast.success(t("doctor.financialStats.csvExported"));
     } else {
-      toast.info(`${format.toUpperCase()} export will be available soon`);
+      toast.info(t("doctor.financialStats.exportComingSoon", { format: format.toUpperCase() }));
     }
   };
 
   const handleRefresh = () => {
     refreshData();
-    toast.success('Financial data refreshed');
+    toast.success(t("doctor.financialStats.dataRefreshed"));
   };
 
   if (loading) {
@@ -101,8 +103,8 @@ export const DoctorFinancialStatsSection = () => {
     return (
       <Card className="p-6">
         <div className="text-center">
-          <p className="text-destructive mb-4">Error loading financial data: {error}</p>
-          <Button onClick={handleRefresh}>Retry</Button>
+          <p className="text-destructive mb-4">{t("doctor.financialStats.errorLoading")}: {error}</p>
+          <Button onClick={handleRefresh}>{t("doctor.financialStats.retry")}</Button>
         </div>
       </Card>
     );
@@ -113,8 +115,8 @@ export const DoctorFinancialStatsSection = () => {
       {/* Header Actions */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold">Financial Stats</h2>
-          <p className="text-muted-foreground">Track your earnings and financial performance</p>
+          <h2 className="text-3xl font-bold">{t("doctor.financialStats.title")}</h2>
+          <p className="text-muted-foreground">{t("doctor.financialStats.description")}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <div className="flex gap-1 border rounded-md p-1">
@@ -123,30 +125,30 @@ export const DoctorFinancialStatsSection = () => {
               size="sm"
               onClick={() => handleDatePresetChange('7days')}
             >
-              7 Days
+              {t("doctor.financialStats.7days")}
             </Button>
             <Button 
               variant={datePreset === '30days' ? 'default' : 'ghost'} 
               size="sm"
               onClick={() => handleDatePresetChange('30days')}
             >
-              30 Days
+              {t("doctor.financialStats.30days")}
             </Button>
             <Button 
               variant={datePreset === '90days' ? 'default' : 'ghost'} 
               size="sm"
               onClick={() => handleDatePresetChange('90days')}
             >
-              90 Days
+              {t("doctor.financialStats.90days")}
             </Button>
           </div>
           <Button variant="outline" size="sm" onClick={handleRefresh}>
             <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
+            {t("doctor.financialStats.refresh")}
           </Button>
           <Button variant="outline" size="sm" onClick={() => handleExport('csv')}>
             <FileText className="w-4 h-4 mr-2" />
-            Export
+            {t("doctor.financialStats.export")}
           </Button>
         </div>
       </div>
