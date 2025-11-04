@@ -373,7 +373,7 @@ const DoctorDashboardContent = () => {
                           appointment.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
                           'bg-gray-100 text-gray-700'
                         }>
-                          {appointment.status}
+                          {t(`doctor.appointmentStatus.${appointment.status}`)}
                         </Badge>
                       </div>
                     ))

@@ -312,6 +312,13 @@
       "completeProfileBanner": "Complete Your Profile ({{completion}}%)",
       "completeProfileMessage": "Complete your profile to verify your account and start accepting patients."
     },
+    "appointmentStatus": {
+      "confirmed": "Confirmed",
+      "pending": "Pending",
+      "completed": "Completed",
+      "canceled": "Canceled",
+      "rescheduled": "Rescheduled"
+    },
     "settings": {
       "title": "Settings",
       "account": "Account",

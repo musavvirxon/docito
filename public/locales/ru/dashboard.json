@@ -312,6 +312,13 @@
       "completeProfileBanner": "Завершите свой профиль ({{completion}}%)",
       "completeProfileMessage": "Завершите свой профиль, чтобы подтвердить учетную запись и начать принимать пациентов."
     },
+    "appointmentStatus": {
+      "confirmed": "Подтверждено",
+      "pending": "Ожидается",
+      "completed": "Завершено",
+      "canceled": "Отменено",
+      "rescheduled": "Перенесено"
+    },
     "settings": {
       "title": "Настройки",
       "account": "Учетная запись",
