@@ -101,7 +101,83 @@
       "profileVisibility": "Видимость профиля",
       "shareDataWithDoctors": "Делиться данными с врачами",
       "showActivityStatus": "Показывать статус активности",
-      "instructions": "Инструкции"
+      "instructions": "Управление настройками учетной записи, уведомлениями и параметрами конфиденциальности",
+      "account": {
+        "title": "Личная информация",
+        "description": "Обновите ваши личные данные",
+        "fullName": "Полное имя",
+        "email": "Email",
+        "phone": "Телефон",
+        "dateOfBirth": "Дата рождения",
+        "address": "Адрес",
+        "saveChanges": "Сохранить изменения"
+      },
+      "notifications": {
+        "emailTitle": "Email уведомления",
+        "emailDescription": "Управление настройками email уведомлений",
+        "smsTitle": "SMS уведомления",
+        "smsDescription": "Управление настройками SMS уведомлений",
+        "bookingConfirmations": "Подтверждения записи",
+        "bookingConfirmationsDesc": "Получать email при записи на прием",
+        "appointmentReminders": "Напоминания о приемах",
+        "appointmentRemindersDesc": "Получать напоминания перед приемами",
+        "cancellationNotices": "Уведомления об отмене",
+        "cancellationNoticesDesc": "Получать подтверждения отмены",
+        "smsReminders": "SMS напоминания",
+        "smsRemindersDesc": "Получать текстовые напоминания перед приемами",
+        "pushNotifications": "Push уведомления",
+        "pushNotificationsDesc": "Получать уведомления в приложении",
+        "saveSettings": "Сохранить настройки уведомлений"
+      },
+      "privacy": {
+        "title": "Настройки конфиденциальности",
+        "description": "Управление параметрами конфиденциальности",
+        "profileVisibility": "Видимость профиля",
+        "profileVisibilityDesc": "Разрешить врачам видеть ваш профиль",
+        "shareAnalytics": "Делиться аналитикой",
+        "shareAnalyticsDesc": "Помогите нам улучшиться с помощью анонимных данных",
+        "marketingCommunications": "Маркетинговые сообщения",
+        "marketingCommunicationsDesc": "Получать рекламные письма",
+        "saveSettings": "Сохранить настройки конфиденциальности"
+      },
+      "security": {
+        "title": "Изменить пароль",
+        "description": "Обновите пароль для обеспечения безопасности учетной записи",
+        "currentPassword": "Текущий пароль",
+        "newPassword": "Новый пароль",
+        "confirmPassword": "Подтвердите новый пароль",
+        "updatePassword": "Обновить пароль"
+      }
+    },
+    "filters": {
+      "title": "Фильтры",
+      "providerType": "Тип поставщика",
+      "doctorsOnly": "Только врачи",
+      "practicesOnly": "Только клиники",
+      "availability": "Доступность",
+      "acceptingNewPatients": "Принимает новых пациентов",
+      "availableToday": "Доступен сегодня",
+      "services": "Услуги",
+      "acceptsInsurance": "Принимает страховку",
+      "videoConsultation": "Видеоконсультация",
+      "reset": "Сбросить",
+      "apply": "Применить"
+    },
+    "resultCard": {
+      "doctor": "Врач",
+      "practice": "Клиника",
+      "reviews": "отзывов",
+      "consultation": "консультация",
+      "experience": "опыт",
+      "doctors": "врачей",
+      "affiliatedDoctors": "аффилированных врачей",
+      "bookNow": "Записаться",
+      "booking": "Запись...",
+      "bookAppointment": "Записаться на прием",
+      "viewProfile": "Просмотр профиля",
+      "availableToday": "Доступен сегодня",
+      "acceptingNewPatients": "Принимает новых пациентов",
+      "acceptsInsurance": "Принимает страховку"
     }
   },
   "doctor": {
@@ -217,6 +293,73 @@
       "specialtyNotProvided": "Специальность - Не указана",
       "completeProfileBanner": "Завершите свой профиль ({{completion}}%)",
       "completeProfileMessage": "Завершите свой профиль, чтобы подтвердить учетную запись и начать принимать пациентов."
+    },
+    "settings": {
+      "title": "Настройки",
+      "account": "Учетная запись",
+      "notifications": "Уведомления",
+      "calendar": "Календарь",
+      "security": "Безопасность",
+      "practice": "Практика",
+      "accountInfo": {
+        "title": "Личная информация",
+        "description": "Обновите данные вашей учетной записи",
+        "email": "Email",
+        "phone": "Телефон",
+        "timezone": "Часовой пояс",
+        "language": "Язык",
+        "selectTimezone": "Выберите часовой пояс",
+        "selectLanguage": "Выберите язык",
+        "saving": "Сохранение...",
+        "saveChanges": "Сохранить изменения"
+      },
+      "privacy": {
+        "title": "Настройки конфиденциальности",
+        "description": "Управление параметрами конфиденциальности",
+        "profileVisibility": "Видимость профиля",
+        "profileVisibilityDesc": "Разрешить пациентам просматривать ваш профиль",
+        "shareAnalytics": "Делиться аналитикой",
+        "shareAnalyticsDesc": "Помогите улучшить наш сервис с помощью анонимных данных",
+        "marketingCommunications": "Маркетинговые сообщения",
+        "marketingCommunicationsDesc": "Получать обновления о новых функциях"
+      },
+      "notificationSettings": {
+        "emailTitle": "Email уведомления",
+        "emailDescription": "Управление настройками email уведомлений",
+        "smsTitle": "SMS уведомления",
+        "smsDescription": "Управление настройками текстовых уведомлений",
+        "pushTitle": "Push уведомления",
+        "pushDescription": "Управление уведомлениями в приложении",
+        "appointmentBookings": "Записи на прием",
+        "appointmentBookingsDesc": "Получать уведомления при записи пациентов",
+        "appointmentReminders": "Напоминания о приемах",
+        "appointmentRemindersDesc": "Получать напоминания перед приемами",
+        "cancellations": "Отмены",
+        "cancellationsDesc": "Получать уведомления об отмене приемов",
+        "smsBookings": "SMS о записях",
+        "smsBookingsDesc": "Получать SMS при записи пациентов",
+        "smsReminders": "SMS напоминания",
+        "smsRemindersDesc": "Получать текстовые напоминания о приемах",
+        "smsCancellations": "SMS об отменах",
+        "smsCancellationsDesc": "Получать SMS об отменах",
+        "enablePush": "Включить Push уведомления",
+        "enablePushDesc": "Получать уведомления в реальном времени в приложении"
+      },
+      "calendarSync": {
+        "title": "Интеграция с календарем",
+        "description": "Синхронизация приемов с вашим календарем",
+        "googleCalendar": "Google Календарь",
+        "googleCalendarDesc": "Синхронизация с Google Календарь",
+        "outlookCalendar": "Outlook Календарь",
+        "outlookCalendarDesc": "Синхронизация с Microsoft Outlook",
+        "appleCalendar": "Apple Календарь",
+        "appleCalendarDesc": "Синхронизация с Apple Календарь"
+      },
+      "practiceInfo": {
+        "title": "Информация о практике",
+        "description": "Управление вашей практикой",
+        "comingSoon": "Функции управления практикой скоро появятся..."
+      }
     }
   }
 }

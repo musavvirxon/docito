@@ -101,7 +101,83 @@
       "profileVisibility": "Profile Visibility",
       "shareDataWithDoctors": "Share Data with Doctors",
       "showActivityStatus": "Show Activity Status",
-      "instructions": "Instructions"
+      "instructions": "Manage your account settings, notifications, and privacy preferences",
+      "account": {
+        "title": "Personal Information",
+        "description": "Update your personal details",
+        "fullName": "Full Name",
+        "email": "Email",
+        "phone": "Phone",
+        "dateOfBirth": "Date of Birth",
+        "address": "Address",
+        "saveChanges": "Save Changes"
+      },
+      "notifications": {
+        "emailTitle": "Email Notifications",
+        "emailDescription": "Manage your email notification preferences",
+        "smsTitle": "SMS Notifications",
+        "smsDescription": "Manage your SMS notification preferences",
+        "bookingConfirmations": "Booking Confirmations",
+        "bookingConfirmationsDesc": "Receive emails when appointments are booked",
+        "appointmentReminders": "Appointment Reminders",
+        "appointmentRemindersDesc": "Get reminded before your appointments",
+        "cancellationNotices": "Cancellation Notices",
+        "cancellationNoticesDesc": "Receive cancellation confirmations",
+        "smsReminders": "SMS Reminders",
+        "smsRemindersDesc": "Get text reminders before appointments",
+        "pushNotifications": "Push Notifications",
+        "pushNotificationsDesc": "Receive in-app notifications",
+        "saveSettings": "Save Notification Settings"
+      },
+      "privacy": {
+        "title": "Privacy Settings",
+        "description": "Control your privacy preferences",
+        "profileVisibility": "Profile Visibility",
+        "profileVisibilityDesc": "Allow doctors to see your profile",
+        "shareAnalytics": "Share Analytics",
+        "shareAnalyticsDesc": "Help us improve with anonymous data",
+        "marketingCommunications": "Marketing Communications",
+        "marketingCommunicationsDesc": "Receive promotional emails",
+        "saveSettings": "Save Privacy Settings"
+      },
+      "security": {
+        "title": "Change Password",
+        "description": "Update your password to keep your account secure",
+        "currentPassword": "Current Password",
+        "newPassword": "New Password",
+        "confirmPassword": "Confirm New Password",
+        "updatePassword": "Update Password"
+      }
+    },
+    "filters": {
+      "title": "Filters",
+      "providerType": "Provider Type",
+      "doctorsOnly": "Doctors only",
+      "practicesOnly": "Practices only",
+      "availability": "Availability",
+      "acceptingNewPatients": "Accepting new patients",
+      "availableToday": "Available today",
+      "services": "Services",
+      "acceptsInsurance": "Accepts insurance",
+      "videoConsultation": "Video consultation",
+      "reset": "Reset",
+      "apply": "Apply"
+    },
+    "resultCard": {
+      "doctor": "Doctor",
+      "practice": "Practice",
+      "reviews": "reviews",
+      "consultation": "consultation",
+      "experience": "experience",
+      "doctors": "doctors",
+      "affiliatedDoctors": "affiliated doctors",
+      "bookNow": "Book Now",
+      "booking": "Booking...",
+      "bookAppointment": "Book Appointment",
+      "viewProfile": "View Profile",
+      "availableToday": "Available today",
+      "acceptingNewPatients": "Accepting new patients",
+      "acceptsInsurance": "Accepts insurance"
     }
   },
   "doctor": {
@@ -217,6 +293,73 @@
       "specialtyNotProvided": "Specialty - Not Provided",
       "completeProfileBanner": "Complete Your Profile ({{completion}}%)",
       "completeProfileMessage": "Complete your profile to verify your account and start accepting patients."
+    },
+    "settings": {
+      "title": "Settings",
+      "account": "Account",
+      "notifications": "Notifications",
+      "calendar": "Calendar",
+      "security": "Security",
+      "practice": "Practice",
+      "accountInfo": {
+        "title": "Personal Information",
+        "description": "Update your account details",
+        "email": "Email",
+        "phone": "Phone",
+        "timezone": "Timezone",
+        "language": "Language",
+        "selectTimezone": "Select timezone",
+        "selectLanguage": "Select language",
+        "saving": "Saving...",
+        "saveChanges": "Save Changes"
+      },
+      "privacy": {
+        "title": "Privacy Settings",
+        "description": "Control your privacy preferences",
+        "profileVisibility": "Profile Visibility",
+        "profileVisibilityDesc": "Allow patients to view your profile",
+        "shareAnalytics": "Share Analytics",
+        "shareAnalyticsDesc": "Help improve our service with anonymous data",
+        "marketingCommunications": "Marketing Communications",
+        "marketingCommunicationsDesc": "Receive updates about new features"
+      },
+      "notificationSettings": {
+        "emailTitle": "Email Notifications",
+        "emailDescription": "Manage your email notification preferences",
+        "smsTitle": "SMS Notifications",
+        "smsDescription": "Manage your text message notifications",
+        "pushTitle": "Push Notifications",
+        "pushDescription": "Manage in-app push notifications",
+        "appointmentBookings": "Appointment Bookings",
+        "appointmentBookingsDesc": "Get notified when patients book appointments",
+        "appointmentReminders": "Appointment Reminders",
+        "appointmentRemindersDesc": "Receive reminders before appointments",
+        "cancellations": "Cancellations",
+        "cancellationsDesc": "Get notified when appointments are cancelled",
+        "smsBookings": "SMS Bookings",
+        "smsBookingsDesc": "Get SMS when patients book",
+        "smsReminders": "SMS Reminders",
+        "smsRemindersDesc": "Receive text reminders for appointments",
+        "smsCancellations": "SMS Cancellations",
+        "smsCancellationsDesc": "Get SMS for cancellations",
+        "enablePush": "Enable Push Notifications",
+        "enablePushDesc": "Receive real-time notifications in the app"
+      },
+      "calendarSync": {
+        "title": "Calendar Integration",
+        "description": "Sync appointments with your calendar",
+        "googleCalendar": "Google Calendar",
+        "googleCalendarDesc": "Sync with Google Calendar",
+        "outlookCalendar": "Outlook Calendar",
+        "outlookCalendarDesc": "Sync with Microsoft Outlook",
+        "appleCalendar": "Apple Calendar",
+        "appleCalendarDesc": "Sync with Apple Calendar"
+      },
+      "practiceInfo": {
+        "title": "Practice Information",
+        "description": "Manage your practice affiliation",
+        "comingSoon": "Practice management features coming soon..."
+      }
     }
   }
 }

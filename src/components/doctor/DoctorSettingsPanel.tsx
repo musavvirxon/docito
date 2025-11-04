@@ -39,7 +39,7 @@ export function DoctorSettingsPanel() {
 
   return (
     <div className="p-6">
-      <h2 className="text-3xl font-bold mb-6">Settings</h2>
+      <h2 className="text-3xl font-bold mb-6">{t("doctor.settings.title")}</h2>
       
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-5">

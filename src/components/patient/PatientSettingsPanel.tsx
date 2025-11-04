@@ -114,13 +114,13 @@ export const PatientSettingsPanel = () => {
         <TabsContent value="account" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Personal Information</CardTitle>
-              <CardDescription>Update your personal details</CardDescription>
+              <CardTitle>{t("patient.settings.account.title")}</CardTitle>
+              <CardDescription>{t("patient.settings.account.description")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="full_name">Full Name</Label>
+                  <Label htmlFor="full_name">{t("patient.settings.account.fullName")}</Label>
                   <Input
                     id="full_name"
                     value={localAccount.full_name}
@@ -128,7 +128,7 @@ export const PatientSettingsPanel = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t("patient.settings.account.email")}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -165,7 +165,7 @@ export const PatientSettingsPanel = () => {
               {hasAccountChanges && (
                 <Button onClick={handleSaveAccount} className="mt-4">
                   <Save className="w-4 h-4 mr-2" />
-                  Save Changes
+                  {t("patient.settings.account.saveChanges")}
                 </Button>
               )}
             </CardContent>
@@ -175,8 +175,8 @@ export const PatientSettingsPanel = () => {
         <TabsContent value="notifications" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Email Notifications</CardTitle>
-              <CardDescription>Manage your email notification preferences</CardDescription>
+              <CardTitle>{t("patient.settings.notifications.emailTitle")}</CardTitle>
+              <CardDescription>{t("patient.settings.notifications.emailDescription")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
@@ -305,8 +305,8 @@ export const PatientSettingsPanel = () => {
         <TabsContent value="security" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Change Password</CardTitle>
-              <CardDescription>Update your password to keep your account secure</CardDescription>
+              <CardTitle>{t("patient.settings.security.title")}</CardTitle>
+              <CardDescription>{t("patient.settings.security.description")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">

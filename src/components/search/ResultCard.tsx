@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, Star, Calendar, CreditCard, Languages, Loader2, Building2, Users, GraduationCap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useBookingAuth } from "@/hooks/useBookingAuth";
+import { useTranslation } from "react-i18next";
 
 interface SearchResult {
   id: string;
@@ -42,6 +43,7 @@ const ResultCard = ({ result, isMobile = false }: ResultCardProps) => {
   const navigate = useNavigate();
   const { handleBookingClick } = useBookingAuth();
   const [isBookingLoading, setIsBookingLoading] = useState(false);
+  const { t } = useTranslation("dashboard");
 
   const handleBookAppointment = async () => {
     setIsBookingLoading(true);
@@ -77,7 +79,7 @@ const ResultCard = ({ result, isMobile = false }: ResultCardProps) => {
           {/* Type and Specialty/Degree */}
           <div className="flex items-center gap-2 mb-2">
             <Badge variant="secondary" className="text-xs">
-              {result.type === 'doctor' ? 'Doctor' : 'Practice'}
+              {result.type === 'doctor' ? t("patient.resultCard.doctor") : t("patient.resultCard.practice")}
             </Badge>
             {result.degree && result.type === 'doctor' && (
               <span className="text-xs text-muted-foreground">{result.degree}</span>
@@ -123,7 +125,7 @@ const ResultCard = ({ result, isMobile = false }: ResultCardProps) => {
           {result.type === 'practice' && result.doctorCount && (
             <div className="flex items-center gap-1 mb-2">
               <Users className="w-3 h-3 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">{result.doctorCount} doctors</span>
+              <span className="text-xs text-muted-foreground">{result.doctorCount} {t("patient.resultCard.doctors")}</span>
             </div>
           )}
           
@@ -137,17 +139,17 @@ const ResultCard = ({ result, isMobile = false }: ResultCardProps) => {
               {isBookingLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Booking...
+                  {t("patient.resultCard.booking")}
                 </>
               ) : (
                 <>
                   <Calendar className="w-4 h-4 mr-2" />
-                  Book Now
+                  {t("patient.resultCard.bookNow")}
                 </>
               )}
             </Button>
             <Button onClick={handleViewProfile} variant="outline" size="sm" className="min-h-[44px] active:scale-95 transition-all duration-150">
-              View Profile
+              {t("patient.resultCard.viewProfile")}
             </Button>
           </div>
         </div>
@@ -176,7 +178,7 @@ const ResultCard = ({ result, isMobile = false }: ResultCardProps) => {
             {/* Doctor-specific info */}
             {result.type === 'doctor' && (
               <div className="flex items-center gap-2 mb-2">
-                <Badge variant="secondary" className="text-xs">Doctor</Badge>
+                <Badge variant="secondary" className="text-xs">{result.type === 'doctor' ? t("patient.resultCard.doctor") : t("patient.resultCard.practice")}</Badge>
                 {result.degree && (
                   <div className="flex items-center gap-1">
                     <GraduationCap className="w-3 h-3 text-muted-foreground" />
@@ -250,7 +252,7 @@ const ResultCard = ({ result, isMobile = false }: ResultCardProps) => {
               {result.consultationFee && (
                 <div className="flex items-center gap-2">
                   <CreditCard className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  <span className="text-sm">${result.consultationFee} consultation</span>
+                  <span className="text-sm">${result.consultationFee} {t("patient.resultCard.consultation")}</span>
                 </div>
               )}
               
@@ -267,7 +269,7 @@ const ResultCard = ({ result, isMobile = false }: ResultCardProps) => {
           {result.type === 'practice' && result.doctorCount && (
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-              <span className="text-sm">{result.doctorCount} affiliated doctors</span>
+              <span className="text-sm">{result.doctorCount} {t("patient.resultCard.affiliatedDoctors")}</span>
             </div>
           )}
 
@@ -284,17 +286,17 @@ const ResultCard = ({ result, isMobile = false }: ResultCardProps) => {
         <div className="flex flex-wrap items-center gap-2 mb-4">
           {result.availability?.includes('today') && (
             <Badge variant="outline" className="text-green-600 border-green-600 text-xs">
-              Available today
+              {t("patient.resultCard.availableToday")}
             </Badge>
           )}
           {result.acceptsNewPatients && (
             <Badge variant="outline" className="text-blue-600 border-blue-600 text-xs">
-              Accepting new patients
+              {t("patient.resultCard.acceptingNewPatients")}
             </Badge>
           )}
           {result.acceptsInsurance && (
             <Badge variant="outline" className="text-purple-600 border-purple-600 text-xs">
-              Accepts insurance
+              {t("patient.resultCard.acceptsInsurance")}
             </Badge>
           )}
         </div>
@@ -310,12 +312,12 @@ const ResultCard = ({ result, isMobile = false }: ResultCardProps) => {
             {isBookingLoading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Booking...
+                {t("patient.resultCard.booking")}
               </>
             ) : (
               <>
                 <Calendar className="w-4 h-4 mr-2" />
-                Book Appointment
+                {t("patient.resultCard.bookAppointment")}
               </>
             )}
           </Button>
@@ -325,7 +327,7 @@ const ResultCard = ({ result, isMobile = false }: ResultCardProps) => {
             size="sm" 
             className="flex-1 max-w-[140px] min-h-[42px] hover:bg-muted active:scale-95 transition-all duration-150"
           >
-            View Profile
+            {t("patient.resultCard.viewProfile")}
           </Button>
         </div>
       </div>

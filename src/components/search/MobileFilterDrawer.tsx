@@ -4,6 +4,7 @@ import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Filter, X } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface MobileFilterDrawerProps {
   filters: {
@@ -20,6 +21,7 @@ interface MobileFilterDrawerProps {
 
 const MobileFilterDrawer = ({ filters, onFilterChange, onReset }: MobileFilterDrawerProps) => {
   const [open, setOpen] = useState(false);
+  const { t } = useTranslation("dashboard");
 
   const handleApply = () => {
     setOpen(false);
@@ -30,22 +32,22 @@ const MobileFilterDrawer = ({ filters, onFilterChange, onReset }: MobileFilterDr
       <SheetTrigger asChild>
         <Button variant="outline" size="sm">
           <Filter className="w-4 h-4 mr-2" />
-          Filters
+          {t("patient.filters.title")}
         </Button>
       </SheetTrigger>
       <SheetContent side="right" className="w-80">
         <SheetHeader>
-          <SheetTitle>Filters</SheetTitle>
+          <SheetTitle>{t("patient.filters.title")}</SheetTitle>
         </SheetHeader>
         
         <div className="mt-6 space-y-6">
           {/* Provider Type */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Provider Type</Label>
+            <Label className="text-sm font-medium">{t("patient.filters.providerType")}</Label>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="mobile-doctors-only" className="text-sm">
-                  Doctors only
+                  {t("patient.filters.doctorsOnly")}
                 </Label>
                 <Switch
                   id="mobile-doctors-only"
@@ -55,7 +57,7 @@ const MobileFilterDrawer = ({ filters, onFilterChange, onReset }: MobileFilterDr
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="mobile-practices-only" className="text-sm">
-                  Practices only
+                  {t("patient.filters.practicesOnly")}
                 </Label>
                 <Switch
                   id="mobile-practices-only"
@@ -68,11 +70,11 @@ const MobileFilterDrawer = ({ filters, onFilterChange, onReset }: MobileFilterDr
 
           {/* Availability */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Availability</Label>
+            <Label className="text-sm font-medium">{t("patient.filters.availability")}</Label>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="mobile-new-patients" className="text-sm">
-                  Accepting new patients
+                  {t("patient.filters.acceptingNewPatients")}
                 </Label>
                 <Switch
                   id="mobile-new-patients"
@@ -82,7 +84,7 @@ const MobileFilterDrawer = ({ filters, onFilterChange, onReset }: MobileFilterDr
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="mobile-available-today" className="text-sm">
-                  Available today
+                  {t("patient.filters.availableToday")}
                 </Label>
                 <Switch
                   id="mobile-available-today"
@@ -95,11 +97,11 @@ const MobileFilterDrawer = ({ filters, onFilterChange, onReset }: MobileFilterDr
 
           {/* Services */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Services</Label>
+            <Label className="text-sm font-medium">{t("patient.filters.services")}</Label>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="mobile-accepts-insurance" className="text-sm">
-                  Accepts insurance
+                  {t("patient.filters.acceptsInsurance")}
                 </Label>
                 <Switch
                   id="mobile-accepts-insurance"
@@ -109,7 +111,7 @@ const MobileFilterDrawer = ({ filters, onFilterChange, onReset }: MobileFilterDr
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="mobile-video-consultation" className="text-sm">
-                  Video consultation
+                  {t("patient.filters.videoConsultation")}
                 </Label>
                 <Switch
                   id="mobile-video-consultation"
@@ -124,10 +126,10 @@ const MobileFilterDrawer = ({ filters, onFilterChange, onReset }: MobileFilterDr
         {/* Action Buttons */}
         <div className="absolute bottom-6 left-6 right-6 flex gap-3">
           <Button variant="outline" onClick={onReset} className="flex-1">
-            Reset
+            {t("patient.filters.reset")}
           </Button>
           <Button onClick={handleApply} className="flex-1">
-            Apply
+            {t("patient.filters.apply")}
           </Button>
         </div>
       </SheetContent>
