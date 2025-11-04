@@ -47,23 +47,23 @@ export function DoctorSettingsPanel() {
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="account">
             <User className="w-4 h-4 mr-2" />
-            Account
+            {t("doctor.settings.account")}
           </TabsTrigger>
           <TabsTrigger value="notifications">
             <Bell className="w-4 h-4 mr-2" />
-            Notifications
+            {t("doctor.settings.notifications")}
           </TabsTrigger>
           <TabsTrigger value="calendar">
             <Calendar className="w-4 h-4 mr-2" />
-            Calendar
+            {t("doctor.settings.calendar")}
           </TabsTrigger>
           <TabsTrigger value="security">
             <Shield className="w-4 h-4 mr-2" />
-            Security
+            {t("doctor.settings.security")}
           </TabsTrigger>
           <TabsTrigger value="practice">
             <Building className="w-4 h-4 mr-2" />
-            Practice
+            {t("doctor.settings.practice")}
           </TabsTrigger>
         </TabsList>
 
@@ -71,8 +71,8 @@ export function DoctorSettingsPanel() {
         <TabsContent value="account" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Personal Information</CardTitle>
-              <CardDescription>Update your account details</CardDescription>
+            <CardTitle>{t("doctor.settings.personalInfo")}</CardTitle>
+            <CardDescription>{t("doctor.settings.updateDetails")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -135,7 +135,7 @@ export function DoctorSettingsPanel() {
               </div>
               
               <Button onClick={handleAccountUpdate} disabled={saving}>
-                {saving ? 'Saving...' : 'Save Changes'}
+                {saving ? t("doctor.settings.saving") : t("doctor.settings.saveChanges")}
               </Button>
             </CardContent>
           </Card>

@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Award, Calendar, DollarSign } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { useTranslation } from "react-i18next";
 
 interface FinancialInsightsProps {
   insights: {
@@ -13,13 +14,15 @@ interface FinancialInsightsProps {
 }
 
 export const FinancialInsights = ({ insights }: FinancialInsightsProps) => {
+  const { t } = useTranslation("dashboard");
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <Card>
         <CardHeader>
           <CardTitle className="text-sm flex items-center gap-2">
             <Award className="w-4 h-4" />
-            Most Profitable Service
+            {t("doctor.financialStats.insights.mostProfitable")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -30,11 +33,11 @@ export const FinancialInsights = ({ insights }: FinancialInsightsProps) => {
                 ${insights.mostProfitableService.totalRevenue.toLocaleString()}
               </p>
               <p className="text-sm text-muted-foreground">
-                {insights.mostProfitableService.bookings} bookings
+                {insights.mostProfitableService.bookings} {t("doctor.financialStats.insights.bookings")}
               </p>
             </>
           ) : (
-            <p className="text-muted-foreground">No data available</p>
+            <p className="text-muted-foreground">{t("doctor.financialStats.insights.noData")}</p>
           )}
         </CardContent>
       </Card>
@@ -43,13 +46,13 @@ export const FinancialInsights = ({ insights }: FinancialInsightsProps) => {
         <CardHeader>
           <CardTitle className="text-sm flex items-center gap-2">
             <DollarSign className="w-4 h-4" />
-            Revenue Per Hour
+            {t("doctor.financialStats.insights.revenuePerHour")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-2xl font-bold">${insights.revenuePerHour.toFixed(2)}</p>
           <p className="text-sm text-muted-foreground">
-            Based on {insights.totalHours.toFixed(1)} hours worked
+            {t("doctor.financialStats.insights.basedOnHours", { hours: insights.totalHours.toFixed(1) })}
           </p>
         </CardContent>
       </Card>
@@ -58,7 +61,7 @@ export const FinancialInsights = ({ insights }: FinancialInsightsProps) => {
         <CardHeader>
           <CardTitle className="text-sm flex items-center gap-2">
             <TrendingUp className="w-4 h-4" />
-            Cancellation Refund Rate
+            {t("doctor.financialStats.insights.refundRate")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -66,7 +69,7 @@ export const FinancialInsights = ({ insights }: FinancialInsightsProps) => {
             <div className="flex justify-between">
               <span className="text-2xl font-bold">{insights.refundRate.toFixed(1)}%</span>
               <span className="text-sm text-muted-foreground">
-                {insights.refundRate < 10 ? 'Excellent' : insights.refundRate < 20 ? 'Good' : 'Needs Improvement'}
+                {insights.refundRate < 10 ? t("doctor.financialStats.insights.excellent") : insights.refundRate < 20 ? t("doctor.financialStats.insights.good") : t("doctor.financialStats.insights.needsImprovement")}
               </span>
             </div>
             <Progress value={insights.refundRate} className="h-2" />
@@ -78,7 +81,7 @@ export const FinancialInsights = ({ insights }: FinancialInsightsProps) => {
         <CardHeader>
           <CardTitle className="text-sm flex items-center gap-2">
             <Calendar className="w-4 h-4" />
-            Busiest Days (Revenue)
+            {t("doctor.financialStats.insights.busiestDays")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -94,7 +97,7 @@ export const FinancialInsights = ({ insights }: FinancialInsightsProps) => {
               ))}
             </div>
           ) : (
-            <p className="text-muted-foreground">No data available</p>
+            <p className="text-muted-foreground">{t("doctor.financialStats.insights.noData")}</p>
           )}
         </CardContent>
       </Card>
