@@ -11,7 +11,11 @@
     "login": "Kirish",
     "register": "Ro'yxatdan o'tish",
     "dashboard": "Boshqaruv paneli",
-    "logout": "Chiqish"
+    "logout": "Chiqish",
+    "findDoctors": "Shifokorlarni topish",
+    "features": "Imkoniyatlar",
+    "help": "Yordam",
+    "scheduleDemo": "Demoni rejalashtirish"
   },
   "buttons": {
     "search": "Qidirish",

@@ -25,12 +25,12 @@ const ModernNavbar = () => {
   }, []);
 
   const navLinks = [
-    { name: "Find Doctors", href: "/search-doctors", isRoute: true },
-    { name: "Specialties", href: "/browse-specialties", isRoute: true },
-    { name: "Practices", href: "/find-practices", isRoute: true },
-    { name: "Features", href: "/features", isRoute: true },
-    { name: "Help", href: "/help-center", isRoute: true },
-    { name: "About", href: "/about", isRoute: true },
+    { name: t('navigation.findDoctors'), href: "/search-doctors", isRoute: true },
+    { name: t('navigation.specialties'), href: "/browse-specialties", isRoute: true },
+    { name: t('navigation.practices'), href: "/find-practices", isRoute: true },
+    { name: t('navigation.features'), href: "/features", isRoute: true },
+    { name: t('navigation.help'), href: "/help-center", isRoute: true },
+    { name: t('navigation.about'), href: "/about", isRoute: true },
   ];
 
   return (
@@ -172,7 +172,7 @@ const ModernNavbar = () => {
                       }}
                       className="w-full"
                     >
-                      Dashboard
+                      {t('navigation.dashboard')}
                     </Button>
                     <Button
                       onClick={() => {
@@ -181,7 +181,7 @@ const ModernNavbar = () => {
                       }}
                       className="w-full bg-primary text-primary-foreground"
                     >
-                      Sign Out
+                      {t('navigation.logout')}
                     </Button>
                   </>
                 ) : (
@@ -194,7 +194,7 @@ const ModernNavbar = () => {
                       }}
                       className="w-full"
                     >
-                      Sign In
+                      {t('navigation.login')}
                     </Button>
                     <Button
                       onClick={() => {
@@ -203,7 +203,7 @@ const ModernNavbar = () => {
                       }}
                       className="w-full bg-primary text-primary-foreground"
                     >
-                      Schedule Demo
+                      {t('navigation.scheduleDemo')}
                     </Button>
                   </>
                 )}

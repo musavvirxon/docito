@@ -11,7 +11,11 @@
     "login": "Войти",
     "register": "Регистрация",
     "dashboard": "Панель управления",
-    "logout": "Выйти"
+    "logout": "Выйти",
+    "findDoctors": "Найти врачей",
+    "features": "Возможности",
+    "help": "Помощь",
+    "scheduleDemo": "Запланировать демо"
   },
   "buttons": {
     "search": "Поиск",

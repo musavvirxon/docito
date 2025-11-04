@@ -11,7 +11,11 @@
     "login": "Giriş Yap",
     "register": "Kayıt Ol",
     "dashboard": "Kontrol Paneli",
-    "logout": "Çıkış Yap"
+    "logout": "Çıkış Yap",
+    "findDoctors": "Doktor Bul",
+    "features": "Özellikler",
+    "help": "Yardım",
+    "scheduleDemo": "Demo Planla"
   },
   "buttons": {
     "search": "Ara",

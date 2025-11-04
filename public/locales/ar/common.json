@@ -11,7 +11,11 @@
     "login": "تسجيل الدخول",
     "register": "التسجيل",
     "dashboard": "لوحة التحكم",
-    "logout": "تسجيل الخروج"
+    "logout": "تسجيل الخروج",
+    "findDoctors": "البحث عن الأطباء",
+    "features": "المميزات",
+    "help": "المساعدة",
+    "scheduleDemo": "جدولة العرض التوضيحي"
   },
   "buttons": {
     "search": "بحث",

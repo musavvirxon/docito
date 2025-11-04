@@ -11,7 +11,11 @@
     "login": "Login",
     "register": "Register",
     "dashboard": "Dashboard",
-    "logout": "Logout"
+    "logout": "Logout",
+    "findDoctors": "Find Doctors",
+    "features": "Features",
+    "help": "Help",
+    "scheduleDemo": "Schedule Demo"
   },
   "buttons": {
     "search": "Search",
