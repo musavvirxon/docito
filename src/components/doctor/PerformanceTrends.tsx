@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Users, Clock, MapPin, Lightbulb } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { useTranslation } from 'react-i18next';
 
 interface PerformanceTrendsProps {
   dailyTrends: Array<{ date: string; appointments: number; completed: number; cancelled: number }>;
@@ -13,9 +14,11 @@ interface PerformanceTrendsProps {
 }
 
 export function PerformanceTrends({ dailyTrends, popularTimeSlots, stats }: PerformanceTrendsProps) {
+  const { t } = useTranslation("dashboard");
+  
   const patientTypeData = [
-    { name: 'Returning', value: stats.returningPatients, color: '#10b981' },
-    { name: 'New', value: stats.newPatients, color: '#3b82f6' }
+    { name: t("performance.returning"), value: stats.returningPatients, color: '#10b981' },
+    { name: t("performance.new"), value: stats.newPatients, color: '#3b82f6' }
   ];
 
   // Get recommendations based on data

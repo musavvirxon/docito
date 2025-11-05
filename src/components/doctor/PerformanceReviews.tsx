@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Star, Filter, ThumbsUp, MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { Progress } from "@/components/ui/progress";
+import { useTranslation } from 'react-i18next';
 
 interface Review {
   patient_name: string;
@@ -19,6 +20,7 @@ interface PerformanceReviewsProps {
 }
 
 export function PerformanceReviews({ reviews, averageRating, totalReviews }: PerformanceReviewsProps) {
+  const { t } = useTranslation("dashboard");
   const [filter, setFilter] = useState<number | 'all'>('all');
 
   // Calculate rating distribution

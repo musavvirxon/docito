@@ -10,8 +10,10 @@ import { useSettings } from '@/hooks/useSettings';
 import { useAccountActivity } from '@/hooks/useAccountActivity';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 export function SecuritySettings() {
+  const { t } = useTranslation("dashboard");
   const { changePassword, saving } = useSettings();
   const { 
     activities, 
@@ -29,17 +31,17 @@ export function SecuritySettings() {
 
   const handlePasswordChange = async () => {
     if (!passwordForm.currentPassword || !passwordForm.newPassword) {
-      toast.error('Please fill in all password fields');
+      toast.error(t("doctor.settings.passwordRequired"));
       return;
     }
 
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toast.error('New passwords do not match');
+      toast.error(t("doctor.settings.passwordMismatch"));
       return;
     }
 
     if (passwordForm.newPassword.length < 8) {
-      toast.error('Password must be at least 8 characters');
+      toast.error(t("doctor.settings.passwordLength"));
       return;
     }
 
@@ -73,43 +75,43 @@ export function SecuritySettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Lock className="w-5 h-5" />
-            Change Password
+            {t("doctor.settings.changePassword")}
           </CardTitle>
           <CardDescription>
-            Update your password to keep your account secure
+            {t("doctor.settings.changePasswordDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="currentPassword">Current Password</Label>
+            <Label htmlFor="currentPassword">{t("doctor.settings.currentPassword")}</Label>
             <Input
               id="currentPassword"
               type="password"
               value={passwordForm.currentPassword}
               onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
-              placeholder="Enter current password"
+              placeholder={t("doctor.settings.enterCurrentPassword")}
             />
           </div>
           
           <div>
-            <Label htmlFor="newPassword">New Password</Label>
+            <Label htmlFor="newPassword">{t("doctor.settings.newPassword")}</Label>
             <Input
               id="newPassword"
               type="password"
               value={passwordForm.newPassword}
               onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-              placeholder="Enter new password (min. 8 characters)"
+              placeholder={t("doctor.settings.enterNewPassword")}
             />
           </div>
           
           <div>
-            <Label htmlFor="confirmPassword">Confirm New Password</Label>
+            <Label htmlFor="confirmPassword">{t("doctor.settings.confirmPassword")}</Label>
             <Input
               id="confirmPassword"
               type="password"
               value={passwordForm.confirmPassword}
               onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-              placeholder="Confirm new password"
+              placeholder={t("doctor.settings.confirmNewPassword")}
             />
           </div>
 
@@ -118,7 +120,7 @@ export function SecuritySettings() {
             disabled={saving}
             className="w-full"
           >
-            {saving ? 'Updating...' : 'Update Password'}
+            {saving ? t("doctor.settings.updating") : t("doctor.settings.updatePassword")}
           </Button>
         </CardContent>
       </Card>
@@ -128,17 +130,17 @@ export function SecuritySettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <History className="w-5 h-5" />
-            Recent Account Activity
+            {t("doctor.settings.recentActivity")}
           </CardTitle>
           <CardDescription>
-            Review your recent login history and account changes
+            {t("doctor.settings.recentActivityDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {loadingActivities ? (
-            <p className="text-sm text-muted-foreground">Loading activity...</p>
+            <p className="text-sm text-muted-foreground">{t("doctor.settings.loadingActivity")}</p>
           ) : !activities || activities.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No recent activity</p>
+            <p className="text-sm text-muted-foreground">{t("doctor.settings.noRecentActivity")}</p>
           ) : (
             <div className="space-y-3">
               {activities.slice(0, 5).map((activity) => (
@@ -146,7 +148,7 @@ export function SecuritySettings() {
                   <div>
                     <p className="font-medium capitalize">{activity.activity_type.replace('_', ' ')}</p>
                     <p className="text-sm text-muted-foreground">
-                      {activity.ip_address && `IP: ${activity.ip_address}`}
+                      {activity.ip_address && `${t("doctor.settings.ip")}: ${activity.ip_address}`}
                       {activity.device_info && ` • ${activity.device_info}`}
                     </p>
                   </div>
@@ -165,18 +167,17 @@ export function SecuritySettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Key className="w-5 h-5" />
-            Two-Factor Authentication (Coming Soon)
+            {t("doctor.settings.twoFactorAuth")}
           </CardTitle>
           <CardDescription>
-            Add an extra layer of security to your account
+            {t("doctor.settings.twoFactorAuthDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Alert>
             <Shield className="h-4 w-4" />
             <AlertDescription>
-              Two-factor authentication will be available in a future update. 
-              This will allow you to secure your account with SMS or authenticator app verification.
+              {t("doctor.settings.twoFactorComingSoon")}
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -189,10 +190,10 @@ export function SecuritySettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-destructive">
             <AlertTriangle className="w-5 h-5" />
-            Danger Zone
+            {t("doctor.settings.dangerZone")}
           </CardTitle>
           <CardDescription>
-            Irreversible account actions
+            {t("doctor.settings.dangerZoneDesc")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -200,16 +201,16 @@ export function SecuritySettings() {
           {requests && requests.filter(r => r.status === 'pending').length > 0 && (
             <Alert>
               <AlertDescription>
-                You have pending account requests. Please wait for them to be processed.
+                {t("doctor.settings.pendingRequests")}
               </AlertDescription>
             </Alert>
           )}
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium">Export Account Data</p>
+              <p className="font-medium">{t("doctor.settings.exportData")}</p>
               <p className="text-sm text-muted-foreground">
-                Download all your account data and information
+                {t("doctor.settings.exportDataDesc")}
               </p>
             </div>
             <Button 
@@ -218,7 +219,7 @@ export function SecuritySettings() {
               disabled={isSubmittingRequest}
             >
               <Download className="w-4 h-4 mr-2" />
-              Request Export
+              {t("doctor.settings.requestExport")}
             </Button>
           </div>
 
@@ -226,9 +227,9 @@ export function SecuritySettings() {
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium text-destructive">Deactivate Account</p>
+              <p className="font-medium text-destructive">{t("doctor.settings.deactivateAccount")}</p>
               <p className="text-sm text-muted-foreground">
-                Request to permanently deactivate your account
+                {t("doctor.settings.deactivateAccountDesc")}
               </p>
             </div>
             <Button 
@@ -236,7 +237,7 @@ export function SecuritySettings() {
               onClick={handleRequestDeactivation}
               disabled={isSubmittingRequest}
             >
-              Request Deactivation
+              {t("doctor.settings.requestDeactivation")}
             </Button>
           </div>
         </CardContent>

@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DollarSign, Clock, TrendingUp, Activity, ArrowUpDown } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useState } from "react";
+import { useTranslation } from 'react-i18next';
 
 interface Service {
   id: string;
@@ -22,6 +23,7 @@ interface PerformanceServicesProps {
 }
 
 export function PerformanceServices({ services }: PerformanceServicesProps) {
+  const { t } = useTranslation("dashboard");
   const [sortBy, setSortBy] = useState<'bookings' | 'revenue' | 'conversionRate'>('bookings');
   const [filterCategory, setFilterCategory] = useState<string>('all');
 

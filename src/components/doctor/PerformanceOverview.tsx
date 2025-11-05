@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Calendar, CheckCircle2, XCircle, UserX, Clock, TrendingUp, Users, Award } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useTranslation } from 'react-i18next';
 
 interface PerformanceOverviewProps {
   stats: {
@@ -23,6 +24,8 @@ interface PerformanceOverviewProps {
 }
 
 export function PerformanceOverview({ stats, dailyTrends }: PerformanceOverviewProps) {
+  const { t } = useTranslation("dashboard");
+  
   const getBadgeColor = (badge: string) => {
     switch (badge) {
       case 'Gold': return 'bg-yellow-500';
@@ -32,9 +35,9 @@ export function PerformanceOverview({ stats, dailyTrends }: PerformanceOverviewP
   };
 
   const getAlertStatus = (rate: number, threshold: number) => {
-    if (rate > threshold) return { color: 'text-red-600', status: 'High' };
-    if (rate > threshold * 0.7) return { color: 'text-yellow-600', status: 'Medium' };
-    return { color: 'text-green-600', status: 'Low' };
+    if (rate > threshold) return { color: 'text-red-600', status: t("performance.high") };
+    if (rate > threshold * 0.7) return { color: 'text-yellow-600', status: t("performance.medium") };
+    return { color: 'text-green-600', status: t("performance.low") };
   };
 
   const cancellationAlert = getAlertStatus(stats.cancellationRate, 15);

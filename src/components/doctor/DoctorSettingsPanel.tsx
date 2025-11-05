@@ -77,58 +77,61 @@ export function DoctorSettingsPanel() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t("doctor.settings.email")}</Label>
                   <Input 
                     id="email" 
                     type="email" 
                     value={accountSettings.email}
                     onChange={(e) => updateAccountSettings({ email: e.target.value })}
-                    placeholder="doctor@example.com" 
+                    placeholder={t("doctor.settings.emailPlaceholder")}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="phone">Phone</Label>
+                  <Label htmlFor="phone">{t("doctor.settings.phone")}</Label>
                   <Input 
                     id="phone" 
                     type="tel" 
                     value={accountSettings.phone}
                     onChange={(e) => updateAccountSettings({ phone: e.target.value })}
-                    placeholder="+1 (555) 000-0000" 
+                    placeholder={t("doctor.settings.phonePlaceholder")}
                   />
                 </div>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="timezone">Timezone</Label>
+                  <Label htmlFor="timezone">{t("doctor.settings.timezone")}</Label>
                   <Select 
                     value={accountSettings.timezone}
                     onValueChange={(value) => updateAccountSettings({ timezone: value })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select timezone" />
+                      <SelectValue placeholder={t("doctor.settings.selectTimezone")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="America/New_York">Eastern Time (EST)</SelectItem>
-                      <SelectItem value="America/Chicago">Central Time (CST)</SelectItem>
-                      <SelectItem value="America/Denver">Mountain Time (MST)</SelectItem>
-                      <SelectItem value="America/Los_Angeles">Pacific Time (PST)</SelectItem>
+                      <SelectItem value="America/New_York">{t("doctor.settings.timezones.est")}</SelectItem>
+                      <SelectItem value="America/Chicago">{t("doctor.settings.timezones.cst")}</SelectItem>
+                      <SelectItem value="America/Denver">{t("doctor.settings.timezones.mst")}</SelectItem>
+                      <SelectItem value="America/Los_Angeles">{t("doctor.settings.timezones.pst")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="language">Language</Label>
+                  <Label htmlFor="language">{t("doctor.settings.language")}</Label>
                   <Select 
                     value={accountSettings.language}
                     onValueChange={(value) => updateAccountSettings({ language: value })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select language" />
+                      <SelectValue placeholder={t("doctor.settings.selectLanguage")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="en">English</SelectItem>
-                      <SelectItem value="es">Spanish</SelectItem>
-                      <SelectItem value="fr">French</SelectItem>
+                      <SelectItem value="en">{t("doctor.settings.languages.en")}</SelectItem>
+                      <SelectItem value="es">{t("doctor.settings.languages.es")}</SelectItem>
+                      <SelectItem value="fr">{t("doctor.settings.languages.fr")}</SelectItem>
+                      <SelectItem value="ru">{t("doctor.settings.languages.ru")}</SelectItem>
+                      <SelectItem value="uz">{t("doctor.settings.languages.uz")}</SelectItem>
+                      <SelectItem value="ar">{t("doctor.settings.languages.ar")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -143,14 +146,14 @@ export function DoctorSettingsPanel() {
           {/* Privacy Settings */}
           <Card>
             <CardHeader>
-              <CardTitle>Privacy Settings</CardTitle>
-              <CardDescription>Control your privacy preferences</CardDescription>
+              <CardTitle>{t("doctor.settings.privacySettings")}</CardTitle>
+              <CardDescription>{t("doctor.settings.privacyDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>Profile Visibility</Label>
-                  <p className="text-sm text-muted-foreground">Allow patients to view your profile</p>
+                  <Label>{t("doctor.settings.profileVisibility")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("doctor.settings.profileVisibilityDesc")}</p>
                 </div>
                 <Switch 
                   checked={privacySettings.profileVisibility}
@@ -160,8 +163,8 @@ export function DoctorSettingsPanel() {
               
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>Share Analytics</Label>
-                  <p className="text-sm text-muted-foreground">Help improve our service with anonymous data</p>
+                  <Label>{t("doctor.settings.shareAnalytics")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("doctor.settings.shareAnalyticsDesc")}</p>
                 </div>
                 <Switch 
                   checked={privacySettings.shareAnalytics}
@@ -171,8 +174,8 @@ export function DoctorSettingsPanel() {
               
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>Marketing Communications</Label>
-                  <p className="text-sm text-muted-foreground">Receive updates about new features</p>
+                  <Label>{t("doctor.settings.marketingCommunications")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("doctor.settings.marketingDesc")}</p>
                 </div>
                 <Switch 
                   checked={privacySettings.marketingCommunications}
@@ -187,14 +190,14 @@ export function DoctorSettingsPanel() {
         <TabsContent value="notifications" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Email Notifications</CardTitle>
-              <CardDescription>Manage your email notification preferences</CardDescription>
+              <CardTitle>{t("doctor.settings.emailNotifications")}</CardTitle>
+              <CardDescription>{t("doctor.settings.emailNotificationsDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>Appointment Bookings</Label>
-                  <p className="text-sm text-muted-foreground">Get notified when patients book appointments</p>
+                  <Label>{t("doctor.settings.appointmentBookings")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("doctor.settings.appointmentBookingsDesc")}</p>
                 </div>
                 <Switch 
                   checked={notifications.emailBookings}
@@ -204,8 +207,8 @@ export function DoctorSettingsPanel() {
               
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>Appointment Reminders</Label>
-                  <p className="text-sm text-muted-foreground">Receive reminders before appointments</p>
+                  <Label>{t("doctor.settings.appointmentReminders")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("doctor.settings.appointmentRemindersDesc")}</p>
                 </div>
                 <Switch 
                   checked={notifications.emailReminders}
@@ -215,8 +218,8 @@ export function DoctorSettingsPanel() {
               
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>Cancellations</Label>
-                  <p className="text-sm text-muted-foreground">Get notified when appointments are cancelled</p>
+                  <Label>{t("doctor.settings.cancellations")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("doctor.settings.cancellationsDesc")}</p>
                 </div>
                 <Switch 
                   checked={notifications.emailCancellations}
@@ -228,14 +231,14 @@ export function DoctorSettingsPanel() {
 
           <Card>
             <CardHeader>
-              <CardTitle>SMS Notifications</CardTitle>
-              <CardDescription>Manage your text message notifications</CardDescription>
+              <CardTitle>{t("doctor.settings.smsNotifications")}</CardTitle>
+              <CardDescription>{t("doctor.settings.smsNotificationsDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>SMS Bookings</Label>
-                  <p className="text-sm text-muted-foreground">Get SMS when patients book</p>
+                  <Label>{t("doctor.settings.smsBookings")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("doctor.settings.smsBookingsDesc")}</p>
                 </div>
                 <Switch 
                   checked={notifications.smsBookings}
@@ -245,8 +248,8 @@ export function DoctorSettingsPanel() {
               
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>SMS Reminders</Label>
-                  <p className="text-sm text-muted-foreground">Receive text reminders for appointments</p>
+                  <Label>{t("doctor.settings.smsReminders")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("doctor.settings.smsRemindersDesc")}</p>
                 </div>
                 <Switch 
                   checked={notifications.smsReminders}
@@ -256,8 +259,8 @@ export function DoctorSettingsPanel() {
               
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>SMS Cancellations</Label>
-                  <p className="text-sm text-muted-foreground">Get SMS for cancellations</p>
+                  <Label>{t("doctor.settings.smsCancellations")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("doctor.settings.smsCancellationsDesc")}</p>
                 </div>
                 <Switch 
                   checked={notifications.smsCancellations}
@@ -269,14 +272,14 @@ export function DoctorSettingsPanel() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Push Notifications</CardTitle>
-              <CardDescription>Manage in-app push notifications</CardDescription>
+              <CardTitle>{t("doctor.settings.pushNotifications")}</CardTitle>
+              <CardDescription>{t("doctor.settings.pushNotificationsDesc")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>Enable Push Notifications</Label>
-                  <p className="text-sm text-muted-foreground">Receive real-time notifications in the app</p>
+                  <Label>{t("doctor.settings.enablePush")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("doctor.settings.enablePushDesc")}</p>
                 </div>
                 <Switch 
                   checked={notifications.pushNotifications}
@@ -291,14 +294,14 @@ export function DoctorSettingsPanel() {
         <TabsContent value="calendar" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Calendar Integration</CardTitle>
-              <CardDescription>Sync appointments with your calendar</CardDescription>
+              <CardTitle>{t("doctor.settings.calendarIntegration")}</CardTitle>
+              <CardDescription>{t("doctor.settings.calendarIntegrationDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>Google Calendar</Label>
-                  <p className="text-sm text-muted-foreground">Sync with Google Calendar</p>
+                  <Label>{t("doctor.settings.googleCalendar")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("doctor.settings.googleCalendarDesc")}</p>
                 </div>
                 <Switch 
                   checked={calendarSync.googleCalendar}
@@ -308,8 +311,8 @@ export function DoctorSettingsPanel() {
               
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>Outlook Calendar</Label>
-                  <p className="text-sm text-muted-foreground">Sync with Microsoft Outlook</p>
+                  <Label>{t("doctor.settings.outlookCalendar")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("doctor.settings.outlookCalendarDesc")}</p>
                 </div>
                 <Switch 
                   checked={calendarSync.outlookCalendar}
@@ -319,8 +322,8 @@ export function DoctorSettingsPanel() {
               
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>Apple Calendar</Label>
-                  <p className="text-sm text-muted-foreground">Sync with Apple Calendar</p>
+                  <Label>{t("doctor.settings.appleCalendar")}</Label>
+                  <p className="text-sm text-muted-foreground">{t("doctor.settings.appleCalendarDesc")}</p>
                 </div>
                 <Switch 
                   checked={calendarSync.appleCalendar}
@@ -340,11 +343,11 @@ export function DoctorSettingsPanel() {
         <TabsContent value="practice" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Practice Information</CardTitle>
-              <CardDescription>Manage your practice affiliation</CardDescription>
+              <CardTitle>{t("doctor.settings.practiceInfo")}</CardTitle>
+              <CardDescription>{t("doctor.settings.practiceInfoDesc")}</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">Practice management features coming soon...</p>
+              <p className="text-sm text-muted-foreground">{t("doctor.settings.practiceComingSoon")}</p>
             </CardContent>
           </Card>
         </TabsContent>
