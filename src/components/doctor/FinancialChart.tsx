@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface EarningsHistory {
   date: string;
@@ -14,6 +15,7 @@ interface FinancialChartProps {
 }
 
 export const FinancialChart = ({ earningsHistory }: FinancialChartProps) => {
+  const { t } = useTranslation("dashboard");
   const [chartType, setChartType] = useState<'line' | 'bar'>('line');
 
   const hasData = earningsHistory.length > 0;
@@ -25,21 +27,21 @@ export const FinancialChart = ({ earningsHistory }: FinancialChartProps) => {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>Earnings Over Time</CardTitle>
+          <CardTitle>{t("doctor.financialStats.chart.title")}</CardTitle>
           <div className="flex gap-2">
             <Button
               variant={chartType === 'line' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setChartType('line')}
             >
-              Line
+              {t("doctor.financialStats.chart.line")}
             </Button>
             <Button
               variant={chartType === 'bar' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setChartType('bar')}
             >
-              Bar
+              {t("doctor.financialStats.chart.bar")}
             </Button>
           </div>
         </div>
@@ -47,8 +49,8 @@ export const FinancialChart = ({ earningsHistory }: FinancialChartProps) => {
       <CardContent>
         {!hasData && (
           <div className="text-center py-8 text-muted-foreground">
-            <p className="text-sm">No financial data available yet</p>
-            <p className="text-xs mt-1">Complete appointments to see earnings history</p>
+            <p className="text-sm">{t("doctor.financialStats.chart.noData")}</p>
+            <p className="text-xs mt-1">{t("doctor.financialStats.chart.noDataDesc")}</p>
           </div>
         )}
         <ResponsiveContainer width="100%" height={300}>
@@ -79,7 +81,7 @@ export const FinancialChart = ({ earningsHistory }: FinancialChartProps) => {
                 dataKey="earnings" 
                 stroke="hsl(var(--primary))" 
                 strokeWidth={2}
-                name="Earnings ($)"
+                name={t("doctor.financialStats.chart.earningsLabel")}
                 dot={hasData}
               />
             </LineChart>
@@ -105,7 +107,7 @@ export const FinancialChart = ({ earningsHistory }: FinancialChartProps) => {
                 }}
               />
               <Legend />
-              <Bar dataKey="earnings" fill="hsl(var(--primary))" name="Earnings ($)" />
+              <Bar dataKey="earnings" fill="hsl(var(--primary))" name={t("doctor.financialStats.chart.earningsLabel")} />
             </BarChart>
           )}
         </ResponsiveContainer>

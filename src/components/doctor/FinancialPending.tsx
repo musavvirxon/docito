@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface PendingPayment {
   appointmentId: string;
@@ -19,19 +20,20 @@ interface FinancialPendingProps {
 }
 
 export const FinancialPending = ({ pendingPayments }: FinancialPendingProps) => {
+  const { t } = useTranslation("dashboard");
   const totalPending = pendingPayments.reduce((sum, payment) => sum + payment.amount, 0);
 
   const handleMarkAsPaid = (appointmentId: string) => {
-    toast.success('Payment marked as received');
+    toast.success(t("doctor.financialStats.pending.paymentMarked"));
   };
 
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>Pending Payments</CardTitle>
+          <CardTitle>{t("doctor.financialStats.pending.title")}</CardTitle>
           <Badge variant="outline" className="text-lg">
-            Total: ${totalPending.toLocaleString()}
+            {t("doctor.financialStats.pending.total")}: ${totalPending.toLocaleString()}
           </Badge>
         </div>
       </CardHeader>
@@ -39,12 +41,12 @@ export const FinancialPending = ({ pendingPayments }: FinancialPendingProps) => 
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Patient Name</TableHead>
-              <TableHead>Service</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Action</TableHead>
+              <TableHead>{t("doctor.financialStats.pending.patientName")}</TableHead>
+              <TableHead>{t("doctor.financialStats.pending.service")}</TableHead>
+              <TableHead>{t("doctor.financialStats.pending.amount")}</TableHead>
+              <TableHead>{t("doctor.financialStats.pending.date")}</TableHead>
+              <TableHead>{t("doctor.financialStats.pending.status")}</TableHead>
+              <TableHead>{t("doctor.financialStats.pending.action")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -65,7 +67,7 @@ export const FinancialPending = ({ pendingPayments }: FinancialPendingProps) => 
                       onClick={() => handleMarkAsPaid(payment.appointmentId)}
                     >
                       <CheckCircle className="w-4 h-4 mr-1" />
-                      Mark Paid
+                      {t("doctor.financialStats.pending.markPaid")}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -73,7 +75,7 @@ export const FinancialPending = ({ pendingPayments }: FinancialPendingProps) => 
             ) : (
               <TableRow>
                 <TableCell colSpan={6} className="text-center text-muted-foreground">
-                  No pending payments
+                  {t("doctor.financialStats.pending.noData")}
                 </TableCell>
               </TableRow>
             )}

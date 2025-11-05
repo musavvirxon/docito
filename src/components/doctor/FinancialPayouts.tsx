@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Clock, XCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface PayoutRecord {
   id: string;
@@ -17,6 +18,8 @@ interface FinancialPayoutsProps {
 }
 
 export const FinancialPayouts = ({ payoutRecords }: FinancialPayoutsProps) => {
+  const { t } = useTranslation("dashboard");
+  
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
@@ -46,17 +49,17 @@ export const FinancialPayouts = ({ payoutRecords }: FinancialPayoutsProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Payout History</CardTitle>
+        <CardTitle>{t("doctor.financialStats.payouts.title")}</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Reference ID</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Payment Method</TableHead>
+              <TableHead>{t("doctor.financialStats.payouts.referenceId")}</TableHead>
+              <TableHead>{t("doctor.financialStats.payouts.amount")}</TableHead>
+              <TableHead>{t("doctor.financialStats.payouts.status")}</TableHead>
+              <TableHead>{t("doctor.financialStats.payouts.date")}</TableHead>
+              <TableHead>{t("doctor.financialStats.payouts.paymentMethod")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -78,7 +81,7 @@ export const FinancialPayouts = ({ payoutRecords }: FinancialPayoutsProps) => {
             ) : (
               <TableRow>
                 <TableCell colSpan={5} className="text-center text-muted-foreground">
-                  No payout records available
+                  {t("doctor.financialStats.payouts.noData")}
                 </TableCell>
               </TableRow>
             )}

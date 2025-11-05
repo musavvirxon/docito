@@ -3,6 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ArrowUpDown, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface ServiceEarnings {
   serviceId: string;
@@ -18,6 +19,7 @@ interface FinancialServicesProps {
 }
 
 export const FinancialServices = ({ serviceEarnings }: FinancialServicesProps) => {
+  const { t } = useTranslation("dashboard");
   const [sortBy, setSortBy] = useState<'bookings' | 'revenue'>('revenue');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
@@ -41,13 +43,13 @@ export const FinancialServices = ({ serviceEarnings }: FinancialServicesProps) =
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Earnings by Service/Procedure</CardTitle>
+        <CardTitle>{t("doctor.financialStats.services.title")}</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Service Name</TableHead>
+              <TableHead>{t("doctor.financialStats.services.serviceName")}</TableHead>
               <TableHead>
                 <Button 
                   variant="ghost" 
@@ -55,7 +57,7 @@ export const FinancialServices = ({ serviceEarnings }: FinancialServicesProps) =
                   onClick={() => toggleSort('bookings')}
                   className="hover:bg-transparent"
                 >
-                  Bookings <ArrowUpDown className="ml-2 h-4 w-4" />
+                  {t("doctor.financialStats.services.bookings")} <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
               </TableHead>
               <TableHead>
@@ -65,14 +67,14 @@ export const FinancialServices = ({ serviceEarnings }: FinancialServicesProps) =
                   onClick={() => toggleSort('revenue')}
                   className="hover:bg-transparent"
                 >
-                  Total Revenue <ArrowUpDown className="ml-2 h-4 w-4" />
+                  {t("doctor.financialStats.services.totalRevenue")} <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
               </TableHead>
-              <TableHead>Avg Revenue</TableHead>
+              <TableHead>{t("doctor.financialStats.services.avgRevenue")}</TableHead>
               <TableHead>
                 <div className="flex items-center">
                   <Clock className="w-4 h-4 mr-1" />
-                  Avg Duration
+                  {t("doctor.financialStats.services.avgDuration")}
                 </div>
               </TableHead>
             </TableRow>
@@ -93,7 +95,7 @@ export const FinancialServices = ({ serviceEarnings }: FinancialServicesProps) =
             ) : (
               <TableRow>
                 <TableCell colSpan={5} className="text-center text-muted-foreground">
-                  No service earnings data available
+                  {t("doctor.financialStats.services.noData")}
                 </TableCell>
               </TableRow>
             )}
