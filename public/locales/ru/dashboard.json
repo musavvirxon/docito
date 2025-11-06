@@ -502,6 +502,97 @@
       "publishFailed": "Не удалось опубликовать план лечения",
       "loadFailed": "Не удалось загрузить планы лечения"
     },
+    "financialStats": {
+      "title": "Финансовая аналитика",
+      "description": "Отслеживайте свои доходы, выплаты и финансовые показатели",
+      "7days": "7 дней",
+      "30days": "30 дней",
+      "90days": "90 дней",
+      "refresh": "Обновить",
+      "export": "Экспорт",
+      "csvExported": "Финансовый отчет экспортирован в CSV",
+      "exportComingSoon": "Экспорт {{format}} скоро появится",
+      "dataRefreshed": "Финансовые данные успешно обновлены",
+      "errorLoading": "Ошибка загрузки финансовых данных",
+      "retry": "Повторить",
+      "overview": {
+        "totalEarnings": "Общий доход",
+        "allTimeRevenue": "Доход за все время",
+        "thisMonth": "В этом месяце",
+        "thisWeek": "На этой неделе",
+        "unpaidEarnings": "Неоплаченный доход",
+        "pendingAppointments": "Ожидающие приемы",
+        "netEarnings": "Чистый доход",
+        "afterPlatformFee": "После комиссии платформы 15%",
+        "payoutInfo": "Информация о выплатах",
+        "payoutsProcessed": "Обработано выплат",
+        "nextPayout": "Следующая выплата",
+        "tbd": "Уточняется",
+        "platformCommission": "Комиссия платформы"
+      },
+      "tabs": {
+        "earningsChart": "График доходов",
+        "byService": "По услугам",
+        "payouts": "Выплаты",
+        "pending": "Ожидание",
+        "insights": "Аналитика"
+      },
+      "chart": {
+        "title": "Доходы за период",
+        "line": "Линия",
+        "bar": "Столбцы",
+        "noData": "Нет данных о доходах за выбранный период",
+        "noDataDesc": "Начните принимать пациентов, чтобы увидеть доходы здесь",
+        "earningsLabel": "Доходы"
+      },
+      "services": {
+        "title": "Доходы по услугам",
+        "serviceName": "Название услуги",
+        "bookings": "Записи",
+        "totalRevenue": "Общий доход",
+        "avgRevenue": "Средний доход",
+        "avgDuration": "Средняя длительность",
+        "minutes": "мин",
+        "noData": "Нет данных о доходах по услугам"
+      },
+      "payouts": {
+        "title": "История выплат",
+        "referenceId": "ID транзакции",
+        "amount": "Сумма",
+        "status": "Статус",
+        "date": "Дата",
+        "paymentMethod": "Способ оплаты",
+        "statusCompleted": "Завершено",
+        "statusPending": "В обработке",
+        "statusFailed": "Не удалось",
+        "noData": "Нет записей о выплатах"
+      },
+      "pending": {
+        "title": "Ожидающие платежи",
+        "total": "Всего",
+        "patientName": "Имя пациента",
+        "service": "Услуга",
+        "amount": "Сумма",
+        "date": "Дата",
+        "status": "Статус",
+        "action": "Действие",
+        "markPaid": "Отметить оплаченным",
+        "paymentMarked": "Платеж отмечен как полученный",
+        "noData": "Нет ожидающих платежей"
+      },
+      "insights": {
+        "mostProfitable": "Самая прибыльная услуга",
+        "bookings": "записей",
+        "noData": "Нет данных",
+        "revenuePerHour": "Доход в час",
+        "basedOnHours": "На основе {{hours}} отработанных часов",
+        "refundRate": "Процент возвратов/отмен",
+        "excellent": "Отлично",
+        "good": "Хорошо",
+        "needsImprovement": "Требует улучшения",
+        "busiestDays": "Самые загруженные дни"
+      }
+    },
     "calendar": {
       "clinicCalendar": "Календарь клиники",
       "myCalendar": "Мой календарь",

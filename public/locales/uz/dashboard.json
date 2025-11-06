@@ -408,6 +408,97 @@
       "publishFailed": "Davolash rejasini nashr qilib bo'lmadi",
       "loadFailed": "Davolash rejalarini yuklab bo'lmadi"
     },
+    "financialStats": {
+      "title": "Moliyaviy tahlil",
+      "description": "Daromadlaringiz, to'lovlar va moliyaviy ko'rsatkichlarni kuzatish",
+      "7days": "7 kun",
+      "30days": "30 kun",
+      "90days": "90 kun",
+      "refresh": "Yangilash",
+      "export": "Eksport",
+      "csvExported": "Moliyaviy hisobot CSV formatida eksport qilindi",
+      "exportComingSoon": "{{format}} eksport tez orada",
+      "dataRefreshed": "Moliyaviy ma'lumotlar muvaffaqiyatli yangilandi",
+      "errorLoading": "Moliyaviy ma'lumotlarni yuklashda xato",
+      "retry": "Qayta urinish",
+      "overview": {
+        "totalEarnings": "Umumiy daromad",
+        "allTimeRevenue": "Barcha vaqt daromadi",
+        "thisMonth": "Shu oy",
+        "thisWeek": "Shu hafta",
+        "unpaidEarnings": "To'lanmagan daromad",
+        "pendingAppointments": "Kutilayotgan qabullar",
+        "netEarnings": "Sof daromad",
+        "afterPlatformFee": "15% platforma to'lovidan keyin",
+        "payoutInfo": "To'lov ma'lumoti",
+        "payoutsProcessed": "Qayta ishlangan to'lovlar",
+        "nextPayout": "Keyingi to'lov",
+        "tbd": "Aniqlanadi",
+        "platformCommission": "Platforma komissiyasi"
+      },
+      "tabs": {
+        "earningsChart": "Daromad grafigi",
+        "byService": "Xizmat bo'yicha",
+        "payouts": "To'lovlar",
+        "pending": "Kutilmoqda",
+        "insights": "Tahlil"
+      },
+      "chart": {
+        "title": "Vaqt bo'yicha daromad",
+        "line": "Chiziq",
+        "bar": "Ustun",
+        "noData": "Tanlangan davr uchun daromad ma'lumotlari yo'q",
+        "noDataDesc": "Daromadingizni ko'rish uchun qabullarni qabul qilishni boshlang",
+        "earningsLabel": "Daromad"
+      },
+      "services": {
+        "title": "Xizmat bo'yicha daromad",
+        "serviceName": "Xizmat nomi",
+        "bookings": "Bandliklar",
+        "totalRevenue": "Umumiy daromad",
+        "avgRevenue": "O'rtacha daromad",
+        "avgDuration": "O'rtacha davomiylik",
+        "minutes": "daq",
+        "noData": "Xizmat daromadlari ma'lumotlari yo'q"
+      },
+      "payouts": {
+        "title": "To'lovlar tarixi",
+        "referenceId": "Ma'lumot ID",
+        "amount": "Miqdor",
+        "status": "Holat",
+        "date": "Sana",
+        "paymentMethod": "To'lov usuli",
+        "statusCompleted": "Yakunlangan",
+        "statusPending": "Kutilmoqda",
+        "statusFailed": "Muvaffaqiyatsiz",
+        "noData": "To'lov yozuvlari yo'q"
+      },
+      "pending": {
+        "title": "Kutilayotgan to'lovlar",
+        "total": "Jami",
+        "patientName": "Bemor nomi",
+        "service": "Xizmat",
+        "amount": "Miqdor",
+        "date": "Sana",
+        "status": "Holat",
+        "action": "Harakat",
+        "markPaid": "To'langan deb belgilash",
+        "paymentMarked": "To'lov qabul qilingan deb belgilandi",
+        "noData": "Kutilayotgan to'lovlar yo'q"
+      },
+      "insights": {
+        "mostProfitable": "Eng foydali xizmat",
+        "bookings": "bandliklar",
+        "noData": "Ma'lumotlar yo'q",
+        "revenuePerHour": "Soatiga daromad",
+        "basedOnHours": "{{hours}} soat ishlashga asoslangan",
+        "refundRate": "Qaytarish/Bekor qilish foizi",
+        "excellent": "A'lo",
+        "good": "Yaxshi",
+        "needsImprovement": "Yaxshilash kerak",
+        "busiestDays": "Eng band kunlar"
+      }
+    },
     "calendar": {
       "clinicCalendar": "Klinika kalendari",
       "myCalendar": "Mening kalendarim",

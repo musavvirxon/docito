@@ -502,6 +502,97 @@
       "publishFailed": "Failed to publish treatment plan",
       "loadFailed": "Failed to load treatment plans"
     },
+    "financialStats": {
+      "title": "Financial Analytics",
+      "description": "Track your earnings, payouts, and financial insights",
+      "7days": "7 Days",
+      "30days": "30 Days",
+      "90days": "90 Days",
+      "refresh": "Refresh",
+      "export": "Export",
+      "csvExported": "Financial report exported as CSV",
+      "exportComingSoon": "{{format}} export coming soon",
+      "dataRefreshed": "Financial data refreshed successfully",
+      "errorLoading": "Error loading financial data",
+      "retry": "Retry",
+      "overview": {
+        "totalEarnings": "Total Earnings",
+        "allTimeRevenue": "All-time revenue",
+        "thisMonth": "This Month",
+        "thisWeek": "This week",
+        "unpaidEarnings": "Unpaid Earnings",
+        "pendingAppointments": "Pending appointments",
+        "netEarnings": "Net Earnings",
+        "afterPlatformFee": "After 15% platform fee",
+        "payoutInfo": "Payout Information",
+        "payoutsProcessed": "Payouts Processed",
+        "nextPayout": "Next Payout",
+        "tbd": "TBD",
+        "platformCommission": "Platform Commission"
+      },
+      "tabs": {
+        "earningsChart": "Earnings Chart",
+        "byService": "By Service",
+        "payouts": "Payouts",
+        "pending": "Pending",
+        "insights": "Insights"
+      },
+      "chart": {
+        "title": "Earnings Over Time",
+        "line": "Line",
+        "bar": "Bar",
+        "noData": "No earnings data available for the selected period",
+        "noDataDesc": "Start accepting appointments to see your earnings here",
+        "earningsLabel": "Earnings"
+      },
+      "services": {
+        "title": "Earnings by Service",
+        "serviceName": "Service Name",
+        "bookings": "Bookings",
+        "totalRevenue": "Total Revenue",
+        "avgRevenue": "Avg Revenue",
+        "avgDuration": "Avg Duration",
+        "minutes": "min",
+        "noData": "No service earnings data available"
+      },
+      "payouts": {
+        "title": "Payout History",
+        "referenceId": "Reference ID",
+        "amount": "Amount",
+        "status": "Status",
+        "date": "Date",
+        "paymentMethod": "Payment Method",
+        "statusCompleted": "Completed",
+        "statusPending": "Pending",
+        "statusFailed": "Failed",
+        "noData": "No payout records available"
+      },
+      "pending": {
+        "title": "Pending Payments",
+        "total": "Total",
+        "patientName": "Patient Name",
+        "service": "Service",
+        "amount": "Amount",
+        "date": "Date",
+        "status": "Status",
+        "action": "Action",
+        "markPaid": "Mark as Paid",
+        "paymentMarked": "Payment marked as received",
+        "noData": "No pending payments"
+      },
+      "insights": {
+        "mostProfitable": "Most Profitable Service",
+        "bookings": "bookings",
+        "noData": "No data available",
+        "revenuePerHour": "Revenue per Hour",
+        "basedOnHours": "Based on {{hours}} hours worked",
+        "refundRate": "Refund/Cancellation Rate",
+        "excellent": "Excellent",
+        "good": "Good",
+        "needsImprovement": "Needs Improvement",
+        "busiestDays": "Busiest Days"
+      }
+    },
     "calendar": {
       "clinicCalendar": "Clinic Calendar",
       "myCalendar": "My Calendar",

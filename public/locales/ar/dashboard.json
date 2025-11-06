@@ -408,6 +408,97 @@
       "publishFailed": "فشل نشر خطة العلاج",
       "loadFailed": "فشل تحميل خطط العلاج"
     },
+    "financialStats": {
+      "title": "التحليلات المالية",
+      "description": "تتبع أرباحك ومدفوعاتك ورؤى مالية",
+      "7days": "7 أيام",
+      "30days": "30 يوم",
+      "90days": "90 يوم",
+      "refresh": "تحديث",
+      "export": "تصدير",
+      "csvExported": "تم تصدير التقرير المالي كملف CSV",
+      "exportComingSoon": "تصدير {{format}} قريباً",
+      "dataRefreshed": "تم تحديث البيانات المالية بنجاح",
+      "errorLoading": "خطأ في تحميل البيانات المالية",
+      "retry": "إعادة المحاولة",
+      "overview": {
+        "totalEarnings": "إجمالي الأرباح",
+        "allTimeRevenue": "الإيرادات على مر الزمن",
+        "thisMonth": "هذا الشهر",
+        "thisWeek": "هذا الأسبوع",
+        "unpaidEarnings": "الأرباح غير المدفوعة",
+        "pendingAppointments": "المواعيد المعلقة",
+        "netEarnings": "صافي الأرباح",
+        "afterPlatformFee": "بعد رسوم المنصة 15%",
+        "payoutInfo": "معلومات الدفع",
+        "payoutsProcessed": "المدفوعات المعالجة",
+        "nextPayout": "الدفع التالي",
+        "tbd": "سيتم تحديده",
+        "platformCommission": "عمولة المنصة"
+      },
+      "tabs": {
+        "earningsChart": "رسم بياني للأرباح",
+        "byService": "حسب الخدمة",
+        "payouts": "المدفوعات",
+        "pending": "قيد الانتظار",
+        "insights": "رؤى"
+      },
+      "chart": {
+        "title": "الأرباح عبر الزمن",
+        "line": "خط",
+        "bar": "عمود",
+        "noData": "لا توجد بيانات أرباح للفترة المحددة",
+        "noDataDesc": "ابدأ بقبول المواعيد لرؤية أرباحك هنا",
+        "earningsLabel": "الأرباح"
+      },
+      "services": {
+        "title": "الأرباح حسب الخدمة",
+        "serviceName": "اسم الخدمة",
+        "bookings": "الحجوزات",
+        "totalRevenue": "إجمالي الإيرادات",
+        "avgRevenue": "متوسط الإيرادات",
+        "avgDuration": "متوسط المدة",
+        "minutes": "دقيقة",
+        "noData": "لا توجد بيانات أرباح الخدمات"
+      },
+      "payouts": {
+        "title": "سجل المدفوعات",
+        "referenceId": "رقم المرجع",
+        "amount": "المبلغ",
+        "status": "الحالة",
+        "date": "التاريخ",
+        "paymentMethod": "طريقة الدفع",
+        "statusCompleted": "مكتمل",
+        "statusPending": "قيد الانتظار",
+        "statusFailed": "فشل",
+        "noData": "لا توجد سجلات دفع"
+      },
+      "pending": {
+        "title": "المدفوعات المعلقة",
+        "total": "الإجمالي",
+        "patientName": "اسم المريض",
+        "service": "الخدمة",
+        "amount": "المبلغ",
+        "date": "التاريخ",
+        "status": "الحالة",
+        "action": "الإجراء",
+        "markPaid": "وضع علامة كمدفوع",
+        "paymentMarked": "تم وضع علامة على الدفع كمستلم",
+        "noData": "لا توجد مدفوعات معلقة"
+      },
+      "insights": {
+        "mostProfitable": "الخدمة الأكثر ربحية",
+        "bookings": "حجوزات",
+        "noData": "لا توجد بيانات متاحة",
+        "revenuePerHour": "الإيرادات في الساعة",
+        "basedOnHours": "بناءً على {{hours}} ساعات عمل",
+        "refundRate": "معدل الاسترداد/الإلغاء",
+        "excellent": "ممتاز",
+        "good": "جيد",
+        "needsImprovement": "يحتاج إلى تحسين",
+        "busiestDays": "الأيام الأكثر ازدحاماً"
+      }
+    },
     "calendar": {
       "clinicCalendar": "تقويم العيادة",
       "myCalendar": "تقويمي",

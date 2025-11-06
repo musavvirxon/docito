@@ -89,7 +89,7 @@ export const FinancialServices = ({ serviceEarnings }: FinancialServicesProps) =
                     ${service.totalRevenue.toLocaleString()}
                   </TableCell>
                   <TableCell>${service.avgRevenue.toFixed(2)}</TableCell>
-                  <TableCell>{service.avgDuration} min</TableCell>
+                  <TableCell>{service.avgDuration} {t("doctor.financialStats.services.minutes")}</TableCell>
                 </TableRow>
               ))
             ) : (

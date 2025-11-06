@@ -39,7 +39,7 @@ export const FinancialOverview = ({ stats }: FinancialOverviewProps) => {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">${stats.earningsThisMonth.toLocaleString()}</div>
-          <p className="text-xs text-muted-foreground">This week: ${stats.earningsThisWeek.toLocaleString()}</p>
+          <p className="text-xs text-muted-foreground">{t("doctor.financialStats.overview.thisWeek")}: ${stats.earningsThisWeek.toLocaleString()}</p>
         </CardContent>
       </Card>
 
@@ -50,7 +50,7 @@ export const FinancialOverview = ({ stats }: FinancialOverviewProps) => {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-orange-600">${stats.unpaidEarnings.toLocaleString()}</div>
-          <p className="text-xs text-muted-foreground">Pending appointments</p>
+          <p className="text-xs text-muted-foreground">{t("doctor.financialStats.overview.pendingAppointments")}</p>
         </CardContent>
       </Card>
 
@@ -61,7 +61,7 @@ export const FinancialOverview = ({ stats }: FinancialOverviewProps) => {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-green-600">${stats.netEarnings.toLocaleString()}</div>
-          <p className="text-xs text-muted-foreground">After 15% platform fee</p>
+          <p className="text-xs text-muted-foreground">{t("doctor.financialStats.overview.afterPlatformFee")}</p>
         </CardContent>
       </Card>
 
@@ -71,18 +71,18 @@ export const FinancialOverview = ({ stats }: FinancialOverviewProps) => {
         </CardHeader>
         <CardContent className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-muted-foreground">Payouts Processed</p>
+            <p className="text-sm text-muted-foreground">{t("doctor.financialStats.overview.payoutsProcessed")}</p>
             <p className="text-2xl font-bold">{stats.payoutsProcessed}</p>
           </div>
           <div className="text-right">
-            <p className="text-sm text-muted-foreground">Next Payout</p>
+            <p className="text-sm text-muted-foreground">{t("doctor.financialStats.overview.nextPayout")}</p>
             <Badge variant="outline" className="mt-1">
               <CreditCard className="w-3 h-3 mr-1" />
-              {stats.nextPayoutDate || 'TBD'}
+              {stats.nextPayoutDate || t("doctor.financialStats.overview.tbd")}
             </Badge>
           </div>
           <div className="text-right">
-            <p className="text-sm text-muted-foreground">Platform Commission</p>
+            <p className="text-sm text-muted-foreground">{t("doctor.financialStats.overview.platformCommission")}</p>
             <p className="text-lg font-semibold text-destructive">${stats.platformCommission.toLocaleString()}</p>
           </div>
         </CardContent>

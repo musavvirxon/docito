@@ -71,7 +71,7 @@ export const FinancialPayouts = ({ payoutRecords }: FinancialPayoutsProps) => {
                   <TableCell>
                     <Badge variant={getStatusVariant(payout.status)} className="flex items-center gap-1 w-fit">
                       {getStatusIcon(payout.status)}
-                      {payout.status}
+                      {t(`doctor.financialStats.payouts.status${payout.status.charAt(0).toUpperCase() + payout.status.slice(1)}`)}
                     </Badge>
                   </TableCell>
                   <TableCell>{new Date(payout.date).toLocaleDateString()}</TableCell>

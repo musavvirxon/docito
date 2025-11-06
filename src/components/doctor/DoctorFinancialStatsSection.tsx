@@ -159,11 +159,11 @@ export const DoctorFinancialStatsSection = () => {
       {/* Tabs */}
       <Tabs defaultValue="chart" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="chart">Earnings Chart</TabsTrigger>
-          <TabsTrigger value="services">By Service</TabsTrigger>
-          <TabsTrigger value="payouts">Payouts</TabsTrigger>
-          <TabsTrigger value="pending">Pending</TabsTrigger>
-          <TabsTrigger value="insights">Insights</TabsTrigger>
+          <TabsTrigger value="chart">{t("doctor.financialStats.tabs.earningsChart")}</TabsTrigger>
+          <TabsTrigger value="services">{t("doctor.financialStats.tabs.byService")}</TabsTrigger>
+          <TabsTrigger value="payouts">{t("doctor.financialStats.tabs.payouts")}</TabsTrigger>
+          <TabsTrigger value="pending">{t("doctor.financialStats.tabs.pending")}</TabsTrigger>
+          <TabsTrigger value="insights">{t("doctor.financialStats.tabs.insights")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="chart" className="space-y-6">
