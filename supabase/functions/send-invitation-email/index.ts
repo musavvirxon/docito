@@ -118,9 +118,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Invalid invitation token');
     }
 
-    const acceptLink = isExistingUser
-      ? `${platformUrl}/dashboard?invitation=${encodeURIComponent(inviteToken)}`
-      : `${platformUrl}/sign-up?invitation=${encodeURIComponent(inviteToken)}`;
+    const acceptLink = `${platformUrl}/accept-invite/${encodeURIComponent(inviteToken)}`;
 
     const emailHtml = isExistingUser
       ? `

@@ -48,6 +48,7 @@ const HelpCenter = lazy(() => import("./pages/HelpCenter"));
 const Contact = lazy(() => import("./pages/Contact"));
 const FAQs = lazy(() => import("./pages/FAQs"));
 const Support = lazy(() => import("./pages/Support"));
+const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
 
 const queryClient = new QueryClient();
 
@@ -105,6 +106,7 @@ const LanguageRoutes = () => {
       <Route path="/contact" element={<Contact />} />
       <Route path="/faqs" element={<FAQs />} />
       <Route path="/support" element={<Support />} />
+      <Route path="/accept-invite/:token" element={<AcceptInvite />} />
       
       {/* Language-prefixed routes */}
       <Route path="/:lang/" element={<Index />} />
@@ -144,6 +146,7 @@ const LanguageRoutes = () => {
       <Route path="/:lang/contact" element={<Contact />} />
       <Route path="/:lang/faqs" element={<FAQs />} />
       <Route path="/:lang/support" element={<Support />} />
+      <Route path="/:lang/accept-invite/:token" element={<AcceptInvite />} />
       
       <Route path="*" element={<NotFound />} />
     </Routes>
