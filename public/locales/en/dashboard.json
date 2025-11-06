@@ -502,6 +502,98 @@
       "publishFailed": "Failed to publish treatment plan",
       "loadFailed": "Failed to load treatment plans"
     },
+    "settings": {
+      "title": "Account Settings",
+      "description": "Manage your account preferences and security settings",
+      "tabs": {
+        "general": "General",
+        "notifications": "Notifications",
+        "calendar": "Calendar",
+        "security": "Security"
+      },
+      "account": {
+        "title": "Account Information",
+        "description": "Update your basic account details",
+        "email": "Email Address",
+        "phone": "Phone Number",
+        "timezone": "Timezone",
+        "language": "Language",
+        "saveChanges": "Save Changes"
+      },
+      "privacy": {
+        "title": "Privacy Settings",
+        "description": "Control your profile visibility and data sharing",
+        "profileVisibility": "Profile Visibility",
+        "profileVisibilityDesc": "Show your profile in doctor search results",
+        "shareAnalytics": "Share Analytics Data",
+        "shareAnalyticsDesc": "Help improve our platform with anonymous usage data",
+        "marketingCommunications": "Marketing Communications",
+        "marketingCommunicationsDesc": "Receive updates about new features and tips",
+        "saveSettings": "Save Privacy Settings"
+      },
+      "notificationPreferences": {
+        "title": "Notification Preferences",
+        "description": "Choose how you want to receive notifications",
+        "email": {
+          "title": "Email Notifications",
+          "bookings": "Booking Confirmations",
+          "bookingsDesc": "Get notified when patients book appointments",
+          "reminders": "Appointment Reminders",
+          "remindersDesc": "Reminders about upcoming appointments",
+          "cancellations": "Cancellations",
+          "cancellationsDesc": "Get notified when patients cancel appointments"
+        },
+        "sms": {
+          "title": "SMS Notifications",
+          "bookings": "Booking Confirmations",
+          "bookingsDesc": "Text notifications for new bookings",
+          "reminders": "Appointment Reminders",
+          "remindersDesc": "SMS reminders before appointments",
+          "cancellations": "Cancellations",
+          "cancellationsDesc": "SMS alerts for cancellations"
+        },
+        "push": {
+          "title": "Push Notifications",
+          "browser": "Browser Notifications",
+          "browserDesc": "Real-time notifications in your browser"
+        },
+        "save": "Save Notification Preferences"
+      },
+      "calendarIntegration": {
+        "title": "Calendar Integration",
+        "description": "Sync your appointments with external calendars",
+        "googleCalendar": "Google Calendar",
+        "outlookCalendar": "Outlook Calendar",
+        "appleCalendar": "Apple Calendar",
+        "connected": "Connected",
+        "notConnected": "Not connected",
+        "syncSettings": {
+          "title": "Sync Settings",
+          "realTime": "Appointments will be synced in real-time",
+          "noImport": "External calendar events won't be imported",
+          "disconnect": "You can disconnect at any time"
+        }
+      },
+      "timezones": {
+        "eastern": "Eastern Standard Time",
+        "central": "Central Standard Time",
+        "mountain": "Mountain Standard Time",
+        "pacific": "Pacific Standard Time"
+      },
+      "languages": {
+        "en": "English",
+        "es": "Spanish",
+        "fr": "French"
+      },
+      "toast": {
+        "accountSuccess": "Account settings saved successfully",
+        "accountError": "Failed to save account settings",
+        "notificationsSuccess": "Notification preferences saved successfully",
+        "notificationsError": "Failed to save notification preferences",
+        "privacySuccess": "Privacy settings saved successfully",
+        "privacyError": "Failed to save privacy settings"
+      }
+    },
     "performance": {
       "title": "Performance Analytics",
       "description": "Track your performance metrics and insights",

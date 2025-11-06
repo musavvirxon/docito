@@ -11,8 +11,10 @@ import { Eye, EyeOff, Settings, Bell, Calendar, Shield, Trash2, RefreshCw, Loade
 import { useSettings } from "@/hooks/useSettings";
 import { SecuritySettings } from "../dashboard/SecuritySettings";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 const DoctorSettingsSection = () => {
+  const { t } = useTranslation();
   const {
     loading,
     saving,
@@ -72,9 +74,9 @@ const DoctorSettingsSection = () => {
     try {
       await updateAccountSettings(localAccountSettings);
       setHasAccountChanges(false);
-      toast.success("Account settings saved successfully");
+      toast.success(t("doctor.settings.toast.accountSuccess"));
     } catch (error) {
-      toast.error("Failed to save account settings");
+      toast.error(t("doctor.settings.toast.accountError"));
     }
   };
 
@@ -82,9 +84,9 @@ const DoctorSettingsSection = () => {
     try {
       await updateNotificationSettings(localNotifications);
       setHasNotificationChanges(false);
-      toast.success("Notification preferences saved successfully");
+      toast.success(t("doctor.settings.toast.notificationsSuccess"));
     } catch (error) {
-      toast.error("Failed to save notification preferences");
+      toast.error(t("doctor.settings.toast.notificationsError"));
     }
   };
 
@@ -92,9 +94,9 @@ const DoctorSettingsSection = () => {
     try {
       await updatePrivacySettings(localPrivacySettings);
       setHasPrivacyChanges(false);
-      toast.success("Privacy settings saved successfully");
+      toast.success(t("doctor.settings.toast.privacySuccess"));
     } catch (error) {
-      toast.error("Failed to save privacy settings");
+      toast.error(t("doctor.settings.toast.privacyError"));
     }
   };
 
@@ -112,31 +114,31 @@ const DoctorSettingsSection = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Settings className="w-5 h-5" />
-            Account Settings
+            {t("doctor.settings.title")}
           </CardTitle>
-          <p className="text-muted-foreground">Manage your account preferences and security settings</p>
+          <p className="text-muted-foreground">{t("doctor.settings.description")}</p>
         </CardHeader>
       </Card>
 
       <Tabs defaultValue="general" className="space-y-4">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="calendar">Calendar</TabsTrigger>
-          <TabsTrigger value="security">Security</TabsTrigger>
+          <TabsTrigger value="general">{t("doctor.settings.tabs.general")}</TabsTrigger>
+          <TabsTrigger value="notifications">{t("doctor.settings.tabs.notifications")}</TabsTrigger>
+          <TabsTrigger value="calendar">{t("doctor.settings.tabs.calendar")}</TabsTrigger>
+          <TabsTrigger value="security">{t("doctor.settings.tabs.security")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="space-y-6">
           {/* Account Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Account Information</CardTitle>
-              <p className="text-muted-foreground">Update your basic account details</p>
+              <CardTitle>{t("doctor.settings.account.title")}</CardTitle>
+              <p className="text-muted-foreground">{t("doctor.settings.account.description")}</p>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="email">{t("doctor.settings.account.email")}</Label>
                   <Input 
                     id="email" 
                     type="email" 
@@ -149,7 +151,7 @@ const DoctorSettingsSection = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="phone">Phone Number</Label>
+                  <Label htmlFor="phone">{t("doctor.settings.account.phone")}</Label>
                   <Input 
                     id="phone"
                     value={localAccountSettings.phone}
@@ -164,7 +166,7 @@ const DoctorSettingsSection = () => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="timezone">Timezone</Label>
+                  <Label htmlFor="timezone">{t("doctor.settings.account.timezone")}</Label>
                   <Select 
                     value={localAccountSettings.timezone}
                     onValueChange={(value) => {
@@ -177,15 +179,15 @@ const DoctorSettingsSection = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="America/New_York">Eastern Standard Time</SelectItem>
-                      <SelectItem value="America/Chicago">Central Standard Time</SelectItem>
-                      <SelectItem value="America/Denver">Mountain Standard Time</SelectItem>
-                      <SelectItem value="America/Los_Angeles">Pacific Standard Time</SelectItem>
+                      <SelectItem value="America/New_York">{t("doctor.settings.timezones.eastern")}</SelectItem>
+                      <SelectItem value="America/Chicago">{t("doctor.settings.timezones.central")}</SelectItem>
+                      <SelectItem value="America/Denver">{t("doctor.settings.timezones.mountain")}</SelectItem>
+                      <SelectItem value="America/Los_Angeles">{t("doctor.settings.timezones.pacific")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="language">Language</Label>
+                  <Label htmlFor="language">{t("doctor.settings.account.language")}</Label>
                   <Select 
                     value={localAccountSettings.language}
                     onValueChange={(value) => {
@@ -198,9 +200,9 @@ const DoctorSettingsSection = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="en">English</SelectItem>
-                      <SelectItem value="es">Spanish</SelectItem>
-                      <SelectItem value="fr">French</SelectItem>
+                      <SelectItem value="en">{t("doctor.settings.languages.en")}</SelectItem>
+                      <SelectItem value="es">{t("doctor.settings.languages.es")}</SelectItem>
+                      <SelectItem value="fr">{t("doctor.settings.languages.fr")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -208,7 +210,7 @@ const DoctorSettingsSection = () => {
 
               <Button onClick={handleSaveAccountSettings} disabled={saving || !hasAccountChanges}>
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                Save Changes
+                {t("doctor.settings.account.saveChanges")}
               </Button>
             </CardContent>
           </Card>
@@ -278,19 +280,19 @@ const DoctorSettingsSection = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Bell className="w-5 h-5" />
-                Notification Preferences
+                {t("doctor.settings.notificationPreferences.title")}
               </CardTitle>
-              <p className="text-muted-foreground">Choose how you want to receive notifications</p>
+              <p className="text-muted-foreground">{t("doctor.settings.notificationPreferences.description")}</p>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Email Notifications */}
               <div>
-                <h3 className="font-medium mb-4">Email Notifications</h3>
+                <h3 className="font-medium mb-4">{t("doctor.settings.notificationPreferences.email.title")}</h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-medium">Booking Confirmations</div>
-                      <div className="text-sm text-muted-foreground">Get notified when patients book appointments</div>
+                      <div className="font-medium">{t("doctor.settings.notificationPreferences.email.bookings")}</div>
+                      <div className="text-sm text-muted-foreground">{t("doctor.settings.notificationPreferences.email.bookingsDesc")}</div>
                     </div>
                     <Switch 
                       checked={localNotifications.emailBookings}
@@ -304,8 +306,8 @@ const DoctorSettingsSection = () => {
                   
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-medium">Appointment Reminders</div>
-                      <div className="text-sm text-muted-foreground">Reminders about upcoming appointments</div>
+                      <div className="font-medium">{t("doctor.settings.notificationPreferences.email.reminders")}</div>
+                      <div className="text-sm text-muted-foreground">{t("doctor.settings.notificationPreferences.email.remindersDesc")}</div>
                     </div>
                     <Switch 
                       checked={localNotifications.emailReminders}
@@ -319,8 +321,8 @@ const DoctorSettingsSection = () => {
                   
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-medium">Cancellations</div>
-                      <div className="text-sm text-muted-foreground">Get notified when patients cancel appointments</div>
+                      <div className="font-medium">{t("doctor.settings.notificationPreferences.email.cancellations")}</div>
+                      <div className="text-sm text-muted-foreground">{t("doctor.settings.notificationPreferences.email.cancellationsDesc")}</div>
                     </div>
                     <Switch 
                       checked={localNotifications.emailCancellations}
@@ -336,12 +338,12 @@ const DoctorSettingsSection = () => {
 
               {/* SMS Notifications */}
               <div>
-                <h3 className="font-medium mb-4">SMS Notifications</h3>
+                <h3 className="font-medium mb-4">{t("doctor.settings.notificationPreferences.sms.title")}</h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-medium">Booking Confirmations</div>
-                      <div className="text-sm text-muted-foreground">Text notifications for new bookings</div>
+                      <div className="font-medium">{t("doctor.settings.notificationPreferences.sms.bookings")}</div>
+                      <div className="text-sm text-muted-foreground">{t("doctor.settings.notificationPreferences.sms.bookingsDesc")}</div>
                     </div>
                     <Switch 
                       checked={localNotifications.smsBookings}
@@ -355,8 +357,8 @@ const DoctorSettingsSection = () => {
                   
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-medium">Appointment Reminders</div>
-                      <div className="text-sm text-muted-foreground">SMS reminders before appointments</div>
+                      <div className="font-medium">{t("doctor.settings.notificationPreferences.sms.reminders")}</div>
+                      <div className="text-sm text-muted-foreground">{t("doctor.settings.notificationPreferences.sms.remindersDesc")}</div>
                     </div>
                     <Switch 
                       checked={localNotifications.smsReminders}
@@ -370,8 +372,8 @@ const DoctorSettingsSection = () => {
                   
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-medium">Cancellations</div>
-                      <div className="text-sm text-muted-foreground">SMS alerts for cancellations</div>
+                      <div className="font-medium">{t("doctor.settings.notificationPreferences.sms.cancellations")}</div>
+                      <div className="text-sm text-muted-foreground">{t("doctor.settings.notificationPreferences.sms.cancellationsDesc")}</div>
                     </div>
                     <Switch 
                       checked={localNotifications.smsCancellations}
@@ -387,11 +389,11 @@ const DoctorSettingsSection = () => {
 
               {/* Push Notifications */}
               <div>
-                <h3 className="font-medium mb-4">Push Notifications</h3>
+                <h3 className="font-medium mb-4">{t("doctor.settings.notificationPreferences.push.title")}</h3>
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="font-medium">Browser Notifications</div>
-                    <div className="text-sm text-muted-foreground">Real-time notifications in your browser</div>
+                    <div className="font-medium">{t("doctor.settings.notificationPreferences.push.browser")}</div>
+                    <div className="text-sm text-muted-foreground">{t("doctor.settings.notificationPreferences.push.browserDesc")}</div>
                   </div>
                   <Switch 
                     checked={localNotifications.pushNotifications}
@@ -406,7 +408,7 @@ const DoctorSettingsSection = () => {
 
               <Button onClick={handleSaveNotifications} disabled={saving || !hasNotificationChanges}>
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                Save Notification Preferences
+                {t("doctor.settings.notificationPreferences.save")}
               </Button>
             </CardContent>
           </Card>
