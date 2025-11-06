@@ -137,13 +137,13 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
   };
 
   const days = [
-    { key: "monday", label: "Monday" },
-    { key: "tuesday", label: "Tuesday" },
-    { key: "wednesday", label: "Wednesday" },
-    { key: "thursday", label: "Thursday" },
-    { key: "friday", label: "Friday" },
-    { key: "saturday", label: "Saturday" },
-    { key: "sunday", label: "Sunday" }
+    { key: "monday", label: t("doctor.schedule.days.monday") },
+    { key: "tuesday", label: t("doctor.schedule.days.tuesday") },
+    { key: "wednesday", label: t("doctor.schedule.days.wednesday") },
+    { key: "thursday", label: t("doctor.schedule.days.thursday") },
+    { key: "friday", label: t("doctor.schedule.days.friday") },
+    { key: "saturday", label: t("doctor.schedule.days.saturday") },
+    { key: "sunday", label: t("doctor.schedule.days.sunday") }
   ];
 
   const timeOptions = Array.from({ length: 96 }, (_, i) => {
@@ -183,9 +183,9 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
     });
 
     if (result.success) {
-      toast.success("Availability settings saved successfully");
+      toast.success(t("doctor.schedule.scheduleUpdated"));
     } else {
-      toast.error("Failed to save availability settings");
+      toast.error(t("doctor.schedule.saveFailed"));
     }
   };
 
@@ -219,21 +219,21 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
         {/* Calendar View */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Schedule Overview</CardTitle>
+            <CardTitle>{t("doctor.calendar.scheduleOverview")}</CardTitle>
           </CardHeader>
           <CardContent>
             {/* Procedure Selector */}
             <div className="mb-6 p-4 bg-muted/50 rounded-lg">
               <Label className="flex items-center gap-2 mb-2">
                 <Stethoscope className="h-4 w-4" />
-                Select Procedure/Service
+                {t("doctor.calendar.selectProcedure")}
               </Label>
               <Select value={selectedProcedureId} onValueChange={setSelectedProcedureId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a procedure to see available time slots" />
+                  <SelectValue placeholder={t("doctor.calendar.selectProcedurePlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="default">Standard Appointment (30 min)</SelectItem>
+                  <SelectItem value="default">{t("doctor.calendar.standardAppointment")}</SelectItem>
                   {procedures.map((procedure) => (
                     <SelectItem key={procedure.id} value={procedure.id}>
                       {procedure.name} ({procedure.duration_minutes} min)
@@ -263,21 +263,21 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
                 
                 {slotsLoading ? (
                   <div className="flex items-center justify-center py-8">
-                    <p className="text-muted-foreground">Loading slots...</p>
+                    <p className="text-muted-foreground">{t("doctor.calendar.loadingSlots")}</p>
                   </div>
                 ) : isHoliday(selectedDate) ? (
                   <div className="flex flex-col items-center justify-center py-8 text-center">
                     <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30 mb-2">
-                      Holiday / Day Off
+                      {t("doctor.calendar.holidayDayOff")}
                     </Badge>
-                    <p className="text-muted-foreground">No appointments scheduled</p>
+                    <p className="text-muted-foreground">{t("doctor.calendar.noAppointmentsScheduled")}</p>
                   </div>
                 ) : timeSlots.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-8 text-center">
                     <Badge variant="outline" className="bg-muted text-muted-foreground border-border mb-2">
-                      Not a Working Day
+                      {t("doctor.calendar.notWorkingDay")}
                     </Badge>
-                    <p className="text-muted-foreground">Office is closed</p>
+                    <p className="text-muted-foreground">{t("doctor.calendar.officeClosed")}</p>
                   </div>
                 ) : (
                   <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2">
@@ -305,7 +305,7 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
         {/* Quick Actions */}
         <Card>
           <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
+            <CardTitle>{t("doctor.calendar.quickActions")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <Button 
@@ -317,7 +317,7 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
               }}
             >
               <Plus className="w-4 h-4 mr-2" />
-              Block Time
+              {t("doctor.calendar.blockTime")}
             </Button>
             <Button 
               className="w-full justify-start" 
@@ -325,7 +325,7 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
               onClick={() => setIsAvailabilityOpen(true)}
             >
               <Clock className="w-4 h-4 mr-2" />
-              Set Availability
+              {t("doctor.calendar.setAvailability")}
             </Button>
             <Button 
               className="w-full justify-start" 
@@ -336,7 +336,7 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
               }}
             >
               <Calendar className="w-4 h-4 mr-2" />
-              Book Appointment
+              {t("doctor.calendar.bookAppointment")}
             </Button>
             {doctorStatus === "independent" && (
               <Button 
@@ -345,7 +345,7 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
                 onClick={() => setIsGoogleSyncOpen(true)}
               >
                 <Settings className="w-4 h-4 mr-2" />
-                Sync Google Calendar
+                {t("doctor.calendar.syncGoogleCalendar")}
               </Button>
             )}
           </CardContent>
@@ -365,7 +365,7 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
             preselectedSlot={selectedSlotForAction}
             onSuccess={async () => {
               await refetch();
-              toast.success("Time blocked successfully");
+              toast.success(t("doctor.calendar.timeBlockedSuccess"));
               setIsBlockTimeOpen(false);
               setSelectedSlotForAction(null);
             }}
@@ -384,7 +384,7 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
             prefilledTime={selectedSlotForAction?.time}
             onSuccess={async () => {
               await refetch();
-              toast.success("Appointment booked successfully");
+              toast.success(t("doctor.calendar.appointmentBookedSuccess"));
               setIsBookAppointmentOpen(false);
               setSelectedSlotForAction(null);
             }}
@@ -397,7 +397,7 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
             doctorId={doctorId}
             onSuccess={async () => {
               await refetch();
-              toast.success("Availability updated");
+              toast.success(t("doctor.calendar.availabilityUpdated"));
               setIsAvailabilityOpen(false);
             }}
           />
@@ -413,32 +413,32 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
       {/* Availability Settings */}
       <Card>
         <CardHeader>
-          <CardTitle>Availability Settings</CardTitle>
-          <p className="text-muted-foreground">Configure your working hours and appointment settings</p>
+          <CardTitle>{t("doctor.calendar.availabilitySettings")}</CardTitle>
+          <p className="text-muted-foreground">{t("doctor.calendar.configureWorkingHours")}</p>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Buffer Time Setting */}
           <div>
-            <Label htmlFor="bufferTime">Buffer Time Between Appointments</Label>
+            <Label htmlFor="bufferTime">{t("doctor.calendar.bufferTime")}</Label>
             <Select value={bufferTime.toString()} onValueChange={(v) => setBufferTime(parseInt(v))}>
               <SelectTrigger className="w-full md:w-64">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="0">No buffer</SelectItem>
-                <SelectItem value="15">15 minutes</SelectItem>
-                <SelectItem value="30">30 minutes</SelectItem>
-                <SelectItem value="45">45 minutes</SelectItem>
+                <SelectItem value="0">{t("doctor.calendar.noBuffer")}</SelectItem>
+                <SelectItem value="15">{t("doctor.calendar.minutes15")}</SelectItem>
+                <SelectItem value="30">{t("doctor.calendar.minutes30")}</SelectItem>
+                <SelectItem value="45">{t("doctor.calendar.minutes45")}</SelectItem>
               </SelectContent>
             </Select>
             <p className="text-sm text-muted-foreground mt-1">
-              Time added between appointments for preparation
+              {t("doctor.calendar.bufferTimeDesc")}
             </p>
           </div>
 
           {/* Working Hours */}
           <div>
-            <h3 className="font-medium mb-4">Weekly Schedule</h3>
+            <h3 className="font-medium mb-4">{t("doctor.calendar.weeklySchedule")}</h3>
             <div className="space-y-4">
               {days.map((day) => (
                 <div key={day.key} className="flex items-center gap-4">
@@ -467,7 +467,7 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
                           ))}
                         </SelectContent>
                       </Select>
-                      <span className="text-muted-foreground">to</span>
+                      <span className="text-muted-foreground">{t("doctor.calendar.to")}</span>
                       <Select
                         value={workingHours[day.key].end}
                         onValueChange={(value) => updateWorkingHours(day.key, 'end', value)}
@@ -485,7 +485,7 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
                       </Select>
                     </div>
                   ) : (
-                    <span className="text-muted-foreground">Closed</span>
+                    <span className="text-muted-foreground">{t("doctor.calendar.closed")}</span>
                   )}
                 </div>
               ))}
@@ -493,7 +493,7 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
           </div>
 
           <Button onClick={handleSaveAvailability} disabled={scheduleLoading}>
-            {scheduleLoading ? "Saving..." : "Save Availability Settings"}
+            {scheduleLoading ? t("doctor.calendar.saving") : t("doctor.calendar.saveAvailabilitySettings")}
           </Button>
         </CardContent>
       </Card>
