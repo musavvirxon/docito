@@ -88,15 +88,7 @@ const DoctorScheduleSettingsSection = () => {
     holidays: []
   });
 
-  const dayNames = {
-    monday: 'Monday',
-    tuesday: 'Tuesday', 
-    wednesday: 'Wednesday',
-    thursday: 'Thursday',
-    friday: 'Friday',
-    saturday: 'Saturday',
-    sunday: 'Sunday'
-  };
+  const getDayName = (day: string) => t(`doctor.schedule.days.${day}`);
 
   // Sync with context schedule settings
   useEffect(() => {
@@ -302,7 +294,7 @@ const DoctorScheduleSettingsSection = () => {
                         checked={hours.enabled}
                         onCheckedChange={(enabled) => updateWorkingDay(day as keyof typeof scheduleSettings.workingDays, { enabled })}
                       />
-                      <Label className="text-base font-medium">{dayNames[day as keyof typeof dayNames]}</Label>
+                      <Label className="text-base font-medium">{getDayName(day)}</Label>
                     </div>
                     {hours.enabled && (
                       <Badge variant="outline" className="text-xs">
@@ -316,7 +308,7 @@ const DoctorScheduleSettingsSection = () => {
                       {/* Working Hours */}
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label className="text-sm">Start Time</Label>
+                          <Label className="text-sm">{t("doctor.schedule.startTime")}</Label>
                           <Select
                             value={hours.startTime}
                             onValueChange={(time) => updateWorkingDay(day as keyof typeof scheduleSettings.workingDays, { startTime: time })}
@@ -332,7 +324,7 @@ const DoctorScheduleSettingsSection = () => {
                           </Select>
                         </div>
                         <div>
-                          <Label className="text-sm">End Time</Label>
+                          <Label className="text-sm">{t("doctor.schedule.endTime")}</Label>
                           <Select
                             value={hours.endTime}
                             onValueChange={(time) => updateWorkingDay(day as keyof typeof scheduleSettings.workingDays, { endTime: time })}
@@ -352,14 +344,14 @@ const DoctorScheduleSettingsSection = () => {
                       {/* Breaks */}
                       <div>
                         <div className="flex items-center justify-between mb-3">
-                          <Label className="text-sm font-medium">Breaks</Label>
+                          <Label className="text-sm font-medium">{t("doctor.schedule.breaks")}</Label>
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => addBreak(day as keyof typeof scheduleSettings.workingDays)}
                           >
                             <Plus className="w-3 h-3 mr-1" />
-                            Add Break
+                            {t("doctor.schedule.addBreak")}
                           </Button>
                         </div>
                         
@@ -367,7 +359,7 @@ const DoctorScheduleSettingsSection = () => {
                           {hours.breaks.map((breakTime) => (
                             <div key={breakTime.id} className="flex items-center gap-2 p-2 bg-muted/30 rounded">
                               <Input
-                                placeholder="Break name"
+                                placeholder={t("doctor.schedule.breakName")}
                                 value={breakTime.name}
                                 onChange={(e) => updateBreak(day as keyof typeof scheduleSettings.workingDays, breakTime.id, { name: e.target.value })}
                                 className="h-8 text-xs"
@@ -421,12 +413,12 @@ const DoctorScheduleSettingsSection = () => {
           {/* Buffer Time Settings */}
           <Card>
             <CardHeader>
-              <CardTitle>Appointment Settings</CardTitle>
+              <CardTitle>{t("doctor.schedule.appointmentSettings")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <Label>Default Buffer Time Between Appointments</Label>
+                  <Label>{t("doctor.schedule.bufferTime")}</Label>
                   <Select
                     value={scheduleSettings.defaultBufferTime.toString()}
                     onValueChange={(value) => setScheduleSettings(prev => ({ ...prev, defaultBufferTime: parseInt(value) }))}
@@ -435,14 +427,14 @@ const DoctorScheduleSettingsSection = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-background">
-                      <SelectItem value="5">5 minutes</SelectItem>
-                      <SelectItem value="10">10 minutes</SelectItem>
-                      <SelectItem value="15">15 minutes</SelectItem>
-                      <SelectItem value="30">30 minutes</SelectItem>
+                      <SelectItem value="5">5 {t("doctor.schedule.minutes")}</SelectItem>
+                      <SelectItem value="10">10 {t("doctor.schedule.minutes")}</SelectItem>
+                      <SelectItem value="15">15 {t("doctor.schedule.minutes")}</SelectItem>
+                      <SelectItem value="30">30 {t("doctor.schedule.minutes")}</SelectItem>
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Time between appointments for preparation and notes
+                    {t("doctor.schedule.bufferTimeDesc")}
                   </p>
                 </div>
               </div>
@@ -456,7 +448,7 @@ const DoctorScheduleSettingsSection = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CalendarIcon className="w-5 h-5" />
-                Holidays & Days Off
+                {t("doctor.schedule.holidaysTitle")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -464,7 +456,7 @@ const DoctorScheduleSettingsSection = () => {
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full">
                     <Plus className="w-4 h-4 mr-2" />
-                    Add Holiday/Day Off
+                    {t("doctor.schedule.addHoliday")}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
@@ -482,7 +474,7 @@ const DoctorScheduleSettingsSection = () => {
                       disabled={!selectedDate}
                       className="w-full"
                     >
-                      Add Day Off
+                      {t("doctor.schedule.addDayOff")}
                     </Button>
                   </div>
                 </PopoverContent>
@@ -491,7 +483,7 @@ const DoctorScheduleSettingsSection = () => {
               <div className="space-y-2">
                 {scheduleSettings.holidays.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-4">
-                    No holidays scheduled
+                    {t("doctor.schedule.noHolidays")}
                   </p>
                 ) : (
                   scheduleSettings.holidays.map((holiday, index) => (
@@ -514,7 +506,7 @@ const DoctorScheduleSettingsSection = () => {
           {/* Quick Actions */}
           <Card>
             <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
+              <CardTitle>{t("doctor.schedule.quickActions")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <Button 
@@ -537,12 +529,12 @@ const DoctorScheduleSettingsSection = () => {
                   }));
                   
                   toast({
-                    title: "Schedule Copied",
-                    description: "Monday's schedule has been applied to weekdays",
+                    title: t("doctor.schedule.scheduleCopied"),
+                    description: t("doctor.schedule.scheduleCopiedDesc"),
                   });
                 }}
               >
-                Copy Monday to Weekdays
+                {t("doctor.schedule.copyMondayToWeekdays")}
               </Button>
               
               <Button 
@@ -559,12 +551,12 @@ const DoctorScheduleSettingsSection = () => {
                   }));
                   
                   toast({
-                    title: "Weekends Disabled",
-                    description: "Saturday and Sunday have been disabled",
+                    title: t("doctor.schedule.weekendsDisabled"),
+                    description: t("doctor.schedule.weekendsDisabledDesc"),
                   });
                 }}
               >
-                Disable Weekends
+                {t("doctor.schedule.disableWeekends")}
               </Button>
             </CardContent>
           </Card>
