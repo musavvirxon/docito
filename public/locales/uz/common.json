@@ -55,5 +55,27 @@
     "privacy": "Maxfiylik siyosati",
     "terms": "Foydalanish shartlari",
     "contact": "Biz bilan bog'laning"
+  },
+  "cookies": {
+    "title": "Biz sizning maxfiyligingizni qadrlaymiz",
+    "description": "Biz cookie-fayllardan foydalangan holda sizning tajribangizni yaxshilaymiz, shaxsiylashtirilgan kontent taqdim etamiz va trafikni tahlil qilamiz. \"Hammasini qabul qilish\" tugmasini bosish orqali siz cookie-fayllardan foydalanishga rozilik bildirasiz.",
+    "acceptAll": "Hammasini qabul qilish",
+    "essentialOnly": "Faqat zaruriy",
+    "customize": "Sozlash",
+    "settings": {
+      "title": "Cookie sozlamalari",
+      "description": "Quyida cookie parametrlarini sozlang. Muhim cookie-fayllar platformaning ishlashi uchun zarurdir.",
+      "essential": "Muhim cookie-fayllar",
+      "essentialDesc": "Kirish va asosiy funksiyalar uchun zarur",
+      "analytics": "Analitik cookie-fayllar",
+      "analyticsDesc": "Platformani yaxshilashga yordam beradi",
+      "marketing": "Marketing cookie-fayllar",
+      "marketingDesc": "Shaxsiylashtirilgan kontent va reklamalar",
+      "savePreferences": "Parametrlarni saqlash"
+    },
+    "toast": {
+      "saved": "Cookie parametrlari saqlandi",
+      "error": "Parametrlarni saqlashda xatolik"
+    }
   }
 }

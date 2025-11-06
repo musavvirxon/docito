@@ -55,5 +55,27 @@
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
     "contact": "Contact Us"
+  },
+  "cookies": {
+    "title": "We Value Your Privacy",
+    "description": "We use cookies to enhance your browsing experience, provide personalized content, and analyze our traffic. By clicking \"Accept All\", you consent to our use of cookies.",
+    "acceptAll": "Accept All",
+    "essentialOnly": "Essential Only",
+    "customize": "Customize",
+    "settings": {
+      "title": "Cookie Settings",
+      "description": "Customize your cookie preferences below. Essential cookies are required for the platform to function.",
+      "essential": "Essential Cookies",
+      "essentialDesc": "Required for login and core functionality",
+      "analytics": "Analytics Cookies",
+      "analyticsDesc": "Help us improve the platform",
+      "marketing": "Marketing Cookies",
+      "marketingDesc": "Personalized content and ads",
+      "savePreferences": "Save Preferences"
+    },
+    "toast": {
+      "saved": "Cookie preferences saved",
+      "error": "Failed to save preferences"
+    }
   }
 }

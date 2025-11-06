@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Cookie, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -22,6 +23,7 @@ interface CookiePreferences {
 
 export default function CookieConsentBanner() {
   const { user } = useAuth();
+  const { t } = useTranslation('common');
   const [showBanner, setShowBanner] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [preferences, setPreferences] = useState<CookiePreferences>({
@@ -88,10 +90,10 @@ export default function CookieConsentBanner() {
 
       setShowBanner(false);
       setShowSettings(false);
-      toast.success('Cookie preferences saved');
+      toast.success(t('cookies.toast.saved'));
     } catch (error) {
       console.error('Error saving cookie preferences:', error);
-      toast.error('Failed to save preferences');
+      toast.error(t('cookies.toast.error'));
     } finally {
       setSaving(false);
     }
@@ -133,20 +135,19 @@ export default function CookieConsentBanner() {
                 <Cookie className="h-5 w-5 text-primary" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-lg mb-2">We Value Your Privacy</h3>
+                <h3 className="font-semibold text-lg mb-2">{t('cookies.title')}</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  We use cookies to enhance your browsing experience, provide personalized content, 
-                  and analyze our traffic. By clicking "Accept All", you consent to our use of cookies.
+                  {t('cookies.description')}
                 </p>
                 <div className="flex gap-2 flex-wrap">
                   <Button onClick={handleAcceptAll} disabled={saving}>
-                    Accept All
+                    {t('cookies.acceptAll')}
                   </Button>
                   <Button variant="outline" onClick={handleAcceptEssential} disabled={saving}>
-                    Essential Only
+                    {t('cookies.essentialOnly')}
                   </Button>
                   <Button variant="ghost" onClick={() => setShowSettings(true)}>
-                    Customize
+                    {t('cookies.customize')}
                   </Button>
                 </div>
               </div>
@@ -166,18 +167,18 @@ export default function CookieConsentBanner() {
       <Dialog open={showSettings} onOpenChange={setShowSettings}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Cookie Settings</DialogTitle>
+            <DialogTitle>{t('cookies.settings.title')}</DialogTitle>
             <DialogDescription>
-              Customize your cookie preferences below. Essential cookies are required for the platform to function.
+              {t('cookies.settings.description')}
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <h4 className="font-medium">Essential Cookies</h4>
+                <h4 className="font-medium">{t('cookies.settings.essential')}</h4>
                 <p className="text-sm text-muted-foreground">
-                  Required for login and core functionality
+                  {t('cookies.settings.essentialDesc')}
                 </p>
               </div>
               <Switch checked={true} disabled />
@@ -185,9 +186,9 @@ export default function CookieConsentBanner() {
 
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <h4 className="font-medium">Analytics Cookies</h4>
+                <h4 className="font-medium">{t('cookies.settings.analytics')}</h4>
                 <p className="text-sm text-muted-foreground">
-                  Help us improve the platform
+                  {t('cookies.settings.analyticsDesc')}
                 </p>
               </div>
               <Switch
@@ -200,9 +201,9 @@ export default function CookieConsentBanner() {
 
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <h4 className="font-medium">Marketing Cookies</h4>
+                <h4 className="font-medium">{t('cookies.settings.marketing')}</h4>
                 <p className="text-sm text-muted-foreground">
-                  Personalized content and ads
+                  {t('cookies.settings.marketingDesc')}
                 </p>
               </div>
               <Switch
@@ -216,10 +217,10 @@ export default function CookieConsentBanner() {
 
           <div className="flex gap-2">
             <Button onClick={handleSaveCustom} disabled={saving} className="flex-1">
-              Save Preferences
+              {t('cookies.settings.savePreferences')}
             </Button>
             <Button variant="outline" onClick={() => setShowSettings(false)}>
-              Cancel
+              {t('buttons.cancel')}
             </Button>
           </div>
         </DialogContent>
