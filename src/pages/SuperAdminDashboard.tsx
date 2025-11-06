@@ -22,6 +22,7 @@ import VerificationTable from "@/components/super-admin/VerificationTable";
 import DoctorVerificationTable from "@/components/super-admin/DoctorVerificationTable";
 import SuperAdminSettingsPanel from "@/components/super-admin/SuperAdminSettingsPanel";
 import TranslationManagement from "@/pages/TranslationManagement";
+import { useTranslation } from 'react-i18next';
 
 const SuperAdminLogin = () => {
   const [email, setEmail] = useState("");
@@ -29,6 +30,7 @@ const SuperAdminLogin = () => {
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation('dashboard');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,13 +46,13 @@ const SuperAdminLogin = () => {
         if (error) {
           toast({
             variant: "destructive",
-            title: "Sign up failed",
+            title: t("superAdmin.login.signUpFailed"),
             description: error.message,
           });
         } else {
           toast({
-            title: "Account created",
-            description: "You can now sign in with your credentials",
+            title: t("superAdmin.login.accountCreated"),
+            description: t("superAdmin.login.accountCreatedDesc"),
           });
           setIsSignUp(false);
         }
@@ -63,7 +65,7 @@ const SuperAdminLogin = () => {
         if (error) {
           toast({
             variant: "destructive",
-            title: "Authentication failed",
+            title: t("superAdmin.login.authFailed"),
             description: error.message,
           });
         }
@@ -71,8 +73,8 @@ const SuperAdminLogin = () => {
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "An unexpected error occurred",
+        title: t("superAdmin.login.error"),
+        description: t("superAdmin.login.unexpectedError"),
       });
     } finally {
       setLoading(false);
@@ -84,16 +86,16 @@ const SuperAdminLogin = () => {
       <Card className="w-full max-w-md mx-4">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
-            Super Admin Access
+            {t("superAdmin.login.title")}
           </CardTitle>
           <CardDescription className="text-center">
-            {isSignUp ? "Create Super Admin Account" : "Platform Owner Login"} - Authorized Personnel Only
+            {isSignUp ? t("superAdmin.login.subtitleSignUp") : t("superAdmin.login.subtitle")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("superAdmin.login.email")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -105,7 +107,7 @@ const SuperAdminLogin = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("superAdmin.login.password")}</Label>
               <Input
                 id="password"
                 type="password"
@@ -124,10 +126,10 @@ const SuperAdminLogin = () => {
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {isSignUp ? "Creating account..." : "Signing in..."}
+                  {isSignUp ? t("superAdmin.login.creatingAccount") : t("superAdmin.login.signingIn")}
                 </>
               ) : (
-                isSignUp ? "Create Account" : "Sign In"
+                isSignUp ? t("superAdmin.login.signUp") : t("superAdmin.login.signIn")
               )}
             </Button>
             <div className="text-center mt-4">
@@ -138,7 +140,7 @@ const SuperAdminLogin = () => {
                 disabled={loading}
                 className="text-sm"
               >
-                {isSignUp ? "Already have an account? Sign in" : "Need to create an account? Sign up"}
+                {isSignUp ? t("superAdmin.login.alreadyHaveAccount") : t("superAdmin.login.needAccount")}
               </Button>
             </div>
           </form>
@@ -151,6 +153,7 @@ const SuperAdminLogin = () => {
 const SuperAdminDashboard = () => {
   const { user, profile, loading } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation('dashboard');
   const [activeSection, setActiveSection] = useState("dashboard");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState<boolean | null>(null);
@@ -160,8 +163,8 @@ const SuperAdminDashboard = () => {
   const handleInactive = async () => {
     await supabase.auth.signOut();
     toast({
-      title: "Session expired",
-      description: "You have been logged out due to inactivity",
+      title: t("superAdmin.sessionExpired"),
+      description: t("superAdmin.sessionExpiredDesc"),
     });
   };
 
@@ -229,8 +232,8 @@ const SuperAdminDashboard = () => {
         return (
           <div className="space-y-8">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Dashboard Overview</h1>
-              <p className="text-muted-foreground mt-1">Platform metrics at a glance</p>
+              <h1 className="text-3xl font-bold text-foreground">{t("superAdmin.dashboard.title")}</h1>
+              <p className="text-muted-foreground mt-1">{t("superAdmin.dashboard.subtitle")}</p>
             </div>
             
             <KPICards />
@@ -240,7 +243,7 @@ const SuperAdminDashboard = () => {
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
               <div className="xl:col-span-2">
                 <ManagementTable
-                  title="Recent Appointments"
+                  title={t("superAdmin.dashboard.recentAppointments")}
                   type="appointments"
                 />
               </div>
@@ -255,14 +258,14 @@ const SuperAdminDashboard = () => {
         return (
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Doctors Management</h1>
-              <p className="text-muted-foreground mt-1">Manage all platform doctors</p>
+              <h1 className="text-3xl font-bold text-foreground">{t("superAdmin.doctors.title")}</h1>
+              <p className="text-muted-foreground mt-1">{t("superAdmin.doctors.subtitle")}</p>
             </div>
-            <ManagementTable title="All Doctors" type="doctors" />
+            <ManagementTable title={t("superAdmin.doctors.allDoctors")} type="doctors" />
             
             <div className="mt-8">
-              <h2 className="text-2xl font-bold text-foreground mb-4">Doctor Verifications</h2>
-              <DoctorVerificationTable title="Pending Doctor Verifications" status="pending" />
+              <h2 className="text-2xl font-bold text-foreground mb-4">{t("superAdmin.doctors.verifications")}</h2>
+              <DoctorVerificationTable title={t("superAdmin.doctors.pendingVerifications")} status="pending" />
             </div>
           </div>
         );
@@ -271,14 +274,14 @@ const SuperAdminDashboard = () => {
         return (
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Practices Management</h1>
-              <p className="text-muted-foreground mt-1">Manage all medical practices</p>
+              <h1 className="text-3xl font-bold text-foreground">{t("superAdmin.practices.title")}</h1>
+              <p className="text-muted-foreground mt-1">{t("superAdmin.practices.subtitle")}</p>
             </div>
-            <ManagementTable title="All Practices" type="practices" />
+            <ManagementTable title={t("superAdmin.practices.allPractices")} type="practices" />
             
             <div className="mt-8">
-              <h2 className="text-2xl font-bold text-foreground mb-4">Practice Verifications</h2>
-              <VerificationTable title="Pending Verifications" status="under_review" />
+              <h2 className="text-2xl font-bold text-foreground mb-4">{t("superAdmin.practices.verifications")}</h2>
+              <VerificationTable title={t("superAdmin.practices.pendingVerifications")} status="under_review" />
             </div>
           </div>
         );
@@ -287,10 +290,10 @@ const SuperAdminDashboard = () => {
         return (
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Patients Management</h1>
-              <p className="text-muted-foreground mt-1">View all platform patients</p>
+              <h1 className="text-3xl font-bold text-foreground">{t("superAdmin.patients.title")}</h1>
+              <p className="text-muted-foreground mt-1">{t("superAdmin.patients.subtitle")}</p>
             </div>
-            <ManagementTable title="All Patients" type="patients" />
+            <ManagementTable title={t("superAdmin.patients.allPatients")} type="patients" />
           </div>
         );
       
@@ -298,10 +301,10 @@ const SuperAdminDashboard = () => {
         return (
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Appointments Management</h1>
-              <p className="text-muted-foreground mt-1">Monitor all appointments</p>
+              <h1 className="text-3xl font-bold text-foreground">{t("superAdmin.appointments.title")}</h1>
+              <p className="text-muted-foreground mt-1">{t("superAdmin.appointments.subtitle")}</p>
             </div>
-            <ManagementTable title="All Appointments" type="appointments" />
+            <ManagementTable title={t("superAdmin.appointments.allAppointments")} type="appointments" />
           </div>
         );
       
@@ -309,10 +312,10 @@ const SuperAdminDashboard = () => {
         return (
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Payments & Transactions</h1>
-              <p className="text-muted-foreground mt-1">Financial overview and transactions</p>
+              <h1 className="text-3xl font-bold text-foreground">{t("superAdmin.payments.title")}</h1>
+              <p className="text-muted-foreground mt-1">{t("superAdmin.payments.subtitle")}</p>
             </div>
-            <ManagementTable title="All Transactions" type="payments" />
+            <ManagementTable title={t("superAdmin.payments.allTransactions")} type="payments" />
           </div>
         );
       
@@ -320,8 +323,8 @@ const SuperAdminDashboard = () => {
         return (
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Platform Analytics</h1>
-              <p className="text-muted-foreground mt-1">Detailed insights and metrics</p>
+              <h1 className="text-3xl font-bold text-foreground">{t("superAdmin.analytics.title")}</h1>
+              <p className="text-muted-foreground mt-1">{t("superAdmin.analytics.subtitle")}</p>
             </div>
             <AnalyticsCharts showAll />
           </div>
@@ -331,8 +334,8 @@ const SuperAdminDashboard = () => {
         return (
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">System Settings</h1>
-              <p className="text-muted-foreground mt-1">Configure platform settings</p>
+              <h1 className="text-3xl font-bold text-foreground">{t("superAdmin.settings.title")}</h1>
+              <p className="text-muted-foreground mt-1">{t("superAdmin.settings.subtitle")}</p>
             </div>
             <SuperAdminSettingsPanel />
           </div>
@@ -342,8 +345,8 @@ const SuperAdminDashboard = () => {
         return (
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">System Logs</h1>
-              <p className="text-muted-foreground mt-1">Audit trail and system events</p>
+              <h1 className="text-3xl font-bold text-foreground">{t("superAdmin.logs.title")}</h1>
+              <p className="text-muted-foreground mt-1">{t("superAdmin.logs.subtitle")}</p>
             </div>
             <ActivityFeed showAll />
           </div>
@@ -376,7 +379,7 @@ const SuperAdminDashboard = () => {
           
           <footer className="border-t border-border py-4 px-8">
             <p className="text-sm text-muted-foreground">
-              © 2025 Docito Admin Platform - Secure Access Only
+              {t("superAdmin.footer")}
             </p>
           </footer>
         </div>

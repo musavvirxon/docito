@@ -997,5 +997,75 @@
       "avgDurationLabel": "Avg. Duration",
       "completedLabel": "Completed"
     }
+  },
+  "superAdmin": {
+    "login": {
+      "title": "Super Admin Access",
+      "subtitle": "Platform Owner Login - Authorized Personnel Only",
+      "subtitleSignUp": "Create Super Admin Account",
+      "email": "Email",
+      "password": "Password",
+      "signIn": "Sign In",
+      "signUp": "Create Account",
+      "signingIn": "Signing in...",
+      "creatingAccount": "Creating account...",
+      "alreadyHaveAccount": "Already have an account? Sign in",
+      "needAccount": "Need to create an account? Sign up",
+      "signUpFailed": "Sign up failed",
+      "accountCreated": "Account created",
+      "accountCreatedDesc": "You can now sign in with your credentials",
+      "authFailed": "Authentication failed",
+      "error": "Error",
+      "unexpectedError": "An unexpected error occurred"
+    },
+    "dashboard": {
+      "title": "Dashboard Overview",
+      "subtitle": "Platform metrics at a glance",
+      "recentAppointments": "Recent Appointments"
+    },
+    "doctors": {
+      "title": "Doctors Management",
+      "subtitle": "Manage all platform doctors",
+      "allDoctors": "All Doctors",
+      "verifications": "Doctor Verifications",
+      "pendingVerifications": "Pending Doctor Verifications"
+    },
+    "practices": {
+      "title": "Practices Management",
+      "subtitle": "Manage all medical practices",
+      "allPractices": "All Practices",
+      "verifications": "Practice Verifications",
+      "pendingVerifications": "Pending Verifications"
+    },
+    "patients": {
+      "title": "Patients Management",
+      "subtitle": "View all platform patients",
+      "allPatients": "All Patients"
+    },
+    "appointments": {
+      "title": "Appointments Management",
+      "subtitle": "Monitor all appointments",
+      "allAppointments": "All Appointments"
+    },
+    "payments": {
+      "title": "Payments & Transactions",
+      "subtitle": "Financial overview and transactions",
+      "allTransactions": "All Transactions"
+    },
+    "analytics": {
+      "title": "Platform Analytics",
+      "subtitle": "Detailed insights and metrics"
+    },
+    "settings": {
+      "title": "System Settings",
+      "subtitle": "Configure platform settings"
+    },
+    "logs": {
+      "title": "System Logs",
+      "subtitle": "Audit trail and system events"
+    },
+    "footer": "© 2025 Docito Admin Platform - Secure Access Only",
+    "sessionExpired": "Session expired",
+    "sessionExpiredDesc": "You have been logged out due to inactivity"
   }
 }
