@@ -19,6 +19,7 @@ import PendingInvitationsSection from "@/components/dashboard/PendingInvitations
 import { AddLocationModal } from "@/components/dashboard/AddLocationModal";
 import { SettingsPanel } from "@/components/dashboard/SettingsPanel";
 import { ComprehensiveRegistrationModal } from "@/components/dashboard/ComprehensiveRegistrationModal";
+import { CreateClinicModal } from "@/components/dashboard/CreateClinicModal";
 import { ViewRequirementsModal } from "@/components/dashboard/ViewRequirementsModal";
 import VerificationSuccessModal from "@/components/dashboard/VerificationSuccessModal";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
@@ -171,12 +172,10 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
         
-        <ComprehensiveRegistrationModal
+        <CreateClinicModal
           open={createClinicOpen}
           onOpenChange={setCreateClinicOpen}
-          onSuccess={handleVerificationSuccess}
-          practiceId={practice?.id || ""}
-          existingPracticeData={practice}
+          onSuccess={refreshData}
         />
       </div>
     );
@@ -823,10 +822,20 @@ const AdminDashboard = () => {
       />
 
       {practice && (
-        <ViewRequirementsModal
-          open={requirementsOpen}
-          onOpenChange={setRequirementsOpen}
-        />
+        <>
+          <ViewRequirementsModal
+            open={requirementsOpen}
+            onOpenChange={setRequirementsOpen}
+          />
+          
+          <ComprehensiveRegistrationModal
+            open={createClinicOpen}
+            onOpenChange={setCreateClinicOpen}
+            onSuccess={handleVerificationSuccess}
+            practiceId={practice.id}
+            existingPracticeData={practice}
+          />
+        </>
       )}
 
       {/* Verification Success Modal */}
