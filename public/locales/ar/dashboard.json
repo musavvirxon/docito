@@ -167,6 +167,54 @@
       "completeProfileBanner": "أكمل ملفك الشخصي ({{completion}}% منجز)",
       "completeProfileMessage": "الملف الشخصي الكامل يساعد المرضى على إيجادك والثقة بك بسهولة أكبر"
     },
+    "quickModals": {
+      "settings": {
+        "title": "إعدادات الملف السريعة",
+        "specialty": "التخصص",
+        "selectSpecialty": "اختر التخصص",
+        "specialties": {
+          "generalPractice": "الممارسة العامة",
+          "cardiology": "أمراض القلب",
+          "dermatology": "الأمراض الجلدية",
+          "pediatrics": "طب الأطفال",
+          "orthopedics": "جراحة العظام",
+          "neurology": "طب الأعصاب"
+        },
+        "consultationFee": "رسوم الاستشارة ($)",
+        "bio": "السيرة الذاتية",
+        "bioPlaceholder": "أخبر المرضى عن خبرتك...",
+        "cancel": "إلغاء",
+        "updateProfile": "تحديث الملف الشخصي",
+        "profileUpdated": "تم تحديث الملف الشخصي بنجاح"
+      },
+      "procedures": {
+        "title": "إضافة خدمة سريعة",
+        "serviceName": "اسم الخدمة",
+        "serviceNamePlaceholder": "مثال: استشارة عامة",
+        "category": "الفئة",
+        "categories": {
+          "general": "عام",
+          "preventive": "وقائي",
+          "restorative": "ترميمي",
+          "cosmetic": "تجميلي"
+        },
+        "cost": "التكلفة ($)",
+        "duration": "المدة",
+        "durations": {
+          "15min": "15 دقيقة",
+          "30min": "30 دقيقة",
+          "45min": "45 دقيقة",
+          "1hour": "ساعة واحدة",
+          "1.5hours": "1.5 ساعة"
+        },
+        "cancel": "إلغاء",
+        "addService": "إضافة خدمة",
+        "serviceAdded": "تمت إضافة الخدمة بنجاح"
+      },
+      "blockTime": {
+        "timeBlocked": "تم حظر الوقت من {{start}} إلى {{end}}"
+      }
+    },
     "schedule": {
       "title": "إعدادات الجدول الزمني",
       "description": "قم بتكوين ساعات العمل والفترات الاستراحة والتوافر",

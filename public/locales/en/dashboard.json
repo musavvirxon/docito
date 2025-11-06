@@ -261,6 +261,54 @@
       "completeProfileBanner": "Complete your profile ({{completion}}% done)",
       "completeProfileMessage": "A complete profile helps patients find and trust you more easily"
     },
+    "quickModals": {
+      "settings": {
+        "title": "Quick Profile Settings",
+        "specialty": "Specialty",
+        "selectSpecialty": "Select specialty",
+        "specialties": {
+          "generalPractice": "General Practice",
+          "cardiology": "Cardiology",
+          "dermatology": "Dermatology",
+          "pediatrics": "Pediatrics",
+          "orthopedics": "Orthopedics",
+          "neurology": "Neurology"
+        },
+        "consultationFee": "Consultation Fee ($)",
+        "bio": "Bio",
+        "bioPlaceholder": "Tell patients about your experience...",
+        "cancel": "Cancel",
+        "updateProfile": "Update Profile",
+        "profileUpdated": "Profile updated successfully"
+      },
+      "procedures": {
+        "title": "Quick Add Service",
+        "serviceName": "Service Name",
+        "serviceNamePlaceholder": "e.g., General Consultation",
+        "category": "Category",
+        "categories": {
+          "general": "General",
+          "preventive": "Preventive",
+          "restorative": "Restorative",
+          "cosmetic": "Cosmetic"
+        },
+        "cost": "Cost ($)",
+        "duration": "Duration",
+        "durations": {
+          "15min": "15 minutes",
+          "30min": "30 minutes",
+          "45min": "45 minutes",
+          "1hour": "1 hour",
+          "1.5hours": "1.5 hours"
+        },
+        "cancel": "Cancel",
+        "addService": "Add Service",
+        "serviceAdded": "Service added successfully"
+      },
+      "blockTime": {
+        "timeBlocked": "Time blocked from {{start}} to {{end}}"
+      }
+    },
     "schedule": {
       "title": "Schedule Settings",
       "description": "Configure your working hours, breaks, and availability",

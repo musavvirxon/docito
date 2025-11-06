@@ -261,6 +261,54 @@
       "completeProfileBanner": "Завершите ваш профиль ({{completion}}% выполнено)",
       "completeProfileMessage": "Полный профиль помогает пациентам легче находить вас и доверять вам"
     },
+    "quickModals": {
+      "settings": {
+        "title": "Быстрые настройки профиля",
+        "specialty": "Специальность",
+        "selectSpecialty": "Выберите специальность",
+        "specialties": {
+          "generalPractice": "Общая практика",
+          "cardiology": "Кардиология",
+          "dermatology": "Дерматология",
+          "pediatrics": "Педиатрия",
+          "orthopedics": "Ортопедия",
+          "neurology": "Неврология"
+        },
+        "consultationFee": "Стоимость консультации ($)",
+        "bio": "Биография",
+        "bioPlaceholder": "Расскажите пациентам о вашем опыте...",
+        "cancel": "Отмена",
+        "updateProfile": "Обновить профиль",
+        "profileUpdated": "Профиль успешно обновлен"
+      },
+      "procedures": {
+        "title": "Быстрое добавление услуги",
+        "serviceName": "Название услуги",
+        "serviceNamePlaceholder": "напр., Общая консультация",
+        "category": "Категория",
+        "categories": {
+          "general": "Общая",
+          "preventive": "Профилактическая",
+          "restorative": "Восстановительная",
+          "cosmetic": "Косметическая"
+        },
+        "cost": "Стоимость ($)",
+        "duration": "Длительность",
+        "durations": {
+          "15min": "15 минут",
+          "30min": "30 минут",
+          "45min": "45 минут",
+          "1hour": "1 час",
+          "1.5hours": "1.5 часа"
+        },
+        "cancel": "Отмена",
+        "addService": "Добавить услугу",
+        "serviceAdded": "Услуга успешно добавлена"
+      },
+      "blockTime": {
+        "timeBlocked": "Время заблокировано с {{start}} до {{end}}"
+      }
+    },
     "schedule": {
       "title": "Настройки расписания",
       "description": "Настройте ваши рабочие часы, перерывы и доступность",

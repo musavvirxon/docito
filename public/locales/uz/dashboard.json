@@ -167,6 +167,54 @@
       "completeProfileBanner": "Profilingizni to'ldiring ({{completion}}% bajarildi)",
       "completeProfileMessage": "To'liq profil bemorlarga sizni topish va ishonishda yordam beradi"
     },
+    "quickModals": {
+      "settings": {
+        "title": "Tez profil sozlamalari",
+        "specialty": "Mutaxassislik",
+        "selectSpecialty": "Mutaxassislikni tanlang",
+        "specialties": {
+          "generalPractice": "Umumiy amaliyot",
+          "cardiology": "Kardiologiya",
+          "dermatology": "Dermatologiya",
+          "pediatrics": "Pediatriya",
+          "orthopedics": "Ortopediya",
+          "neurology": "Nevrologiya"
+        },
+        "consultationFee": "Konsultatsiya narxi ($)",
+        "bio": "Biografiya",
+        "bioPlaceholder": "Bemorlarga tajribangiz haqida ayting...",
+        "cancel": "Bekor qilish",
+        "updateProfile": "Profilni yangilash",
+        "profileUpdated": "Profil muvaffaqiyatli yangilandi"
+      },
+      "procedures": {
+        "title": "Tez xizmat qo'shish",
+        "serviceName": "Xizmat nomi",
+        "serviceNamePlaceholder": "mas., Umumiy konsultatsiya",
+        "category": "Kategoriya",
+        "categories": {
+          "general": "Umumiy",
+          "preventive": "Profilaktik",
+          "restorative": "Tiklovchi",
+          "cosmetic": "Kosmetik"
+        },
+        "cost": "Narxi ($)",
+        "duration": "Davomiyligi",
+        "durations": {
+          "15min": "15 daqiqa",
+          "30min": "30 daqiqa",
+          "45min": "45 daqiqa",
+          "1hour": "1 soat",
+          "1.5hours": "1.5 soat"
+        },
+        "cancel": "Bekor qilish",
+        "addService": "Xizmat qo'shish",
+        "serviceAdded": "Xizmat muvaffaqiyatli qo'shildi"
+      },
+      "blockTime": {
+        "timeBlocked": "Vaqt {{start}} dan {{end}} gacha bloklandi"
+      }
+    },
     "schedule": {
       "title": "Jadval sozlamalari",
       "description": "Ish vaqtlaringiz, tanaffuslar va mavjudligingizni sozlang",

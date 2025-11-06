@@ -12,6 +12,7 @@ import { Calendar, Clock, Users, Settings } from "lucide-react";
 import { useDoctorProfile } from "@/hooks/useDoctorProfile";
 import { useDoctorServices } from "@/hooks/useDoctorServices";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface QuickActionModalsProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ interface QuickActionModalsProps {
 }
 
 const QuickActionModals = ({ isOpen, action, onClose, doctorProfile, todaysAppointments = [] }: QuickActionModalsProps) => {
+  const { t } = useTranslation("dashboard");
   const { updateProfile } = useDoctorProfile();
   const { addService } = useDoctorServices();
   
@@ -49,7 +51,7 @@ const QuickActionModals = ({ isOpen, action, onClose, doctorProfile, todaysAppoi
 
     const result = await updateProfile(updates);
     if (result?.success) {
-      toast.success('Profile updated successfully');
+      toast.success(t("doctor.quickModals.settings.profileUpdated"));
       onClose();
     }
   };
@@ -68,14 +70,14 @@ const QuickActionModals = ({ isOpen, action, onClose, doctorProfile, todaysAppoi
 
     const result = await addService(serviceData);
     if (result?.success) {
-      toast.success('Service added successfully');
+      toast.success(t("doctor.quickModals.procedures.serviceAdded"));
       onClose();
     }
   };
 
   const handleBlockTime = () => {
     // Placeholder for blocking time functionality
-    toast.success(`Time blocked from ${formData.block_start} to ${formData.block_end}`);
+    toast.success(t("doctor.quickModals.blockTime.timeBlocked", { start: formData.block_start, end: formData.block_end }));
     onClose();
   };
 
@@ -87,29 +89,29 @@ const QuickActionModals = ({ isOpen, action, onClose, doctorProfile, todaysAppoi
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Settings className="w-5 h-5" />
-                Quick Profile Settings
+                {t("doctor.quickModals.settings.title")}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
-                <Label htmlFor="specialty">Specialty</Label>
+                <Label htmlFor="specialty">{t("doctor.quickModals.settings.specialty")}</Label>
                 <Select value={formData.specialty} onValueChange={(value) => setFormData(prev => ({ ...prev, specialty: value }))}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select specialty" />
+                    <SelectValue placeholder={t("doctor.quickModals.settings.selectSpecialty")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="general practice">General Practice</SelectItem>
-                    <SelectItem value="cardiology">Cardiology</SelectItem>
-                    <SelectItem value="dermatology">Dermatology</SelectItem>
-                    <SelectItem value="pediatrics">Pediatrics</SelectItem>
-                    <SelectItem value="orthopedics">Orthopedics</SelectItem>
-                    <SelectItem value="neurology">Neurology</SelectItem>
+                    <SelectItem value="general practice">{t("doctor.quickModals.settings.specialties.generalPractice")}</SelectItem>
+                    <SelectItem value="cardiology">{t("doctor.quickModals.settings.specialties.cardiology")}</SelectItem>
+                    <SelectItem value="dermatology">{t("doctor.quickModals.settings.specialties.dermatology")}</SelectItem>
+                    <SelectItem value="pediatrics">{t("doctor.quickModals.settings.specialties.pediatrics")}</SelectItem>
+                    <SelectItem value="orthopedics">{t("doctor.quickModals.settings.specialties.orthopedics")}</SelectItem>
+                    <SelectItem value="neurology">{t("doctor.quickModals.settings.specialties.neurology")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
               <div>
-                <Label htmlFor="consultation_fee">Consultation Fee ($)</Label>
+                <Label htmlFor="consultation_fee">{t("doctor.quickModals.settings.consultationFee")}</Label>
                 <Input
                   id="consultation_fee"
                   type="number"
@@ -120,19 +122,19 @@ const QuickActionModals = ({ isOpen, action, onClose, doctorProfile, todaysAppoi
               </div>
               
               <div>
-                <Label htmlFor="bio">Bio</Label>
+                <Label htmlFor="bio">{t("doctor.quickModals.settings.bio")}</Label>
                 <Textarea
                   id="bio"
                   value={formData.bio}
                   onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
-                  placeholder="Tell patients about your experience..."
+                  placeholder={t("doctor.quickModals.settings.bioPlaceholder")}
                   className="min-h-[100px]"
                 />
               </div>
               
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={onClose}>Cancel</Button>
-                <Button onClick={handleUpdateProfile}>Update Profile</Button>
+                <Button variant="outline" onClick={onClose}>{t("doctor.quickModals.settings.cancel")}</Button>
+                <Button onClick={handleUpdateProfile}>{t("doctor.quickModals.settings.updateProfile")}</Button>
               </div>
             </div>
           </>
@@ -144,38 +146,38 @@ const QuickActionModals = ({ isOpen, action, onClose, doctorProfile, todaysAppoi
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Users className="w-5 h-5" />
-                Quick Add Service
+                {t("doctor.quickModals.procedures.title")}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
-                <Label htmlFor="service_name">Service Name</Label>
+                <Label htmlFor="service_name">{t("doctor.quickModals.procedures.serviceName")}</Label>
                 <Input
                   id="service_name"
                   value={formData.service_name}
                   onChange={(e) => setFormData(prev => ({ ...prev, service_name: e.target.value }))}
-                  placeholder="e.g., General Consultation"
+                  placeholder={t("doctor.quickModals.procedures.serviceNamePlaceholder")}
                 />
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="service_category">Category</Label>
+                  <Label htmlFor="service_category">{t("doctor.quickModals.procedures.category")}</Label>
                   <Select value={formData.service_category} onValueChange={(value) => setFormData(prev => ({ ...prev, service_category: value }))}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="general">General</SelectItem>
-                      <SelectItem value="preventive">Preventive</SelectItem>
-                      <SelectItem value="restorative">Restorative</SelectItem>
-                      <SelectItem value="cosmetic">Cosmetic</SelectItem>
+                      <SelectItem value="general">{t("doctor.quickModals.procedures.categories.general")}</SelectItem>
+                      <SelectItem value="preventive">{t("doctor.quickModals.procedures.categories.preventive")}</SelectItem>
+                      <SelectItem value="restorative">{t("doctor.quickModals.procedures.categories.restorative")}</SelectItem>
+                      <SelectItem value="cosmetic">{t("doctor.quickModals.procedures.categories.cosmetic")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 
                 <div>
-                  <Label htmlFor="service_cost">Cost ($)</Label>
+                  <Label htmlFor="service_cost">{t("doctor.quickModals.procedures.cost")}</Label>
                   <Input
                     id="service_cost"
                     type="number"
@@ -187,24 +189,24 @@ const QuickActionModals = ({ isOpen, action, onClose, doctorProfile, todaysAppoi
               </div>
               
               <div>
-                <Label htmlFor="service_duration">Duration</Label>
+                <Label htmlFor="service_duration">{t("doctor.quickModals.procedures.duration")}</Label>
                 <Select value={formData.service_duration} onValueChange={(value) => setFormData(prev => ({ ...prev, service_duration: value }))}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="15">15 minutes</SelectItem>
-                    <SelectItem value="30">30 minutes</SelectItem>
-                    <SelectItem value="45">45 minutes</SelectItem>
-                    <SelectItem value="60">1 hour</SelectItem>
-                    <SelectItem value="90">1.5 hours</SelectItem>
+                    <SelectItem value="15">{t("doctor.quickModals.procedures.durations.15min")}</SelectItem>
+                    <SelectItem value="30">{t("doctor.quickModals.procedures.durations.30min")}</SelectItem>
+                    <SelectItem value="45">{t("doctor.quickModals.procedures.durations.45min")}</SelectItem>
+                    <SelectItem value="60">{t("doctor.quickModals.procedures.durations.1hour")}</SelectItem>
+                    <SelectItem value="90">{t("doctor.quickModals.procedures.durations.1.5hours")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={onClose}>Cancel</Button>
-                <Button onClick={handleAddService}>Add Service</Button>
+                <Button variant="outline" onClick={onClose}>{t("doctor.quickModals.procedures.cancel")}</Button>
+                <Button onClick={handleAddService}>{t("doctor.quickModals.procedures.addService")}</Button>
               </div>
             </div>
           </>
