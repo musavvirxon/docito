@@ -47,10 +47,10 @@ export function PerformanceServices({ services }: PerformanceServicesProps) {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-xl">🏆 Top Performing Service</CardTitle>
-                <p className="text-muted-foreground mt-1">Your most booked service</p>
+                <CardTitle className="text-xl">{t("doctor.performance.services.topPerforming")}</CardTitle>
+                <p className="text-muted-foreground mt-1">{t("doctor.performance.services.mostBooked")}</p>
               </div>
-              <Badge className="text-lg px-4 py-2">Best Seller</Badge>
+              <Badge className="text-lg px-4 py-2">{t("doctor.performance.services.bestSeller")}</Badge>
             </div>
           </CardHeader>
           <CardContent>
@@ -61,15 +61,15 @@ export function PerformanceServices({ services }: PerformanceServicesProps) {
               </div>
               <div className="text-center">
                 <p className="text-3xl font-bold text-primary">{topService.bookings}</p>
-                <p className="text-sm text-muted-foreground">Total Bookings</p>
+                <p className="text-sm text-muted-foreground">{t("doctor.performance.services.totalBookings")}</p>
               </div>
               <div className="text-center">
                 <p className="text-3xl font-bold text-green-600">${topService.revenue.toLocaleString()}</p>
-                <p className="text-sm text-muted-foreground">Revenue</p>
+                <p className="text-sm text-muted-foreground">{t("doctor.performance.services.revenue")}</p>
               </div>
               <div className="text-center">
                 <p className="text-3xl font-bold text-blue-600">{topService.conversionRate.toFixed(1)}%</p>
-                <p className="text-sm text-muted-foreground">Completion Rate</p>
+                <p className="text-sm text-muted-foreground">{t("doctor.performance.services.completionRate")}</p>
               </div>
             </div>
           </CardContent>

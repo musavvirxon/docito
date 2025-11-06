@@ -40,7 +40,7 @@ export function PerformanceReviews({ reviews, averageRating, totalReviews }: Per
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Overall Rating</CardTitle>
+            <CardTitle>{t("doctor.performance.reviews.overallRating")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-4">
@@ -54,7 +54,7 @@ export function PerformanceReviews({ reviews, averageRating, totalReviews }: Per
                     />
                   ))}
                 </div>
-                <p className="text-sm text-muted-foreground mt-2">Based on {totalReviews} reviews</p>
+                <p className="text-sm text-muted-foreground mt-2">{t("doctor.performance.reviews.basedOnReviews", { count: totalReviews })}</p>
               </div>
               
               <div className="flex-1 space-y-2">
@@ -72,13 +72,13 @@ export function PerformanceReviews({ reviews, averageRating, totalReviews }: Per
 
         <Card>
           <CardHeader>
-            <CardTitle>Review Insights</CardTitle>
+            <CardTitle>{t("doctor.performance.reviews.reviewInsights")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between p-3 bg-primary/5 rounded-lg">
               <div className="flex items-center gap-2">
                 <ThumbsUp className="w-5 h-5 text-green-600" />
-                <span className="font-medium">Positive Reviews</span>
+                <span className="font-medium">{t("doctor.performance.reviews.positiveReviews")}</span>
               </div>
               <Badge className="bg-green-100 text-green-700">
                 {reviews.filter(r => r.rating >= 4).length}
@@ -88,7 +88,7 @@ export function PerformanceReviews({ reviews, averageRating, totalReviews }: Per
             <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
               <div className="flex items-center gap-2">
                 <MessageSquare className="w-5 h-5 text-yellow-600" />
-                <span className="font-medium">With Comments</span>
+                <span className="font-medium">{t("doctor.performance.reviews.withComments")}</span>
               </div>
               <Badge className="bg-yellow-100 text-yellow-700">
                 {reviews.filter(r => r.comment && r.comment.length > 10).length}
@@ -96,9 +96,9 @@ export function PerformanceReviews({ reviews, averageRating, totalReviews }: Per
             </div>
 
             <div className="pt-2">
-              <p className="text-sm text-muted-foreground mb-2">Rating Trend</p>
+              <p className="text-sm text-muted-foreground mb-2">{t("doctor.performance.reviews.ratingTrend")}</p>
               <p className="text-2xl font-bold text-green-600">+0.3</p>
-              <p className="text-xs text-muted-foreground">vs last month</p>
+              <p className="text-xs text-muted-foreground">{t("doctor.performance.reviews.vsLastMonth")}</p>
             </div>
           </CardContent>
         </Card>
@@ -113,7 +113,7 @@ export function PerformanceReviews({ reviews, averageRating, totalReviews }: Per
               size="sm"
               onClick={() => setFilter('all')}
             >
-              All Reviews
+              {t("doctor.performance.reviews.allReviews")}
             </Button>
             {[5, 4, 3, 2, 1].map(stars => (
               <Button
@@ -150,7 +150,7 @@ export function PerformanceReviews({ reviews, averageRating, totalReviews }: Per
                   </div>
                 </div>
                 {review.rating === 5 && (
-                  <Badge className="bg-green-100 text-green-700">Excellent</Badge>
+                  <Badge className="bg-green-100 text-green-700">{t("doctor.performance.reviews.excellent")}</Badge>
                 )}
               </div>
               
@@ -159,11 +159,11 @@ export function PerformanceReviews({ reviews, averageRating, totalReviews }: Per
               <div className="flex gap-2 mt-4">
                 <Button variant="outline" size="sm">
                   <ThumbsUp className="w-4 h-4 mr-2" />
-                  Helpful
+                  {t("doctor.performance.reviews.helpful")}
                 </Button>
                 <Button variant="outline" size="sm">
                   <MessageSquare className="w-4 h-4 mr-2" />
-                  Reply
+                  {t("doctor.performance.reviews.reply")}
                 </Button>
               </div>
             </CardContent>
@@ -174,7 +174,7 @@ export function PerformanceReviews({ reviews, averageRating, totalReviews }: Per
           <Card>
             <CardContent className="py-12 text-center">
               <Star className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <p className="text-muted-foreground">No reviews found for this filter</p>
+              <p className="text-muted-foreground">{t("doctor.performance.reviews.noReviewsFilter")}</p>
             </CardContent>
           </Card>
         )}

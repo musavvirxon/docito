@@ -17,8 +17,8 @@ export function PerformanceTrends({ dailyTrends, popularTimeSlots, stats }: Perf
   const { t } = useTranslation("dashboard");
   
   const patientTypeData = [
-    { name: t("performance.returning"), value: stats.returningPatients, color: '#10b981' },
-    { name: t("performance.new"), value: stats.newPatients, color: '#3b82f6' }
+    { name: t("doctor.performance.returning"), value: stats.returningPatients, color: '#10b981' },
+    { name: t("doctor.performance.new"), value: stats.newPatients, color: '#3b82f6' }
   ];
 
   // Get recommendations based on data
@@ -78,9 +78,9 @@ export function PerformanceTrends({ dailyTrends, popularTimeSlots, stats }: Perf
         <CardHeader>
           <div className="flex items-center gap-2">
             <Lightbulb className="w-5 h-5 text-primary" />
-            <CardTitle>AI-Powered Recommendations</CardTitle>
+            <CardTitle>{t("doctor.performance.trends.aiRecommendations")}</CardTitle>
           </div>
-          <p className="text-sm text-muted-foreground">Insights to improve your practice</p>
+          <p className="text-sm text-muted-foreground">{t("doctor.performance.trends.insightsToImprove")}</p>
         </CardHeader>
         <CardContent className="space-y-3">
           {recommendations.map((rec, index) => (
@@ -95,8 +95,8 @@ export function PerformanceTrends({ dailyTrends, popularTimeSlots, stats }: Perf
       {/* Appointment Trends Over Time */}
       <Card>
         <CardHeader>
-          <CardTitle>Appointment Trends</CardTitle>
-          <p className="text-sm text-muted-foreground">Daily breakdown of appointments</p>
+          <CardTitle>{t("doctor.performance.trends.appointmentTrends")}</CardTitle>
+          <p className="text-sm text-muted-foreground">{t("doctor.performance.trends.dailyBreakdown")}</p>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
@@ -106,9 +106,9 @@ export function PerformanceTrends({ dailyTrends, popularTimeSlots, stats }: Perf
               <YAxis />
               <Tooltip />
               <Legend />
-              <Line type="monotone" dataKey="appointments" stroke="hsl(var(--primary))" name="Total" strokeWidth={2} />
-              <Line type="monotone" dataKey="completed" stroke="#10b981" name="Completed" strokeWidth={2} />
-              <Line type="monotone" dataKey="cancelled" stroke="#f59e0b" name="Cancelled" />
+              <Line type="monotone" dataKey="appointments" stroke="hsl(var(--primary))" name={t("doctor.performance.overview.total")} strokeWidth={2} />
+              <Line type="monotone" dataKey="completed" stroke="#10b981" name={t("doctor.performance.overview.completed")} strokeWidth={2} />
+              <Line type="monotone" dataKey="cancelled" stroke="#f59e0b" name={t("doctor.performance.overview.cancelled")} />
             </LineChart>
           </ResponsiveContainer>
         </CardContent>
@@ -118,8 +118,8 @@ export function PerformanceTrends({ dailyTrends, popularTimeSlots, stats }: Perf
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Patient Type Distribution</CardTitle>
-            <p className="text-sm text-muted-foreground">New vs returning patients</p>
+            <CardTitle>{t("doctor.performance.trends.patientTypeDistribution")}</CardTitle>
+            <p className="text-sm text-muted-foreground">{t("doctor.performance.trends.newVsReturning")}</p>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
@@ -145,11 +145,11 @@ export function PerformanceTrends({ dailyTrends, popularTimeSlots, stats }: Perf
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div className="text-center p-3 bg-blue-50 rounded-lg">
                 <p className="text-2xl font-bold text-blue-600">{stats.newPatients}</p>
-                <p className="text-sm text-muted-foreground">New Patients</p>
+                <p className="text-sm text-muted-foreground">{t("doctor.performance.trends.newPatients")}</p>
               </div>
               <div className="text-center p-3 bg-green-50 rounded-lg">
                 <p className="text-2xl font-bold text-green-600">{stats.returningPatients}</p>
-                <p className="text-sm text-muted-foreground">Returning</p>
+                <p className="text-sm text-muted-foreground">{t("doctor.performance.trends.returning")}</p>
               </div>
             </div>
           </CardContent>
@@ -157,8 +157,8 @@ export function PerformanceTrends({ dailyTrends, popularTimeSlots, stats }: Perf
 
         <Card>
           <CardHeader>
-            <CardTitle>Most Popular Time Slots</CardTitle>
-            <p className="text-sm text-muted-foreground">Peak booking times</p>
+            <CardTitle>{t("doctor.performance.trends.popularTimeSlots")}</CardTitle>
+            <p className="text-sm text-muted-foreground">{t("doctor.performance.trends.peakBookingTimes")}</p>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
@@ -179,7 +179,7 @@ export function PerformanceTrends({ dailyTrends, popularTimeSlots, stats }: Perf
                     <Clock className="w-4 h-4 text-muted-foreground" />
                     <span className="font-medium">{slot.time}</span>
                   </div>
-                  <span className="text-sm text-muted-foreground">{slot.count} bookings</span>
+                  <span className="text-sm text-muted-foreground">{slot.count} {t("doctor.performance.trends.bookings")}</span>
                 </div>
               ))}
             </div>
@@ -190,37 +190,37 @@ export function PerformanceTrends({ dailyTrends, popularTimeSlots, stats }: Perf
       {/* Performance Insights */}
       <Card>
         <CardHeader>
-          <CardTitle>Key Insights</CardTitle>
+          <CardTitle>{t("doctor.performance.trends.keyInsights")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 border rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <TrendingUp className="w-5 h-5 text-green-600" />
-                <h4 className="font-semibold">Growth Trend</h4>
+                <h4 className="font-semibold">{t("doctor.performance.trends.growthTrend")}</h4>
               </div>
               <p className="text-sm text-muted-foreground">
-                Appointments trending {dailyTrends[dailyTrends.length - 1]?.appointments > dailyTrends[0]?.appointments ? 'upward' : 'stable'}
+                {t("doctor.performance.trends.appointmentsTrending")} {dailyTrends[dailyTrends.length - 1]?.appointments > dailyTrends[0]?.appointments ? t("doctor.performance.trends.upward") : t("doctor.performance.trends.stable")}
               </p>
             </div>
 
             <div className="p-4 border rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <Users className="w-5 h-5 text-blue-600" />
-                <h4 className="font-semibold">Patient Loyalty</h4>
+                <h4 className="font-semibold">{t("doctor.performance.trends.patientLoyalty")}</h4>
               </div>
               <p className="text-sm text-muted-foreground">
-                {stats.returningPatients > stats.newPatients ? 'Strong' : 'Building'} patient retention
+                {stats.returningPatients > stats.newPatients ? t("doctor.performance.trends.strong") : t("doctor.performance.trends.building")} {t("doctor.performance.trends.patientRetention")}
               </p>
             </div>
 
             <div className="p-4 border rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <Clock className="w-5 h-5 text-purple-600" />
-                <h4 className="font-semibold">Best Time</h4>
+                <h4 className="font-semibold">{t("doctor.performance.trends.bestTime")}</h4>
               </div>
               <p className="text-sm text-muted-foreground">
-                Peak demand at {popularTimeSlots[0]?.time || 'N/A'}
+                {t("doctor.performance.trends.peakDemandAt")} {popularTimeSlots[0]?.time || 'N/A'}
               </p>
             </div>
           </div>

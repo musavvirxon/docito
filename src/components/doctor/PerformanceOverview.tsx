@@ -35,9 +35,9 @@ export function PerformanceOverview({ stats, dailyTrends }: PerformanceOverviewP
   };
 
   const getAlertStatus = (rate: number, threshold: number) => {
-    if (rate > threshold) return { color: 'text-red-600', status: t("performance.high") };
-    if (rate > threshold * 0.7) return { color: 'text-yellow-600', status: t("performance.medium") };
-    return { color: 'text-green-600', status: t("performance.low") };
+    if (rate > threshold) return { color: 'text-red-600', status: t("doctor.performance.high") };
+    if (rate > threshold * 0.7) return { color: 'text-yellow-600', status: t("doctor.performance.medium") };
+    return { color: 'text-green-600', status: t("doctor.performance.low") };
   };
 
   const cancellationAlert = getAlertStatus(stats.cancellationRate, 15);
@@ -50,8 +50,8 @@ export function PerformanceOverview({ stats, dailyTrends }: PerformanceOverviewP
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold mb-2">Performance Level</h3>
-              <p className="text-muted-foreground">Based on completion rate, ratings, and activity</p>
+              <h3 className="text-lg font-semibold mb-2">{t("doctor.performance.overview.performanceLevel")}</h3>
+              <p className="text-muted-foreground">{t("doctor.performance.overview.basedOn")}</p>
             </div>
             <div className="text-center">
               <div className={`w-20 h-20 ${getBadgeColor(stats.performanceBadge)} rounded-full flex items-center justify-center mb-2`}>
@@ -67,29 +67,29 @@ export function PerformanceOverview({ stats, dailyTrends }: PerformanceOverviewP
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Appointments</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("doctor.performance.overview.totalAppointments")}</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalAppointments}</div>
-            <p className="text-xs text-muted-foreground mt-1">In selected period</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("doctor.performance.overview.inSelectedPeriod")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("doctor.performance.overview.completed")}</CardTitle>
             <CheckCircle2 className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{stats.completedAppointments}</div>
-            <p className="text-xs text-muted-foreground mt-1">{stats.completionRate.toFixed(1)}% completion rate</p>
+            <p className="text-xs text-muted-foreground mt-1">{stats.completionRate.toFixed(1)}% {t("doctor.performance.overview.completionRate")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Cancelled</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("doctor.performance.overview.cancelled")}</CardTitle>
             <XCircle className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
@@ -102,7 +102,7 @@ export function PerformanceOverview({ stats, dailyTrends }: PerformanceOverviewP
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">No-Shows</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("doctor.performance.overview.noShows")}</CardTitle>
             <UserX className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
@@ -118,34 +118,34 @@ export function PerformanceOverview({ stats, dailyTrends }: PerformanceOverviewP
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Days</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("doctor.performance.overview.activeDays")}</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.activeDays}</div>
-            <p className="text-xs text-muted-foreground mt-1">Days with appointments</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("doctor.performance.overview.daysWithAppointments")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Daily Patients</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("doctor.performance.overview.avgDailyPatients")}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.avgDailyPatients}</div>
-            <p className="text-xs text-muted-foreground mt-1">Patients per active day</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("doctor.performance.overview.patientsPerDay")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Duration</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("doctor.performance.overview.avgDuration")}</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.averageSessionLength} min</div>
-            <p className="text-xs text-muted-foreground mt-1">Per appointment</p>
+            <div className="text-2xl font-bold">{stats.averageSessionLength} {t("doctor.performance.services.minutes")}</div>
+            <p className="text-xs text-muted-foreground mt-1">{t("doctor.performance.overview.perAppointment")}</p>
           </CardContent>
         </Card>
       </div>
@@ -153,8 +153,8 @@ export function PerformanceOverview({ stats, dailyTrends }: PerformanceOverviewP
       {/* Appointment Trends Chart */}
       <Card>
         <CardHeader>
-          <CardTitle>Appointment Trends</CardTitle>
-          <p className="text-sm text-muted-foreground">Daily appointment breakdown</p>
+          <CardTitle>{t("doctor.performance.overview.appointmentTrends")}</CardTitle>
+          <p className="text-sm text-muted-foreground">{t("doctor.performance.overview.dailyBreakdown")}</p>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
@@ -163,9 +163,9 @@ export function PerformanceOverview({ stats, dailyTrends }: PerformanceOverviewP
               <XAxis dataKey="date" />
               <YAxis />
               <Tooltip />
-              <Line type="monotone" dataKey="appointments" stroke="hsl(var(--primary))" name="Total" strokeWidth={2} />
-              <Line type="monotone" dataKey="completed" stroke="#10b981" name="Completed" strokeWidth={2} />
-              <Line type="monotone" dataKey="cancelled" stroke="#f59e0b" name="Cancelled" />
+              <Line type="monotone" dataKey="appointments" stroke="hsl(var(--primary))" name={t("doctor.performance.overview.total")} strokeWidth={2} />
+              <Line type="monotone" dataKey="completed" stroke="#10b981" name={t("doctor.performance.overview.completed")} strokeWidth={2} />
+              <Line type="monotone" dataKey="cancelled" stroke="#f59e0b" name={t("doctor.performance.overview.cancelled")} />
             </LineChart>
           </ResponsiveContainer>
         </CardContent>
@@ -174,12 +174,12 @@ export function PerformanceOverview({ stats, dailyTrends }: PerformanceOverviewP
       {/* Performance Metrics */}
       <Card>
         <CardHeader>
-          <CardTitle>Performance Metrics</CardTitle>
+          <CardTitle>{t("doctor.performance.overview.performanceMetrics")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <div className="flex justify-between mb-2">
-              <span className="text-sm font-medium">Completion Rate</span>
+              <span className="text-sm font-medium">{t("doctor.performance.overview.completionRateLabel")}</span>
               <span className="text-sm font-bold text-green-600">{stats.completionRate.toFixed(1)}%</span>
             </div>
             <Progress value={stats.completionRate} className="h-2" />
@@ -187,7 +187,7 @@ export function PerformanceOverview({ stats, dailyTrends }: PerformanceOverviewP
           
           <div>
             <div className="flex justify-between mb-2">
-              <span className="text-sm font-medium">Cancellation Rate</span>
+              <span className="text-sm font-medium">{t("doctor.performance.overview.cancellationRate")}</span>
               <span className={`text-sm font-bold ${cancellationAlert.color}`}>{stats.cancellationRate.toFixed(1)}%</span>
             </div>
             <Progress value={stats.cancellationRate} className="h-2" />
@@ -195,7 +195,7 @@ export function PerformanceOverview({ stats, dailyTrends }: PerformanceOverviewP
 
           <div>
             <div className="flex justify-between mb-2">
-              <span className="text-sm font-medium">No-Show Rate</span>
+              <span className="text-sm font-medium">{t("doctor.performance.overview.noShowRate")}</span>
               <span className={`text-sm font-bold ${noShowAlert.color}`}>{stats.noShowRate.toFixed(1)}%</span>
             </div>
             <Progress value={stats.noShowRate} className="h-2" />

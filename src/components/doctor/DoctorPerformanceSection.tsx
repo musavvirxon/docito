@@ -116,8 +116,8 @@ const DoctorPerformanceSection = ({ doctorProfile, stats: providedStats }: Docto
               <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
                 <Award className="w-10 h-10" />
               </div>
-              <div>
-                <h3 className="text-2xl font-bold">New Achievement Unlocked!</h3>
+               <div>
+                <h3 className="text-2xl font-bold">{t("doctor.performance.newAchievement")}</h3>
                 <p className="text-lg">{newAchievements[0].title}</p>
               </div>
             </div>
@@ -128,10 +128,10 @@ const DoctorPerformanceSection = ({ doctorProfile, stats: providedStats }: Docto
       {/* Tabs for Different Sections */}
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="services">Services</TabsTrigger>
-          <TabsTrigger value="reviews">Reviews</TabsTrigger>
-          <TabsTrigger value="trends">Trends</TabsTrigger>
+          <TabsTrigger value="overview">{t("doctor.performance.tabs.overview")}</TabsTrigger>
+          <TabsTrigger value="services">{t("doctor.performance.tabs.services")}</TabsTrigger>
+          <TabsTrigger value="reviews">{t("doctor.performance.tabs.reviews")}</TabsTrigger>
+          <TabsTrigger value="trends">{t("doctor.performance.tabs.trends")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
