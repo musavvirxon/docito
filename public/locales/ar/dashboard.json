@@ -102,6 +102,97 @@
       "shareDataWithDoctors": "مشاركة البيانات مع الأطباء",
       "showActivityStatus": "إظهار حالة النشاط",
       "instructions": "التعليمات"
+    },
+    "settings": {
+      "title": "الإعدادات",
+      "description": "إدارة إعدادات حسابك",
+      "tabs": {
+        "general": "عام",
+        "notifications": "الإشعارات",
+        "calendar": "التقويم",
+        "security": "الأمان"
+      },
+      "account": {
+        "title": "معلومات الحساب",
+        "description": "تحديث معلوماتك الشخصية",
+        "email": "البريد الإلكتروني",
+        "phone": "رقم الهاتف",
+        "timezone": "المنطقة الزمنية",
+        "language": "اللغة",
+        "saveChanges": "حفظ التغييرات"
+      },
+      "privacy": {
+        "title": "إعدادات الخصوصية",
+        "description": "إدارة إعدادات الخصوصية ومشاركة البيانات",
+        "profileVisibility": "ظهور الملف الشخصي",
+        "profileVisibilityDesc": "اجعل ملفك الشخصي مرئيًا للمرضى",
+        "shareAnalytics": "مشاركة بيانات التحليلات",
+        "shareAnalyticsDesc": "مشاركة البيانات لتحسين الخدمة",
+        "marketingComms": "الاتصالات التسويقية",
+        "marketingCommsDesc": "تلقي التحديثات والعروض",
+        "savePrivacySettings": "حفظ الإعدادات"
+      },
+      "notificationPreferences": {
+        "title": "إعدادات الإشعارات",
+        "description": "اختر كيفية تلقي الإشعارات",
+        "email": {
+          "title": "إشعارات البريد الإلكتروني",
+          "bookings": "تأكيدات الحجز",
+          "bookingsDesc": "احصل على إشعار بالحجوزات الجديدة",
+          "reminders": "تذكيرات المواعيد",
+          "remindersDesc": "تذكيرات بالمواعيد القادمة",
+          "cancellations": "إشعارات الإلغاء",
+          "cancellationsDesc": "احصل على إشعار بالمواعيد الملغاة"
+        },
+        "sms": {
+          "title": "إشعارات الرسائل النصية",
+          "bookings": "تأكيدات الحجز",
+          "bookingsDesc": "احصل على رسائل نصية للحجوزات الجديدة",
+          "reminders": "تذكيرات المواعيد",
+          "remindersDesc": "رسائل نصية للمواعيد القادمة",
+          "cancellations": "إشعارات الإلغاء",
+          "cancellationsDesc": "احصل على رسائل نصية للمواعيد الملغاة"
+        },
+        "push": {
+          "title": "الإشعارات الفورية",
+          "browserNotifications": "تمكين إشعارات المتصفح"
+        },
+        "saveNotificationSettings": "حفظ الإعدادات"
+      },
+      "calendar": {
+        "title": "تكامل التقويم",
+        "description": "مزامنة مع تطبيقات التقويم الخاصة بك",
+        "google": "تقويم Google",
+        "outlook": "تقويم Outlook",
+        "apple": "تقويم Apple",
+        "connected": "متصل",
+        "notConnected": "غير متصل",
+        "connect": "اتصال",
+        "disconnect": "قطع الاتصال",
+        "syncSettings": "إعدادات المزامنة",
+        "syncAppointments": "مزامنة المواعيد تلقائيًا",
+        "syncBlockedTime": "مزامنة الوقت المحجوب",
+        "twoWaySync": "تمكين المزامنة الثنائية"
+      },
+      "timezones": {
+        "eastern": "التوقيت الشرقي (ET)",
+        "central": "التوقيت المركزي (CT)",
+        "mountain": "التوقيت الجبلي (MT)",
+        "pacific": "توقيت المحيط الهادئ (PT)"
+      },
+      "languages": {
+        "en": "English",
+        "es": "Español",
+        "fr": "Français"
+      },
+      "toast": {
+        "accountSuccess": "تم حفظ إعدادات الحساب",
+        "accountError": "فشل في حفظ إعدادات الحساب",
+        "notificationsSuccess": "تم حفظ إعدادات الإشعارات",
+        "notificationsError": "فشل في حفظ إعدادات الإشعارات",
+        "privacySuccess": "تم حفظ إعدادات الخصوصية",
+        "privacyError": "فشل في حفظ إعدادات الخصوصية"
+      }
     }
   },
   "doctor": {

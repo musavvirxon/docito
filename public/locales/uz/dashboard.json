@@ -102,6 +102,97 @@
       "shareDataWithDoctors": "Shifokorlar bilan ma'lumot almashish",
       "showActivityStatus": "Faoliyat holatini ko'rsatish",
       "instructions": "Ko'rsatmalar"
+    },
+    "settings": {
+      "title": "Sozlamalar",
+      "description": "Hisob sozlamalaringizni boshqaring",
+      "tabs": {
+        "general": "Umumiy",
+        "notifications": "Bildirishnomalar",
+        "calendar": "Kalendar",
+        "security": "Xavfsizlik"
+      },
+      "account": {
+        "title": "Hisob ma'lumotlari",
+        "description": "Shaxsiy ma'lumotlaringizni yangilang",
+        "email": "Elektron pochta",
+        "phone": "Telefon raqami",
+        "timezone": "Vaqt zonasi",
+        "language": "Til",
+        "saveChanges": "O'zgarishlarni saqlash"
+      },
+      "privacy": {
+        "title": "Maxfiylik sozlamalari",
+        "description": "Maxfiylik va ma'lumotlarni ulashish sozlamalaringizni boshqaring",
+        "profileVisibility": "Profil ko'rinishi",
+        "profileVisibilityDesc": "Profilingizni bemorlarga ko'rsatish",
+        "shareAnalytics": "Analitik ma'lumotlarni ulashish",
+        "shareAnalyticsDesc": "Xizmatni yaxshilash uchun ma'lumotlarni ulashish",
+        "marketingComms": "Marketing xabarlari",
+        "marketingCommsDesc": "Yangiliklar va takliflar haqida xabarlar olish",
+        "savePrivacySettings": "Sozlamalarni saqlash"
+      },
+      "notificationPreferences": {
+        "title": "Bildirishnoma sozlamalari",
+        "description": "Bildirishnomalarni qanday olishni tanlang",
+        "email": {
+          "title": "Elektron pochta bildirshnomalari",
+          "bookings": "Band qilish tasdiqlari",
+          "bookingsDesc": "Yangi band qilishlar haqida xabar olish",
+          "reminders": "Uchrashuv eslatmalari",
+          "remindersDesc": "Yaqinlashib kelayotgan uchrashuvlar haqida eslatma",
+          "cancellations": "Bekor qilish bildirshnomalari",
+          "cancellationsDesc": "Bekor qilingan uchrashuvlar haqida xabar olish"
+        },
+        "sms": {
+          "title": "SMS bildirshnomalari",
+          "bookings": "Band qilish tasdiqlari",
+          "bookingsDesc": "Yangi band qilishlar haqida SMS olish",
+          "reminders": "Uchrashuv eslatmalari",
+          "remindersDesc": "Yaqinlashib kelayotgan uchrashuvlar haqida SMS",
+          "cancellations": "Bekor qilish bildirshnomalari",
+          "cancellationsDesc": "Bekor qilingan uchrashuvlar haqida SMS olish"
+        },
+        "push": {
+          "title": "Push bildirshnomalari",
+          "browserNotifications": "Brauzer bildirshnomalari yoqish"
+        },
+        "saveNotificationSettings": "Sozlamalarni saqlash"
+      },
+      "calendar": {
+        "title": "Kalendar integratsiyasi",
+        "description": "Kalendar ilovalaringiz bilan sinxronlash",
+        "google": "Google Calendar",
+        "outlook": "Outlook Calendar",
+        "apple": "Apple Calendar",
+        "connected": "Ulangan",
+        "notConnected": "Ulanmagan",
+        "connect": "Ulash",
+        "disconnect": "Uzish",
+        "syncSettings": "Sinxronlash sozlamalari",
+        "syncAppointments": "Uchrashuvlarni avtomatik sinxronlash",
+        "syncBlockedTime": "Bloklangan vaqtni sinxronlash",
+        "twoWaySync": "Ikki tomonlama sinxronlash yoqish"
+      },
+      "timezones": {
+        "eastern": "Sharqiy vaqt (ET)",
+        "central": "Markaziy vaqt (CT)",
+        "mountain": "Tog' vaqti (MT)",
+        "pacific": "Tinch okeani vaqti (PT)"
+      },
+      "languages": {
+        "en": "English",
+        "es": "Español",
+        "fr": "Français"
+      },
+      "toast": {
+        "accountSuccess": "Hisob sozlamalari saqlandi",
+        "accountError": "Hisob sozlamalarini saqlashda xatolik",
+        "notificationsSuccess": "Bildirishnoma sozlamalari saqlandi",
+        "notificationsError": "Bildirishnoma sozlamalarini saqlashda xatolik",
+        "privacySuccess": "Maxfiylik sozlamalari saqlandi",
+        "privacyError": "Maxfiylik sozlamalarini saqlashda xatolik"
+      }
     }
   },
   "doctor": {
