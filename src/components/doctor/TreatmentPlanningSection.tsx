@@ -53,11 +53,11 @@ const TreatmentPlanningSection = () => {
   const [selectedPlanForMeds, setSelectedPlanForMeds] = useState<string | null>(null);
 
   const statusOptions = [
-    { value: "all", label: "All Statuses" },
-    { value: "draft", label: "Draft" },
-    { value: "published", label: "Published" },
-    { value: "in_progress", label: "In Progress" },
-    { value: "completed", label: "Completed" }
+    { value: "all", label: t("doctor.treatmentPlanning.allStatuses") },
+    { value: "draft", label: t("doctor.treatmentPlanning.draft") },
+    { value: "published", label: t("doctor.treatmentPlanning.published") },
+    { value: "in_progress", label: t("doctor.treatmentPlanning.inProgress") },
+    { value: "completed", label: t("doctor.treatmentPlanning.completed") }
   ];
 
   useEffect(() => {
@@ -121,7 +121,7 @@ const TreatmentPlanningSection = () => {
       if (error) throw error;
       setTreatmentPlans(data || []);
     } catch (error: any) {
-      toast.error("Failed to load treatment plans: " + error.message);
+      toast.error(t("doctor.treatmentPlanning.loadFailed") + ": " + error.message);
     } finally {
       setLoading(false);
     }
@@ -186,7 +186,7 @@ const TreatmentPlanningSection = () => {
   };
 
   const handleDeletePlan = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this treatment plan?")) return;
+    if (!confirm(t("doctor.treatmentPlanning.deleteConfirm"))) return;
 
     try {
       const { error } = await supabase
@@ -196,10 +196,10 @@ const TreatmentPlanningSection = () => {
 
       if (error) throw error;
       
-      toast.success("Treatment plan deleted successfully");
+      toast.success(t("doctor.treatmentPlanning.deleteSuccess"));
       fetchTreatmentPlans();
     } catch (error: any) {
-      toast.error("Failed to delete treatment plan: " + error.message);
+      toast.error(t("doctor.treatmentPlanning.deleteFailed") + ": " + error.message);
     }
   };
 
@@ -215,10 +215,10 @@ const TreatmentPlanningSection = () => {
 
       if (error) throw error;
       
-      toast.success("Treatment plan published successfully");
+      toast.success(t("doctor.treatmentPlanning.publishSuccess"));
       fetchTreatmentPlans();
     } catch (error: any) {
-      toast.error("Failed to publish treatment plan: " + error.message);
+      toast.error(t("doctor.treatmentPlanning.publishFailed") + ": " + error.message);
     }
   };
 
@@ -241,7 +241,7 @@ const TreatmentPlanningSection = () => {
 
   const getPatientName = (patientId: string) => {
     const patient = patients.find(p => p.id === patientId);
-    return patient ? patient.name : "Unknown Patient";
+    return patient ? patient.name : t("doctor.treatmentPlanning.unknownPatient");
   };
 
   const handleMedicationManagement = (planId: string, patientId: string) => {
@@ -287,7 +287,7 @@ const TreatmentPlanningSection = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Filter className="w-5 h-5" />
-            Filters & Search
+            {t("doctor.treatmentPlanning.filtersTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -295,7 +295,7 @@ const TreatmentPlanningSection = () => {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
-                placeholder="Search treatment plans..."
+                placeholder={t("doctor.treatmentPlanning.searchPlaceholder")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -303,7 +303,7 @@ const TreatmentPlanningSection = () => {
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Filter by status" />
+                <SelectValue placeholder={t("doctor.treatmentPlanning.filterByStatus")} />
               </SelectTrigger>
               <SelectContent>
                 {statusOptions.map((option) => (
@@ -315,10 +315,10 @@ const TreatmentPlanningSection = () => {
             </Select>
             <Select value={patientFilter} onValueChange={setPatientFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Filter by patient" />
+                <SelectValue placeholder={t("doctor.treatmentPlanning.filterByPatient")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Patients</SelectItem>
+                <SelectItem value="all">{t("doctor.treatmentPlanning.allPatients")}</SelectItem>
                 {patients.map((patient) => (
                   <SelectItem key={patient.id} value={patient.id}>
                     {patient.name}
@@ -334,7 +334,7 @@ const TreatmentPlanningSection = () => {
                 setPatientFilter("all");
               }}
             >
-              Clear Filters
+              {t("doctor.treatmentPlanning.clearFilters")}
             </Button>
           </div>
         </CardContent>
@@ -343,27 +343,27 @@ const TreatmentPlanningSection = () => {
       {/* Treatment Plans Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Treatment Plans ({filteredPlans.length})</CardTitle>
+          <CardTitle>{t("doctor.treatmentPlanning.treatmentPlansCount", { count: filteredPlans.length })}</CardTitle>
         </CardHeader>
         <CardContent>
           {filteredPlans.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">No treatment plans found. Create your first treatment plan to get started.</p>
+              <p className="text-muted-foreground">{t("doctor.treatmentPlanning.noPlansFound")}</p>
               <Button onClick={() => setShowCreateModal(true)} className="mt-4">
                 <Plus className="w-4 h-4 mr-2" />
-                Create First Treatment Plan
+                {t("doctor.treatmentPlanning.createFirstPlan")}
               </Button>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Plan Title</TableHead>
-                  <TableHead>Patient</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Total Cost</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{t("doctor.treatmentPlanning.planTitle")}</TableHead>
+                  <TableHead>{t("doctor.treatmentPlanning.patient")}</TableHead>
+                  <TableHead>{t("doctor.treatmentPlanning.status")}</TableHead>
+                  <TableHead>{t("doctor.treatmentPlanning.totalCost")}</TableHead>
+                  <TableHead>{t("doctor.treatmentPlanning.created")}</TableHead>
+                  <TableHead>{t("doctor.treatmentPlanning.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -391,7 +391,7 @@ const TreatmentPlanningSection = () => {
                       </Badge>
                     </TableCell>
                     <TableCell className="font-medium">
-                      {plan.total_cost ? formatCurrency(plan.total_cost) : "Not calculated"}
+                      {plan.total_cost ? formatCurrency(plan.total_cost) : t("doctor.treatmentPlanning.notCalculated")}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -405,7 +405,7 @@ const TreatmentPlanningSection = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => setSelectedPlan(plan)}
-                          title="View Details"
+                          title={t("doctor.treatmentPlanning.viewDetails")}
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
@@ -413,7 +413,7 @@ const TreatmentPlanningSection = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleMedicationManagement(plan.id, plan.patient_id)}
-                          title="Manage Medications"
+                          title={t("doctor.treatmentPlanning.manageMedications")}
                         >
                           <Pill className="w-4 h-4" />
                         </Button>
@@ -423,7 +423,7 @@ const TreatmentPlanningSection = () => {
                             size="sm"
                             onClick={() => handleConfirmPlan(plan)}
                             className="text-blue-600 hover:text-blue-700"
-                            title="Publish Plan"
+                            title={t("doctor.treatmentPlanning.publishPlan")}
                           >
                             <FileText className="w-4 h-4" />
                           </Button>
@@ -433,7 +433,7 @@ const TreatmentPlanningSection = () => {
                           size="sm"
                           onClick={() => handleDeletePlan(plan.id)}
                           className="text-destructive hover:text-destructive"
-                          title="Delete Plan"
+                          title={t("doctor.treatmentPlanning.deletePlan")}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
