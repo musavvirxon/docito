@@ -199,6 +199,68 @@
     }
   },
   "doctor": {
+    "loading": "Loading your dashboard...",
+    "settingUp": "Setting up your profile...",
+    "profileSetup": {
+      "settingUp": "Setting Up Your Profile",
+      "unableToLoad": "We're unable to load your doctor profile. This might be because your profile is still being set up or there's a temporary issue.",
+      "retryLoading": "Retry Loading",
+      "completeSetup": "Complete Profile Setup",
+      "goHome": "Go to Homepage",
+      "required": "Profile Setup Required",
+      "message": "Please complete your doctor profile setup to access the dashboard.",
+      "tryAgain": "Try Again"
+    },
+    "clinic": {
+      "verified": "Verified",
+      "requestToLeave": "Request to Leave"
+    },
+    "verification": {
+      "pending": "Verification Pending",
+      "message": "Your profile is under review. Complete your profile to speed up verification.",
+      "completeProfile": "Complete Profile",
+      "viewProfile": "View Profile"
+    },
+    "profileCompletion": {
+      "title": "Profile Completion",
+      "message": "Complete your profile to attract more patients"
+    },
+    "stats": {
+      "totalAppointments": "Total Appointments",
+      "allTimeBookings": "All-time bookings",
+      "totalPatients": "Total Patients",
+      "uniquePatients": "Unique patients served",
+      "averageRating": "Average Rating",
+      "basedOnReviews": "Based on {{count}} reviews",
+      "revenue": "Revenue",
+      "totalEarnings": "Total earnings"
+    },
+    "appointmentStatus": {
+      "confirmed": "Confirmed",
+      "pending": "Pending",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "upcomingAppointments": {
+      "title": "Upcoming Appointments",
+      "noAppointments": "No upcoming appointments",
+      "scheduleIsClear": "Your schedule is clear for now"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "updateSettings": "Update Schedule Settings",
+      "addService": "Add New Service",
+      "blockTime": "Block Time Slot"
+    },
+    "todaysSchedule": {
+      "viewFull": "View Today's Schedule"
+    },
+    "dashboardContent": {
+      "welcomeBack": "Welcome back",
+      "specialtyNotProvided": "Specialty not provided",
+      "completeProfileBanner": "Complete your profile ({{completion}}% done)",
+      "completeProfileMessage": "A complete profile helps patients find and trust you more easily"
+    },
     "schedule": {
       "title": "Schedule Settings",
       "description": "Configure your working hours, breaks, and availability",

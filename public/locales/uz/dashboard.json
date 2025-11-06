@@ -105,6 +105,68 @@
     }
   },
   "doctor": {
+    "loading": "Panelingiz yuklanmoqda...",
+    "settingUp": "Profilingiz sozlanmoqda...",
+    "profileSetup": {
+      "settingUp": "Profilingizni sozlash",
+      "unableToLoad": "Shifokor profilingizni yuklay olmayapmiz. Bu profilingiz hali sozlanayotgani yoki vaqtinchalik muammo tufayli bo'lishi mumkin.",
+      "retryLoading": "Qayta yuklash",
+      "completeSetup": "Profil sozlashni yakunlash",
+      "goHome": "Bosh sahifaga",
+      "required": "Profil sozlash talab qilinadi",
+      "message": "Boshqaruv paneliga kirish uchun shifokor profilini sozlashni yakunlang.",
+      "tryAgain": "Qaytadan urinib ko'ring"
+    },
+    "clinic": {
+      "verified": "Tasdiqlangan",
+      "requestToLeave": "Chiqish uchun so'rov"
+    },
+    "verification": {
+      "pending": "Tekshirilmoqda",
+      "message": "Profilingiz ko'rib chiqilmoqda. Tekshirishni tezlashtirish uchun profilingizni to'ldiring.",
+      "completeProfile": "Profilni to'ldirish",
+      "viewProfile": "Profilni ko'rish"
+    },
+    "profileCompletion": {
+      "title": "Profil to'ldirilishi",
+      "message": "Ko'proq bemorlarni jalb qilish uchun profilingizni to'ldiring"
+    },
+    "stats": {
+      "totalAppointments": "Jami qabullar",
+      "allTimeBookings": "Barcha vaqt bronlari",
+      "totalPatients": "Jami bemorlar",
+      "uniquePatients": "Xizmat ko'rsatilgan noyob bemorlar",
+      "averageRating": "O'rtacha reyting",
+      "basedOnReviews": "{{count}} sharh asosida",
+      "revenue": "Daromad",
+      "totalEarnings": "Jami daromad"
+    },
+    "appointmentStatus": {
+      "confirmed": "Tasdiqlangan",
+      "pending": "Kutilmoqda",
+      "completed": "Yakunlangan",
+      "cancelled": "Bekor qilingan"
+    },
+    "upcomingAppointments": {
+      "title": "Kelgusi qabullar",
+      "noAppointments": "Kelgusi qabullar yo'q",
+      "scheduleIsClear": "Jadvalingiz hozircha bo'sh"
+    },
+    "quickActions": {
+      "title": "Tez harakatlar",
+      "updateSettings": "Jadval sozlamalarini yangilash",
+      "addService": "Yangi xizmat qo'shish",
+      "blockTime": "Vaqt oralig'ini bloklash"
+    },
+    "todaysSchedule": {
+      "viewFull": "Bugungi jadvalni ko'rish"
+    },
+    "dashboardContent": {
+      "welcomeBack": "Xush kelibsiz",
+      "specialtyNotProvided": "Mutaxassislik ko'rsatilmagan",
+      "completeProfileBanner": "Profilingizni to'ldiring ({{completion}}% bajarildi)",
+      "completeProfileMessage": "To'liq profil bemorlarga sizni topish va ishonishda yordam beradi"
+    },
     "schedule": {
       "title": "Jadval sozlamalari",
       "description": "Ish vaqtlaringiz, tanaffuslar va mavjudligingizni sozlang",

@@ -105,6 +105,68 @@
     }
   },
   "doctor": {
+    "loading": "جارٍ تحميل لوحة التحكم الخاصة بك...",
+    "settingUp": "جارٍ إعداد ملفك الشخصي...",
+    "profileSetup": {
+      "settingUp": "إعداد ملفك الشخصي",
+      "unableToLoad": "غير قادر على تحميل ملف الطبيب الخاص بك. قد يكون ذلك بسبب أن ملفك الشخصي لا يزال قيد الإعداد أو هناك مشكلة مؤقتة.",
+      "retryLoading": "إعادة المحاولة",
+      "completeSetup": "إكمال إعداد الملف الشخصي",
+      "goHome": "الذهاب إلى الصفحة الرئيسية",
+      "required": "إعداد الملف الشخصي مطلوب",
+      "message": "يرجى إكمال إعداد ملف الطبيب الخاص بك للوصول إلى لوحة التحكم.",
+      "tryAgain": "حاول مجدداً"
+    },
+    "clinic": {
+      "verified": "موثّق",
+      "requestToLeave": "طلب المغادرة"
+    },
+    "verification": {
+      "pending": "في انتظار التحقق",
+      "message": "ملفك الشخصي قيد المراجعة. أكمل ملفك الشخصي لتسريع عملية التحقق.",
+      "completeProfile": "إكمال الملف الشخصي",
+      "viewProfile": "عرض الملف الشخصي"
+    },
+    "profileCompletion": {
+      "title": "اكتمال الملف الشخصي",
+      "message": "أكمل ملفك الشخصي لجذب المزيد من المرضى"
+    },
+    "stats": {
+      "totalAppointments": "إجمالي المواعيد",
+      "allTimeBookings": "جميع الحجوزات",
+      "totalPatients": "إجمالي المرضى",
+      "uniquePatients": "المرضى الفريدون الذين تم خدمتهم",
+      "averageRating": "متوسط التقييم",
+      "basedOnReviews": "بناءً على {{count}} تقييمات",
+      "revenue": "الإيرادات",
+      "totalEarnings": "إجمالي الأرباح"
+    },
+    "appointmentStatus": {
+      "confirmed": "مؤكد",
+      "pending": "قيد الانتظار",
+      "completed": "مكتمل",
+      "cancelled": "ملغى"
+    },
+    "upcomingAppointments": {
+      "title": "المواعيد القادمة",
+      "noAppointments": "لا توجد مواعيد قادمة",
+      "scheduleIsClear": "جدولك خالٍ في الوقت الحالي"
+    },
+    "quickActions": {
+      "title": "إجراءات سريعة",
+      "updateSettings": "تحديث إعدادات الجدول",
+      "addService": "إضافة خدمة جديدة",
+      "blockTime": "حظر فترة زمنية"
+    },
+    "todaysSchedule": {
+      "viewFull": "عرض جدول اليوم"
+    },
+    "dashboardContent": {
+      "welcomeBack": "مرحباً بعودتك",
+      "specialtyNotProvided": "لم يتم تحديد التخصص",
+      "completeProfileBanner": "أكمل ملفك الشخصي ({{completion}}% منجز)",
+      "completeProfileMessage": "الملف الشخصي الكامل يساعد المرضى على إيجادك والثقة بك بسهولة أكبر"
+    },
     "schedule": {
       "title": "إعدادات الجدول الزمني",
       "description": "قم بتكوين ساعات العمل والفترات الاستراحة والتوافر",
