@@ -38,7 +38,16 @@ export function CreateClinicModal({ open, onOpenChange, onSuccess }: CreateClini
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    
+    if (!user) {
+      toast.error("You must be logged in to create a clinic");
+      return;
+    }
+
+    if (!formData.name.trim()) {
+      toast.error(t('createClinic.clinicNameRequired'));
+      return;
+    }
 
     setLoading(true);
     try {
