@@ -1,4 +1,21 @@
 {
+  "createClinic": {
+    "title": "Klinikangizni sozlash",
+    "description": "Shifokorlar va uchrashuvlarni boshqarishni boshlash uchun klinika profilini to'ldiring.",
+    "clinicName": "Klinika nomi",
+    "clinicNameRequired": "Klinika nomi majburiy",
+    "description_field": "Tavsif",
+    "phone": "Telefon",
+    "email": "Email",
+    "address": "Manzil",
+    "city": "Shahar",
+    "country": "Mamlakat",
+    "cancel": "Bekor qilish",
+    "create": "Klinika profilini yaratish",
+    "creating": "Yaratilmoqda...",
+    "success": "Klinika profili muvaffaqiyatli yaratildi!",
+    "error": "Klinika profilini yaratib bo'lmadi"
+  },
   "admin": {
     "title": "Klinika paneli",
     "unverifiedPractice": "Tasdiqlanmagan klinika",

@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface CreateClinicModalProps {
   open: boolean;
@@ -23,6 +24,7 @@ interface CreateClinicModalProps {
 
 export function CreateClinicModal({ open, onOpenChange, onSuccess }: CreateClinicModalProps) {
   const { user } = useAuth();
+  const { t } = useTranslation('dashboard');
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -56,12 +58,12 @@ export function CreateClinicModal({ open, onOpenChange, onSuccess }: CreateClini
 
       if (error) throw error;
 
-      toast.success("Clinic profile created successfully!");
+      toast.success(t('createClinic.success'));
       onOpenChange(false);
       onSuccess();
     } catch (err: any) {
       console.error('Error creating clinic:', err);
-      toast.error(err.message || "Failed to create clinic profile");
+      toast.error(err.message || t('createClinic.error'));
     } finally {
       setLoading(false);
     }
@@ -71,15 +73,15 @@ export function CreateClinicModal({ open, onOpenChange, onSuccess }: CreateClini
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Setup Your Clinic</DialogTitle>
+          <DialogTitle>{t('createClinic.title')}</DialogTitle>
           <DialogDescription>
-            Complete your clinic profile to start managing doctors and appointments.
+            {t('createClinic.description')}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Clinic Name *</Label>
+            <Label htmlFor="name">{t('createClinic.clinicName')} *</Label>
             <Input
               id="name"
               required
@@ -90,7 +92,7 @@ export function CreateClinicModal({ open, onOpenChange, onSuccess }: CreateClini
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{t('createClinic.description_field')}</Label>
             <Textarea
               id="description"
               value={formData.description}
@@ -102,7 +104,7 @@ export function CreateClinicModal({ open, onOpenChange, onSuccess }: CreateClini
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
+              <Label htmlFor="phone">{t('createClinic.phone')}</Label>
               <Input
                 id="phone"
                 type="tel"
@@ -113,7 +115,7 @@ export function CreateClinicModal({ open, onOpenChange, onSuccess }: CreateClini
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('createClinic.email')}</Label>
               <Input
                 id="email"
                 type="email"
@@ -125,7 +127,7 @@ export function CreateClinicModal({ open, onOpenChange, onSuccess }: CreateClini
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="address">Address</Label>
+            <Label htmlFor="address">{t('createClinic.address')}</Label>
             <Input
               id="address"
               value={formData.address}
@@ -136,7 +138,7 @@ export function CreateClinicModal({ open, onOpenChange, onSuccess }: CreateClini
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="city">City</Label>
+              <Label htmlFor="city">{t('createClinic.city')}</Label>
               <Input
                 id="city"
                 value={formData.city}
@@ -146,7 +148,7 @@ export function CreateClinicModal({ open, onOpenChange, onSuccess }: CreateClini
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="country">Country</Label>
+              <Label htmlFor="country">{t('createClinic.country')}</Label>
               <Input
                 id="country"
                 value={formData.country}
@@ -164,16 +166,16 @@ export function CreateClinicModal({ open, onOpenChange, onSuccess }: CreateClini
               disabled={loading}
               className="flex-1"
             >
-              Cancel
+              {t('createClinic.cancel')}
             </Button>
             <Button type="submit" disabled={loading} className="flex-1">
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Creating...
+                  {t('createClinic.creating')}
                 </>
               ) : (
-                "Create Clinic Profile"
+                t('createClinic.create')
               )}
             </Button>
           </div>

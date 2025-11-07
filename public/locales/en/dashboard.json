@@ -1,4 +1,21 @@
 {
+  "createClinic": {
+    "title": "Setup Your Clinic",
+    "description": "Complete your clinic profile to start managing doctors and appointments.",
+    "clinicName": "Clinic Name",
+    "clinicNameRequired": "Clinic Name is required",
+    "description_field": "Description",
+    "phone": "Phone",
+    "email": "Email",
+    "address": "Address",
+    "city": "City",
+    "country": "Country",
+    "cancel": "Cancel",
+    "create": "Create Clinic Profile",
+    "creating": "Creating...",
+    "success": "Clinic profile created successfully!",
+    "error": "Failed to create clinic profile"
+  },
   "admin": {
     "title": "Practice Dashboard",
     "unverifiedPractice": "Unverified Practice",
