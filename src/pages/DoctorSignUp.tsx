@@ -16,8 +16,10 @@ import { useFileUpload } from "@/hooks/useFileUpload";
 import { useDoctorVerification } from "@/hooks/useDoctorVerification";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 const DoctorSignUp = () => {
+  const { t } = useTranslation('auth');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [hasAssociatedPractice, setHasAssociatedPractice] = useState<string>("");
@@ -101,12 +103,12 @@ const DoctorSignUp = () => {
   ];
 
   const getPasswordStrength = (password: string) => {
-    if (password.length < 4) return { level: 0, text: "Too weak", color: "text-red-500" };
-    if (password.length < 6) return { level: 1, text: "Weak", color: "text-orange-500" };
-    if (password.length < 8) return { level: 2, text: "Fair", color: "text-yellow-500" };
+    if (password.length < 4) return { level: 0, text: t("doctorSignup.password.strength.tooWeak"), color: "text-red-500" };
+    if (password.length < 6) return { level: 1, text: t("doctorSignup.password.strength.weak"), color: "text-orange-500" };
+    if (password.length < 8) return { level: 2, text: t("doctorSignup.password.strength.fair"), color: "text-yellow-500" };
     if (password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password)) 
-      return { level: 3, text: "Strong", color: "text-green-500" };
-    return { level: 2, text: "Fair", color: "text-yellow-500" };
+      return { level: 3, text: t("doctorSignup.password.strength.strong"), color: "text-green-500" };
+    return { level: 2, text: t("doctorSignup.password.strength.fair"), color: "text-yellow-500" };
   };
 
   const passwordStrength = getPasswordStrength(formData.password || "");
@@ -140,16 +142,16 @@ const DoctorSignUp = () => {
       setAvatarPreview(reader.result as string);
     };
     reader.readAsDataURL(file);
-    toast.success('Profile photo selected');
+    toast.success(t('doctorSignup.messages.photoSelected'));
   };
 
   const handleDocumentUpload = (type: 'medical_license' | 'professional_id', file: File) => {
     if (type === 'medical_license') {
       setMedicalLicense(file);
-      toast.success('Medical license document selected');
+      toast.success(t('doctorSignup.messages.licenseSelected'));
     } else {
       setProfessionalId(file);
-      toast.success('Professional ID document selected');
+      toast.success(t('doctorSignup.messages.idSelected'));
     }
   };
 
@@ -209,11 +211,11 @@ const DoctorSignUp = () => {
         });
       }
 
-      toast.success('Profile created successfully! Redirecting...');
+      toast.success(t('doctorSignup.messages.profileCreated'));
       setTimeout(() => navigateToDoctorDashboard(), 1500);
     } catch (error: any) {
       console.error('Error creating doctor profile:', error);
-      toast.error(error.message || 'Failed to create profile');
+      toast.error(error.message || t('doctorSignup.messages.profileError'));
     }
   };
 
@@ -231,10 +233,10 @@ const DoctorSignUp = () => {
           {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              Create Your Doctor Profile
+              {t('doctorSignup.title')}
             </h1>
             <p className="text-xl text-muted-foreground">
-              Join our trusted healthcare network and start connecting with patients
+              {t('doctorSignup.subtitle')}
             </p>
           </div>
 
@@ -258,56 +260,56 @@ const DoctorSignUp = () => {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <User className="w-5 h-5 mr-2 text-blue-600" />
-                  Personal Details
+                  {t('doctorSignup.sections.personal')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="firstName">First Name (Optional)</Label>
-                    <Input id="firstName" placeholder="John" />
+                    <Label htmlFor="firstName">{t('doctorSignup.fields.firstName')} ({t('doctorSignup.buttons.optional')})</Label>
+                    <Input id="firstName" placeholder={t('doctorSignup.placeholders.firstName')} />
                   </div>
                   <div>
-                    <Label htmlFor="lastName">Last Name (Optional)</Label>
-                    <Input id="lastName" placeholder="Smith" />
+                    <Label htmlFor="lastName">{t('doctorSignup.fields.lastName')} ({t('doctorSignup.buttons.optional')})</Label>
+                    <Input id="lastName" placeholder={t('doctorSignup.placeholders.lastName')} />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="gender">Gender (Optional)</Label>
+                    <Label htmlFor="gender">{t('doctorSignup.fields.gender')} ({t('doctorSignup.buttons.optional')})</Label>
                     <Select>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select gender" />
+                        <SelectValue placeholder={t('doctorSignup.placeholders.selectGender')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="male">Male</SelectItem>
-                        <SelectItem value="female">Female</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                        <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
+                        <SelectItem value="male">{t('doctorSignup.gender.male')}</SelectItem>
+                        <SelectItem value="female">{t('doctorSignup.gender.female')}</SelectItem>
+                        <SelectItem value="other">{t('doctorSignup.gender.other')}</SelectItem>
+                        <SelectItem value="prefer-not-to-say">{t('doctorSignup.gender.preferNotToSay')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="phone">Phone Number (Optional)</Label>
-                    <Input id="phone" placeholder="(555) 123-4567" />
+                    <Label htmlFor="phone">{t('doctorSignup.fields.phone')} ({t('doctorSignup.buttons.optional')})</Label>
+                    <Input id="phone" placeholder={t('doctorSignup.placeholders.phone')} />
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="email">Email Address (Optional)</Label>
-                  <Input id="email" type="email" placeholder="doctor@example.com" />
-                  <p className="text-sm text-muted-foreground mt-1">Used for login and patient communication</p>
+                  <Label htmlFor="email">{t('doctorSignup.fields.email')} ({t('doctorSignup.buttons.optional')})</Label>
+                  <Input id="email" type="email" placeholder={t('doctorSignup.placeholders.email')} />
+                  <p className="text-sm text-muted-foreground mt-1">{t('doctorSignup.help.emailUsage')}</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="password">Password (Optional)</Label>
+                    <Label htmlFor="password">{t('doctorSignup.fields.password')} ({t('doctorSignup.buttons.optional')})</Label>
                     <div className="relative">
                       <Input 
                         id="password" 
                         type={showPassword ? "text" : "password"} 
-                        placeholder="Enter password"
+                        placeholder={t('doctorSignup.placeholders.password')}
                         value={formData.password}
                         onChange={(e) => updateField('password', e.target.value)}
                       />
@@ -342,12 +344,12 @@ const DoctorSignUp = () => {
                     )}
                   </div>
                   <div>
-                    <Label htmlFor="confirmPassword">Confirm Password (Optional)</Label>
+                    <Label htmlFor="confirmPassword">{t('doctorSignup.fields.confirmPassword')} ({t('doctorSignup.buttons.optional')})</Label>
                     <div className="relative">
                       <Input 
                         id="confirmPassword" 
                         type={showConfirmPassword ? "text" : "password"} 
-                        placeholder="Confirm password"
+                        placeholder={t('doctorSignup.placeholders.confirmPassword')}
                         value={formData.confirmPassword}
                         onChange={(e) => updateField('confirmPassword', e.target.value)}
                       />
@@ -363,7 +365,7 @@ const DoctorSignUp = () => {
                     </div>
                     {formData.confirmPassword && (
                       <div className={`mt-2 text-sm font-medium ${passwordsMatch ? 'text-green-600' : 'text-red-600'}`}>
-                        {passwordsMatch ? '✅ Passwords match' : '❌ Passwords do not match'}
+                        {passwordsMatch ? t('doctorSignup.password.match') : t('doctorSignup.password.noMatch')}
                       </div>
                     )}
                   </div>
@@ -376,15 +378,15 @@ const DoctorSignUp = () => {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Briefcase className="w-5 h-5 mr-2 text-blue-600" />
-                  Professional Information
+                  {t('doctorSignup.sections.professional')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <Label htmlFor="specialty">Specialty (Optional)</Label>
+                  <Label htmlFor="specialty">{t('doctorSignup.fields.specialty')} ({t('doctorSignup.buttons.optional')})</Label>
                   <Select>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select your specialty" />
+                      <SelectValue placeholder={t('doctorSignup.placeholders.selectSpecialty')} />
                     </SelectTrigger>
                     <SelectContent>
                       {specialties.map((specialty) => (
@@ -397,41 +399,41 @@ const DoctorSignUp = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="degrees">Degrees / Certifications</Label>
-                  <Input id="degrees" placeholder="MD, Board Certified in Internal Medicine" />
-                  <p className="text-sm text-muted-foreground mt-1">Separate multiple entries with commas</p>
+                  <Label htmlFor="degrees">{t('doctorSignup.fields.degrees')}</Label>
+                  <Input id="degrees" placeholder={t('doctorSignup.placeholders.degrees')} />
+                  <p className="text-sm text-muted-foreground mt-1">{t('doctorSignup.help.degreesMultiple')}</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="experience">Years of Experience</Label>
+                    <Label htmlFor="experience">{t('doctorSignup.fields.experience')}</Label>
                     <Select>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select experience" />
+                        <SelectValue placeholder={t('doctorSignup.placeholders.selectExperience')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="0-2">0-2 years</SelectItem>
-                        <SelectItem value="3-5">3-5 years</SelectItem>
-                        <SelectItem value="6-10">6-10 years</SelectItem>
-                        <SelectItem value="11-15">11-15 years</SelectItem>
-                        <SelectItem value="16-20">16-20 years</SelectItem>
-                        <SelectItem value="20+">20+ years</SelectItem>
+                        <SelectItem value="0-2">{t('doctorSignup.experience.0-2')}</SelectItem>
+                        <SelectItem value="3-5">{t('doctorSignup.experience.3-5')}</SelectItem>
+                        <SelectItem value="6-10">{t('doctorSignup.experience.6-10')}</SelectItem>
+                        <SelectItem value="11-15">{t('doctorSignup.experience.11-15')}</SelectItem>
+                        <SelectItem value="16-20">{t('doctorSignup.experience.16-20')}</SelectItem>
+                        <SelectItem value="20+">{t('doctorSignup.experience.20+')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="license">Medical License Number</Label>
+                    <Label htmlFor="license">{t('doctorSignup.fields.license')}</Label>
                     <div className="relative">
-                      <Input id="license" placeholder="License number" />
+                      <Input id="license" placeholder={t('doctorSignup.placeholders.license')} />
                       <Info className="w-4 h-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">Used to verify your medical credentials</p>
+                    <p className="text-sm text-muted-foreground mt-1">{t('doctorSignup.help.licenseVerification')}</p>
                   </div>
                 </div>
 
                 <div>
-                  <Label>Languages Spoken</Label>
-                  <p className="text-sm text-muted-foreground mb-3">Search and select languages you speak fluently</p>
+                  <Label>{t('doctorSignup.fields.languages')}</Label>
+                  <p className="text-sm text-muted-foreground mb-3">{t('doctorSignup.help.languagesSelect')}</p>
                   
                   {/* Selected Languages */}
                   {selectedLanguages.length > 0 && (
@@ -458,7 +460,7 @@ const DoctorSignUp = () => {
                   {/* Language Search */}
                   <div className="relative mb-3">
                     <Input
-                      placeholder="Search languages..."
+                      placeholder={t('doctorSignup.placeholders.searchLanguages')}
                       value={languageSearch}
                       onChange={(e) => setLanguageSearch(e.target.value)}
                     />
@@ -480,7 +482,7 @@ const DoctorSignUp = () => {
                       </div>
                     ))}
                     {filteredLanguages.length === 0 && (
-                      <p className="text-sm text-muted-foreground p-2">No languages found</p>
+                      <p className="text-sm text-muted-foreground p-2">{t('doctorSignup.messages.noLanguagesFound')}</p>
                     )}
                   </div>
                 </div>
@@ -492,17 +494,17 @@ const DoctorSignUp = () => {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Building2 className="w-5 h-5 mr-2 text-blue-600" />
-                  Location & Clinic Connection
+                  {t('doctorSignup.sections.location')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Country and Region */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="country">Country (Optional)</Label>
+                    <Label htmlFor="country">{t('doctorSignup.fields.country')} ({t('doctorSignup.buttons.optional')})</Label>
                     <Select value={formData.country} onValueChange={(value) => updateField('country', value)}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select country" />
+                        <SelectValue placeholder={t('doctorSignup.placeholders.selectCountry')} />
                       </SelectTrigger>
                       <SelectContent>
                         {countries.map((countryOption) => (
@@ -514,10 +516,10 @@ const DoctorSignUp = () => {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="region">Region/State (Optional)</Label>
+                    <Label htmlFor="region">{t('doctorSignup.fields.region')} ({t('doctorSignup.buttons.optional')})</Label>
                     <Select value={formData.region} onValueChange={(value) => updateField('region', value)} disabled={!formData.country}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select region/state" />
+                        <SelectValue placeholder={t('doctorSignup.placeholders.selectRegion')} />
                       </SelectTrigger>
                       <SelectContent>
                         {formData.country === "united states" && usStates.map((state) => (
@@ -532,14 +534,14 @@ const DoctorSignUp = () => {
 
                 {/* Clinic Search */}
                 <div>
-                  <Label htmlFor="clinic-search">Search for Registered Clinics</Label>
+                  <Label htmlFor="clinic-search">{t('doctorSignup.clinic.searchTitle')}</Label>
                   <p className="text-sm text-muted-foreground mb-3">
-                    Find your clinic in our database or add it manually if not found
+                    {t('doctorSignup.help.clinicSearch')}
                   </p>
                   <div className="relative">
                     <Input
                       id="clinic-search"
-                      placeholder="Search by clinic name, address..."
+                      placeholder={t('doctorSignup.placeholders.clinicSearch')}
                       value={clinicSearch}
                       onChange={(e) => setClinicSearch(e.target.value)}
                     />
@@ -564,7 +566,7 @@ const DoctorSignUp = () => {
                               </div>
                               <div className="flex items-center space-x-2">
                                 {clinic.verified && (
-                                  <Badge variant="default" className="text-xs">Verified</Badge>
+                                  <Badge variant="default" className="text-xs">{t('doctorSignup.clinic.verified')}</Badge>
                                 )}
                                 {selectedClinic?.id === clinic.id && (
                                   <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
@@ -576,7 +578,7 @@ const DoctorSignUp = () => {
                       ) : (
                         <div className="p-4 text-center">
                           <p className="text-sm text-muted-foreground mb-3">
-                            No clinics found. You can add your clinic manually.
+                            {t('doctorSignup.clinic.noClinicFound')}
                           </p>
                           <Button 
                             type="button"
@@ -584,7 +586,7 @@ const DoctorSignUp = () => {
                             size="sm"
                             onClick={() => setShowManualClinic(true)}
                           >
-                            Add Clinic Manually
+                            {t('doctorSignup.clinic.addManually')}
                           </Button>
                         </div>
                       )}
@@ -598,38 +600,38 @@ const DoctorSignUp = () => {
                     <CardHeader>
                       <CardTitle className="text-lg flex items-center">
                         <Info className="w-5 h-5 mr-2 text-orange-600" />
-                        Add Clinic Information
+                        {t('doctorSignup.clinic.addInformation')}
                       </CardTitle>
                       <p className="text-sm text-orange-700">
-                        This information will be flagged for admin verification
+                        {t('doctorSignup.clinic.verificationNote')}
                       </p>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div>
-                        <Label htmlFor="practice-name">Practice Name (Optional)</Label>
-                        <Input id="practice-name" placeholder="Enter clinic/practice name" />
+                        <Label htmlFor="practice-name">{t('doctorSignup.fields.practiceName')} ({t('doctorSignup.buttons.optional')})</Label>
+                        <Input id="practice-name" placeholder={t('doctorSignup.placeholders.practiceName')} />
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="practice-phone">Phone Number</Label>
-                          <Input id="practice-phone" placeholder="(555) 123-4567" />
+                          <Label htmlFor="practice-phone">{t('doctorSignup.fields.practicePhone')}</Label>
+                          <Input id="practice-phone" placeholder={t('doctorSignup.placeholders.phone')} />
                         </div>
                         <div>
-                          <Label htmlFor="practice-email">Email</Label>
-                          <Input id="practice-email" type="email" placeholder="info@clinic.com" />
+                          <Label htmlFor="practice-email">{t('doctorSignup.fields.practiceEmail')}</Label>
+                          <Input id="practice-email" type="email" placeholder={t('doctorSignup.placeholders.email')} />
                         </div>
                       </div>
                       <div>
-                        <Label htmlFor="practice-address">Address *</Label>
+                        <Label htmlFor="practice-address">{t('doctorSignup.fields.practiceAddress')} {t('doctorSignup.clinic.required')}</Label>
                         <Textarea 
                           id="practice-address" 
-                          placeholder="Full address including street, city, state, ZIP"
+                          placeholder={t('doctorSignup.placeholders.practiceAddress')}
                           className="min-h-[80px]"
                         />
                       </div>
                       <div className="bg-amber-50 p-3 rounded-lg">
                         <p className="text-sm text-amber-700">
-                          📍 <strong>Note:</strong> Manually entered clinics require admin verification before going live.
+                          📍 <strong>{t('doctorSignup.buttons.optional')}:</strong> {t('doctorSignup.help.manualClinicNote')}
                         </p>
                       </div>
                     </CardContent>
@@ -641,7 +643,7 @@ const DoctorSignUp = () => {
                   <div className="bg-green-50 p-4 rounded-lg">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-semibold text-green-800">Selected Clinic</h4>
+                        <h4 className="font-semibold text-green-800">{t('doctorSignup.clinic.selectedClinic')}</h4>
                         <p className="text-green-700">{selectedClinic.name}</p>
                         <p className="text-sm text-green-600">{selectedClinic.address}</p>
                       </div>
@@ -651,7 +653,7 @@ const DoctorSignUp = () => {
                         size="sm"
                         onClick={() => setSelectedClinic(null)}
                       >
-                        Change
+                        {t('doctorSignup.clinic.change')}
                       </Button>
                     </div>
                   </div>
@@ -664,25 +666,25 @@ const DoctorSignUp = () => {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <FileText className="w-5 h-5 mr-2 text-blue-600" />
-                  Profile Details
+                  {t('doctorSignup.sections.profile')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <Label htmlFor="bio">About You / Bio</Label>
+                  <Label htmlFor="bio">{t('doctorSignup.fields.bio')}</Label>
                   <Textarea 
                     id="bio" 
-                    placeholder="Tell patients about your experience, approach to care, and what makes you unique..."
+                    placeholder={t('doctorSignup.placeholders.bio')}
                     className="min-h-[100px]"
                     value={formData.bio}
                     onChange={(e) => updateField('bio', e.target.value)}
                   />
-                  <p className="text-sm text-muted-foreground mt-1">300-500 characters recommended</p>
+                  <p className="text-sm text-muted-foreground mt-1">{t('doctorSignup.help.bioLength')}</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label>Profile Photo</Label>
+                    <Label>{t('doctorSignup.fields.profilePhoto')}</Label>
                     <div className={`border-2 border-dashed rounded-lg p-6 text-center ${
                       avatar ? 'border-green-500 bg-green-50' : 'border-border'
                     }`}>
@@ -695,7 +697,7 @@ const DoctorSignUp = () => {
                         <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
                       )}
                       <p className="text-sm text-muted-foreground mb-2">
-                        {avatar ? avatar.name : 'Upload your photo'}
+                        {avatar ? avatar.name : t('doctorSignup.placeholders.uploadPhoto')}
                       </p>
                       <Button 
                         type="button"
@@ -713,13 +715,13 @@ const DoctorSignUp = () => {
                           input.click();
                         }}
                       >
-                        {avatar ? 'Change File' : 'Choose File'}
+                        {avatar ? t('doctorSignup.buttons.changeFile') : t('doctorSignup.buttons.chooseFile')}
                       </Button>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">Professional headshot recommended</p>
+                    <p className="text-sm text-muted-foreground mt-1">{t('doctorSignup.help.professionalHeadshot')}</p>
                   </div>
                   <div>
-                    <Label>Medical License Document</Label>
+                    <Label>{t('doctorSignup.fields.medicalLicense')}</Label>
                     <div className={`border-2 border-dashed rounded-lg p-6 text-center mb-3 ${
                       medicalLicense ? 'border-green-500 bg-green-50' : 'border-border'
                     }`}>
@@ -729,7 +731,7 @@ const DoctorSignUp = () => {
                         <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
                       )}
                       <p className="text-sm text-muted-foreground mb-2">
-                        {medicalLicense ? medicalLicense.name : 'Upload medical license'}
+                        {medicalLicense ? medicalLicense.name : t('doctorSignup.placeholders.uploadLicense')}
                       </p>
                       <Button 
                         type="button"
@@ -747,11 +749,11 @@ const DoctorSignUp = () => {
                           input.click();
                         }}
                       >
-                        {medicalLicense ? 'Change File' : 'Choose File'}
+                        {medicalLicense ? t('doctorSignup.buttons.changeFile') : t('doctorSignup.buttons.chooseFile')}
                       </Button>
                     </div>
                     
-                    <Label>Professional ID</Label>
+                    <Label>{t('doctorSignup.fields.professionalId')}</Label>
                     <div className={`border-2 border-dashed rounded-lg p-6 text-center ${
                       professionalId ? 'border-green-500 bg-green-50' : 'border-border'
                     }`}>
@@ -761,7 +763,7 @@ const DoctorSignUp = () => {
                         <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
                       )}
                       <p className="text-sm text-muted-foreground mb-2">
-                        {professionalId ? professionalId.name : 'Upload professional ID'}
+                        {professionalId ? professionalId.name : t('doctorSignup.placeholders.uploadId')}
                       </p>
                       <Button 
                         type="button"
@@ -779,10 +781,10 @@ const DoctorSignUp = () => {
                           input.click();
                         }}
                       >
-                        {professionalId ? 'Change File' : 'Choose File'}
+                        {professionalId ? t('doctorSignup.buttons.changeFile') : t('doctorSignup.buttons.chooseFile')}
                       </Button>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">PDF or image files accepted</p>
+                    <p className="text-sm text-muted-foreground mt-1">{t('doctorSignup.help.pdfOrImage')}</p>
                   </div>
                 </div>
               </CardContent>
@@ -793,18 +795,18 @@ const DoctorSignUp = () => {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Settings className="w-5 h-5 mr-2 text-blue-600" />
-                  Availability & Preferences <Badge variant="secondary">Optional</Badge>
+                  {t('doctorSignup.sections.availability')} <Badge variant="secondary">{t('doctorSignup.buttons.optional')}</Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <Label>Preferred Appointment Types</Label>
+                  <Label>{t('doctorSignup.fields.appointmentTypes')}</Label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
                     {[
-                      { id: "in-person", label: "In-person" },
-                      { id: "video", label: "Video" },
-                      { id: "home-visit", label: "Home Visit" },
-                      { id: "chat", label: "Chat" }
+                      { id: "in-person", label: t('doctorSignup.appointmentTypes.inPerson') },
+                      { id: "video", label: t('doctorSignup.appointmentTypes.video') },
+                      { id: "home-visit", label: t('doctorSignup.appointmentTypes.homeVisit') },
+                      { id: "chat", label: t('doctorSignup.appointmentTypes.chat') }
                     ].map((type) => (
                       <div key={type.id} className="flex items-center space-x-2">
                         <Checkbox id={type.id} />
@@ -815,12 +817,12 @@ const DoctorSignUp = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="consultation-fee">Consultation Fee Range</Label>
+                  <Label htmlFor="consultation-fee">{t('doctorSignup.fields.consultationFee')}</Label>
                   <div className="grid grid-cols-2 gap-4 mt-2">
-                    <Input placeholder="From $" />
-                    <Input placeholder="To $" />
+                    <Input placeholder={t('doctorSignup.placeholders.feeFrom')} />
+                    <Input placeholder={t('doctorSignup.placeholders.feeTo')} />
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1">You can adjust this later in your profile</p>
+                  <p className="text-sm text-muted-foreground mt-1">{t('doctorSignup.help.adjustFee')}</p>
                 </div>
               </CardContent>
             </Card>
@@ -830,7 +832,7 @@ const DoctorSignUp = () => {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Shield className="w-5 h-5 mr-2 text-blue-600" />
-                  Security, Agreements & Final Steps
+                  {t('doctorSignup.sections.security')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -838,32 +840,32 @@ const DoctorSignUp = () => {
                   <div className="flex items-start space-x-3">
                     <Checkbox id="accuracy" className="mt-1" />
                     <Label htmlFor="accuracy" className="text-sm leading-relaxed">
-                      I confirm that all information provided is accurate and verifiable
+                      {t('doctorSignup.security.accuracyConfirm')}
                     </Label>
                   </div>
                   
                   <div className="flex items-start space-x-3">
                     <Checkbox id="terms" className="mt-1" />
                     <Label htmlFor="terms" className="text-sm leading-relaxed">
-                      I agree to the <a href="#" className="text-blue-600 hover:underline">Terms of Service</a> and <a href="#" className="text-blue-600 hover:underline">Privacy Policy</a>
+                      {t('doctorSignup.security.termsAgree')} <a href="#" className="text-blue-600 hover:underline">{t('doctorSignup.security.termsOfService')}</a> {t('doctorSignup.security.and')} <a href="#" className="text-blue-600 hover:underline">{t('doctorSignup.security.privacyPolicy')}</a>
                     </Label>
                   </div>
                 </div>
 
                 <div className="bg-slate-50 p-6 rounded-lg">
-                  <h4 className="font-semibold text-foreground mb-3">Your data is secure with us</h4>
+                  <h4 className="font-semibold text-foreground mb-3">{t('doctorSignup.security.dataSecure')}</h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center">
                       <Shield className="w-4 h-4 mr-2 text-green-600" />
-                      HIPAA Compliant
+                      {t('doctorSignup.security.hipaaCompliant')}
                     </div>
                     <div className="flex items-center">
                       <Shield className="w-4 h-4 mr-2 text-green-600" />
-                      End-to-End Encryption
+                      {t('doctorSignup.security.encryption')}
                     </div>
                     <div className="flex items-center">
                       <Shield className="w-4 h-4 mr-2 text-green-600" />
-                      Data Privacy Protection
+                      {t('doctorSignup.security.dataPrivacy')}
                     </div>
                   </div>
                 </div>
@@ -873,11 +875,11 @@ const DoctorSignUp = () => {
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold"
                   disabled={isLoading || isSubmitting || uploading}
                 >
-                  {isLoading || isSubmitting ? 'Creating Profile...' : 'Create My Profile'}
+                  {isLoading || isSubmitting ? t('doctorSignup.buttons.creatingProfile') : t('doctorSignup.buttons.createProfile')}
                 </Button>
 
                 <p className="text-center text-sm text-muted-foreground">
-                  Already have an account? <a href="#" className="text-blue-600 hover:underline">Log In</a>
+                  {t('doctorSignup.footer.haveAccount')} <a href="#" className="text-blue-600 hover:underline">{t('doctorSignup.footer.login')}</a>
                 </p>
               </CardContent>
             </Card>
