@@ -9,8 +9,10 @@ import { Loader2, User, Stethoscope, Building2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 const Auth = () => {
+  const { t } = useTranslation('auth');
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("signin");
   
@@ -95,43 +97,43 @@ const Auth = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-primary mb-2">MedConnect</h1>
-          <p className="text-muted-foreground">Your healthcare management platform</p>
+          <h1 className="text-3xl font-bold text-primary mb-2">{t('auth.appTitle')}</h1>
+          <p className="text-muted-foreground">{t('auth.appSubtitle')}</p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="signin">Sign In</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            <TabsTrigger value="signin">{t('auth.tabs.signIn')}</TabsTrigger>
+            <TabsTrigger value="signup">{t('auth.tabs.signUp')}</TabsTrigger>
           </TabsList>
           
           <TabsContent value="signin">
             <Card>
               <CardHeader>
-                <CardTitle>Welcome Back</CardTitle>
+                <CardTitle>{t('auth.signIn.title')}</CardTitle>
                 <CardDescription>
-                  Sign in to your account to continue
+                  {t('auth.signIn.description')}
                 </CardDescription>
               </CardHeader>
               <form onSubmit={handleSignIn}>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signin-email">Email</Label>
+                    <Label htmlFor="signin-email">{t('auth.signIn.email')}</Label>
                     <Input
                       id="signin-email"
                       type="email"
-                      placeholder="Enter your email"
+                      placeholder={t('auth.signIn.emailPlaceholder')}
                       value={signInEmail}
                       onChange={(e) => setSignInEmail(e.target.value)}
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signin-password">Password</Label>
+                    <Label htmlFor="signin-password">{t('auth.signIn.password')}</Label>
                     <Input
                       id="signin-password"
                       type="password"
-                      placeholder="Enter your password"
+                      placeholder={t('auth.signIn.passwordPlaceholder')}
                       value={signInPassword}
                       onChange={(e) => setSignInPassword(e.target.value)}
                       required
@@ -143,10 +145,10 @@ const Auth = () => {
                     {loading ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Signing in...
+                        {t('auth.signIn.buttonLoading')}
                       </>
                     ) : (
-                      'Sign In'
+                      t('auth.signIn.button')
                     )}
                   </Button>
                 </CardFooter>
@@ -157,72 +159,72 @@ const Auth = () => {
           <TabsContent value="signup">
             <Card>
               <CardHeader>
-                <CardTitle>Create Account</CardTitle>
+                <CardTitle>{t('auth.signUp.title')}</CardTitle>
                 <CardDescription>
-                  Join MedConnect to manage your healthcare
+                  {t('auth.signUp.description')}
                 </CardDescription>
               </CardHeader>
               <form onSubmit={handleSignUp}>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signup-name">Full Name</Label>
+                    <Label htmlFor="signup-name">{t('auth.signUp.fullName')}</Label>
                     <Input
                       id="signup-name"
                       type="text"
-                      placeholder="Enter your full name"
+                      placeholder={t('auth.signUp.fullNamePlaceholder')}
                       value={signUpFullName}
                       onChange={(e) => setSignUpFullName(e.target.value)}
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
+                    <Label htmlFor="signup-email">{t('auth.signUp.email')}</Label>
                     <Input
                       id="signup-email"
                       type="email"
-                      placeholder="Enter your email"
+                      placeholder={t('auth.signUp.emailPlaceholder')}
                       value={signUpEmail}
                       onChange={(e) => setSignUpEmail(e.target.value)}
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password">Password</Label>
+                    <Label htmlFor="signup-password">{t('auth.signUp.password')}</Label>
                     <Input
                       id="signup-password"
                       type="password"
-                      placeholder="Create a password"
+                      placeholder={t('auth.signUp.passwordPlaceholder')}
                       value={signUpPassword}
                       onChange={(e) => setSignUpPassword(e.target.value)}
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-role">Account Type</Label>
+                    <Label htmlFor="signup-role">{t('auth.signUp.accountType')}</Label>
                     <Select value={signUpRole} onValueChange={setSignUpRole}>
                       <SelectTrigger>
                         <div className="flex items-center gap-2">
                           {getRoleIcon(signUpRole)}
-                          <SelectValue placeholder="Select account type" />
+                          <SelectValue placeholder={t('auth.signUp.accountTypePlaceholder')} />
                         </div>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="patient">
                           <div className="flex items-center gap-2">
                             <User className="w-4 h-4" />
-                            Patient
+                            {t('auth.signUp.roles.patient')}
                           </div>
                         </SelectItem>
                         <SelectItem value="doctor">
                           <div className="flex items-center gap-2">
                             <Stethoscope className="w-4 h-4" />
-                            Doctor
+                            {t('auth.signUp.roles.doctor')}
                           </div>
                         </SelectItem>
                         <SelectItem value="admin">
                           <div className="flex items-center gap-2">
                             <Building2 className="w-4 h-4" />
-                            Practice Administrator
+                            {t('auth.signUp.roles.admin')}
                           </div>
                         </SelectItem>
                       </SelectContent>
@@ -234,10 +236,10 @@ const Auth = () => {
                     {loading ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Creating account...
+                        {t('auth.signUp.buttonLoading')}
                       </>
                     ) : (
-                      'Create Account'
+                      t('auth.signUp.button')
                     )}
                   </Button>
                 </CardFooter>
@@ -248,7 +250,7 @@ const Auth = () => {
         
         <div className="text-center mt-6">
           <p className="text-sm text-muted-foreground">
-            By signing up, you agree to our Terms of Service and Privacy Policy
+            {t('auth.footer.terms')}
           </p>
         </div>
       </div>
