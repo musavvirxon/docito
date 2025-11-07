@@ -603,29 +603,31 @@ export function ComprehensiveRegistrationModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Practice Verification - Complete Details</DialogTitle>
           <DialogDescription>
             Step {currentStep} of {totalSteps} - Provide accurate information for verification
           </DialogDescription>
         </DialogHeader>
 
-        <Progress value={(currentStep / totalSteps) * 100} className="mb-4" />
+        <Progress value={(currentStep / totalSteps) * 100} className="mb-4 flex-shrink-0" />
 
-        <div className="mb-4 flex justify-between text-xs text-muted-foreground">
+        <div className="mb-4 flex justify-between text-xs text-muted-foreground flex-shrink-0">
           <span className={currentStep === 1 ? "font-semibold text-foreground" : ""}>Basic Info</span>
           <span className={currentStep === 2 ? "font-semibold text-foreground" : ""}>Business Info</span>
           <span className={currentStep === 3 ? "font-semibold text-foreground" : ""}>Services</span>
           <span className={currentStep === 4 ? "font-semibold text-foreground" : ""}>Agreements</span>
         </div>
 
-        {currentStep === 1 && renderStep1()}
-        {currentStep === 2 && renderStep2()}
-        {currentStep === 3 && renderStep3()}
-        {currentStep === 4 && renderStep4()}
+        <div className="overflow-y-auto flex-1 pr-2">
+          {currentStep === 1 && renderStep1()}
+          {currentStep === 2 && renderStep2()}
+          {currentStep === 3 && renderStep3()}
+          {currentStep === 4 && renderStep4()}
+        </div>
 
-        <div className="flex gap-3 pt-4 border-t">
+        <div className="flex gap-3 pt-4 border-t mt-4 flex-shrink-0 bg-background">
           {currentStep > 1 && (
             <Button
               type="button"
