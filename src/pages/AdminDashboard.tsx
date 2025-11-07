@@ -38,8 +38,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useTranslation } from 'react-i18next';
 
 const AdminDashboard = () => {
+  const { t } = useTranslation('dashboard');
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const { 
@@ -80,12 +82,12 @@ const AdminDashboard = () => {
   };
 
   const dashboardMetrics = [
-    { label: "Total Bookings", value: stats.totalBookings.toString(), icon: Calendar, trend: "" },
-    { label: "Total Patients", value: stats.totalPatients.toString(), icon: Users, trend: "" },
-    { label: "Revenue This Month", value: `$${stats.totalRevenue.toLocaleString()}`, icon: DollarSign, trend: "" },
-    { label: "Clinic Rating", value: stats.clinicRating.toFixed(1), icon: Star, trend: "" },
-    { label: "Pending Invites", value: stats.pendingInvites.toString(), icon: UserPlus, trend: "" },
-    { label: "Locations", value: stats.locations.toString(), icon: MapPin, trend: "" },
+    { label: t('admin.metrics.totalBookings'), value: stats.totalBookings.toString(), icon: Calendar, trend: "" },
+    { label: t('admin.metrics.totalPatients'), value: stats.totalPatients.toString(), icon: Users, trend: "" },
+    { label: t('admin.metrics.revenueThisMonth'), value: `$${stats.totalRevenue.toLocaleString()}`, icon: DollarSign, trend: "" },
+    { label: t('admin.metrics.clinicRating'), value: stats.clinicRating.toFixed(1), icon: Star, trend: "" },
+    { label: t('admin.metrics.pendingInvites'), value: stats.pendingInvites.toString(), icon: UserPlus, trend: "" },
+    { label: t('admin.metrics.locations'), value: stats.locations.toString(), icon: MapPin, trend: "" },
   ];
 
   const getVerificationStatusColor = (status: string) => {
@@ -99,10 +101,10 @@ const AdminDashboard = () => {
 
   const getVerificationMessage = (status: string) => {
     switch (status) {
-      case "verified": return "Your practice is verified and live! Patients can now find and book with you.";
-      case "rejected": return "Verification failed. Please review the requirements and resubmit your documents.";
-      case "under_review": return "Your verification is under review. We'll notify you once the review is complete (2-3 business days).";
-      default: return "To go public and appear in search results, your practice verification must be completed.";
+      case "verified": return t('admin.verification.verified');
+      case "rejected": return t('admin.verification.rejected');
+      case "under_review": return t('admin.verification.underReview');
+      default: return t('admin.verification.pending');
     }
   };
 
@@ -111,7 +113,7 @@ const AdminDashboard = () => {
       <div className="min-h-screen bg-muted/20 flex items-center justify-center">
         <div className="flex items-center gap-2">
           <Loader2 className="w-6 h-6 animate-spin text-primary" />
-          <span className="text-muted-foreground">Loading dashboard...</span>
+          <span className="text-muted-foreground">{t('admin.loading')}</span>
         </div>
       </div>
     );
@@ -123,9 +125,9 @@ const AdminDashboard = () => {
         <Card className="max-w-md">
           <CardContent className="p-6 text-center">
             <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Failed to load dashboard</h3>
+            <h3 className="text-lg font-semibold mb-2">{t('admin.error.failed')}</h3>
             <p className="text-muted-foreground mb-4">{error}</p>
-            <Button onClick={refreshData}>Try Again</Button>
+            <Button onClick={refreshData}>{t('admin.error.tryAgain')}</Button>
           </CardContent>
         </Card>
       </div>
@@ -140,24 +142,24 @@ const AdminDashboard = () => {
             <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
               <Building2 className="w-8 h-8 text-primary" />
             </div>
-            <h3 className="text-2xl font-bold mb-3">Welcome to Your Admin Dashboard!</h3>
+            <h3 className="text-2xl font-bold mb-3">{t('admin.welcome.title')}</h3>
             <p className="text-muted-foreground mb-6 text-base">
-              Let's set up your clinic information so you can start managing your doctors and appointments.
+              {t('admin.welcome.description')}
             </p>
             <div className="bg-muted/50 rounded-lg p-6 mb-6 text-left">
-              <p className="text-sm font-medium mb-4">You'll need to provide:</p>
+              <p className="text-sm font-medium mb-4">{t('admin.welcome.needProvide')}</p>
               <ul className="space-y-3">
                 <li className="flex items-center gap-2 text-sm">
                   <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
-                  Clinic name and description
+                  {t('admin.welcome.requirements.clinicName')}
                 </li>
                 <li className="flex items-center gap-2 text-sm">
                   <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
-                  Location and contact information
+                  {t('admin.welcome.requirements.location')}
                 </li>
                 <li className="flex items-center gap-2 text-sm">
                   <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
-                  Operating details
+                  {t('admin.welcome.requirements.operating')}
                 </li>
               </ul>
             </div>
@@ -167,7 +169,7 @@ const AdminDashboard = () => {
               className="w-full sm:w-auto"
             >
               <Building2 className="w-4 h-4 mr-2" />
-              Create Clinic Profile
+              {t('admin.welcome.createProfile')}
             </Button>
           </CardContent>
         </Card>
@@ -188,11 +190,11 @@ const AdminDashboard = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Practice Dashboard</h1>
+              <h1 className="text-2xl font-bold text-foreground">{t('admin.title')}</h1>
               <p className="text-muted-foreground">
                 {verificationStatus === "verified" 
-                  ? (practice.name || "Unnamed Practice")
-                  : "Unverified Practice"}
+                  ? (practice.name || t('admin.unverifiedPractice'))
+                  : t('admin.unverifiedPractice')}
               </p>
             </div>
             <div className="flex items-center gap-4">
@@ -201,7 +203,7 @@ const AdminDashboard = () => {
               {verificationStatus === "verified" && (
                 <Button variant="outline" size="sm">
                   <Eye className="h-4 w-4 mr-2" />
-                  Preview Public Profile
+                  {t('admin.header.previewProfile')}
                 </Button>
               )}
               
@@ -210,18 +212,18 @@ const AdminDashboard = () => {
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm">
                       <User className="h-4 w-4 mr-2" />
-                      Profile
+                      {t('admin.header.profile')}
                       <ChevronDown className="h-4 w-4 ml-2" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuItem onClick={() => navigate('/admin/profile-settings')}>
                       <User className="h-4 w-4 mr-2" />
-                      Profile Settings
+                      {t('admin.header.profileSettings')}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setSettingsOpen(true)}>
                       <Building2 className="h-4 w-4 mr-2" />
-                      Practice Settings
+                      {t('admin.header.practiceSettings')}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
@@ -232,7 +234,7 @@ const AdminDashboard = () => {
                       className="text-destructive focus:text-destructive"
                     >
                       <LogOut className="h-4 w-4 mr-2" />
-                      Logout
+                      {t('admin.header.logout')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -258,9 +260,9 @@ const AdminDashboard = () => {
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <h3 className="font-semibold">Verification Status:</h3>
+                  <h3 className="font-semibold">{t('admin.verification.status')}</h3>
                   <Badge variant="outline" className={getVerificationStatusColor(verificationStatus)}>
-                    {verificationStatus.replace("_", " ").toUpperCase()}
+                    {t(`admin.verification.statuses.${verificationStatus}`)}
                   </Badge>
                 </div>
                 <p className="text-sm mb-3">{getVerificationMessage(verificationStatus)}</p>
@@ -268,10 +270,10 @@ const AdminDashboard = () => {
                   <div className="flex gap-2">
                     <Button size="sm" onClick={() => setCreateClinicOpen(true)}>
                       <CheckCircle className="h-4 w-4 mr-2" />
-                      {verificationStatus === "rejected" ? "Resubmit Verification" : "Verify Practice"}
+                      {verificationStatus === "rejected" ? t('admin.verification.resubmit') : t('admin.verification.verifyPractice')}
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => setRequirementsOpen(true)}>
-                      View Requirements
+                      {t('admin.verification.viewRequirements')}
                     </Button>
                   </div>
                 )}
@@ -309,16 +311,16 @@ const AdminDashboard = () => {
         {/* Main Dashboard Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 mb-6">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="overview">{t('admin.tabs.overview')}</TabsTrigger>
             {verificationStatus === "verified" && (
               <>
-                <TabsTrigger value="providers">Providers</TabsTrigger>
-                <TabsTrigger value="services">Services</TabsTrigger>
-                <TabsTrigger value="staff">Staff</TabsTrigger>
-                <TabsTrigger value="locations">Locations</TabsTrigger>
-                <TabsTrigger value="patients">Patients</TabsTrigger>
-                <TabsTrigger value="billing">Billing</TabsTrigger>
-                <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                <TabsTrigger value="providers">{t('admin.tabs.providers')}</TabsTrigger>
+                <TabsTrigger value="services">{t('admin.tabs.services')}</TabsTrigger>
+                <TabsTrigger value="staff">{t('admin.tabs.staff')}</TabsTrigger>
+                <TabsTrigger value="locations">{t('admin.tabs.locations')}</TabsTrigger>
+                <TabsTrigger value="patients">{t('admin.tabs.patients')}</TabsTrigger>
+                <TabsTrigger value="billing">{t('admin.tabs.billing')}</TabsTrigger>
+                <TabsTrigger value="analytics">{t('admin.tabs.analytics')}</TabsTrigger>
               </>
             )}
           </TabsList>
@@ -329,14 +331,14 @@ const AdminDashboard = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Calendar className="h-5 w-5" />
-                    Recent Appointments
+                    {t('admin.overview.recentAppointments')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {appointments.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
                       <Calendar className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                      <p>No appointments scheduled</p>
+                      <p>{t('admin.overview.noAppointments')}</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
@@ -363,14 +365,14 @@ const AdminDashboard = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <MessageCircle className="h-5 w-5" />
-                    Recent Messages
+                    {t('admin.overview.recentMessages')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {messages.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
                       <MessageCircle className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                      <p>No recent messages</p>
+                      <p>{t('admin.overview.noMessages')}</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
@@ -397,10 +399,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="providers" className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Manage Providers</h2>
+              <h2 className="text-xl font-semibold">{t('admin.providers.title')}</h2>
               <Button onClick={() => setInviteProviderOpen(true)}>
                 <UserPlus className="h-4 w-4 mr-2" />
-                Invite Provider
+                {t('admin.providers.inviteProvider')}
               </Button>
             </div>
             
@@ -408,13 +410,13 @@ const AdminDashboard = () => {
               <Card>
                 <CardContent className="p-12 text-center">
                   <Stethoscope className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h3 className="text-lg font-semibold mb-2">No Providers Yet</h3>
+                  <h3 className="text-lg font-semibold mb-2">{t('admin.providers.noProviders')}</h3>
                   <p className="text-muted-foreground mb-4">
-                    Invite doctors to join your practice to get started
+                    {t('admin.providers.noProvidersDesc')}
                   </p>
                   <Button onClick={() => setInviteProviderOpen(true)}>
                     <UserPlus className="h-4 w-4 mr-2" />
-                    Invite First Provider
+                    {t('admin.providers.inviteFirst')}
                   </Button>
                 </CardContent>
               </Card>
@@ -436,16 +438,16 @@ const AdminDashboard = () => {
                         <div className="flex items-center gap-6">
                           <div className="text-center">
                             <p className="text-lg font-semibold">{provider.num_reviews || 0}</p>
-                            <p className="text-xs text-muted-foreground">Reviews</p>
+                            <p className="text-xs text-muted-foreground">{t('admin.providers.reviews')}</p>
                           </div>
                           <div className="text-center">
                             <p className="text-lg font-semibold">{provider.average_rating.toFixed(1)}</p>
-                            <p className="text-xs text-muted-foreground">Rating</p>
+                            <p className="text-xs text-muted-foreground">{t('admin.providers.rating')}</p>
                           </div>
                           <Badge variant={provider.verified ? "default" : "secondary"}>
-                            {provider.verified ? "Verified" : "Pending"}
+                            {provider.verified ? t('admin.providers.verified') : t('admin.providers.pending')}
                           </Badge>
-                          <Button variant="outline" size="sm">Edit</Button>
+                          <Button variant="outline" size="sm">{t('admin.providers.edit')}</Button>
                         </div>
                       </div>
                     </CardContent>

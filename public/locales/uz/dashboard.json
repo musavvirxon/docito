@@ -1,4 +1,147 @@
 {
+  "admin": {
+    "title": "Klinika paneli",
+    "unverifiedPractice": "Tasdiqlanmagan klinika",
+    "loading": "Panel yuklanmoqda...",
+    "error": {
+      "failed": "Panelni yuklash amalga oshmadi",
+      "tryAgain": "Qayta urinish"
+    },
+    "welcome": {
+      "title": "Administrator panelingizga xush kelibsiz!",
+      "description": "Shifokorlar va uchrashuvlarni boshqarishni boshlash uchun klinika ma'lumotlarini sozlaylik.",
+      "needProvide": "Taqdim etishingiz kerak:",
+      "requirements": {
+        "clinicName": "Klinika nomi va tavsifi",
+        "location": "Joylashuv va aloqa ma'lumotlari",
+        "operating": "Ish tafsilotlari"
+      },
+      "createProfile": "Klinika profilini yaratish"
+    },
+    "header": {
+      "previewProfile": "Ommaviy profilni ko'rish",
+      "profile": "Profil",
+      "profileSettings": "Profil sozlamalari",
+      "practiceSettings": "Klinika sozlamalari",
+      "logout": "Chiqish"
+    },
+    "verification": {
+      "status": "Tasdiqlash holati:",
+      "verified": "Klinikangiz tasdiqlangan va faol! Bemorlar endi sizni topishi va qabul yozishi mumkin.",
+      "rejected": "Tasdiqlash muvaffaqiyatsiz tugadi. Iltimos, talablarni ko'rib chiqing va hujjatlarni qayta yuboring.",
+      "underReview": "Tasdiqlanish jarayonida. Ko'rib chiqish tugashi bilan sizga xabar beramiz (2-3 ish kuni).",
+      "pending": "Ommaviy bo'lish va qidiruv natijalarida ko'rinish uchun klinikangizni tasdiqlash kerak.",
+      "verifyPractice": "Klinikani tasdiqlash",
+      "resubmit": "Qayta yuborish",
+      "viewRequirements": "Talablarni ko'rish",
+      "statuses": {
+        "verified": "TASDIQLANGAN",
+        "rejected": "RAD ETILGAN",
+        "under_review": "KO'RIB CHIQILMOQDA",
+        "pending": "KUTILMOQDA"
+      }
+    },
+    "metrics": {
+      "totalBookings": "Jami yozuvlar",
+      "totalPatients": "Jami bemorlar",
+      "revenueThisMonth": "Bu oydagi daromad",
+      "clinicRating": "Klinika reytingi",
+      "pendingInvites": "Kutilayotgan takliflar",
+      "locations": "Joylashuvlar"
+    },
+    "tabs": {
+      "overview": "Umumiy ko'rinish",
+      "providers": "Shifokorlar",
+      "services": "Xizmatlar",
+      "staff": "Xodimlar",
+      "locations": "Joylashuvlar",
+      "patients": "Bemorlar",
+      "billing": "To'lovlar",
+      "analytics": "Tahlil"
+    },
+    "overview": {
+      "recentAppointments": "So'nggi uchrashuvlar",
+      "recentMessages": "So'nggi xabarlar",
+      "noAppointments": "Rejalashtirilgan uchrashuvlar yo'q",
+      "noMessages": "So'nggi xabarlar yo'q"
+    },
+    "providers": {
+      "title": "Shifokorlarni boshqarish",
+      "inviteProvider": "Shifokorni taklif qilish",
+      "noProviders": "Shifokorlar hali yo'q",
+      "noProvidersDesc": "Boshlash uchun shifokorlarni klinikangizga taklif qiling",
+      "inviteFirst": "Birinchi shifokorni taklif qilish",
+      "reviews": "Sharhlar",
+      "rating": "Reyting",
+      "verified": "Tasdiqlangan",
+      "pending": "Kutilmoqda",
+      "edit": "Tahrirlash"
+    },
+    "locations": {
+      "title": "Klinika joylashuvlari",
+      "addLocation": "Yangi joylashuv qo'shish",
+      "noLocations": "Joylashuvlar hali yo'q",
+      "noLocationsDesc": "Bemorlar sizni topishi uchun klinika joylashuvlarini qo'shing",
+      "addFirst": "Birinchi joylashuvni qo'shish",
+      "primary": "Asosiy",
+      "photos": "Rasmlar",
+      "edit": "Tahrirlash"
+    },
+    "services": {
+      "title": "Xizmatlar va davolanish",
+      "addService": "Yangi xizmat qo'shish",
+      "noServices": "Xizmatlar hali yo'q",
+      "noServicesDesc": "Klinikangizda taqdim etiladigan xizmatlar va davolanishlarni qo'shing",
+      "addFirst": "Birinchi xizmatni qo'shish",
+      "availableWith": "Mavjud:",
+      "price": "Narx",
+      "duration": "Davomiyligi",
+      "edit": "Tahrirlash"
+    },
+    "staff": {
+      "title": "Xodimlarni boshqarish",
+      "inviteStaff": "Xodimni taklif qilish",
+      "noStaff": "Xodimlar hali yo'q",
+      "noStaffDesc": "Klinikangizni boshqarishda yordam berish uchun xodimlar qo'shing",
+      "inviteFirst": "Birinchi xodimni taklif qilish",
+      "activeStaff": "Faol xodimlar",
+      "edit": "Tahrirlash"
+    },
+    "patients": {
+      "title": "Bemorlarni boshqarish",
+      "searchPlaceholder": "Bemorlarni qidirish...",
+      "export": "Eksport",
+      "noPatients": "Bemorlar hali yo'q",
+      "tableHeaders": {
+        "name": "Bemor ismi",
+        "lastVisit": "Oxirgi tashrif",
+        "provider": "Shifokor",
+        "status": "Holat"
+      }
+    },
+    "billing": {
+      "title": "To'lovlar va hisob-kitoblar",
+      "generateReport": "Hisobot yaratish",
+      "paymentSummary": "To'lovlar xulosasi",
+      "totalRevenue": "Jami daromad (bu oy)",
+      "pendingPayments": "Kutilayotgan to'lovlar",
+      "completedPayments": "Tugallangan to'lovlar",
+      "recentTransactions": "So'nggi tranzaksiyalar",
+      "noTransactions": "Tranzaksiyalar hali yo'q"
+    },
+    "analytics": {
+      "title": "Klinika tahlili",
+      "last30Days": "Oxirgi 30 kun",
+      "exportReport": "Hisobotni eksport qilish",
+      "bookingTrends": "Yozuvlar tendensiyalari",
+      "chartPlaceholder": "Bu yerda grafik tasviri bo'ladi",
+      "performanceMetrics": "Samaradorlik ko'rsatkichlari",
+      "averageRating": "O'rtacha reyting",
+      "patientSatisfaction": "Bemorlar qoniqishi",
+      "appointmentCompletion": "Uchrashuvlarni tugallash darajasi",
+      "responseTime": "O'rtacha javob vaqti"
+    }
+  },
   "patient": {
     "title": "Bemor paneli",
     "loading": "Panel yuklanmoqda...",

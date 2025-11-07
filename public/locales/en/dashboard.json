@@ -1,4 +1,147 @@
 {
+  "admin": {
+    "title": "Practice Dashboard",
+    "unverifiedPractice": "Unverified Practice",
+    "loading": "Loading dashboard...",
+    "error": {
+      "failed": "Failed to load dashboard",
+      "tryAgain": "Try Again"
+    },
+    "welcome": {
+      "title": "Welcome to Your Admin Dashboard!",
+      "description": "Let's set up your clinic information so you can start managing your doctors and appointments.",
+      "needProvide": "You'll need to provide:",
+      "requirements": {
+        "clinicName": "Clinic name and description",
+        "location": "Location and contact information",
+        "operating": "Operating details"
+      },
+      "createProfile": "Create Clinic Profile"
+    },
+    "header": {
+      "previewProfile": "Preview Public Profile",
+      "profile": "Profile",
+      "profileSettings": "Profile Settings",
+      "practiceSettings": "Practice Settings",
+      "logout": "Logout"
+    },
+    "verification": {
+      "status": "Verification Status:",
+      "verified": "Your practice is verified and live! Patients can now find and book with you.",
+      "rejected": "Verification failed. Please review the requirements and resubmit your documents.",
+      "underReview": "Your verification is under review. We'll notify you once the review is complete (2-3 business days).",
+      "pending": "To go public and appear in search results, your practice verification must be completed.",
+      "verifyPractice": "Verify Practice",
+      "resubmit": "Resubmit Verification",
+      "viewRequirements": "View Requirements",
+      "statuses": {
+        "verified": "VERIFIED",
+        "rejected": "REJECTED",
+        "under_review": "UNDER REVIEW",
+        "pending": "PENDING"
+      }
+    },
+    "metrics": {
+      "totalBookings": "Total Bookings",
+      "totalPatients": "Total Patients",
+      "revenueThisMonth": "Revenue This Month",
+      "clinicRating": "Clinic Rating",
+      "pendingInvites": "Pending Invites",
+      "locations": "Locations"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "providers": "Providers",
+      "services": "Services",
+      "staff": "Staff",
+      "locations": "Locations",
+      "patients": "Patients",
+      "billing": "Billing",
+      "analytics": "Analytics"
+    },
+    "overview": {
+      "recentAppointments": "Recent Appointments",
+      "recentMessages": "Recent Messages",
+      "noAppointments": "No appointments scheduled",
+      "noMessages": "No recent messages"
+    },
+    "providers": {
+      "title": "Manage Providers",
+      "inviteProvider": "Invite Provider",
+      "noProviders": "No Providers Yet",
+      "noProvidersDesc": "Invite doctors to join your practice to get started",
+      "inviteFirst": "Invite First Provider",
+      "reviews": "Reviews",
+      "rating": "Rating",
+      "verified": "Verified",
+      "pending": "Pending",
+      "edit": "Edit"
+    },
+    "locations": {
+      "title": "Practice Locations",
+      "addLocation": "Add New Location",
+      "noLocations": "No Locations Yet",
+      "noLocationsDesc": "Add your practice locations to help patients find you",
+      "addFirst": "Add First Location",
+      "primary": "Primary",
+      "photos": "Photos",
+      "edit": "Edit"
+    },
+    "services": {
+      "title": "Services & Treatments",
+      "addService": "Add New Service",
+      "noServices": "No Services Yet",
+      "noServicesDesc": "Add services and treatments offered at your practice",
+      "addFirst": "Add First Service",
+      "availableWith": "Available with:",
+      "price": "Price",
+      "duration": "Duration",
+      "edit": "Edit"
+    },
+    "staff": {
+      "title": "Staff Management",
+      "inviteStaff": "Invite Staff Member",
+      "noStaff": "No Staff Members Yet",
+      "noStaffDesc": "Add staff members to help manage your practice",
+      "inviteFirst": "Invite First Staff Member",
+      "activeStaff": "Active Staff Members",
+      "edit": "Edit"
+    },
+    "patients": {
+      "title": "Patient Management",
+      "searchPlaceholder": "Search patients...",
+      "export": "Export",
+      "noPatients": "No patients yet",
+      "tableHeaders": {
+        "name": "Patient Name",
+        "lastVisit": "Last Visit",
+        "provider": "Provider",
+        "status": "Status"
+      }
+    },
+    "billing": {
+      "title": "Billing & Payments",
+      "generateReport": "Generate Report",
+      "paymentSummary": "Payment Summary",
+      "totalRevenue": "Total Revenue (This Month)",
+      "pendingPayments": "Pending Payments",
+      "completedPayments": "Completed Payments",
+      "recentTransactions": "Recent Transactions",
+      "noTransactions": "No transactions yet"
+    },
+    "analytics": {
+      "title": "Practice Analytics",
+      "last30Days": "Last 30 Days",
+      "exportReport": "Export Report",
+      "bookingTrends": "Booking Trends",
+      "chartPlaceholder": "Chart visualization would go here",
+      "performanceMetrics": "Performance Metrics",
+      "averageRating": "Average Rating",
+      "patientSatisfaction": "Patient Satisfaction",
+      "appointmentCompletion": "Appointment Completion Rate",
+      "responseTime": "Average Response Time"
+    }
+  },
   "patient": {
     "title": "Patient Dashboard",
     "loading": "Loading dashboard...",

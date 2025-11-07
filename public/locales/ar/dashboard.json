@@ -1,4 +1,147 @@
 {
+  "admin": {
+    "title": "لوحة العيادة",
+    "unverifiedPractice": "عيادة غير موثقة",
+    "loading": "جاري تحميل اللوحة...",
+    "error": {
+      "failed": "فشل تحميل اللوحة",
+      "tryAgain": "حاول مرة أخرى"
+    },
+    "welcome": {
+      "title": "مرحباً بك في لوحة المسؤول!",
+      "description": "دعنا نقوم بإعداد معلومات عيادتك حتى تتمكن من البدء في إدارة الأطباء والمواعيد.",
+      "needProvide": "ستحتاج إلى تقديم:",
+      "requirements": {
+        "clinicName": "اسم العيادة والوصف",
+        "location": "الموقع ومعلومات الاتصال",
+        "operating": "تفاصيل التشغيل"
+      },
+      "createProfile": "إنشاء ملف العيادة"
+    },
+    "header": {
+      "previewProfile": "معاينة الملف العام",
+      "profile": "الملف الشخصي",
+      "profileSettings": "إعدادات الملف الشخصي",
+      "practiceSettings": "إعدادات العيادة",
+      "logout": "تسجيل الخروج"
+    },
+    "verification": {
+      "status": "حالة التوثيق:",
+      "verified": "عيادتك موثقة ومباشرة! يمكن للمرضى الآن العثور عليك والحجز معك.",
+      "rejected": "فشل التوثيق. يرجى مراجعة المتطلبات وإعادة إرسال المستندات.",
+      "underReview": "توثيقك قيد المراجعة. سنخطرك بمجرد اكتمال المراجعة (2-3 أيام عمل).",
+      "pending": "للظهور علناً في نتائج البحث، يجب إكمال توثيق العيادة.",
+      "verifyPractice": "توثيق العيادة",
+      "resubmit": "إعادة إرسال التوثيق",
+      "viewRequirements": "عرض المتطلبات",
+      "statuses": {
+        "verified": "موثق",
+        "rejected": "مرفوض",
+        "under_review": "قيد المراجعة",
+        "pending": "معلق"
+      }
+    },
+    "metrics": {
+      "totalBookings": "إجمالي الحجوزات",
+      "totalPatients": "إجمالي المرضى",
+      "revenueThisMonth": "الإيرادات هذا الشهر",
+      "clinicRating": "تقييم العيادة",
+      "pendingInvites": "الدعوات المعلقة",
+      "locations": "المواقع"
+    },
+    "tabs": {
+      "overview": "نظرة عامة",
+      "providers": "الأطباء",
+      "services": "الخدمات",
+      "staff": "الموظفون",
+      "locations": "المواقع",
+      "patients": "المرضى",
+      "billing": "الفواتير",
+      "analytics": "التحليلات"
+    },
+    "overview": {
+      "recentAppointments": "المواعيد الأخيرة",
+      "recentMessages": "الرسائل الأخيرة",
+      "noAppointments": "لا توجد مواعيد مجدولة",
+      "noMessages": "لا توجد رسائل حديثة"
+    },
+    "providers": {
+      "title": "إدارة الأطباء",
+      "inviteProvider": "دعوة طبيب",
+      "noProviders": "لا يوجد أطباء بعد",
+      "noProvidersDesc": "قم بدعوة الأطباء للانضمام إلى عيادتك للبدء",
+      "inviteFirst": "دعوة أول طبيب",
+      "reviews": "التقييمات",
+      "rating": "التقييم",
+      "verified": "موثق",
+      "pending": "معلق",
+      "edit": "تعديل"
+    },
+    "locations": {
+      "title": "مواقع العيادة",
+      "addLocation": "إضافة موقع جديد",
+      "noLocations": "لا توجد مواقع بعد",
+      "noLocationsDesc": "أضف مواقع عيادتك لمساعدة المرضى في العثور عليك",
+      "addFirst": "إضافة أول موقع",
+      "primary": "رئيسي",
+      "photos": "الصور",
+      "edit": "تعديل"
+    },
+    "services": {
+      "title": "الخدمات والعلاجات",
+      "addService": "إضافة خدمة جديدة",
+      "noServices": "لا توجد خدمات بعد",
+      "noServicesDesc": "أضف الخدمات والعلاجات المقدمة في عيادتك",
+      "addFirst": "إضافة أول خدمة",
+      "availableWith": "متاح مع:",
+      "price": "السعر",
+      "duration": "المدة",
+      "edit": "تعديل"
+    },
+    "staff": {
+      "title": "إدارة الموظفين",
+      "inviteStaff": "دعوة موظف",
+      "noStaff": "لا يوجد موظفون بعد",
+      "noStaffDesc": "أضف موظفين للمساعدة في إدارة عيادتك",
+      "inviteFirst": "دعوة أول موظف",
+      "activeStaff": "الموظفون النشطون",
+      "edit": "تعديل"
+    },
+    "patients": {
+      "title": "إدارة المرضى",
+      "searchPlaceholder": "البحث عن مرضى...",
+      "export": "تصدير",
+      "noPatients": "لا يوجد مرضى بعد",
+      "tableHeaders": {
+        "name": "اسم المريض",
+        "lastVisit": "آخر زيارة",
+        "provider": "الطبيب",
+        "status": "الحالة"
+      }
+    },
+    "billing": {
+      "title": "الفواتير والمدفوعات",
+      "generateReport": "إنشاء تقرير",
+      "paymentSummary": "ملخص الدفعات",
+      "totalRevenue": "إجمالي الإيرادات (هذا الشهر)",
+      "pendingPayments": "الدفعات المعلقة",
+      "completedPayments": "الدفعات المكتملة",
+      "recentTransactions": "المعاملات الأخيرة",
+      "noTransactions": "لا توجد معاملات بعد"
+    },
+    "analytics": {
+      "title": "تحليلات العيادة",
+      "last30Days": "آخر 30 يوماً",
+      "exportReport": "تصدير التقرير",
+      "bookingTrends": "اتجاهات الحجز",
+      "chartPlaceholder": "سيتم عرض الرسم البياني هنا",
+      "performanceMetrics": "مقاييس الأداء",
+      "averageRating": "متوسط التقييم",
+      "patientSatisfaction": "رضا المرضى",
+      "appointmentCompletion": "معدل إتمام المواعيد",
+      "responseTime": "متوسط وقت الاستجابة"
+    }
+  },
   "patient": {
     "title": "لوحة المريض",
     "loading": "جاري تحميل لوحة التحكم...",
