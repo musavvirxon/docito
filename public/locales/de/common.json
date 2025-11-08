@@ -1,0 +1,81 @@
+{
+  "siteName": "Docito",
+  "tagline": "Finden und buchen Sie die besten Ärzte in Ihrer Nähe",
+  "navigation": {
+    "home": "Startseite",
+    "doctors": "Ärzte",
+    "practices": "Arztpraxen",
+    "specialties": "Fachrichtungen",
+    "about": "Über uns",
+    "contact": "Kontakt",
+    "login": "Anmelden",
+    "register": "Registrieren",
+    "dashboard": "Dashboard",
+    "logout": "Abmelden",
+    "findDoctors": "Ärzte Finden",
+    "features": "Funktionen",
+    "help": "Hilfe",
+    "scheduleDemo": "Demo Planen"
+  },
+  "buttons": {
+    "search": "Suchen",
+    "bookNow": "Jetzt Buchen",
+    "viewProfile": "Profil Anzeigen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "submit": "Absenden",
+    "back": "Zurück",
+    "next": "Weiter",
+    "finish": "Fertig",
+    "close": "Schließen",
+    "confirm": "Bestätigen"
+  },
+  "form": {
+    "email": "E-Mail",
+    "password": "Passwort",
+    "confirmPassword": "Passwort Bestätigen",
+    "name": "Name",
+    "phone": "Telefon",
+    "address": "Adresse",
+    "city": "Stadt",
+    "country": "Land",
+    "specialty": "Fachrichtung",
+    "message": "Nachricht"
+  },
+  "status": {
+    "pending": "Ausstehend",
+    "confirmed": "Bestätigt",
+    "completed": "Abgeschlossen",
+    "cancelled": "Storniert"
+  },
+  "footer": {
+    "copyright": "© 2025 Docito. Alle Rechte vorbehalten.",
+    "privacy": "Datenschutzerklärung",
+    "terms": "Nutzungsbedingungen",
+    "contact": "Kontaktieren Sie Uns"
+  },
+  "cookies": {
+    "title": "Wir Schätzen Ihre Privatsphäre",
+    "description": "Wir verwenden Cookies, um Ihr Browsing-Erlebnis zu verbessern, personalisierte Inhalte bereitzustellen und unseren Traffic zu analysieren. Durch Klicken auf \"Alle Akzeptieren\" stimmen Sie unserer Verwendung von Cookies zu.",
+    "acceptAll": "Alle Akzeptieren",
+    "essentialOnly": "Nur Essenzielle",
+    "customize": "Anpassen",
+    "settings": {
+      "title": "Cookie-Einstellungen",
+      "description": "Passen Sie Ihre Cookie-Präferenzen unten an. Essenzielle Cookies sind für die Funktionsweise der Plattform erforderlich.",
+      "essential": "Essenzielle Cookies",
+      "essentialDesc": "Erforderlich für Anmeldung und Kernfunktionalität",
+      "analytics": "Analyse-Cookies",
+      "analyticsDesc": "Helfen Sie uns, die Plattform zu verbessern",
+      "marketing": "Marketing-Cookies",
+      "marketingDesc": "Personalisierte Inhalte und Anzeigen",
+      "savePreferences": "Einstellungen Speichern"
+    },
+    "toast": {
+      "saved": "Cookie-Einstellungen gespeichert",
+      "error": "Fehler beim Speichern der Einstellungen"
+    }
+  }
+}

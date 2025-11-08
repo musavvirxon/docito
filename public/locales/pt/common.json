@@ -1,0 +1,81 @@
+{
+  "siteName": "Docito",
+  "tagline": "Encontre e agende consultas com os melhores médicos perto de você",
+  "navigation": {
+    "home": "Início",
+    "doctors": "Médicos",
+    "practices": "Práticas Médicas",
+    "specialties": "Especialidades",
+    "about": "Sobre Nós",
+    "contact": "Contato",
+    "login": "Entrar",
+    "register": "Registrar",
+    "dashboard": "Painel",
+    "logout": "Sair",
+    "findDoctors": "Encontrar Médicos",
+    "features": "Recursos",
+    "help": "Ajuda",
+    "scheduleDemo": "Agendar Demo"
+  },
+  "buttons": {
+    "search": "Buscar",
+    "bookNow": "Agendar Agora",
+    "viewProfile": "Ver Perfil",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "submit": "Enviar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "finish": "Concluir",
+    "close": "Fechar",
+    "confirm": "Confirmar"
+  },
+  "form": {
+    "email": "E-mail",
+    "password": "Senha",
+    "confirmPassword": "Confirmar Senha",
+    "name": "Nome",
+    "phone": "Telefone",
+    "address": "Endereço",
+    "city": "Cidade",
+    "country": "País",
+    "specialty": "Especialidade",
+    "message": "Mensagem"
+  },
+  "status": {
+    "pending": "Pendente",
+    "confirmed": "Confirmado",
+    "completed": "Concluído",
+    "cancelled": "Cancelado"
+  },
+  "footer": {
+    "copyright": "© 2025 Docito. Todos os direitos reservados.",
+    "privacy": "Política de Privacidade",
+    "terms": "Termos de Serviço",
+    "contact": "Entre em Contato"
+  },
+  "cookies": {
+    "title": "Valorizamos Sua Privacidade",
+    "description": "Usamos cookies para melhorar sua experiência de navegação, fornecer conteúdo personalizado e analisar nosso tráfego. Ao clicar em \"Aceitar Tudo\", você consente com nosso uso de cookies.",
+    "acceptAll": "Aceitar Tudo",
+    "essentialOnly": "Apenas Essenciais",
+    "customize": "Personalizar",
+    "settings": {
+      "title": "Configurações de Cookies",
+      "description": "Personalize suas preferências de cookies abaixo. Cookies essenciais são necessários para o funcionamento da plataforma.",
+      "essential": "Cookies Essenciais",
+      "essentialDesc": "Necessários para login e funcionalidade principal",
+      "analytics": "Cookies de Análise",
+      "analyticsDesc": "Ajude-nos a melhorar a plataforma",
+      "marketing": "Cookies de Marketing",
+      "marketingDesc": "Conteúdo e anúncios personalizados",
+      "savePreferences": "Salvar Preferências"
+    },
+    "toast": {
+      "saved": "Preferências de cookies salvas",
+      "error": "Falha ao salvar preferências"
+    }
+  }
+}

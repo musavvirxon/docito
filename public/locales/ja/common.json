@@ -1,0 +1,81 @@
+{
+  "siteName": "Docito",
+  "tagline": "お近くのトップドクターを検索して予約",
+  "navigation": {
+    "home": "ホーム",
+    "doctors": "医師",
+    "practices": "医療機関",
+    "specialties": "専門分野",
+    "about": "会社概要",
+    "contact": "お問い合わせ",
+    "login": "ログイン",
+    "register": "登録",
+    "dashboard": "ダッシュボード",
+    "logout": "ログアウト",
+    "findDoctors": "医師を探す",
+    "features": "機能",
+    "help": "ヘルプ",
+    "scheduleDemo": "デモを予約"
+  },
+  "buttons": {
+    "search": "検索",
+    "bookNow": "今すぐ予約",
+    "viewProfile": "プロフィールを見る",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "edit": "編集",
+    "delete": "削除",
+    "submit": "送信",
+    "back": "戻る",
+    "next": "次へ",
+    "finish": "完了",
+    "close": "閉じる",
+    "confirm": "確認"
+  },
+  "form": {
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "confirmPassword": "パスワード確認",
+    "name": "名前",
+    "phone": "電話番号",
+    "address": "住所",
+    "city": "市区町村",
+    "country": "国",
+    "specialty": "専門分野",
+    "message": "メッセージ"
+  },
+  "status": {
+    "pending": "保留中",
+    "confirmed": "確認済み",
+    "completed": "完了",
+    "cancelled": "キャンセル済み"
+  },
+  "footer": {
+    "copyright": "© 2025 Docito. 全著作権所有。",
+    "privacy": "プライバシーポリシー",
+    "terms": "利用規約",
+    "contact": "お問い合わせ"
+  },
+  "cookies": {
+    "title": "プライバシーを大切にします",
+    "description": "当社はCookieを使用して、ブラウジング体験を向上させ、パーソナライズされたコンテンツを提供し、トラフィックを分析します。「すべて受け入れる」をクリックすると、Cookieの使用に同意したことになります。",
+    "acceptAll": "すべて受け入れる",
+    "essentialOnly": "必須のみ",
+    "customize": "カスタマイズ",
+    "settings": {
+      "title": "Cookie設定",
+      "description": "以下でCookieの設定をカスタマイズしてください。プラットフォームが機能するには、必須Cookieが必要です。",
+      "essential": "必須Cookie",
+      "essentialDesc": "ログインとコア機能に必要",
+      "analytics": "分析Cookie",
+      "analyticsDesc": "プラットフォームの改善にご協力ください",
+      "marketing": "マーケティングCookie",
+      "marketingDesc": "パーソナライズされたコンテンツと広告",
+      "savePreferences": "設定を保存"
+    },
+    "toast": {
+      "saved": "Cookie設定が保存されました",
+      "error": "設定の保存に失敗しました"
+    }
+  }
+}

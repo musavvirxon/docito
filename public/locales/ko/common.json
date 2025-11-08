@@ -1,0 +1,81 @@
+{
+  "siteName": "Docito",
+  "tagline": "주변의 최고 의사를 찾고 예약하세요",
+  "navigation": {
+    "home": "홈",
+    "doctors": "의사",
+    "practices": "의료 기관",
+    "specialties": "전문 분야",
+    "about": "회사 소개",
+    "contact": "문의하기",
+    "login": "로그인",
+    "register": "회원가입",
+    "dashboard": "대시보드",
+    "logout": "로그아웃",
+    "findDoctors": "의사 찾기",
+    "features": "기능",
+    "help": "도움말",
+    "scheduleDemo": "데모 일정 잡기"
+  },
+  "buttons": {
+    "search": "검색",
+    "bookNow": "지금 예약",
+    "viewProfile": "프로필 보기",
+    "save": "저장",
+    "cancel": "취소",
+    "edit": "수정",
+    "delete": "삭제",
+    "submit": "제출",
+    "back": "뒤로",
+    "next": "다음",
+    "finish": "완료",
+    "close": "닫기",
+    "confirm": "확인"
+  },
+  "form": {
+    "email": "이메일",
+    "password": "비밀번호",
+    "confirmPassword": "비밀번호 확인",
+    "name": "이름",
+    "phone": "전화번호",
+    "address": "주소",
+    "city": "도시",
+    "country": "국가",
+    "specialty": "전문 분야",
+    "message": "메시지"
+  },
+  "status": {
+    "pending": "대기 중",
+    "confirmed": "확인됨",
+    "completed": "완료됨",
+    "cancelled": "취소됨"
+  },
+  "footer": {
+    "copyright": "© 2025 Docito. 모든 권리 보유.",
+    "privacy": "개인정보 처리방침",
+    "terms": "서비스 약관",
+    "contact": "문의하기"
+  },
+  "cookies": {
+    "title": "귀하의 개인정보를 소중히 여깁니다",
+    "description": "저희는 쿠키를 사용하여 브라우징 경험을 향상시키고, 맞춤형 콘텐츠를 제공하며, 트래픽을 분석합니다. \"모두 수락\"을 클릭하면 쿠키 사용에 동의하는 것입니다.",
+    "acceptAll": "모두 수락",
+    "essentialOnly": "필수만",
+    "customize": "사용자 지정",
+    "settings": {
+      "title": "쿠키 설정",
+      "description": "아래에서 쿠키 기본 설정을 사용자 지정하세요. 플랫폼이 작동하려면 필수 쿠키가 필요합니다.",
+      "essential": "필수 쿠키",
+      "essentialDesc": "로그인 및 핵심 기능에 필요",
+      "analytics": "분석 쿠키",
+      "analyticsDesc": "플랫폼 개선에 도움을 주세요",
+      "marketing": "마케팅 쿠키",
+      "marketingDesc": "맞춤형 콘텐츠 및 광고",
+      "savePreferences": "설정 저장"
+    },
+    "toast": {
+      "saved": "쿠키 설정이 저장되었습니다",
+      "error": "설정 저장 실패"
+    }
+  }
+}

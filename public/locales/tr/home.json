@@ -1,0 +1,227 @@
+{
+  "hero": {
+    "badge": "Profesyonel Tıbbi Platform",
+    "title1": "Komple Sağlık",
+    "title2": "Yönetim Çözümü",
+    "description": "Tıp profesyonelleri için entegre ödemeler, randevu, kayıtlar ve analizler",
+    "features": {
+      "payments": "Ödeme İşlemleri",
+      "scheduling": "Randevu Planlama",
+      "records": "Kayıtlar",
+      "analytics": "Analizler"
+    }
+  },
+  "search": {
+    "specialty": "Uzmanlık veya Doktor Adı",
+    "location": "Şehir veya Konum",
+    "insurance": "Sigorta Sağlayıcısı",
+    "searchButton": "Sağlık Hizmeti Sağlayıcılarını Ara",
+    "searching": "Aranıyor..."
+  },
+  "stats": {
+    "doctors": "Doktorlar",
+    "patients": "Hastalar",
+    "countries": "Ülkeler",
+    "avgRating": "Ort. Değerlendirme"
+  },
+  "valueProposition": {
+    "badge": "Kurumsal Düzeyde Platform",
+    "title": "Profesyonel Araçlar",
+    "subtitle": "Modern Sağlık Hizmetleri İçin",
+    "paymentProcessing": {
+      "title": "Ödeme İşlemleri",
+      "description": "Çoklu para birimi desteği ile güvenli ödeme işlemleri"
+    },
+    "schedulingManagement": {
+      "title": "Randevu Yönetimi",
+      "description": "Otomatik iş akışlarıyla gerçek zamanlı rezervasyon sistemi"
+    },
+    "recordsManagement": {
+      "title": "Kayıt Yönetimi",
+      "description": "Komple dijital sağlık kayıtları sistemi"
+    },
+    "procedureLibrary": {
+      "title": "İşlem Kütüphanesi",
+      "description": "Kapsamlı tıbbi işlem takibi"
+    },
+    "referralNetwork": {
+      "title": "Sevk Ağı",
+      "description": "Profesyonel sevk yönetim sistemi"
+    },
+    "legalCompliance": {
+      "title": "Yasal Uyumluluk",
+      "description": "Yerleşik HIPAA uyumluluğu ve dokümantasyon"
+    },
+    "analytics": {
+      "badge": "Kapsamlı Analiz Paketi",
+      "title": "Veriye Dayalı İçgörüler",
+      "description": "Gerçek zamanlı kontrol panelleri, kapsamlı raporlar, performans metrikleri, hasta içgörüleri, gelir takibi ve randevu analizleri.",
+      "features": {
+        "dashboard": "Canlı metriklerle gerçek zamanlı kontrol paneli",
+        "revenue": "Gelir takibi ve tahminler",
+        "insights": "Hasta içgörüleri ve demografik bilgiler",
+        "trends": "Randevu trendleri ve kalıpları",
+        "performance": "Performans metrikleri ve verimlilik",
+        "reports": "Özel dışa aktarılabilir raporlar"
+      },
+      "stats": {
+        "revenueToday": "Bugünkü Gelir",
+        "appointments": "Randevular",
+        "activePatients": "Aktif Hastalar"
+      }
+    }
+  },
+  "specialties": {
+    "title": "Tıbbi Uzmanlıklar",
+    "subtitle": "Sertifikalı uzmanlarla bağlantı kurun",
+    "cardiology": "Kardiyoloji",
+    "dentist": "Dişçi",
+    "obGyn": "Kadın Doğum",
+    "dermatology": "Dermatoloji",
+    "psychiatry": "Psikiyatri",
+    "ophthalmology": "Göz Hastalıkları",
+    "neurology": "Nöroloji",
+    "orthopedics": "Ortopedi",
+    "pediatrics": "Pediatri"
+  },
+  "topSpecialists": {
+    "title": "Öne Çıkan Uzmanlar",
+    "bookAppointment": "Randevu Al",
+    "noReviews": "Henüz değerlendirme yok",
+    "featuredSpot": {
+      "title": "Öne Çıkan Uzman Yeri",
+      "description": "En iyi tıp profesyonelleri ağımıza katılın ve binlerce hastaya ulaşın",
+      "button": "Doktor Olarak Katıl"
+    },
+    "beFirst": {
+      "title": "İlk Öne Çıkan Uzman Olun",
+      "description": "Docito'ya katılın ve kurucu öne çıkan uzmanlarımızdan biri olun. Premium görünürlük kazanın ve ilk günden hastalara ulaşın.",
+      "button": "Kliniğinizi Kaydedin"
+    }
+  },
+  "topPractices": {
+    "title": "Önde Gelen Tıbbi Kurumlar",
+    "subtitle": "Güvenilir sağlık kuruluşları",
+    "viewPractice": "Kurum Bilgilerini Görüntüle",
+    "noReviews": "Henüz değerlendirme yok",
+    "emptySpot": {
+      "premium": {
+        "title": "Premium Kurum Yeri",
+        "description": "Tıbbi kurumunuzu binlerce potansiyel hastaya gösterin. Öne çıkan yerleşim ve premium görünürlük kazanın.",
+        "button": "Kurum Kaydı"
+      },
+      "regular": {
+        "title": "Kurumunuz Burada",
+        "description": "Önde gelen sağlık hizmeti sağlayıcıları ağımıza katılın",
+        "button": "Daha Fazla Bilgi"
+      }
+    },
+    "beFounder": {
+      "title": "Kurucu Kurum Olun",
+      "description": "İlk öne çıkan tıbbi kurumlarımızdan biri olarak Docito'ya katılın. Premium görünürlük kazanın, daha fazla hasta çekin ve platformumuzla kurumunuzu büyütün.",
+      "registerButton": "Kurumunuzu Kaydedin",
+      "contactButton": "Satış İle İletişime Geçin"
+    }
+  },
+  "howItWorks": {
+    "title": "Platform Yetenekleri",
+    "subtitle": "4 adımda konsültasyon rezervasyonu yapın",
+    "steps": {
+      "search": {
+        "title": "Arama",
+        "description": "Uzmanlık ve konuma göre sağlık hizmeti sağlayıcılarını bulun"
+      },
+      "review": {
+        "title": "İnceleme",
+        "description": "Yeterlilikleri ve doğrulanmış değerlendirmeleri karşılaştırın"
+      },
+      "book": {
+        "title": "Rezervasyon",
+        "description": "Anında online konsültasyon planlayın"
+      },
+      "care": {
+        "title": "Bakım",
+        "description": "Profesyonel sağlık hizmetleri alın"
+      }
+    }
+  },
+  "features": {
+    "title": "Platform Yetenekleri",
+    "subtitle": "Modern sağlık hizmetleri için profesyonel araçlar",
+    "verifiedProviders": {
+      "title": "Doğrulanmış Sağlayıcılar",
+      "description": "Tüm sağlık hizmeti sağlayıcıları kapsamlı olarak doğrulanmış ve lisanslıdır"
+    },
+    "availability": {
+      "title": "7/24 Erişilebilirlik",
+      "description": "Her zaman, her yerde, her cihazda konsültasyon rezervasyonu yapın"
+    },
+    "verifiedReviews": {
+      "title": "Doğrulanmış Değerlendirmeler",
+      "description": "Bilinçli kararlar vermenize yardımcı olan özgün değerlendirmeler"
+    },
+    "instantBooking": {
+      "title": "Anında Rezervasyon",
+      "description": "Günler değil, saniyeler içinde onaylanmış konsültasyonlar"
+    },
+    "globalNetwork": {
+      "title": "Küresel Ağ",
+      "description": "Dünya çapında birçok ülkede sağlık hizmeti sağlayıcıları"
+    },
+    "hipaaCompliant": {
+      "title": "HIPAA Uyumlu",
+      "description": "Tıbbi veriler şifreli ve HIPAA uyumlu"
+    }
+  },
+  "cta": {
+    "title": "Profesyonel Sağlık Yönetimi",
+    "description": "Kurumsal düzeyde araçlar ve kapsamlı hasta yönetimi ile kliniğinizi dönüştürün",
+    "scheduleDemoButton": "Demo Planla",
+    "learnMoreButton": "Daha Fazla Bilgi",
+    "features": {
+      "hipaa": "HIPAA Uyumlu",
+      "security": "Kurumsal Güvenlik",
+      "support": "7/24 Destek"
+    }
+  },
+  "footer": {
+    "description": "Profesyonel Tıbbi Platform. Tıp profesyonelleri için güvenli rezervasyon, dijital kayıtlar ve kapsamlı analizlerle kurumsal düzeyde sağlık yönetimi.",
+    "platform": {
+      "title": "Platform",
+      "searchDoctors": "Doktor Ara",
+      "browseSpecialties": "Uzmanlıklara Göz At",
+      "findPractices": "Kurum Bul",
+      "features": "Özellikler"
+    },
+    "support": {
+      "title": "Destek",
+      "helpCenter": "Yardım Merkezi",
+      "contact": "Bize Ulaşın",
+      "faqs": "S.S.S.",
+      "support": "Destek"
+    },
+    "legal": {
+      "title": "Yasal",
+      "about": "Hakkımızda",
+      "privacy": "Gizlilik Politikası",
+      "terms": "Kullanım Şartları",
+      "cookies": "Çerez Politikası",
+      "legalCenter": "Yasal Merkez"
+    },
+    "contact": {
+      "email": "contact@docito.com",
+      "phone": "+1 (555) 123-4567",
+      "location": "San Francisco, CA"
+    },
+    "disclaimer": "Sağlanan içerik yalnızca bilgilendirme amaçlıdır. Tıbbi tavsiye, teşhis veya tedavi amaçlı değildir. Tıbbi tavsiye için her zaman doğrudan sağlık hizmeti sağlayıcılarına danışın. Platform hastalar ve sağlayıcılar arasında bağlantı kurar ancak doğrudan tıbbi hizmet sağlamaz. HIPAA Uyumlu.",
+    "copyright": "Tüm Hakları Saklıdır",
+    "trademark": "Docito tescilli bir marka ve aşağıdakine aittir:",
+    "company": "Artsy Developers Inc.",
+    "links": {
+      "terms": "Şartlar",
+      "privacy": "Gizlilik",
+      "cookies": "Çerezler",
+      "about": "Hakkında"
+    }
+  }
+}

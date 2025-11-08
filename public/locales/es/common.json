@@ -1,0 +1,81 @@
+{
+  "siteName": "Docito",
+  "tagline": "Encuentra y reserva los mejores médicos cerca de ti",
+  "navigation": {
+    "home": "Inicio",
+    "doctors": "Médicos",
+    "practices": "Prácticas Médicas",
+    "specialties": "Especialidades",
+    "about": "Acerca de",
+    "contact": "Contacto",
+    "login": "Iniciar Sesión",
+    "register": "Registrarse",
+    "dashboard": "Panel",
+    "logout": "Cerrar Sesión",
+    "findDoctors": "Buscar Médicos",
+    "features": "Características",
+    "help": "Ayuda",
+    "scheduleDemo": "Agendar Demo"
+  },
+  "buttons": {
+    "search": "Buscar",
+    "bookNow": "Reservar Ahora",
+    "viewProfile": "Ver Perfil",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "submit": "Enviar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "finish": "Finalizar",
+    "close": "Cerrar",
+    "confirm": "Confirmar"
+  },
+  "form": {
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar Contraseña",
+    "name": "Nombre",
+    "phone": "Teléfono",
+    "address": "Dirección",
+    "city": "Ciudad",
+    "country": "País",
+    "specialty": "Especialidad",
+    "message": "Mensaje"
+  },
+  "status": {
+    "pending": "Pendiente",
+    "confirmed": "Confirmado",
+    "completed": "Completado",
+    "cancelled": "Cancelado"
+  },
+  "footer": {
+    "copyright": "© 2025 Docito. Todos los derechos reservados.",
+    "privacy": "Política de Privacidad",
+    "terms": "Términos de Servicio",
+    "contact": "Contáctanos"
+  },
+  "cookies": {
+    "title": "Valoramos Tu Privacidad",
+    "description": "Utilizamos cookies para mejorar tu experiencia de navegación, proporcionar contenido personalizado y analizar nuestro tráfico. Al hacer clic en \"Aceptar Todo\", aceptas nuestro uso de cookies.",
+    "acceptAll": "Aceptar Todo",
+    "essentialOnly": "Solo Esenciales",
+    "customize": "Personalizar",
+    "settings": {
+      "title": "Configuración de Cookies",
+      "description": "Personaliza tus preferencias de cookies a continuación. Las cookies esenciales son necesarias para que la plataforma funcione.",
+      "essential": "Cookies Esenciales",
+      "essentialDesc": "Requeridas para inicio de sesión y funcionalidad principal",
+      "analytics": "Cookies de Análisis",
+      "analyticsDesc": "Ayúdanos a mejorar la plataforma",
+      "marketing": "Cookies de Marketing",
+      "marketingDesc": "Contenido y anuncios personalizados",
+      "savePreferences": "Guardar Preferencias"
+    },
+    "toast": {
+      "saved": "Preferencias de cookies guardadas",
+      "error": "Error al guardar preferencias"
+    }
+  }
+}
