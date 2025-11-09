@@ -1,0 +1,602 @@
+{
+  "createClinic": {
+    "title": "Richten Sie Ihre Praxis ein",
+    "description": "Vervollständigen Sie Ihr Praxisprofil, um mit der Verwaltung von Ärzten und Terminen zu beginnen.",
+    "clinicName": "Praxisname",
+    "clinicNameRequired": "Praxisname ist erforderlich",
+    "description_field": "Beschreibung",
+    "phone": "Telefon",
+    "email": "E-Mail",
+    "address": "Adresse",
+    "city": "Stadt",
+    "country": "Land",
+    "cancel": "Abbrechen",
+    "create": "Praxisprofil erstellen",
+    "creating": "Wird erstellt...",
+    "success": "Praxisprofil erfolgreich erstellt!",
+    "error": "Praxisprofil konnte nicht erstellt werden"
+  },
+  "admin": {
+    "title": "Praxis-Dashboard",
+    "unverifiedPractice": "Ungeprüfte Praxis",
+    "loading": "Dashboard wird geladen...",
+    "error": {
+      "failed": "Dashboard konnte nicht geladen werden",
+      "tryAgain": "Erneut versuchen"
+    },
+    "welcome": {
+      "title": "Willkommen in Ihrem Admin-Dashboard!",
+      "description": "Richten wir Ihre Praxisinformationen ein, damit Sie mit der Verwaltung Ihrer Ärzte und Termine beginnen können.",
+      "needProvide": "Sie müssen angeben:",
+      "requirements": {
+        "clinicName": "Praxisname und Beschreibung",
+        "location": "Standort und Kontaktinformationen",
+        "operating": "Betriebsdetails"
+      },
+      "createProfile": "Praxisprofil erstellen"
+    },
+    "header": {
+      "previewProfile": "Öffentliches Profil anzeigen",
+      "profile": "Profil",
+      "profileSettings": "Profileinstellungen",
+      "practiceSettings": "Praxiseinstellungen",
+      "logout": "Abmelden"
+    },
+    "verification": {
+      "status": "Verifizierungsstatus:",
+      "verified": "Ihre Praxis ist verifiziert und online! Patienten können Sie jetzt finden und Termine buchen.",
+      "rejected": "Verifizierung fehlgeschlagen. Bitte überprüfen Sie die Anforderungen und reichen Sie Ihre Dokumente erneut ein.",
+      "underReview": "Ihre Verifizierung wird überprüft. Wir benachrichtigen Sie, sobald die Überprüfung abgeschlossen ist (2-3 Werktage).",
+      "pending": "Um öffentlich zu werden und in Suchergebnissen zu erscheinen, muss Ihre Praxisverifizierung abgeschlossen werden.",
+      "verifyPractice": "Praxis verifizieren",
+      "resubmit": "Verifizierung erneut einreichen",
+      "viewRequirements": "Anforderungen anzeigen",
+      "statuses": {
+        "verified": "VERIFIZIERT",
+        "rejected": "ABGELEHNT",
+        "under_review": "IN PRÜFUNG",
+        "pending": "AUSSTEHEND"
+      }
+    },
+    "metrics": {
+      "totalBookings": "Gesamtbuchungen",
+      "totalPatients": "Gesamtpatienten",
+      "revenueThisMonth": "Umsatz diesen Monat",
+      "clinicRating": "Praxisbewertung",
+      "pendingInvites": "Ausstehende Einladungen",
+      "locations": "Standorte"
+    },
+    "tabs": {
+      "overview": "Übersicht",
+      "providers": "Anbieter",
+      "services": "Dienstleistungen",
+      "staff": "Personal",
+      "locations": "Standorte",
+      "patients": "Patienten",
+      "billing": "Abrechnung",
+      "analytics": "Analysen"
+    },
+    "overview": {
+      "recentAppointments": "Aktuelle Termine",
+      "recentMessages": "Aktuelle Nachrichten",
+      "noAppointments": "Keine Termine geplant",
+      "noMessages": "Keine aktuellen Nachrichten"
+    },
+    "providers": {
+      "title": "Anbieter verwalten",
+      "inviteProvider": "Anbieter einladen",
+      "noProviders": "Noch keine Anbieter",
+      "noProvidersDesc": "Laden Sie Ärzte ein, Ihrer Praxis beizutreten, um zu beginnen",
+      "inviteFirst": "Ersten Anbieter einladen",
+      "reviews": "Bewertungen",
+      "rating": "Bewertung",
+      "verified": "Verifiziert",
+      "pending": "Ausstehend",
+      "edit": "Bearbeiten"
+    },
+    "locations": {
+      "title": "Praxisstandorte",
+      "addLocation": "Neuen Standort hinzufügen",
+      "noLocations": "Noch keine Standorte",
+      "noLocationsDesc": "Fügen Sie Ihre Praxisstandorte hinzu, um Patienten zu helfen, Sie zu finden",
+      "addFirst": "Ersten Standort hinzufügen",
+      "primary": "Primär",
+      "photos": "Fotos",
+      "edit": "Bearbeiten"
+    },
+    "services": {
+      "title": "Leistungen & Behandlungen",
+      "addService": "Neue Leistung hinzufügen",
+      "noServices": "Noch keine Leistungen",
+      "noServicesDesc": "Fügen Sie in Ihrer Praxis angebotene Leistungen und Behandlungen hinzu",
+      "addFirst": "Erste Leistung hinzufügen",
+      "availableWith": "Verfügbar bei:",
+      "price": "Preis",
+      "duration": "Dauer",
+      "edit": "Bearbeiten"
+    },
+    "staff": {
+      "title": "Personalverwaltung",
+      "inviteStaff": "Personalmitglied einladen",
+      "noStaff": "Noch keine Personalmitglieder",
+      "noStaffDesc": "Fügen Sie Personalmitglieder hinzu, um Ihre Praxis zu verwalten",
+      "inviteFirst": "Erstes Personalmitglied einladen",
+      "activeStaff": "Aktive Personalmitglieder",
+      "edit": "Bearbeiten"
+    },
+    "patients": {
+      "title": "Patientenverwaltung",
+      "searchPlaceholder": "Patienten suchen...",
+      "export": "Exportieren",
+      "noPatients": "Noch keine Patienten",
+      "tableHeaders": {
+        "name": "Patientenname",
+        "lastVisit": "Letzter Besuch",
+        "provider": "Anbieter",
+        "status": "Status"
+      }
+    },
+    "billing": {
+      "title": "Abrechnung & Zahlungen",
+      "generateReport": "Bericht erstellen",
+      "paymentSummary": "Zahlungsübersicht",
+      "totalRevenue": "Gesamtumsatz (Dieser Monat)",
+      "pendingPayments": "Ausstehende Zahlungen",
+      "completedPayments": "Abgeschlossene Zahlungen",
+      "recentTransactions": "Aktuelle Transaktionen",
+      "noTransactions": "Noch keine Transaktionen"
+    },
+    "analytics": {
+      "title": "Praxisanalysen",
+      "last30Days": "Letzte 30 Tage",
+      "exportReport": "Bericht exportieren",
+      "bookingTrends": "Buchungstrends",
+      "chartPlaceholder": "Diagrammvisualisierung würde hier erscheinen",
+      "performanceMetrics": "Leistungsmetriken",
+      "averageRating": "Durchschnittsbewertung",
+      "patientSatisfaction": "Patientenzufriedenheit",
+      "appointmentCompletion": "Terminabschlussrate",
+      "responseTime": "Durchschnittliche Antwortzeit"
+    }
+  },
+  "patient": {
+    "title": "Patienten-Dashboard",
+    "loading": "Dashboard wird geladen...",
+    "navigation": {
+      "dashboard": "Dashboard",
+      "myAppointments": "Meine Termine",
+      "medications": "Medikamente",
+      "medicalRecords": "Krankenakten",
+      "findDoctors": "Ärzte finden",
+      "settings": "Einstellungen",
+      "logout": "Abmelden"
+    },
+    "stats": {
+      "upcomingAppointments": "Anstehende Termine",
+      "medicalRecords": "Krankenakten",
+      "pendingReminders": "Ausstehende Erinnerungen",
+      "nextAppointment": "Nächster Termin",
+      "none": "Keine"
+    },
+    "quickActions": {
+      "title": "Schnellaktionen",
+      "findDoctors": "Ärzte finden",
+      "bookAppointment": "Termin buchen",
+      "viewAppointments": "Termine anzeigen"
+    },
+    "nextAppointment": {
+      "title": "Nächster Termin",
+      "location": "Standortdetails"
+    },
+    "appointments": {
+      "title": "Meine Termine",
+      "noAppointments": "Keine Termine geplant",
+      "bookFirst": "Buchen Sie Ihren ersten Termin",
+      "doctor": "Arzt"
+    },
+    "records": {
+      "title": "Krankenakten",
+      "noRecords": "Noch keine Krankenakten"
+    },
+    "medications": {
+      "title": "Medikamentenerinnerungen",
+      "todaysReminders": "Heutige Erinnerungen",
+      "upcomingReminders": "Anstehende Erinnerungen",
+      "allReminders": "Alle Erinnerungen",
+      "pending": "Ausstehend",
+      "taken": "Eingenommen",
+      "missed": "Verpasst",
+      "skipped": "Übersprungen",
+      "overdue": "Überfällig",
+      "markTaken": "Als eingenommen markieren",
+      "markSkipped": "Überspringen",
+      "snooze": "Schlummern",
+      "completionRate": "Heutige Abschlussrate",
+      "noReminders": "Keine Medikamentenerinnerungen",
+      "addFirst": "Fügen Sie Ihre erste Medikamentenerinnerung hinzu"
+    },
+    "findDoctors": {
+      "title": "Einen Arzt finden",
+      "subtitle": "Suchen und buchen Sie Termine mit qualifizierten Fachkräften im Gesundheitswesen",
+      "searchPlaceholder": "Nach Name oder Fachgebiet suchen",
+      "filters": "Filter",
+      "resetFilters": "Filter zurücksetzen",
+      "specialty": "Fachgebiet",
+      "allSpecialties": "Alle Fachgebiete",
+      "country": "Land",
+      "allCountries": "Alle Länder",
+      "region": "Region",
+      "allRegions": "Alle Regionen",
+      "minimumRating": "Mindestbewertung",
+      "sortBy": "Sortieren nach",
+      "relevance": "Relevanz",
+      "rating": "Bewertung",
+      "experience": "Erfahrung",
+      "price": "Preis",
+      "showFilters": "Filter anzeigen",
+      "hideFilters": "Filter ausblenden",
+      "regionCity": "Region/Stadt",
+      "stars": "Sterne",
+      "loadingDoctors": "Ärzte werden geladen...",
+      "doctorsFound": "Arzt",
+      "doctorsFoundPlural": "Ärzte",
+      "found": "gefunden",
+      "noDoctorsFound": "Keine Ärzte gefunden",
+      "tryAdjustingFilters": "Versuchen Sie, Ihre Filter oder Suchkriterien anzupassen",
+      "resetAllFilters": "Alle Filter zurücksetzen",
+      "perVisit": "pro Besuch",
+      "results": "{{count}} Ärzte gefunden",
+      "bookNow": "Jetzt buchen",
+      "viewProfile": "Profil anzeigen",
+      "consultationFee": "Konsultationsgebühr",
+      "reviews": "Bewertungen",
+      "noResults": "Keine Ärzte gefunden",
+      "adjustFilters": "Versuchen Sie, Ihre Filter anzupassen",
+      "doctorProfile": "Arztprofil",
+      "practiceInformation": "Praxisinformationen",
+      "about": "Über",
+      "appointmentsCompleted": "Termine abgeschlossen",
+      "verifiedHealthcareProfessional": "Verifizierte Fachkraft im Gesundheitswesen",
+      "bookAppointmentWith": "Termin buchen mit Dr."
+    },
+    "settings": {
+      "title": "Einstellungen",
+      "subtitle": "Verwalten Sie Ihre Kontoeinstellungen und Einstellungen",
+      "account": "Konto",
+      "notifications": "Benachrichtigungen",
+      "privacy": "Datenschutz",
+      "security": "Sicherheit",
+      "save": "Änderungen speichern",
+      "changePassword": "Passwort ändern",
+      "currentPassword": "Aktuelles Passwort",
+      "newPassword": "Neues Passwort",
+      "confirmPassword": "Passwort bestätigen",
+      "emailNotifications": "E-Mail-Benachrichtigungen",
+      "smsNotifications": "SMS-Benachrichtigungen",
+      "appointmentReminders": "Terminerinnerungen",
+      "medicationReminders": "Medikamentenerinnerungen",
+      "marketingEmails": "Marketing-E-Mails",
+      "profileVisibility": "Profil-Sichtbarkeit",
+      "shareDataWithDoctors": "Daten mit Ärzten teilen",
+      "showActivityStatus": "Aktivitätsstatus anzeigen",
+      "instructions": "Verwalten Sie Ihre Kontoeinstellungen, Benachrichtigungen und Datenschutzeinstellungen",
+      "account": {
+        "title": "Persönliche Informationen",
+        "description": "Aktualisieren Sie Ihre persönlichen Daten",
+        "fullName": "Vollständiger Name",
+        "email": "E-Mail",
+        "phone": "Telefon",
+        "dateOfBirth": "Geburtsdatum",
+        "address": "Adresse",
+        "saveChanges": "Änderungen speichern"
+      },
+      "notifications": {
+        "emailTitle": "E-Mail-Benachrichtigungen",
+        "emailDescription": "Verwalten Sie Ihre E-Mail-Benachrichtigungseinstellungen",
+        "smsTitle": "SMS-Benachrichtigungen",
+        "smsDescription": "Verwalten Sie Ihre SMS-Benachrichtigungseinstellungen",
+        "bookingConfirmations": "Buchungsbestätigungen",
+        "bookingConfirmationsDesc": "Erhalten Sie E-Mails, wenn Termine gebucht werden",
+        "appointmentReminders": "Terminerinnerungen",
+        "appointmentRemindersDesc": "Erhalten Sie Erinnerungen vor Ihren Terminen",
+        "cancellationNotices": "Stornierungsmitteilungen",
+        "cancellationNoticesDesc": "Erhalten Sie Stornierungsbestätigungen",
+        "smsReminders": "SMS-Erinnerungen",
+        "smsRemindersDesc": "Erhalten Sie Texterinnerungen vor Terminen",
+        "pushNotifications": "Push-Benachrichtigungen",
+        "pushNotificationsDesc": "Erhalten Sie In-App-Benachrichtigungen",
+        "saveSettings": "Benachrichtigungseinstellungen speichern"
+      },
+      "privacy": {
+        "title": "Datenschutzeinstellungen",
+        "description": "Kontrollieren Sie Ihre Datenschutzeinstellungen",
+        "profileVisibility": "Profil-Sichtbarkeit",
+        "profileVisibilityDesc": "Ärzten erlauben, Ihr Profil zu sehen",
+        "shareAnalytics": "Analysen teilen",
+        "shareAnalyticsDesc": "Helfen Sie uns mit anonymen Daten zu verbessern",
+        "marketingCommunications": "Marketing-Kommunikation",
+        "marketingCommunicationsDesc": "Werbe-E-Mails erhalten",
+        "saveSettings": "Datenschutzeinstellungen speichern"
+      },
+      "security": {
+        "title": "Passwort ändern",
+        "description": "Aktualisieren Sie Ihr Passwort, um Ihr Konto zu sichern",
+        "currentPassword": "Aktuelles Passwort",
+        "newPassword": "Neues Passwort",
+        "confirmPassword": "Neues Passwort bestätigen",
+        "updatePassword": "Passwort aktualisieren"
+      }
+    },
+    "filters": {
+      "title": "Filter",
+      "providerType": "Anbietertyp",
+      "doctorsOnly": "Nur Ärzte",
+      "practicesOnly": "Nur Praxen",
+      "availability": "Verfügbarkeit",
+      "acceptingNewPatients": "Nimmt neue Patienten an",
+      "availableToday": "Heute verfügbar",
+      "services": "Dienstleistungen",
+      "acceptsInsurance": "Akzeptiert Versicherung",
+      "videoConsultation": "Videokonsultation",
+      "reset": "Zurücksetzen",
+      "apply": "Anwenden"
+    },
+    "resultCard": {
+      "doctor": "Arzt",
+      "practice": "Praxis",
+      "reviews": "Bewertungen",
+      "consultation": "Konsultation",
+      "experience": "Erfahrung",
+      "doctors": "Ärzte",
+      "affiliatedDoctors": "verbundene Ärzte",
+      "bookNow": "Jetzt buchen",
+      "booking": "Wird gebucht...",
+      "bookAppointment": "Termin buchen",
+      "viewProfile": "Profil anzeigen",
+      "availableToday": "Heute verfügbar",
+      "acceptingNewPatients": "Nimmt neue Patienten an",
+      "acceptsInsurance": "Akzeptiert Versicherung"
+    }
+  },
+  "doctor": {
+    "loading": "Ihr Dashboard wird geladen...",
+    "settingUp": "Ihr Profil wird eingerichtet...",
+    "profileSetup": {
+      "settingUp": "Ihr Profil wird eingerichtet",
+      "unableToLoad": "Wir können Ihr Arztprofil nicht laden. Dies könnte daran liegen, dass Ihr Profil noch eingerichtet wird oder es ein vorübergehendes Problem gibt.",
+      "retryLoading": "Laden erneut versuchen",
+      "completeSetup": "Profilsetup abschließen",
+      "goHome": "Zur Startseite",
+      "required": "Profilsetup erforderlich",
+      "message": "Bitte schließen Sie Ihr Arztprofilsetup ab, um auf das Dashboard zuzugreifen.",
+      "tryAgain": "Erneut versuchen"
+    },
+    "clinic": {
+      "verified": "Verifiziert",
+      "requestToLeave": "Antrag auf Austritt"
+    },
+    "verification": {
+      "pending": "Verifizierung ausstehend",
+      "message": "Ihr Profil wird geprüft. Vervollständigen Sie Ihr Profil, um die Verifizierung zu beschleunigen.",
+      "completeProfile": "Profil vervollständigen",
+      "viewProfile": "Profil anzeigen"
+    },
+    "profileCompletion": {
+      "title": "Profilvervollständigung",
+      "message": "Vervollständigen Sie Ihr Profil, um mehr Patienten anzuziehen"
+    },
+    "stats": {
+      "totalAppointments": "Termine insgesamt",
+      "allTimeBookings": "Buchungen aller Zeiten",
+      "totalPatients": "Patienten insgesamt",
+      "uniquePatients": "Einzigartige betreute Patienten",
+      "averageRating": "Durchschnittsbewertung",
+      "basedOnReviews": "Basierend auf {{count}} Bewertungen",
+      "revenue": "Umsatz",
+      "totalEarnings": "Gesamteinnahmen"
+    },
+    "appointmentStatus": {
+      "confirmed": "Bestätigt",
+      "pending": "Ausstehend",
+      "completed": "Abgeschlossen",
+      "cancelled": "Storniert"
+    },
+    "upcomingAppointments": {
+      "title": "Anstehende Termine",
+      "noAppointments": "Keine anstehenden Termine",
+      "scheduleIsClear": "Ihr Zeitplan ist vorerst frei"
+    },
+    "quickActions": {
+      "title": "Schnellaktionen",
+      "updateSettings": "Zeitplaneinstellungen aktualisieren",
+      "addService": "Neue Leistung hinzufügen",
+      "blockTime": "Zeitfenster blockieren"
+    },
+    "todaysSchedule": {
+      "viewFull": "Heutigen vollständigen Zeitplan anzeigen"
+    },
+    "dashboardContent": {
+      "welcomeBack": "Willkommen zurück",
+      "specialtyNotProvided": "Fachgebiet nicht angegeben",
+      "completeProfileBanner": "Vervollständigen Sie Ihr Profil ({{completion}}% fertig)",
+      "completeProfileMessage": "Ein vollständiges Profil hilft Patienten, Sie leichter zu finden und Ihnen zu vertrauen"
+    },
+    "quickModals": {
+      "settings": {
+        "title": "Schnelle Profileinstellungen",
+        "specialty": "Fachgebiet",
+        "selectSpecialty": "Fachgebiet auswählen",
+        "specialties": {
+          "generalPractice": "Allgemeinmedizin",
+          "cardiology": "Kardiologie",
+          "dermatology": "Dermatologie",
+          "pediatrics": "Kinderheilkunde",
+          "orthopedics": "Orthopädie",
+          "neurology": "Neurologie"
+        },
+        "consultationFee": "Konsultationsgebühr (€)",
+        "bio": "Biografie",
+        "bioPlaceholder": "Erzählen Sie Patienten von Ihrer Erfahrung...",
+        "cancel": "Abbrechen",
+        "updateProfile": "Profil aktualisieren",
+        "profileUpdated": "Profil erfolgreich aktualisiert"
+      },
+      "procedures": {
+        "title": "Schnelle Leistung hinzufügen",
+        "serviceName": "Leistungsname",
+        "serviceNamePlaceholder": "z.B. Allgemeine Konsultation",
+        "category": "Kategorie",
+        "categories": {
+          "general": "Allgemein",
+          "preventive": "Vorbeugend",
+          "restorative": "Restaurativ",
+          "cosmetic": "Kosmetisch"
+        },
+        "cost": "Kosten (€)",
+        "duration": "Dauer",
+        "durations": {
+          "15min": "15 Minuten",
+          "30min": "30 Minuten",
+          "45min": "45 Minuten",
+          "1hour": "1 Stunde",
+          "1.5hours": "1,5 Stunden"
+        },
+        "cancel": "Abbrechen",
+        "addService": "Leistung hinzufügen",
+        "serviceAdded": "Leistung erfolgreich hinzugefügt"
+      },
+      "blockTime": {
+        "timeBlocked": "Zeit von {{start}} bis {{end}} blockiert"
+      }
+    },
+    "schedule": {
+      "title": "Zeitplaneinstellungen",
+      "description": "Konfigurieren Sie Ihre Arbeitszeiten, Pausen und Verfügbarkeit",
+      "loading": "Zeitplaneinstellungen werden geladen...",
+      "saving": "Wird gespeichert...",
+      "saveSettings": "Zeitplaneinstellungen speichern",
+      "scheduleUpdated": "Zeitplan aktualisiert",
+      "scheduleUpdatedDesc": "Ihre Zeitplaneinstellungen wurden erfolgreich gespeichert",
+      "error": "Fehler",
+      "saveFailed": "Zeitplaneinstellungen konnten nicht gespeichert werden",
+      "workingHours": "Arbeitszeiten",
+      "days": {
+        "monday": "Montag",
+        "tuesday": "Dienstag",
+        "wednesday": "Mittwoch",
+        "thursday": "Donnerstag",
+        "friday": "Freitag",
+        "saturday": "Samstag",
+        "sunday": "Sonntag"
+      },
+      "startTime": "Startzeit",
+      "endTime": "Endzeit",
+      "breaks": "Pausen",
+      "addBreak": "Pause hinzufügen",
+      "breakName": "Pausenname",
+      "appointmentSettings": "Termineinstellungen",
+      "bufferTime": "Standard-Pufferzeit zwischen Terminen",
+      "bufferTimeDesc": "Zeit zwischen Terminen für Vorbereitung und Notizen",
+      "minutes": "Minuten",
+      "holidaysTitle": "Feiertage & freie Tage",
+      "addHoliday": "Feiertag/freien Tag hinzufügen",
+      "addDayOff": "Freien Tag hinzufügen",
+      "noHolidays": "Keine Feiertage geplant",
+      "quickActions": "Schnellaktionen",
+      "copyMondayToWeekdays": "Montag auf Wochentage kopieren",
+      "disableWeekends": "Wochenenden deaktivieren",
+      "scheduleCopied": "Zeitplan kopiert",
+      "scheduleCopiedDesc": "Montagszeitplan wurde auf Wochentage angewendet",
+      "weekendsDisabled": "Wochenenden deaktiviert",
+      "weekendsDisabledDesc": "Samstag und Sonntag wurden deaktiviert"
+    },
+    "title": "Arzt-Dashboard",
+    "navigation": {
+      "dashboard": "Dashboard",
+      "myProfile": "Mein Profil",
+      "myServices": "Meine Leistungen",
+      "assignedServices": "Zugewiesene Leistungen",
+      "scheduleSettings": "Zeitplaneinstellungen",
+      "procedureLibrary": "Verfahrensbibliothek",
+      "treatmentPlanning": "Behandlungsplanung",
+      "myPatients": "Meine Patienten",
+      "calendar": "Kalender",
+      "messages": "Nachrichten",
+      "performance": "Leistung",
+      "financialStats": "Finanzstatistiken",
+      "clinicFinder": "Praxisfinder",
+      "settings": "Einstellungen",
+      "logout": "Abmelden"
+    },
+    "superAdmin": {
+      "login": {
+        "title": "Super-Admin-Zugang",
+        "subtitle": "Plattformbesitzer-Anmeldung - Nur autorisiertes Personal",
+        "subtitleSignUp": "Super-Admin-Konto erstellen",
+        "email": "E-Mail",
+        "password": "Passwort",
+        "signIn": "Anmelden",
+        "signUp": "Konto erstellen",
+        "signingIn": "Wird angemeldet...",
+        "creatingAccount": "Konto wird erstellt...",
+        "alreadyHaveAccount": "Bereits ein Konto? Anmelden",
+        "needAccount": "Konto erstellen müssen? Registrieren",
+        "signUpFailed": "Registrierung fehlgeschlagen",
+        "accountCreated": "Konto erstellt",
+        "accountCreatedDesc": "Sie können sich jetzt mit Ihren Anmeldedaten anmelden",
+        "authFailed": "Authentifizierung fehlgeschlagen",
+        "error": "Fehler",
+        "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten"
+      },
+      "dashboard": {
+        "title": "Dashboard-Übersicht",
+        "subtitle": "Plattformmetriken auf einen Blick",
+        "recentAppointments": "Aktuelle Termine"
+      },
+      "doctors": {
+        "title": "Ärzteverwaltung",
+        "subtitle": "Alle Plattformärzte verwalten",
+        "allDoctors": "Alle Ärzte",
+        "verifications": "Arztverifizierungen",
+        "pendingVerifications": "Ausstehende Arztverifizierungen"
+      },
+      "practices": {
+        "title": "Praxisverwaltung",
+        "subtitle": "Alle medizinischen Praxen verwalten",
+        "allPractices": "Alle Praxen",
+        "verifications": "Praxisverifizierungen",
+        "pendingVerifications": "Ausstehende Verifizierungen"
+      },
+      "patients": {
+        "title": "Patientenverwaltung",
+        "subtitle": "Alle Plattformpatienten anzeigen",
+        "allPatients": "Alle Patienten"
+      },
+      "appointments": {
+        "title": "Terminverwaltung",
+        "subtitle": "Alle Termine überwachen",
+        "allAppointments": "Alle Termine"
+      },
+      "payments": {
+        "title": "Zahlungen & Transaktionen",
+        "subtitle": "Finanzübersicht und Transaktionen",
+        "allTransactions": "Alle Transaktionen"
+      },
+      "analytics": {
+        "title": "Plattformanalysen",
+        "subtitle": "Detaillierte Einblicke und Metriken"
+      },
+      "settings": {
+        "title": "Systemeinstellungen",
+        "subtitle": "Plattformeinstellungen konfigurieren"
+      },
+      "logs": {
+        "title": "Systemprotokolle",
+        "subtitle": "Audit-Trail und Systemereignisse"
+      },
+      "footer": "© 2025 Docito Admin-Plattform - Nur sicherer Zugang",
+      "sessionExpired": "Sitzung abgelaufen",
+      "sessionExpiredDesc": "Sie wurden aufgrund von Inaktivität abgemeldet"
+    }
+  }
+}

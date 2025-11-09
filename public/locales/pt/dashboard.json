@@ -1,0 +1,44 @@
+{
+  "createClinic": {
+    "title": "Configure Sua Clínica",
+    "description": "Complete o perfil da sua clínica para começar a gerenciar médicos e consultas.",
+    "clinicName": "Nome da Clínica",
+    "clinicNameRequired": "Nome da clínica é obrigatório",
+    "description_field": "Descrição",
+    "phone": "Telefone",
+    "email": "E-mail",
+    "address": "Endereço",
+    "city": "Cidade",
+    "country": "País",
+    "cancel": "Cancelar",
+    "create": "Criar Perfil da Clínica",
+    "creating": "Criando...",
+    "success": "Perfil da clínica criado com sucesso!",
+    "error": "Falha ao criar perfil da clínica"
+  },
+  "admin": {
+    "title": "Painel da Clínica",
+    "loading": "Carregando painel..."
+  },
+  "patient": {
+    "title": "Painel do Paciente",
+    "loading": "Carregando painel...",
+    "navigation": {
+      "dashboard": "Painel",
+      "myAppointments": "Minhas Consultas",
+      "medications": "Medicamentos",
+      "settings": "Configurações",
+      "logout": "Sair"
+    }
+  },
+  "doctor": {
+    "title": "Painel do Médico",
+    "loading": "Carregando seu painel...",
+    "navigation": {
+      "dashboard": "Painel",
+      "myProfile": "Meu Perfil",
+      "settings": "Configurações",
+      "logout": "Sair"
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "createClinic": {
+    "title": "클리닉 설정",
+    "description": "클리닉 프로필을 완성하여 의사와 예약 관리를 시작하세요.",
+    "clinicName": "클리닉 이름",
+    "phone": "전화",
+    "email": "이메일",
+    "cancel": "취소",
+    "create": "클리닉 프로필 만들기"
+  },
+  "patient": {
+    "title": "환자 대시보드",
+    "loading": "대시보드 로딩 중...",
+    "navigation": {
+      "dashboard": "대시보드",
+      "myAppointments": "내 예약",
+      "settings": "설정",
+      "logout": "로그아웃"
+    }
+  },
+  "doctor": {
+    "title": "의사 대시보드",
+    "loading": "대시보드 로딩 중...",
+    "navigation": {
+      "dashboard": "대시보드",
+      "myProfile": "내 프로필",
+      "settings": "설정",
+      "logout": "로그아웃"
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "createClinic": {
+    "title": "クリニックを設定",
+    "description": "クリニックプロフィールを完成させて、医師と予約の管理を開始します。",
+    "clinicName": "クリニック名",
+    "phone": "電話",
+    "email": "メール",
+    "cancel": "キャンセル",
+    "create": "クリニックプロフィールを作成"
+  },
+  "patient": {
+    "title": "患者ダッシュボード",
+    "loading": "ダッシュボードを読み込んでいます...",
+    "navigation": {
+      "dashboard": "ダッシュボード",
+      "myAppointments": "予約",
+      "settings": "設定",
+      "logout": "ログアウト"
+    }
+  },
+  "doctor": {
+    "title": "医師ダッシュボード",
+    "loading": "ダッシュボードを読み込んでいます...",
+    "navigation": {
+      "dashboard": "ダッシュボード",
+      "myProfile": "プロフィール",
+      "settings": "設定",
+      "logout": "ログアウト"
+    }
+  }
+}
