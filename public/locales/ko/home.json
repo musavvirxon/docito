@@ -1,0 +1,66 @@
+{
+  "hero": {
+    "title": "최고의 의사를 찾고 예약하세요",
+    "subtitle": "근처의 검증된 의료 전문가와 연결하세요",
+    "searchPlaceholder": "전문 분야, 의사 또는 병원 검색",
+    "searchButton": "검색",
+    "orBrowse": "또는 전문 분야 둘러보기"
+  },
+  "stats": {
+    "doctors": "검증된 의사",
+    "patients": "만족한 환자",
+    "appointments": "완료된 예약",
+    "clinics": "파트너 클리닉"
+  },
+  "features": {
+    "title": "의료를 간단하게",
+    "subtitle": "Docito가 의료 경험을 혁신하는 방법",
+    "instantBooking": {
+      "title": "즉시 예약",
+      "description": "몇 번의 클릭으로 선호하는 의사와 예약"
+    },
+    "verifiedDoctors": {
+      "title": "검증된 의사",
+      "description": "모든 의사는 자격과 경력이 검증됨"
+    },
+    "secureRecords": {
+      "title": "안전한 기록",
+      "description": "의료 기록이 안전하게 저장되고 언제든지 액세스 가능"
+    },
+    "realTimeUpdates": {
+      "title": "실시간 업데이트",
+      "description": "예약 및 일정 변경에 대한 즉각적인 알림"
+    }
+  },
+  "howItWorks": {
+    "title": "작동 방식",
+    "subtitle": "세 가지 간단한 단계로 시작하세요",
+    "step1": {
+      "title": "의사 검색",
+      "description": "전문 분야, 위치 또는 이름으로 의사 찾기"
+    },
+    "step2": {
+      "title": "예약하기",
+      "description": "가능한 시간대를 선택하고 즉시 예약 확인"
+    },
+    "step3": {
+      "title": "진료 받기",
+      "description": "예정된 시간에 방문하여 양질의 진료 받기"
+    }
+  },
+  "specialties": {
+    "title": "인기 전문 분야",
+    "subtitle": "가장 많이 찾는 의료 전문 분야 탐색",
+    "viewAll": "모든 전문 분야 보기"
+  },
+  "cta": {
+    "title": "오늘 시작하세요",
+    "subtitle": "의료 여정을 쉽게 만들 준비가 되셨나요?",
+    "patientButton": "환자로 가입",
+    "doctorButton": "의사로 참여"
+  },
+  "testimonials": {
+    "title": "환자 후기",
+    "subtitle": "환자들이 저희에 대해 말하는 것"
+  }
+}

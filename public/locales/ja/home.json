@@ -1,0 +1,66 @@
+{
+  "hero": {
+    "title": "最高の医師を見つけて予約する",
+    "subtitle": "お近くの検証済み医療専門家とつながりましょう",
+    "searchPlaceholder": "専門、医師、または医療機関を検索",
+    "searchButton": "検索",
+    "orBrowse": "または専門分野を閲覧"
+  },
+  "stats": {
+    "doctors": "検証済み医師",
+    "patients": "満足した患者",
+    "appointments": "予約完了",
+    "clinics": "提携クリニック"
+  },
+  "features": {
+    "title": "医療をシンプルに",
+    "subtitle": "Docitoが医療体験を変革する方法",
+    "instantBooking": {
+      "title": "即時予約",
+      "description": "数回のクリックでお気に入りの医師と予約"
+    },
+    "verifiedDoctors": {
+      "title": "検証済み医師",
+      "description": "すべての医師は資格と経験が検証済み"
+    },
+    "secureRecords": {
+      "title": "安全な記録",
+      "description": "医療記録は安全に保存され、いつでもアクセス可能"
+    },
+    "realTimeUpdates": {
+      "title": "リアルタイム更新",
+      "description": "予約とスケジュール変更の即時通知"
+    }
+  },
+  "howItWorks": {
+    "title": "仕組み",
+    "subtitle": "3つの簡単なステップで始めましょう",
+    "step1": {
+      "title": "医師を検索",
+      "description": "専門、場所、または名前で医師を見つける"
+    },
+    "step2": {
+      "title": "予約を取る",
+      "description": "利用可能な時間を選択し、即座に予約を確認"
+    },
+    "step3": {
+      "title": "診察を受ける",
+      "description": "予定された時間に訪問し、質の高いケアを受ける"
+    }
+  },
+  "specialties": {
+    "title": "人気の専門分野",
+    "subtitle": "最も求められている医療専門分野を探索",
+    "viewAll": "すべての専門分野を表示"
+  },
+  "cta": {
+    "title": "今日から始めましょう",
+    "subtitle": "医療の旅を簡単にする準備はできていますか？",
+    "patientButton": "患者として登録",
+    "doctorButton": "医師として参加"
+  },
+  "testimonials": {
+    "title": "患者の声",
+    "subtitle": "患者が私たちについて語ること"
+  }
+}
