@@ -316,15 +316,5 @@
       "engagement": "参与度",
       "reports": "报告"
     }
-  },
-  "doctor": {
-    "performance": {
-      "tabs": {
-        "overview": "概览",
-        "services": "服务",
-        "reviews": "评价",
-        "trends": "趋势"
-      }
-    }
   }
 }

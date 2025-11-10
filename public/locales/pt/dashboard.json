@@ -225,7 +225,7 @@
       "active": "Planos Ativos",
       "completed": "Concluídos",
       "draft": "Rascunho"
-    }
+    },
     "performance": {
       "title": "Análise de Desempenho",
       "description": "Acompanhe suas métricas de desempenho e insights",
@@ -315,16 +315,6 @@
       "revenue": "Receita",
       "engagement": "Engajamento",
       "reports": "Relatórios"
-    }
-  },
-  "doctor": {
-    "performance": {
-      "tabs": {
-        "overview": "Visão Geral",
-        "services": "Serviços",
-        "reviews": "Avaliações",
-        "trends": "Tendências"
-      }
     }
   }
 }
