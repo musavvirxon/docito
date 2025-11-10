@@ -10,20 +10,11 @@ export const languages = [
   { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
   { code: 'ar', name: 'العربية', flag: '🇸🇦', dir: 'rtl' },
   { code: 'es', name: 'Español', flag: '🇪🇸' },
-  { code: 'fr', name: 'Français', flag: '🇫🇷' },
   { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
   { code: 'zh', name: '中文', flag: '🇨🇳' },
-  { code: 'hi', name: 'हिन्दी', flag: '🇮🇳' },
-  { code: 'bn', name: 'বাংলা', flag: '🇧🇩' },
-  { code: 'ur', name: 'اردو', flag: '🇵🇰', dir: 'rtl' },
-  { code: 'id', name: 'Bahasa Indonesia', flag: '🇮🇩' },
-  { code: 'tl', name: 'Filipino', flag: '🇵🇭' },
-  { code: 'fa', name: 'فارسی', flag: '🇮🇷', dir: 'rtl' },
-  { code: 'th', name: 'ไทย', flag: '🇹🇭' },
-  { code: 'pl', name: 'Polski', flag: '🇵🇱' },
-  { code: 'it', name: 'Italiano', flag: '🇮🇹' },
-  { code: 'ja', name: '日本語', flag: '🇯🇵' },
   { code: 'pt', name: 'Português', flag: '🇧🇷' },
+  { code: 'ja', name: '日本語', flag: '🇯🇵' },
+  { code: 'ko', name: '한국어', flag: '🇰🇷' },
 ];
 
 i18n
