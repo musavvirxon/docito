@@ -527,6 +527,7 @@
       "clinicFinder": "Praxisfinder",
       "settings": "Einstellungen",
       "logout": "Abmelden"
+    },
     "performance": {
       "title": "Leistungsanalyse",
       "description": "Verfolgen Sie Ihre Leistungsmetriken und Einblicke",
@@ -542,6 +543,31 @@
         "services": "Dienstleistungen",
         "reviews": "Bewertungen",
         "trends": "Trends"
+      },
+      "overview": {
+        "performanceLevel": "Leistungsniveau",
+        "basedOn": "Basierend auf Abschlussrate, Bewertungen und Aktivität",
+        "totalAppointments": "Termine insgesamt",
+        "inPeriod": "Im ausgewählten Zeitraum",
+        "completed": "Abgeschlossen",
+        "completionRate": "{{rate}}% Abschlussrate",
+        "cancelled": "Storniert",
+        "high": "Hoch",
+        "medium": "Mittel",
+        "low": "Niedrig",
+        "noShows": "Nichterscheinen",
+        "activeDays": "Aktive Tage",
+        "daysWithAppts": "Tage mit Terminen",
+        "avgDailyPatients": "Durchschn. tägliche Patienten",
+        "patientsPerDay": "Patienten pro aktivem Tag",
+        "avgDuration": "Durchschn. Dauer",
+        "perAppointment": "Pro Termin",
+        "appointmentTrends": "Termintrends",
+        "dailyBreakdown": "Tägliche Aufschlüsselung der Termine",
+        "total": "Gesamt",
+        "performanceMetrics": "Leistungsmetriken",
+        "cancellationRate": "Stornierungsrate",
+        "noShowRate": "Nichterscheinensrate"
       }
     },
     "financialStats": {

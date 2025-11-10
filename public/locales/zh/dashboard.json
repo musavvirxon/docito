@@ -241,6 +241,31 @@
         "services": "服务",
         "reviews": "评论",
         "trends": "趋势"
+      },
+      "overview": {
+        "performanceLevel": "绩效水平",
+        "basedOn": "基于完成率、评分和活动",
+        "totalAppointments": "总预约数",
+        "inPeriod": "在选定期间",
+        "completed": "已完成",
+        "completionRate": "{{rate}}% 完成率",
+        "cancelled": "已取消",
+        "high": "高",
+        "medium": "中",
+        "low": "低",
+        "noShows": "未到",
+        "activeDays": "活跃天数",
+        "daysWithAppts": "有预约的天数",
+        "avgDailyPatients": "日均患者",
+        "patientsPerDay": "每个活跃日的患者",
+        "avgDuration": "平均时长",
+        "perAppointment": "每次预约",
+        "appointmentTrends": "预约趋势",
+        "dailyBreakdown": "每日预约明细",
+        "total": "总计",
+        "performanceMetrics": "绩效指标",
+        "cancellationRate": "取消率",
+        "noShowRate": "未到率"
       }
     },
     "financialStats": {

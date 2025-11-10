@@ -241,6 +241,31 @@
         "services": "サービス",
         "reviews": "レビュー",
         "trends": "トレンド"
+      },
+      "overview": {
+        "performanceLevel": "パフォーマンスレベル",
+        "basedOn": "完了率、評価、活動に基づく",
+        "totalAppointments": "総予約数",
+        "inPeriod": "選択期間内",
+        "completed": "完了",
+        "completionRate": "{{rate}}% 完了率",
+        "cancelled": "キャンセル",
+        "high": "高",
+        "medium": "中",
+        "low": "低",
+        "noShows": "無断キャンセル",
+        "activeDays": "稼働日数",
+        "daysWithAppts": "予約のある日数",
+        "avgDailyPatients": "1日平均患者数",
+        "patientsPerDay": "稼働日あたりの患者数",
+        "avgDuration": "平均時間",
+        "perAppointment": "予約あたり",
+        "appointmentTrends": "予約トレンド",
+        "dailyBreakdown": "日別の予約内訳",
+        "total": "合計",
+        "performanceMetrics": "パフォーマンス指標",
+        "cancellationRate": "キャンセル率",
+        "noShowRate": "無断キャンセル率"
       }
     },
     "financialStats": {

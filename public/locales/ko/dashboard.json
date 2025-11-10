@@ -241,6 +241,31 @@
         "services": "서비스",
         "reviews": "리뷰",
         "trends": "트렌드"
+      },
+      "overview": {
+        "performanceLevel": "성과 수준",
+        "basedOn": "완료율, 평가 및 활동을 기반으로",
+        "totalAppointments": "총 예약",
+        "inPeriod": "선택한 기간",
+        "completed": "완료",
+        "completionRate": "{{rate}}% 완료율",
+        "cancelled": "취소됨",
+        "high": "높음",
+        "medium": "중간",
+        "low": "낮음",
+        "noShows": "노쇼",
+        "activeDays": "활동 일수",
+        "daysWithAppts": "예약이 있는 날",
+        "avgDailyPatients": "일평균 환자",
+        "patientsPerDay": "활동일당 환자",
+        "avgDuration": "평균 시간",
+        "perAppointment": "예약당",
+        "appointmentTrends": "예약 추세",
+        "dailyBreakdown": "일별 예약 분석",
+        "total": "합계",
+        "performanceMetrics": "성과 지표",
+        "cancellationRate": "취소율",
+        "noShowRate": "노쇼율"
       }
     },
     "financialStats": {

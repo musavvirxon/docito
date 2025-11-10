@@ -241,6 +241,31 @@
         "services": "Serviços",
         "reviews": "Avaliações",
         "trends": "Tendências"
+      },
+      "overview": {
+        "performanceLevel": "Nível de Desempenho",
+        "basedOn": "Baseado na taxa de conclusão, avaliações e atividade",
+        "totalAppointments": "Total de Consultas",
+        "inPeriod": "No período selecionado",
+        "completed": "Concluídas",
+        "completionRate": "{{rate}}% taxa de conclusão",
+        "cancelled": "Canceladas",
+        "high": "Alto",
+        "medium": "Médio",
+        "low": "Baixo",
+        "noShows": "Faltas",
+        "activeDays": "Dias Ativos",
+        "daysWithAppts": "Dias com consultas",
+        "avgDailyPatients": "Média Diária de Pacientes",
+        "patientsPerDay": "Pacientes por dia ativo",
+        "avgDuration": "Duração Média",
+        "perAppointment": "Por consulta",
+        "appointmentTrends": "Tendências de Consultas",
+        "dailyBreakdown": "Detalhamento diário de consultas",
+        "total": "Total",
+        "performanceMetrics": "Métricas de Desempenho",
+        "cancellationRate": "Taxa de Cancelamento",
+        "noShowRate": "Taxa de Faltas"
       }
     },
     "financialStats": {
