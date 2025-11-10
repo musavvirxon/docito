@@ -1,1 +1,29 @@
-{}
+{
+  "search": {
+    "title": "البحث عن الأطباء",
+    "placeholder": "البحث بالاسم أو التخصص أو الموقع",
+    "filters": "المرشحات",
+    "availability": "التوفر",
+    "rating": "التقييم",
+    "experience": "الخبرة",
+    "consultationFee": "رسوم الاستشارة",
+    "specialty": "التخصص",
+    "location": "الموقع",
+    "applyFilters": "تطبيق المرشحات",
+    "clearFilters": "مسح المرشحات"
+  },
+  "profile": {
+    "viewProfile": "عرض الملف الشخصي",
+    "bookAppointment": "حجز موعد",
+    "specialty": "التخصص",
+    "experience": "سنوات الخبرة",
+    "consultationFee": "رسوم الاستشارة",
+    "rating": "التقييم",
+    "reviews": "التقييمات",
+    "availability": "التوفر",
+    "about": "نبذة عن الطبيب",
+    "education": "التعليم",
+    "languages": "اللغات المتحدث بها",
+    "services": "الخدمات المقدمة"
+  }
+}

@@ -1,1 +1,22 @@
-{}
+{
+  "dashboard": {
+    "title": "Patient Dashboard",
+    "welcome": "Welcome",
+    "upcomingAppointments": "Upcoming Appointments",
+    "pastAppointments": "Past Appointments",
+    "medicalRecords": "Medical Records",
+    "prescriptions": "Prescriptions",
+    "testResults": "Test Results"
+  },
+  "appointments": {
+    "book": "Book Appointment",
+    "cancel": "Cancel Appointment",
+    "reschedule": "Reschedule",
+    "confirmed": "Confirmed",
+    "pending": "Pending",
+    "cancelled": "Cancelled",
+    "completed": "Completed",
+    "noAppointments": "No appointments found",
+    "viewDetails": "View Details"
+  }
+}

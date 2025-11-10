@@ -1,1 +1,22 @@
-{}
+{
+  "dashboard": {
+    "title": "환자 대시보드",
+    "welcome": "환영합니다",
+    "upcomingAppointments": "다가오는 예약",
+    "pastAppointments": "지난 예약",
+    "medicalRecords": "의료 기록",
+    "prescriptions": "처방전",
+    "testResults": "검사 결과"
+  },
+  "appointments": {
+    "book": "예약하기",
+    "cancel": "예약 취소",
+    "reschedule": "일정 변경",
+    "confirmed": "확인됨",
+    "pending": "대기 중",
+    "cancelled": "취소됨",
+    "completed": "완료됨",
+    "noAppointments": "예약을 찾을 수 없습니다",
+    "viewDetails": "세부 정보 보기"
+  }
+}

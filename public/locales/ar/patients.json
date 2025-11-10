@@ -1,1 +1,22 @@
-{}
+{
+  "dashboard": {
+    "title": "لوحة تحكم المريض",
+    "welcome": "مرحباً",
+    "upcomingAppointments": "المواعيد القادمة",
+    "pastAppointments": "المواعيد السابقة",
+    "medicalRecords": "السجلات الطبية",
+    "prescriptions": "الوصفات الطبية",
+    "testResults": "نتائج الاختبارات"
+  },
+  "appointments": {
+    "book": "حجز موعد",
+    "cancel": "إلغاء الموعد",
+    "reschedule": "إعادة جدولة",
+    "confirmed": "مؤكد",
+    "pending": "قيد الانتظار",
+    "cancelled": "ملغى",
+    "completed": "مكتمل",
+    "noAppointments": "لم يتم العثور على مواعيد",
+    "viewDetails": "عرض التفاصيل"
+  }
+}

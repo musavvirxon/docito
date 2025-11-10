@@ -1,1 +1,22 @@
-{}
+{
+  "dashboard": {
+    "title": "Painel do Paciente",
+    "welcome": "Bem-vindo",
+    "upcomingAppointments": "Consultas Próximas",
+    "pastAppointments": "Consultas Passadas",
+    "medicalRecords": "Registros Médicos",
+    "prescriptions": "Prescrições",
+    "testResults": "Resultados de Testes"
+  },
+  "appointments": {
+    "book": "Marcar Consulta",
+    "cancel": "Cancelar Consulta",
+    "reschedule": "Reagendar",
+    "confirmed": "Confirmado",
+    "pending": "Pendente",
+    "cancelled": "Cancelado",
+    "completed": "Concluído",
+    "noAppointments": "Nenhuma consulta encontrada",
+    "viewDetails": "Ver Detalhes"
+  }
+}

@@ -1,1 +1,29 @@
-{}
+{
+  "search": {
+    "title": "의사 찾기",
+    "placeholder": "이름, 전문 분야 또는 위치로 검색",
+    "filters": "필터",
+    "availability": "가용성",
+    "rating": "평점",
+    "experience": "경력",
+    "consultationFee": "진료비",
+    "specialty": "전문 분야",
+    "location": "위치",
+    "applyFilters": "필터 적용",
+    "clearFilters": "필터 지우기"
+  },
+  "profile": {
+    "viewProfile": "프로필 보기",
+    "bookAppointment": "예약하기",
+    "specialty": "전문 분야",
+    "experience": "년 경력",
+    "consultationFee": "진료비",
+    "rating": "평점",
+    "reviews": "리뷰",
+    "availability": "가용성",
+    "about": "소개",
+    "education": "학력",
+    "languages": "사용 언어",
+    "services": "제공 서비스"
+  }
+}

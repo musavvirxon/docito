@@ -1,1 +1,22 @@
-{}
+{
+  "dashboard": {
+    "title": "患者ダッシュボード",
+    "welcome": "ようこそ",
+    "upcomingAppointments": "今後の予約",
+    "pastAppointments": "過去の予約",
+    "medicalRecords": "医療記録",
+    "prescriptions": "処方箋",
+    "testResults": "検査結果"
+  },
+  "appointments": {
+    "book": "予約する",
+    "cancel": "予約をキャンセル",
+    "reschedule": "再スケジュール",
+    "confirmed": "確認済み",
+    "pending": "保留中",
+    "cancelled": "キャンセル済み",
+    "completed": "完了",
+    "noAppointments": "予約が見つかりません",
+    "viewDetails": "詳細を表示"
+  }
+}

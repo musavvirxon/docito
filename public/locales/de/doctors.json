@@ -1,1 +1,29 @@
-{}
+{
+  "search": {
+    "title": "Ärzte finden",
+    "placeholder": "Suche nach Name, Fachgebiet oder Standort",
+    "filters": "Filter",
+    "availability": "Verfügbarkeit",
+    "rating": "Bewertung",
+    "experience": "Erfahrung",
+    "consultationFee": "Beratungsgebühr",
+    "specialty": "Fachgebiet",
+    "location": "Standort",
+    "applyFilters": "Filter anwenden",
+    "clearFilters": "Filter löschen"
+  },
+  "profile": {
+    "viewProfile": "Profil ansehen",
+    "bookAppointment": "Termin buchen",
+    "specialty": "Fachgebiet",
+    "experience": "Jahre Erfahrung",
+    "consultationFee": "Beratungsgebühr",
+    "rating": "Bewertung",
+    "reviews": "Bewertungen",
+    "availability": "Verfügbarkeit",
+    "about": "Über",
+    "education": "Ausbildung",
+    "languages": "Gesprochene Sprachen",
+    "services": "Angebotene Dienstleistungen"
+  }
+}

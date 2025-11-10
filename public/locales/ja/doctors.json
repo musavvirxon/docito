@@ -1,1 +1,29 @@
-{}
+{
+  "search": {
+    "title": "医師を探す",
+    "placeholder": "名前、専門分野、または場所で検索",
+    "filters": "フィルター",
+    "availability": "空き状況",
+    "rating": "評価",
+    "experience": "経験",
+    "consultationFee": "診察料",
+    "specialty": "専門分野",
+    "location": "場所",
+    "applyFilters": "フィルターを適用",
+    "clearFilters": "フィルターをクリア"
+  },
+  "profile": {
+    "viewProfile": "プロフィールを表示",
+    "bookAppointment": "予約する",
+    "specialty": "専門分野",
+    "experience": "年の経験",
+    "consultationFee": "診察料",
+    "rating": "評価",
+    "reviews": "レビュー",
+    "availability": "空き状況",
+    "about": "について",
+    "education": "学歴",
+    "languages": "話せる言語",
+    "services": "提供サービス"
+  }
+}

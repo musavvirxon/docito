@@ -1,1 +1,22 @@
-{}
+{
+  "dashboard": {
+    "title": "Patienten-Dashboard",
+    "welcome": "Willkommen",
+    "upcomingAppointments": "Anstehende Termine",
+    "pastAppointments": "Vergangene Termine",
+    "medicalRecords": "Medizinische Aufzeichnungen",
+    "prescriptions": "Rezepte",
+    "testResults": "Testergebnisse"
+  },
+  "appointments": {
+    "book": "Termin buchen",
+    "cancel": "Termin absagen",
+    "reschedule": "Neu planen",
+    "confirmed": "Bestätigt",
+    "pending": "Ausstehend",
+    "cancelled": "Abgesagt",
+    "completed": "Abgeschlossen",
+    "noAppointments": "Keine Termine gefunden",
+    "viewDetails": "Details anzeigen"
+  }
+}

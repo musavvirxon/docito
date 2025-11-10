@@ -1,1 +1,22 @@
-{}
+{
+  "dashboard": {
+    "title": "Hasta Paneli",
+    "welcome": "Hoş Geldiniz",
+    "upcomingAppointments": "Yaklaşan Randevular",
+    "pastAppointments": "Geçmiş Randevular",
+    "medicalRecords": "Tıbbi Kayıtlar",
+    "prescriptions": "Reçeteler",
+    "testResults": "Test Sonuçları"
+  },
+  "appointments": {
+    "book": "Randevu Al",
+    "cancel": "Randevuyu İptal Et",
+    "reschedule": "Yeniden Planla",
+    "confirmed": "Onaylandı",
+    "pending": "Beklemede",
+    "cancelled": "İptal Edildi",
+    "completed": "Tamamlandı",
+    "noAppointments": "Randevu bulunamadı",
+    "viewDetails": "Detayları Görüntüle"
+  }
+}

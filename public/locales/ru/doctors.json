@@ -1,1 +1,29 @@
-{}
+{
+  "search": {
+    "title": "Найти врачей",
+    "placeholder": "Поиск по имени, специальности или местоположению",
+    "filters": "Фильтры",
+    "availability": "Доступность",
+    "rating": "Рейтинг",
+    "experience": "Опыт",
+    "consultationFee": "Стоимость консультации",
+    "specialty": "Специальность",
+    "location": "Местоположение",
+    "applyFilters": "Применить фильтры",
+    "clearFilters": "Очистить фильтры"
+  },
+  "profile": {
+    "viewProfile": "Просмотреть профиль",
+    "bookAppointment": "Записаться на прием",
+    "specialty": "Специальность",
+    "experience": "лет опыта",
+    "consultationFee": "Стоимость консультации",
+    "rating": "Рейтинг",
+    "reviews": "отзывов",
+    "availability": "Доступность",
+    "about": "О враче",
+    "education": "Образование",
+    "languages": "Языки",
+    "services": "Предоставляемые услуги"
+  }
+}

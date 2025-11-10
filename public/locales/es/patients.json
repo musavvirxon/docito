@@ -1,1 +1,22 @@
-{}
+{
+  "dashboard": {
+    "title": "Panel del Paciente",
+    "welcome": "Bienvenido",
+    "upcomingAppointments": "Citas Próximas",
+    "pastAppointments": "Citas Pasadas",
+    "medicalRecords": "Registros Médicos",
+    "prescriptions": "Recetas",
+    "testResults": "Resultados de Pruebas"
+  },
+  "appointments": {
+    "book": "Reservar Cita",
+    "cancel": "Cancelar Cita",
+    "reschedule": "Reprogramar",
+    "confirmed": "Confirmado",
+    "pending": "Pendiente",
+    "cancelled": "Cancelado",
+    "completed": "Completado",
+    "noAppointments": "No se encontraron citas",
+    "viewDetails": "Ver Detalles"
+  }
+}

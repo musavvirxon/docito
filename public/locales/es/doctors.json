@@ -1,1 +1,29 @@
-{}
+{
+  "search": {
+    "title": "Encontrar Doctores",
+    "placeholder": "Buscar por nombre, especialidad o ubicación",
+    "filters": "Filtros",
+    "availability": "Disponibilidad",
+    "rating": "Calificación",
+    "experience": "Experiencia",
+    "consultationFee": "Tarifa de Consulta",
+    "specialty": "Especialidad",
+    "location": "Ubicación",
+    "applyFilters": "Aplicar Filtros",
+    "clearFilters": "Limpiar Filtros"
+  },
+  "profile": {
+    "viewProfile": "Ver Perfil",
+    "bookAppointment": "Reservar Cita",
+    "specialty": "Especialidad",
+    "experience": "años de experiencia",
+    "consultationFee": "Tarifa de Consulta",
+    "rating": "Calificación",
+    "reviews": "reseñas",
+    "availability": "Disponibilidad",
+    "about": "Acerca de",
+    "education": "Educación",
+    "languages": "Idiomas Hablados",
+    "services": "Servicios Ofrecidos"
+  }
+}

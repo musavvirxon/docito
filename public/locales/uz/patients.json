@@ -1,1 +1,22 @@
-{}
+{
+  "dashboard": {
+    "title": "Bemor paneli",
+    "welcome": "Xush kelibsiz",
+    "upcomingAppointments": "Kelgusi qabullar",
+    "pastAppointments": "O'tgan qabullar",
+    "medicalRecords": "Tibbiy yozuvlar",
+    "prescriptions": "Retseptlar",
+    "testResults": "Tahlil natijalari"
+  },
+  "appointments": {
+    "book": "Qabulga yozilish",
+    "cancel": "Qabulni bekor qilish",
+    "reschedule": "Vaqtni o'zgartirish",
+    "confirmed": "Tasdiqlangan",
+    "pending": "Kutilmoqda",
+    "cancelled": "Bekor qilingan",
+    "completed": "Yakunlangan",
+    "noAppointments": "Qabullar topilmadi",
+    "viewDetails": "Tafsilotlarni ko'rish"
+  }
+}

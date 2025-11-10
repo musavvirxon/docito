@@ -1,1 +1,22 @@
-{}
+{
+  "dashboard": {
+    "title": "Панель пациента",
+    "welcome": "Добро пожаловать",
+    "upcomingAppointments": "Предстоящие приемы",
+    "pastAppointments": "Прошедшие приемы",
+    "medicalRecords": "Медицинские записи",
+    "prescriptions": "Рецепты",
+    "testResults": "Результаты анализов"
+  },
+  "appointments": {
+    "book": "Записаться на прием",
+    "cancel": "Отменить прием",
+    "reschedule": "Перенести",
+    "confirmed": "Подтверждено",
+    "pending": "В ожидании",
+    "cancelled": "Отменено",
+    "completed": "Завершено",
+    "noAppointments": "Приемы не найдены",
+    "viewDetails": "Просмотреть детали"
+  }
+}

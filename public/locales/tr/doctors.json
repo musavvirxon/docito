@@ -1,1 +1,29 @@
-{}
+{
+  "search": {
+    "title": "Doktor Bul",
+    "placeholder": "İsim, uzmanlık veya konum ile ara",
+    "filters": "Filtreler",
+    "availability": "Müsaitlik",
+    "rating": "Değerlendirme",
+    "experience": "Deneyim",
+    "consultationFee": "Muayene Ücreti",
+    "specialty": "Uzmanlık",
+    "location": "Konum",
+    "applyFilters": "Filtreleri Uygula",
+    "clearFilters": "Filtreleri Temizle"
+  },
+  "profile": {
+    "viewProfile": "Profili Görüntüle",
+    "bookAppointment": "Randevu Al",
+    "specialty": "Uzmanlık",
+    "experience": "yıl deneyim",
+    "consultationFee": "Muayene Ücreti",
+    "rating": "Değerlendirme",
+    "reviews": "yorum",
+    "availability": "Müsaitlik",
+    "about": "Hakkında",
+    "education": "Eğitim",
+    "languages": "Konuşulan Diller",
+    "services": "Sunulan Hizmetler"
+  }
+}

@@ -1,1 +1,29 @@
-{}
+{
+  "search": {
+    "title": "查找医生",
+    "placeholder": "按姓名、专科或地点搜索",
+    "filters": "筛选",
+    "availability": "可用性",
+    "rating": "评分",
+    "experience": "经验",
+    "consultationFee": "咨询费用",
+    "specialty": "专科",
+    "location": "地点",
+    "applyFilters": "应用筛选",
+    "clearFilters": "清除筛选"
+  },
+  "profile": {
+    "viewProfile": "查看资料",
+    "bookAppointment": "预约",
+    "specialty": "专科",
+    "experience": "年经验",
+    "consultationFee": "咨询费用",
+    "rating": "评分",
+    "reviews": "评论",
+    "availability": "可用性",
+    "about": "关于",
+    "education": "教育",
+    "languages": "使用语言",
+    "services": "提供的服务"
+  }
+}

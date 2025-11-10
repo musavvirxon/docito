@@ -1,1 +1,22 @@
-{}
+{
+  "dashboard": {
+    "title": "患者仪表板",
+    "welcome": "欢迎",
+    "upcomingAppointments": "即将到来的预约",
+    "pastAppointments": "过去的预约",
+    "medicalRecords": "医疗记录",
+    "prescriptions": "处方",
+    "testResults": "测试结果"
+  },
+  "appointments": {
+    "book": "预约",
+    "cancel": "取消预约",
+    "reschedule": "重新安排",
+    "confirmed": "已确认",
+    "pending": "待处理",
+    "cancelled": "已取消",
+    "completed": "已完成",
+    "noAppointments": "未找到预约",
+    "viewDetails": "查看详情"
+  }
+}

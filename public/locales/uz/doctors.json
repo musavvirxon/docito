@@ -1,1 +1,29 @@
-{}
+{
+  "search": {
+    "title": "Shifokorlarni topish",
+    "placeholder": "Ism, mutaxassislik yoki joylashuv bo'yicha qidirish",
+    "filters": "Filtrlar",
+    "availability": "Mavjudlik",
+    "rating": "Reyting",
+    "experience": "Tajriba",
+    "consultationFee": "Konsultatsiya narxi",
+    "specialty": "Mutaxassislik",
+    "location": "Joylashuv",
+    "applyFilters": "Filtrlarni qo'llash",
+    "clearFilters": "Filtrlarni tozalash"
+  },
+  "profile": {
+    "viewProfile": "Profilni ko'rish",
+    "bookAppointment": "Qabulga yozilish",
+    "specialty": "Mutaxassislik",
+    "experience": "yillik tajriba",
+    "consultationFee": "Konsultatsiya narxi",
+    "rating": "Reyting",
+    "reviews": "sharh",
+    "availability": "Mavjudlik",
+    "about": "Shifokor haqida",
+    "education": "Ta'lim",
+    "languages": "Tillar",
+    "services": "Taqdim etiladigan xizmatlar"
+  }
+}

@@ -1,1 +1,29 @@
-{}
+{
+  "search": {
+    "title": "Find Doctors",
+    "placeholder": "Search by name, specialty, or location",
+    "filters": "Filters",
+    "availability": "Availability",
+    "rating": "Rating",
+    "experience": "Experience",
+    "consultationFee": "Consultation Fee",
+    "specialty": "Specialty",
+    "location": "Location",
+    "applyFilters": "Apply Filters",
+    "clearFilters": "Clear Filters"
+  },
+  "profile": {
+    "viewProfile": "View Profile",
+    "bookAppointment": "Book Appointment",
+    "specialty": "Specialty",
+    "experience": "years experience",
+    "consultationFee": "Consultation Fee",
+    "rating": "Rating",
+    "reviews": "reviews",
+    "availability": "Availability",
+    "about": "About",
+    "education": "Education",
+    "languages": "Languages Spoken",
+    "services": "Services Offered"
+  }
+}
