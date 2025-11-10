@@ -1692,11 +1692,40 @@
       "export": "Экспорт отчета",
       "exportComingSoon": "Функция экспорта скоро появится",
       "dataRefreshed": "Данные производительности успешно обновлены",
+      "high": "Высокий",
+      "medium": "Средний",
+      "low": "Низкий",
       "tabs": {
         "overview": "Обзор",
         "services": "Услуги",
         "reviews": "Отзывы",
         "trends": "Тренды"
+      },
+      "overview": {
+        "performanceLevel": "Уровень производительности",
+        "basedOn": "На основе процента завершения, рейтингов и активности",
+        "totalAppointments": "Всего приемов",
+        "inSelectedPeriod": "В выбранном периоде",
+        "completed": "Завершено",
+        "completionRate": "процент завершения",
+        "cancelled": "Отменено",
+        "noShows": "Неявки",
+        "activeDays": "Активные дни",
+        "daysWithAppointments": "Дни с приемами",
+        "avgDailyPatients": "Сред. пациентов в день",
+        "patientsPerDay": "Пациентов за активный день",
+        "avgDuration": "Сред. длительность",
+        "perAppointment": "За прием",
+        "appointmentTrends": "Тренды приемов",
+        "dailyBreakdown": "Ежедневная разбивка приемов",
+        "total": "Всего",
+        "performanceMetrics": "Метрики производительности",
+        "completionRateLabel": "Процент завершения",
+        "cancellationRate": "Процент отмен",
+        "noShowRate": "Процент неявок"
+      },
+      "services": {
+        "minutes": "мин"
       }
     },
     "financialStats": {
@@ -1712,12 +1741,82 @@
       "dataRefreshed": "Финансовые данные успешно обновлены",
       "errorLoading": "Ошибка загрузки финансовых данных",
       "retry": "Повторить",
+      "overview": {
+        "totalEarnings": "Общий доход",
+        "allTimeRevenue": "Доход за все время",
+        "thisMonth": "Этот месяц",
+        "thisWeek": "Эта неделя",
+        "unpaidEarnings": "Неоплаченный доход",
+        "pendingAppointments": "Ожидающие приемы",
+        "netEarnings": "Чистый доход",
+        "afterPlatformFee": "После комиссии платформы 15%",
+        "payoutInfo": "Информация о выплатах",
+        "payoutsProcessed": "Обработано выплат",
+        "nextPayout": "Следующая выплата",
+        "tbd": "Уточняется",
+        "platformCommission": "Комиссия платформы"
+      },
       "tabs": {
         "earningsChart": "График доходов",
         "byService": "По услугам",
         "payouts": "Выплаты",
         "pending": "Ожидается",
         "insights": "Аналитика"
+      },
+      "chart": {
+        "title": "Доходы со временем",
+        "line": "Линия",
+        "bar": "Столбцы",
+        "noData": "Нет данных о доходах за выбранный период",
+        "noDataDesc": "Начните принимать приемы, чтобы видеть ваши доходы здесь",
+        "earningsLabel": "Доходы"
+      },
+      "services": {
+        "title": "Доходы по услугам",
+        "serviceName": "Название услуги",
+        "bookings": "Записей",
+        "totalRevenue": "Общий доход",
+        "avgRevenue": "Сред. доход",
+        "avgDuration": "Сред. длительность",
+        "minutes": "мин",
+        "noData": "Нет данных о доходах от услуг"
+      },
+      "payouts": {
+        "title": "История выплат",
+        "referenceId": "Номер ссылки",
+        "amount": "Сумма",
+        "status": "Статус",
+        "date": "Дата",
+        "paymentMethod": "Способ оплаты",
+        "statusCompleted": "Завершено",
+        "statusPending": "Ожидается",
+        "statusFailed": "Не удалось",
+        "noData": "Нет записей о выплатах"
+      },
+      "pending": {
+        "title": "Ожидающие платежи",
+        "total": "Всего",
+        "patientName": "Имя пациента",
+        "service": "Услуга",
+        "amount": "Сумма",
+        "date": "Дата",
+        "status": "Статус",
+        "action": "Действие",
+        "markPaid": "Отметить как оплаченное",
+        "paymentMarked": "Платеж отмечен как полученный",
+        "noData": "Нет ожидающих платежей"
+      },
+      "insights": {
+        "mostProfitable": "Самая прибыльная услуга",
+        "bookings": "записей",
+        "noData": "Нет данных",
+        "revenuePerHour": "Доход в час",
+        "basedOnHours": "На основе {{hours}} отработанных часов",
+        "refundRate": "Процент возвратов/отмен",
+        "excellent": "Отлично",
+        "good": "Хорошо",
+        "needsImprovement": "Требует улучшения",
+        "busiestDays": "Самые загруженные дни"
       }
     }
   },
