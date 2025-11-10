@@ -636,5 +636,15 @@
       "sessionExpired": "Sitzung abgelaufen",
       "sessionExpiredDesc": "Sie wurden aufgrund von Inaktivität abgemeldet"
     }
+  },
+  "doctor": {
+    "performance": {
+      "tabs": {
+        "overview": "Übersicht",
+        "services": "Dienstleistungen",
+        "reviews": "Bewertungen",
+        "trends": "Trends"
+      }
+    }
   }
 }

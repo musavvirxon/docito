@@ -316,5 +316,15 @@
       "engagement": "エンゲージメント",
       "reports": "レポート"
     }
+  },
+  "doctor": {
+    "performance": {
+      "tabs": {
+        "overview": "概要",
+        "services": "サービス",
+        "reviews": "レビュー",
+        "trends": "トレンド"
+      }
+    }
   }
 }

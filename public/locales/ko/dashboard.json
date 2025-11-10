@@ -316,5 +316,15 @@
       "engagement": "참여",
       "reports": "보고서"
     }
+  },
+  "doctor": {
+    "performance": {
+      "tabs": {
+        "overview": "개요",
+        "services": "서비스",
+        "reviews": "리뷰",
+        "trends": "트렌드"
+      }
+    }
   }
 }
