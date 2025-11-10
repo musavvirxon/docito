@@ -226,6 +226,44 @@
       "completed": "已完成",
       "draft": "草稿"
     }
+    "performance": {
+      "title": "绩效分析",
+      "description": "跟踪您的绩效指标和见解",
+      "loading": "正在加载绩效数据...",
+      "errorLoading": "加载绩效数据时出错",
+      "tryAgain": "重试",
+      "refresh": "刷新",
+      "export": "导出报告",
+      "exportComingSoon": "导出功能即将推出",
+      "dataRefreshed": "绩效数据已成功刷新",
+      "tabs": {
+        "overview": "概览",
+        "services": "服务",
+        "reviews": "评论",
+        "trends": "趋势"
+      }
+    },
+    "financialStats": {
+      "title": "财务分析",
+      "description": "跟踪您的收入、支付和财务见解",
+      "7days": "7天",
+      "30days": "30天",
+      "90days": "90天",
+      "refresh": "刷新",
+      "export": "导出",
+      "csvExported": "财务报告已导出为CSV",
+      "exportComingSoon": "{{format}}导出即将推出",
+      "dataRefreshed": "财务数据已成功刷新",
+      "errorLoading": "加载财务数据时出错",
+      "retry": "重试",
+      "tabs": {
+        "earningsChart": "收入图表",
+        "byService": "按服务",
+        "payouts": "支付",
+        "pending": "待处理",
+        "insights": "见解"
+      }
+    }
   },
   "superAdmin": {
     "title": "超级管理员仪表板",

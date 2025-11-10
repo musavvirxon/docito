@@ -226,6 +226,44 @@
       "completed": "完了",
       "draft": "下書き"
     }
+    "performance": {
+      "title": "パフォーマンス分析",
+      "description": "パフォーマンス指標とインサイトを追跡",
+      "loading": "パフォーマンスデータを読み込み中...",
+      "errorLoading": "パフォーマンスデータの読み込みエラー",
+      "tryAgain": "再試行",
+      "refresh": "更新",
+      "export": "レポートをエクスポート",
+      "exportComingSoon": "エクスポート機能は近日公開",
+      "dataRefreshed": "パフォーマンスデータを正常に更新しました",
+      "tabs": {
+        "overview": "概要",
+        "services": "サービス",
+        "reviews": "レビュー",
+        "trends": "トレンド"
+      }
+    },
+    "financialStats": {
+      "title": "財務分析",
+      "description": "収入、支払い、財務インサイトを追跡",
+      "7days": "7日間",
+      "30days": "30日間",
+      "90days": "90日間",
+      "refresh": "更新",
+      "export": "エクスポート",
+      "csvExported": "財務レポートをCSVとしてエクスポートしました",
+      "exportComingSoon": "{{format}}エクスポートは近日公開",
+      "dataRefreshed": "財務データを正常に更新しました",
+      "errorLoading": "財務データの読み込みエラー",
+      "retry": "再試行",
+      "tabs": {
+        "earningsChart": "収入チャート",
+        "byService": "サービス別",
+        "payouts": "支払い",
+        "pending": "保留中",
+        "insights": "インサイト"
+      }
+    }
   },
   "superAdmin": {
     "title": "スーパー管理者ダッシュボード",

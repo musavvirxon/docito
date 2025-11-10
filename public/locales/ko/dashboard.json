@@ -226,6 +226,44 @@
       "completed": "완료",
       "draft": "초안"
     }
+    "performance": {
+      "title": "성과 분석",
+      "description": "성과 지표 및 인사이트 추적",
+      "loading": "성과 데이터 로딩 중...",
+      "errorLoading": "성과 데이터 로딩 오류",
+      "tryAgain": "다시 시도",
+      "refresh": "새로고침",
+      "export": "보고서 내보내기",
+      "exportComingSoon": "내보내기 기능 곧 출시",
+      "dataRefreshed": "성과 데이터가 성공적으로 새로고침되었습니다",
+      "tabs": {
+        "overview": "개요",
+        "services": "서비스",
+        "reviews": "리뷰",
+        "trends": "트렌드"
+      }
+    },
+    "financialStats": {
+      "title": "재무 분석",
+      "description": "수입, 지급 및 재무 인사이트 추적",
+      "7days": "7일",
+      "30days": "30일",
+      "90days": "90일",
+      "refresh": "새로고침",
+      "export": "내보내기",
+      "csvExported": "재무 보고서가 CSV로 내보내기되었습니다",
+      "exportComingSoon": "{{format}} 내보내기 곧 출시",
+      "dataRefreshed": "재무 데이터가 성공적으로 새로고침되었습니다",
+      "errorLoading": "재무 데이터 로딩 오류",
+      "retry": "다시 시도",
+      "tabs": {
+        "earningsChart": "수입 차트",
+        "byService": "서비스별",
+        "payouts": "지급",
+        "pending": "대기 중",
+        "insights": "인사이트"
+      }
+    }
   },
   "superAdmin": {
     "title": "슈퍼 관리자 대시보드",

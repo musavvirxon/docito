@@ -1018,6 +1018,44 @@
       "noDescription": "Açıklama mevcut değil",
       "loadingError": "Klinikler yüklenemedi."
     }
+    "performance": {
+      "title": "Performans Analizi",
+      "description": "Performans metriklerinizi ve içgörülerinizi takip edin",
+      "loading": "Performans verileri yükleniyor...",
+      "errorLoading": "Performans verileri yüklenirken hata oluştu",
+      "tryAgain": "Tekrar Dene",
+      "refresh": "Yenile",
+      "export": "Rapor Dışa Aktar",
+      "exportComingSoon": "Dışa aktarma özelliği yakında",
+      "dataRefreshed": "Performans verileri başarıyla yenilendi",
+      "tabs": {
+        "overview": "Genel Bakış",
+        "services": "Hizmetler",
+        "reviews": "Yorumlar",
+        "trends": "Trendler"
+      }
+    },
+    "financialStats": {
+      "title": "Finansal Analitik",
+      "description": "Kazançlarınızı, ödemelerinizi ve finansal içgörülerinizi takip edin",
+      "7days": "7 Gün",
+      "30days": "30 Gün",
+      "90days": "90 Gün",
+      "refresh": "Yenile",
+      "export": "Dışa Aktar",
+      "csvExported": "Finansal rapor CSV olarak dışa aktarıldı",
+      "exportComingSoon": "{{format}} dışa aktarma yakında",
+      "dataRefreshed": "Finansal veriler başarıyla yenilendi",
+      "errorLoading": "Finansal veriler yüklenirken hata",
+      "retry": "Tekrar Dene",
+      "tabs": {
+        "earningsChart": "Kazanç Grafiği",
+        "byService": "Hizmete Göre",
+        "payouts": "Ödemeler",
+        "pending": "Beklemede",
+        "insights": "İçgörüler"
+      }
+    }
   },
   "superAdmin": {
     "login": {

@@ -1018,6 +1018,44 @@
       "noDescription": "No hay descripción disponible",
       "loadingError": "No se pudieron cargar las clínicas."
     }
+    "performance": {
+      "title": "Analítica de Rendimiento",
+      "description": "Rastrea tus métricas de rendimiento y perspectivas",
+      "loading": "Cargando datos de rendimiento...",
+      "errorLoading": "Error al cargar datos de rendimiento",
+      "tryAgain": "Intentar Nuevamente",
+      "refresh": "Actualizar",
+      "export": "Exportar Informe",
+      "exportComingSoon": "Función de exportación próximamente",
+      "dataRefreshed": "Datos de rendimiento actualizados exitosamente",
+      "tabs": {
+        "overview": "Resumen",
+        "services": "Servicios",
+        "reviews": "Reseñas",
+        "trends": "Tendencias"
+      }
+    },
+    "financialStats": {
+      "title": "Analítica Financiera",
+      "description": "Rastrea tus ganancias, pagos e información financiera",
+      "7days": "7 Días",
+      "30days": "30 Días",
+      "90days": "90 Días",
+      "refresh": "Actualizar",
+      "export": "Exportar",
+      "csvExported": "Informe financiero exportado como CSV",
+      "exportComingSoon": "Exportación {{format}} próximamente",
+      "dataRefreshed": "Datos financieros actualizados exitosamente",
+      "errorLoading": "Error al cargar datos financieros",
+      "retry": "Reintentar",
+      "tabs": {
+        "earningsChart": "Gráfico de Ganancias",
+        "byService": "Por Servicio",
+        "payouts": "Pagos",
+        "pending": "Pendiente",
+        "insights": "Perspectivas"
+      }
+    }
   },
   "superAdmin": {
     "login": {

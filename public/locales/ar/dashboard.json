@@ -901,6 +901,44 @@
       "closed": "مغلق",
       "saveAvailabilitySettings": "حفظ إعدادات التوفر",
       "saving": "جاري الحفظ..."
+    },
+    "performance": {
+      "title": "تحليلات الأداء",
+      "description": "تتبع مقاييس الأداء والرؤى",
+      "loading": "جاري تحميل بيانات الأداء...",
+      "errorLoading": "خطأ في تحميل بيانات الأداء",
+      "tryAgain": "حاول مرة أخرى",
+      "refresh": "تحديث",
+      "export": "تصدير التقرير",
+      "exportComingSoon": "ميزة التصدير قادمة قريباً",
+      "dataRefreshed": "تم تحديث بيانات الأداء بنجاح",
+      "tabs": {
+        "overview": "نظرة عامة",
+        "services": "الخدمات",
+        "reviews": "التقييمات",
+        "trends": "الاتجاهات"
+      }
+    },
+    "financialStats": {
+      "title": "التحليلات المالية",
+      "description": "تتبع أرباحك والمدفوعات والرؤى المالية",
+      "7days": "7 أيام",
+      "30days": "30 يوماً",
+      "90days": "90 يوماً",
+      "refresh": "تحديث",
+      "export": "تصدير",
+      "csvExported": "تم تصدير التقرير المالي بصيغة CSV",
+      "exportComingSoon": "تصدير {{format}} قادم قريباً",
+      "dataRefreshed": "تم تحديث البيانات المالية بنجاح",
+      "errorLoading": "خطأ في تحميل البيانات المالية",
+      "retry": "إعادة المحاولة",
+      "tabs": {
+        "earningsChart": "رسم بياني للأرباح",
+        "byService": "حسب الخدمة",
+        "payouts": "المدفوعات",
+        "pending": "قيد الانتظار",
+        "insights": "الرؤى"
+      }
     }
   }
 }

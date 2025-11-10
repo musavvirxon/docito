@@ -527,8 +527,46 @@
       "clinicFinder": "Praxisfinder",
       "settings": "Einstellungen",
       "logout": "Abmelden"
+    "performance": {
+      "title": "Leistungsanalyse",
+      "description": "Verfolgen Sie Ihre Leistungsmetriken und Einblicke",
+      "loading": "Leistungsdaten werden geladen...",
+      "errorLoading": "Fehler beim Laden der Leistungsdaten",
+      "tryAgain": "Erneut Versuchen",
+      "refresh": "Aktualisieren",
+      "export": "Bericht Exportieren",
+      "exportComingSoon": "Exportfunktion kommt bald",
+      "dataRefreshed": "Leistungsdaten erfolgreich aktualisiert",
+      "tabs": {
+        "overview": "Übersicht",
+        "services": "Dienstleistungen",
+        "reviews": "Bewertungen",
+        "trends": "Trends"
+      }
     },
-    "superAdmin": {
+    "financialStats": {
+      "title": "Finanzanalyse",
+      "description": "Verfolgen Sie Ihre Einnahmen, Auszahlungen und finanziellen Einblicke",
+      "7days": "7 Tage",
+      "30days": "30 Tage",
+      "90days": "90 Tage",
+      "refresh": "Aktualisieren",
+      "export": "Exportieren",
+      "csvExported": "Finanzbericht als CSV exportiert",
+      "exportComingSoon": "{{format}}-Export kommt bald",
+      "dataRefreshed": "Finanzdaten erfolgreich aktualisiert",
+      "errorLoading": "Fehler beim Laden der Finanzdaten",
+      "retry": "Wiederholen",
+      "tabs": {
+        "earningsChart": "Einnahmendiagramm",
+        "byService": "Nach Dienstleistung",
+        "payouts": "Auszahlungen",
+        "pending": "Ausstehend",
+        "insights": "Einblicke"
+      }
+    }
+  },
+  "superAdmin": {
       "login": {
         "title": "Super-Admin-Zugang",
         "subtitle": "Plattformbesitzer-Anmeldung - Nur autorisiertes Personal",

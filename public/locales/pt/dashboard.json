@@ -226,6 +226,44 @@
       "completed": "Concluídos",
       "draft": "Rascunho"
     }
+    "performance": {
+      "title": "Análise de Desempenho",
+      "description": "Acompanhe suas métricas de desempenho e insights",
+      "loading": "Carregando dados de desempenho...",
+      "errorLoading": "Erro ao carregar dados de desempenho",
+      "tryAgain": "Tentar Novamente",
+      "refresh": "Atualizar",
+      "export": "Exportar Relatório",
+      "exportComingSoon": "Recurso de exportação em breve",
+      "dataRefreshed": "Dados de desempenho atualizados com sucesso",
+      "tabs": {
+        "overview": "Visão Geral",
+        "services": "Serviços",
+        "reviews": "Avaliações",
+        "trends": "Tendências"
+      }
+    },
+    "financialStats": {
+      "title": "Análise Financeira",
+      "description": "Acompanhe seus ganhos, pagamentos e insights financeiros",
+      "7days": "7 Dias",
+      "30days": "30 Dias",
+      "90days": "90 Dias",
+      "refresh": "Atualizar",
+      "export": "Exportar",
+      "csvExported": "Relatório financeiro exportado como CSV",
+      "exportComingSoon": "Exportação {{format}} em breve",
+      "dataRefreshed": "Dados financeiros atualizados com sucesso",
+      "errorLoading": "Erro ao carregar dados financeiros",
+      "retry": "Tentar Novamente",
+      "tabs": {
+        "earningsChart": "Gráfico de Ganhos",
+        "byService": "Por Serviço",
+        "payouts": "Pagamentos",
+        "pending": "Pendente",
+        "insights": "Insights"
+      }
+    }
   },
   "superAdmin": {
     "title": "Painel do Super Administrador",

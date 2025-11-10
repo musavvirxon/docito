@@ -901,6 +901,44 @@
       "closed": "Yopiq",
       "saveAvailabilitySettings": "Mavjudlik sozlamalarini saqlash",
       "saving": "Saqlanmoqda..."
+    },
+    "performance": {
+      "title": "Samaradorlik tahlili",
+      "description": "Ko'rsatkichlaringiz va tahlillaringizni kuzating",
+      "loading": "Samaradorlik ma'lumotlari yuklanmoqda...",
+      "errorLoading": "Samaradorlik ma'lumotlarini yuklashda xatolik",
+      "tryAgain": "Qayta urinib ko'ring",
+      "refresh": "Yangilash",
+      "export": "Hisobotni eksport qilish",
+      "exportComingSoon": "Eksport funksiyasi tez orada",
+      "dataRefreshed": "Samaradorlik ma'lumotlari muvaffaqiyatli yangilandi",
+      "tabs": {
+        "overview": "Umumiy ko'rinish",
+        "services": "Xizmatlar",
+        "reviews": "Sharhlar",
+        "trends": "Tendensiyalar"
+      }
+    },
+    "financialStats": {
+      "title": "Moliyaviy tahlil",
+      "description": "Daromadlar, to'lovlar va moliyaviy tahlilni kuzating",
+      "7days": "7 kun",
+      "30days": "30 kun",
+      "90days": "90 kun",
+      "refresh": "Yangilash",
+      "export": "Eksport",
+      "csvExported": "Moliyaviy hisobot CSV formatda eksport qilindi",
+      "exportComingSoon": "{{format}} eksporti tez orada",
+      "dataRefreshed": "Moliyaviy ma'lumotlar muvaffaqiyatli yangilandi",
+      "errorLoading": "Moliyaviy ma'lumotlarni yuklashda xatolik",
+      "retry": "Qayta urinish",
+      "tabs": {
+        "earningsChart": "Daromadlar grafigi",
+        "byService": "Xizmatlar bo'yicha",
+        "payouts": "To'lovlar",
+        "pending": "Kutilmoqda",
+        "insights": "Tahlil"
+      }
     }
   }
 }
