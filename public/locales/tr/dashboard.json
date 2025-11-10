@@ -681,12 +681,6 @@
       "low": "Düşük",
       "returning": "Dönen",
       "new": "Yeni",
-      "tabs": {
-        "overview": "Genel Bakış",
-        "services": "Hizmetler",
-        "reviews": "Yorumlar",
-        "trends": "Trendler"
-      },
       "overview": {
         "performanceLevel": "Performans Seviyesi",
         "basedOn": "Tamamlanma oranı, puanlar ve aktiviteye dayalı",

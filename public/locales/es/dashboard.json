@@ -681,12 +681,6 @@
       "low": "Bajo",
       "returning": "Que regresa",
       "new": "Nuevo",
-      "tabs": {
-        "overview": "Resumen",
-        "services": "Servicios",
-        "reviews": "Reseñas",
-        "trends": "Tendencias"
-      },
       "overview": {
         "performanceLevel": "Nivel de Rendimiento",
         "basedOn": "Basado en tasa de finalización, calificaciones y actividad",

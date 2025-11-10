@@ -681,12 +681,6 @@
       "low": "Past",
       "returning": "Qaytgan",
       "new": "Yangi",
-      "tabs": {
-        "overview": "Umumiy ko'rinish",
-        "services": "Xizmatlar",
-        "reviews": "Sharhlar",
-        "trends": "Tendentsiyalar"
-      },
       "overview": {
         "performanceLevel": "Samaradorlik darajasi",
         "basedOn": "Yakunlash foizi, reyting va faollikka asoslangan",

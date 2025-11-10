@@ -681,12 +681,6 @@
       "low": "منخفض",
       "returning": "العائدون",
       "new": "جديد",
-      "tabs": {
-        "overview": "نظرة عامة",
-        "services": "الخدمات",
-        "reviews": "المراجعات",
-        "trends": "الاتجاهات"
-      },
       "overview": {
         "performanceLevel": "مستوى الأداء",
         "basedOn": "بناءً على معدل الإكمال والتقييمات والنشاط",
