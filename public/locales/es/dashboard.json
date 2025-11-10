@@ -667,6 +667,12 @@
       "tryAgain": "Intentar Nuevamente",
       "refresh": "Actualizar",
       "export": "Exportar Informe",
+      "tabs": {
+        "overview": "Resumen",
+        "services": "Servicios",
+        "reviews": "Reseñas",
+        "trends": "Tendencias"
+      },
       "exportComingSoon": "Función de exportación próximamente",
       "dataRefreshed": "Datos de rendimiento actualizados exitosamente",
       "newAchievement": "¡Nuevo Logro Desbloqueado!",

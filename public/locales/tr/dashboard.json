@@ -667,6 +667,12 @@
       "tryAgain": "Tekrar Dene",
       "refresh": "Yenile",
       "export": "Rapor Dışa Aktar",
+      "tabs": {
+        "overview": "Genel Bakış",
+        "services": "Hizmetler",
+        "reviews": "Yorumlar",
+        "trends": "Trendler"
+      },
       "exportComingSoon": "Dışa aktarma özelliği yakında",
       "dataRefreshed": "Performans verileri başarıyla yenilendi",
       "newAchievement": "Yeni Başarı Kilidi Açıldı!",

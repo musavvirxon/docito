@@ -667,6 +667,12 @@
       "tryAgain": "حاول مرة أخرى",
       "refresh": "تحديث",
       "export": "تصدير التقرير",
+      "tabs": {
+        "overview": "نظرة عامة",
+        "services": "الخدمات",
+        "reviews": "المراجعات",
+        "trends": "الاتجاهات"
+      },
       "exportComingSoon": "ميزة التصدير قريباً",
       "dataRefreshed": "تم تحديث بيانات الأداء بنجاح",
       "newAchievement": "إنجاز جديد تم فتحه!",

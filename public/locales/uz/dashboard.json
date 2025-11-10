@@ -667,6 +667,12 @@
       "tryAgain": "Qayta urinish",
       "refresh": "Yangilash",
       "export": "Hisobotni eksport qilish",
+      "tabs": {
+        "overview": "Umumiy ma'lumot",
+        "services": "Xizmatlar",
+        "reviews": "Sharhlar",
+        "trends": "Tendentsiyalar"
+      },
       "exportComingSoon": "Eksport funksiyasi tez orada",
       "dataRefreshed": "Samaradorlik ma'lumotlari muvaffaqiyatli yangilandi",
       "newAchievement": "Yangi yutuq qo'lga kiritildi!",
