@@ -23,40 +23,260 @@
     "error": {
       "failed": "加载仪表板失败",
       "tryAgain": "重试"
-    }
+    },
+    "tabs": {
+      "overview": "概览",
+      "doctors": "医生",
+      "appointments": "预约",
+      "patients": "患者",
+      "settings": "设置"
+    },
+    "stats": {
+      "totalDoctors": "医生总数",
+      "totalAppointments": "预约总数",
+      "totalPatients": "患者总数",
+      "revenue": "收入"
+    },
+    "inviteDoctor": "邀请医生",
+    "inviteStaff": "邀请员工",
+    "manageLocations": "管理地点",
+    "viewReports": "查看报告"
   },
   "patient": {
     "title": "患者仪表板",
     "loading": "加载仪表板中...",
+    "welcome": "欢迎回来",
     "navigation": {
       "dashboard": "仪表板",
       "myAppointments": "我的预约",
       "medications": "药物",
       "medicalRecords": "医疗记录",
       "findDoctors": "查找医生",
+      "treatmentPlans": "治疗计划",
       "settings": "设置",
       "logout": "登出"
+    },
+    "appointments": {
+      "title": "即将到来的预约",
+      "noAppointments": "没有即将到来的预约",
+      "bookNew": "预约新预约",
+      "viewAll": "查看全部",
+      "upcoming": "即将到来",
+      "past": "过去",
+      "cancelled": "已取消",
+      "confirmed": "已确认",
+      "pending": "待处理",
+      "reschedule": "重新安排",
+      "cancel": "取消"
+    },
+    "medications": {
+      "title": "我的药物",
+      "active": "活动",
+      "completed": "已完成",
+      "noMedications": "没有活动药物",
+      "addNew": "添加药物",
+      "dosage": "剂量",
+      "frequency": "频率",
+      "startDate": "开始日期",
+      "endDate": "结束日期"
+    },
+    "treatmentPlans": {
+      "title": "治疗计划",
+      "active": "活动",
+      "completed": "已完成",
+      "noPlans": "没有治疗计划",
+      "viewDetails": "查看详情"
+    },
+    "medicalRecords": {
+      "title": "医疗记录",
+      "noRecords": "没有医疗记录",
+      "upload": "上传记录",
+      "download": "下载"
     }
   },
   "doctor": {
     "loading": "加载您的仪表板...",
     "settingUp": "设置您的个人资料...",
     "title": "医生仪表板",
+    "welcome": "欢迎，医生",
     "navigation": {
       "dashboard": "仪表板",
       "myProfile": "我的个人资料",
       "myServices": "我的服务",
       "calendar": "日历",
+      "patients": "患者",
+      "appointments": "预约",
+      "schedule": "时间表",
+      "financial": "财务",
+      "performance": "绩效",
+      "messages": "消息",
       "settings": "设置",
       "logout": "登出"
+    },
+    "stats": {
+      "todayAppointments": "今日预约",
+      "weekAppointments": "本周预约",
+      "totalPatients": "患者总数",
+      "revenue": "收入",
+      "rating": "评分",
+      "reviews": "评论"
+    },
+    "schedule": {
+      "title": "我的时间表",
+      "today": "今天",
+      "week": "本周",
+      "month": "本月",
+      "setAvailability": "设置可用性",
+      "blockTime": "阻止时间",
+      "viewCalendar": "查看日历",
+      "noAppointments": "没有预约安排",
+      "upcoming": "即将到来",
+      "inProgress": "进行中",
+      "completed": "已完成"
+    },
+    "patients": {
+      "title": "我的患者",
+      "total": "患者总数",
+      "new": "新患者",
+      "active": "活动患者",
+      "search": "搜索患者",
+      "addNew": "添加患者",
+      "viewAll": "查看全部",
+      "recentPatients": "最近的患者",
+      "assignedPatients": "分配的患者"
+    },
+    "appointments": {
+      "title": "预约",
+      "today": "今天",
+      "upcoming": "即将到来",
+      "past": "过去",
+      "cancelled": "已取消",
+      "bookManual": "手动预约",
+      "viewAll": "查看全部",
+      "noAppointments": "没有预约",
+      "confirm": "确认",
+      "reschedule": "重新安排",
+      "cancel": "取消",
+      "complete": "完成"
+    },
+    "services": {
+      "title": "我的服务",
+      "addService": "添加服务",
+      "editService": "编辑服务",
+      "deleteService": "删除服务",
+      "noServices": "没有添加服务",
+      "price": "价格",
+      "duration": "持续时间",
+      "active": "活动",
+      "inactive": "不活动"
+    },
+    "financial": {
+      "title": "财务概览",
+      "totalEarnings": "总收入",
+      "thisMonth": "本月",
+      "lastMonth": "上月",
+      "pending": "待处理",
+      "paid": "已支付",
+      "viewDetails": "查看详情",
+      "payouts": "支付",
+      "transactions": "交易"
+    },
+    "performance": {
+      "title": "绩效指标",
+      "patientSatisfaction": "患者满意度",
+      "appointmentRate": "预约率",
+      "cancellationRate": "取消率",
+      "averageRating": "平均评分",
+      "totalReviews": "评论总数",
+      "viewInsights": "查看见解"
+    },
+    "profile": {
+      "title": "我的个人资料",
+      "edit": "编辑个人资料",
+      "specialties": "专业",
+      "education": "教育",
+      "experience": "经验",
+      "languages": "语言",
+      "about": "关于",
+      "credentials": "证书",
+      "availability": "可用性"
+    },
+    "settings": {
+      "title": "设置",
+      "profile": "个人资料设置",
+      "schedule": "时间表设置",
+      "notifications": "通知",
+      "privacy": "隐私",
+      "billing": "账单",
+      "integrations": "集成",
+      "preferences": "偏好"
+    },
+    "procedures": {
+      "title": "程序",
+      "library": "程序库",
+      "addProcedure": "添加程序",
+      "viewAll": "查看全部",
+      "recent": "最近的程序",
+      "templates": "模板"
+    },
+    "treatmentPlans": {
+      "title": "治疗计划",
+      "create": "创建计划",
+      "active": "活动计划",
+      "completed": "已完成",
+      "draft": "草稿"
     }
   },
   "superAdmin": {
+    "title": "超级管理员仪表板",
     "login": {
       "title": "超级管理员访问",
       "email": "电子邮件",
       "password": "密码",
       "signIn": "登录"
+    },
+    "navigation": {
+      "dashboard": "仪表板",
+      "users": "用户",
+      "doctors": "医生",
+      "practices": "诊所",
+      "verification": "验证",
+      "analytics": "分析",
+      "settings": "设置"
+    },
+    "stats": {
+      "totalUsers": "用户总数",
+      "totalDoctors": "医生总数",
+      "totalPractices": "诊所总数",
+      "pendingVerifications": "待验证",
+      "revenue": "收入",
+      "activeUsers": "活跃用户"
+    },
+    "verification": {
+      "title": "验证请求",
+      "pending": "待处理",
+      "approved": "已批准",
+      "rejected": "已拒绝",
+      "review": "审核",
+      "approve": "批准",
+      "reject": "拒绝"
+    },
+    "users": {
+      "title": "用户管理",
+      "search": "搜索用户",
+      "filter": "筛选",
+      "active": "活动",
+      "inactive": "不活动",
+      "banned": "已封禁",
+      "viewDetails": "查看详情"
+    },
+    "analytics": {
+      "title": "分析",
+      "overview": "概览",
+      "userGrowth": "用户增长",
+      "revenue": "收入",
+      "engagement": "参与度",
+      "reports": "报告"
     }
   }
 }

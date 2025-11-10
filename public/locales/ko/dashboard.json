@@ -3,29 +3,280 @@
     "title": "클리닉 설정",
     "description": "클리닉 프로필을 완성하여 의사와 예약 관리를 시작하세요.",
     "clinicName": "클리닉 이름",
+    "clinicNameRequired": "클리닉 이름은 필수입니다",
+    "description_field": "설명",
     "phone": "전화",
     "email": "이메일",
+    "address": "주소",
+    "city": "도시",
+    "country": "국가",
     "cancel": "취소",
-    "create": "클리닉 프로필 만들기"
+    "create": "클리닉 프로필 만들기",
+    "creating": "만드는 중...",
+    "success": "클리닉 프로필이 성공적으로 생성되었습니다!",
+    "error": "클리닉 프로필 생성 실패"
+  },
+  "admin": {
+    "title": "클리닉 대시보드",
+    "unverifiedPractice": "미인증 클리닉",
+    "loading": "대시보드 로딩 중...",
+    "error": {
+      "failed": "대시보드 로딩 실패",
+      "tryAgain": "다시 시도"
+    },
+    "tabs": {
+      "overview": "개요",
+      "doctors": "의사",
+      "appointments": "예약",
+      "patients": "환자",
+      "settings": "설정"
+    },
+    "stats": {
+      "totalDoctors": "총 의사 수",
+      "totalAppointments": "총 예약 수",
+      "totalPatients": "총 환자 수",
+      "revenue": "수익"
+    },
+    "inviteDoctor": "의사 초대",
+    "inviteStaff": "직원 초대",
+    "manageLocations": "위치 관리",
+    "viewReports": "보고서 보기"
   },
   "patient": {
     "title": "환자 대시보드",
     "loading": "대시보드 로딩 중...",
+    "welcome": "다시 오신 것을 환영합니다",
     "navigation": {
       "dashboard": "대시보드",
       "myAppointments": "내 예약",
+      "medications": "약물",
+      "medicalRecords": "의료 기록",
+      "findDoctors": "의사 찾기",
+      "treatmentPlans": "치료 계획",
       "settings": "설정",
       "logout": "로그아웃"
+    },
+    "appointments": {
+      "title": "예정된 예약",
+      "noAppointments": "예정된 예약이 없습니다",
+      "bookNew": "새 예약하기",
+      "viewAll": "모두 보기",
+      "upcoming": "예정",
+      "past": "과거",
+      "cancelled": "취소됨",
+      "confirmed": "확인됨",
+      "pending": "대기 중",
+      "reschedule": "일정 변경",
+      "cancel": "취소"
+    },
+    "medications": {
+      "title": "내 약물",
+      "active": "활성",
+      "completed": "완료",
+      "noMedications": "활성 약물이 없습니다",
+      "addNew": "약물 추가",
+      "dosage": "용량",
+      "frequency": "빈도",
+      "startDate": "시작일",
+      "endDate": "종료일"
+    },
+    "treatmentPlans": {
+      "title": "치료 계획",
+      "active": "활성",
+      "completed": "완료",
+      "noPlans": "치료 계획이 없습니다",
+      "viewDetails": "세부 정보 보기"
+    },
+    "medicalRecords": {
+      "title": "의료 기록",
+      "noRecords": "의료 기록이 없습니다",
+      "upload": "기록 업로드",
+      "download": "다운로드"
     }
   },
   "doctor": {
-    "title": "의사 대시보드",
     "loading": "대시보드 로딩 중...",
+    "settingUp": "프로필 설정 중...",
+    "title": "의사 대시보드",
+    "welcome": "환영합니다, 선생님",
     "navigation": {
       "dashboard": "대시보드",
       "myProfile": "내 프로필",
+      "myServices": "내 서비스",
+      "calendar": "캘린더",
+      "patients": "환자",
+      "appointments": "예약",
+      "schedule": "일정",
+      "financial": "재무",
+      "performance": "성과",
+      "messages": "메시지",
       "settings": "설정",
       "logout": "로그아웃"
+    },
+    "stats": {
+      "todayAppointments": "오늘의 예약",
+      "weekAppointments": "이번 주 예약",
+      "totalPatients": "총 환자 수",
+      "revenue": "수익",
+      "rating": "평점",
+      "reviews": "리뷰"
+    },
+    "schedule": {
+      "title": "내 일정",
+      "today": "오늘",
+      "week": "이번 주",
+      "month": "이번 달",
+      "setAvailability": "가용성 설정",
+      "blockTime": "시간 차단",
+      "viewCalendar": "캘린더 보기",
+      "noAppointments": "예약이 없습니다",
+      "upcoming": "예정",
+      "inProgress": "진행 중",
+      "completed": "완료"
+    },
+    "patients": {
+      "title": "내 환자",
+      "total": "총 환자 수",
+      "new": "새 환자",
+      "active": "활성 환자",
+      "search": "환자 검색",
+      "addNew": "환자 추가",
+      "viewAll": "모두 보기",
+      "recentPatients": "최근 환자",
+      "assignedPatients": "할당된 환자"
+    },
+    "appointments": {
+      "title": "예약",
+      "today": "오늘",
+      "upcoming": "예정",
+      "past": "과거",
+      "cancelled": "취소됨",
+      "bookManual": "수동 예약",
+      "viewAll": "모두 보기",
+      "noAppointments": "예약이 없습니다",
+      "confirm": "확인",
+      "reschedule": "일정 변경",
+      "cancel": "취소",
+      "complete": "완료"
+    },
+    "services": {
+      "title": "내 서비스",
+      "addService": "서비스 추가",
+      "editService": "서비스 편집",
+      "deleteService": "서비스 삭제",
+      "noServices": "추가된 서비스가 없습니다",
+      "price": "가격",
+      "duration": "기간",
+      "active": "활성",
+      "inactive": "비활성"
+    },
+    "financial": {
+      "title": "재무 개요",
+      "totalEarnings": "총 수익",
+      "thisMonth": "이번 달",
+      "lastMonth": "지난 달",
+      "pending": "대기 중",
+      "paid": "지불됨",
+      "viewDetails": "세부 정보 보기",
+      "payouts": "지급",
+      "transactions": "거래"
+    },
+    "performance": {
+      "title": "성과 지표",
+      "patientSatisfaction": "환자 만족도",
+      "appointmentRate": "예약률",
+      "cancellationRate": "취소율",
+      "averageRating": "평균 평점",
+      "totalReviews": "총 리뷰 수",
+      "viewInsights": "인사이트 보기"
+    },
+    "profile": {
+      "title": "내 프로필",
+      "edit": "프로필 편집",
+      "specialties": "전문 분야",
+      "education": "학력",
+      "experience": "경험",
+      "languages": "언어",
+      "about": "소개",
+      "credentials": "자격증",
+      "availability": "가용성"
+    },
+    "settings": {
+      "title": "설정",
+      "profile": "프로필 설정",
+      "schedule": "일정 설정",
+      "notifications": "알림",
+      "privacy": "개인정보",
+      "billing": "청구",
+      "integrations": "통합",
+      "preferences": "환경설정"
+    },
+    "procedures": {
+      "title": "시술",
+      "library": "시술 라이브러리",
+      "addProcedure": "시술 추가",
+      "viewAll": "모두 보기",
+      "recent": "최근 시술",
+      "templates": "템플릿"
+    },
+    "treatmentPlans": {
+      "title": "치료 계획",
+      "create": "계획 만들기",
+      "active": "활성 계획",
+      "completed": "완료",
+      "draft": "초안"
+    }
+  },
+  "superAdmin": {
+    "title": "슈퍼 관리자 대시보드",
+    "login": {
+      "title": "슈퍼 관리자 액세스",
+      "email": "이메일",
+      "password": "비밀번호",
+      "signIn": "로그인"
+    },
+    "navigation": {
+      "dashboard": "대시보드",
+      "users": "사용자",
+      "doctors": "의사",
+      "practices": "클리닉",
+      "verification": "인증",
+      "analytics": "분석",
+      "settings": "설정"
+    },
+    "stats": {
+      "totalUsers": "총 사용자 수",
+      "totalDoctors": "총 의사 수",
+      "totalPractices": "총 클리닉 수",
+      "pendingVerifications": "대기 중인 인증",
+      "revenue": "수익",
+      "activeUsers": "활성 사용자"
+    },
+    "verification": {
+      "title": "인증 요청",
+      "pending": "대기 중",
+      "approved": "승인됨",
+      "rejected": "거부됨",
+      "review": "검토",
+      "approve": "승인",
+      "reject": "거부"
+    },
+    "users": {
+      "title": "사용자 관리",
+      "search": "사용자 검색",
+      "filter": "필터",
+      "active": "활성",
+      "inactive": "비활성",
+      "banned": "차단됨",
+      "viewDetails": "세부 정보 보기"
+    },
+    "analytics": {
+      "title": "분석",
+      "overview": "개요",
+      "userGrowth": "사용자 증가",
+      "revenue": "수익",
+      "engagement": "참여",
+      "reports": "보고서"
     }
   }
 }

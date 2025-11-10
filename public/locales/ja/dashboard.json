@@ -3,29 +3,280 @@
     "title": "クリニックを設定",
     "description": "クリニックプロフィールを完成させて、医師と予約の管理を開始します。",
     "clinicName": "クリニック名",
+    "clinicNameRequired": "クリニック名は必須です",
+    "description_field": "説明",
     "phone": "電話",
     "email": "メール",
+    "address": "住所",
+    "city": "市区町村",
+    "country": "国",
     "cancel": "キャンセル",
-    "create": "クリニックプロフィールを作成"
+    "create": "クリニックプロフィールを作成",
+    "creating": "作成中...",
+    "success": "クリニックプロフィールが正常に作成されました！",
+    "error": "クリニックプロフィールの作成に失敗しました"
+  },
+  "admin": {
+    "title": "クリニックダッシュボード",
+    "unverifiedPractice": "未検証のクリニック",
+    "loading": "ダッシュボードを読み込んでいます...",
+    "error": {
+      "failed": "ダッシュボードの読み込みに失敗しました",
+      "tryAgain": "再試行"
+    },
+    "tabs": {
+      "overview": "概要",
+      "doctors": "医師",
+      "appointments": "予約",
+      "patients": "患者",
+      "settings": "設定"
+    },
+    "stats": {
+      "totalDoctors": "医師総数",
+      "totalAppointments": "予約総数",
+      "totalPatients": "患者総数",
+      "revenue": "収益"
+    },
+    "inviteDoctor": "医師を招待",
+    "inviteStaff": "スタッフを招待",
+    "manageLocations": "場所を管理",
+    "viewReports": "レポートを表示"
   },
   "patient": {
     "title": "患者ダッシュボード",
     "loading": "ダッシュボードを読み込んでいます...",
+    "welcome": "おかえりなさい",
     "navigation": {
       "dashboard": "ダッシュボード",
       "myAppointments": "予約",
+      "medications": "薬",
+      "medicalRecords": "医療記録",
+      "findDoctors": "医師を探す",
+      "treatmentPlans": "治療計画",
       "settings": "設定",
       "logout": "ログアウト"
+    },
+    "appointments": {
+      "title": "今後の予約",
+      "noAppointments": "今後の予約はありません",
+      "bookNew": "新しい予約を取る",
+      "viewAll": "すべて表示",
+      "upcoming": "今後",
+      "past": "過去",
+      "cancelled": "キャンセル済み",
+      "confirmed": "確認済み",
+      "pending": "保留中",
+      "reschedule": "再スケジュール",
+      "cancel": "キャンセル"
+    },
+    "medications": {
+      "title": "私の薬",
+      "active": "アクティブ",
+      "completed": "完了",
+      "noMedications": "アクティブな薬はありません",
+      "addNew": "薬を追加",
+      "dosage": "用量",
+      "frequency": "頻度",
+      "startDate": "開始日",
+      "endDate": "終了日"
+    },
+    "treatmentPlans": {
+      "title": "治療計画",
+      "active": "アクティブ",
+      "completed": "完了",
+      "noPlans": "治療計画はありません",
+      "viewDetails": "詳細を表示"
+    },
+    "medicalRecords": {
+      "title": "医療記録",
+      "noRecords": "医療記録はありません",
+      "upload": "記録をアップロード",
+      "download": "ダウンロード"
     }
   },
   "doctor": {
-    "title": "医師ダッシュボード",
     "loading": "ダッシュボードを読み込んでいます...",
+    "settingUp": "プロフィールを設定しています...",
+    "title": "医師ダッシュボード",
+    "welcome": "ようこそ、先生",
     "navigation": {
       "dashboard": "ダッシュボード",
       "myProfile": "プロフィール",
+      "myServices": "サービス",
+      "calendar": "カレンダー",
+      "patients": "患者",
+      "appointments": "予約",
+      "schedule": "スケジュール",
+      "financial": "財務",
+      "performance": "パフォーマンス",
+      "messages": "メッセージ",
       "settings": "設定",
       "logout": "ログアウト"
+    },
+    "stats": {
+      "todayAppointments": "今日の予約",
+      "weekAppointments": "今週の予約",
+      "totalPatients": "患者総数",
+      "revenue": "収益",
+      "rating": "評価",
+      "reviews": "レビュー"
+    },
+    "schedule": {
+      "title": "スケジュール",
+      "today": "今日",
+      "week": "今週",
+      "month": "今月",
+      "setAvailability": "空き状況を設定",
+      "blockTime": "時間をブロック",
+      "viewCalendar": "カレンダーを表示",
+      "noAppointments": "予約はありません",
+      "upcoming": "今後",
+      "inProgress": "進行中",
+      "completed": "完了"
+    },
+    "patients": {
+      "title": "私の患者",
+      "total": "患者総数",
+      "new": "新しい患者",
+      "active": "アクティブな患者",
+      "search": "患者を検索",
+      "addNew": "患者を追加",
+      "viewAll": "すべて表示",
+      "recentPatients": "最近の患者",
+      "assignedPatients": "割り当てられた患者"
+    },
+    "appointments": {
+      "title": "予約",
+      "today": "今日",
+      "upcoming": "今後",
+      "past": "過去",
+      "cancelled": "キャンセル済み",
+      "bookManual": "手動で予約",
+      "viewAll": "すべて表示",
+      "noAppointments": "予約はありません",
+      "confirm": "確認",
+      "reschedule": "再スケジュール",
+      "cancel": "キャンセル",
+      "complete": "完了"
+    },
+    "services": {
+      "title": "サービス",
+      "addService": "サービスを追加",
+      "editService": "サービスを編集",
+      "deleteService": "サービスを削除",
+      "noServices": "サービスが追加されていません",
+      "price": "価格",
+      "duration": "期間",
+      "active": "アクティブ",
+      "inactive": "非アクティブ"
+    },
+    "financial": {
+      "title": "財務概要",
+      "totalEarnings": "総収益",
+      "thisMonth": "今月",
+      "lastMonth": "先月",
+      "pending": "保留中",
+      "paid": "支払済み",
+      "viewDetails": "詳細を表示",
+      "payouts": "支払い",
+      "transactions": "取引"
+    },
+    "performance": {
+      "title": "パフォーマンス指標",
+      "patientSatisfaction": "患者満足度",
+      "appointmentRate": "予約率",
+      "cancellationRate": "キャンセル率",
+      "averageRating": "平均評価",
+      "totalReviews": "レビュー総数",
+      "viewInsights": "インサイトを表示"
+    },
+    "profile": {
+      "title": "プロフィール",
+      "edit": "プロフィールを編集",
+      "specialties": "専門分野",
+      "education": "学歴",
+      "experience": "経験",
+      "languages": "言語",
+      "about": "について",
+      "credentials": "資格",
+      "availability": "空き状況"
+    },
+    "settings": {
+      "title": "設定",
+      "profile": "プロフィール設定",
+      "schedule": "スケジュール設定",
+      "notifications": "通知",
+      "privacy": "プライバシー",
+      "billing": "請求",
+      "integrations": "統合",
+      "preferences": "設定"
+    },
+    "procedures": {
+      "title": "処置",
+      "library": "処置ライブラリ",
+      "addProcedure": "処置を追加",
+      "viewAll": "すべて表示",
+      "recent": "最近の処置",
+      "templates": "テンプレート"
+    },
+    "treatmentPlans": {
+      "title": "治療計画",
+      "create": "計画を作成",
+      "active": "アクティブな計画",
+      "completed": "完了",
+      "draft": "下書き"
+    }
+  },
+  "superAdmin": {
+    "title": "スーパー管理者ダッシュボード",
+    "login": {
+      "title": "スーパー管理者アクセス",
+      "email": "メール",
+      "password": "パスワード",
+      "signIn": "ログイン"
+    },
+    "navigation": {
+      "dashboard": "ダッシュボード",
+      "users": "ユーザー",
+      "doctors": "医師",
+      "practices": "クリニック",
+      "verification": "検証",
+      "analytics": "分析",
+      "settings": "設定"
+    },
+    "stats": {
+      "totalUsers": "ユーザー総数",
+      "totalDoctors": "医師総数",
+      "totalPractices": "クリニック総数",
+      "pendingVerifications": "検証待ち",
+      "revenue": "収益",
+      "activeUsers": "アクティブユーザー"
+    },
+    "verification": {
+      "title": "検証リクエスト",
+      "pending": "保留中",
+      "approved": "承認済み",
+      "rejected": "却下済み",
+      "review": "レビュー",
+      "approve": "承認",
+      "reject": "却下"
+    },
+    "users": {
+      "title": "ユーザー管理",
+      "search": "ユーザーを検索",
+      "filter": "フィルター",
+      "active": "アクティブ",
+      "inactive": "非アクティブ",
+      "banned": "禁止済み",
+      "viewDetails": "詳細を表示"
+    },
+    "analytics": {
+      "title": "分析",
+      "overview": "概要",
+      "userGrowth": "ユーザー成長",
+      "revenue": "収益",
+      "engagement": "エンゲージメント",
+      "reports": "レポート"
     }
   }
 }

@@ -18,27 +18,265 @@
   },
   "admin": {
     "title": "Painel da Clínica",
-    "loading": "Carregando painel..."
+    "unverifiedPractice": "Clínica Não Verificada",
+    "loading": "Carregando painel...",
+    "error": {
+      "failed": "Falha ao carregar painel",
+      "tryAgain": "Tentar Novamente"
+    },
+    "tabs": {
+      "overview": "Visão Geral",
+      "doctors": "Médicos",
+      "appointments": "Consultas",
+      "patients": "Pacientes",
+      "settings": "Configurações"
+    },
+    "stats": {
+      "totalDoctors": "Total de Médicos",
+      "totalAppointments": "Total de Consultas",
+      "totalPatients": "Total de Pacientes",
+      "revenue": "Receita"
+    },
+    "inviteDoctor": "Convidar Médico",
+    "inviteStaff": "Convidar Equipe",
+    "manageLocations": "Gerenciar Locais",
+    "viewReports": "Ver Relatórios"
   },
   "patient": {
     "title": "Painel do Paciente",
     "loading": "Carregando painel...",
+    "welcome": "Bem-vindo de volta",
     "navigation": {
       "dashboard": "Painel",
       "myAppointments": "Minhas Consultas",
       "medications": "Medicamentos",
+      "medicalRecords": "Registros Médicos",
+      "findDoctors": "Encontrar Médicos",
+      "treatmentPlans": "Planos de Tratamento",
       "settings": "Configurações",
       "logout": "Sair"
+    },
+    "appointments": {
+      "title": "Próximas Consultas",
+      "noAppointments": "Nenhuma consulta próxima",
+      "bookNew": "Agendar Nova Consulta",
+      "viewAll": "Ver Todas",
+      "upcoming": "Próximas",
+      "past": "Passadas",
+      "cancelled": "Canceladas",
+      "confirmed": "Confirmadas",
+      "pending": "Pendentes",
+      "reschedule": "Reagendar",
+      "cancel": "Cancelar"
+    },
+    "medications": {
+      "title": "Meus Medicamentos",
+      "active": "Ativos",
+      "completed": "Concluídos",
+      "noMedications": "Nenhum medicamento ativo",
+      "addNew": "Adicionar Medicamento",
+      "dosage": "Dosagem",
+      "frequency": "Frequência",
+      "startDate": "Data de Início",
+      "endDate": "Data de Término"
+    },
+    "treatmentPlans": {
+      "title": "Planos de Tratamento",
+      "active": "Ativos",
+      "completed": "Concluídos",
+      "noPlans": "Nenhum plano de tratamento",
+      "viewDetails": "Ver Detalhes"
+    },
+    "medicalRecords": {
+      "title": "Registros Médicos",
+      "noRecords": "Nenhum registro médico",
+      "upload": "Enviar Registro",
+      "download": "Baixar"
     }
   },
   "doctor": {
-    "title": "Painel do Médico",
     "loading": "Carregando seu painel...",
+    "settingUp": "Configurando seu perfil...",
+    "title": "Painel do Médico",
+    "welcome": "Bem-vindo, Doutor",
     "navigation": {
       "dashboard": "Painel",
       "myProfile": "Meu Perfil",
+      "myServices": "Meus Serviços",
+      "calendar": "Calendário",
+      "patients": "Pacientes",
+      "appointments": "Consultas",
+      "schedule": "Agenda",
+      "financial": "Financeiro",
+      "performance": "Desempenho",
+      "messages": "Mensagens",
       "settings": "Configurações",
       "logout": "Sair"
+    },
+    "stats": {
+      "todayAppointments": "Consultas de Hoje",
+      "weekAppointments": "Consultas da Semana",
+      "totalPatients": "Total de Pacientes",
+      "revenue": "Receita",
+      "rating": "Avaliação",
+      "reviews": "Avaliações"
+    },
+    "schedule": {
+      "title": "Minha Agenda",
+      "today": "Hoje",
+      "week": "Semana",
+      "month": "Mês",
+      "setAvailability": "Definir Disponibilidade",
+      "blockTime": "Bloquear Horário",
+      "viewCalendar": "Ver Calendário",
+      "noAppointments": "Nenhuma consulta agendada",
+      "upcoming": "Próximas",
+      "inProgress": "Em Andamento",
+      "completed": "Concluídas"
+    },
+    "patients": {
+      "title": "Meus Pacientes",
+      "total": "Total de Pacientes",
+      "new": "Novos Pacientes",
+      "active": "Pacientes Ativos",
+      "search": "Buscar Paciente",
+      "addNew": "Adicionar Paciente",
+      "viewAll": "Ver Todos",
+      "recentPatients": "Pacientes Recentes",
+      "assignedPatients": "Pacientes Atribuídos"
+    },
+    "appointments": {
+      "title": "Consultas",
+      "today": "Hoje",
+      "upcoming": "Próximas",
+      "past": "Passadas",
+      "cancelled": "Canceladas",
+      "bookManual": "Agendar Manualmente",
+      "viewAll": "Ver Todas",
+      "noAppointments": "Nenhuma consulta",
+      "confirm": "Confirmar",
+      "reschedule": "Reagendar",
+      "cancel": "Cancelar",
+      "complete": "Concluir"
+    },
+    "services": {
+      "title": "Meus Serviços",
+      "addService": "Adicionar Serviço",
+      "editService": "Editar Serviço",
+      "deleteService": "Excluir Serviço",
+      "noServices": "Nenhum serviço adicionado",
+      "price": "Preço",
+      "duration": "Duração",
+      "active": "Ativo",
+      "inactive": "Inativo"
+    },
+    "financial": {
+      "title": "Visão Financeira",
+      "totalEarnings": "Ganhos Totais",
+      "thisMonth": "Este Mês",
+      "lastMonth": "Mês Passado",
+      "pending": "Pendente",
+      "paid": "Pago",
+      "viewDetails": "Ver Detalhes",
+      "payouts": "Pagamentos",
+      "transactions": "Transações"
+    },
+    "performance": {
+      "title": "Métricas de Desempenho",
+      "patientSatisfaction": "Satisfação do Paciente",
+      "appointmentRate": "Taxa de Consultas",
+      "cancellationRate": "Taxa de Cancelamento",
+      "averageRating": "Avaliação Média",
+      "totalReviews": "Total de Avaliações",
+      "viewInsights": "Ver Insights"
+    },
+    "profile": {
+      "title": "Meu Perfil",
+      "edit": "Editar Perfil",
+      "specialties": "Especialidades",
+      "education": "Educação",
+      "experience": "Experiência",
+      "languages": "Idiomas",
+      "about": "Sobre",
+      "credentials": "Credenciais",
+      "availability": "Disponibilidade"
+    },
+    "settings": {
+      "title": "Configurações",
+      "profile": "Configurações de Perfil",
+      "schedule": "Configurações de Agenda",
+      "notifications": "Notificações",
+      "privacy": "Privacidade",
+      "billing": "Faturamento",
+      "integrations": "Integrações",
+      "preferences": "Preferências"
+    },
+    "procedures": {
+      "title": "Procedimentos",
+      "library": "Biblioteca de Procedimentos",
+      "addProcedure": "Adicionar Procedimento",
+      "viewAll": "Ver Todos",
+      "recent": "Procedimentos Recentes",
+      "templates": "Modelos"
+    },
+    "treatmentPlans": {
+      "title": "Planos de Tratamento",
+      "create": "Criar Plano",
+      "active": "Planos Ativos",
+      "completed": "Concluídos",
+      "draft": "Rascunho"
+    }
+  },
+  "superAdmin": {
+    "title": "Painel do Super Administrador",
+    "login": {
+      "title": "Acesso de Super Administrador",
+      "email": "E-mail",
+      "password": "Senha",
+      "signIn": "Entrar"
+    },
+    "navigation": {
+      "dashboard": "Painel",
+      "users": "Usuários",
+      "doctors": "Médicos",
+      "practices": "Clínicas",
+      "verification": "Verificação",
+      "analytics": "Análises",
+      "settings": "Configurações"
+    },
+    "stats": {
+      "totalUsers": "Total de Usuários",
+      "totalDoctors": "Total de Médicos",
+      "totalPractices": "Total de Clínicas",
+      "pendingVerifications": "Verificações Pendentes",
+      "revenue": "Receita",
+      "activeUsers": "Usuários Ativos"
+    },
+    "verification": {
+      "title": "Solicitações de Verificação",
+      "pending": "Pendentes",
+      "approved": "Aprovadas",
+      "rejected": "Rejeitadas",
+      "review": "Revisar",
+      "approve": "Aprovar",
+      "reject": "Rejeitar"
+    },
+    "users": {
+      "title": "Gerenciamento de Usuários",
+      "search": "Buscar Usuários",
+      "filter": "Filtrar",
+      "active": "Ativos",
+      "inactive": "Inativos",
+      "banned": "Banidos",
+      "viewDetails": "Ver Detalhes"
+    },
+    "analytics": {
+      "title": "Análises",
+      "overview": "Visão Geral",
+      "userGrowth": "Crescimento de Usuários",
+      "revenue": "Receita",
+      "engagement": "Engajamento",
+      "reports": "Relatórios"
     }
   }
 }
