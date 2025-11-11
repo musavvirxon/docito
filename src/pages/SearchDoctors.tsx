@@ -12,7 +12,7 @@ export default function SearchDoctors() {
   const { t } = useTranslation('doctors');
   const [searchQuery, setSearchQuery] = useState('');
   const [location, setLocation] = useState('');
-  const [specialty, setSpecialty] = useState('All Specialties');
+  const [specialty, setSpecialty] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     minRating: 0,
@@ -33,7 +33,7 @@ export default function SearchDoctors() {
         query = query.or(`full_name.ilike.%${searchQuery}%,specialty.ilike.%${searchQuery}%`);
       }
 
-      if (specialty !== 'All Specialties') {
+      if (specialty !== 'all') {
         query = query.eq('specialty', specialty);
       }
 
@@ -49,17 +49,17 @@ export default function SearchDoctors() {
   });
 
   const specialties = [
-    'All Specialties',
-    'General Practice',
-    'Cardiology',
-    'Dermatology',
-    'Pediatrics',
-    'Orthopedics',
-    'Neurology',
-    'Psychiatry',
-    'Dentistry',
-    'Ophthalmology',
-    'ENT'
+    { key: 'all', label: t('specialties.all') },
+    { key: 'generalPractice', label: t('specialties.generalPractice') },
+    { key: 'cardiology', label: t('specialties.cardiology') },
+    { key: 'dermatology', label: t('specialties.dermatology') },
+    { key: 'pediatrics', label: t('specialties.pediatrics') },
+    { key: 'orthopedics', label: t('specialties.orthopedics') },
+    { key: 'neurology', label: t('specialties.neurology') },
+    { key: 'psychiatry', label: t('specialties.psychiatry') },
+    { key: 'dentistry', label: t('specialties.dentistry') },
+    { key: 'ophthalmology', label: t('specialties.ophthalmology') },
+    { key: 'ent', label: t('specialties.ent') }
   ];
 
   return (
@@ -117,7 +117,7 @@ export default function SearchDoctors() {
                 className="px-4 py-3 rounded-lg border-2 border-input bg-background text-foreground"
               >
                 {specialties.map(spec => (
-                  <option key={spec} value={spec}>{spec}</option>
+                  <option key={spec.key} value={spec.key}>{spec.label}</option>
                 ))}
               </select>
             </div>
@@ -134,7 +134,7 @@ export default function SearchDoctors() {
                 onClick={() => {
                   setSearchQuery('');
                   setLocation('');
-                  setSpecialty('All Specialties');
+                  setSpecialty('all');
                   setFilters({ minRating: 0, maxPrice: 1000, availability: 'any', insurance: 'any' });
                 }}
                 className="text-sm text-muted-foreground hover:text-primary"
@@ -195,7 +195,7 @@ export default function SearchDoctors() {
               onClick={() => {
                 setSearchQuery('');
                 setLocation('');
-                setSpecialty('All Specialties');
+                setSpecialty('all');
               }}
               className="px-6 py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
             >

@@ -46,5 +46,18 @@
     "available": "予約可能",
     "consultationFee": "診察料: ${{fee}}",
     "bookNow": "今すぐ予約"
+  },
+  "specialties": {
+    "all": "すべての専門分野",
+    "generalPractice": "一般診療",
+    "cardiology": "循環器内科",
+    "dermatology": "皮膚科",
+    "pediatrics": "小児科",
+    "orthopedics": "整形外科",
+    "neurology": "神経内科",
+    "psychiatry": "精神科",
+    "dentistry": "歯科",
+    "ophthalmology": "眼科",
+    "ent": "耳鼻咽喉科"
   }
 }

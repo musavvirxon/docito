@@ -46,5 +46,18 @@
     "available": "Verfügbar für Termine",
     "consultationFee": "Beratung: ${{fee}}",
     "bookNow": "Jetzt buchen"
+  },
+  "specialties": {
+    "all": "Alle Fachgebiete",
+    "generalPractice": "Allgemeinmedizin",
+    "cardiology": "Kardiologie",
+    "dermatology": "Dermatologie",
+    "pediatrics": "Pädiatrie",
+    "orthopedics": "Orthopädie",
+    "neurology": "Neurologie",
+    "psychiatry": "Psychiatrie",
+    "dentistry": "Zahnmedizin",
+    "ophthalmology": "Augenheilkunde",
+    "ent": "HNO"
   }
 }

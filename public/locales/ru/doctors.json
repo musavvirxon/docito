@@ -46,5 +46,18 @@
     "available": "Доступен для записи",
     "consultationFee": "Консультация: ${{fee}}",
     "bookNow": "Записаться"
+  },
+  "specialties": {
+    "all": "Все специальности",
+    "generalPractice": "Общая практика",
+    "cardiology": "Кардиология",
+    "dermatology": "Дерматология",
+    "pediatrics": "Педиатрия",
+    "orthopedics": "Ортопедия",
+    "neurology": "Неврология",
+    "psychiatry": "Психиатрия",
+    "dentistry": "Стоматология",
+    "ophthalmology": "Офтальмология",
+    "ent": "ЛОР"
   }
 }

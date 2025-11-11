@@ -46,5 +46,18 @@
     "available": "Available for appointments",
     "consultationFee": "Consultation: ${{fee}}",
     "bookNow": "Book Now"
+  },
+  "specialties": {
+    "all": "All Specialties",
+    "generalPractice": "General Practice",
+    "cardiology": "Cardiology",
+    "dermatology": "Dermatology",
+    "pediatrics": "Pediatrics",
+    "orthopedics": "Orthopedics",
+    "neurology": "Neurology",
+    "psychiatry": "Psychiatry",
+    "dentistry": "Dentistry",
+    "ophthalmology": "Ophthalmology",
+    "ent": "ENT"
   }
 }

@@ -46,5 +46,18 @@
     "available": "예약 가능",
     "consultationFee": "진료비: ${{fee}}",
     "bookNow": "지금 예약"
+  },
+  "specialties": {
+    "all": "모든 전문 분야",
+    "generalPractice": "일반의",
+    "cardiology": "순환기내과",
+    "dermatology": "피부과",
+    "pediatrics": "소아과",
+    "orthopedics": "정형외과",
+    "neurology": "신경과",
+    "psychiatry": "정신과",
+    "dentistry": "치과",
+    "ophthalmology": "안과",
+    "ent": "이비인후과"
   }
 }

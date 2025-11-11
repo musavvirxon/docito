@@ -46,5 +46,18 @@
     "available": "Disponível para consultas",
     "consultationFee": "Consulta: ${{fee}}",
     "bookNow": "Reservar Agora"
+  },
+  "specialties": {
+    "all": "Todas as Especialidades",
+    "generalPractice": "Clínica Geral",
+    "cardiology": "Cardiologia",
+    "dermatology": "Dermatologia",
+    "pediatrics": "Pediatria",
+    "orthopedics": "Ortopedia",
+    "neurology": "Neurologia",
+    "psychiatry": "Psiquiatria",
+    "dentistry": "Odontologia",
+    "ophthalmology": "Oftalmologia",
+    "ent": "Otorrinolaringologia"
   }
 }

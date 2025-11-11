@@ -46,5 +46,18 @@
     "available": "可预约",
     "consultationFee": "咨询费: ${{fee}}",
     "bookNow": "立即预约"
+  },
+  "specialties": {
+    "all": "所有专科",
+    "generalPractice": "全科医生",
+    "cardiology": "心脏病学",
+    "dermatology": "皮肤科",
+    "pediatrics": "儿科",
+    "orthopedics": "骨科",
+    "neurology": "神经内科",
+    "psychiatry": "精神科",
+    "dentistry": "牙科",
+    "ophthalmology": "眼科",
+    "ent": "耳鼻喉科"
   }
 }

@@ -46,5 +46,18 @@
     "available": "متاح للمواعيد",
     "consultationFee": "الاستشارة: ${{fee}}",
     "bookNow": "احجز الآن"
+  },
+  "specialties": {
+    "all": "جميع التخصصات",
+    "generalPractice": "الطب العام",
+    "cardiology": "أمراض القلب",
+    "dermatology": "الأمراض الجلدية",
+    "pediatrics": "طب الأطفال",
+    "orthopedics": "جراحة العظام",
+    "neurology": "طب الأعصاب",
+    "psychiatry": "الطب النفسي",
+    "dentistry": "طب الأسنان",
+    "ophthalmology": "طب العيون",
+    "ent": "الأنف والأذن والحنجرة"
   }
 }

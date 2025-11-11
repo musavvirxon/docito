@@ -46,5 +46,18 @@
     "available": "Randevu için müsait",
     "consultationFee": "Muayene: ${{fee}}",
     "bookNow": "Şimdi Rezerve Et"
+  },
+  "specialties": {
+    "all": "Tüm Uzmanlıklar",
+    "generalPractice": "Genel Pratisyen",
+    "cardiology": "Kardiyoloji",
+    "dermatology": "Dermatoloji",
+    "pediatrics": "Pediatri",
+    "orthopedics": "Ortopedi",
+    "neurology": "Nöroloji",
+    "psychiatry": "Psikiyatri",
+    "dentistry": "Diş Hekimliği",
+    "ophthalmology": "Göz Hastalıkları",
+    "ent": "KBB"
   }
 }

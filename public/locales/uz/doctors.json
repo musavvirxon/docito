@@ -46,5 +46,18 @@
     "available": "Qabulga yozilish mumkin",
     "consultationFee": "Konsultatsiya: ${{fee}}",
     "bookNow": "Hozir Yozilish"
+  },
+  "specialties": {
+    "all": "Barcha mutaxassisliklar",
+    "generalPractice": "Umumiy amaliyot",
+    "cardiology": "Kardiologiya",
+    "dermatology": "Dermatologiya",
+    "pediatrics": "Pediatriya",
+    "orthopedics": "Ortopediya",
+    "neurology": "Nevrologiya",
+    "psychiatry": "Psixiatriya",
+    "dentistry": "Stomatologiya",
+    "ophthalmology": "Oftalmologiya",
+    "ent": "LOR"
   }
 }
