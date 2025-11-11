@@ -51,10 +51,25 @@
     "cancelled": "已取消"
   },
   "footer": {
-    "copyright": "© 2025 Docito. 版权所有。",
-    "privacy": "隐私政策",
-    "terms": "服务条款",
-    "contact": "联系我们"
+    "platform": "平台",
+    "home": "首页",
+    "findDoctors": "查找医生",
+    "practices": "诊所",
+    "forProviders": "医疗提供者",
+    "joinProvider": "作为提供者加入",
+    "registerPractice": "注册诊所",
+    "company": "公司",
+    "aboutUs": "关于我们",
+    "legalCenter": "法律中心",
+    "contact": "联系",
+    "legal": "法律",
+    "termsOfService": "服务条款",
+    "privacyPolicy": "隐私政策",
+    "cookiePolicy": "Cookie政策",
+    "disclaimer": "Docito上提供的内容仅用于一般信息目的。它不作为医疗建议、诊断或治疗，Docito也不提供这些服务。如有任何关于您的健康或特定医疗建议的问题，请始终直接联系您的医疗保健提供者。",
+    "allRightsReserved": "保留所有权利",
+    "trademark": "Docito是Artsy Developers Inc.的注册商标和品牌。",
+    "patent": "所有服务、功能和知识产权均受适用专利法保护。"
   },
   "cookies": {
     "title": "我们重视您的隐私",

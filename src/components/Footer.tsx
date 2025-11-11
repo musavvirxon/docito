@@ -1,9 +1,11 @@
 import { Logo } from "@/components/Logo";
 import { Link } from "react-router-dom";
 import { Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const { t } = useTranslation('common');
 
   return (
     <footer className="bg-muted/30 border-t border-border py-12">
@@ -16,37 +18,37 @@ const Footer = () => {
         {/* Navigation Links */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 max-w-4xl mx-auto">
           <div>
-            <h3 className="font-semibold mb-3 text-foreground">Platform</h3>
+            <h3 className="font-semibold mb-3 text-foreground">{t('footer.platform')}</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link to="/" className="text-muted-foreground hover:text-primary transition-colors">Home</Link></li>
-              <li><Link to="/doctors" className="text-muted-foreground hover:text-primary transition-colors">Find Doctors</Link></li>
-              <li><Link to="/practices" className="text-muted-foreground hover:text-primary transition-colors">Practices</Link></li>
+              <li><Link to="/" className="text-muted-foreground hover:text-primary transition-colors">{t('footer.home')}</Link></li>
+              <li><Link to="/doctors" className="text-muted-foreground hover:text-primary transition-colors">{t('footer.findDoctors')}</Link></li>
+              <li><Link to="/practices" className="text-muted-foreground hover:text-primary transition-colors">{t('footer.practices')}</Link></li>
             </ul>
           </div>
 
           <div>
-            <h3 className="font-semibold mb-3 text-foreground">For Providers</h3>
+            <h3 className="font-semibold mb-3 text-foreground">{t('footer.forProviders')}</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link to="/doctor-signup" className="text-muted-foreground hover:text-primary transition-colors">Join as Provider</Link></li>
-              <li><Link to="/register-practice" className="text-muted-foreground hover:text-primary transition-colors">Register Practice</Link></li>
+              <li><Link to="/doctor-signup" className="text-muted-foreground hover:text-primary transition-colors">{t('footer.joinProvider')}</Link></li>
+              <li><Link to="/register-practice" className="text-muted-foreground hover:text-primary transition-colors">{t('footer.registerPractice')}</Link></li>
             </ul>
           </div>
 
           <div>
-            <h3 className="font-semibold mb-3 text-foreground">Company</h3>
+            <h3 className="font-semibold mb-3 text-foreground">{t('footer.company')}</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">About Us</Link></li>
-              <li><Link to="/legal" className="text-muted-foreground hover:text-primary transition-colors">Legal Center</Link></li>
-              <li><a href="mailto:info@docito.com" className="text-muted-foreground hover:text-primary transition-colors">Contact</a></li>
+              <li><Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">{t('footer.aboutUs')}</Link></li>
+              <li><Link to="/legal" className="text-muted-foreground hover:text-primary transition-colors">{t('footer.legalCenter')}</Link></li>
+              <li><a href="mailto:info@docito.com" className="text-muted-foreground hover:text-primary transition-colors">{t('footer.contact')}</a></li>
             </ul>
           </div>
 
           <div>
-            <h3 className="font-semibold mb-3 text-foreground">Legal</h3>
+            <h3 className="font-semibold mb-3 text-foreground">{t('footer.legal')}</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link to="/legal/terms-of-service" className="text-muted-foreground hover:text-primary transition-colors">Terms of Service</Link></li>
-              <li><Link to="/legal/privacy-policy" className="text-muted-foreground hover:text-primary transition-colors">Privacy Policy</Link></li>
-              <li><Link to="/legal/cookie-policy" className="text-muted-foreground hover:text-primary transition-colors">Cookie Policy</Link></li>
+              <li><Link to="/legal/terms-of-service" className="text-muted-foreground hover:text-primary transition-colors">{t('footer.termsOfService')}</Link></li>
+              <li><Link to="/legal/privacy-policy" className="text-muted-foreground hover:text-primary transition-colors">{t('footer.privacyPolicy')}</Link></li>
+              <li><Link to="/legal/cookie-policy" className="text-muted-foreground hover:text-primary transition-colors">{t('footer.cookiePolicy')}</Link></li>
             </ul>
           </div>
         </div>
@@ -54,7 +56,7 @@ const Footer = () => {
         {/* Medical Disclaimer */}
         <div className="border-t border-border pt-6 mb-6">
           <p className="text-xs text-muted-foreground leading-relaxed max-w-4xl mx-auto text-center">
-            The content provided on Docito is for general informational purposes only. It is not intended as, and Docito does not provide, medical advice, diagnosis or treatment. Always contact your healthcare provider directly with any questions you may have regarding your health or specific medical advice.
+            {t('footer.disclaimer')}
           </p>
         </div>
 
@@ -62,13 +64,13 @@ const Footer = () => {
         <div className="border-t border-border pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-center md:text-left">
             <p className="text-sm text-foreground font-medium mb-1">
-              © {currentYear} <span className="font-bold text-primary">Docito®</span> - All Rights Reserved
+              © {currentYear} <span className="font-bold text-primary">Docito®</span> - {t('footer.allRightsReserved')}
             </p>
             <p className="text-xs text-muted-foreground mb-1">
-              Docito is a registered trademark and brand of <span className="font-semibold">Artsy Developers Inc.</span>
+              {t('footer.trademark')}
             </p>
             <p className="text-xs text-muted-foreground">
-              All services, features, and intellectual property are protected under applicable patent laws.
+              {t('footer.patent')}
             </p>
           </div>
           

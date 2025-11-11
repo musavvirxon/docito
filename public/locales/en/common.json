@@ -51,10 +51,25 @@
     "cancelled": "Cancelled"
   },
   "footer": {
-    "copyright": "© 2025 Docito. All rights reserved.",
-    "privacy": "Privacy Policy",
-    "terms": "Terms of Service",
-    "contact": "Contact Us"
+    "platform": "Platform",
+    "home": "Home",
+    "findDoctors": "Find Doctors",
+    "practices": "Practices",
+    "forProviders": "For Providers",
+    "joinProvider": "Join as Provider",
+    "registerPractice": "Register Practice",
+    "company": "Company",
+    "aboutUs": "About Us",
+    "legalCenter": "Legal Center",
+    "contact": "Contact",
+    "legal": "Legal",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "cookiePolicy": "Cookie Policy",
+    "disclaimer": "The content provided on Docito is for general informational purposes only. It is not intended as, and Docito does not provide, medical advice, diagnosis or treatment. Always contact your healthcare provider directly with any questions you may have regarding your health or specific medical advice.",
+    "allRightsReserved": "All Rights Reserved",
+    "trademark": "Docito is a registered trademark and brand of Artsy Developers Inc.",
+    "patent": "All services, features, and intellectual property are protected under applicable patent laws."
   },
   "cookies": {
     "title": "We Value Your Privacy",

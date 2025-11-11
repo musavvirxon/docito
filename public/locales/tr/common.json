@@ -51,10 +51,25 @@
     "cancelled": "İptal Edildi"
   },
   "footer": {
-    "copyright": "© 2025 Docito. Tüm hakları saklıdır.",
-    "privacy": "Gizlilik Politikası",
-    "terms": "Kullanım Şartları",
-    "contact": "Bize Ulaşın"
+    "platform": "Platform",
+    "home": "Ana Sayfa",
+    "findDoctors": "Doktor Bul",
+    "practices": "Pratikler",
+    "forProviders": "Sağlayıcılar İçin",
+    "joinProvider": "Sağlayıcı Olarak Katıl",
+    "registerPractice": "Pratik Kaydet",
+    "company": "Şirket",
+    "aboutUs": "Hakkımızda",
+    "legalCenter": "Hukuki Merkez",
+    "contact": "İletişim",
+    "legal": "Yasal",
+    "termsOfService": "Hizmet Şartları",
+    "privacyPolicy": "Gizlilik Politikası",
+    "cookiePolicy": "Çerez Politikası",
+    "disclaimer": "Docito'da sağlanan içerik yalnızca genel bilgilendirme amaçlıdır. Tıbbi tavsiye, teşhis veya tedavi olarak amaçlanmamıştır ve Docito bunları sağlamaz. Sağlığınız veya belirli tıbbi tavsiyeler hakkında sahip olabileceğiniz sorularla ilgili olarak her zaman doğrudan sağlık hizmeti sağlayıcınıza başvurun.",
+    "allRightsReserved": "Tüm Hakları Saklıdır",
+    "trademark": "Docito, Artsy Developers Inc.'in tescilli markası ve markasıdır.",
+    "patent": "Tüm hizmetler, özellikler ve fikri mülkiyet geçerli patent yasaları kapsamında korunmaktadır."
   },
   "cookies": {
     "title": "Gizliliğinize Değer Veriyoruz",

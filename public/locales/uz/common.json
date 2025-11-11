@@ -51,10 +51,25 @@
     "cancelled": "Bekor qilingan"
   },
   "footer": {
-    "copyright": "© 2025 Docito. Barcha huquqlar himoyalangan.",
-    "privacy": "Maxfiylik siyosati",
-    "terms": "Foydalanish shartlari",
-    "contact": "Biz bilan bog'laning"
+    "platform": "Platforma",
+    "home": "Bosh sahifa",
+    "findDoctors": "Shifokorlarni topish",
+    "practices": "Amaliyotlar",
+    "forProviders": "Provayderlar uchun",
+    "joinProvider": "Provayder sifatida qo'shiling",
+    "registerPractice": "Amaliyotni ro'yxatdan o'tkazish",
+    "company": "Kompaniya",
+    "aboutUs": "Biz haqimizda",
+    "legalCenter": "Huquqiy markaz",
+    "contact": "Aloqa",
+    "legal": "Huquqiy",
+    "termsOfService": "Foydalanish shartlari",
+    "privacyPolicy": "Maxfiylik siyosati",
+    "cookiePolicy": "Cookie siyosati",
+    "disclaimer": "Docito'da taqdim etilgan tarkib faqat umumiy ma'lumot berish maqsadida. Bu tibbiy maslahat, tashxis yoki davolash uchun mo'ljallanmagan va Docito buni taqdim etmaydi. Sog'ligingiz yoki aniq tibbiy maslahat haqida har qanday savollaringiz bo'lsa, har doim to'g'ridan-to'g'ri sog'liqni saqlash xizmati provayderingizga murojaat qiling.",
+    "allRightsReserved": "Barcha Huquqlar Himoyalangan",
+    "trademark": "Docito Artsy Developers Inc.ning ro'yxatdan o'tgan savdo belgisi va brendidir.",
+    "patent": "Barcha xizmatlar, xususiyatlar va intellektual mulk tegishli patent qonunlari bilan himoyalangan."
   },
   "cookies": {
     "title": "Biz sizning maxfiyligingizni qadrlaymiz",

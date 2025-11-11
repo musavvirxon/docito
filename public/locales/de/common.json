@@ -51,10 +51,25 @@
     "cancelled": "Storniert"
   },
   "footer": {
-    "copyright": "© 2025 Docito. Alle Rechte vorbehalten.",
-    "privacy": "Datenschutzerklärung",
-    "terms": "Nutzungsbedingungen",
-    "contact": "Kontaktieren Sie Uns"
+    "platform": "Plattform",
+    "home": "Startseite",
+    "findDoctors": "Ärzte finden",
+    "practices": "Praxen",
+    "forProviders": "Für Anbieter",
+    "joinProvider": "Als Anbieter beitreten",
+    "registerPractice": "Praxis registrieren",
+    "company": "Unternehmen",
+    "aboutUs": "Über uns",
+    "legalCenter": "Rechtszentrum",
+    "contact": "Kontakt",
+    "legal": "Rechtliches",
+    "termsOfService": "Nutzungsbedingungen",
+    "privacyPolicy": "Datenschutzrichtlinie",
+    "cookiePolicy": "Cookie-Richtlinie",
+    "disclaimer": "Die auf Docito bereitgestellten Inhalte dienen nur allgemeinen Informationszwecken. Sie sind nicht als medizinischer Rat, Diagnose oder Behandlung gedacht, und Docito bietet diese nicht an. Wenden Sie sich bei Fragen zu Ihrer Gesundheit oder spezifischem medizinischen Rat immer direkt an Ihren Arzt.",
+    "allRightsReserved": "Alle Rechte vorbehalten",
+    "trademark": "Docito ist eine eingetragene Marke und Marke von Artsy Developers Inc.",
+    "patent": "Alle Dienste, Funktionen und geistiges Eigentum sind durch geltende Patentgesetze geschützt."
   },
   "cookies": {
     "title": "Wir Schätzen Ihre Privatsphäre",

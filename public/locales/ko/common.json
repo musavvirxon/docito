@@ -51,10 +51,25 @@
     "cancelled": "취소됨"
   },
   "footer": {
-    "copyright": "© 2025 Docito. 모든 권리 보유.",
-    "privacy": "개인정보 처리방침",
-    "terms": "서비스 약관",
-    "contact": "문의하기"
+    "platform": "플랫폼",
+    "home": "홈",
+    "findDoctors": "의사 찾기",
+    "practices": "진료소",
+    "forProviders": "의료 제공자용",
+    "joinProvider": "제공자로 가입",
+    "registerPractice": "진료소 등록",
+    "company": "회사",
+    "aboutUs": "회사 소개",
+    "legalCenter": "법률 센터",
+    "contact": "문의",
+    "legal": "법률",
+    "termsOfService": "서비스 약관",
+    "privacyPolicy": "개인정보 처리방침",
+    "cookiePolicy": "쿠키 정책",
+    "disclaimer": "Docito에서 제공되는 콘텐츠는 일반 정보 제공 목적으로만 사용됩니다. 의학적 조언, 진단 또는 치료를 목적으로 하지 않으며 Docito는 이를 제공하지 않습니다. 건강이나 특정 의학적 조언에 관한 질문이 있는 경우 항상 의료 제공자에게 직접 문의하십시오.",
+    "allRightsReserved": "모든 권리 보유",
+    "trademark": "Docito는 Artsy Developers Inc.의 등록 상표 및 브랜드입니다.",
+    "patent": "모든 서비스, 기능 및 지적 재산은 해당 특허법에 따라 보호됩니다."
   },
   "cookies": {
     "title": "귀하의 개인정보를 소중히 여깁니다",

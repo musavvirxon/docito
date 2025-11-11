@@ -51,10 +51,25 @@
     "cancelled": "キャンセル済み"
   },
   "footer": {
-    "copyright": "© 2025 Docito. 全著作権所有。",
-    "privacy": "プライバシーポリシー",
-    "terms": "利用規約",
-    "contact": "お問い合わせ"
+    "platform": "プラットフォーム",
+    "home": "ホーム",
+    "findDoctors": "医師を探す",
+    "practices": "診療所",
+    "forProviders": "医療提供者向け",
+    "joinProvider": "プロバイダーとして参加",
+    "registerPractice": "診療所を登録",
+    "company": "会社",
+    "aboutUs": "会社概要",
+    "legalCenter": "法的センター",
+    "contact": "お問い合わせ",
+    "legal": "法的情報",
+    "termsOfService": "利用規約",
+    "privacyPolicy": "プライバシーポリシー",
+    "cookiePolicy": "クッキーポリシー",
+    "disclaimer": "Docitoで提供されるコンテンツは、一般的な情報提供のみを目的としています。医学的アドバイス、診断、または治療として意図されておらず、Docitoはこれらを提供しません。健康や特定の医学的アドバイスに関する質問がある場合は、常に直接医療提供者にお問い合わせください。",
+    "allRightsReserved": "無断複写・転載を禁じます",
+    "trademark": "DocitoはArtsy Developers Inc.の登録商標およびブランドです。",
+    "patent": "すべてのサービス、機能、知的財産は、適用される特許法により保護されています。"
   },
   "cookies": {
     "title": "プライバシーを大切にします",
