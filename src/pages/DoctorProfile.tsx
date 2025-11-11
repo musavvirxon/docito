@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import Header from "@/components/Header";
 import BackButton from "@/components/BackButton";
 import { Card, CardContent } from "@/components/ui/card";
@@ -73,6 +74,7 @@ const DoctorProfile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { handleBookingClick } = useBookingAuth();
+  const { t } = useTranslation(['common', 'doctors']);
   const [isSaved, setIsSaved] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
@@ -240,7 +242,7 @@ const DoctorProfile = () => {
                         onClick={() => setIsSaved(!isSaved)}
                       >
                         <Heart className={cn("w-4 h-4 mr-2", isSaved && "fill-red-500 text-red-500")} />
-                        {isSaved ? "Saved" : "Save"}
+                        {isSaved ? t('doctors:profile.saved') : t('doctors:profile.save')}
                       </Button>
                       <Button variant="outline" size="sm">
                         <Share2 className="w-4 h-4" />
@@ -253,7 +255,7 @@ const DoctorProfile = () => {
                       {renderStars(doctor.rating)}
                       <span className="font-medium ml-2">{doctor.rating}</span>
                       <span className="text-muted-foreground text-sm">
-                        ({doctor.reviewCount} reviews)
+                        ({doctor.reviewCount} {t('doctors:profile.reviews')})
                       </span>
                     </div>
                   </div>
@@ -261,7 +263,7 @@ const DoctorProfile = () => {
                   <div className="flex flex-wrap gap-2 mb-6">
                     <Badge variant="secondary">
                       <GraduationCap className="w-3 h-3 mr-1" />
-                      {doctor.yearsOfPractice} years experience
+                      {doctor.yearsOfPractice} {t('doctors:profile.yearsExperience')}
                     </Badge>
                     <Badge variant="secondary">
                       <Languages className="w-3 h-3 mr-1" />
@@ -273,7 +275,7 @@ const DoctorProfile = () => {
                     </Badge>
                     <Badge variant="default" className="bg-green-100 text-green-700">
                       <Video className="w-3 h-3 mr-1" />
-                      Video consultations available
+                      {t('doctors:profile.videoConsultations')}
                     </Badge>
                   </div>
 
@@ -292,12 +294,12 @@ const DoctorProfile = () => {
                       {isBookingLoading ? (
                         <>
                           <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                          Booking...
+                          {t('doctors:profile.booking')}
                         </>
                       ) : (
                         <>
                           <Calendar className="w-5 h-5 mr-2" />
-                          Book Appointment
+                          {t('doctors:profile.bookAppointment')}
                         </>
                       )}
                     </Button>
@@ -307,7 +309,7 @@ const DoctorProfile = () => {
                       className="hover:bg-muted active:scale-95 transition-all duration-200 min-h-[48px]"
                     >
                       <Video className="w-5 h-5 mr-2" />
-                      Video Call
+                      {t('doctors:profile.videoCall')}
                     </Button>
                   </div>
                 </div>
@@ -318,18 +320,18 @@ const DoctorProfile = () => {
           {/* Tabs Section */}
           <Tabs defaultValue="about" className="space-y-6">
             <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="about">About</TabsTrigger>
-              <TabsTrigger value="practice">Practice Info</TabsTrigger>
-              <TabsTrigger value="services">Services</TabsTrigger>
-              <TabsTrigger value="reviews">Reviews</TabsTrigger>
-              <TabsTrigger value="availability" id="availability-tab">Availability</TabsTrigger>
+              <TabsTrigger value="about">{t('doctors:profile.tabs.about')}</TabsTrigger>
+              <TabsTrigger value="practice">{t('doctors:profile.tabs.practiceInfo')}</TabsTrigger>
+              <TabsTrigger value="services">{t('doctors:profile.tabs.services')}</TabsTrigger>
+              <TabsTrigger value="reviews">{t('doctors:profile.tabs.reviews')}</TabsTrigger>
+              <TabsTrigger value="availability" id="availability-tab">{t('doctors:profile.tabs.availability')}</TabsTrigger>
             </TabsList>
 
             {/* About Tab */}
             <TabsContent value="about" className="space-y-6">
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-4">About Dr. {doctor.name.split(' ').pop()}</h3>
+                  <h3 className="text-lg font-semibold mb-4">{t('doctors:profile.aboutDoctor', { name: doctor.name.split(' ').pop() })}</h3>
                   <p className="text-muted-foreground leading-relaxed mb-6">
                     {doctor.bio}
                   </p>
@@ -338,7 +340,7 @@ const DoctorProfile = () => {
                     <div>
                       <h4 className="font-semibold mb-3 flex items-center">
                         <GraduationCap className="w-5 h-5 mr-2" />
-                        Education
+                        {t('doctors:profile.education')}
                       </h4>
                       <ul className="space-y-2">
                         {doctor.education.map((edu, index) => (
@@ -352,7 +354,7 @@ const DoctorProfile = () => {
                     <div>
                       <h4 className="font-semibold mb-3 flex items-center">
                         <Award className="w-5 h-5 mr-2" />
-                        Certifications
+                        {t('doctors:profile.certifications')}
                       </h4>
                       <ul className="space-y-2">
                         {doctor.certifications.map((cert, index) => (
@@ -379,7 +381,7 @@ const DoctorProfile = () => {
                       </h3>
                       <Button variant="outline" size="sm">
                         <MapPin className="w-4 h-4 mr-2" />
-                        Directions
+                        {t('doctors:profile.directions')}
                       </Button>
                     </div>
                     
@@ -406,7 +408,7 @@ const DoctorProfile = () => {
             <TabsContent value="services" className="space-y-6">
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-6">Services & Pricing</h3>
+                  <h3 className="text-lg font-semibold mb-6">{t('doctors:profile.servicesPricing')}</h3>
                   
                   <div className="space-y-4">
                     {doctor.services.map((service, index) => (
@@ -417,7 +419,7 @@ const DoctorProfile = () => {
                             {service.insuranceAccepted && (
                               <Badge variant="outline" className="text-xs">
                                 <CreditCard className="w-3 h-3 mr-1" />
-                                Insurance accepted
+                                {t('doctors:profile.insuranceAccepted')}
                               </Badge>
                             )}
                           </div>
@@ -427,7 +429,7 @@ const DoctorProfile = () => {
                             <div className="font-semibold">{service.price}</div>
                           )}
                           <Button variant="outline" size="sm" className="mt-2">
-                            Book Service
+                            {t('doctors:profile.bookService')}
                           </Button>
                         </div>
                       </div>
@@ -442,12 +444,12 @@ const DoctorProfile = () => {
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-semibold">Patient Reviews</h3>
+                    <h3 className="text-lg font-semibold">{t('doctors:profile.patientReviews')}</h3>
                     <div className="flex items-center gap-2">
                       {renderStars(doctor.rating)}
                       <span className="font-medium">{doctor.rating}</span>
                       <span className="text-muted-foreground">
-                        ({doctor.reviewCount} reviews)
+                        ({doctor.reviewCount} {t('doctors:profile.reviews')})
                       </span>
                     </div>
                   </div>
@@ -481,12 +483,12 @@ const DoctorProfile = () => {
             <TabsContent value="availability" className="space-y-6">
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-6">Book Your Appointment</h3>
+                  <h3 className="text-lg font-semibold mb-6">{t('doctors:profile.bookYourAppointment')}</h3>
                   
                   <div className="grid md:grid-cols-2 gap-8">
                     {/* Date Selection */}
                     <div>
-                      <h4 className="font-medium mb-4">Select Date</h4>
+                      <h4 className="font-medium mb-4">{t('doctors:profile.selectDate')}</h4>
                       <div className="space-y-2">
                         {doctor.availability.map((day) => (
                           <button
@@ -508,7 +510,7 @@ const DoctorProfile = () => {
                               })}
                             </div>
                             <div className="text-sm text-muted-foreground">
-                              {day.slots.length} slots available
+                              {day.slots.length} {t('doctors:profile.slotsAvailable')}
                             </div>
                           </button>
                         ))}
@@ -518,7 +520,7 @@ const DoctorProfile = () => {
                     {/* Time Selection */}
                     <div>
                       <h4 className="font-medium mb-4">
-                        {selectedDate ? 'Select Time' : 'Select a date first'}
+                        {selectedDate ? t('doctors:profile.selectTime') : t('doctors:profile.selectDateFirst')}
                       </h4>
                       {selectedDate && (
                         <div className="grid grid-cols-2 gap-2">
@@ -541,19 +543,19 @@ const DoctorProfile = () => {
                       
                       {selectedDate && selectedTime && (
                         <div className="mt-6 p-4 bg-primary/10 rounded-lg">
-                          <h5 className="font-medium mb-2">Appointment Summary</h5>
+                          <h5 className="font-medium mb-2">{t('doctors:profile.appointmentSummary')}</h5>
                           <p className="text-sm text-muted-foreground">
                             {new Date(selectedDate).toLocaleDateString('en-US', {
                               weekday: 'long',
                               month: 'long',
                               day: 'numeric'
-                            })} at {selectedTime}
+                            })} {t('doctors:profile.at')} {selectedTime}
                           </p>
                           <Button 
                             className="w-full mt-4"
                             onClick={handleBookAppointment}
                           >
-                            Confirm Appointment
+                            {t('doctors:profile.confirmAppointment')}
                           </Button>
                         </div>
                       )}
