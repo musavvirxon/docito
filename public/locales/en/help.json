@@ -1,0 +1,45 @@
+{
+  "hero": {
+    "title": "How can we help you?",
+    "subtitle": "Search our knowledge base for answers",
+    "searchPlaceholder": "Search for help articles..."
+  },
+  "categories": {
+    "title": "Browse by Category",
+    "articles": "articles",
+    "gettingStarted": {
+      "title": "Getting Started",
+      "description": "Learn the basics of using Docito"
+    },
+    "appointments": {
+      "title": "Appointments",
+      "description": "Booking and managing appointments"
+    },
+    "telemedicine": {
+      "title": "Telemedicine",
+      "description": "Video consultations and virtual care"
+    },
+    "medicalRecords": {
+      "title": "Medical Records",
+      "description": "Managing your health records"
+    },
+    "billingPayments": {
+      "title": "Billing & Payments",
+      "description": "Payment methods and insurance"
+    },
+    "accountManagement": {
+      "title": "Account Management",
+      "description": "Managing your account settings"
+    }
+  },
+  "popular": {
+    "title": "Popular Articles",
+    "views": "views",
+    "noArticles": "No popular articles yet"
+  },
+  "cta": {
+    "title": "Still need help?",
+    "subtitle": "Our support team is here to assist you 24/7",
+    "button": "Contact Support"
+  }
+}

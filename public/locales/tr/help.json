@@ -1,0 +1,45 @@
+{
+  "hero": {
+    "title": "Nasıl yardımcı olabiliriz?",
+    "subtitle": "Cevaplar için bilgi tabanımızda arama yapın",
+    "searchPlaceholder": "Yardım makaleleri ara..."
+  },
+  "categories": {
+    "title": "Kategoriye Göre Göz At",
+    "articles": "makale",
+    "gettingStarted": {
+      "title": "Başlarken",
+      "description": "Docito kullanımının temellerini öğrenin"
+    },
+    "appointments": {
+      "title": "Randevular",
+      "description": "Randevu alma ve yönetme"
+    },
+    "telemedicine": {
+      "title": "Teletıp",
+      "description": "Video konsültasyonlar ve sanal bakım"
+    },
+    "medicalRecords": {
+      "title": "Tıbbi Kayıtlar",
+      "description": "Sağlık kayıtlarınızı yönetme"
+    },
+    "billingPayments": {
+      "title": "Faturalama ve Ödemeler",
+      "description": "Ödeme yöntemleri ve sigorta"
+    },
+    "accountManagement": {
+      "title": "Hesap Yönetimi",
+      "description": "Hesap ayarlarınızı yönetme"
+    }
+  },
+  "popular": {
+    "title": "Popüler Makaleler",
+    "views": "görüntüleme",
+    "noArticles": "Henüz popüler makale yok"
+  },
+  "cta": {
+    "title": "Hala yardıma mı ihtiyacınız var?",
+    "subtitle": "Destek ekibimiz 7/24 size yardımcı olmak için burada",
+    "button": "Desteğe Ulaşın"
+  }
+}

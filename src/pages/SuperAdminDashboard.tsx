@@ -22,6 +22,7 @@ import VerificationTable from "@/components/super-admin/VerificationTable";
 import DoctorVerificationTable from "@/components/super-admin/DoctorVerificationTable";
 import SuperAdminSettingsPanel from "@/components/super-admin/SuperAdminSettingsPanel";
 import TranslationManagement from "@/pages/TranslationManagement";
+import HelpArticlesManagement from "@/components/super-admin/HelpArticlesManagement";
 import { useTranslation } from 'react-i18next';
 
 const SuperAdminLogin = () => {
@@ -354,6 +355,17 @@ const SuperAdminDashboard = () => {
       
       case "translations":
         return <TranslationManagement />;
+      
+      case "help":
+        return (
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Help Center Management</h1>
+              <p className="text-muted-foreground mt-1">Manage help articles and knowledge base content</p>
+            </div>
+            <HelpArticlesManagement />
+          </div>
+        );
       
       default:
         return null;

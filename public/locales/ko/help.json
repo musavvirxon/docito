@@ -1,0 +1,45 @@
+{
+  "hero": {
+    "title": "어떻게 도와드릴까요?",
+    "subtitle": "답변을 위해 지식 기반을 검색하세요",
+    "searchPlaceholder": "도움말 기사 검색..."
+  },
+  "categories": {
+    "title": "카테고리별로 찾아보기",
+    "articles": "기사",
+    "gettingStarted": {
+      "title": "시작하기",
+      "description": "Docito 사용의 기본 배우기"
+    },
+    "appointments": {
+      "title": "예약",
+      "description": "예약 생성 및 관리"
+    },
+    "telemedicine": {
+      "title": "원격 의료",
+      "description": "비디오 상담 및 가상 치료"
+    },
+    "medicalRecords": {
+      "title": "의료 기록",
+      "description": "건강 기록 관리"
+    },
+    "billingPayments": {
+      "title": "청구 및 결제",
+      "description": "결제 방법 및 보험"
+    },
+    "accountManagement": {
+      "title": "계정 관리",
+      "description": "계정 설정 관리"
+    }
+  },
+  "popular": {
+    "title": "인기 기사",
+    "views": "조회수",
+    "noArticles": "아직 인기 기사가 없습니다"
+  },
+  "cta": {
+    "title": "아직 도움이 필요하신가요?",
+    "subtitle": "지원 팀이 24시간 연중무휴로 도와드립니다",
+    "button": "지원팀에 문의"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "hero": {
+    "title": "Wie können wir Ihnen helfen?",
+    "subtitle": "Durchsuchen Sie unsere Wissensdatenbank nach Antworten",
+    "searchPlaceholder": "Nach Hilfeartikeln suchen..."
+  },
+  "categories": {
+    "title": "Nach Kategorie durchsuchen",
+    "articles": "Artikel",
+    "gettingStarted": {
+      "title": "Erste Schritte",
+      "description": "Lernen Sie die Grundlagen von Docito"
+    },
+    "appointments": {
+      "title": "Termine",
+      "description": "Termine buchen und verwalten"
+    },
+    "telemedicine": {
+      "title": "Telemedizin",
+      "description": "Videokonsultationen und virtuelle Pflege"
+    },
+    "medicalRecords": {
+      "title": "Medizinische Aufzeichnungen",
+      "description": "Verwaltung Ihrer Gesundheitsakten"
+    },
+    "billingPayments": {
+      "title": "Abrechnung und Zahlungen",
+      "description": "Zahlungsmethoden und Versicherung"
+    },
+    "accountManagement": {
+      "title": "Kontoverwaltung",
+      "description": "Verwaltung Ihrer Kontoeinstellungen"
+    }
+  },
+  "popular": {
+    "title": "Beliebte Artikel",
+    "views": "Aufrufe",
+    "noArticles": "Noch keine beliebten Artikel"
+  },
+  "cta": {
+    "title": "Benötigen Sie noch Hilfe?",
+    "subtitle": "Unser Support-Team ist rund um die Uhr für Sie da",
+    "button": "Support Kontaktieren"
+  }
+}

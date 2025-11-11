@@ -585,6 +585,150 @@ export type Database = {
           },
         ]
       }
+      help_articles: {
+        Row: {
+          category: Database["public"]["Enums"]["help_category"]
+          color: string | null
+          content_ar: string | null
+          content_de: string | null
+          content_en: string
+          content_es: string | null
+          content_ja: string | null
+          content_ko: string | null
+          content_pt: string | null
+          content_ru: string | null
+          content_tr: string | null
+          content_uz: string | null
+          content_zh: string | null
+          created_at: string | null
+          created_by: string | null
+          description_ar: string | null
+          description_de: string | null
+          description_en: string
+          description_es: string | null
+          description_ja: string | null
+          description_ko: string | null
+          description_pt: string | null
+          description_ru: string | null
+          description_tr: string | null
+          description_uz: string | null
+          description_zh: string | null
+          display_order: number | null
+          icon: string | null
+          id: string
+          is_popular: boolean | null
+          is_published: boolean | null
+          slug: string
+          title_ar: string | null
+          title_de: string | null
+          title_en: string
+          title_es: string | null
+          title_ja: string | null
+          title_ko: string | null
+          title_pt: string | null
+          title_ru: string | null
+          title_tr: string | null
+          title_uz: string | null
+          title_zh: string | null
+          updated_at: string | null
+          views: number | null
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["help_category"]
+          color?: string | null
+          content_ar?: string | null
+          content_de?: string | null
+          content_en: string
+          content_es?: string | null
+          content_ja?: string | null
+          content_ko?: string | null
+          content_pt?: string | null
+          content_ru?: string | null
+          content_tr?: string | null
+          content_uz?: string | null
+          content_zh?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description_ar?: string | null
+          description_de?: string | null
+          description_en: string
+          description_es?: string | null
+          description_ja?: string | null
+          description_ko?: string | null
+          description_pt?: string | null
+          description_ru?: string | null
+          description_tr?: string | null
+          description_uz?: string | null
+          description_zh?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_popular?: boolean | null
+          is_published?: boolean | null
+          slug: string
+          title_ar?: string | null
+          title_de?: string | null
+          title_en: string
+          title_es?: string | null
+          title_ja?: string | null
+          title_ko?: string | null
+          title_pt?: string | null
+          title_ru?: string | null
+          title_tr?: string | null
+          title_uz?: string | null
+          title_zh?: string | null
+          updated_at?: string | null
+          views?: number | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["help_category"]
+          color?: string | null
+          content_ar?: string | null
+          content_de?: string | null
+          content_en?: string
+          content_es?: string | null
+          content_ja?: string | null
+          content_ko?: string | null
+          content_pt?: string | null
+          content_ru?: string | null
+          content_tr?: string | null
+          content_uz?: string | null
+          content_zh?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description_ar?: string | null
+          description_de?: string | null
+          description_en?: string
+          description_es?: string | null
+          description_ja?: string | null
+          description_ko?: string | null
+          description_pt?: string | null
+          description_ru?: string | null
+          description_tr?: string | null
+          description_uz?: string | null
+          description_zh?: string | null
+          display_order?: number | null
+          icon?: string | null
+          id?: string
+          is_popular?: boolean | null
+          is_published?: boolean | null
+          slug?: string
+          title_ar?: string | null
+          title_de?: string | null
+          title_en?: string
+          title_es?: string | null
+          title_ja?: string | null
+          title_ko?: string | null
+          title_pt?: string | null
+          title_ru?: string | null
+          title_tr?: string | null
+          title_uz?: string | null
+          title_zh?: string | null
+          updated_at?: string | null
+          views?: number | null
+        }
+        Relationships: []
+      }
       legal_pages: {
         Row: {
           category: string | null
@@ -2718,6 +2862,13 @@ export type Database = {
         | "no_show"
       consent_status: "pending" | "signed" | "declined"
       gender_type: "male" | "female" | "other" | "prefer_not_to_say"
+      help_category:
+        | "getting_started"
+        | "appointments"
+        | "telemedicine"
+        | "medical_records"
+        | "billing_payments"
+        | "account_management"
       procedure_category:
         | "general"
         | "preventive"
@@ -2885,6 +3036,14 @@ export const Constants = {
       ],
       consent_status: ["pending", "signed", "declined"],
       gender_type: ["male", "female", "other", "prefer_not_to_say"],
+      help_category: [
+        "getting_started",
+        "appointments",
+        "telemedicine",
+        "medical_records",
+        "billing_payments",
+        "account_management",
+      ],
       procedure_category: [
         "general",
         "preventive",

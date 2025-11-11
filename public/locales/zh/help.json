@@ -1,0 +1,45 @@
+{
+  "hero": {
+    "title": "我们能如何帮助您？",
+    "subtitle": "在我们的知识库中搜索答案",
+    "searchPlaceholder": "搜索帮助文章..."
+  },
+  "categories": {
+    "title": "按类别浏览",
+    "articles": "文章",
+    "gettingStarted": {
+      "title": "入门",
+      "description": "学习使用Docito的基础知识"
+    },
+    "appointments": {
+      "title": "预约",
+      "description": "预订和管理预约"
+    },
+    "telemedicine": {
+      "title": "远程医疗",
+      "description": "视频咨询和虚拟护理"
+    },
+    "medicalRecords": {
+      "title": "医疗记录",
+      "description": "管理您的健康记录"
+    },
+    "billingPayments": {
+      "title": "计费和付款",
+      "description": "支付方式和保险"
+    },
+    "accountManagement": {
+      "title": "账户管理",
+      "description": "管理您的账户设置"
+    }
+  },
+  "popular": {
+    "title": "热门文章",
+    "views": "次查看",
+    "noArticles": "暂无热门文章"
+  },
+  "cta": {
+    "title": "还需要帮助吗？",
+    "subtitle": "我们的支持团队24/7全天候为您服务",
+    "button": "联系支持"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "hero": {
+    "title": "どのようにお手伝いできますか？",
+    "subtitle": "ナレッジベースで回答を検索",
+    "searchPlaceholder": "ヘルプ記事を検索..."
+  },
+  "categories": {
+    "title": "カテゴリ別に閲覧",
+    "articles": "記事",
+    "gettingStarted": {
+      "title": "はじめに",
+      "description": "Docitoの基本的な使い方を学ぶ"
+    },
+    "appointments": {
+      "title": "予約",
+      "description": "予約の作成と管理"
+    },
+    "telemedicine": {
+      "title": "遠隔医療",
+      "description": "ビデオ相談とバーチャルケア"
+    },
+    "medicalRecords": {
+      "title": "医療記録",
+      "description": "健康記録の管理"
+    },
+    "billingPayments": {
+      "title": "請求と支払い",
+      "description": "支払い方法と保険"
+    },
+    "accountManagement": {
+      "title": "アカウント管理",
+      "description": "アカウント設定の管理"
+    }
+  },
+  "popular": {
+    "title": "人気記事",
+    "views": "閲覧",
+    "noArticles": "まだ人気記事はありません"
+  },
+  "cta": {
+    "title": "まだヘルプが必要ですか？",
+    "subtitle": "サポートチームが24時間365日対応します",
+    "button": "サポートに連絡"
+  }
+}

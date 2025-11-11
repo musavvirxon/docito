@@ -1,0 +1,45 @@
+{
+  "hero": {
+    "title": "كيف يمكننا مساعدتك؟",
+    "subtitle": "ابحث في قاعدة معارفنا للحصول على إجابات",
+    "searchPlaceholder": "البحث عن مقالات المساعدة..."
+  },
+  "categories": {
+    "title": "تصفح حسب الفئة",
+    "articles": "مقالات",
+    "gettingStarted": {
+      "title": "البدء",
+      "description": "تعلم أساسيات استخدام Docito"
+    },
+    "appointments": {
+      "title": "المواعيد",
+      "description": "حجز وإدارة المواعيد"
+    },
+    "telemedicine": {
+      "title": "الطب عن بعد",
+      "description": "الاستشارات عبر الفيديو والرعاية الافتراضية"
+    },
+    "medicalRecords": {
+      "title": "السجلات الطبية",
+      "description": "إدارة سجلاتك الصحية"
+    },
+    "billingPayments": {
+      "title": "الفوترة والمدفوعات",
+      "description": "طرق الدفع والتأمين"
+    },
+    "accountManagement": {
+      "title": "إدارة الحساب",
+      "description": "إدارة إعدادات حسابك"
+    }
+  },
+  "popular": {
+    "title": "المقالات الشائعة",
+    "views": "مشاهدات",
+    "noArticles": "لا توجد مقالات شائعة حتى الآن"
+  },
+  "cta": {
+    "title": "هل لا تزال بحاجة إلى مساعدة؟",
+    "subtitle": "فريق الدعم لدينا هنا لمساعدتك على مدار الساعة",
+    "button": "اتصل بالدعم"
+  }
+}

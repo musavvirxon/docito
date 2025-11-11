@@ -1,0 +1,45 @@
+{
+  "hero": {
+    "title": "¿Cómo podemos ayudarte?",
+    "subtitle": "Busca en nuestra base de conocimientos para obtener respuestas",
+    "searchPlaceholder": "Buscar artículos de ayuda..."
+  },
+  "categories": {
+    "title": "Explorar por Categoría",
+    "articles": "artículos",
+    "gettingStarted": {
+      "title": "Primeros Pasos",
+      "description": "Aprende los conceptos básicos de usar Docito"
+    },
+    "appointments": {
+      "title": "Citas",
+      "description": "Reservar y gestionar citas"
+    },
+    "telemedicine": {
+      "title": "Telemedicina",
+      "description": "Consultas por video y atención virtual"
+    },
+    "medicalRecords": {
+      "title": "Registros Médicos",
+      "description": "Gestionar tus registros de salud"
+    },
+    "billingPayments": {
+      "title": "Facturación y Pagos",
+      "description": "Métodos de pago y seguros"
+    },
+    "accountManagement": {
+      "title": "Gestión de Cuenta",
+      "description": "Gestionar la configuración de tu cuenta"
+    }
+  },
+  "popular": {
+    "title": "Artículos Populares",
+    "views": "vistas",
+    "noArticles": "Aún no hay artículos populares"
+  },
+  "cta": {
+    "title": "¿Todavía necesitas ayuda?",
+    "subtitle": "Nuestro equipo de soporte está aquí para ayudarte 24/7",
+    "button": "Contactar Soporte"
+  }
+}

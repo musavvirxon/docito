@@ -1,0 +1,45 @@
+{
+  "hero": {
+    "title": "Sizga qanday yordam berishimiz mumkin?",
+    "subtitle": "Javoblar uchun bilimlar bazamizdan qidiring",
+    "searchPlaceholder": "Yordam maqolalarini qidirish..."
+  },
+  "categories": {
+    "title": "Kategoriya bo'yicha ko'rib chiqish",
+    "articles": "maqolalar",
+    "gettingStarted": {
+      "title": "Boshlash",
+      "description": "Docito'dan foydalanishning asoslarini o'rganing"
+    },
+    "appointments": {
+      "title": "Uchrashuv",
+      "description": "Uchrashuvlarni bron qilish va boshqarish"
+    },
+    "telemedicine": {
+      "title": "Telemeditsina",
+      "description": "Video konsultatsiyalar va virtual yordam"
+    },
+    "medicalRecords": {
+      "title": "Tibbiy Yozuvlar",
+      "description": "Sog'liq yozuvlaringizni boshqarish"
+    },
+    "billingPayments": {
+      "title": "Hisob-kitob va to'lovlar",
+      "description": "To'lov usullari va sug'urta"
+    },
+    "accountManagement": {
+      "title": "Hisob Boshqaruvi",
+      "description": "Hisob sozlamalaringizni boshqarish"
+    }
+  },
+  "popular": {
+    "title": "Mashhur Maqolalar",
+    "views": "ko'rish",
+    "noArticles": "Hali mashhur maqolalar yo'q"
+  },
+  "cta": {
+    "title": "Hali yordam kerakmi?",
+    "subtitle": "Bizning qo'llab-quvvatlash jamoamiz 24/7 sizga yordam berish uchun shu yerda",
+    "button": "Qo'llab-quvvatlashga murojaat qiling"
+  }
+}
