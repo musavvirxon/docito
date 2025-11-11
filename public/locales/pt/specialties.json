@@ -1,0 +1,52 @@
+{
+  "page": {
+    "signIn": "Entrar",
+    "title": "Explorar Especialidades Médicas",
+    "subtitle": "Encontre o especialista certo para suas necessidades de saúde em nossa lista abrangente de áreas médicas",
+    "doctors": "médicos",
+    "viewAll": "Ver todos",
+    "notFound": {
+      "title": "Não Consegue Encontrar Sua Especialidade?",
+      "description": "Estamos constantemente adicionando novos especialistas. Entre em contato conosco para solicitar uma especialidade específica.",
+      "button": "Contatar Suporte"
+    }
+  },
+  "cardiology": {
+    "description": "Especialistas em coração e sistema cardiovascular"
+  },
+  "neurology": {
+    "description": "Especialistas em cérebro e sistema nervoso"
+  },
+  "pediatrics": {
+    "description": "Especialistas em saúde infantil"
+  },
+  "orthopedics": {
+    "description": "Especialistas em ossos, articulações e músculos"
+  },
+  "ophthalmology": {
+    "description": "Especialistas em cuidados com os olhos e visão"
+  },
+  "ent": {
+    "description": "Especialistas em ouvido, nariz e garganta"
+  },
+  "dentistry": {
+    "description": "Saúde bucal e cuidados dentários"
+  },
+  "dermatology": {
+    "description": "Especialistas em pele, cabelo e unhas"
+  },
+  "psychiatry": {
+    "description": "Especialistas em saúde mental"
+  },
+  "generalPractice": {
+    "description": "Médicos de cuidados primários"
+  },
+  "pharmacy": {
+    "name": "Farmácia",
+    "description": "Cuidados medicamentosos e farmacêuticos"
+  },
+  "laboratory": {
+    "name": "Laboratório",
+    "description": "Serviços de diagnóstico e testes"
+  }
+}

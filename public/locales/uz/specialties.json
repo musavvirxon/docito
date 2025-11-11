@@ -1,0 +1,52 @@
+{
+  "page": {
+    "signIn": "Kirish",
+    "title": "Tibbiy Mutaxassisliklarni Ko'rish",
+    "subtitle": "Tibbiy sohalarning to'liq ro'yxatidan sog'liq ehtiyojlaringiz uchun to'g'ri mutaxassisni toping",
+    "doctors": "shifokor",
+    "viewAll": "Hammasini ko'rish",
+    "notFound": {
+      "title": "Mutaxassisligingizni Topolmayapsizmi?",
+      "description": "Biz doimiy ravishda yangi mutaxassislar qo'shmoqdamiz. Ma'lum bir mutaxassislikni so'rash uchun biz bilan bog'laning.",
+      "button": "Qo'llab-quvvatlash Bilan Bog'lanish"
+    }
+  },
+  "cardiology": {
+    "description": "Yurak va qon-tomir tizimi mutaxassislari"
+  },
+  "neurology": {
+    "description": "Miya va nerv tizimi mutaxassislari"
+  },
+  "pediatrics": {
+    "description": "Bolalar sog'liqni saqlash mutaxassislari"
+  },
+  "orthopedics": {
+    "description": "Suyak, bo'g'im va mushak mutaxassislari"
+  },
+  "ophthalmology": {
+    "description": "Ko'z parvarishi va ko'rish mutaxassislari"
+  },
+  "ent": {
+    "description": "Quloq, burun va tomoq mutaxassislari"
+  },
+  "dentistry": {
+    "description": "Og'iz bo'shlig'i salomatligi va stomatologik parvarish"
+  },
+  "dermatology": {
+    "description": "Teri, soch va tirnoq mutaxassislari"
+  },
+  "psychiatry": {
+    "description": "Ruhiy salomatlik mutaxassislari"
+  },
+  "generalPractice": {
+    "description": "Birlamchi tibbiy yordam shifokorlari"
+  },
+  "pharmacy": {
+    "name": "Dorixona",
+    "description": "Dori va farmatsevtik parvarish"
+  },
+  "laboratory": {
+    "name": "Laboratoriya",
+    "description": "Diagnostika va test xizmatlari"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "page": {
+    "signIn": "登录",
+    "title": "浏览医疗专科",
+    "subtitle": "从我们全面的医疗领域列表中找到适合您健康需求的专家",
+    "doctors": "位医生",
+    "viewAll": "查看全部",
+    "notFound": {
+      "title": "找不到您的专科？",
+      "description": "我们不断添加新的专家。请联系我们以请求特定专科。",
+      "button": "联系支持"
+    }
+  },
+  "cardiology": {
+    "description": "心脏和心血管系统专家"
+  },
+  "neurology": {
+    "description": "大脑和神经系统专家"
+  },
+  "pediatrics": {
+    "description": "儿童保健专家"
+  },
+  "orthopedics": {
+    "description": "骨骼、关节和肌肉专家"
+  },
+  "ophthalmology": {
+    "description": "眼部护理和视力专家"
+  },
+  "ent": {
+    "description": "耳鼻喉专家"
+  },
+  "dentistry": {
+    "description": "口腔健康和牙科护理"
+  },
+  "dermatology": {
+    "description": "皮肤、头发和指甲专家"
+  },
+  "psychiatry": {
+    "description": "心理健康专家"
+  },
+  "generalPractice": {
+    "description": "初级保健医生"
+  },
+  "pharmacy": {
+    "name": "药房",
+    "description": "药物和药学护理"
+  },
+  "laboratory": {
+    "name": "实验室",
+    "description": "诊断和检测服务"
+  }
+}

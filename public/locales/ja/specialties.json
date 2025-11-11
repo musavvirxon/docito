@@ -1,0 +1,52 @@
+{
+  "page": {
+    "signIn": "サインイン",
+    "title": "医療専門分野を閲覧",
+    "subtitle": "包括的な医療分野リストから、あなたの健康ニーズに適した専門家を見つけましょう",
+    "doctors": "人の医師",
+    "viewAll": "すべて表示",
+    "notFound": {
+      "title": "専門分野が見つかりませんか？",
+      "description": "新しい専門家を常に追加しています。特定の専門分野をリクエストするには、お問い合わせください。",
+      "button": "サポートに連絡"
+    }
+  },
+  "cardiology": {
+    "description": "心臓と心血管系の専門家"
+  },
+  "neurology": {
+    "description": "脳と神経系の専門家"
+  },
+  "pediatrics": {
+    "description": "小児医療の専門家"
+  },
+  "orthopedics": {
+    "description": "骨、関節、筋肉の専門家"
+  },
+  "ophthalmology": {
+    "description": "目のケアと視力の専門家"
+  },
+  "ent": {
+    "description": "耳鼻咽喉科の専門家"
+  },
+  "dentistry": {
+    "description": "口腔の健康と歯科治療"
+  },
+  "dermatology": {
+    "description": "皮膚、髪、爪の専門家"
+  },
+  "psychiatry": {
+    "description": "メンタルヘルスの専門家"
+  },
+  "generalPractice": {
+    "description": "プライマリケア医師"
+  },
+  "pharmacy": {
+    "name": "薬局",
+    "description": "薬物療法と医薬品ケア"
+  },
+  "laboratory": {
+    "name": "検査室",
+    "description": "診断・検査サービス"
+  }
+}

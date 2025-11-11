@@ -1,0 +1,52 @@
+{
+  "page": {
+    "signIn": "로그인",
+    "title": "의료 전문 분야 탐색",
+    "subtitle": "포괄적인 의료 분야 목록에서 귀하의 건강 요구에 맞는 전문가를 찾으세요",
+    "doctors": "명의 의사",
+    "viewAll": "모두 보기",
+    "notFound": {
+      "title": "전문 분야를 찾을 수 없나요?",
+      "description": "우리는 지속적으로 새로운 전문가를 추가하고 있습니다. 특정 전문 분야를 요청하려면 문의하세요.",
+      "button": "지원팀에 문의"
+    }
+  },
+  "cardiology": {
+    "description": "심장 및 심혈관계 전문의"
+  },
+  "neurology": {
+    "description": "뇌와 신경계 전문가"
+  },
+  "pediatrics": {
+    "description": "아동 건강 전문의"
+  },
+  "orthopedics": {
+    "description": "뼈, 관절, 근육 전문의"
+  },
+  "ophthalmology": {
+    "description": "눈 관리 및 시력 전문의"
+  },
+  "ent": {
+    "description": "이비인후과 전문의"
+  },
+  "dentistry": {
+    "description": "구강 건강 및 치과 치료"
+  },
+  "dermatology": {
+    "description": "피부, 모발, 손톱 전문의"
+  },
+  "psychiatry": {
+    "description": "정신 건강 전문의"
+  },
+  "generalPractice": {
+    "description": "1차 진료 의사"
+  },
+  "pharmacy": {
+    "name": "약국",
+    "description": "약물 및 제약 치료"
+  },
+  "laboratory": {
+    "name": "검사실",
+    "description": "진단 및 검사 서비스"
+  }
+}

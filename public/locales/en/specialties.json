@@ -1,0 +1,52 @@
+{
+  "page": {
+    "signIn": "Sign In",
+    "title": "Browse Medical Specialties",
+    "subtitle": "Find the right specialist for your healthcare needs from our comprehensive list of medical fields",
+    "doctors": "doctors",
+    "viewAll": "View all",
+    "notFound": {
+      "title": "Can't Find Your Specialty?",
+      "description": "We're constantly adding new specialists. Contact us to request a specific specialty.",
+      "button": "Contact Support"
+    }
+  },
+  "cardiology": {
+    "description": "Heart and cardiovascular system specialists"
+  },
+  "neurology": {
+    "description": "Brain and nervous system experts"
+  },
+  "pediatrics": {
+    "description": "Child healthcare specialists"
+  },
+  "orthopedics": {
+    "description": "Bone, joint, and muscle specialists"
+  },
+  "ophthalmology": {
+    "description": "Eye care and vision specialists"
+  },
+  "ent": {
+    "description": "Ear, nose, and throat specialists"
+  },
+  "dentistry": {
+    "description": "Oral health and dental care"
+  },
+  "dermatology": {
+    "description": "Skin, hair, and nail specialists"
+  },
+  "psychiatry": {
+    "description": "Mental health specialists"
+  },
+  "generalPractice": {
+    "description": "Primary care physicians"
+  },
+  "pharmacy": {
+    "name": "Pharmacy",
+    "description": "Medication and pharmaceutical care"
+  },
+  "laboratory": {
+    "name": "Laboratory",
+    "description": "Diagnostic and testing services"
+  }
+}

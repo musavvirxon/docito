@@ -1,0 +1,52 @@
+{
+  "page": {
+    "signIn": "Giriş Yap",
+    "title": "Tıbbi Uzmanlıkları Keşfet",
+    "subtitle": "Kapsamlı tıbbi alanlar listemizden sağlık ihtiyaçlarınız için doğru uzmanı bulun",
+    "doctors": "doktor",
+    "viewAll": "Tümünü gör",
+    "notFound": {
+      "title": "Uzmanlığınızı Bulamıyor Musunuz?",
+      "description": "Sürekli yeni uzmanlar ekliyoruz. Belirli bir uzmanlık talep etmek için bizimle iletişime geçin.",
+      "button": "Destek ile İletişime Geç"
+    }
+  },
+  "cardiology": {
+    "description": "Kalp ve kardiyovasküler sistem uzmanları"
+  },
+  "neurology": {
+    "description": "Beyin ve sinir sistemi uzmanları"
+  },
+  "pediatrics": {
+    "description": "Çocuk sağlığı uzmanları"
+  },
+  "orthopedics": {
+    "description": "Kemik, eklem ve kas uzmanları"
+  },
+  "ophthalmology": {
+    "description": "Göz bakımı ve görme uzmanları"
+  },
+  "ent": {
+    "description": "Kulak, burun ve boğaz uzmanları"
+  },
+  "dentistry": {
+    "description": "Ağız sağlığı ve diş bakımı"
+  },
+  "dermatology": {
+    "description": "Cilt, saç ve tırnak uzmanları"
+  },
+  "psychiatry": {
+    "description": "Ruh sağlığı uzmanları"
+  },
+  "generalPractice": {
+    "description": "Birinci basamak hekimleri"
+  },
+  "pharmacy": {
+    "name": "Eczane",
+    "description": "İlaç ve farmasötik bakım"
+  },
+  "laboratory": {
+    "name": "Laboratuvar",
+    "description": "Tanı ve test hizmetleri"
+  }
+}

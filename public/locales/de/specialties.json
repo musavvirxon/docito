@@ -1,0 +1,52 @@
+{
+  "page": {
+    "signIn": "Anmelden",
+    "title": "Medizinische Fachgebiete durchsuchen",
+    "subtitle": "Finden Sie den richtigen Spezialisten für Ihre Gesundheitsbedürfnisse aus unserer umfassenden Liste medizinischer Fachgebiete",
+    "doctors": "Ärzte",
+    "viewAll": "Alle ansehen",
+    "notFound": {
+      "title": "Ihr Fachgebiet nicht gefunden?",
+      "description": "Wir fügen ständig neue Spezialisten hinzu. Kontaktieren Sie uns, um ein bestimmtes Fachgebiet anzufordern.",
+      "button": "Support kontaktieren"
+    }
+  },
+  "cardiology": {
+    "description": "Herz- und Kreislaufspezialisten"
+  },
+  "neurology": {
+    "description": "Gehirn- und Nervensystemexperten"
+  },
+  "pediatrics": {
+    "description": "Spezialisten für Kindergesundheit"
+  },
+  "orthopedics": {
+    "description": "Knochen-, Gelenk- und Muskelspezialisten"
+  },
+  "ophthalmology": {
+    "description": "Augenpflege- und Sehspezialisten"
+  },
+  "ent": {
+    "description": "Hals-Nasen-Ohren-Spezialisten"
+  },
+  "dentistry": {
+    "description": "Mundgesundheit und Zahnpflege"
+  },
+  "dermatology": {
+    "description": "Haut-, Haar- und Nagelspezialisten"
+  },
+  "psychiatry": {
+    "description": "Spezialisten für psychische Gesundheit"
+  },
+  "generalPractice": {
+    "description": "Hausärzte"
+  },
+  "pharmacy": {
+    "name": "Apotheke",
+    "description": "Medikamenten- und pharmazeutische Versorgung"
+  },
+  "laboratory": {
+    "name": "Labor",
+    "description": "Diagnostik- und Testdienstleistungen"
+  }
+}
