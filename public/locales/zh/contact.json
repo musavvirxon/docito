@@ -1,0 +1,92 @@
+{
+  "hero": {
+    "title": "联系我们",
+    "subtitle": "有问题吗？我们在这里帮助您。通过以下任何方式与我们联系。"
+  },
+  "methods": {
+    "email": {
+      "title": "发送电子邮件",
+      "description": "随时给我们发送电子邮件"
+    },
+    "phone": {
+      "title": "电话联系",
+      "description": "周一至周五 上午8点至下午6点"
+    },
+    "location": {
+      "title": "访问我们",
+      "description": "欢迎来访我们的办公室"
+    },
+    "chat": {
+      "title": "在线聊天",
+      "value": "全天候可用",
+      "description": "与我们的支持团队聊天"
+    }
+  },
+  "form": {
+    "title": "发送消息",
+    "fields": {
+      "name": {
+        "label": "全名",
+        "placeholder": "张三"
+      },
+      "email": {
+        "label": "电子邮箱",
+        "placeholder": "zhangsan@example.com"
+      },
+      "phone": {
+        "label": "电话（可选）",
+        "placeholder": "+86 138 0000 0000"
+      },
+      "category": {
+        "label": "类别",
+        "options": {
+          "general": "一般咨询",
+          "technical": "技术支持",
+          "billing": "计费问题",
+          "partnership": "合作机会",
+          "feedback": "反馈"
+        }
+      },
+      "subject": {
+        "label": "主题",
+        "placeholder": "我们能如何帮助您？"
+      },
+      "message": {
+        "label": "留言",
+        "placeholder": "详细说明您的问题..."
+      }
+    },
+    "submit": "发送消息",
+    "sending": "发送中...",
+    "successTitle": "消息发送成功！",
+    "successDescription": "我们会尽快回复您。"
+  },
+  "faq": {
+    "title": "常见问题",
+    "questions": {
+      "hours": {
+        "question": "你们的支持时间是？",
+        "answer": "我们的支持团队通过在线聊天和电子邮件全天候提供服务。电话支持时间为周一至周五，上午8点至下午6点（EST）。"
+      },
+      "response": {
+        "question": "多快能收到回复？",
+        "answer": "我们通常在工作时间内2-4小时内回复所有咨询，对于工作时间外收到的消息，我们会在24小时内回复。"
+      },
+      "emergency": {
+        "question": "你们提供紧急支持吗？",
+        "answer": "是的！对于紧急技术问题或紧急情况，请拨打我们的热线 +1 (555) 123-4567 并按1获得即时帮助。"
+      },
+      "demo": {
+        "question": "我可以预约演示吗？",
+        "answer": "当然可以！点击我们主页上的"预约演示"按钮，或在您的消息中提及，我们将为您安排个性化演示。"
+      }
+    }
+  },
+  "businessHours": {
+    "title": "营业时间",
+    "weekdays": "周一 - 周五: 上午8:00 - 下午6:00 EST",
+    "saturday": "周六: 上午9:00 - 下午3:00 EST",
+    "sunday": "周日: 休息",
+    "liveChat": "在线聊天全天候可用"
+  }
+}

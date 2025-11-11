@@ -1,0 +1,92 @@
+{
+  "hero": {
+    "title": "Get in Touch",
+    "subtitle": "Have questions? We're here to help. Reach out to us through any of the methods below."
+  },
+  "methods": {
+    "email": {
+      "title": "Email Us",
+      "description": "Send us an email anytime"
+    },
+    "phone": {
+      "title": "Call Us",
+      "description": "Mon-Fri from 8am to 6pm"
+    },
+    "location": {
+      "title": "Visit Us",
+      "description": "Come visit our office"
+    },
+    "chat": {
+      "title": "Live Chat",
+      "value": "Available 24/7",
+      "description": "Chat with our support team"
+    }
+  },
+  "form": {
+    "title": "Send us a Message",
+    "fields": {
+      "name": {
+        "label": "Full Name",
+        "placeholder": "John Doe"
+      },
+      "email": {
+        "label": "Email",
+        "placeholder": "john@example.com"
+      },
+      "phone": {
+        "label": "Phone (Optional)",
+        "placeholder": "+1 (555) 123-4567"
+      },
+      "category": {
+        "label": "Category",
+        "options": {
+          "general": "General Inquiry",
+          "technical": "Technical Support",
+          "billing": "Billing Question",
+          "partnership": "Partnership Opportunity",
+          "feedback": "Feedback"
+        }
+      },
+      "subject": {
+        "label": "Subject",
+        "placeholder": "How can we help?"
+      },
+      "message": {
+        "label": "Message",
+        "placeholder": "Tell us more about your inquiry..."
+      }
+    },
+    "submit": "Send Message",
+    "sending": "Sending...",
+    "successTitle": "Message sent successfully!",
+    "successDescription": "We'll get back to you soon."
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "questions": {
+      "hours": {
+        "question": "What are your support hours?",
+        "answer": "Our support team is available 24/7 via live chat and email. Phone support is available Monday-Friday, 8am-6pm EST."
+      },
+      "response": {
+        "question": "How quickly will I get a response?",
+        "answer": "We typically respond to all inquiries within 2-4 hours during business hours, and within 24 hours for messages received outside business hours."
+      },
+      "emergency": {
+        "question": "Do you offer emergency support?",
+        "answer": "Yes! For urgent technical issues or emergencies, please call our hotline at +1 (555) 123-4567 and press 1 for immediate assistance."
+      },
+      "demo": {
+        "question": "Can I schedule a demo?",
+        "answer": "Absolutely! Click the 'Schedule Demo' button on our homepage or mention it in your message, and we'll set up a personalized demonstration."
+      }
+    }
+  },
+  "businessHours": {
+    "title": "Business Hours",
+    "weekdays": "Monday - Friday: 8:00 AM - 6:00 PM EST",
+    "saturday": "Saturday: 9:00 AM - 3:00 PM EST",
+    "sunday": "Sunday: Closed",
+    "liveChat": "Live chat available 24/7"
+  }
+}

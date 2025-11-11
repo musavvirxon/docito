@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Logo } from '@/components/Logo';
 import Footer from '@/components/Footer';
 import { Mail, Phone, MapPin, Send, MessageSquare, Clock, ChevronRight } from 'lucide-react';
@@ -8,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 export default function Contact() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation(['common', 'contact']);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -24,8 +26,8 @@ export default function Contact() {
 
     setTimeout(() => {
       toast({
-        title: "Message sent successfully!",
-        description: "We'll get back to you soon.",
+        title: t('contact:form.successTitle'),
+        description: t('contact:form.successDescription'),
       });
       setFormData({
         name: '',
@@ -42,30 +44,30 @@ export default function Contact() {
   const contactMethods = [
     {
       icon: Mail,
-      title: 'Email Us',
+      title: t('contact:methods.email.title'),
       value: 'support@docito.app',
-      description: 'Send us an email anytime',
+      description: t('contact:methods.email.description'),
       color: 'from-blue-500 to-indigo-600'
     },
     {
       icon: Phone,
-      title: 'Call Us',
+      title: t('contact:methods.phone.title'),
       value: '+1 (555) 123-4567',
-      description: 'Mon-Fri from 8am to 6pm',
+      description: t('contact:methods.phone.description'),
       color: 'from-green-500 to-teal-600'
     },
     {
       icon: MapPin,
-      title: 'Visit Us',
+      title: t('contact:methods.location.title'),
       value: '123 Healthcare Ave, Medical District',
-      description: 'Come visit our office',
+      description: t('contact:methods.location.description'),
       color: 'from-purple-500 to-pink-600'
     },
     {
       icon: MessageSquare,
-      title: 'Live Chat',
-      value: 'Available 24/7',
-      description: 'Chat with our support team',
+      title: t('contact:methods.chat.title'),
+      value: t('contact:methods.chat.value'),
+      description: t('contact:methods.chat.description'),
       color: 'from-orange-500 to-red-600'
     }
   ];
@@ -80,7 +82,7 @@ export default function Contact() {
               onClick={() => navigate('/auth')}
               className="px-6 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              Sign In
+              {t('common:nav.signIn')}
             </button>
           </div>
         </div>
@@ -88,9 +90,9 @@ export default function Contact() {
 
       <div className="bg-gradient-to-br from-primary/90 to-primary py-16">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl font-bold text-primary-foreground mb-4">Get in Touch</h1>
+          <h1 className="text-5xl font-bold text-primary-foreground mb-4">{t('contact:hero.title')}</h1>
           <p className="text-xl text-primary-foreground/80 max-w-2xl mx-auto">
-            Have questions? We're here to help. Reach out to us through any of the methods below.
+            {t('contact:hero.subtitle')}
           </p>
         </div>
       </div>
@@ -104,80 +106,80 @@ export default function Contact() {
 
         <div className="grid lg:grid-cols-2 gap-12">
           <div className="bg-card rounded-2xl p-8 shadow-xl border border-border">
-            <h2 className="text-2xl font-bold text-foreground mb-6">Send us a Message</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-6">{t('contact:form.title')}</h2>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Full Name</label>
+                <label className="block text-sm font-medium text-foreground mb-2">{t('contact:form.fields.name.label')}</label>
                 <input
                   type="text"
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-4 py-3 rounded-lg border-2 border-input bg-background text-foreground"
-                  placeholder="John Doe"
+                  placeholder={t('contact:form.fields.name.placeholder')}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Email</label>
+                <label className="block text-sm font-medium text-foreground mb-2">{t('contact:form.fields.email.label')}</label>
                 <input
                   type="email"
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="w-full px-4 py-3 rounded-lg border-2 border-input bg-background text-foreground"
-                  placeholder="john@example.com"
+                  placeholder={t('contact:form.fields.email.placeholder')}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Phone (Optional)</label>
+                <label className="block text-sm font-medium text-foreground mb-2">{t('contact:form.fields.phone.label')}</label>
                 <input
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   className="w-full px-4 py-3 rounded-lg border-2 border-input bg-background text-foreground"
-                  placeholder="+1 (555) 123-4567"
+                  placeholder={t('contact:form.fields.phone.placeholder')}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Category</label>
+                <label className="block text-sm font-medium text-foreground mb-2">{t('contact:form.fields.category.label')}</label>
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className="w-full px-4 py-3 rounded-lg border-2 border-input bg-background text-foreground"
                 >
-                  <option value="general">General Inquiry</option>
-                  <option value="technical">Technical Support</option>
-                  <option value="billing">Billing Question</option>
-                  <option value="partnership">Partnership Opportunity</option>
-                  <option value="feedback">Feedback</option>
+                  <option value="general">{t('contact:form.fields.category.options.general')}</option>
+                  <option value="technical">{t('contact:form.fields.category.options.technical')}</option>
+                  <option value="billing">{t('contact:form.fields.category.options.billing')}</option>
+                  <option value="partnership">{t('contact:form.fields.category.options.partnership')}</option>
+                  <option value="feedback">{t('contact:form.fields.category.options.feedback')}</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Subject</label>
+                <label className="block text-sm font-medium text-foreground mb-2">{t('contact:form.fields.subject.label')}</label>
                 <input
                   type="text"
                   required
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                   className="w-full px-4 py-3 rounded-lg border-2 border-input bg-background text-foreground"
-                  placeholder="How can we help?"
+                  placeholder={t('contact:form.fields.subject.placeholder')}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Message</label>
+                <label className="block text-sm font-medium text-foreground mb-2">{t('contact:form.fields.message.label')}</label>
                 <textarea
                   required
                   rows={6}
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   className="w-full px-4 py-3 rounded-lg border-2 border-input bg-background text-foreground"
-                  placeholder="Tell us more about your inquiry..."
+                  placeholder={t('contact:form.fields.message.placeholder')}
                 />
               </div>
 
@@ -186,10 +188,10 @@ export default function Contact() {
                 disabled={isSubmitting}
                 className="w-full px-6 py-4 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-lg flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                {isSubmitting ? 'Sending...' : (
+                {isSubmitting ? t('contact:form.sending') : (
                   <>
                     <Send className="w-5 h-5" />
-                    Send Message
+                    {t('contact:form.submit')}
                   </>
                 )}
               </button>
@@ -197,35 +199,35 @@ export default function Contact() {
           </div>
 
           <div>
-            <h2 className="text-2xl font-bold text-foreground mb-6">Frequently Asked Questions</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-6">{t('contact:faq.title')}</h2>
             
             <div className="space-y-4 mb-8">
               <FAQItem
-                question="What are your support hours?"
-                answer="Our support team is available 24/7 via live chat and email. Phone support is available Monday-Friday, 8am-6pm EST."
+                question={t('contact:faq.questions.hours.question')}
+                answer={t('contact:faq.questions.hours.answer')}
               />
               <FAQItem
-                question="How quickly will I get a response?"
-                answer="We typically respond to all inquiries within 2-4 hours during business hours, and within 24 hours for messages received outside business hours."
+                question={t('contact:faq.questions.response.question')}
+                answer={t('contact:faq.questions.response.answer')}
               />
               <FAQItem
-                question="Do you offer emergency support?"
-                answer="Yes! For urgent technical issues or emergencies, please call our hotline at +1 (555) 123-4567 and press 1 for immediate assistance."
+                question={t('contact:faq.questions.emergency.question')}
+                answer={t('contact:faq.questions.emergency.answer')}
               />
               <FAQItem
-                question="Can I schedule a demo?"
-                answer="Absolutely! Click the 'Schedule Demo' button on our homepage or mention it in your message, and we'll set up a personalized demonstration."
+                question={t('contact:faq.questions.demo.question')}
+                answer={t('contact:faq.questions.demo.answer')}
               />
             </div>
 
             <div className="bg-primary/10 rounded-xl p-6 border border-primary/20">
               <Clock className="w-8 h-8 text-primary mb-4" />
-              <h3 className="text-lg font-bold text-foreground mb-2">Business Hours</h3>
+              <h3 className="text-lg font-bold text-foreground mb-2">{t('contact:businessHours.title')}</h3>
               <div className="space-y-1 text-sm text-muted-foreground">
-                <p>Monday - Friday: 8:00 AM - 6:00 PM EST</p>
-                <p>Saturday: 9:00 AM - 3:00 PM EST</p>
-                <p>Sunday: Closed</p>
-                <p className="text-primary font-semibold mt-2">Live chat available 24/7</p>
+                <p>{t('contact:businessHours.weekdays')}</p>
+                <p>{t('contact:businessHours.saturday')}</p>
+                <p>{t('contact:businessHours.sunday')}</p>
+                <p className="text-primary font-semibold mt-2">{t('contact:businessHours.liveChat')}</p>
               </div>
             </div>
           </div>

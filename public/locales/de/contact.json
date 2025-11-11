@@ -1,0 +1,92 @@
+{
+  "hero": {
+    "title": "Kontaktieren Sie uns",
+    "subtitle": "Haben Sie Fragen? Wir sind hier um zu helfen. Kontaktieren Sie uns über eine der folgenden Methoden."
+  },
+  "methods": {
+    "email": {
+      "title": "E-Mail an uns",
+      "description": "Senden Sie uns jederzeit eine E-Mail"
+    },
+    "phone": {
+      "title": "Rufen Sie uns an",
+      "description": "Mo-Fr von 8 bis 18 Uhr"
+    },
+    "location": {
+      "title": "Besuchen Sie uns",
+      "description": "Kommen Sie in unser Büro"
+    },
+    "chat": {
+      "title": "Live-Chat",
+      "value": "Verfügbar 24/7",
+      "description": "Chatten Sie mit unserem Support-Team"
+    }
+  },
+  "form": {
+    "title": "Senden Sie uns eine Nachricht",
+    "fields": {
+      "name": {
+        "label": "Vollständiger Name",
+        "placeholder": "Max Mustermann"
+      },
+      "email": {
+        "label": "E-Mail",
+        "placeholder": "max@beispiel.de"
+      },
+      "phone": {
+        "label": "Telefon (Optional)",
+        "placeholder": "+49 123 456 789"
+      },
+      "category": {
+        "label": "Kategorie",
+        "options": {
+          "general": "Allgemeine Anfrage",
+          "technical": "Technischer Support",
+          "billing": "Abrechnungsfrage",
+          "partnership": "Partnerschaftsmöglichkeit",
+          "feedback": "Feedback"
+        }
+      },
+      "subject": {
+        "label": "Betreff",
+        "placeholder": "Wie können wir helfen?"
+      },
+      "message": {
+        "label": "Nachricht",
+        "placeholder": "Erzählen Sie uns mehr über Ihre Anfrage..."
+      }
+    },
+    "submit": "Nachricht senden",
+    "sending": "Wird gesendet...",
+    "successTitle": "Nachricht erfolgreich gesendet!",
+    "successDescription": "Wir werden uns bald bei Ihnen melden."
+  },
+  "faq": {
+    "title": "Häufig gestellte Fragen",
+    "questions": {
+      "hours": {
+        "question": "Was sind Ihre Support-Zeiten?",
+        "answer": "Unser Support-Team ist 24/7 per Live-Chat und E-Mail verfügbar. Telefon-Support ist Montag-Freitag, 8-18 Uhr EST verfügbar."
+      },
+      "response": {
+        "question": "Wie schnell erhalte ich eine Antwort?",
+        "answer": "Wir antworten in der Regel innerhalb von 2-4 Stunden während der Geschäftszeiten auf alle Anfragen und innerhalb von 24 Stunden für Nachrichten außerhalb der Geschäftszeiten."
+      },
+      "emergency": {
+        "question": "Bieten Sie Notfall-Support an?",
+        "answer": "Ja! Bei dringenden technischen Problemen oder Notfällen rufen Sie bitte unsere Hotline unter +1 (555) 123-4567 an und drücken Sie 1 für sofortige Hilfe."
+      },
+      "demo": {
+        "question": "Kann ich eine Demo planen?",
+        "answer": "Absolut! Klicken Sie auf die Schaltfläche 'Demo planen' auf unserer Homepage oder erwähnen Sie es in Ihrer Nachricht, und wir richten eine personalisierte Demonstration ein."
+      }
+    }
+  },
+  "businessHours": {
+    "title": "Geschäftszeiten",
+    "weekdays": "Montag - Freitag: 8:00 - 18:00 Uhr EST",
+    "saturday": "Samstag: 9:00 - 15:00 Uhr EST",
+    "sunday": "Sonntag: Geschlossen",
+    "liveChat": "Live-Chat rund um die Uhr verfügbar"
+  }
+}

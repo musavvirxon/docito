@@ -1,0 +1,92 @@
+{
+  "hero": {
+    "title": "문의하기",
+    "subtitle": "궁금한 점이 있으신가요? 도와드리겠습니다. 아래 방법 중 하나로 문의해 주세요."
+  },
+  "methods": {
+    "email": {
+      "title": "이메일 문의",
+      "description": "언제든지 이메일을 보내주세요"
+    },
+    "phone": {
+      "title": "전화 문의",
+      "description": "월-금 오전 8시~오후 6시"
+    },
+    "location": {
+      "title": "방문 문의",
+      "description": "저희 사무실을 방문해 주세요"
+    },
+    "chat": {
+      "title": "실시간 채팅",
+      "value": "연중무휴 24시간",
+      "description": "지원팀과 채팅하기"
+    }
+  },
+  "form": {
+    "title": "메시지 보내기",
+    "fields": {
+      "name": {
+        "label": "이름",
+        "placeholder": "홍길동"
+      },
+      "email": {
+        "label": "이메일",
+        "placeholder": "hong@example.com"
+      },
+      "phone": {
+        "label": "전화번호 (선택사항)",
+        "placeholder": "+82 10-1234-5678"
+      },
+      "category": {
+        "label": "카테고리",
+        "options": {
+          "general": "일반 문의",
+          "technical": "기술 지원",
+          "billing": "청구 관련 질문",
+          "partnership": "파트너십 기회",
+          "feedback": "피드백"
+        }
+      },
+      "subject": {
+        "label": "제목",
+        "placeholder": "어떻게 도와드릴까요?"
+      },
+      "message": {
+        "label": "메시지",
+        "placeholder": "문의 내용을 자세히 알려주세요..."
+      }
+    },
+    "submit": "메시지 전송",
+    "sending": "전송 중...",
+    "successTitle": "메시지가 성공적으로 전송되었습니다!",
+    "successDescription": "곧 연락드리겠습니다."
+  },
+  "faq": {
+    "title": "자주 묻는 질문",
+    "questions": {
+      "hours": {
+        "question": "지원 시간은 어떻게 되나요?",
+        "answer": "지원팀은 실시간 채팅과 이메일을 통해 연중무휴 24시간 이용 가능합니다. 전화 지원은 월요일~금요일, 오전 8시~오후 6시(EST)에 이용하실 수 있습니다."
+      },
+      "response": {
+        "question": "얼마나 빨리 답변을 받을 수 있나요?",
+        "answer": "일반적으로 업무 시간 중 모든 문의에 2-4시간 이내에 답변드리며, 업무 시간 외에 받은 메시지는 24시간 이내에 답변드립니다."
+      },
+      "emergency": {
+        "question": "긴급 지원을 제공하나요?",
+        "answer": "네! 긴급 기술 문제나 응급 상황의 경우 핫라인 +1 (555) 123-4567로 전화하여 1번을 눌러 즉시 지원을 받으실 수 있습니다."
+      },
+      "demo": {
+        "question": "데모를 예약할 수 있나요?",
+        "answer": "물론입니다! 홈페이지의 '데모 예약' 버튼을 클릭하거나 메시지에 언급해 주시면 맞춤형 시연을 준비해 드리겠습니다."
+      }
+    }
+  },
+  "businessHours": {
+    "title": "업무 시간",
+    "weekdays": "월요일 - 금요일: 오전 8:00 - 오후 6:00 EST",
+    "saturday": "토요일: 오전 9:00 - 오후 3:00 EST",
+    "sunday": "일요일: 휴무",
+    "liveChat": "실시간 채팅 연중무휴 24시간"
+  }
+}

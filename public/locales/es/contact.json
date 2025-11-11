@@ -1,0 +1,92 @@
+{
+  "hero": {
+    "title": "Ponte en Contacto",
+    "subtitle": "¿Tienes preguntas? Estamos aquí para ayudar. Contáctanos a través de cualquiera de los métodos a continuación."
+  },
+  "methods": {
+    "email": {
+      "title": "Envíanos un Email",
+      "description": "Envíanos un correo en cualquier momento"
+    },
+    "phone": {
+      "title": "Llámanos",
+      "description": "Lun-Vie de 8am a 6pm"
+    },
+    "location": {
+      "title": "Visítanos",
+      "description": "Ven a visitar nuestra oficina"
+    },
+    "chat": {
+      "title": "Chat en Vivo",
+      "value": "Disponible 24/7",
+      "description": "Chatea con nuestro equipo de soporte"
+    }
+  },
+  "form": {
+    "title": "Envíanos un Mensaje",
+    "fields": {
+      "name": {
+        "label": "Nombre Completo",
+        "placeholder": "Juan Pérez"
+      },
+      "email": {
+        "label": "Correo Electrónico",
+        "placeholder": "juan@ejemplo.com"
+      },
+      "phone": {
+        "label": "Teléfono (Opcional)",
+        "placeholder": "+34 123 456 789"
+      },
+      "category": {
+        "label": "Categoría",
+        "options": {
+          "general": "Consulta General",
+          "technical": "Soporte Técnico",
+          "billing": "Pregunta de Facturación",
+          "partnership": "Oportunidad de Asociación",
+          "feedback": "Comentarios"
+        }
+      },
+      "subject": {
+        "label": "Asunto",
+        "placeholder": "¿Cómo podemos ayudarte?"
+      },
+      "message": {
+        "label": "Mensaje",
+        "placeholder": "Cuéntanos más sobre tu consulta..."
+      }
+    },
+    "submit": "Enviar Mensaje",
+    "sending": "Enviando...",
+    "successTitle": "¡Mensaje enviado exitosamente!",
+    "successDescription": "Te responderemos pronto."
+  },
+  "faq": {
+    "title": "Preguntas Frecuentes",
+    "questions": {
+      "hours": {
+        "question": "¿Cuáles son sus horarios de soporte?",
+        "answer": "Nuestro equipo de soporte está disponible 24/7 a través de chat en vivo y correo electrónico. El soporte telefónico está disponible de lunes a viernes, de 8am a 6pm EST."
+      },
+      "response": {
+        "question": "¿Qué tan rápido recibiré una respuesta?",
+        "answer": "Normalmente respondemos a todas las consultas dentro de 2-4 horas durante el horario laboral, y dentro de 24 horas para mensajes recibidos fuera del horario laboral."
+      },
+      "emergency": {
+        "question": "¿Ofrecen soporte de emergencia?",
+        "answer": "¡Sí! Para problemas técnicos urgentes o emergencias, por favor llama a nuestra línea directa al +1 (555) 123-4567 y presiona 1 para asistencia inmediata."
+      },
+      "demo": {
+        "question": "¿Puedo programar una demostración?",
+        "answer": "¡Por supuesto! Haz clic en el botón 'Programar Demo' en nuestra página de inicio o menciónalo en tu mensaje, y configuraremos una demostración personalizada."
+      }
+    }
+  },
+  "businessHours": {
+    "title": "Horario de Atención",
+    "weekdays": "Lunes - Viernes: 8:00 AM - 6:00 PM EST",
+    "saturday": "Sábado: 9:00 AM - 3:00 PM EST",
+    "sunday": "Domingo: Cerrado",
+    "liveChat": "Chat en vivo disponible 24/7"
+  }
+}

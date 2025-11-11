@@ -1,0 +1,92 @@
+{
+  "hero": {
+    "title": "Bize Ulaşın",
+    "subtitle": "Sorularınız mı var? Yardımcı olmak için buradayız. Aşağıdaki yöntemlerden herhangi biriyle bize ulaşın."
+  },
+  "methods": {
+    "email": {
+      "title": "Bize E-posta Gönderin",
+      "description": "Bize istediğiniz zaman e-posta gönderin"
+    },
+    "phone": {
+      "title": "Bizi Arayın",
+      "description": "Pzt-Cum 08:00-18:00"
+    },
+    "location": {
+      "title": "Bizi Ziyaret Edin",
+      "description": "Ofisimizi ziyaret edin"
+    },
+    "chat": {
+      "title": "Canlı Sohbet",
+      "value": "7/24 Müsait",
+      "description": "Destek ekibimizle sohbet edin"
+    }
+  },
+  "form": {
+    "title": "Bize Mesaj Gönderin",
+    "fields": {
+      "name": {
+        "label": "Tam Ad",
+        "placeholder": "Ahmet Yılmaz"
+      },
+      "email": {
+        "label": "E-posta",
+        "placeholder": "ahmet@ornek.com"
+      },
+      "phone": {
+        "label": "Telefon (İsteğe bağlı)",
+        "placeholder": "+90 555 123 4567"
+      },
+      "category": {
+        "label": "Kategori",
+        "options": {
+          "general": "Genel Soru",
+          "technical": "Teknik Destek",
+          "billing": "Fatura Sorusu",
+          "partnership": "Ortaklık Fırsatı",
+          "feedback": "Geri Bildirim"
+        }
+      },
+      "subject": {
+        "label": "Konu",
+        "placeholder": "Nasıl yardımcı olabiliriz?"
+      },
+      "message": {
+        "label": "Mesaj",
+        "placeholder": "Sorgunuz hakkında daha fazla bilgi verin..."
+      }
+    },
+    "submit": "Mesaj Gönder",
+    "sending": "Gönderiliyor...",
+    "successTitle": "Mesaj başarıyla gönderildi!",
+    "successDescription": "Size kısa sürede geri döneceğiz."
+  },
+  "faq": {
+    "title": "Sıkça Sorulan Sorular",
+    "questions": {
+      "hours": {
+        "question": "Destek saatleriniz nedir?",
+        "answer": "Destek ekibimiz canlı sohbet ve e-posta yoluyla 7/24 hizmetinizdedir. Telefon desteği Pazartesi-Cuma, 08:00-18:00 EST saatleri arasında mevcuttur."
+      },
+      "response": {
+        "question": "Ne kadar hızlı yanıt alacağım?",
+        "answer": "Genellikle mesai saatleri içinde tüm sorulara 2-4 saat içinde ve mesai saatleri dışında gelen mesajlara 24 saat içinde yanıt veriyoruz."
+      },
+      "emergency": {
+        "question": "Acil destek sunuyor musunuz?",
+        "answer": "Evet! Acil teknik sorunlar veya acil durumlar için lütfen +1 (555) 123-4567 numaralı yardım hattımızı arayın ve anında yardım için 1'e basın."
+      },
+      "demo": {
+        "question": "Demo planlayabilir miyim?",
+        "answer": "Kesinlikle! Ana sayfamızdaki 'Demo Planla' düğmesine tıklayın veya mesajınızda bahsedin, size özel bir gösteri ayarlayacağız."
+      }
+    }
+  },
+  "businessHours": {
+    "title": "Çalışma Saatleri",
+    "weekdays": "Pazartesi - Cuma: 08:00 - 18:00 EST",
+    "saturday": "Cumartesi: 09:00 - 15:00 EST",
+    "sunday": "Pazar: Kapalı",
+    "liveChat": "Canlı sohbet 7/24 mevcut"
+  }
+}

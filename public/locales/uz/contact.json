@@ -1,0 +1,92 @@
+{
+  "hero": {
+    "title": "Biz bilan bog'laning",
+    "subtitle": "Savollaringiz bormi? Biz yordam berish uchun shu yerdamiz. Quyidagi usullardan birortasi orqali biz bilan bog'laning."
+  },
+  "methods": {
+    "email": {
+      "title": "Bizga email yuboring",
+      "description": "Bizga istalgan vaqtda email yuboring"
+    },
+    "phone": {
+      "title": "Bizga qo'ng'iroq qiling",
+      "description": "Dush-Juma 8:00 dan 18:00 gacha"
+    },
+    "location": {
+      "title": "Bizni tashrif buyuring",
+      "description": "Ofisimizga kelib tashrif buyuring"
+    },
+    "chat": {
+      "title": "Jonli chat",
+      "value": "24/7 mavjud",
+      "description": "Yordam jamoamiz bilan suhbatlashing"
+    }
+  },
+  "form": {
+    "title": "Bizga xabar yuboring",
+    "fields": {
+      "name": {
+        "label": "To'liq ism",
+        "placeholder": "Sardor Karimov"
+      },
+      "email": {
+        "label": "Email",
+        "placeholder": "sardor@misol.uz"
+      },
+      "phone": {
+        "label": "Telefon (Ixtiyoriy)",
+        "placeholder": "+998 90 123 45 67"
+      },
+      "category": {
+        "label": "Kategoriya",
+        "options": {
+          "general": "Umumiy so'rov",
+          "technical": "Texnik yordam",
+          "billing": "Hisob-kitob savoli",
+          "partnership": "Hamkorlik imkoniyati",
+          "feedback": "Fikr-mulohaza"
+        }
+      },
+      "subject": {
+        "label": "Mavzu",
+        "placeholder": "Qanday yordam bera olamiz?"
+      },
+      "message": {
+        "label": "Xabar",
+        "placeholder": "So'rovingiz haqida ko'proq ma'lumot bering..."
+      }
+    },
+    "submit": "Xabar yuborish",
+    "sending": "Yuborilmoqda...",
+    "successTitle": "Xabar muvaffaqiyatli yuborildi!",
+    "successDescription": "Tez orada sizga javob beramiz."
+  },
+  "faq": {
+    "title": "Ko'p so'raladigan savollar",
+    "questions": {
+      "hours": {
+        "question": "Sizning yordam soatlaringiz qanday?",
+        "answer": "Bizning yordam jamoamiz jonli chat va email orqali 24/7 mavjud. Telefon yordami Dushanba-Juma, 8:00 dan 18:00 gacha EST vaqtida mavjud."
+      },
+      "response": {
+        "question": "Qanchalik tez javob olaman?",
+        "answer": "Biz odatda ish soatlarida barcha so'rovlarga 2-4 soat ichida va ish soatlaridan tashqarida olingan xabarlarga 24 soat ichida javob beramiz."
+      },
+      "emergency": {
+        "question": "Shoshilinch yordam taklif qilasizmi?",
+        "answer": "Ha! Shoshilinch texnik muammolar yoki favqulodda vaziyatlar uchun bizning issiq liniyamizga +1 (555) 123-4567 raqamiga qo'ng'iroq qiling va zudlik bilan yordam uchun 1 ni bosing."
+      },
+      "demo": {
+        "question": "Demo rejalashtirishim mumkinmi?",
+        "answer": "Albatta! Bosh sahifamizdagi 'Demo rejalashtirish' tugmasini bosing yoki xabaringizda eslatib o'ting, va biz shaxsiy namoyish tashkil qilamiz."
+      }
+    }
+  },
+  "businessHours": {
+    "title": "Ish soatlari",
+    "weekdays": "Dushanba - Juma: 8:00 - 18:00 EST",
+    "saturday": "Shanba: 9:00 - 15:00 EST",
+    "sunday": "Yakshanba: Yopiq",
+    "liveChat": "Jonli chat 24/7 mavjud"
+  }
+}
