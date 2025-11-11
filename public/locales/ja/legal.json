@@ -1,0 +1,34 @@
+{
+  "backHome": "ホームに戻る",
+  "title": "法律・ポリシーセンター",
+  "subtitle": "Docitoでは、透明性、セキュリティ、患者データ保護に取り組んでいます。以下では、当社のポリシー、GDPRと医療規制への準拠、および情報の保護方法に関する包括的な情報をご覧いただけます。",
+  "lastUpdated": "最終更新",
+  "aboutUs": {
+    "title": "会社概要",
+    "description": "私たちのミッション、ビジョン、医療の卓越性への取り組みについて学びましょう。",
+    "discover": "私たちのストーリーを発見する"
+  },
+  "principles": {
+    "title": "私たちの倫理原則",
+    "dataIntegrity": "<strong>データの完全性:</strong> データの正確性とセキュリティの最高基準を維持します",
+    "transparency": "<strong>透明性:</strong> 情報の取り扱い方法についての明確なコミュニケーション",
+    "accountability": "<strong>説明責任:</strong> 医療データの責任ある管理"
+  },
+  "contact": {
+    "text": "法的な問い合わせやコンプライアンスに関する質問は、以下までご連絡ください:"
+  },
+  "detail": {
+    "backToLegal": "法律センターに戻る",
+    "effectiveDate": "発効日",
+    "downloadPDF": "PDFをダウンロード",
+    "loadError": "法的ページの読み込みに失敗しました",
+    "acceptSuccess": "ポリシーが正常に承認されました",
+    "acceptError": "承認の記録に失敗しました",
+    "pdfComingSoon": "PDF ダウンロード機能は近日公開予定",
+    "acceptedTitle": "このポリシーを承認しました",
+    "acceptedDescription": "承認は記録され、安全に保存されています。",
+    "agreeToPolicy": "{{policy}}を読み、同意します",
+    "acceptButton": "ポリシーを承認",
+    "questions": "このポリシーについて質問がありますか？お問い合わせ"
+  }
+}

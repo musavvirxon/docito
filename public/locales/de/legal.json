@@ -1,0 +1,34 @@
+{
+  "backHome": "Zurück zur Startseite",
+  "title": "Rechts- und Richtlinienzentrum",
+  "subtitle": "Bei Docito sind wir der Transparenz, Sicherheit und dem Schutz von Patientendaten verpflichtet. Nachfolgend finden Sie umfassende Informationen zu unseren Richtlinien, zur Einhaltung der DSGVO und der Gesundheitsvorschriften sowie zum Schutz Ihrer Informationen.",
+  "lastUpdated": "Zuletzt aktualisiert",
+  "aboutUs": {
+    "title": "Über uns",
+    "description": "Erfahren Sie mehr über unsere Mission, Vision und unser Engagement für Gesundheitsexzellenz.",
+    "discover": "Entdecken Sie unsere Geschichte"
+  },
+  "principles": {
+    "title": "Unsere Ethischen Prinzipien",
+    "dataIntegrity": "<strong>Datenintegrität:</strong> Wir wahren die höchsten Standards für Datengenauigkeit und -sicherheit",
+    "transparency": "<strong>Transparenz:</strong> Klare Kommunikation darüber, wie wir mit Ihren Informationen umgehen",
+    "accountability": "<strong>Verantwortlichkeit:</strong> Verantwortungsvolle Verwaltung von Gesundheitsdaten"
+  },
+  "contact": {
+    "text": "Für rechtliche Anfragen oder Compliance-Fragen kontaktieren Sie uns bitte unter:"
+  },
+  "detail": {
+    "backToLegal": "Zurück zum Rechtszentrum",
+    "effectiveDate": "Wirksamkeitsdatum",
+    "downloadPDF": "PDF herunterladen",
+    "loadError": "Rechtliche Seite konnte nicht geladen werden",
+    "acceptSuccess": "Richtlinie erfolgreich akzeptiert",
+    "acceptError": "Akzeptanz konnte nicht aufgezeichnet werden",
+    "pdfComingSoon": "PDF-Download-Funktion kommt bald",
+    "acceptedTitle": "Sie haben diese Richtlinie akzeptiert",
+    "acceptedDescription": "Ihre Akzeptanz wurde aufgezeichnet und sicher gespeichert.",
+    "agreeToPolicy": "Ich habe {{policy}} gelesen und stimme zu",
+    "acceptButton": "Richtlinie akzeptieren",
+    "questions": "Fragen zu dieser Richtlinie? Kontaktieren Sie uns unter"
+  }
+}

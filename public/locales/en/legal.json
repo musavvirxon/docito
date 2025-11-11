@@ -1,0 +1,34 @@
+{
+  "backHome": "Back to Home",
+  "title": "Legal & Policy Center",
+  "subtitle": "At Docito, we are committed to transparency, security, and patient data protection. Below you'll find comprehensive information about our policies, compliance with GDPR and healthcare regulations, and how we safeguard your information.",
+  "lastUpdated": "Last updated",
+  "aboutUs": {
+    "title": "About Us",
+    "description": "Learn about our mission, vision, and commitment to healthcare excellence.",
+    "discover": "Discover our story"
+  },
+  "principles": {
+    "title": "Our Ethical Principles",
+    "dataIntegrity": "<strong>Data Integrity:</strong> We maintain the highest standards of data accuracy and security",
+    "transparency": "<strong>Transparency:</strong> Clear communication about how we handle your information",
+    "accountability": "<strong>Accountability:</strong> Responsible stewardship of healthcare data"
+  },
+  "contact": {
+    "text": "For legal inquiries or compliance questions, please contact us at:"
+  },
+  "detail": {
+    "backToLegal": "Back to Legal Center",
+    "effectiveDate": "Effective Date",
+    "downloadPDF": "Download PDF",
+    "loadError": "Failed to load legal page",
+    "acceptSuccess": "Policy accepted successfully",
+    "acceptError": "Failed to record acceptance",
+    "pdfComingSoon": "PDF download feature coming soon",
+    "acceptedTitle": "You've accepted this policy",
+    "acceptedDescription": "Your acceptance was recorded and is stored securely.",
+    "agreeToPolicy": "I have read and agree to the {{policy}}",
+    "acceptButton": "Accept Policy",
+    "questions": "Questions about this policy? Contact us at"
+  }
+}

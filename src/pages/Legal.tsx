@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Shield, FileText, Cookie, Info, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
+import { useContentTranslation } from '@/hooks/useContentTranslation';
 
 interface LegalPage {
   id: string;
@@ -21,6 +23,8 @@ const iconMap: Record<string, any> = {
 };
 
 export default function Legal() {
+  const { t } = useTranslation(['common', 'legal']);
+  const { getTranslatedField } = useContentTranslation();
   const [legalPages, setLegalPages] = useState<LegalPage[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -44,7 +48,7 @@ export default function Legal() {
     try {
       const { data, error } = await supabase
         .from('legal_pages')
-        .select('id, slug, title, description, updated_at')
+        .select('*')
         .eq('is_published', true)
         .order('title');
 
@@ -64,17 +68,15 @@ export default function Legal() {
           <Link to="/">
             <Button variant="ghost" size="sm" className="mb-4">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Home
+              {t('legal:backHome')}
             </Button>
           </Link>
           
           <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Legal & Policy Center
+            {t('legal:title')}
           </h1>
           <p className="text-lg text-muted-foreground max-w-3xl">
-            At Docito, we are committed to transparency, security, and patient data protection. 
-            Below you'll find comprehensive information about our policies, compliance with GDPR and healthcare regulations, 
-            and how we safeguard your information.
+            {t('legal:subtitle')}
           </p>
         </div>
 
@@ -104,17 +106,17 @@ export default function Legal() {
                           </div>
                           <div className="flex-1">
                             <CardTitle className="mb-2 group-hover:text-primary transition-colors">
-                              {page.title}
+                              {getTranslatedField(page, 'title')}
                             </CardTitle>
                             <CardDescription className="line-clamp-2">
-                              {page.description}
+                              {getTranslatedField(page, 'description')}
                             </CardDescription>
                           </div>
                         </div>
                       </CardHeader>
                       <CardContent>
                         <p className="text-sm text-muted-foreground">
-                          Last updated: {format(new Date(page.updated_at), 'MMMM d, yyyy')}
+                          {t('legal:lastUpdated')}: {format(new Date(page.updated_at), 'MMMM d, yyyy')}
                         </p>
                       </CardContent>
                     </Card>
@@ -131,17 +133,17 @@ export default function Legal() {
                       </div>
                       <div className="flex-1">
                         <CardTitle className="mb-2 group-hover:text-accent transition-colors">
-                          About Us
+                          {t('legal:aboutUs.title')}
                         </CardTitle>
                         <CardDescription className="line-clamp-2">
-                          Learn about our mission, vision, and commitment to healthcare excellence.
+                          {t('legal:aboutUs.description')}
                         </CardDescription>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm text-muted-foreground">
-                      Discover our story
+                      {t('legal:aboutUs.discover')}
                     </p>
                   </CardContent>
                 </Card>
@@ -150,21 +152,21 @@ export default function Legal() {
 
             <Card className="border-accent/20 bg-accent/5">
               <CardHeader>
-                <CardTitle className="text-lg">Our Ethical Principles</CardTitle>
+                <CardTitle className="text-lg">{t('legal:principles.title')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2">
                   <li className="flex items-start gap-2">
                     <span className="text-accent mt-1">•</span>
-                    <span><strong>Data Integrity:</strong> We maintain the highest standards of data accuracy and security</span>
+                    <span dangerouslySetInnerHTML={{ __html: t('legal:principles.dataIntegrity') }} />
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-accent mt-1">•</span>
-                    <span><strong>Transparency:</strong> Clear communication about how we handle your information</span>
+                    <span dangerouslySetInnerHTML={{ __html: t('legal:principles.transparency') }} />
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-accent mt-1">•</span>
-                    <span><strong>Accountability:</strong> Responsible stewardship of healthcare data</span>
+                    <span dangerouslySetInnerHTML={{ __html: t('legal:principles.accountability') }} />
                   </li>
                 </ul>
               </CardContent>
@@ -172,7 +174,7 @@ export default function Legal() {
 
             <div className="mt-8 text-center">
               <p className="text-sm text-muted-foreground mb-4">
-                For legal inquiries or compliance questions, please contact us at:
+                {t('legal:contact.text')}
               </p>
               <Button variant="outline" asChild>
                 <a href="mailto:legal@docito.com">legal@docito.com</a>

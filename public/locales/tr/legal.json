@@ -1,0 +1,34 @@
+{
+  "backHome": "Ana Sayfaya Dön",
+  "title": "Yasal ve Politika Merkezi",
+  "subtitle": "Docito'da şeffaflık, güvenlik ve hasta veri korumasına kendimizi adadık. Aşağıda politikalarımız, GDPR ve sağlık düzenlemelerine uygunluk ve bilgilerinizi nasıl koruduğumuz hakkında kapsamlı bilgiler bulacaksınız.",
+  "lastUpdated": "Son güncelleme",
+  "aboutUs": {
+    "title": "Hakkımızda",
+    "description": "Misyonumuz, vizyonumuz ve sağlık mükemmelliğine bağlılığımız hakkında bilgi edinin.",
+    "discover": "Hikayemizi keşfedin"
+  },
+  "principles": {
+    "title": "Etik İlkelerimiz",
+    "dataIntegrity": "<strong>Veri Bütünlüğü:</strong> Veri doğruluğu ve güvenliğinin en yüksek standartlarını koruyoruz",
+    "transparency": "<strong>Şeffaflık:</strong> Bilgilerinizi nasıl ele aldığımız konusunda açık iletişim",
+    "accountability": "<strong>Sorumluluk:</strong> Sağlık verilerinin sorumlu yönetimi"
+  },
+  "contact": {
+    "text": "Yasal sorgular veya uygunluk soruları için lütfen bizimle iletişime geçin:"
+  },
+  "detail": {
+    "backToLegal": "Yasal Merkeze Dön",
+    "effectiveDate": "Yürürlük Tarihi",
+    "downloadPDF": "PDF İndir",
+    "loadError": "Yasal sayfa yüklenemedi",
+    "acceptSuccess": "Politika başarıyla kabul edildi",
+    "acceptError": "Kabul kaydedilemedi",
+    "pdfComingSoon": "PDF indirme özelliği yakında",
+    "acceptedTitle": "Bu politikayı kabul ettiniz",
+    "acceptedDescription": "Kabulünüz kaydedildi ve güvenli bir şekilde saklandı.",
+    "agreeToPolicy": "{{policy}}'yi okudum ve kabul ediyorum",
+    "acceptButton": "Politikayı Kabul Et",
+    "questions": "Bu politika hakkında sorularınız mı var? Bize ulaşın"
+  }
+}

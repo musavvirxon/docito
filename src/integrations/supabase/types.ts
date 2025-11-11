@@ -733,39 +733,138 @@ export type Database = {
         Row: {
           category: string | null
           content: string
+          content_ar: string | null
+          content_de: string | null
+          content_en: string | null
+          content_es: string | null
+          content_ja: string | null
+          content_ko: string | null
+          content_pt: string | null
+          content_ru: string | null
+          content_tr: string | null
+          content_uz: string | null
+          content_zh: string | null
           created_at: string
           created_by: string | null
           description: string | null
+          description_ar: string | null
+          description_de: string | null
+          description_en: string | null
+          description_es: string | null
+          description_ja: string | null
+          description_ko: string | null
+          description_pt: string | null
+          description_ru: string | null
+          description_tr: string | null
+          description_uz: string | null
+          description_zh: string | null
           id: string
           is_published: boolean | null
           slug: string
           title: string
+          title_ar: string | null
+          title_de: string | null
+          title_en: string | null
+          title_es: string | null
+          title_ja: string | null
+          title_ko: string | null
+          title_pt: string | null
+          title_ru: string | null
+          title_tr: string | null
+          title_uz: string | null
+          title_zh: string | null
           updated_at: string
           updated_by: string | null
         }
         Insert: {
           category?: string | null
           content: string
+          content_ar?: string | null
+          content_de?: string | null
+          content_en?: string | null
+          content_es?: string | null
+          content_ja?: string | null
+          content_ko?: string | null
+          content_pt?: string | null
+          content_ru?: string | null
+          content_tr?: string | null
+          content_uz?: string | null
+          content_zh?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
+          description_ar?: string | null
+          description_de?: string | null
+          description_en?: string | null
+          description_es?: string | null
+          description_ja?: string | null
+          description_ko?: string | null
+          description_pt?: string | null
+          description_ru?: string | null
+          description_tr?: string | null
+          description_uz?: string | null
+          description_zh?: string | null
           id?: string
           is_published?: boolean | null
           slug: string
           title: string
+          title_ar?: string | null
+          title_de?: string | null
+          title_en?: string | null
+          title_es?: string | null
+          title_ja?: string | null
+          title_ko?: string | null
+          title_pt?: string | null
+          title_ru?: string | null
+          title_tr?: string | null
+          title_uz?: string | null
+          title_zh?: string | null
           updated_at?: string
           updated_by?: string | null
         }
         Update: {
           category?: string | null
           content?: string
+          content_ar?: string | null
+          content_de?: string | null
+          content_en?: string | null
+          content_es?: string | null
+          content_ja?: string | null
+          content_ko?: string | null
+          content_pt?: string | null
+          content_ru?: string | null
+          content_tr?: string | null
+          content_uz?: string | null
+          content_zh?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
+          description_ar?: string | null
+          description_de?: string | null
+          description_en?: string | null
+          description_es?: string | null
+          description_ja?: string | null
+          description_ko?: string | null
+          description_pt?: string | null
+          description_ru?: string | null
+          description_tr?: string | null
+          description_uz?: string | null
+          description_zh?: string | null
           id?: string
           is_published?: boolean | null
           slug?: string
           title?: string
+          title_ar?: string | null
+          title_de?: string | null
+          title_en?: string | null
+          title_es?: string | null
+          title_ja?: string | null
+          title_ko?: string | null
+          title_pt?: string | null
+          title_ru?: string | null
+          title_tr?: string | null
+          title_uz?: string | null
+          title_zh?: string | null
           updated_at?: string
           updated_by?: string | null
         }

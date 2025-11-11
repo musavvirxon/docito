@@ -1,0 +1,34 @@
+{
+  "backHome": "Voltar ao Início",
+  "title": "Centro Legal e de Políticas",
+  "subtitle": "Na Docito, estamos comprometidos com transparência, segurança e proteção de dados dos pacientes. Abaixo você encontrará informações abrangentes sobre nossas políticas, conformidade com GDPR e regulamentações de saúde, e como protegemos suas informações.",
+  "lastUpdated": "Última atualização",
+  "aboutUs": {
+    "title": "Sobre Nós",
+    "description": "Conheça nossa missão, visão e compromisso com a excelência em saúde.",
+    "discover": "Descubra nossa história"
+  },
+  "principles": {
+    "title": "Nossos Princípios Éticos",
+    "dataIntegrity": "<strong>Integridade de Dados:</strong> Mantemos os mais altos padrões de precisão e segurança de dados",
+    "transparency": "<strong>Transparência:</strong> Comunicação clara sobre como lidamos com suas informações",
+    "accountability": "<strong>Responsabilidade:</strong> Administração responsável de dados de saúde"
+  },
+  "contact": {
+    "text": "Para consultas legais ou questões de conformidade, entre em contato conosco em:"
+  },
+  "detail": {
+    "backToLegal": "Voltar ao Centro Legal",
+    "effectiveDate": "Data de Vigência",
+    "downloadPDF": "Baixar PDF",
+    "loadError": "Falha ao carregar página legal",
+    "acceptSuccess": "Política aceita com sucesso",
+    "acceptError": "Falha ao registrar aceitação",
+    "pdfComingSoon": "Recurso de download de PDF em breve",
+    "acceptedTitle": "Você aceitou esta política",
+    "acceptedDescription": "Sua aceitação foi registrada e armazenada com segurança.",
+    "agreeToPolicy": "Li e concordo com {{policy}}",
+    "acceptButton": "Aceitar Política",
+    "questions": "Dúvidas sobre esta política? Entre em contato conosco em"
+  }
+}

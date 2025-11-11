@@ -1,0 +1,34 @@
+{
+  "backHome": "Bosh sahifaga qaytish",
+  "title": "Yuridik va Siyosat Markazi",
+  "subtitle": "Docito'da biz shaffoflik, xavfsizlik va bemorlar ma'lumotlarini himoya qilishga sodiqmiz. Quyida bizning siyosatlarimiz, GDPR va tibbiy qoidalarga muvofiqlik hamda ma'lumotlaringizni qanday himoya qilishimiz haqida keng ma'lumotni topasiz.",
+  "lastUpdated": "Oxirgi yangilanish",
+  "aboutUs": {
+    "title": "Biz haqimizda",
+    "description": "Bizning missiyamiz, ko'rishimiz va tibbiy mukammallikka sodiqligimiz haqida bilib oling.",
+    "discover": "Bizning hikoyamizni kashf eting"
+  },
+  "principles": {
+    "title": "Bizning Axloqiy Tamoyillarimiz",
+    "dataIntegrity": "<strong>Ma'lumotlar yaxlitligi:</strong> Biz ma'lumotlar aniqligi va xavfsizligining eng yuqori standartlarini saqlaymiz",
+    "transparency": "<strong>Shaffoflik:</strong> Ma'lumotlaringizni qanday boshqarishimiz haqida aniq muloqot",
+    "accountability": "<strong>Javobgarlik:</strong> Tibbiy ma'lumotlarning mas'uliyatli boshqaruvi"
+  },
+  "contact": {
+    "text": "Yuridik so'rovlar yoki muvofiqlik savollari uchun biz bilan bog'laning:"
+  },
+  "detail": {
+    "backToLegal": "Yuridik Markazga qaytish",
+    "effectiveDate": "Kuchga kirish sanasi",
+    "downloadPDF": "PDF yuklab olish",
+    "loadError": "Yuridik sahifa yuklanmadi",
+    "acceptSuccess": "Siyosat muvaffaqiyatli qabul qilindi",
+    "acceptError": "Qabulni yozib bo'lmadi",
+    "pdfComingSoon": "PDF yuklab olish funksiyasi tez orada",
+    "acceptedTitle": "Siz bu siyosatni qabul qildingiz",
+    "acceptedDescription": "Sizning qabulingiz yozildi va xavfsiz saqlanmoqda.",
+    "agreeToPolicy": "Men {{policy}}ni o'qidim va roziman",
+    "acceptButton": "Siyosatni qabul qilish",
+    "questions": "Bu siyosat haqida savollar? Biz bilan bog'laning"
+  }
+}

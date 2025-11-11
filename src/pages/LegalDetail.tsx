@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,6 +10,7 @@ import { ArrowLeft, Download, Check } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
+import { useContentTranslation } from '@/hooks/useContentTranslation';
 
 interface LegalPageData {
   id: string;
@@ -22,6 +24,8 @@ export default function LegalDetail() {
   const { slug } = useParams<{ slug: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation(['common', 'legal']);
+  const { getTranslatedField } = useContentTranslation();
   const [page, setPage] = useState<LegalPageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasAccepted, setHasAccepted] = useState(false);
@@ -40,7 +44,7 @@ export default function LegalDetail() {
     try {
       const { data, error } = await supabase
         .from('legal_pages')
-        .select('id, slug, title, content, updated_at')
+        .select('*')
         .eq('slug', slug)
         .eq('is_published', true)
         .single();
@@ -49,7 +53,7 @@ export default function LegalDetail() {
       setPage(data);
     } catch (error) {
       console.error('Error fetching legal page:', error);
-      toast.error('Failed to load legal page');
+      toast.error(t('legal:detail.loadError'));
       navigate('/legal');
     } finally {
       setLoading(false);
@@ -92,10 +96,10 @@ export default function LegalDetail() {
       if (error) throw error;
 
       setHasAccepted(true);
-      toast.success('Policy accepted successfully');
+      toast.success(t('legal:detail.acceptSuccess'));
     } catch (error) {
       console.error('Error accepting policy:', error);
-      toast.error('Failed to record acceptance');
+      toast.error(t('legal:detail.acceptError'));
     } finally {
       setIsAccepting(false);
     }
@@ -103,13 +107,13 @@ export default function LegalDetail() {
 
   const handleDownloadPDF = () => {
     // In production, implement PDF generation
-    toast.info('PDF download feature coming soon');
+    toast.info(t('legal:detail.pdfComingSoon'));
   };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+        <div className="animate-pulse text-muted-foreground">{t('common:loading')}</div>
       </div>
     );
   }
@@ -125,27 +129,27 @@ export default function LegalDetail() {
           <Link to="/legal">
             <Button variant="ghost" size="sm" className="mb-4">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Legal Center
+              {t('legal:detail.backToLegal')}
             </Button>
           </Link>
 
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <h1 className="text-4xl font-bold mb-2">{page.title}</h1>
+              <h1 className="text-4xl font-bold mb-2">{getTranslatedField(page, 'title')}</h1>
               <p className="text-muted-foreground">
-                Effective Date: {format(new Date(page.updated_at), 'MMMM d, yyyy')}
+                {t('legal:detail.effectiveDate')}: {format(new Date(page.updated_at), 'MMMM d, yyyy')}
               </p>
             </div>
             <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
               <Download className="mr-2 h-4 w-4" />
-              Download PDF
+              {t('legal:detail.downloadPDF')}
             </Button>
           </div>
         </div>
 
         <Card>
           <CardContent className="prose prose-slate dark:prose-invert max-w-none p-8">
-            <ReactMarkdown>{page.content}</ReactMarkdown>
+            <ReactMarkdown>{getTranslatedField(page, 'content')}</ReactMarkdown>
           </CardContent>
         </Card>
 
@@ -159,9 +163,9 @@ export default function LegalDetail() {
                       <Check className="h-5 w-5 text-green-500" />
                     </div>
                     <div>
-                      <h3 className="font-semibold mb-1">You've accepted this policy</h3>
+                      <h3 className="font-semibold mb-1">{t('legal:detail.acceptedTitle')}</h3>
                       <p className="text-sm text-muted-foreground">
-                        Your acceptance was recorded and is stored securely.
+                        {t('legal:detail.acceptedDescription')}
                       </p>
                     </div>
                   </>
@@ -176,7 +180,7 @@ export default function LegalDetail() {
                         htmlFor="accept-policy" 
                         className="text-sm font-medium cursor-pointer"
                       >
-                        I have read and agree to the {page.title}
+                        {t('legal:detail.agreeToPolicy', { policy: getTranslatedField(page, 'title') })}
                       </label>
                       <Button 
                         onClick={handleAccept}
@@ -184,7 +188,7 @@ export default function LegalDetail() {
                         className="mt-4"
                         size="sm"
                       >
-                        Accept Policy
+                        {t('legal:detail.acceptButton')}
                       </Button>
                     </div>
                   </>
@@ -196,7 +200,7 @@ export default function LegalDetail() {
 
         <div className="mt-8 text-center">
           <p className="text-sm text-muted-foreground">
-            Questions about this policy? Contact us at{' '}
+            {t('legal:detail.questions')}{' '}
             <a href="mailto:legal@docito.com" className="text-primary hover:underline">
               legal@docito.com
             </a>
