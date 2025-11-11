@@ -1,0 +1,113 @@
+{
+  "hero": {
+    "title": "Leistungsstarke Funktionen für moderne Gesundheitsversorgung",
+    "subtitle": "Alles, was Sie brauchen, um Ihre Praxis effizient zu verwalten und außergewöhnliche Patientenversorgung zu bieten",
+    "cta": "Kostenlose Testversion Starten"
+  },
+  "mainSection": {
+    "title": "Komplette Gesundheitsmanagementsuite",
+    "subtitle": "Alle Tools, die Sie benötigen, in einer integrierten Plattform"
+  },
+  "mainFeatures": {
+    "scheduling": {
+      "title": "Intelligente Terminplanung",
+      "description": "KI-gestützte Planung, die Ihre Zeit optimiert und Nichterscheinen mit automatischen Erinnerungen reduziert",
+      "benefit1": "Echtzeit-Verfügbarkeit",
+      "benefit2": "Automatische Erinnerungen",
+      "benefit3": "Einfache Umplanung",
+      "benefit4": "Kalendersynchronisation"
+    },
+    "patientManagement": {
+      "title": "Patientenverwaltung",
+      "description": "Umfassende Patientenprofile mit Krankengeschichte, Behandlungsplänen und Kommunikationstools",
+      "benefit1": "Digitale Gesundheitsakten",
+      "benefit2": "Behandlungsverfolgung",
+      "benefit3": "Patientenportalzugang",
+      "benefit4": "Familienkontoverbindung"
+    },
+    "healthRecords": {
+      "title": "Digitale Gesundheitsakten",
+      "description": "Sichere, HIPAA-konforme elektronische Gesundheitsakten, jederzeit und überall zugänglich",
+      "benefit1": "Cloud-Speicher",
+      "benefit2": "Einfaches Teilen",
+      "benefit3": "Dokumentenscannen",
+      "benefit4": "Versionsverlauf"
+    },
+    "telemedicine": {
+      "title": "Telemedizin",
+      "description": "Integrierte Videokonsultationen mit HD-Qualität und sicheren verschlüsselten Verbindungen",
+      "benefit1": "HD-Videoanrufe",
+      "benefit2": "Bildschirmfreigabe",
+      "benefit3": "Chat-Nachrichten",
+      "benefit4": "Aufnahmeoptionen"
+    },
+    "medication": {
+      "title": "Medikamentenverwaltung",
+      "description": "Verfolgen Sie Rezepte, setzen Sie Erinnerungen und überwachen Sie die Medikamenteneinhaltung",
+      "benefit1": "Nachfüllerinnerungen",
+      "benefit2": "Arzneimittelwechselwirkungen",
+      "benefit3": "Dosierungsverfolgung",
+      "benefit4": "Apothekenintegration"
+    },
+    "analytics": {
+      "title": "Analysen und Berichte",
+      "description": "Leistungsstarke Einblicke in Praxisleistung, Patientenergebnisse und Finanzkennzahlen",
+      "benefit1": "Umsatzverfolgung",
+      "benefit2": "Patientenanalysen",
+      "benefit3": "Benutzerdefinierte Berichte",
+      "benefit4": "Exportoptionen"
+    },
+    "billing": {
+      "title": "Abrechnung und Zahlungen",
+      "description": "Integrierte Zahlungsabwicklung mit Versicherungsanspruchsverwaltung",
+      "benefit1": "Online-Zahlungen",
+      "benefit2": "Versicherungsansprüche",
+      "benefit3": "Rechnungserstellung",
+      "benefit4": "Zahlungspläne"
+    },
+    "messaging": {
+      "title": "Sichere Nachrichten",
+      "description": "HIPAA-konforme Nachrichten zwischen Ärzten, Patienten und Personal",
+      "benefit1": "Verschlüsselte Nachrichten",
+      "benefit2": "Dateianhänge",
+      "benefit3": "Gruppenchats",
+      "benefit4": "Lesebestätigungen"
+    },
+    "notifications": {
+      "title": "Intelligente Benachrichtigungen",
+      "description": "Anpassbare Benachrichtigungen für Termine, Laborbefunde und wichtige Updates",
+      "benefit1": "SMS-Benachrichtigungen",
+      "benefit2": "E-Mail-Benachrichtigungen",
+      "benefit3": "Push-Benachrichtigungen",
+      "benefit4": "Benutzerdefinierte Zeitpläne"
+    }
+  },
+  "securitySection": {
+    "title": "Sicherheit auf Unternehmensniveau",
+    "subtitle": "Ihre Daten sind mit den höchsten Sicherheitsstandards geschützt"
+  },
+  "security": {
+    "hipaa": {
+      "title": "HIPAA-konform",
+      "description": "Vollständige Einhaltung der Datenschutzbestimmungen im Gesundheitswesen"
+    },
+    "encryption": {
+      "title": "Ende-zu-Ende-Verschlüsselung",
+      "description": "Militärische Verschlüsselung für alle Daten"
+    },
+    "backups": {
+      "title": "Echtzeit-Backups",
+      "description": "Automatische Backups jede Stunde"
+    },
+    "uptime": {
+      "title": "99,9% Verfügbarkeit",
+      "description": "Zuverlässiger Service, auf den Sie sich verlassen können"
+    }
+  },
+  "cta": {
+    "title": "Bereit, Ihre Praxis zu transformieren?",
+    "subtitle": "Schließen Sie sich Tausenden von Gesundheitsfachkräften an, die Docito nutzen, um bessere Patientenversorgung zu bieten",
+    "startTrial": "Kostenlose Testversion Starten",
+    "scheduleDemo": "Demo Planen"
+  }
+}

@@ -6,81 +6,128 @@ import {
   Check, Zap, Heart, Lock
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function Features() {
   const navigate = useNavigate();
+  const { t } = useTranslation(['common', 'features']);
 
   const mainFeatures = [
     {
       icon: Calendar,
-      title: 'Smart Appointment Scheduling',
-      description: 'AI-powered scheduling that optimizes your time and reduces no-shows with automated reminders',
+      title: t('features:mainFeatures.scheduling.title'),
+      description: t('features:mainFeatures.scheduling.description'),
       color: 'from-blue-500 to-indigo-600',
-      benefits: ['Real-time availability', 'Automated reminders', 'Easy rescheduling', 'Calendar sync']
+      benefits: [
+        t('features:mainFeatures.scheduling.benefit1'),
+        t('features:mainFeatures.scheduling.benefit2'),
+        t('features:mainFeatures.scheduling.benefit3'),
+        t('features:mainFeatures.scheduling.benefit4')
+      ]
     },
     {
       icon: Users,
-      title: 'Patient Management',
-      description: 'Comprehensive patient profiles with medical history, treatment plans, and communication tools',
+      title: t('features:mainFeatures.patientManagement.title'),
+      description: t('features:mainFeatures.patientManagement.description'),
       color: 'from-purple-500 to-pink-600',
-      benefits: ['Digital health records', 'Treatment tracking', 'Patient portal access', 'Family account linking']
+      benefits: [
+        t('features:mainFeatures.patientManagement.benefit1'),
+        t('features:mainFeatures.patientManagement.benefit2'),
+        t('features:mainFeatures.patientManagement.benefit3'),
+        t('features:mainFeatures.patientManagement.benefit4')
+      ]
     },
     {
       icon: FileText,
-      title: 'Digital Health Records',
-      description: 'Secure, HIPAA-compliant electronic health records accessible anytime, anywhere',
+      title: t('features:mainFeatures.healthRecords.title'),
+      description: t('features:mainFeatures.healthRecords.description'),
       color: 'from-green-500 to-teal-600',
-      benefits: ['Cloud storage', 'Easy sharing', 'Document scanning', 'Version history']
+      benefits: [
+        t('features:mainFeatures.healthRecords.benefit1'),
+        t('features:mainFeatures.healthRecords.benefit2'),
+        t('features:mainFeatures.healthRecords.benefit3'),
+        t('features:mainFeatures.healthRecords.benefit4')
+      ]
     },
     {
       icon: Video,
-      title: 'Telemedicine',
-      description: 'Built-in video consultations with HD quality and secure encrypted connections',
+      title: t('features:mainFeatures.telemedicine.title'),
+      description: t('features:mainFeatures.telemedicine.description'),
       color: 'from-red-500 to-orange-600',
-      benefits: ['HD video calls', 'Screen sharing', 'Chat messaging', 'Recording options']
+      benefits: [
+        t('features:mainFeatures.telemedicine.benefit1'),
+        t('features:mainFeatures.telemedicine.benefit2'),
+        t('features:mainFeatures.telemedicine.benefit3'),
+        t('features:mainFeatures.telemedicine.benefit4')
+      ]
     },
     {
       icon: Pill,
-      title: 'Medication Management',
-      description: 'Track prescriptions, set reminders, and monitor medication adherence',
+      title: t('features:mainFeatures.medication.title'),
+      description: t('features:mainFeatures.medication.description'),
       color: 'from-cyan-500 to-blue-600',
-      benefits: ['Refill reminders', 'Drug interactions', 'Dosage tracking', 'Pharmacy integration']
+      benefits: [
+        t('features:mainFeatures.medication.benefit1'),
+        t('features:mainFeatures.medication.benefit2'),
+        t('features:mainFeatures.medication.benefit3'),
+        t('features:mainFeatures.medication.benefit4')
+      ]
     },
     {
       icon: BarChart3,
-      title: 'Analytics & Reports',
-      description: 'Powerful insights into practice performance, patient outcomes, and financial metrics',
+      title: t('features:mainFeatures.analytics.title'),
+      description: t('features:mainFeatures.analytics.description'),
       color: 'from-indigo-500 to-purple-600',
-      benefits: ['Revenue tracking', 'Patient analytics', 'Custom reports', 'Export options']
+      benefits: [
+        t('features:mainFeatures.analytics.benefit1'),
+        t('features:mainFeatures.analytics.benefit2'),
+        t('features:mainFeatures.analytics.benefit3'),
+        t('features:mainFeatures.analytics.benefit4')
+      ]
     },
     {
       icon: CreditCard,
-      title: 'Billing & Payments',
-      description: 'Integrated payment processing with insurance claim management',
+      title: t('features:mainFeatures.billing.title'),
+      description: t('features:mainFeatures.billing.description'),
       color: 'from-emerald-500 to-green-600',
-      benefits: ['Online payments', 'Insurance claims', 'Invoice generation', 'Payment plans']
+      benefits: [
+        t('features:mainFeatures.billing.benefit1'),
+        t('features:mainFeatures.billing.benefit2'),
+        t('features:mainFeatures.billing.benefit3'),
+        t('features:mainFeatures.billing.benefit4')
+      ]
     },
     {
       icon: MessageSquare,
-      title: 'Secure Messaging',
-      description: 'HIPAA-compliant messaging between doctors, patients, and staff',
+      title: t('features:mainFeatures.messaging.title'),
+      description: t('features:mainFeatures.messaging.description'),
       color: 'from-pink-500 to-rose-600',
-      benefits: ['Encrypted messages', 'File attachments', 'Group chats', 'Read receipts']
+      benefits: [
+        t('features:mainFeatures.messaging.benefit1'),
+        t('features:mainFeatures.messaging.benefit2'),
+        t('features:mainFeatures.messaging.benefit3'),
+        t('features:mainFeatures.messaging.benefit4')
+      ]
     },
     {
       icon: Bell,
-      title: 'Smart Notifications',
-      description: 'Customizable alerts for appointments, lab results, and important updates',
+      title: t('features:mainFeatures.notifications.title'),
+      description: t('features:mainFeatures.notifications.description'),
       color: 'from-yellow-500 to-amber-600',
-      benefits: ['SMS alerts', 'Email notifications', 'Push notifications', 'Custom schedules']
+      benefits: [
+        t('features:mainFeatures.notifications.benefit1'),
+        t('features:mainFeatures.notifications.benefit2'),
+        t('features:mainFeatures.notifications.benefit3'),
+        t('features:mainFeatures.notifications.benefit4')
+      ]
     }
   ];
 
   const securityFeatures = [
-    { icon: Shield, title: 'HIPAA Compliant', description: 'Full compliance with healthcare privacy regulations' },
-    { icon: Lock, title: 'End-to-End Encryption', description: 'Military-grade encryption for all data' },
-    { icon: Zap, title: 'Real-Time Backups', description: 'Automatic backups every hour' },
-    { icon: Heart, title: '99.9% Uptime', description: 'Reliable service you can count on' }
+    { icon: Shield, title: t('features:security.hipaa.title'), description: t('features:security.hipaa.description') },
+    { icon: Lock, title: t('features:security.encryption.title'), description: t('features:security.encryption.description') },
+    { icon: Zap, title: t('features:security.backups.title'), description: t('features:security.backups.description') },
+    { icon: Heart, title: t('features:security.uptime.title'), description: t('features:security.uptime.description') }
   ];
 
   return (
@@ -93,7 +140,7 @@ export default function Features() {
               onClick={() => navigate('/auth')}
               className="px-6 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              Sign In
+              {t('common:nav.signIn')}
             </button>
           </div>
         </div>
@@ -102,16 +149,16 @@ export default function Features() {
       <div className="bg-gradient-to-br from-primary/90 to-primary py-20">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-5xl md:text-6xl font-bold text-primary-foreground mb-6">
-            Powerful Features for Modern Healthcare
+            {t('features:hero.title')}
           </h1>
           <p className="text-xl text-primary-foreground/80 max-w-3xl mx-auto mb-8">
-            Everything you need to manage your practice efficiently and provide exceptional patient care
+            {t('features:hero.subtitle')}
           </p>
           <button
             onClick={() => navigate('/signup')}
             className="px-8 py-4 rounded-lg bg-background text-foreground hover:bg-background/90 font-semibold text-lg"
           >
-            Start Free Trial
+            {t('features:hero.cta')}
           </button>
         </div>
       </div>
@@ -119,9 +166,9 @@ export default function Features() {
       <div className="container mx-auto px-4 py-20">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-foreground mb-4">
-            Complete Healthcare Management Suite
+            {t('features:mainSection.title')}
           </h2>
-          <p className="text-xl text-muted-foreground">All the tools you need in one integrated platform</p>
+          <p className="text-xl text-muted-foreground">{t('features:mainSection.subtitle')}</p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -134,8 +181,8 @@ export default function Features() {
       <div className="bg-slate-900 dark:bg-slate-950 py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">Enterprise-Grade Security</h2>
-            <p className="text-xl text-slate-300">Your data is protected with the highest security standards</p>
+            <h2 className="text-4xl font-bold text-white mb-4">{t('features:securitySection.title')}</h2>
+            <p className="text-xl text-slate-300">{t('features:securitySection.subtitle')}</p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -149,23 +196,23 @@ export default function Features() {
       <div className="container mx-auto px-4 py-20">
         <div className="bg-gradient-to-r from-primary to-primary/80 rounded-3xl p-12 text-center">
           <h2 className="text-4xl font-bold text-primary-foreground mb-4">
-            Ready to Transform Your Practice?
+            {t('features:cta.title')}
           </h2>
           <p className="text-xl text-primary-foreground/80 mb-8 max-w-2xl mx-auto">
-            Join thousands of healthcare professionals using Docito to deliver better patient care
+            {t('features:cta.subtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={() => navigate('/signup')}
               className="px-8 py-4 rounded-lg bg-background text-foreground hover:bg-background/90 font-semibold text-lg"
             >
-              Start Free Trial
+              {t('features:cta.startTrial')}
             </button>
             <button
               onClick={() => navigate('/contact')}
               className="px-8 py-4 rounded-lg border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10 font-semibold text-lg"
             >
-              Schedule Demo
+              {t('features:cta.scheduleDemo')}
             </button>
           </div>
         </div>

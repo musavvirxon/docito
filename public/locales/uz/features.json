@@ -1,0 +1,113 @@
+{
+  "hero": {
+    "title": "Zamonaviy Sog'liqni Saqlash Uchun Kuchli Xususiyatlar",
+    "subtitle": "Amaliyotingizni samarali boshqarish va bemorlaringizga ajoyib tibbiy yordam ko'rsatish uchun kerak bo'lgan hamma narsa",
+    "cta": "Bepul Sinovni Boshlash"
+  },
+  "mainSection": {
+    "title": "To'liq Sog'liqni Saqlash Boshqaruvi Majmuasi",
+    "subtitle": "Bitta integratsiyalashgan platformada kerak bo'lgan barcha vositalar"
+  },
+  "mainFeatures": {
+    "scheduling": {
+      "title": "Aqlli Uchrashuv Rejalashtirish",
+      "description": "Vaqtingizni optimallashtiruvchi va avtomatik eslatmalar bilan kelmasliklarni kamaytiradigan sun'iy intellekt asosida rejalash",
+      "benefit1": "Real vaqtda mavjudlik",
+      "benefit2": "Avtomatik eslatmalar",
+      "benefit3": "Oson qayta rejalashtirish",
+      "benefit4": "Kalendar sinxronizatsiyasi"
+    },
+    "patientManagement": {
+      "title": "Bemorlarni Boshqarish",
+      "description": "Tibbiy tarix, davolash rejalari va aloqa vositalari bilan keng qamrovli bemor profillari",
+      "benefit1": "Raqamli sog'liq yozuvlari",
+      "benefit2": "Davolash kuzatuvi",
+      "benefit3": "Bemor portaliga kirish",
+      "benefit4": "Oilaviy hisob bog'lash"
+    },
+    "healthRecords": {
+      "title": "Raqamli Sog'liq Yozuvlari",
+      "description": "Istalgan vaqtda, istalgan joyda ochiq bo'lgan xavfsiz, HIPAA-ga mos elektron sog'liq yozuvlari",
+      "benefit1": "Bulutli saqlash",
+      "benefit2": "Oson ulashish",
+      "benefit3": "Hujjatlarni skanerlash",
+      "benefit4": "Versiya tarixi"
+    },
+    "telemedicine": {
+      "title": "Telemeditsina",
+      "description": "HD sifatli va xavfsiz shifrlangan ulanishlar bilan o'rnatilgan video konsultatsiyalar",
+      "benefit1": "HD video qo'ng'iroqlar",
+      "benefit2": "Ekranni ulashish",
+      "benefit3": "Chat xabarlari",
+      "benefit4": "Yozib olish imkoniyatlari"
+    },
+    "medication": {
+      "title": "Dori-darmonlarni Boshqarish",
+      "description": "Retseptlarni kuzatish, eslatmalarni o'rnatish va dori-darmonlarni qabul qilishni nazorat qilish",
+      "benefit1": "To'ldirish eslatmalari",
+      "benefit2": "Dori o'zaro ta'siri",
+      "benefit3": "Dozani kuzatish",
+      "benefit4": "Dorixona integratsiyasi"
+    },
+    "analytics": {
+      "title": "Tahlil va Hisobotlar",
+      "description": "Amaliyot samaradorligi, bemorlar natijalari va moliyaviy ko'rsatkichlar bo'yicha kuchli tushunchalar",
+      "benefit1": "Daromad kuzatuvi",
+      "benefit2": "Bemorlar tahlili",
+      "benefit3": "Maxsus hisobotlar",
+      "benefit4": "Eksport imkoniyatlari"
+    },
+    "billing": {
+      "title": "Hisob-kitob va To'lovlar",
+      "description": "Sug'urta da'volarini boshqarish bilan integratsiyalashgan to'lovlarni qayta ishlash",
+      "benefit1": "Onlayn to'lovlar",
+      "benefit2": "Sug'urta da'volari",
+      "benefit3": "Hisob-faktura yaratish",
+      "benefit4": "To'lov rejalari"
+    },
+    "messaging": {
+      "title": "Xavfsiz Xabarlar",
+      "description": "Shifokorlar, bemorlar va xodimlar o'rtasida HIPAA-ga mos xabarlar",
+      "benefit1": "Shifrlangan xabarlar",
+      "benefit2": "Fayl biriktirmalari",
+      "benefit3": "Guruh chatlari",
+      "benefit4": "O'qilganlik bildirishnomasi"
+    },
+    "notifications": {
+      "title": "Aqlli Bildirishnomalar",
+      "description": "Uchrashuv, laboratoriya natijalari va muhim yangilanishlar uchun sozlanishi mumkin bo'lgan ogohlantirishlar",
+      "benefit1": "SMS ogohlantirishlar",
+      "benefit2": "Email bildirishnomalar",
+      "benefit3": "Push bildirishnomalar",
+      "benefit4": "Maxsus jadvallar"
+    }
+  },
+  "securitySection": {
+    "title": "Korxona Darajasidagi Xavfsizlik",
+    "subtitle": "Sizning ma'lumotlaringiz eng yuqori xavfsizlik standartlari bilan himoyalangan"
+  },
+  "security": {
+    "hipaa": {
+      "title": "HIPAA-ga Mos",
+      "description": "Sog'liqni saqlash maxfiyligi qoidalariga to'liq muvofiqlik"
+    },
+    "encryption": {
+      "title": "Uchdan-Uchga Shifrlash",
+      "description": "Barcha ma'lumotlar uchun harbiy darajadagi shifrlash"
+    },
+    "backups": {
+      "title": "Real Vaqtda Zaxira Nusxa",
+      "description": "Har soatda avtomatik zaxira nusxalari"
+    },
+    "uptime": {
+      "title": "99,9% Ishlash Vaqti",
+      "description": "Ishonishingiz mumkin bo'lgan ishonchli xizmat"
+    }
+  },
+  "cta": {
+    "title": "Amaliyotingizni O'zgartirishga Tayyormisiz?",
+    "subtitle": "Yaxshiroq bemor parvarishini ta'minlash uchun Docito'dan foydalanadigan minglab tibbiy mutaxassislarga qo'shiling",
+    "startTrial": "Bepul Sinovni Boshlash",
+    "scheduleDemo": "Demo Rejalashtirish"
+  }
+}

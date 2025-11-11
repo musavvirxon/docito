@@ -1,0 +1,113 @@
+{
+  "hero": {
+    "title": "Powerful Features for Modern Healthcare",
+    "subtitle": "Everything you need to manage your practice efficiently and provide exceptional patient care",
+    "cta": "Start Free Trial"
+  },
+  "mainSection": {
+    "title": "Complete Healthcare Management Suite",
+    "subtitle": "All the tools you need in one integrated platform"
+  },
+  "mainFeatures": {
+    "scheduling": {
+      "title": "Smart Appointment Scheduling",
+      "description": "AI-powered scheduling that optimizes your time and reduces no-shows with automated reminders",
+      "benefit1": "Real-time availability",
+      "benefit2": "Automated reminders",
+      "benefit3": "Easy rescheduling",
+      "benefit4": "Calendar sync"
+    },
+    "patientManagement": {
+      "title": "Patient Management",
+      "description": "Comprehensive patient profiles with medical history, treatment plans, and communication tools",
+      "benefit1": "Digital health records",
+      "benefit2": "Treatment tracking",
+      "benefit3": "Patient portal access",
+      "benefit4": "Family account linking"
+    },
+    "healthRecords": {
+      "title": "Digital Health Records",
+      "description": "Secure, HIPAA-compliant electronic health records accessible anytime, anywhere",
+      "benefit1": "Cloud storage",
+      "benefit2": "Easy sharing",
+      "benefit3": "Document scanning",
+      "benefit4": "Version history"
+    },
+    "telemedicine": {
+      "title": "Telemedicine",
+      "description": "Built-in video consultations with HD quality and secure encrypted connections",
+      "benefit1": "HD video calls",
+      "benefit2": "Screen sharing",
+      "benefit3": "Chat messaging",
+      "benefit4": "Recording options"
+    },
+    "medication": {
+      "title": "Medication Management",
+      "description": "Track prescriptions, set reminders, and monitor medication adherence",
+      "benefit1": "Refill reminders",
+      "benefit2": "Drug interactions",
+      "benefit3": "Dosage tracking",
+      "benefit4": "Pharmacy integration"
+    },
+    "analytics": {
+      "title": "Analytics & Reports",
+      "description": "Powerful insights into practice performance, patient outcomes, and financial metrics",
+      "benefit1": "Revenue tracking",
+      "benefit2": "Patient analytics",
+      "benefit3": "Custom reports",
+      "benefit4": "Export options"
+    },
+    "billing": {
+      "title": "Billing & Payments",
+      "description": "Integrated payment processing with insurance claim management",
+      "benefit1": "Online payments",
+      "benefit2": "Insurance claims",
+      "benefit3": "Invoice generation",
+      "benefit4": "Payment plans"
+    },
+    "messaging": {
+      "title": "Secure Messaging",
+      "description": "HIPAA-compliant messaging between doctors, patients, and staff",
+      "benefit1": "Encrypted messages",
+      "benefit2": "File attachments",
+      "benefit3": "Group chats",
+      "benefit4": "Read receipts"
+    },
+    "notifications": {
+      "title": "Smart Notifications",
+      "description": "Customizable alerts for appointments, lab results, and important updates",
+      "benefit1": "SMS alerts",
+      "benefit2": "Email notifications",
+      "benefit3": "Push notifications",
+      "benefit4": "Custom schedules"
+    }
+  },
+  "securitySection": {
+    "title": "Enterprise-Grade Security",
+    "subtitle": "Your data is protected with the highest security standards"
+  },
+  "security": {
+    "hipaa": {
+      "title": "HIPAA Compliant",
+      "description": "Full compliance with healthcare privacy regulations"
+    },
+    "encryption": {
+      "title": "End-to-End Encryption",
+      "description": "Military-grade encryption for all data"
+    },
+    "backups": {
+      "title": "Real-Time Backups",
+      "description": "Automatic backups every hour"
+    },
+    "uptime": {
+      "title": "99.9% Uptime",
+      "description": "Reliable service you can count on"
+    }
+  },
+  "cta": {
+    "title": "Ready to Transform Your Practice?",
+    "subtitle": "Join thousands of healthcare professionals using Docito to deliver better patient care",
+    "startTrial": "Start Free Trial",
+    "scheduleDemo": "Schedule Demo"
+  }
+}

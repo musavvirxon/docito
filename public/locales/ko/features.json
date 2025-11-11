@@ -1,0 +1,113 @@
+{
+  "hero": {
+    "title": "현대 의료를 위한 강력한 기능",
+    "subtitle": "진료를 효율적으로 관리하고 탁월한 환자 치료를 제공하는 데 필요한 모든 것",
+    "cta": "무료 체험 시작"
+  },
+  "mainSection": {
+    "title": "완전한 의료 관리 스위트",
+    "subtitle": "통합 플랫폼에서 필요한 모든 도구"
+  },
+  "mainFeatures": {
+    "scheduling": {
+      "title": "스마트 예약 스케줄링",
+      "description": "시간을 최적화하고 자동 알림으로 노쇼를 줄이는 AI 기반 스케줄링",
+      "benefit1": "실시간 이용 가능 여부",
+      "benefit2": "자동 알림",
+      "benefit3": "쉬운 재예약",
+      "benefit4": "캘린더 동기화"
+    },
+    "patientManagement": {
+      "title": "환자 관리",
+      "description": "의료 기록, 치료 계획 및 커뮤니케이션 도구가 포함된 포괄적인 환자 프로필",
+      "benefit1": "디지털 건강 기록",
+      "benefit2": "치료 추적",
+      "benefit3": "환자 포털 액세스",
+      "benefit4": "가족 계정 연결"
+    },
+    "healthRecords": {
+      "title": "디지털 건강 기록",
+      "description": "언제 어디서나 액세스할 수 있는 안전한 HIPAA 준수 전자 건강 기록",
+      "benefit1": "클라우드 저장소",
+      "benefit2": "쉬운 공유",
+      "benefit3": "문서 스캔",
+      "benefit4": "버전 기록"
+    },
+    "telemedicine": {
+      "title": "원격 의료",
+      "description": "HD 품질과 안전한 암호화 연결을 갖춘 내장 비디오 상담",
+      "benefit1": "HD 비디오 통화",
+      "benefit2": "화면 공유",
+      "benefit3": "채팅 메시징",
+      "benefit4": "녹화 옵션"
+    },
+    "medication": {
+      "title": "약물 관리",
+      "description": "처방전 추적, 알림 설정 및 복약 순응도 모니터링",
+      "benefit1": "리필 알림",
+      "benefit2": "약물 상호 작용",
+      "benefit3": "복용량 추적",
+      "benefit4": "약국 통합"
+    },
+    "analytics": {
+      "title": "분석 및 보고서",
+      "description": "진료 성과, 환자 결과 및 재무 지표에 대한 강력한 통찰력",
+      "benefit1": "수익 추적",
+      "benefit2": "환자 분석",
+      "benefit3": "맞춤 보고서",
+      "benefit4": "내보내기 옵션"
+    },
+    "billing": {
+      "title": "청구 및 결제",
+      "description": "보험 청구 관리가 포함된 통합 결제 처리",
+      "benefit1": "온라인 결제",
+      "benefit2": "보험 청구",
+      "benefit3": "청구서 생성",
+      "benefit4": "결제 플랜"
+    },
+    "messaging": {
+      "title": "안전한 메시징",
+      "description": "의사, 환자 및 직원 간의 HIPAA 준수 메시징",
+      "benefit1": "암호화된 메시지",
+      "benefit2": "파일 첨부",
+      "benefit3": "그룹 채팅",
+      "benefit4": "읽음 확인"
+    },
+    "notifications": {
+      "title": "스마트 알림",
+      "description": "예약, 검사 결과 및 중요한 업데이트를 위한 사용자 정의 가능한 알림",
+      "benefit1": "SMS 알림",
+      "benefit2": "이메일 알림",
+      "benefit3": "푸시 알림",
+      "benefit4": "맞춤 일정"
+    }
+  },
+  "securitySection": {
+    "title": "엔터프라이즈급 보안",
+    "subtitle": "귀하의 데이터는 최고 수준의 보안 표준으로 보호됩니다"
+  },
+  "security": {
+    "hipaa": {
+      "title": "HIPAA 준수",
+      "description": "의료 개인정보 보호 규정의 완전한 준수"
+    },
+    "encryption": {
+      "title": "종단 간 암호화",
+      "description": "모든 데이터에 대한 군사급 암호화"
+    },
+    "backups": {
+      "title": "실시간 백업",
+      "description": "매시간 자동 백업"
+    },
+    "uptime": {
+      "title": "99.9% 가동 시간",
+      "description": "신뢰할 수 있는 믿을 수 있는 서비스"
+    }
+  },
+  "cta": {
+    "title": "진료를 변화시킬 준비가 되셨나요?",
+    "subtitle": "더 나은 환자 치료를 제공하기 위해 Docito를 사용하는 수천 명의 의료 전문가와 함께하세요",
+    "startTrial": "무료 체험 시작",
+    "scheduleDemo": "데모 예약"
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "hero": {
+    "title": "Características Potentes para la Atención Médica Moderna",
+    "subtitle": "Todo lo que necesitas para gestionar tu práctica de manera eficiente y brindar una atención excepcional al paciente",
+    "cta": "Comenzar Prueba Gratuita"
+  },
+  "mainSection": {
+    "title": "Suite Completa de Gestión Sanitaria",
+    "subtitle": "Todas las herramientas que necesitas en una plataforma integrada"
+  },
+  "mainFeatures": {
+    "scheduling": {
+      "title": "Programación Inteligente de Citas",
+      "description": "Programación impulsada por IA que optimiza tu tiempo y reduce las ausencias con recordatorios automáticos",
+      "benefit1": "Disponibilidad en tiempo real",
+      "benefit2": "Recordatorios automáticos",
+      "benefit3": "Reprogramación fácil",
+      "benefit4": "Sincronización de calendario"
+    },
+    "patientManagement": {
+      "title": "Gestión de Pacientes",
+      "description": "Perfiles completos de pacientes con historial médico, planes de tratamiento y herramientas de comunicación",
+      "benefit1": "Registros de salud digitales",
+      "benefit2": "Seguimiento de tratamientos",
+      "benefit3": "Acceso al portal del paciente",
+      "benefit4": "Vinculación de cuentas familiares"
+    },
+    "healthRecords": {
+      "title": "Registros de Salud Digitales",
+      "description": "Registros electrónicos de salud seguros y compatibles con HIPAA, accesibles en cualquier momento y lugar",
+      "benefit1": "Almacenamiento en la nube",
+      "benefit2": "Fácil compartir",
+      "benefit3": "Escaneo de documentos",
+      "benefit4": "Historial de versiones"
+    },
+    "telemedicine": {
+      "title": "Telemedicina",
+      "description": "Consultas por video integradas con calidad HD y conexiones cifradas seguras",
+      "benefit1": "Videollamadas HD",
+      "benefit2": "Compartir pantalla",
+      "benefit3": "Mensajería por chat",
+      "benefit4": "Opciones de grabación"
+    },
+    "medication": {
+      "title": "Gestión de Medicamentos",
+      "description": "Rastrea recetas, establece recordatorios y monitorea el cumplimiento de la medicación",
+      "benefit1": "Recordatorios de recarga",
+      "benefit2": "Interacciones de medicamentos",
+      "benefit3": "Seguimiento de dosis",
+      "benefit4": "Integración con farmacias"
+    },
+    "analytics": {
+      "title": "Análisis e Informes",
+      "description": "Perspectivas poderosas sobre el rendimiento de la práctica, resultados de pacientes y métricas financieras",
+      "benefit1": "Seguimiento de ingresos",
+      "benefit2": "Análisis de pacientes",
+      "benefit3": "Informes personalizados",
+      "benefit4": "Opciones de exportación"
+    },
+    "billing": {
+      "title": "Facturación y Pagos",
+      "description": "Procesamiento de pagos integrado con gestión de reclamaciones de seguros",
+      "benefit1": "Pagos en línea",
+      "benefit2": "Reclamaciones de seguros",
+      "benefit3": "Generación de facturas",
+      "benefit4": "Planes de pago"
+    },
+    "messaging": {
+      "title": "Mensajería Segura",
+      "description": "Mensajería compatible con HIPAA entre médicos, pacientes y personal",
+      "benefit1": "Mensajes cifrados",
+      "benefit2": "Archivos adjuntos",
+      "benefit3": "Chats grupales",
+      "benefit4": "Confirmaciones de lectura"
+    },
+    "notifications": {
+      "title": "Notificaciones Inteligentes",
+      "description": "Alertas personalizables para citas, resultados de laboratorio y actualizaciones importantes",
+      "benefit1": "Alertas por SMS",
+      "benefit2": "Notificaciones por correo",
+      "benefit3": "Notificaciones push",
+      "benefit4": "Horarios personalizados"
+    }
+  },
+  "securitySection": {
+    "title": "Seguridad de Nivel Empresarial",
+    "subtitle": "Tus datos están protegidos con los más altos estándares de seguridad"
+  },
+  "security": {
+    "hipaa": {
+      "title": "Compatible con HIPAA",
+      "description": "Cumplimiento total con las regulaciones de privacidad de la salud"
+    },
+    "encryption": {
+      "title": "Cifrado de Extremo a Extremo",
+      "description": "Cifrado de grado militar para todos los datos"
+    },
+    "backups": {
+      "title": "Copias de Seguridad en Tiempo Real",
+      "description": "Copias de seguridad automáticas cada hora"
+    },
+    "uptime": {
+      "title": "99.9% de Tiempo Activo",
+      "description": "Servicio confiable en el que puedes confiar"
+    }
+  },
+  "cta": {
+    "title": "¿Listo para Transformar tu Práctica?",
+    "subtitle": "Únete a miles de profesionales de la salud que usan Docito para brindar una mejor atención al paciente",
+    "startTrial": "Comenzar Prueba Gratuita",
+    "scheduleDemo": "Programar Demo"
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "hero": {
+    "title": "現代医療のための強力な機能",
+    "subtitle": "診療を効率的に管理し、優れた患者ケアを提供するために必要なすべて",
+    "cta": "無料トライアルを開始"
+  },
+  "mainSection": {
+    "title": "完全な医療管理スイート",
+    "subtitle": "統合されたプラットフォームで必要なすべてのツール"
+  },
+  "mainFeatures": {
+    "scheduling": {
+      "title": "スマート予約スケジューリング",
+      "description": "時間を最適化し、自動リマインダーで無断キャンセルを減らすAI搭載スケジューリング",
+      "benefit1": "リアルタイムの空き状況",
+      "benefit2": "自動リマインダー",
+      "benefit3": "簡単な再スケジュール",
+      "benefit4": "カレンダー同期"
+    },
+    "patientManagement": {
+      "title": "患者管理",
+      "description": "病歴、治療計画、コミュニケーションツールを備えた包括的な患者プロファイル",
+      "benefit1": "デジタル健康記録",
+      "benefit2": "治療追跡",
+      "benefit3": "患者ポータルアクセス",
+      "benefit4": "家族アカウント連携"
+    },
+    "healthRecords": {
+      "title": "デジタル健康記録",
+      "description": "いつでもどこでもアクセス可能な安全なHIPAA準拠の電子健康記録",
+      "benefit1": "クラウドストレージ",
+      "benefit2": "簡単な共有",
+      "benefit3": "ドキュメントスキャン",
+      "benefit4": "バージョン履歴"
+    },
+    "telemedicine": {
+      "title": "遠隔医療",
+      "description": "HD品質と安全な暗号化接続を備えた組み込みビデオ相談",
+      "benefit1": "HDビデオ通話",
+      "benefit2": "画面共有",
+      "benefit3": "チャットメッセージング",
+      "benefit4": "録画オプション"
+    },
+    "medication": {
+      "title": "薬物管理",
+      "description": "処方箋の追跡、リマインダーの設定、服薬遵守の監視",
+      "benefit1": "補充リマインダー",
+      "benefit2": "薬物相互作用",
+      "benefit3": "用量追跡",
+      "benefit4": "薬局統合"
+    },
+    "analytics": {
+      "title": "分析とレポート",
+      "description": "診療パフォーマンス、患者の転帰、財務指標に関する強力な洞察",
+      "benefit1": "収益追跡",
+      "benefit2": "患者分析",
+      "benefit3": "カスタムレポート",
+      "benefit4": "エクスポートオプション"
+    },
+    "billing": {
+      "title": "請求と支払い",
+      "description": "保険請求管理を備えた統合支払い処理",
+      "benefit1": "オンライン決済",
+      "benefit2": "保険請求",
+      "benefit3": "請求書生成",
+      "benefit4": "支払いプラン"
+    },
+    "messaging": {
+      "title": "安全なメッセージング",
+      "description": "医師、患者、スタッフ間のHIPAA準拠メッセージング",
+      "benefit1": "暗号化されたメッセージ",
+      "benefit2": "ファイル添付",
+      "benefit3": "グループチャット",
+      "benefit4": "既読確認"
+    },
+    "notifications": {
+      "title": "スマート通知",
+      "description": "予約、検査結果、重要な更新のためのカスタマイズ可能なアラート",
+      "benefit1": "SMSアラート",
+      "benefit2": "メール通知",
+      "benefit3": "プッシュ通知",
+      "benefit4": "カスタムスケジュール"
+    }
+  },
+  "securitySection": {
+    "title": "エンタープライズグレードのセキュリティ",
+    "subtitle": "お客様のデータは最高のセキュリティ基準で保護されています"
+  },
+  "security": {
+    "hipaa": {
+      "title": "HIPAA準拠",
+      "description": "医療プライバシー規制への完全な準拠"
+    },
+    "encryption": {
+      "title": "エンドツーエンド暗号化",
+      "description": "すべてのデータに対する軍事グレードの暗号化"
+    },
+    "backups": {
+      "title": "リアルタイムバックアップ",
+      "description": "1時間ごとの自動バックアップ"
+    },
+    "uptime": {
+      "title": "99.9%稼働時間",
+      "description": "信頼できる信頼性の高いサービス"
+    }
+  },
+  "cta": {
+    "title": "診療を変革する準備はできていますか？",
+    "subtitle": "より良い患者ケアを提供するためにDocitoを使用している何千人もの医療専門家に参加してください",
+    "startTrial": "無料トライアルを開始",
+    "scheduleDemo": "デモをスケジュールする"
+  }
+}

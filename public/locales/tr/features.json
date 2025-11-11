@@ -1,0 +1,113 @@
+{
+  "hero": {
+    "title": "Modern Sağlık Hizmetleri için Güçlü Özellikler",
+    "subtitle": "Pratiğinizi verimli bir şekilde yönetmek ve olağanüstü hasta bakımı sağlamak için ihtiyacınız olan her şey",
+    "cta": "Ücretsiz Deneme Başlat"
+  },
+  "mainSection": {
+    "title": "Eksiksiz Sağlık Yönetimi Paketi",
+    "subtitle": "İhtiyacınız olan tüm araçlar tek bir entegre platformda"
+  },
+  "mainFeatures": {
+    "scheduling": {
+      "title": "Akıllı Randevu Planlama",
+      "description": "Zamanınızı optimize eden ve otomatik hatırlatmalarla randevu kaçırmayı azaltan yapay zeka destekli planlama",
+      "benefit1": "Gerçek zamanlı müsaitlik",
+      "benefit2": "Otomatik hatırlatmalar",
+      "benefit3": "Kolay yeniden planlama",
+      "benefit4": "Takvim senkronizasyonu"
+    },
+    "patientManagement": {
+      "title": "Hasta Yönetimi",
+      "description": "Tıbbi geçmiş, tedavi planları ve iletişim araçlarıyla kapsamlı hasta profilleri",
+      "benefit1": "Dijital sağlık kayıtları",
+      "benefit2": "Tedavi takibi",
+      "benefit3": "Hasta portalı erişimi",
+      "benefit4": "Aile hesabı bağlama"
+    },
+    "healthRecords": {
+      "title": "Dijital Sağlık Kayıtları",
+      "description": "Her zaman, her yerde erişilebilir güvenli, HIPAA uyumlu elektronik sağlık kayıtları",
+      "benefit1": "Bulut depolama",
+      "benefit2": "Kolay paylaşım",
+      "benefit3": "Belge tarama",
+      "benefit4": "Sürüm geçmişi"
+    },
+    "telemedicine": {
+      "title": "Telesağlık",
+      "description": "HD kalitede ve güvenli şifreli bağlantılarla yerleşik görüntülü konsültasyonlar",
+      "benefit1": "HD görüntülü aramalar",
+      "benefit2": "Ekran paylaşımı",
+      "benefit3": "Sohbet mesajlaşma",
+      "benefit4": "Kayıt seçenekleri"
+    },
+    "medication": {
+      "title": "İlaç Yönetimi",
+      "description": "Reçeteleri takip edin, hatırlatıcılar ayarlayın ve ilaç uyumunu izleyin",
+      "benefit1": "Yenileme hatırlatıcıları",
+      "benefit2": "İlaç etkileşimleri",
+      "benefit3": "Doz takibi",
+      "benefit4": "Eczane entegrasyonu"
+    },
+    "analytics": {
+      "title": "Analitik ve Raporlar",
+      "description": "Pratik performansı, hasta sonuçları ve finansal metrikler hakkında güçlü içgörüler",
+      "benefit1": "Gelir takibi",
+      "benefit2": "Hasta analitiği",
+      "benefit3": "Özel raporlar",
+      "benefit4": "Dışa aktarma seçenekleri"
+    },
+    "billing": {
+      "title": "Faturalandırma ve Ödemeler",
+      "description": "Sigorta talep yönetimi ile entegre ödeme işleme",
+      "benefit1": "Online ödemeler",
+      "benefit2": "Sigorta talepleri",
+      "benefit3": "Fatura oluşturma",
+      "benefit4": "Ödeme planları"
+    },
+    "messaging": {
+      "title": "Güvenli Mesajlaşma",
+      "description": "Doktorlar, hastalar ve personel arasında HIPAA uyumlu mesajlaşma",
+      "benefit1": "Şifreli mesajlar",
+      "benefit2": "Dosya ekleri",
+      "benefit3": "Grup sohbetleri",
+      "benefit4": "Okundu bilgileri"
+    },
+    "notifications": {
+      "title": "Akıllı Bildirimler",
+      "description": "Randevular, laboratuvar sonuçları ve önemli güncellemeler için özelleştirilebilir uyarılar",
+      "benefit1": "SMS uyarıları",
+      "benefit2": "E-posta bildirimleri",
+      "benefit3": "Push bildirimleri",
+      "benefit4": "Özel programlar"
+    }
+  },
+  "securitySection": {
+    "title": "Kurumsal Düzey Güvenlik",
+    "subtitle": "Verileriniz en yüksek güvenlik standartlarıyla korunmaktadır"
+  },
+  "security": {
+    "hipaa": {
+      "title": "HIPAA Uyumlu",
+      "description": "Sağlık gizliliği düzenlemelerine tam uyumluluk"
+    },
+    "encryption": {
+      "title": "Uçtan Uca Şifreleme",
+      "description": "Tüm veriler için askeri düzeyde şifreleme"
+    },
+    "backups": {
+      "title": "Gerçek Zamanlı Yedekleme",
+      "description": "Her saat otomatik yedekleme"
+    },
+    "uptime": {
+      "title": "%99,9 Çalışma Süresi",
+      "description": "Güvenebileceğiniz güvenilir hizmet"
+    }
+  },
+  "cta": {
+    "title": "Pratiğinizi Dönüştürmeye Hazır mısınız?",
+    "subtitle": "Daha iyi hasta bakımı sunmak için Docito kullanan binlerce sağlık profesyoneline katılın",
+    "startTrial": "Ücretsiz Deneme Başlat",
+    "scheduleDemo": "Demo Planla"
+  }
+}
