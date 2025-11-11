@@ -25,5 +25,26 @@
     "education": "Educación",
     "languages": "Idiomas Hablados",
     "services": "Servicios Ofrecidos"
+  },
+  "page": {
+    "signIn": "Iniciar Sesión",
+    "title": "Encuentra Tu Doctor Perfecto",
+    "subtitle": "Busca entre miles de profesionales de la salud verificados",
+    "showFilters": "Mostrar Filtros",
+    "hideFilters": "Ocultar Filtros",
+    "clearAll": "Limpiar Todo",
+    "minRating": "Calificación Mínima",
+    "anyRating": "Cualquier Calificación",
+    "threeStars": "3+ Estrellas",
+    "fourStars": "4+ Estrellas",
+    "fourHalfStars": "4.5+ Estrellas",
+    "searching": "Buscando...",
+    "doctorsFound": "{{count}} Doctores Encontrados",
+    "showingVerified": "Mostrando profesionales de la salud verificados",
+    "noDoctors": "No se encontraron doctores que coincidan con tus criterios",
+    "doctorPrefix": "Dr.",
+    "available": "Disponible para citas",
+    "consultationFee": "Consulta: ${{fee}}",
+    "bookNow": "Reservar Ahora"
   }
 }

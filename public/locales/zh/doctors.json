@@ -25,5 +25,26 @@
     "education": "教育",
     "languages": "使用语言",
     "services": "提供的服务"
+  },
+  "page": {
+    "signIn": "登录",
+    "title": "找到您的完美医生",
+    "subtitle": "从数千名经过验证的医疗专业人员中搜索",
+    "showFilters": "显示筛选",
+    "hideFilters": "隐藏筛选",
+    "clearAll": "清除全部",
+    "minRating": "最低评分",
+    "anyRating": "任何评分",
+    "threeStars": "3+ 星",
+    "fourStars": "4+ 星",
+    "fourHalfStars": "4.5+ 星",
+    "searching": "搜索中...",
+    "doctorsFound": "找到 {{count}} 位医生",
+    "showingVerified": "显示经过验证的医疗专业人员",
+    "noDoctors": "未找到符合您条件的医生",
+    "doctorPrefix": "Dr.",
+    "available": "可预约",
+    "consultationFee": "咨询费: ${{fee}}",
+    "bookNow": "立即预约"
   }
 }

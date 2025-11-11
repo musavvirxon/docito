@@ -25,5 +25,26 @@
     "education": "Ausbildung",
     "languages": "Gesprochene Sprachen",
     "services": "Angebotene Dienstleistungen"
+  },
+  "page": {
+    "signIn": "Anmelden",
+    "title": "Finden Sie Ihren perfekten Arzt",
+    "subtitle": "Durchsuchen Sie Tausende verifizierte Gesundheitsexperten",
+    "showFilters": "Filter anzeigen",
+    "hideFilters": "Filter ausblenden",
+    "clearAll": "Alles löschen",
+    "minRating": "Mindestbewertung",
+    "anyRating": "Beliebige Bewertung",
+    "threeStars": "3+ Sterne",
+    "fourStars": "4+ Sterne",
+    "fourHalfStars": "4,5+ Sterne",
+    "searching": "Suche läuft...",
+    "doctorsFound": "{{count}} Ärzte gefunden",
+    "showingVerified": "Zeige verifizierte Gesundheitsexperten",
+    "noDoctors": "Keine Ärzte gefunden, die Ihren Kriterien entsprechen",
+    "doctorPrefix": "Dr.",
+    "available": "Verfügbar für Termine",
+    "consultationFee": "Beratung: ${{fee}}",
+    "bookNow": "Jetzt buchen"
   }
 }

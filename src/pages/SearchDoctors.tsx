@@ -5,9 +5,11 @@ import { Logo } from '@/components/Logo';
 import Footer from '@/components/Footer';
 import { Search, MapPin, Star, Clock, DollarSign, Filter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function SearchDoctors() {
   const navigate = useNavigate();
+  const { t } = useTranslation('doctors');
   const [searchQuery, setSearchQuery] = useState('');
   const [location, setLocation] = useState('');
   const [specialty, setSpecialty] = useState('All Specialties');
@@ -70,7 +72,7 @@ export default function SearchDoctors() {
               onClick={() => navigate('/auth')}
               className="px-6 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              Sign In
+              {t('page.signIn')}
             </button>
           </div>
         </div>
@@ -79,10 +81,10 @@ export default function SearchDoctors() {
       <div className="bg-gradient-to-br from-primary/90 to-primary py-16">
         <div className="container mx-auto px-4">
           <h1 className="text-4xl md:text-5xl font-bold text-primary-foreground text-center mb-4">
-            Find Your Perfect Doctor
+            {t('page.title')}
           </h1>
           <p className="text-xl text-primary-foreground/80 text-center mb-8">
-            Search from thousands of verified healthcare professionals
+            {t('page.subtitle')}
           </p>
 
           <div className="max-w-4xl mx-auto bg-card rounded-2xl shadow-2xl p-4">
@@ -91,7 +93,7 @@ export default function SearchDoctors() {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Search doctors, specialties..."
+                  placeholder={t('search.placeholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 rounded-lg border-2 border-input bg-background text-foreground"
@@ -102,7 +104,7 @@ export default function SearchDoctors() {
                 <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Location"
+                  placeholder={t('search.location')}
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 rounded-lg border-2 border-input bg-background text-foreground"
@@ -126,7 +128,7 @@ export default function SearchDoctors() {
                 className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
               >
                 <Filter className="w-4 h-4" />
-                {showFilters ? 'Hide' : 'Show'} Filters
+                {showFilters ? t('page.hideFilters') : t('page.showFilters')}
               </button>
               <button
                 onClick={() => {
@@ -137,23 +139,23 @@ export default function SearchDoctors() {
                 }}
                 className="text-sm text-muted-foreground hover:text-primary"
               >
-                Clear All
+                {t('page.clearAll')}
               </button>
             </div>
 
             {showFilters && (
               <div className="mt-4 pt-4 border-t border-border grid md:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2 text-foreground">Min Rating</label>
+                  <label className="block text-sm font-medium mb-2 text-foreground">{t('page.minRating')}</label>
                   <select
                     value={filters.minRating}
                     onChange={(e) => setFilters({ ...filters, minRating: parseFloat(e.target.value) })}
                     className="w-full px-3 py-2 rounded-lg border-2 border-input bg-background text-foreground"
                   >
-                    <option value={0}>Any Rating</option>
-                    <option value={3}>3+ Stars</option>
-                    <option value={4}>4+ Stars</option>
-                    <option value={4.5}>4.5+ Stars</option>
+                    <option value={0}>{t('page.anyRating')}</option>
+                    <option value={3}>{t('page.threeStars')}</option>
+                    <option value={4}>{t('page.fourStars')}</option>
+                    <option value={4.5}>{t('page.fourHalfStars')}</option>
                   </select>
                 </div>
               </div>
@@ -165,9 +167,9 @@ export default function SearchDoctors() {
       <div className="container mx-auto px-4 py-12">
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-foreground">
-            {isLoading ? 'Searching...' : `${doctors?.length || 0} Doctors Found`}
+            {isLoading ? t('page.searching') : t('page.doctorsFound', { count: doctors?.length || 0 })}
           </h2>
-          <p className="text-muted-foreground">Showing verified healthcare professionals</p>
+          <p className="text-muted-foreground">{t('page.showingVerified')}</p>
         </div>
 
         {isLoading ? (
@@ -188,7 +190,7 @@ export default function SearchDoctors() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-xl text-muted-foreground mb-4">No doctors found matching your criteria</p>
+            <p className="text-xl text-muted-foreground mb-4">{t('page.noDoctors')}</p>
             <button
               onClick={() => {
                 setSearchQuery('');
@@ -197,7 +199,7 @@ export default function SearchDoctors() {
               }}
               className="px-6 py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              Clear Filters
+              {t('search.clearFilters')}
             </button>
           </div>
         )}
@@ -209,6 +211,7 @@ export default function SearchDoctors() {
 }
 
 function DoctorCard({ doctor, navigate }: any) {
+  const { t } = useTranslation('doctors');
   return (
     <div className="bg-card rounded-xl p-6 shadow-lg hover:shadow-xl transition-all border-2 border-border hover:border-primary">
       <div className="flex items-start gap-4 mb-4">
@@ -216,7 +219,7 @@ function DoctorCard({ doctor, navigate }: any) {
           {doctor.full_name?.charAt(0) || 'D'}
         </div>
         <div className="flex-1">
-          <h3 className="text-lg font-bold text-foreground">Dr. {doctor.full_name}</h3>
+          <h3 className="text-lg font-bold text-foreground">{t('page.doctorPrefix')} {doctor.full_name}</h3>
           <p className="text-sm text-primary font-medium">{doctor.specialty}</p>
           <div className="flex items-center gap-1 mt-1">
             <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
@@ -228,11 +231,11 @@ function DoctorCard({ doctor, navigate }: any) {
       <div className="space-y-2 mb-4">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Clock className="w-4 h-4" />
-          <span>Available for appointments</span>
+          <span>{t('page.available')}</span>
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <DollarSign className="w-4 h-4" />
-          <span>Consultation: ${doctor.consultation_fee || 100}</span>
+          <span>{t('page.consultationFee', { fee: doctor.consultation_fee || 100 })}</span>
         </div>
       </div>
 
@@ -241,13 +244,13 @@ function DoctorCard({ doctor, navigate }: any) {
           onClick={() => navigate(`/doctor-profile/${doctor.id}`)}
           className="flex-1 px-4 py-2 rounded-lg border-2 border-primary text-primary hover:bg-primary/10 font-semibold"
         >
-          View Profile
+          {t('profile.viewProfile')}
         </button>
         <button
           onClick={() => navigate(`/booking/${doctor.id}`)}
           className="flex-1 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
         >
-          Book Now
+          {t('page.bookNow')}
         </button>
       </div>
     </div>

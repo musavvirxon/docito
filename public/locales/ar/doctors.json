@@ -25,5 +25,26 @@
     "education": "التعليم",
     "languages": "اللغات المتحدث بها",
     "services": "الخدمات المقدمة"
+  },
+  "page": {
+    "signIn": "تسجيل الدخول",
+    "title": "ابحث عن طبيبك المثالي",
+    "subtitle": "ابحث بين آلاف المتخصصين في الرعاية الصحية المعتمدين",
+    "showFilters": "إظهار المرشحات",
+    "hideFilters": "إخفاء المرشحات",
+    "clearAll": "مسح الكل",
+    "minRating": "الحد الأدنى للتقييم",
+    "anyRating": "أي تقييم",
+    "threeStars": "3+ نجوم",
+    "fourStars": "4+ نجوم",
+    "fourHalfStars": "4.5+ نجوم",
+    "searching": "جاري البحث...",
+    "doctorsFound": "تم العثور على {{count}} طبيب",
+    "showingVerified": "عرض المتخصصين في الرعاية الصحية المعتمدين",
+    "noDoctors": "لم يتم العثور على أطباء يطابقون معاييرك",
+    "doctorPrefix": "د.",
+    "available": "متاح للمواعيد",
+    "consultationFee": "الاستشارة: ${{fee}}",
+    "bookNow": "احجز الآن"
   }
 }

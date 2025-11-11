@@ -25,5 +25,26 @@
     "education": "Ta'lim",
     "languages": "Tillar",
     "services": "Taqdim etiladigan xizmatlar"
+  },
+  "page": {
+    "signIn": "Kirish",
+    "title": "Mukammal Shifokoringizni Toping",
+    "subtitle": "Minglab tasdiqlangan tibbiy mutaxassislar orasidan qidiring",
+    "showFilters": "Filtrlarni Ko'rsatish",
+    "hideFilters": "Filtrlarni Yashirish",
+    "clearAll": "Hammasini Tozalash",
+    "minRating": "Minimal Reyting",
+    "anyRating": "Har Qanday Reyting",
+    "threeStars": "3+ Yulduz",
+    "fourStars": "4+ Yulduz",
+    "fourHalfStars": "4.5+ Yulduz",
+    "searching": "Qidirilmoqda...",
+    "doctorsFound": "{{count}} Shifokor Topildi",
+    "showingVerified": "Tasdiqlangan tibbiy mutaxassislar ko'rsatilmoqda",
+    "noDoctors": "Mezonlaringizga mos shifokorlar topilmadi",
+    "doctorPrefix": "Dr.",
+    "available": "Qabulga yozilish mumkin",
+    "consultationFee": "Konsultatsiya: ${{fee}}",
+    "bookNow": "Hozir Yozilish"
   }
 }

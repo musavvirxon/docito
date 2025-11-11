@@ -25,5 +25,26 @@
     "education": "학력",
     "languages": "사용 언어",
     "services": "제공 서비스"
+  },
+  "page": {
+    "signIn": "로그인",
+    "title": "완벽한 의사를 찾으세요",
+    "subtitle": "수천 명의 검증된 의료 전문가를 검색하세요",
+    "showFilters": "필터 표시",
+    "hideFilters": "필터 숨기기",
+    "clearAll": "모두 지우기",
+    "minRating": "최소 평점",
+    "anyRating": "모든 평점",
+    "threeStars": "3+ 별",
+    "fourStars": "4+ 별",
+    "fourHalfStars": "4.5+ 별",
+    "searching": "검색 중...",
+    "doctorsFound": "{{count}}명의 의사를 찾았습니다",
+    "showingVerified": "검증된 의료 전문가 표시 중",
+    "noDoctors": "기준과 일치하는 의사를 찾을 수 없습니다",
+    "doctorPrefix": "Dr.",
+    "available": "예약 가능",
+    "consultationFee": "진료비: ${{fee}}",
+    "bookNow": "지금 예약"
   }
 }

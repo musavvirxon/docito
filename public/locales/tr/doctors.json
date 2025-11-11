@@ -25,5 +25,26 @@
     "education": "Eğitim",
     "languages": "Konuşulan Diller",
     "services": "Sunulan Hizmetler"
+  },
+  "page": {
+    "signIn": "Giriş Yap",
+    "title": "Mükemmel Doktorunuzu Bulun",
+    "subtitle": "Binlerce doğrulanmış sağlık uzmanı arasından arama yapın",
+    "showFilters": "Filtreleri Göster",
+    "hideFilters": "Filtreleri Gizle",
+    "clearAll": "Tümünü Temizle",
+    "minRating": "Minimum Değerlendirme",
+    "anyRating": "Herhangi Bir Değerlendirme",
+    "threeStars": "3+ Yıldız",
+    "fourStars": "4+ Yıldız",
+    "fourHalfStars": "4,5+ Yıldız",
+    "searching": "Aranıyor...",
+    "doctorsFound": "{{count}} Doktor Bulundu",
+    "showingVerified": "Doğrulanmış sağlık uzmanları gösteriliyor",
+    "noDoctors": "Kriterlerinize uygun doktor bulunamadı",
+    "doctorPrefix": "Dr.",
+    "available": "Randevu için müsait",
+    "consultationFee": "Muayene: ${{fee}}",
+    "bookNow": "Şimdi Rezerve Et"
   }
 }

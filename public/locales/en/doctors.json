@@ -25,5 +25,26 @@
     "education": "Education",
     "languages": "Languages Spoken",
     "services": "Services Offered"
+  },
+  "page": {
+    "signIn": "Sign In",
+    "title": "Find Your Perfect Doctor",
+    "subtitle": "Search from thousands of verified healthcare professionals",
+    "showFilters": "Show Filters",
+    "hideFilters": "Hide Filters",
+    "clearAll": "Clear All",
+    "minRating": "Min Rating",
+    "anyRating": "Any Rating",
+    "threeStars": "3+ Stars",
+    "fourStars": "4+ Stars",
+    "fourHalfStars": "4.5+ Stars",
+    "searching": "Searching...",
+    "doctorsFound": "{{count}} Doctors Found",
+    "showingVerified": "Showing verified healthcare professionals",
+    "noDoctors": "No doctors found matching your criteria",
+    "doctorPrefix": "Dr.",
+    "available": "Available for appointments",
+    "consultationFee": "Consultation: ${{fee}}",
+    "bookNow": "Book Now"
   }
 }

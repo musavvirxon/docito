@@ -25,5 +25,26 @@
     "education": "学歴",
     "languages": "話せる言語",
     "services": "提供サービス"
+  },
+  "page": {
+    "signIn": "サインイン",
+    "title": "最適な医師を見つける",
+    "subtitle": "数千人の認証済み医療専門家から検索",
+    "showFilters": "フィルターを表示",
+    "hideFilters": "フィルターを非表示",
+    "clearAll": "すべてクリア",
+    "minRating": "最低評価",
+    "anyRating": "すべての評価",
+    "threeStars": "3つ星以上",
+    "fourStars": "4つ星以上",
+    "fourHalfStars": "4.5つ星以上",
+    "searching": "検索中...",
+    "doctorsFound": "{{count}}人の医師が見つかりました",
+    "showingVerified": "認証済み医療専門家を表示中",
+    "noDoctors": "条件に一致する医師が見つかりませんでした",
+    "doctorPrefix": "Dr.",
+    "available": "予約可能",
+    "consultationFee": "診察料: ${{fee}}",
+    "bookNow": "今すぐ予約"
   }
 }
