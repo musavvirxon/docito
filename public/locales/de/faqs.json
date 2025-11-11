@@ -1,0 +1,102 @@
+{
+  "hero": {
+    "title": "Häufig gestellte Fragen",
+    "subtitle": "Finden Sie Antworten auf häufige Fragen zu Docito"
+  },
+  "search": {
+    "placeholder": "FAQs durchsuchen..."
+  },
+  "categories": {
+    "all": "Alle",
+    "gettingStarted": "Erste Schritte",
+    "appointments": "Termine",
+    "billing": "Abrechnung",
+    "technical": "Technisch",
+    "privacy": "Datenschutz & Sicherheit"
+  },
+  "results": {
+    "showing": "{{count}} Frage wird angezeigt",
+    "showing_other": "{{count}} Fragen werden angezeigt",
+    "noResults": "Keine FAQs gefunden, die Ihrer Suche entsprechen",
+    "clearSearch": "Suche löschen"
+  },
+  "cta": {
+    "title": "Haben Sie noch Fragen?",
+    "subtitle": "Unser Support-Team steht Ihnen zur Verfügung",
+    "button": "Support kontaktieren"
+  },
+  "items": {
+    "createAccount": {
+      "question": "Wie erstelle ich ein Konto?",
+      "answer": "Um ein Konto zu erstellen, klicken Sie auf die Schaltfläche \"Registrieren\" auf der Startseite. Wählen Sie, ob Sie Patient oder Arzt sind, geben Sie Ihre Daten ein, verifizieren Sie Ihre E-Mail und fertig! Der Vorgang dauert weniger als 2 Minuten."
+    },
+    "isFree": {
+      "question": "Ist Docito kostenlos?",
+      "answer": "Docito bietet sowohl kostenlose als auch Premium-Pläne. Patienten können kostenlos nach Ärzten suchen und Termine buchen. Ärzte erhalten eine 30-tägige kostenlose Testversion, danach beginnen die Abonnementpläne bei 99 $/Monat."
+    },
+    "devices": {
+      "question": "Auf welchen Geräten kann ich Docito verwenden?",
+      "answer": "Docito funktioniert auf allen modernen Webbrowsern (Chrome, Firefox, Safari, Edge) auf Desktop, Tablet und mobilen Geräten. Wir haben auch dedizierte mobile Apps für iOS und Android im App Store und Google Play verfügbar."
+    },
+    "bookAppointment": {
+      "question": "Wie buche ich einen Termin?",
+      "answer": "Suchen Sie nach einem Arzt nach Fachgebiet oder Name, sehen Sie sich die verfügbaren Zeitfenster an, wählen Sie eine passende Zeit aus und bestätigen Sie Ihre Buchung. Sie erhalten sofort eine Bestätigung per E-Mail und SMS."
+    },
+    "cancelReschedule": {
+      "question": "Kann ich einen Termin absagen oder verschieben?",
+      "answer": "Ja! Sie können Termine bis zu 24 Stunden vor dem geplanten Zeitpunkt über Ihr Dashboard absagen oder verschieben. Einige Ärzte haben möglicherweise unterschiedliche Stornierungsrichtlinien, die bei der Buchung angezeigt werden."
+    },
+    "late": {
+      "question": "Was ist, wenn ich zu spät zu meinem Termin komme?",
+      "answer": "Bitte versuchen Sie, pünktlich zu erscheinen. Wenn Sie sich verspäten, wenden Sie sich direkt an die Arztpraxis. Bei virtuellen Terminen können Sie bis zu 10 Minuten nach der geplanten Zeit beitreten, obwohl die Sitzung möglicherweise verkürzt wird."
+    },
+    "videoConsultation": {
+      "question": "Wie funktionieren Videokonsultationen?",
+      "answer": "Videokonsultationen werden über unsere sichere Plattform durchgeführt. Keine Downloads erforderlich! Klicken Sie einfach zur Terminzeit auf \"Videoanruf beitreten\" und Sie werden über HD-Video mit Ihrem Arzt verbunden."
+    },
+    "paymentMethods": {
+      "question": "Welche Zahlungsmethoden akzeptieren Sie?",
+      "answer": "Wir akzeptieren alle gängigen Kreditkarten (Visa, Mastercard, Amex, Discover), Debitkarten und HSA/FSA-Karten. Wir arbeiten auch mit Versicherungsanbietern zusammen und bieten Zahlungspläne für größere Rechnungen an."
+    },
+    "insurance": {
+      "question": "Deckt meine Versicherung Docito-Termine ab?",
+      "answer": "Viele Versicherungspläne decken Telemedizin und persönliche Termine ab, die über Docito gebucht werden. Wenden Sie sich an Ihren Versicherungsanbieter oder suchen Sie nach Ärzten, die Ihre Versicherung in ihrem Profil akzeptieren."
+    },
+    "whenCharged": {
+      "question": "Wann wird mir Geld berechnet?",
+      "answer": "Für die meisten Termine wird die Zahlung zum Zeitpunkt der Buchung verarbeitet. Einige Ärzte bieten Zahlungsoptionen nach dem Besuch an. Sie sehen immer die Zahlungsbedingungen, bevor Sie Ihren Termin bestätigen."
+    },
+    "refund": {
+      "question": "Kann ich eine Rückerstattung erhalten?",
+      "answer": "Die Rückerstattungsrichtlinien variieren je nach Anbieter. Wenn Sie innerhalb des zulässigen Zeitrahmens (normalerweise 24 Stunden) stornieren, erhalten Sie eine vollständige Rückerstattung. Bei Stornierungen außerhalb dieses Zeitraums liegen Rückerstattungen im Ermessen des Arztes."
+    },
+    "videoCalls": {
+      "question": "Ich habe Probleme mit Videoanrufen",
+      "answer": "Überprüfen Sie zuerst Ihre Internetverbindung und stellen Sie sicher, dass Ihre Kamera/Mikrofon-Berechtigungen aktiviert sind. Versuchen Sie Chrome oder Safari für beste Ergebnisse. Wenn Probleme bestehen bleiben, wenden Sie sich an unseren 24/7-technischen Support."
+    },
+    "uploadDocuments": {
+      "question": "Wie lade ich medizinische Dokumente hoch?",
+      "answer": "Gehen Sie zu Ihrem Profil, klicken Sie auf \"Krankenakten\" und dann auf \"Dokument hochladen\". Sie können PDFs, Bilder oder gescannte Dokumente hochladen. Alle Dateien sind verschlüsselt und HIPAA-konform."
+    },
+    "multipleDevices": {
+      "question": "Kann ich von mehreren Geräten auf mein Konto zugreifen?",
+      "answer": "Ja! Sie können sich von jedem Gerät aus anmelden. Ihre Daten werden in Echtzeit sicher über alle Plattformen hinweg synchronisiert."
+    },
+    "dataSecure": {
+      "question": "Sind meine Gesundheitsinformationen sicher?",
+      "answer": "Absolut. Docito ist HIPAA-konform und verwendet militärische Verschlüsselung. Ihre Daten werden auf sicheren Servern mit mehreren Backups gespeichert, und wir geben Ihre Informationen niemals ohne Ihre ausdrückliche Zustimmung weiter."
+    },
+    "whoCanSee": {
+      "question": "Wer kann meine Krankenakten sehen?",
+      "answer": "Nur Sie und Gesundheitsdienstleister, denen Sie Zugriff gewährt haben, können Ihre Aufzeichnungen anzeigen. Sie haben vollständige Kontrolle darüber, wer Ihre Informationen sieht, und können den Zugriff jederzeit widerrufen."
+    },
+    "deleteAccount": {
+      "question": "Wie lösche ich mein Konto?",
+      "answer": "Gehen Sie zu Einstellungen > Konto > Konto löschen. Beachten Sie, dass dadurch alle Ihre Daten dauerhaft gelöscht werden. Zur Aufbewahrung von Krankenakten bewahren wir verschlüsselte Backups 7 Jahre lang wie gesetzlich vorgeschrieben auf, aber sie sind für niemanden zugänglich."
+    },
+    "sellData": {
+      "question": "Verkaufen Sie meine Daten?",
+      "answer": "Niemals. Wir verkaufen, vermieten oder teilen Ihre persönlichen Gesundheitsinformationen nicht mit Dritten für Marketingzwecke. Ihre Privatsphäre ist unsere oberste Priorität."
+    }
+  }
+}

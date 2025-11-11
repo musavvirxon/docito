@@ -1,0 +1,102 @@
+{
+  "hero": {
+    "title": "常见问题",
+    "subtitle": "查找有关Docito的常见问题的答案"
+  },
+  "search": {
+    "placeholder": "搜索常见问题..."
+  },
+  "categories": {
+    "all": "全部",
+    "gettingStarted": "入门",
+    "appointments": "预约",
+    "billing": "账单",
+    "technical": "技术",
+    "privacy": "隐私与安全"
+  },
+  "results": {
+    "showing": "显示{{count}}个问题",
+    "showing_other": "显示{{count}}个问题",
+    "noResults": "未找到与您搜索匹配的常见问题",
+    "clearSearch": "清除搜索"
+  },
+  "cta": {
+    "title": "还有问题吗？",
+    "subtitle": "我们的支持团队随时准备帮助您",
+    "button": "联系支持"
+  },
+  "items": {
+    "createAccount": {
+      "question": "如何创建账户？",
+      "answer": "要创建账户，请点击主页上的"注册"按钮。选择您是患者还是医生，填写详细信息，验证您的电子邮件，就完成了！整个过程不到2分钟。"
+    },
+    "isFree": {
+      "question": "Docito可以免费使用吗？",
+      "answer": "Docito提供免费和高级计划。患者可以免费浏览医生并预约。医生可获得30天免费试用，之后订阅计划从每月99美元起。"
+    },
+    "devices": {
+      "question": "我可以在哪些设备上使用Docito？",
+      "answer": "Docito可在桌面、平板电脑和移动设备上的所有现代网络浏览器（Chrome、Firefox、Safari、Edge）上运行。我们还在App Store和Google Play上提供iOS和Android专用移动应用。"
+    },
+    "bookAppointment": {
+      "question": "如何预约？",
+      "answer": "按专业或姓名搜索医生，查看可用时间段，选择方便的时间并确认预约。您将立即通过电子邮件和短信收到确认。"
+    },
+    "cancelReschedule": {
+      "question": "我可以取消或重新安排预约吗？",
+      "answer": "可以！您可以通过仪表板在预定时间前24小时取消或重新安排预约。一些医生可能有不同的取消政策，预约时会显示。"
+    },
+    "late": {
+      "question": "如果我预约迟到了怎么办？",
+      "answer": "请尽量准时到达。如果您迟到了，请直接联系医生办公室。对于虚拟预约，您可以在预定时间后最多10分钟内加入，但会话可能会缩短。"
+    },
+    "videoConsultation": {
+      "question": "视频咨询如何运作？",
+      "answer": "视频咨询通过我们的安全平台进行。无需下载！只需在预约时间点击"加入视频通话"，您就会通过高清视频与医生连接。"
+    },
+    "paymentMethods": {
+      "question": "你们接受哪些付款方式？",
+      "answer": "我们接受所有主要信用卡（Visa、Mastercard、Amex、Discover）、借记卡和HSA/FSA卡。我们还与保险提供商合作，并为大额账单提供付款计划。"
+    },
+    "insurance": {
+      "question": "我的保险涵盖Docito预约吗？",
+      "answer": "许多保险计划涵盖通过Docito预约的远程医疗和面对面预约。请咨询您的保险提供商或在其个人资料中查找接受您保险的医生。"
+    },
+    "whenCharged": {
+      "question": "我什么时候会被收费？",
+      "answer": "对于大多数预约，付款在预约时处理。一些医生提供访问后付款选项。在确认预约之前，您始终会看到付款条款。"
+    },
+    "refund": {
+      "question": "我可以获得退款吗？",
+      "answer": "退款政策因提供商而异。如果您在允许的时间范围内（通常为24小时）取消，您将获得全额退款。在此时间窗口之外的取消，退款由医生自行决定。"
+    },
+    "videoCalls": {
+      "question": "我在视频通话方面遇到问题",
+      "answer": "首先，检查您的互联网连接并确保您的摄像头/麦克风权限已启用。尝试使用Chrome或Safari以获得最佳效果。如果问题持续存在，请联系我们的24/7技术支持。"
+    },
+    "uploadDocuments": {
+      "question": "如何上传医疗文件？",
+      "answer": "进入您的个人资料，点击"医疗记录"，然后点击"上传文档"。您可以上传PDF、图像或扫描文档。所有文件都经过加密并符合HIPAA标准。"
+    },
+    "multipleDevices": {
+      "question": "我可以从多个设备访问我的账户吗？",
+      "answer": "可以！您可以从任何设备登录。您的数据会在所有平台上实时安全同步。"
+    },
+    "dataSecure": {
+      "question": "我的健康信息安全吗？",
+      "answer": "绝对安全。Docito符合HIPAA标准并使用军事级加密。您的数据存储在具有多个备份的安全服务器上，未经您的明确同意，我们绝不会共享您的信息。"
+    },
+    "whoCanSee": {
+      "question": "谁可以查看我的医疗记录？",
+      "answer": "只有您和您授予访问权限的医疗保健提供者才能查看您的记录。您可以完全控制谁查看您的信息，并可以随时撤销访问权限。"
+    },
+    "deleteAccount": {
+      "question": "如何删除我的账户？",
+      "answer": "转到设置 > 账户 > 删除账户。请注意，这将永久删除您的所有数据。为了医疗记录保留，我们会按照法律要求保留加密备份7年，但任何人都无法访问。"
+    },
+    "sellData": {
+      "question": "你们出售我的数据吗？",
+      "answer": "绝不。我们不会出于营销目的向第三方出售、出租或共享您的个人健康信息。您的隐私是我们的首要任务。"
+    }
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "hero": {
+    "title": "Perguntas Frequentes",
+    "subtitle": "Encontre respostas para perguntas comuns sobre Docito"
+  },
+  "search": {
+    "placeholder": "Pesquisar perguntas..."
+  },
+  "categories": {
+    "all": "Todas",
+    "gettingStarted": "Começando",
+    "appointments": "Consultas",
+    "billing": "Cobrança",
+    "technical": "Técnico",
+    "privacy": "Privacidade e Segurança"
+  },
+  "results": {
+    "showing": "Mostrando {{count}} pergunta",
+    "showing_other": "Mostrando {{count}} perguntas",
+    "noResults": "Nenhuma pergunta encontrada correspondente à sua pesquisa",
+    "clearSearch": "Limpar Pesquisa"
+  },
+  "cta": {
+    "title": "Ainda tem dúvidas?",
+    "subtitle": "Nossa equipe de suporte está pronta para ajudá-lo",
+    "button": "Contatar Suporte"
+  },
+  "items": {
+    "createAccount": {
+      "question": "Como criar uma conta?",
+      "answer": "Para criar uma conta, clique no botão \"Cadastrar-se\" na página inicial. Escolha se você é paciente ou médico, preencha seus dados, verifique seu e-mail e pronto! O processo leva menos de 2 minutos."
+    },
+    "isFree": {
+      "question": "O Docito é gratuito?",
+      "answer": "O Docito oferece planos gratuitos e premium. Os pacientes podem navegar por médicos e agendar consultas gratuitamente. Os médicos recebem um teste gratuito de 30 dias, após o qual os planos de assinatura começam em $99/mês."
+    },
+    "devices": {
+      "question": "Em quais dispositivos posso usar o Docito?",
+      "answer": "O Docito funciona em todos os navegadores modernos (Chrome, Firefox, Safari, Edge) em desktop, tablet e dispositivos móveis. Também temos aplicativos móveis dedicados para iOS e Android disponíveis na App Store e Google Play."
+    },
+    "bookAppointment": {
+      "question": "Como agendar uma consulta?",
+      "answer": "Procure um médico por especialidade ou nome, veja os horários disponíveis, selecione um horário conveniente e confirme sua reserva. Você receberá confirmação instantânea por e-mail e SMS."
+    },
+    "cancelReschedule": {
+      "question": "Posso cancelar ou reagendar uma consulta?",
+      "answer": "Sim! Você pode cancelar ou reagendar consultas até 24 horas antes do horário agendado através do seu painel. Alguns médicos podem ter políticas de cancelamento diferentes, que serão mostradas ao reservar."
+    },
+    "late": {
+      "question": "E se eu me atrasar para minha consulta?",
+      "answer": "Por favor, tente chegar no horário. Se estiver atrasado, entre em contato diretamente com o consultório do médico. Para consultas virtuais, você pode participar até 10 minutos após o horário agendado, embora a sessão possa ser encurtada."
+    },
+    "videoConsultation": {
+      "question": "Como funcionam as consultas por vídeo?",
+      "answer": "As consultas por vídeo são realizadas através da nossa plataforma segura. Não precisa baixar nada! Basta clicar em \"Entrar na videochamada\" no horário da consulta e você será conectado ao seu médico via vídeo HD."
+    },
+    "paymentMethods": {
+      "question": "Quais métodos de pagamento vocês aceitam?",
+      "answer": "Aceitamos todos os principais cartões de crédito (Visa, Mastercard, Amex, Discover), cartões de débito e cartões HSA/FSA. Também trabalhamos com seguradoras e oferecemos planos de pagamento para contas maiores."
+    },
+    "insurance": {
+      "question": "Meu seguro cobre consultas no Docito?",
+      "answer": "Muitos planos de seguro cobrem telemedicina e consultas presenciais agendadas através do Docito. Verifique com sua seguradora ou procure médicos que aceitem seu seguro no perfil deles."
+    },
+    "whenCharged": {
+      "question": "Quando serei cobrado?",
+      "answer": "Para a maioria das consultas, o pagamento é processado no momento da reserva. Alguns médicos oferecem opções de pagamento após a visita. Você sempre verá os termos de pagamento antes de confirmar sua consulta."
+    },
+    "refund": {
+      "question": "Posso obter reembolso?",
+      "answer": "As políticas de reembolso variam de acordo com o fornecedor. Se você cancelar dentro do prazo permitido (geralmente 24 horas), receberá um reembolso total. Para cancelamentos fora desse prazo, os reembolsos ficam a critério do médico."
+    },
+    "videoCalls": {
+      "question": "Estou tendo problemas com videochamadas",
+      "answer": "Primeiro, verifique sua conexão com a internet e certifique-se de que as permissões da câmera/microfone estão habilitadas. Tente usar Chrome ou Safari para melhores resultados. Se os problemas persistirem, entre em contato com nosso suporte técnico 24/7."
+    },
+    "uploadDocuments": {
+      "question": "Como faço upload de documentos médicos?",
+      "answer": "Vá para seu perfil, clique em \"Registros Médicos\" e depois em \"Enviar Documento\". Você pode enviar PDFs, imagens ou documentos digitalizados. Todos os arquivos são criptografados e compatíveis com HIPAA."
+    },
+    "multipleDevices": {
+      "question": "Posso acessar minha conta de vários dispositivos?",
+      "answer": "Sim! Você pode fazer login de qualquer dispositivo. Seus dados são sincronizados com segurança em todas as plataformas em tempo real."
+    },
+    "dataSecure": {
+      "question": "Minhas informações de saúde estão seguras?",
+      "answer": "Absolutamente. O Docito é compatível com HIPAA e usa criptografia de nível militar. Seus dados são armazenados em servidores seguros com vários backups, e nunca compartilhamos suas informações sem seu consentimento explícito."
+    },
+    "whoCanSee": {
+      "question": "Quem pode ver meus registros médicos?",
+      "answer": "Apenas você e os profissionais de saúde aos quais você concedeu acesso podem visualizar seus registros. Você tem controle completo sobre quem vê suas informações e pode revogar o acesso a qualquer momento."
+    },
+    "deleteAccount": {
+      "question": "Como excluir minha conta?",
+      "answer": "Vá para Configurações > Conta > Excluir Conta. Observe que isso exclui permanentemente todos os seus dados. Para retenção de registros médicos, mantemos backups criptografados por 7 anos conforme exigido por lei, mas eles são inacessíveis a qualquer pessoa."
+    },
+    "sellData": {
+      "question": "Vocês vendem meus dados?",
+      "answer": "Nunca. Não vendemos, alugamos ou compartilhamos suas informações pessoais de saúde com terceiros para fins de marketing. Sua privacidade é nossa prioridade máxima."
+    }
+  }
+}

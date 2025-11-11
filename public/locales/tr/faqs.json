@@ -1,0 +1,102 @@
+{
+  "hero": {
+    "title": "Sıkça Sorulan Sorular",
+    "subtitle": "Docito hakkında sık sorulan soruların cevaplarını bulun"
+  },
+  "search": {
+    "placeholder": "SSS ara..."
+  },
+  "categories": {
+    "all": "Tümü",
+    "gettingStarted": "Başlangıç",
+    "appointments": "Randevular",
+    "billing": "Faturalandırma",
+    "technical": "Teknik",
+    "privacy": "Gizlilik ve Güvenlik"
+  },
+  "results": {
+    "showing": "{{count}} soru gösteriliyor",
+    "showing_other": "{{count}} soru gösteriliyor",
+    "noResults": "Aramanızla eşleşen SSS bulunamadı",
+    "clearSearch": "Aramayı Temizle"
+  },
+  "cta": {
+    "title": "Hala sorularınız mı var?",
+    "subtitle": "Destek ekibimiz size yardımcı olmaya hazır",
+    "button": "Destek İle İletişime Geç"
+  },
+  "items": {
+    "createAccount": {
+      "question": "Nasıl hesap oluştururum?",
+      "answer": "Hesap oluşturmak için ana sayfadaki \"Kayıt Ol\" düğmesine tıklayın. Hasta mı yoksa doktor mu olduğunuzu seçin, bilgilerinizi doldurun, e-postanızı doğrulayın ve hazırsınız! İşlem 2 dakikadan az sürer."
+    },
+    "isFree": {
+      "question": "Docito kullanımı ücretsiz mi?",
+      "answer": "Docito hem ücretsiz hem de premium planlar sunar. Hastalar ücretsiz olarak doktorlara göz atabilir ve randevu alabilir. Doktorlar 30 günlük ücretsiz deneme alır, bundan sonra abonelik planları 99$/ay'dan başlar."
+    },
+    "devices": {
+      "question": "Docito'yu hangi cihazlarda kullanabilirim?",
+      "answer": "Docito, masaüstü, tablet ve mobil cihazlarda tüm modern web tarayıcılarında (Chrome, Firefox, Safari, Edge) çalışır. Ayrıca App Store ve Google Play'de iOS ve Android için özel mobil uygulamalarımız mevcuttur."
+    },
+    "bookAppointment": {
+      "question": "Nasıl randevu alırım?",
+      "answer": "Uzmanlığa veya isme göre bir doktor arayın, müsait zaman dilimlerini görüntüleyin, uygun bir zaman seçin ve rezervasyonunuzu onaylayın. E-posta ve SMS ile anında onay alacaksınız."
+    },
+    "cancelReschedule": {
+      "question": "Randevumu iptal edebilir veya yeniden planlayabilir miyim?",
+      "answer": "Evet! Gösterge panelinizden planlanan zamandan 24 saat öncesine kadar randevuları iptal edebilir veya yeniden planlayabilirsiniz. Bazı doktorların farklı iptal politikaları olabilir, bunlar rezervasyon sırasında gösterilecektir."
+    },
+    "late": {
+      "question": "Randevuma geç kalırsam ne olur?",
+      "answer": "Lütfen zamanında gelmeye çalışın. Geç kalıyorsanız doğrudan doktorun ofisi ile iletişime geçin. Sanal randevular için planlanan zamandan 10 dakika sonrasına kadar katılabilirsiniz, ancak oturum kısaltılabilir."
+    },
+    "videoConsultation": {
+      "question": "Video konsültasyonları nasıl çalışır?",
+      "answer": "Video konsültasyonları güvenli platformumuz üzerinden gerçekleştirilir. İndirme gerekmez! Randevu saatinizde \"Video Görüşmesine Katıl\"a tıklayın ve HD video ile doktorunuzla bağlantı kuracaksınız."
+    },
+    "paymentMethods": {
+      "question": "Hangi ödeme yöntemlerini kabul ediyorsunuz?",
+      "answer": "Tüm büyük kredi kartlarını (Visa, Mastercard, Amex, Discover), banka kartlarını ve HSA/FSA kartlarını kabul ediyoruz. Ayrıca sigorta sağlayıcılarıyla çalışıyoruz ve büyük faturalar için ödeme planları sunuyoruz."
+    },
+    "insurance": {
+      "question": "Sigortam Docito randevularını kapsıyor mu?",
+      "answer": "Birçok sigorta planı tele-tıp ve Docito üzerinden alınan yüz yüze randevuları kapsar. Sigorta sağlayıcınıza danışın veya profillerinde sigortanızı kabul eden doktorlara bakın."
+    },
+    "whenCharged": {
+      "question": "Ne zaman ücretlendirileceğim?",
+      "answer": "Çoğu randevu için ödeme rezervasyon sırasında işlenir. Bazı doktorlar ziyaret sonrası ödeme seçenekleri sunar. Randevunuzu onaylamadan önce her zaman ödeme koşullarını göreceksiniz."
+    },
+    "refund": {
+      "question": "Para iadesi alabilir miyim?",
+      "answer": "İade politikaları sağlayıcıya göre değişir. İzin verilen süre içinde (genellikle 24 saat) iptal ederseniz, tam iade alacaksınız. Bu pencerenin dışındaki iptaller için iadeler doktorun takdirindedir."
+    },
+    "videoCalls": {
+      "question": "Video aramalarla ilgili sorun yaşıyorum",
+      "answer": "Önce internet bağlantınızı kontrol edin ve kamera/mikrofon izinlerinizin etkin olduğundan emin olun. En iyi sonuçlar için Chrome veya Safari kullanmayı deneyin. Sorunlar devam ederse 7/24 teknik desteğimizle iletişime geçin."
+    },
+    "uploadDocuments": {
+      "question": "Tıbbi belgeleri nasıl yüklerim?",
+      "answer": "Profilinize gidin, \"Tıbbi Kayıtlar\"a tıklayın, ardından \"Belge Yükle\"ye tıklayın. PDF'ler, görseller veya taranmış belgeleri yükleyebilirsiniz. Tüm dosyalar şifrelenmiştir ve HIPAA uyumludur."
+    },
+    "multipleDevices": {
+      "question": "Hesabıma birden fazla cihazdan erişebilir miyim?",
+      "answer": "Evet! Herhangi bir cihazdan giriş yapabilirsiniz. Verileriniz gerçek zamanlı olarak tüm platformlarda güvenli bir şekilde senkronize edilir."
+    },
+    "dataSecure": {
+      "question": "Sağlık bilgilerim güvende mi?",
+      "answer": "Kesinlikle. Docito HIPAA uyumludur ve askeri düzeyde şifreleme kullanır. Verileriniz birden fazla yedeklemeye sahip güvenli sunucularda saklanır ve açık rızanız olmadan bilgilerinizi asla paylaşmayız."
+    },
+    "whoCanSee": {
+      "question": "Tıbbi kayıtlarımı kimler görebilir?",
+      "answer": "Yalnızca siz ve erişim izni verdiğiniz sağlık hizmeti sağlayıcıları kayıtlarınızı görüntüleyebilir. Bilgilerinizi kimin gördüğü konusunda tam kontrole sahipsiniz ve erişimi istediğiniz zaman iptal edebilirsiniz."
+    },
+    "deleteAccount": {
+      "question": "Hesabımı nasıl silerim?",
+      "answer": "Ayarlar > Hesap > Hesabı Sil'e gidin. Bunun tüm verilerinizi kalıcı olarak sildiğini unutmayın. Tıbbi kayıt saklama için, yasaların gerektirdiği şekilde 7 yıl boyunca şifrelenmiş yedeklemeler tutuyoruz, ancak bunlara kimse erişemez."
+    },
+    "sellData": {
+      "question": "Verilerimi satıyor musunuz?",
+      "answer": "Asla. Kişisel sağlık bilgilerinizi pazarlama amaçlı üçüncü taraflarla satmıyor, kiralamıyor veya paylaşmıyoruz. Gizliliğiniz en önemli önceliğimizdir."
+    }
+  }
+}

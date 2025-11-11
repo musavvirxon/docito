@@ -1,0 +1,102 @@
+{
+  "hero": {
+    "title": "Ko'p so'raladigan savollar",
+    "subtitle": "Docito haqida ko'p so'raladigan savollarga javoblar toping"
+  },
+  "search": {
+    "placeholder": "Savollarni qidirish..."
+  },
+  "categories": {
+    "all": "Hammasi",
+    "gettingStarted": "Boshlash",
+    "appointments": "Uchrashuvlar",
+    "billing": "Hisob-kitob",
+    "technical": "Texnik",
+    "privacy": "Maxfiylik va xavfsizlik"
+  },
+  "results": {
+    "showing": "{{count}} savol ko'rsatilmoqda",
+    "showing_other": "{{count}} savol ko'rsatilmoqda",
+    "noResults": "Qidiruvingizga mos savollar topilmadi",
+    "clearSearch": "Qidiruvni tozalash"
+  },
+  "cta": {
+    "title": "Hali ham savollaringiz bormi?",
+    "subtitle": "Bizning yordam jamoamiz sizga yordam berishga tayyor",
+    "button": "Yordam bilan bog'lanish"
+  },
+  "items": {
+    "createAccount": {
+      "question": "Hisob qanday yaratiladi?",
+      "answer": "Hisob yaratish uchun bosh sahifadagi \"Ro'yxatdan o'tish\" tugmasini bosing. Bemor yoki shifokor ekanligingizni tanlang, ma'lumotlaringizni to'ldiring, emailingizni tasdiqlang va tayyor! Jarayon 2 daqiqadan kam vaqt oladi."
+    },
+    "isFree": {
+      "question": "Docito foydalanish bepulmi?",
+      "answer": "Docito bepul va premium rejalarni taklif qiladi. Bemorlar bepul shifokorlarni ko'rib chiqishi va uchrashuvlarni band qilishi mumkin. Shifokorlar 30 kunlik bepul sinov olishadi, shundan keyin obuna rejalari 99$/oydan boshlanadi."
+    },
+    "devices": {
+      "question": "Docito'dan qaysi qurilmalarda foydalanishim mumkin?",
+      "answer": "Docito barcha zamonaviy veb-brauzerlarda (Chrome, Firefox, Safari, Edge) ish stoli, planshet va mobil qurilmalarda ishlaydi. Shuningdek, App Store va Google Play'da iOS va Android uchun maxsus mobil ilovalarimiz mavjud."
+    },
+    "bookAppointment": {
+      "question": "Uchrashuvni qanday band qilaman?",
+      "answer": "Mutaxassislik yoki ism bo'yicha shifokorni qidiring, mavjud vaqt oralig'ini ko'ring, qulay vaqtni tanlang va bandingizni tasdiqlang. Siz email va SMS orqali darhol tasdiqlash olasiz."
+    },
+    "cancelReschedule": {
+      "question": "Uchrashuvni bekor qilishim yoki qayta rejalashtirish mumkinmi?",
+      "answer": "Ha! Siz boshqaruv panelidan rejalashtirilgan vaqtdan 24 soat oldin uchrashuvlarni bekor qilishingiz yoki qayta rejalashtirishingiz mumkin. Ba'zi shifokorlarning turli bekor qilish siyosatlari bo'lishi mumkin, ular band qilishda ko'rsatiladi."
+    },
+    "late": {
+      "question": "Uchrashuvimga kech qolsam nima bo'ladi?",
+      "answer": "Iltimos, o'z vaqtida kelishga harakat qiling. Agar kech qolayotgan bo'lsangiz, shifokorning ofisi bilan to'g'ridan-to'g'ri bog'laning. Virtual uchrashuvlar uchun rejalashtirilgan vaqtdan 10 daqiqa keyingacha qo'shilishingiz mumkin, ammo sessiya qisqartirilishi mumkin."
+    },
+    "videoConsultation": {
+      "question": "Video konsultatsiyalar qanday ishlaydi?",
+      "answer": "Video konsultatsiyalar bizning xavfsiz platformamiz orqali o'tkaziladi. Yuklab olish kerak emas! Uchrashuvingiz vaqtida \"Video qo'ng'iroqqa qo'shilish\"ni bosing va siz shifokor bilan HD video orqali bog'lanasiz."
+    },
+    "paymentMethods": {
+      "question": "Qanday to'lov usullarini qabul qilasiz?",
+      "answer": "Biz barcha asosiy kredit kartalarini (Visa, Mastercard, Amex, Discover), debet kartalarini va HSA/FSA kartalarini qabul qilamiz. Shuningdek, sug'urta provayderlari bilan ishlaymiz va katta hisob-fakturalar uchun to'lov rejalarini taklif qilamiz."
+    },
+    "insurance": {
+      "question": "Mening sug'urtam Docito uchrashuvlarini qoplaydimi?",
+      "answer": "Ko'pgina sug'urta rejalari telemeditsina va Docito orqali band qilingan shaxsiy uchrashuvlarni qoplaydi. Sug'urta provayder bilan tekshiring yoki profilida sug'urtangizni qabul qiluvchi shifokorlarni qidiring."
+    },
+    "whenCharged": {
+      "question": "Qachon to'lov olinadi?",
+      "answer": "Ko'pgina uchrashuvlar uchun to'lov band qilish vaqtida qayta ishlanadi. Ba'zi shifokorlar tashrif keyin to'lash variantlarini taklif qiladi. Uchrashuvingizni tasdiqlashdan oldin doim to'lov shartlarini ko'rasiz."
+    },
+    "refund": {
+      "question": "Qaytarib olishim mumkinmi?",
+      "answer": "Qaytarish siyosati provayder bo'yicha farq qiladi. Agar ruxsat etilgan vaqt oralig'ida (odatda 24 soat) bekor qilsangiz, to'liq qaytarib olasiz. Bu oynadan tashqarida bekor qilishlar uchun qaytarish shifokorning qaroriga bog'liq."
+    },
+    "videoCalls": {
+      "question": "Video qo'ng'iroqlarda muammo bor",
+      "answer": "Avval internet aloqangizni tekshiring va kamera/mikrofon ruxsatlarining yoqilganligiga ishonch hosil qiling. Eng yaxshi natijalar uchun Chrome yoki Safari'dan foydalanib ko'ring. Muammolar davom etsa, 24/7 texnik yordamimizga murojaat qiling."
+    },
+    "uploadDocuments": {
+      "question": "Tibbiy hujjatlarni qanday yuklash mumkin?",
+      "answer": "Profilingizga o'ting, \"Tibbiy yozuvlar\"ni bosing, keyin \"Hujjat yuklash\"ni bosing. Siz PDF, rasmlar yoki skanerlangan hujjatlarni yuklashingiz mumkin. Barcha fayllar shifrlangan va HIPAA-ga mos keladi."
+    },
+    "multipleDevices": {
+      "question": "Hisobimga bir nechta qurilmadan kirishim mumkinmi?",
+      "answer": "Ha! Siz har qanday qurilmadan kirishingiz mumkin. Ma'lumotlaringiz barcha platformalarda real vaqtda xavfsiz tarzda sinxronlashtiriladi."
+    },
+    "dataSecure": {
+      "question": "Mening sog'liqni saqlash ma'lumotlarim xavfsizmi?",
+      "answer": "Albatta. Docito HIPAA-ga mos keladi va harbiy darajadagi shifrlashdan foydalanadi. Sizning ma'lumotlaringiz ko'p nusxalari bilan xavfsiz serverlarda saqlanadi va biz hech qachon ma'lumotlaringizni aniq roziligingiz bo'lmasa baham ko'rmaymiz."
+    },
+    "whoCanSee": {
+      "question": "Mening tibbiy yozuvlarimni kim ko'rishi mumkin?",
+      "answer": "Faqat siz va kirish huquqini bergan tibbiy xizmat ko'rsatuvchilar yozuvlaringizni ko'rishi mumkin. Siz ma'lumotlaringizni kim ko'rishi ustidan to'liq nazoratga egasiz va istalgan vaqtda kirishni bekor qilishingiz mumkin."
+    },
+    "deleteAccount": {
+      "question": "Hisobimni qanday o'chiraman?",
+      "answer": "Sozlamalar > Hisob > Hisobni o'chirish ga o'ting. Bu barcha ma'lumotlaringizni doimiy ravishda o'chirishini unutmang. Tibbiy yozuvlarni saqlash uchun biz qonun talab qilganidek 7 yil davomida shifrlangan nusxalarni saqlaymiz, lekin ularga hech kim kira olmaydi."
+    },
+    "sellData": {
+      "question": "Ma'lumotlarimni sotasizmi?",
+      "answer": "Hech qachon. Biz shaxsiy sog'liqni saqlash ma'lumotlaringizni marketing maqsadida uchinchi tomonlarga sotmaymiz, ijaraga bermaymiz yoki baham ko'rmaymiz. Maxfiyligingiz bizning asosiy ustuvorligimizdir."
+    }
+  }
+}

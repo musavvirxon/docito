@@ -1,0 +1,102 @@
+{
+  "hero": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Find answers to common questions about Docito"
+  },
+  "search": {
+    "placeholder": "Search FAQs..."
+  },
+  "categories": {
+    "all": "All",
+    "gettingStarted": "Getting Started",
+    "appointments": "Appointments",
+    "billing": "Billing",
+    "technical": "Technical",
+    "privacy": "Privacy & Security"
+  },
+  "results": {
+    "showing": "Showing {{count}} question_one",
+    "showing_other": "Showing {{count}} questions",
+    "noResults": "No FAQs found matching your search",
+    "clearSearch": "Clear Search"
+  },
+  "cta": {
+    "title": "Still have questions?",
+    "subtitle": "Our support team is ready to help you",
+    "button": "Contact Support"
+  },
+  "items": {
+    "createAccount": {
+      "question": "How do I create an account?",
+      "answer": "To create an account, click the \"Sign Up\" button on the homepage. Choose whether you're a patient or doctor, fill in your details, verify your email, and you're all set! The process takes less than 2 minutes."
+    },
+    "isFree": {
+      "question": "Is Docito free to use?",
+      "answer": "Docito offers both free and premium plans. Patients can browse doctors and book appointments for free. Doctors get a 30-day free trial, after which subscription plans start at $99/month."
+    },
+    "devices": {
+      "question": "What devices can I use Docito on?",
+      "answer": "Docito works on all modern web browsers (Chrome, Firefox, Safari, Edge) on desktop, tablet, and mobile devices. We also have dedicated iOS and Android mobile apps available in the App Store and Google Play."
+    },
+    "bookAppointment": {
+      "question": "How do I book an appointment?",
+      "answer": "Search for a doctor by specialty or name, view their available time slots, select a convenient time, and confirm your booking. You'll receive instant confirmation via email and SMS."
+    },
+    "cancelReschedule": {
+      "question": "Can I cancel or reschedule an appointment?",
+      "answer": "Yes! You can cancel or reschedule appointments up to 24 hours before the scheduled time through your dashboard. Some doctors may have different cancellation policies, which will be shown when booking."
+    },
+    "late": {
+      "question": "What if I'm late to my appointment?",
+      "answer": "Please try to arrive on time. If you're running late, contact the doctor's office directly. For virtual appointments, you can join up to 10 minutes after the scheduled time, though the session may be shortened."
+    },
+    "videoConsultation": {
+      "question": "How do video consultations work?",
+      "answer": "Video consultations are conducted through our secure platform. No downloads needed! Just click \"Join Video Call\" at your appointment time, and you'll be connected with your doctor via HD video."
+    },
+    "paymentMethods": {
+      "question": "What payment methods do you accept?",
+      "answer": "We accept all major credit cards (Visa, Mastercard, Amex, Discover), debit cards, and HSA/FSA cards. We also work with insurance providers and offer payment plans for larger bills."
+    },
+    "insurance": {
+      "question": "Does my insurance cover Docito appointments?",
+      "answer": "Many insurance plans cover telemedicine and in-person appointments booked through Docito. Check with your insurance provider or look for doctors who accept your insurance in their profile."
+    },
+    "whenCharged": {
+      "question": "When will I be charged?",
+      "answer": "For most appointments, payment is processed at the time of booking. Some doctors offer pay-after-visit options. You'll always see the payment terms before confirming your appointment."
+    },
+    "refund": {
+      "question": "Can I get a refund?",
+      "answer": "Refund policies vary by provider. If you cancel within the allowed timeframe (usually 24 hours), you'll receive a full refund. For cancellations outside this window, refunds are at the doctor's discretion."
+    },
+    "videoCalls": {
+      "question": "I'm having trouble with video calls",
+      "answer": "First, check your internet connection and ensure your camera/microphone permissions are enabled. Try using Chrome or Safari for best results. If issues persist, contact our 24/7 technical support."
+    },
+    "uploadDocuments": {
+      "question": "How do I upload medical documents?",
+      "answer": "Go to your profile, click \"Medical Records,\" then \"Upload Document.\" You can upload PDFs, images, or scanned documents. All files are encrypted and HIPAA-compliant."
+    },
+    "multipleDevices": {
+      "question": "Can I access my account from multiple devices?",
+      "answer": "Yes! You can log in from any device. Your data is securely synced across all platforms in real-time."
+    },
+    "dataSecure": {
+      "question": "Is my health information secure?",
+      "answer": "Absolutely. Docito is HIPAA-compliant and uses military-grade encryption. Your data is stored on secure servers with multiple backups, and we never share your information without your explicit consent."
+    },
+    "whoCanSee": {
+      "question": "Who can see my medical records?",
+      "answer": "Only you and healthcare providers you've granted access to can view your records. You have complete control over who sees your information and can revoke access at any time."
+    },
+    "deleteAccount": {
+      "question": "How do I delete my account?",
+      "answer": "Go to Settings > Account > Delete Account. Note that this permanently deletes all your data. For medical record retention, we keep encrypted backups for 7 years as required by law, but they're inaccessible to anyone."
+    },
+    "sellData": {
+      "question": "Do you sell my data?",
+      "answer": "Never. We do not sell, rent, or share your personal health information with third parties for marketing purposes. Your privacy is our top priority."
+    }
+  }
+}
