@@ -1,0 +1,32 @@
+{
+  "hero": {
+    "backButton": "Voltar ao Início",
+    "title": "Capacitando Conexões de Saúde",
+    "subtitle": "Simplificando a maneira como os pacientes encontram médicos e clínicas confiáveis, garantindo transparência, acessibilidade e os mais altos padrões de privacidade de dados."
+  },
+  "technology": {
+    "title": "Nossa Tecnologia",
+    "description": "Construída em infraestrutura segura e moderna com atualizações em tempo real e criptografia de ponta a ponta. Nossa plataforma aproveita o Supabase para gerenciamento confiável de dados, garantindo 99,9% de tempo de atividade e segurança de nível empresarial para todos os dados de saúde.",
+    "features": {
+      "encrypted": {
+        "title": "Armazenamento Criptografado",
+        "description": "Todos os dados criptografados em repouso e em trânsito"
+      },
+      "realtime": {
+        "title": "Sincronização em Tempo Real",
+        "description": "Atualizações instantâneas em todos os dispositivos"
+      },
+      "access": {
+        "title": "Acesso Baseado em Funções",
+        "description": "Permissões granulares para segurança de dados"
+      }
+    }
+  },
+  "contact": {
+    "title": "Entre em Contato",
+    "subtitle": "Tem perguntas ou está interessado em fazer parceria conosco?",
+    "generalInquiries": "Consultas Gerais",
+    "partnerships": "Parcerias Comerciais",
+    "legalPolicies": "Ver Políticas Legais"
+  }
+}

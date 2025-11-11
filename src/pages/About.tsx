@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Target, Eye, Heart, Shield } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { useContentTranslation } from '@/hooks/useContentTranslation';
 
 interface AboutSection {
   id: string;
@@ -22,6 +24,8 @@ const sectionIcons: Record<string, any> = {
 };
 
 export default function About() {
+  const { t } = useTranslation(['common', 'about']);
+  const { getTranslatedField } = useContentTranslation();
   const [sections, setSections] = useState<AboutSection[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -54,16 +58,15 @@ export default function About() {
           <Link to="/">
             <Button variant="ghost" size="sm" className="mb-8 text-primary-foreground hover:bg-white/20">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Home
+              {t('about:hero.backButton')}
             </Button>
           </Link>
           
           <h1 className="text-5xl md:text-6xl font-bold mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            Empowering Healthcare Connections
+            {t('about:hero.title')}
           </h1>
           <p className="text-xl md:text-2xl text-primary-foreground/90 max-w-3xl animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
-            Simplifying the way patients find trusted doctors and clinics while ensuring transparency, 
-            accessibility, and the highest standards of data privacy.
+            {t('about:hero.subtitle')}
           </p>
         </div>
       </div>
@@ -97,12 +100,12 @@ export default function About() {
                       <div className="p-2 rounded-lg bg-primary/10">
                         <Icon className="h-6 w-6 text-primary" />
                       </div>
-                      <CardTitle className="text-2xl">{section.title}</CardTitle>
+                      <CardTitle className="text-2xl">{getTranslatedField(section, 'title')}</CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="prose prose-slate dark:prose-invert max-w-none">
-                      <ReactMarkdown>{section.content}</ReactMarkdown>
+                      <ReactMarkdown>{getTranslatedField(section, 'content')}</ReactMarkdown>
                     </div>
                   </CardContent>
                 </Card>
@@ -116,32 +119,30 @@ export default function About() {
           <CardHeader>
             <CardTitle className="text-2xl flex items-center gap-2">
               <Shield className="h-6 w-6 text-accent" />
-              Our Technology
+              {t('about:technology.title')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground leading-relaxed">
-              Built on secure, modern infrastructure with real-time updates and end-to-end encryption. 
-              Our platform leverages Supabase for reliable data management, ensuring 99.9% uptime 
-              and enterprise-grade security for all healthcare data.
+              {t('about:technology.description')}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
               <div className="p-4 rounded-lg bg-background/50">
-                <h4 className="font-semibold mb-2">Encrypted Storage</h4>
+                <h4 className="font-semibold mb-2">{t('about:technology.features.encrypted.title')}</h4>
                 <p className="text-sm text-muted-foreground">
-                  All data encrypted at rest and in transit
+                  {t('about:technology.features.encrypted.description')}
                 </p>
               </div>
               <div className="p-4 rounded-lg bg-background/50">
-                <h4 className="font-semibold mb-2">Real-Time Sync</h4>
+                <h4 className="font-semibold mb-2">{t('about:technology.features.realtime.title')}</h4>
                 <p className="text-sm text-muted-foreground">
-                  Instant updates across all devices
+                  {t('about:technology.features.realtime.description')}
                 </p>
               </div>
               <div className="p-4 rounded-lg bg-background/50">
-                <h4 className="font-semibold mb-2">Role-Based Access</h4>
+                <h4 className="font-semibold mb-2">{t('about:technology.features.access.title')}</h4>
                 <p className="text-sm text-muted-foreground">
-                  Granular permissions for data security
+                  {t('about:technology.features.access.description')}
                 </p>
               </div>
             </div>
@@ -150,16 +151,16 @@ export default function About() {
 
         {/* Contact Section */}
         <div className="mt-12 text-center">
-          <h3 className="text-2xl font-semibold mb-4">Get in Touch</h3>
+          <h3 className="text-2xl font-semibold mb-4">{t('about:contact.title')}</h3>
           <p className="text-muted-foreground mb-6">
-            Have questions or interested in partnering with us?
+            {t('about:contact.subtitle')}
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <Button variant="default" asChild>
-              <a href="mailto:info@docito.com">General Inquiries</a>
+              <a href="mailto:info@docito.com">{t('about:contact.generalInquiries')}</a>
             </Button>
             <Button variant="outline" asChild>
-              <a href="mailto:partnerships@docito.com">Business Partnerships</a>
+              <a href="mailto:partnerships@docito.com">{t('about:contact.partnerships')}</a>
             </Button>
           </div>
         </div>
@@ -167,7 +168,7 @@ export default function About() {
         <div className="mt-8 text-center">
           <Link to="/legal">
             <Button variant="ghost" size="sm">
-              View Legal Policies
+              {t('about:contact.legalPolicies')}
             </Button>
           </Link>
         </div>

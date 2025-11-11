@@ -1,0 +1,32 @@
+{
+  "hero": {
+    "backButton": "Bosh sahifaga qaytish",
+    "title": "Tibbiy aloqalarni kuchaytirish",
+    "subtitle": "Bemorlarning ishonchli shifokorlar va klinikalarni topish usulini soddalashtirib, shaffoflik, mavjudlik va ma'lumotlar maxfiyligining eng yuqori standartlarini ta'minlash."
+  },
+  "technology": {
+    "title": "Bizning texnologiyamiz",
+    "description": "Real vaqt yangilanishlari va uchdan-uchgacha shifrlash bilan xavfsiz, zamonaviy infratuzilma asosida qurilgan. Bizning platformamiz ishonchli ma'lumotlarni boshqarish uchun Supabase'dan foydalanadi, barcha tibbiy ma'lumotlar uchun 99.9% ishlash vaqti va korxona darajasidagi xavfsizlikni ta'minlaydi.",
+    "features": {
+      "encrypted": {
+        "title": "Shifrlangan saqlash",
+        "description": "Barcha ma'lumotlar tinch holatda va uzatishda shifrlangan"
+      },
+      "realtime": {
+        "title": "Real vaqtda sinxronizatsiya",
+        "description": "Barcha qurilmalarda tezkor yangilanishlar"
+      },
+      "access": {
+        "title": "Rol asosida kirish",
+        "description": "Ma'lumotlar xavfsizligi uchun batafsil ruxsatlar"
+      }
+    }
+  },
+  "contact": {
+    "title": "Bog'lanish",
+    "subtitle": "Savollaringiz bormi yoki biz bilan hamkorlik qilishga qiziqasizmi?",
+    "generalInquiries": "Umumiy so'rovlar",
+    "partnerships": "Biznes hamkorligi",
+    "legalPolicies": "Huquqiy siyosatlarni ko'rish"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "hero": {
+    "backButton": "Ana Sayfaya Dön",
+    "title": "Sağlık Bağlantılarını Güçlendirme",
+    "subtitle": "Hastaların güvenilir doktorları ve klinikleri bulma şeklini basitleştirerek şeffaflık, erişilebilirlik ve en yüksek veri gizliliği standartlarını sağlama."
+  },
+  "technology": {
+    "title": "Teknolojimiz",
+    "description": "Gerçek zamanlı güncellemeler ve uçtan uca şifreleme ile güvenli, modern altyapı üzerine kurulmuştur. Platformumuz, tüm sağlık verileri için %99,9 çalışma süresi ve kurumsal düzeyde güvenlik sağlayarak güvenilir veri yönetimi için Supabase'i kullanır.",
+    "features": {
+      "encrypted": {
+        "title": "Şifreli Depolama",
+        "description": "Tüm veriler dinlenme halinde ve aktarım sırasında şifrelenir"
+      },
+      "realtime": {
+        "title": "Gerçek Zamanlı Senkronizasyon",
+        "description": "Tüm cihazlarda anında güncellemeler"
+      },
+      "access": {
+        "title": "Rol Tabanlı Erişim",
+        "description": "Veri güvenliği için ayrıntılı izinler"
+      }
+    }
+  },
+  "contact": {
+    "title": "İletişime Geçin",
+    "subtitle": "Sorularınız mı var veya bizimle ortaklık yapmakla ilgileniyor musunuz?",
+    "generalInquiries": "Genel Sorular",
+    "partnerships": "İş Ortaklıkları",
+    "legalPolicies": "Yasal Politikaları Görüntüle"
+  }
+}

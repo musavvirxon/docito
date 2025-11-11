@@ -1,0 +1,32 @@
+{
+  "hero": {
+    "backButton": "返回主页",
+    "title": "增强医疗保健联系",
+    "subtitle": "简化患者查找值得信赖的医生和诊所的方式，同时确保透明度、可访问性和最高标准的数据隐私。"
+  },
+  "technology": {
+    "title": "我们的技术",
+    "description": "建立在具有实时更新和端到端加密的安全、现代化基础设施上。我们的平台利用 Supabase 进行可靠的数据管理，确保所有医疗保健数据的 99.9% 正常运行时间和企业级安全性。",
+    "features": {
+      "encrypted": {
+        "title": "加密存储",
+        "description": "所有数据在静止和传输中都已加密"
+      },
+      "realtime": {
+        "title": "实时同步",
+        "description": "所有设备上的即时更新"
+      },
+      "access": {
+        "title": "基于角色的访问",
+        "description": "数据安全的细粒度权限"
+      }
+    }
+  },
+  "contact": {
+    "title": "联系我们",
+    "subtitle": "有问题或有兴趣与我们合作？",
+    "generalInquiries": "一般咨询",
+    "partnerships": "商业伙伴关系",
+    "legalPolicies": "查看法律政策"
+  }
+}

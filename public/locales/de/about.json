@@ -1,0 +1,32 @@
+{
+  "hero": {
+    "backButton": "Zurück zur Startseite",
+    "title": "Stärkung von Gesundheitsverbindungen",
+    "subtitle": "Vereinfachung der Art und Weise, wie Patienten vertrauenswürdige Ärzte und Kliniken finden, während Transparenz, Zugänglichkeit und höchste Standards für Datenschutz gewährleistet werden."
+  },
+  "technology": {
+    "title": "Unsere Technologie",
+    "description": "Aufgebaut auf sicherer, moderner Infrastruktur mit Echtzeit-Updates und Ende-zu-Ende-Verschlüsselung. Unsere Plattform nutzt Supabase für zuverlässiges Datenmanagement und gewährleistet 99,9% Betriebszeit und Sicherheit auf Unternehmensniveau für alle Gesundheitsdaten.",
+    "features": {
+      "encrypted": {
+        "title": "Verschlüsselte Speicherung",
+        "description": "Alle Daten sind im Ruhezustand und während der Übertragung verschlüsselt"
+      },
+      "realtime": {
+        "title": "Echtzeit-Synchronisation",
+        "description": "Sofortige Updates auf allen Geräten"
+      },
+      "access": {
+        "title": "Rollenbasierter Zugriff",
+        "description": "Granulare Berechtigungen für Datensicherheit"
+      }
+    }
+  },
+  "contact": {
+    "title": "Kontaktieren Sie uns",
+    "subtitle": "Haben Sie Fragen oder Interesse an einer Partnerschaft mit uns?",
+    "generalInquiries": "Allgemeine Anfragen",
+    "partnerships": "Geschäftspartnerschaften",
+    "legalPolicies": "Rechtsrichtlinien anzeigen"
+  }
+}

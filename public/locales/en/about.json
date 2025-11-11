@@ -1,0 +1,32 @@
+{
+  "hero": {
+    "backButton": "Back to Home",
+    "title": "Empowering Healthcare Connections",
+    "subtitle": "Simplifying the way patients find trusted doctors and clinics while ensuring transparency, accessibility, and the highest standards of data privacy."
+  },
+  "technology": {
+    "title": "Our Technology",
+    "description": "Built on secure, modern infrastructure with real-time updates and end-to-end encryption. Our platform leverages Supabase for reliable data management, ensuring 99.9% uptime and enterprise-grade security for all healthcare data.",
+    "features": {
+      "encrypted": {
+        "title": "Encrypted Storage",
+        "description": "All data encrypted at rest and in transit"
+      },
+      "realtime": {
+        "title": "Real-Time Sync",
+        "description": "Instant updates across all devices"
+      },
+      "access": {
+        "title": "Role-Based Access",
+        "description": "Granular permissions for data security"
+      }
+    }
+  },
+  "contact": {
+    "title": "Get in Touch",
+    "subtitle": "Have questions or interested in partnering with us?",
+    "generalInquiries": "General Inquiries",
+    "partnerships": "Business Partnerships",
+    "legalPolicies": "View Legal Policies"
+  }
+}
