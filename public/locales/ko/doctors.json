@@ -39,12 +39,11 @@
     "fourStars": "4+ 별",
     "fourHalfStars": "4.5+ 별",
     "searching": "검색 중...",
-    "doctorsFound": "{{count}}명의 의사를 찾았습니다",
+    "foundText": "명의 의사를 찾았습니다",
     "showingVerified": "검증된 의료 전문가 표시 중",
     "noDoctors": "기준과 일치하는 의사를 찾을 수 없습니다",
-    "doctorPrefix": "Dr.",
     "available": "예약 가능",
-    "consultationFee": "진료비: ${{fee}}",
+    "consultationLabel": "진료비",
     "bookNow": "지금 예약"
   },
   "specialties": {

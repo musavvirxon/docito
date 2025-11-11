@@ -39,12 +39,11 @@
     "fourStars": "4+ звезд",
     "fourHalfStars": "4,5+ звезд",
     "searching": "Поиск...",
-    "doctorsFound": "Найдено врачей: {{count}}",
+    "foundText": "врачей найдено",
     "showingVerified": "Показаны проверенные специалисты здравоохранения",
     "noDoctors": "Врачи, соответствующие вашим критериям, не найдены",
-    "doctorPrefix": "Др.",
     "available": "Доступен для записи",
-    "consultationFee": "Консультация: ${{fee}}",
+    "consultationLabel": "Консультация",
     "bookNow": "Записаться"
   },
   "specialties": {

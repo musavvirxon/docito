@@ -39,12 +39,11 @@
     "fourStars": "4+ Yulduz",
     "fourHalfStars": "4.5+ Yulduz",
     "searching": "Qidirilmoqda...",
-    "doctorsFound": "{{count}} Shifokor Topildi",
+    "foundText": "Shifokor Topildi",
     "showingVerified": "Tasdiqlangan tibbiy mutaxassislar ko'rsatilmoqda",
     "noDoctors": "Mezonlaringizga mos shifokorlar topilmadi",
-    "doctorPrefix": "Dr.",
     "available": "Qabulga yozilish mumkin",
-    "consultationFee": "Konsultatsiya: ${{fee}}",
+    "consultationLabel": "Konsultatsiya",
     "bookNow": "Hozir Yozilish"
   },
   "specialties": {

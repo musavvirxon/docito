@@ -39,12 +39,11 @@
     "fourStars": "4+ 星",
     "fourHalfStars": "4.5+ 星",
     "searching": "搜索中...",
-    "doctorsFound": "找到 {{count}} 位医生",
+    "foundText": "位医生",
     "showingVerified": "显示经过验证的医疗专业人员",
     "noDoctors": "未找到符合您条件的医生",
-    "doctorPrefix": "Dr.",
     "available": "可预约",
-    "consultationFee": "咨询费: ${{fee}}",
+    "consultationLabel": "咨询费",
     "bookNow": "立即预约"
   },
   "specialties": {

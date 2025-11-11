@@ -167,7 +167,7 @@ export default function SearchDoctors() {
       <div className="container mx-auto px-4 py-12">
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-foreground">
-            {isLoading ? t('page.searching') : t('page.doctorsFound', { count: doctors?.length || 0 })}
+            {isLoading ? t('page.searching') : `${doctors?.length || 0} ${t('page.foundText')}`}
           </h2>
           <p className="text-muted-foreground">{t('page.showingVerified')}</p>
         </div>
@@ -219,7 +219,7 @@ function DoctorCard({ doctor, navigate }: any) {
           {doctor.full_name?.charAt(0) || 'D'}
         </div>
         <div className="flex-1">
-          <h3 className="text-lg font-bold text-foreground">{t('page.doctorPrefix')} {doctor.full_name}</h3>
+          <h3 className="text-lg font-bold text-foreground">Dr. {doctor.full_name}</h3>
           <p className="text-sm text-primary font-medium">{doctor.specialty}</p>
           <div className="flex items-center gap-1 mt-1">
             <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
@@ -235,7 +235,7 @@ function DoctorCard({ doctor, navigate }: any) {
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <DollarSign className="w-4 h-4" />
-          <span>{t('page.consultationFee', { fee: doctor.consultation_fee || 100 })}</span>
+          <span>{t('page.consultationLabel')}: ${doctor.consultation_fee || 100}</span>
         </div>
       </div>
 

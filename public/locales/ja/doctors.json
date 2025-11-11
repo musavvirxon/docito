@@ -39,12 +39,11 @@
     "fourStars": "4つ星以上",
     "fourHalfStars": "4.5つ星以上",
     "searching": "検索中...",
-    "doctorsFound": "{{count}}人の医師が見つかりました",
+    "foundText": "人の医師が見つかりました",
     "showingVerified": "認証済み医療専門家を表示中",
     "noDoctors": "条件に一致する医師が見つかりませんでした",
-    "doctorPrefix": "Dr.",
     "available": "予約可能",
-    "consultationFee": "診察料: ${{fee}}",
+    "consultationLabel": "診察料",
     "bookNow": "今すぐ予約"
   },
   "specialties": {

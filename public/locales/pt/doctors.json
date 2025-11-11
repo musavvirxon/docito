@@ -39,12 +39,11 @@
     "fourStars": "4+ Estrelas",
     "fourHalfStars": "4,5+ Estrelas",
     "searching": "Buscando...",
-    "doctorsFound": "{{count}} Médicos Encontrados",
+    "foundText": "Médicos Encontrados",
     "showingVerified": "Mostrando profissionais de saúde verificados",
     "noDoctors": "Nenhum médico encontrado com seus critérios",
-    "doctorPrefix": "Dr.",
     "available": "Disponível para consultas",
-    "consultationFee": "Consulta: ${{fee}}",
+    "consultationLabel": "Consulta",
     "bookNow": "Reservar Agora"
   },
   "specialties": {

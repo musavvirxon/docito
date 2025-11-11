@@ -39,12 +39,11 @@
     "fourStars": "4+ نجوم",
     "fourHalfStars": "4.5+ نجوم",
     "searching": "جاري البحث...",
-    "doctorsFound": "تم العثور على {{count}} طبيب",
+    "foundText": "طبيب تم العثور عليه",
     "showingVerified": "عرض المتخصصين في الرعاية الصحية المعتمدين",
     "noDoctors": "لم يتم العثور على أطباء يطابقون معاييرك",
-    "doctorPrefix": "د.",
     "available": "متاح للمواعيد",
-    "consultationFee": "الاستشارة: ${{fee}}",
+    "consultationLabel": "الاستشارة",
     "bookNow": "احجز الآن"
   },
   "specialties": {

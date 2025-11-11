@@ -39,12 +39,11 @@
     "fourStars": "4+ Yıldız",
     "fourHalfStars": "4,5+ Yıldız",
     "searching": "Aranıyor...",
-    "doctorsFound": "{{count}} Doktor Bulundu",
+    "foundText": "Doktor Bulundu",
     "showingVerified": "Doğrulanmış sağlık uzmanları gösteriliyor",
     "noDoctors": "Kriterlerinize uygun doktor bulunamadı",
-    "doctorPrefix": "Dr.",
     "available": "Randevu için müsait",
-    "consultationFee": "Muayene: ${{fee}}",
+    "consultationLabel": "Muayene",
     "bookNow": "Şimdi Rezerve Et"
   },
   "specialties": {
