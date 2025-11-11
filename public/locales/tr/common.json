@@ -55,5 +55,27 @@
     "privacy": "Gizlilik Politikası",
     "terms": "Kullanım Şartları",
     "contact": "Bize Ulaşın"
+  },
+  "cookies": {
+    "title": "Gizliliğinize Değer Veriyoruz",
+    "description": "Tarayıcı deneyiminizi geliştirmek, kişiselleştirilmiş içerik sunmak ve trafiğimizi analiz etmek için çerezleri kullanıyoruz. \"Tümünü Kabul Et\" seçeneğine tıklayarak çerez kullanımımızı kabul etmiş olursunuz.",
+    "acceptAll": "Tümünü Kabul Et",
+    "essentialOnly": "Yalnızca Gerekli",
+    "customize": "Özelleştir",
+    "settings": {
+      "title": "Çerez Ayarları",
+      "description": "Çerez tercihlerinizi aşağıda özelleştirin. Temel çerezler platformun çalışması için gereklidir.",
+      "essential": "Temel Çerezler",
+      "essentialDesc": "Giriş ve temel işlevler için gereklidir",
+      "analytics": "Analitik Çerezler",
+      "analyticsDesc": "Platformu geliştirmemize yardımcı olur",
+      "marketing": "Pazarlama Çerezleri",
+      "marketingDesc": "Kişiselleştirilmiş içerik ve reklamlar",
+      "savePreferences": "Tercihleri Kaydet"
+    },
+    "toast": {
+      "saved": "Çerez tercihleri kaydedildi",
+      "error": "Tercihler kaydedilemedi"
+    }
   }
 }
