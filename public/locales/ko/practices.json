@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "의료 시설 찾기",
+    "subtitle": "근처의 클리닉, 병원 및 의료 시설을 찾아보세요",
+    "searchPlaceholder": "시설 검색...",
+    "locationPlaceholder": "위치",
+    "searching": "검색 중...",
+    "practicesFound": "{{count}}개의 시설을 찾았습니다",
+    "notFound": {
+      "description": "조건에 맞는 시설을 찾을 수 없습니다",
+      "clearFilters": "필터 지우기"
+    }
+  },
+  "types": {
+    "all": "모든 유형",
+    "clinic": "클리닉",
+    "dental": "치과",
+    "hospital": "병원",
+    "diagnostic": "진단 센터",
+    "urgentCare": "응급 진료",
+    "medicalCenter": "의료 센터"
+  },
+  "card": {
+    "locationAvailable": "위치 사용 가능",
+    "reviews": "리뷰",
+    "visitWebsite": "웹사이트 방문",
+    "viewPractice": "시설 보기"
+  }
+}

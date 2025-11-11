@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "العثور على العيادات الطبية",
+    "subtitle": "اكتشف العيادات والمستشفيات والمرافق الصحية بالقرب منك",
+    "searchPlaceholder": "البحث عن العيادات...",
+    "locationPlaceholder": "الموقع",
+    "searching": "جارٍ البحث...",
+    "practicesFound": "تم العثور على {{count}} عيادة",
+    "notFound": {
+      "description": "لم يتم العثور على عيادات تطابق معاييرك",
+      "clearFilters": "مسح المرشحات"
+    }
+  },
+  "types": {
+    "all": "جميع الأنواع",
+    "clinic": "عيادة",
+    "dental": "عيادة أسنان",
+    "hospital": "مستشفى",
+    "diagnostic": "مركز تشخيص",
+    "urgentCare": "رعاية عاجلة",
+    "medicalCenter": "مركز طبي"
+  },
+  "card": {
+    "locationAvailable": "الموقع متاح",
+    "reviews": "تقييمات",
+    "visitWebsite": "زيارة الموقع",
+    "viewPractice": "عرض العيادة"
+  }
+}

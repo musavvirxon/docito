@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "Tıbbi Uygulamaları Bul",
+    "subtitle": "Yakınınızdaki klinikleri, hastaneleri ve sağlık tesislerini keşfedin",
+    "searchPlaceholder": "Uygulamaları ara...",
+    "locationPlaceholder": "Konum",
+    "searching": "Aranıyor...",
+    "practicesFound": "{{count}} Uygulama Bulundu",
+    "notFound": {
+      "description": "Kriterlerinize uyan uygulama bulunamadı",
+      "clearFilters": "Filtreleri Temizle"
+    }
+  },
+  "types": {
+    "all": "Tüm Türler",
+    "clinic": "Klinik",
+    "dental": "Diş Kliniği",
+    "hospital": "Hastane",
+    "diagnostic": "Teşhis Merkezi",
+    "urgentCare": "Acil Bakım",
+    "medicalCenter": "Tıp Merkezi"
+  },
+  "card": {
+    "locationAvailable": "Konum mevcut",
+    "reviews": "yorumlar",
+    "visitWebsite": "Web Sitesini Ziyaret Et",
+    "viewPractice": "Uygulamayı Görüntüle"
+  }
+}

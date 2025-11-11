@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "Find Medical Practices",
+    "subtitle": "Discover clinics, hospitals, and healthcare facilities near you",
+    "searchPlaceholder": "Search practices...",
+    "locationPlaceholder": "Location",
+    "searching": "Searching...",
+    "practicesFound": "{{count}} Practices Found",
+    "notFound": {
+      "description": "No practices found matching your criteria",
+      "clearFilters": "Clear Filters"
+    }
+  },
+  "types": {
+    "all": "All Types",
+    "clinic": "Clinic",
+    "dental": "Dental Practice",
+    "hospital": "Hospital",
+    "diagnostic": "Diagnostic Center",
+    "urgentCare": "Urgent Care",
+    "medicalCenter": "Medical Center"
+  },
+  "card": {
+    "locationAvailable": "Location available",
+    "reviews": "reviews",
+    "visitWebsite": "Visit Website",
+    "viewPractice": "View Practice"
+  }
+}

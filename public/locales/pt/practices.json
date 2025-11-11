@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "Encontrar Práticas Médicas",
+    "subtitle": "Descubra clínicas, hospitais e instalações de saúde perto de você",
+    "searchPlaceholder": "Pesquisar práticas...",
+    "locationPlaceholder": "Localização",
+    "searching": "Pesquisando...",
+    "practicesFound": "{{count}} Práticas Encontradas",
+    "notFound": {
+      "description": "Nenhuma prática encontrada que corresponda aos seus critérios",
+      "clearFilters": "Limpar Filtros"
+    }
+  },
+  "types": {
+    "all": "Todos os Tipos",
+    "clinic": "Clínica",
+    "dental": "Consultório Odontológico",
+    "hospital": "Hospital",
+    "diagnostic": "Centro de Diagnóstico",
+    "urgentCare": "Pronto Atendimento",
+    "medicalCenter": "Centro Médico"
+  },
+  "card": {
+    "locationAvailable": "Localização disponível",
+    "reviews": "avaliações",
+    "visitWebsite": "Visitar Website",
+    "viewPractice": "Ver Prática"
+  }
+}

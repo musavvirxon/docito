@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "Medizinische Praxen finden",
+    "subtitle": "Entdecken Sie Kliniken, Krankenhäuser und Gesundheitseinrichtungen in Ihrer Nähe",
+    "searchPlaceholder": "Praxen suchen...",
+    "locationPlaceholder": "Standort",
+    "searching": "Suche läuft...",
+    "practicesFound": "{{count}} Praxen gefunden",
+    "notFound": {
+      "description": "Keine Praxen gefunden, die Ihren Kriterien entsprechen",
+      "clearFilters": "Filter löschen"
+    }
+  },
+  "types": {
+    "all": "Alle Typen",
+    "clinic": "Klinik",
+    "dental": "Zahnarztpraxis",
+    "hospital": "Krankenhaus",
+    "diagnostic": "Diagnostikzentrum",
+    "urgentCare": "Notfallversorgung",
+    "medicalCenter": "Medizinisches Zentrum"
+  },
+  "card": {
+    "locationAvailable": "Standort verfügbar",
+    "reviews": "Bewertungen",
+    "visitWebsite": "Website besuchen",
+    "viewPractice": "Praxis ansehen"
+  }
+}

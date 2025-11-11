@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "Tibbiy Muassasalarni Topish",
+    "subtitle": "Yaqin atrofingizdagi klinikalar, kasalxonalar va tibbiyot muassasalarini kashf eting",
+    "searchPlaceholder": "Muassasalarni qidirish...",
+    "locationPlaceholder": "Joylashuv",
+    "searching": "Qidirilmoqda...",
+    "practicesFound": "{{count}} Muassasa Topildi",
+    "notFound": {
+      "description": "Mezonlaringizga mos muassasalar topilmadi",
+      "clearFilters": "Filterlarni Tozalash"
+    }
+  },
+  "types": {
+    "all": "Barcha Turlar",
+    "clinic": "Klinika",
+    "dental": "Stomatologiya",
+    "hospital": "Kasalxona",
+    "diagnostic": "Diagnostika Markazi",
+    "urgentCare": "Shoshilinch Yordam",
+    "medicalCenter": "Tibbiyot Markazi"
+  },
+  "card": {
+    "locationAvailable": "Joylashuv mavjud",
+    "reviews": "sharhlar",
+    "visitWebsite": "Veb-saytga Tashrif Buyuring",
+    "viewPractice": "Muassasani Ko'rish"
+  }
+}

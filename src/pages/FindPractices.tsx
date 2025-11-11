@@ -5,12 +5,14 @@ import { Logo } from '@/components/Logo';
 import Footer from '@/components/Footer';
 import { Search, MapPin, Building2, Users, Star, Phone, Mail, Globe, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function FindPractices() {
   const navigate = useNavigate();
+  const { t } = useTranslation(['common', 'practices']);
   const [searchQuery, setSearchQuery] = useState('');
   const [location, setLocation] = useState('');
-  const [practiceType, setPracticeType] = useState('All Types');
+  const [practiceType, setPracticeType] = useState('all');
 
   const { data: practices, isLoading } = useQuery({
     queryKey: ['practices', searchQuery, location, practiceType],
@@ -28,7 +30,7 @@ export default function FindPractices() {
         query = query.or(`city.ilike.%${location}%,state.ilike.%${location}%`);
       }
 
-      if (practiceType !== 'All Types') {
+      if (practiceType !== 'all') {
         query = query.eq('practice_type', practiceType);
       }
 
@@ -40,13 +42,13 @@ export default function FindPractices() {
   });
 
   const practiceTypes = [
-    'All Types',
-    'Clinic',
-    'Dental Practice',
-    'Hospital',
-    'Diagnostic Center',
-    'Urgent Care',
-    'Medical Center'
+    { value: 'all', label: t('practices:types.all') },
+    { value: 'Clinic', label: t('practices:types.clinic') },
+    { value: 'Dental Practice', label: t('practices:types.dental') },
+    { value: 'Hospital', label: t('practices:types.hospital') },
+    { value: 'Diagnostic Center', label: t('practices:types.diagnostic') },
+    { value: 'Urgent Care', label: t('practices:types.urgentCare') },
+    { value: 'Medical Center', label: t('practices:types.medicalCenter') }
   ];
 
   return (
@@ -59,7 +61,7 @@ export default function FindPractices() {
               onClick={() => navigate('/auth')}
               className="px-6 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              Sign In
+              {t('common:auth.signIn')}
             </button>
           </div>
         </div>
@@ -68,10 +70,10 @@ export default function FindPractices() {
       <div className="bg-gradient-to-br from-primary/90 to-primary py-16">
         <div className="container mx-auto px-4">
           <h1 className="text-4xl md:text-5xl font-bold text-primary-foreground text-center mb-4">
-            Find Medical Practices
+            {t('practices:page.title')}
           </h1>
           <p className="text-xl text-primary-foreground/80 text-center mb-8">
-            Discover clinics, hospitals, and healthcare facilities near you
+            {t('practices:page.subtitle')}
           </p>
 
           <div className="max-w-4xl mx-auto bg-card rounded-2xl shadow-2xl p-4">
@@ -80,7 +82,7 @@ export default function FindPractices() {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Search practices..."
+                  placeholder={t('practices:page.searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 rounded-lg border-2 border-input bg-background text-foreground"
@@ -91,7 +93,7 @@ export default function FindPractices() {
                 <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Location"
+                  placeholder={t('practices:page.locationPlaceholder')}
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 rounded-lg border-2 border-input bg-background text-foreground"
@@ -104,7 +106,7 @@ export default function FindPractices() {
                 className="px-4 py-3 rounded-lg border-2 border-input bg-background text-foreground"
               >
                 {practiceTypes.map(type => (
-                  <option key={type} value={type}>{type}</option>
+                  <option key={type.value} value={type.value}>{type.label}</option>
                 ))}
               </select>
             </div>
@@ -115,7 +117,7 @@ export default function FindPractices() {
       <div className="container mx-auto px-4 py-12">
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-foreground">
-            {isLoading ? 'Searching...' : `${practices?.length || 0} Practices Found`}
+            {isLoading ? t('practices:page.searching') : t('practices:page.practicesFound', { count: practices?.length || 0 })}
           </h2>
         </div>
 
@@ -132,22 +134,22 @@ export default function FindPractices() {
         ) : practices && practices.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {practices.map(practice => (
-              <PracticeCard key={practice.id} practice={practice} navigate={navigate} />
+              <PracticeCard key={practice.id} practice={practice} navigate={navigate} t={t} />
             ))}
           </div>
         ) : (
           <div className="text-center py-12">
             <Building2 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <p className="text-xl text-muted-foreground mb-4">No practices found matching your criteria</p>
+            <p className="text-xl text-muted-foreground mb-4">{t('practices:page.notFound.description')}</p>
             <button
               onClick={() => {
                 setSearchQuery('');
                 setLocation('');
-                setPracticeType('All Types');
+                setPracticeType('all');
               }}
               className="px-6 py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              Clear Filters
+              {t('practices:page.notFound.clearFilters')}
             </button>
           </div>
         )}
@@ -158,7 +160,7 @@ export default function FindPractices() {
   );
 }
 
-function PracticeCard({ practice, navigate }: any) {
+function PracticeCard({ practice, navigate, t }: any) {
   return (
     <div className="bg-card rounded-xl p-6 shadow-lg hover:shadow-xl transition-all border-2 border-border hover:border-primary">
       <div className="flex items-start gap-4 mb-4">
@@ -168,7 +170,7 @@ function PracticeCard({ practice, navigate }: any) {
         <div className="flex-1">
           <h3 className="text-lg font-bold text-foreground mb-1">{practice.name}</h3>
           <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary">
-            {practice.practice_type || 'Clinic'}
+            {practice.practice_type || t('practices:types.clinic')}
           </span>
         </div>
       </div>
@@ -176,7 +178,7 @@ function PracticeCard({ practice, navigate }: any) {
       <div className="space-y-2 mb-4">
         <div className="flex items-start gap-2 text-sm text-muted-foreground">
           <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-          <span>{practice.city && practice.state ? `${practice.city}, ${practice.state}` : 'Location available'}</span>
+          <span>{practice.city && practice.state ? `${practice.city}, ${practice.state}` : t('practices:card.locationAvailable')}</span>
         </div>
         {practice.phone && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -194,7 +196,7 @@ function PracticeCard({ practice, navigate }: any) {
           <div className="flex items-center gap-2 text-sm text-primary">
             <Globe className="w-4 h-4" />
             <a href={practice.website} target="_blank" rel="noopener noreferrer" className="hover:underline">
-              Visit Website
+              {t('practices:card.visitWebsite')}
             </a>
           </div>
         )}
@@ -204,7 +206,7 @@ function PracticeCard({ practice, navigate }: any) {
         <div className="flex items-center gap-1 mb-4">
           <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
           <span className="text-sm font-semibold text-foreground">{practice.average_rating}</span>
-          <span className="text-xs text-muted-foreground">({practice.num_reviews || 0} reviews)</span>
+          <span className="text-xs text-muted-foreground">({practice.num_reviews || 0} {t('practices:card.reviews')})</span>
         </div>
       )}
 
@@ -212,7 +214,7 @@ function PracticeCard({ practice, navigate }: any) {
         onClick={() => navigate(`/practices/${practice.id}`)}
         className="w-full px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-semibold flex items-center justify-center gap-2"
       >
-        View Practice
+        {t('practices:card.viewPractice')}
         <ChevronRight className="w-4 h-4" />
       </button>
     </div>

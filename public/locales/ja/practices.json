@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "医療施設を探す",
+    "subtitle": "お近くのクリニック、病院、医療施設を見つけましょう",
+    "searchPlaceholder": "施設を検索...",
+    "locationPlaceholder": "場所",
+    "searching": "検索中...",
+    "practicesFound": "{{count}}件の施設が見つかりました",
+    "notFound": {
+      "description": "条件に一致する施設が見つかりませんでした",
+      "clearFilters": "フィルターをクリア"
+    }
+  },
+  "types": {
+    "all": "すべてのタイプ",
+    "clinic": "クリニック",
+    "dental": "歯科医院",
+    "hospital": "病院",
+    "diagnostic": "診断センター",
+    "urgentCare": "緊急医療",
+    "medicalCenter": "医療センター"
+  },
+  "card": {
+    "locationAvailable": "場所が利用可能",
+    "reviews": "レビュー",
+    "visitWebsite": "ウェブサイトを訪問",
+    "viewPractice": "施設を見る"
+  }
+}

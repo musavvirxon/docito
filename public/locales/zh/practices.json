@@ -1,0 +1,29 @@
+{
+  "page": {
+    "title": "查找医疗机构",
+    "subtitle": "发现您附近的诊所、医院和医疗设施",
+    "searchPlaceholder": "搜索机构...",
+    "locationPlaceholder": "位置",
+    "searching": "搜索中...",
+    "practicesFound": "找到{{count}}个机构",
+    "notFound": {
+      "description": "未找到符合您条件的机构",
+      "clearFilters": "清除筛选"
+    }
+  },
+  "types": {
+    "all": "所有类型",
+    "clinic": "诊所",
+    "dental": "牙科诊所",
+    "hospital": "医院",
+    "diagnostic": "诊断中心",
+    "urgentCare": "紧急护理",
+    "medicalCenter": "医疗中心"
+  },
+  "card": {
+    "locationAvailable": "位置可用",
+    "reviews": "评价",
+    "visitWebsite": "访问网站",
+    "viewPractice": "查看机构"
+  }
+}
