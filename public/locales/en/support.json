@@ -1,0 +1,62 @@
+{
+  "hero": {
+    "title": "We're Here to Help",
+    "subtitle": "Get the support you need, when you need it. Our team is available 24/7 to assist you."
+  },
+  "contactSupport": "Contact Support",
+  "selfServiceResources": "Self-Service Resources",
+  "options": {
+    "liveChat": {
+      "title": "Live Chat",
+      "description": "Chat with our support team in real-time",
+      "availability": "Available 24/7",
+      "action": "Start Chat"
+    },
+    "callUs": {
+      "title": "Call Us",
+      "description": "Speak directly with a support representative",
+      "availability": "Mon-Fri 8AM-6PM EST",
+      "action": "Call Now"
+    },
+    "emailSupport": {
+      "title": "Email Support",
+      "description": "Send us a detailed message",
+      "availability": "Response within 24 hours",
+      "action": "Send Email"
+    },
+    "videoCall": {
+      "title": "Video Call",
+      "description": "Schedule a video call with our team",
+      "availability": "By appointment",
+      "action": "Schedule Call"
+    }
+  },
+  "resources": {
+    "helpCenter": {
+      "title": "Help Center",
+      "description": "Browse our comprehensive knowledge base"
+    },
+    "faqs": {
+      "title": "FAQs",
+      "description": "Find answers to common questions"
+    },
+    "documentation": {
+      "title": "Documentation",
+      "description": "Technical guides and documentation"
+    },
+    "videoTutorials": {
+      "title": "Video Tutorials",
+      "description": "Watch step-by-step tutorials"
+    }
+  },
+  "systemStatus": {
+    "title": "All Systems Operational",
+    "message": "99.9% uptime • Last updated: 2 minutes ago",
+    "viewStatus": "View Status Page"
+  },
+  "emergency": {
+    "title": "Medical Emergency?",
+    "message": "If you're experiencing a medical emergency, please call 911 or visit your nearest emergency room immediately.",
+    "warning": "Docito is not for emergency medical situations."
+  }
+}

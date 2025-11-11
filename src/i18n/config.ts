@@ -40,7 +40,7 @@ i18n
       escapeValue: false,
     },
 
-    ns: ['common', 'home', 'doctors', 'patients', 'auth', 'dashboard'],
+    ns: ['common', 'home', 'doctors', 'patients', 'auth', 'dashboard', 'support'],
     defaultNS: 'common',
 
     react: {

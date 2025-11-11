@@ -1,0 +1,62 @@
+{
+  "hero": {
+    "title": "Biz Yordam Berish Uchun Shu Yerdamiz",
+    "subtitle": "Kerakli paytda kerakli yordamni oling. Bizning jamoamiz sizga yordam berish uchun 24/7 mavjud."
+  },
+  "contactSupport": "Qo'llab-quvvatlashga Murojaat Qiling",
+  "selfServiceResources": "O'z-o'ziga Xizmat Ko'rsatish Resurslari",
+  "options": {
+    "liveChat": {
+      "title": "Jonli Suhbat",
+      "description": "Qo'llab-quvvatlash jamoamiz bilan real vaqtda suhbatlashing",
+      "availability": "24/7 Mavjud",
+      "action": "Suhbatni Boshlash"
+    },
+    "callUs": {
+      "title": "Bizga Qo'ng'iroq Qiling",
+      "description": "Qo'llab-quvvatlash vakili bilan to'g'ridan-to'g'ri gaplashing",
+      "availability": "Dush-Jum 8:00-18:00 EST",
+      "action": "Hozir Qo'ng'iroq Qiling"
+    },
+    "emailSupport": {
+      "title": "Elektron Pochta Yordami",
+      "description": "Bizga batafsil xabar yuboring",
+      "availability": "24 soat ichida javob",
+      "action": "Elektron Pochta Yuborish"
+    },
+    "videoCall": {
+      "title": "Video Qo'ng'iroq",
+      "description": "Jamoamiz bilan video qo'ng'iroqni rejalashtiring",
+      "availability": "Tayinlangan vaqt bo'yicha",
+      "action": "Qo'ng'iroqni Rejalashtirish"
+    }
+  },
+  "resources": {
+    "helpCenter": {
+      "title": "Yordam Markazi",
+      "description": "Bizning keng bilimlar bazamizni ko'rib chiqing"
+    },
+    "faqs": {
+      "title": "Ko'p So'raladigan Savollar",
+      "description": "Umumiy savollarga javoblarni toping"
+    },
+    "documentation": {
+      "title": "Hujjatlar",
+      "description": "Texnik qo'llanmalar va hujjatlar"
+    },
+    "videoTutorials": {
+      "title": "Video Darsliklar",
+      "description": "Qadam-baqadam darsliklarni tomosha qiling"
+    }
+  },
+  "systemStatus": {
+    "title": "Barcha Tizimlar Ishlayapti",
+    "message": "99,9% ishlash vaqti • Oxirgi yangilanish: 2 daqiqa oldin",
+    "viewStatus": "Holat Sahifasini Ko'rish"
+  },
+  "emergency": {
+    "title": "Tibbiy Favqulodda Holat?",
+    "message": "Agar tibbiy favqulodda holatni boshdan kechirayotgan bo'lsangiz, iltimos 103 ga qo'ng'iroq qiling yoki darhol eng yaqin shoshilinch tibbiy yordam bo'limiga tashrif buyuring.",
+    "warning": "Docito favqulodda tibbiy holatlar uchun emas."
+  }
+}

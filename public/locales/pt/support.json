@@ -1,0 +1,62 @@
+{
+  "hero": {
+    "title": "Estamos Aqui Para Ajudar",
+    "subtitle": "Obtenha o suporte que você precisa, quando precisa. Nossa equipe está disponível 24/7 para ajudá-lo."
+  },
+  "contactSupport": "Contatar Suporte",
+  "selfServiceResources": "Recursos de Autoatendimento",
+  "options": {
+    "liveChat": {
+      "title": "Chat Ao Vivo",
+      "description": "Converse com nossa equipe de suporte em tempo real",
+      "availability": "Disponível 24/7",
+      "action": "Iniciar Chat"
+    },
+    "callUs": {
+      "title": "Ligue para Nós",
+      "description": "Fale diretamente com um representante de suporte",
+      "availability": "Seg-Sex 8h-18h EST",
+      "action": "Ligar Agora"
+    },
+    "emailSupport": {
+      "title": "Suporte por E-mail",
+      "description": "Envie-nos uma mensagem detalhada",
+      "availability": "Resposta em até 24 horas",
+      "action": "Enviar E-mail"
+    },
+    "videoCall": {
+      "title": "Videochamada",
+      "description": "Agende uma videochamada com nossa equipe",
+      "availability": "Com agendamento",
+      "action": "Agendar Chamada"
+    }
+  },
+  "resources": {
+    "helpCenter": {
+      "title": "Centro de Ajuda",
+      "description": "Navegue por nossa base de conhecimento abrangente"
+    },
+    "faqs": {
+      "title": "Perguntas Frequentes",
+      "description": "Encontre respostas para perguntas comuns"
+    },
+    "documentation": {
+      "title": "Documentação",
+      "description": "Guias técnicos e documentação"
+    },
+    "videoTutorials": {
+      "title": "Tutoriais em Vídeo",
+      "description": "Assista tutoriais passo a passo"
+    }
+  },
+  "systemStatus": {
+    "title": "Todos os Sistemas Operacionais",
+    "message": "99,9% de tempo de atividade • Última atualização: há 2 minutos",
+    "viewStatus": "Ver Página de Status"
+  },
+  "emergency": {
+    "title": "Emergência Médica?",
+    "message": "Se você está passando por uma emergência médica, ligue para 192 ou visite o pronto-socorro mais próximo imediatamente.",
+    "warning": "Docito não é para situações de emergência médica."
+  }
+}

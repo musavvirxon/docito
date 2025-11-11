@@ -1,0 +1,62 @@
+{
+  "hero": {
+    "title": "Yardım İçin Buradayız",
+    "subtitle": "İhtiyacınız olduğunda ihtiyacınız olan desteği alın. Ekibimiz size yardımcı olmak için 7/24 burada."
+  },
+  "contactSupport": "Destek İle İletişime Geçin",
+  "selfServiceResources": "Self Servis Kaynakları",
+  "options": {
+    "liveChat": {
+      "title": "Canlı Sohbet",
+      "description": "Destek ekibimizle gerçek zamanlı sohbet edin",
+      "availability": "7/24 Erişilebilir",
+      "action": "Sohbet Başlat"
+    },
+    "callUs": {
+      "title": "Bizi Arayın",
+      "description": "Bir destek temsilcisiyle doğrudan konuşun",
+      "availability": "Pzt-Cum 8:00-18:00 EST",
+      "action": "Şimdi Ara"
+    },
+    "emailSupport": {
+      "title": "E-posta Desteği",
+      "description": "Bize ayrıntılı bir mesaj gönderin",
+      "availability": "24 saat içinde yanıt",
+      "action": "E-posta Gönder"
+    },
+    "videoCall": {
+      "title": "Video Görüşme",
+      "description": "Ekibimizle bir video görüşmesi planlayın",
+      "availability": "Randevuya göre",
+      "action": "Görüşme Planla"
+    }
+  },
+  "resources": {
+    "helpCenter": {
+      "title": "Yardım Merkezi",
+      "description": "Kapsamlı bilgi tabanımıza göz atın"
+    },
+    "faqs": {
+      "title": "SSS",
+      "description": "Sık sorulan soruların cevaplarını bulun"
+    },
+    "documentation": {
+      "title": "Dokümantasyon",
+      "description": "Teknik kılavuzlar ve dokümantasyon"
+    },
+    "videoTutorials": {
+      "title": "Video Eğitimler",
+      "description": "Adım adım eğitimler izleyin"
+    }
+  },
+  "systemStatus": {
+    "title": "Tüm Sistemler Çalışıyor",
+    "message": "%99,9 çalışma süresi • Son güncelleme: 2 dakika önce",
+    "viewStatus": "Durum Sayfasını Görüntüle"
+  },
+  "emergency": {
+    "title": "Tıbbi Acil Durum mu?",
+    "message": "Tıbbi bir acil durum yaşıyorsanız, lütfen 112'yi arayın veya en yakın acil servisi hemen ziyaret edin.",
+    "warning": "Docito acil tıbbi durumlar için değildir."
+  }
+}

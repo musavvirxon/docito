@@ -1,0 +1,62 @@
+{
+  "hero": {
+    "title": "私たちはお手伝いします",
+    "subtitle": "必要なときに必要なサポートを受けられます。私たちのチームは24時間年中無休でお手伝いします。"
+  },
+  "contactSupport": "サポートに連絡",
+  "selfServiceResources": "セルフサービスリソース",
+  "options": {
+    "liveChat": {
+      "title": "ライブチャット",
+      "description": "リアルタイムでサポートチームとチャット",
+      "availability": "24時間365日利用可能",
+      "action": "チャットを開始"
+    },
+    "callUs": {
+      "title": "お電話ください",
+      "description": "サポート担当者と直接お話しください",
+      "availability": "月-金 8:00-18:00 EST",
+      "action": "今すぐ電話"
+    },
+    "emailSupport": {
+      "title": "メールサポート",
+      "description": "詳細なメッセージをお送りください",
+      "availability": "24時間以内に返信",
+      "action": "メールを送信"
+    },
+    "videoCall": {
+      "title": "ビデオ通話",
+      "description": "チームとのビデオ通話をスケジュール",
+      "availability": "予約制",
+      "action": "通話を予約"
+    }
+  },
+  "resources": {
+    "helpCenter": {
+      "title": "ヘルプセンター",
+      "description": "包括的なナレッジベースを閲覧"
+    },
+    "faqs": {
+      "title": "よくある質問",
+      "description": "よくある質問への回答を見つける"
+    },
+    "documentation": {
+      "title": "ドキュメント",
+      "description": "技術ガイドとドキュメント"
+    },
+    "videoTutorials": {
+      "title": "ビデオチュートリアル",
+      "description": "ステップバイステップのチュートリアルを視聴"
+    }
+  },
+  "systemStatus": {
+    "title": "すべてのシステムが稼働中",
+    "message": "99.9%稼働時間 • 最終更新: 2分前",
+    "viewStatus": "ステータスページを表示"
+  },
+  "emergency": {
+    "title": "医療緊急事態？",
+    "message": "医療緊急事態が発生している場合は、119に電話するか、最寄りの救急室にすぐに行ってください。",
+    "warning": "Docitoは緊急医療状況には対応していません。"
+  }
+}

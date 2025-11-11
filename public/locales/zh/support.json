@@ -1,0 +1,62 @@
+{
+  "hero": {
+    "title": "我们在这里提供帮助",
+    "subtitle": "随时获取您需要的支持。我们的团队24/7全天候为您提供帮助。"
+  },
+  "contactSupport": "联系支持",
+  "selfServiceResources": "自助服务资源",
+  "options": {
+    "liveChat": {
+      "title": "在线聊天",
+      "description": "与我们的支持团队实时聊天",
+      "availability": "24/7全天候可用",
+      "action": "开始聊天"
+    },
+    "callUs": {
+      "title": "致电我们",
+      "description": "直接与支持代表通话",
+      "availability": "周一至周五 上午8点-下午6点 EST",
+      "action": "立即致电"
+    },
+    "emailSupport": {
+      "title": "电子邮件支持",
+      "description": "向我们发送详细信息",
+      "availability": "24小时内回复",
+      "action": "发送电子邮件"
+    },
+    "videoCall": {
+      "title": "视频通话",
+      "description": "安排与我们团队的视频通话",
+      "availability": "预约制",
+      "action": "安排通话"
+    }
+  },
+  "resources": {
+    "helpCenter": {
+      "title": "帮助中心",
+      "description": "浏览我们全面的知识库"
+    },
+    "faqs": {
+      "title": "常见问题",
+      "description": "查找常见问题的答案"
+    },
+    "documentation": {
+      "title": "文档",
+      "description": "技术指南和文档"
+    },
+    "videoTutorials": {
+      "title": "视频教程",
+      "description": "观看分步教程"
+    }
+  },
+  "systemStatus": {
+    "title": "所有系统正常运行",
+    "message": "99.9%正常运行时间 • 最后更新：2分钟前",
+    "viewStatus": "查看状态页面"
+  },
+  "emergency": {
+    "title": "医疗紧急情况？",
+    "message": "如果您遇到医疗紧急情况，请立即拨打120或前往最近的急诊室。",
+    "warning": "Docito不适用于紧急医疗情况。"
+  }
+}

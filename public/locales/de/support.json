@@ -1,0 +1,62 @@
+{
+  "hero": {
+    "title": "Wir Sind Hier, Um Zu Helfen",
+    "subtitle": "Erhalten Sie die Unterstützung, die Sie brauchen, wann Sie sie brauchen. Unser Team steht Ihnen rund um die Uhr zur Verfügung."
+  },
+  "contactSupport": "Support Kontaktieren",
+  "selfServiceResources": "Self-Service-Ressourcen",
+  "options": {
+    "liveChat": {
+      "title": "Live-Chat",
+      "description": "Chatten Sie in Echtzeit mit unserem Support-Team",
+      "availability": "Verfügbar 24/7",
+      "action": "Chat Starten"
+    },
+    "callUs": {
+      "title": "Rufen Sie Uns An",
+      "description": "Sprechen Sie direkt mit einem Support-Mitarbeiter",
+      "availability": "Mo-Fr 8-18 Uhr EST",
+      "action": "Jetzt Anrufen"
+    },
+    "emailSupport": {
+      "title": "E-Mail-Support",
+      "description": "Senden Sie uns eine detaillierte Nachricht",
+      "availability": "Antwort innerhalb von 24 Stunden",
+      "action": "E-Mail Senden"
+    },
+    "videoCall": {
+      "title": "Videoanruf",
+      "description": "Vereinbaren Sie einen Videoanruf mit unserem Team",
+      "availability": "Nach Vereinbarung",
+      "action": "Anruf Planen"
+    }
+  },
+  "resources": {
+    "helpCenter": {
+      "title": "Hilfecenter",
+      "description": "Durchsuchen Sie unsere umfassende Wissensdatenbank"
+    },
+    "faqs": {
+      "title": "FAQs",
+      "description": "Finden Sie Antworten auf häufige Fragen"
+    },
+    "documentation": {
+      "title": "Dokumentation",
+      "description": "Technische Anleitungen und Dokumentation"
+    },
+    "videoTutorials": {
+      "title": "Video-Tutorials",
+      "description": "Sehen Sie sich Schritt-für-Schritt-Tutorials an"
+    }
+  },
+  "systemStatus": {
+    "title": "Alle Systeme Betriebsbereit",
+    "message": "99,9% Betriebszeit • Zuletzt aktualisiert: vor 2 Minuten",
+    "viewStatus": "Statusseite Anzeigen"
+  },
+  "emergency": {
+    "title": "Medizinischer Notfall?",
+    "message": "Wenn Sie einen medizinischen Notfall haben, rufen Sie bitte 911 an oder besuchen Sie sofort Ihre nächste Notaufnahme.",
+    "warning": "Docito ist nicht für medizinische Notfälle gedacht."
+  }
+}
