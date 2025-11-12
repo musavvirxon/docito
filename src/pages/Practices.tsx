@@ -4,8 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { useTranslation } from "react-i18next";
 
 const Practices = () => {
+  const { t } = useTranslation(['common', 'practices']);
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -14,18 +16,18 @@ const Practices = () => {
           <nav className="flex items-center justify-between h-16">
             <Link to="/" className="flex items-center">
               <Logo variant="horizontal" size="sm" />
-              <span className="ml-2 text-muted-foreground">for Providers</span>
+              <span className="ml-2 text-muted-foreground">{t('practices:providers.header')}</span>
             </Link>
             
             <div className="flex items-center space-x-6">
               <div className="hidden lg:flex items-center space-x-6">
-                <Link to="/search-doctors" className="text-foreground hover:text-primary cursor-pointer">Find Doctors</Link>
-                <Link to="/browse-specialties" className="text-foreground hover:text-primary cursor-pointer">Specialties</Link>
-                <Link to="/features" className="text-foreground hover:text-primary cursor-pointer">Features</Link>
-                <Link to="/auth" className="text-foreground hover:text-primary cursor-pointer">Log in</Link>
+                <Link to="/search-doctors" className="text-foreground hover:text-primary cursor-pointer">{t('practices:providers.nav.findDoctors')}</Link>
+                <Link to="/browse-specialties" className="text-foreground hover:text-primary cursor-pointer">{t('practices:providers.nav.specialties')}</Link>
+                <Link to="/features" className="text-foreground hover:text-primary cursor-pointer">{t('practices:providers.nav.features')}</Link>
+                <Link to="/auth" className="text-foreground hover:text-primary cursor-pointer">{t('common:auth.signIn')}</Link>
               </div>
               <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium">
-                <Link to="/register-practice">Sign up</Link>
+                <Link to="/register-practice">{t('common:auth.signUp')}</Link>
               </Button>
             </div>
           </nav>
@@ -38,17 +40,16 @@ const Practices = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <h1 className="text-5xl font-bold text-foreground mb-6">
-                The easiest way to grow your practice
+                {t('practices:providers.hero.title')}
               </h1>
               <p className="text-xl text-muted-foreground mb-8">
-                Docito helps you bring in more new patients and keep them coming
-                back – while saving your practice valuable time.
+                {t('practices:providers.hero.description')}
               </p>
               <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg">
-                <Link to="/register-practice">Get started</Link>
+                <Link to="/register-practice">{t('practices:providers.hero.cta')}</Link>
               </Button>
               <p className="text-sm text-muted-foreground mt-4">
-                Want to speak to us? Call us at{" "}
+                {t('practices:providers.hero.phone')}{" "}
                 <Link to="tel:(212) 204-7108" className="text-blue-600 hover:text-blue-800 underline">
                   (212) 204-7108
                 </Link>
@@ -65,18 +66,18 @@ const Practices = () => {
       <section className="py-20 bg-muted/20">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center text-foreground mb-16">
-            Products you can start using today
+            {t('practices:providers.products.title')}
           </h2>
           
           <div className="grid lg:grid-cols-2 gap-12 mb-16">
             <Card className="bg-primary text-primary-foreground border-0">
               <CardContent className="p-8">
                 <h3 className="text-2xl font-bold mb-4">
-                  Docito is where patients find providers
+                  {t('practices:providers.products.findProviders.title')}
                 </h3>
                 <div className="bg-white rounded-lg p-6 mb-6">
                   <div className="text-sm text-muted-foreground mb-4">
-                    Book local doctors who take your insurance
+                    {t('practices:providers.products.findProviders.subtitle')}
                   </div>
                   <div className="space-y-2">
                     <div className="h-3 bg-muted rounded"></div>
@@ -88,19 +89,17 @@ const Practices = () => {
             
             <div>
               <h3 className="text-2xl font-bold text-foreground mb-4">
-                Docito Marketplace
+                {t('practices:providers.products.marketplace.title')}
               </h3>
               <p className="text-muted-foreground mb-6">
-                List your practice on Docito to reach millions of
-                people searching for care each month. Pay only for
-                first-time new patient bookings.
+                {t('practices:providers.products.marketplace.description')}
               </p>
               <div className="space-x-4">
                 <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                  Get started
+                  {t('practices:providers.products.marketplace.cta')}
                 </Button>
                 <Button variant="ghost" className="text-foreground underline hover:text-primary">
-                  See how it works
+                  {t('practices:providers.products.marketplace.learnMore')}
                 </Button>
               </div>
             </div>
@@ -112,10 +111,10 @@ const Practices = () => {
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center text-foreground mb-4">
-            Docito Practice Solutions
+            {t('practices:providers.solutions.title')}
           </h2>
           <p className="text-xl text-center text-muted-foreground mb-16">
-            Fully manage your private practice. Reach, manage, and keep patients with free and easy-to-use tools. Take payments, view stats, add your own custom services or treatments, store patient history, view stats of your providers and staff.
+            {t('practices:providers.solutions.description')}
           </p>
           
           <div className="grid md:grid-cols-2 gap-8 mb-16">
@@ -127,16 +126,15 @@ const Practices = () => {
                 <div className="p-6">
                   <div className="flex items-center gap-2 mb-2">
                     <h3 className="text-xl font-bold text-foreground">
-                      Online scheduling from your website
+                      {t('practices:providers.solutions.features.scheduling.title')}
                     </h3>
-                    <Badge className="bg-green-100 text-green-800">Free</Badge>
+                    <Badge className="bg-green-100 text-green-800">{t('practices:providers.solutions.free')}</Badge>
                   </div>
                   <p className="text-muted-foreground mb-4">
-                    Give patients a convenient way to book directly from
-                    your practice's website 24/7.
+                    {t('practices:providers.solutions.features.scheduling.description')}
                   </p>
                   <Button variant="ghost" className="text-foreground underline p-0">
-                    Learn more
+                    {t('practices:providers.solutions.learnMore')}
                   </Button>
                 </div>
               </CardContent>
@@ -149,15 +147,14 @@ const Practices = () => {
                 </div>
                 <div className="p-6">
                   <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-xl font-bold text-foreground">Intake</h3>
-                    <Badge className="bg-green-100 text-green-800">Free</Badge>
+                    <h3 className="text-xl font-bold text-foreground">{t('practices:providers.solutions.features.intake.title')}</h3>
+                    <Badge className="bg-green-100 text-green-800">{t('practices:providers.solutions.free')}</Badge>
                   </div>
                   <p className="text-muted-foreground mb-4">
-                    Send text reminders and collect insurance cards, IDs,
-                    and your office forms online ahead of appointments.
+                    {t('practices:providers.solutions.features.intake.description')}
                   </p>
                   <Button variant="ghost" className="text-foreground underline p-0">
-                    Learn more
+                    {t('practices:providers.solutions.learnMore')}
                   </Button>
                 </div>
               </CardContent>
@@ -170,15 +167,14 @@ const Practices = () => {
                 </div>
                 <div className="p-6">
                   <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-xl font-bold text-foreground">Video Service</h3>
-                    <Badge className="bg-green-100 text-green-800">Free</Badge>
+                    <h3 className="text-xl font-bold text-foreground">{t('practices:providers.solutions.features.video.title')}</h3>
+                    <Badge className="bg-green-100 text-green-800">{t('practices:providers.solutions.free')}</Badge>
                   </div>
                   <p className="text-muted-foreground mb-4">
-                    See patients virtually with an integrated, HIPAA
-                    compliant video experience.
+                    {t('practices:providers.solutions.features.video.description')}
                   </p>
                   <Button variant="ghost" className="text-foreground underline p-0">
-                    Learn more
+                    {t('practices:providers.solutions.learnMore')}
                   </Button>
                 </div>
               </CardContent>
@@ -191,25 +187,24 @@ const Practices = () => {
                 </div>
                 <div className="p-6">
                   <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-xl font-bold text-foreground">Book from Google & other search engines</h3>
-                    <Badge className="bg-green-100 text-green-800">Free</Badge>
+                    <h3 className="text-xl font-bold text-foreground">{t('practices:providers.solutions.features.bookGoogle.title')}</h3>
+                    <Badge className="bg-green-100 text-green-800">{t('practices:providers.solutions.free')}</Badge>
                   </div>
                   <p className="text-muted-foreground mb-4">
-                    Let patients book with you directly from the top places 
-                    they are searching for care, like Google, Apple, Bing and others.
+                    {t('practices:providers.solutions.features.bookGoogle.description')}
                   </p>
                   <Button variant="ghost" className="text-foreground underline p-0">
-                    Learn more
+                    {t('practices:providers.solutions.learnMore')}
                   </Button>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Why you'll love Zocdoc Section */}
+          {/* Why you'll love Docito Section */}
           <div className="mb-16">
             <h3 className="text-3xl font-bold text-center text-foreground mb-12">
-              Why you'll love Docito
+              {t('practices:providers.whyLove.title')}
             </h3>
             
             <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -256,13 +251,13 @@ const Practices = () => {
               
               <div>
                 <h4 className="text-2xl font-bold text-foreground mb-4">
-                  Get the right new patients for your practice
+                  {t('practices:providers.whyLove.rightPatients.title')}
                 </h4>
                 <p className="text-muted-foreground mb-6">
-                  Showcase your practice to the largest group of patients searching for care online. Only accept patients for the insurances and visit reasons you list.
+                  {t('practices:providers.whyLove.rightPatients.description')}
                 </p>
                 <Button variant="ghost" className="text-foreground hover:text-primary underline p-0">
-                  How Marketplace works
+                  {t('practices:providers.whyLove.rightPatients.cta')}
                 </Button>
               </div>
             </div>
@@ -270,10 +265,10 @@ const Practices = () => {
             <div className="grid lg:grid-cols-2 gap-12 items-center mt-16">
               <div>
                 <h4 className="text-2xl font-bold text-foreground mb-4">
-                  Make it easy for patients to book with you online
+                  {t('practices:providers.whyLove.easyBooking.title')}
                 </h4>
                 <p className="text-muted-foreground mb-6">
-                  Turn patient interest into bookings anywhere patients find you online – whether that's through search engines (such as Google), your website, or the Docito Marketplace.
+                  {t('practices:providers.whyLove.easyBooking.description')}
                 </p>
               </div>
               
@@ -318,10 +313,10 @@ const Practices = () => {
                 
                 <div>
                   <h5 className="font-bold text-foreground mb-2">
-                    Save time collecting essential information from patients
+                    {t('practices:providers.whyLove.saveTime.title')}
                   </h5>
                   <p className="text-muted-foreground text-sm">
-                    Receive insurance cards, IDs, and forms from all your patients, before they arrive for their appointment.
+                    {t('practices:providers.whyLove.saveTime.description')}
                   </p>
                 </div>
               </div>
@@ -333,47 +328,43 @@ const Practices = () => {
       {/* No Risk Section */}
       <section className="py-20 bg-primary text-primary-foreground">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-4">No risk to get started</h2>
-          <p className="text-xl mb-12">No upfront fees or subscription costs.</p>
+          <h2 className="text-4xl font-bold mb-4">{t('practices:providers.noRisk.title')}</h2>
+          <p className="text-xl mb-12">{t('practices:providers.noRisk.subtitle')}</p>
           
           <Card className="max-w-4xl mx-auto bg-background text-foreground border-border">
             <CardHeader>
-              <CardTitle className="text-2xl text-left">Docito Practice Solutions</CardTitle>
+              <CardTitle className="text-2xl text-left">{t('practices:providers.solutions.title')}</CardTitle>
               <hr className="my-4" />
             </CardHeader>
             <CardContent className="space-y-6 text-left">
               <div>
-                <h3 className="font-bold mb-2">Online scheduling from your website</h3>
+                <h3 className="font-bold mb-2">{t('practices:providers.solutions.features.scheduling.title')}</h3>
                 <p className="text-muted-foreground text-sm mb-2">
-                  Give patients a convenient way to book directly from your practice's
-                  website 24/7.
+                  {t('practices:providers.solutions.features.scheduling.description')}
                 </p>
-                <Badge className="bg-green-100 text-green-800">Free</Badge>
+                <Badge className="bg-green-100 text-green-800">{t('practices:providers.solutions.free')}</Badge>
               </div>
               
               <div>
-                <h3 className="font-bold mb-2">Book from Google</h3>
+                <h3 className="font-bold mb-2">{t('practices:providers.solutions.features.bookGoogle.title')}</h3>
                 <p className="text-muted-foreground text-sm mb-2">
-                  Let patients book with you directly from the top places they are
-                  searching for care, like Google, Apple, Bing and others.
+                  {t('practices:providers.solutions.features.bookGoogle.description')}
                 </p>
-                <Badge className="bg-green-100 text-green-800">Free</Badge>
+                <Badge className="bg-green-100 text-green-800">{t('practices:providers.solutions.free')}</Badge>
               </div>
               
               <div>
-                <h3 className="font-bold mb-2">Intake and reminders</h3>
+                <h3 className="font-bold mb-2">{t('practices:providers.noRisk.features.intakeReminders')}</h3>
                 <p className="text-muted-foreground text-sm mb-2">
-                  Collect insurance cards, IDs, and your office forms from all patients,
-                  even those who call to book.
+                  {t('practices:providers.noRisk.features.intakeDescription')}
                 </p>
-                <Badge className="bg-green-100 text-green-800">Free</Badge>
+                <Badge className="bg-green-100 text-green-800">{t('practices:providers.solutions.free')}</Badge>
               </div>
               
               <div>
-                <h3 className="font-bold mb-2">Video Service</h3>
+                <h3 className="font-bold mb-2">{t('practices:providers.solutions.features.video.title')}</h3>
                 <p className="text-muted-foreground text-sm mb-2">
-                  See patients virtually with an integrated, HIPAA compliant video
-                  experience.
+                  {t('practices:providers.solutions.features.video.description')}
                 </p>
                 <Badge className="bg-green-100 text-green-800">Free</Badge>
               </div>
@@ -381,28 +372,26 @@ const Practices = () => {
               <hr className="my-6" />
               
               <div>
-                <h3 className="text-xl font-bold mb-4">Zocdoc Marketplace</h3>
+                <h3 className="text-xl font-bold mb-4">{t('practices:providers.products.marketplace.title')}</h3>
                 
                 <div className="space-y-4">
                   <div>
-                    <h4 className="font-medium mb-1">Your existing patients</h4>
+                    <h4 className="font-medium mb-1">{t('practices:providers.noRisk.features.existingPatients')}</h4>
                     <p className="text-sm text-muted-foreground mb-2">
-                      Bookings made by your existing patients through the Marketplace
-                      are free.
+                      {t('practices:providers.noRisk.features.existingDescription')}
                     </p>
-                    <Badge className="bg-green-100 text-green-800">Free</Badge>
+                    <Badge className="bg-green-100 text-green-800">{t('practices:providers.solutions.free')}</Badge>
                   </div>
                   
                   <div>
-                    <h4 className="font-medium mb-1">New patients from Zocdoc.com</h4>
+                    <h4 className="font-medium mb-1">{t('practices:providers.noRisk.features.newPatients')}</h4>
                     <p className="text-sm text-muted-foreground mb-2">
-                      Receive bookings from new patients through Zocdoc.com or the
-                      Zocdoc mobile app.
+                      {t('practices:providers.noRisk.features.newPatientsDescription')}
                     </p>
                     <div>
-                      <span className="font-medium">One-time fee for first booking</span>
+                      <span className="font-medium">{t('practices:providers.noRisk.features.oneTimeFee')}</span>
                       <p className="text-xs text-muted-foreground">
-                        Varies by specialty and location
+                        {t('practices:providers.noRisk.features.feeNote')}
                       </p>
                     </div>
                   </div>
@@ -410,7 +399,7 @@ const Practices = () => {
               </div>
               
               <Button className="w-full bg-yellow-400 text-foreground hover:bg-yellow-500 h-12 text-lg font-medium">
-                Get started
+                {t('practices:providers.noRisk.cta')}
               </Button>
             </CardContent>
           </Card>
@@ -421,37 +410,33 @@ const Practices = () => {
       <section className="py-20 bg-background">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-lg text-muted-foreground mb-12">
-            From solo practitioners to large health systems
+            {t('practices:providers.trust.subtitle')}
           </h2>
           
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
               <div className="bg-muted/30 h-64 rounded-lg flex items-center justify-center">
-                <span className="text-muted-foreground">Building Illustration</span>
+                <span className="text-muted-foreground">{t('practices:providers.trust.illustrationPlaceholder')}</span>
               </div>
             </div>
             
             <div className="text-left">
               <h3 className="text-4xl font-bold text-foreground mb-6">
-                Zocdoc is trusted by 100,000+ providers
+                {t('practices:providers.trust.title')}
               </h3>
               <p className="text-muted-foreground mb-6">
-                Zocdoc is built for practices who care about delivering a great patient
-                experience – from solo practitioners to the largest health systems in
-                the country.
+                {t('practices:providers.trust.description1')}
               </p>
               <p className="text-muted-foreground mb-8">
-                Primary care doctors, dentists, OB-GYNs, and more than 250 other
-                specialties have turned to Zocdoc for over 15 years to reach the
-                patients they can best treat.
+                {t('practices:providers.trust.description2')}
               </p>
               <div className="space-y-4">
                 <Button className="bg-yellow-400 text-foreground hover:bg-yellow-500">
-                  Get started
+                  {t('practices:providers.trust.cta')}
                 </Button>
                 <div>
                   <Link to="#" className="text-foreground underline">
-                    Zocdoc for Enterprise
+                    {t('practices:providers.trust.enterprise')}
                   </Link>
                 </div>
               </div>
@@ -466,14 +451,14 @@ const Practices = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-3xl font-bold text-foreground mb-4">
-                Zocdoc for health systems
+                {t('practices:providers.healthSystems.title')}
               </h2>
               <h3 className="text-2xl font-semibold text-foreground mb-8">
-                We're trusted by top health systems
+                {t('practices:providers.healthSystems.subtitle')}
               </h3>
               
               <Button className="bg-yellow-400 text-foreground hover:bg-yellow-500 font-medium">
-                Partner with Zocdoc
+                {t('practices:providers.healthSystems.cta')}
               </Button>
             </div>
             
@@ -493,10 +478,10 @@ const Practices = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-foreground mb-4">
-              Find care in your city
+              {t('practices:providers.cities.title')}
             </h2>
             <p className="text-lg text-muted-foreground">
-              Book appointments with top-rated doctors in your area
+              {t('practices:providers.cities.subtitle')}
             </p>
           </div>
           
@@ -518,13 +503,13 @@ const Practices = () => {
       <section className="py-20 bg-muted">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-foreground mb-4">
-            Work at Zocdoc
+            {t('practices:providers.careers.title')}
           </h2>
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join our mission to give power to the patient. We're looking for passionate people to help us transform healthcare.
+            {t('practices:providers.careers.description')}
           </p>
           <Button className="bg-yellow-400 text-foreground hover:bg-yellow-500 font-medium">
-            View open positions
+            {t('practices:providers.careers.cta')}
           </Button>
         </div>
       </section>
@@ -534,10 +519,10 @@ const Practices = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-foreground mb-4">
-              Book by visit reason
+              {t('practices:providers.visitReasons.title')}
             </h2>
             <p className="text-lg text-muted-foreground">
-              Find the right care for your specific needs
+              {t('practices:providers.visitReasons.subtitle')}
             </p>
           </div>
           
@@ -560,59 +545,54 @@ const Practices = () => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
             <div className="lg:col-span-1">
-              <div className="flex items-center mb-4">
-                <div className="bg-yellow-400 rounded-full w-8 h-8 flex items-center justify-center mr-2">
-                  <span className="text-foreground font-bold text-lg">Z</span>
-                </div>
-                <span className="text-xl font-semibold text-foreground">Zocdoc</span>
-              </div>
+              <Logo variant="horizontal" size="sm" className="mb-4" />
               <p className="text-muted-foreground text-sm">
-                Making healthcare more human
+                {t('practices:providers.footer.tagline')}
               </p>
             </div>
             
             <div>
-              <h4 className="font-semibold text-foreground mb-4">Discover</h4>
+              <h4 className="font-semibold text-foreground mb-4">{t('practices:providers.footer.discover.title')}</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link to="#" className="hover:text-foreground">Book a doctor</Link></li>
-                <li><Link to="#" className="hover:text-foreground">Read reviews</Link></li>
-                <li><Link to="#" className="hover:text-foreground">Find insurance</Link></li>
-                <li><Link to="#" className="hover:text-foreground">Download our app</Link></li>
+                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.discover.bookDoctor')}</Link></li>
+                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.discover.readReviews')}</Link></li>
+                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.discover.findInsurance')}</Link></li>
+                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.discover.downloadApp')}</Link></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="font-semibold text-foreground mb-4">For providers</h4>
+              <h4 className="font-semibold text-foreground mb-4">{t('practices:providers.footer.forProviders.title')}</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link to="#" className="hover:text-foreground">List your practice</Link></li>
-                <li><Link to="#" className="hover:text-foreground">Provider resources</Link></li>
-                <li><Link to="#" className="hover:text-foreground">Enterprise solutions</Link></li>
+                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.forProviders.listPractice')}</Link></li>
+                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.forProviders.resources')}</Link></li>
+                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.forProviders.enterprise')}</Link></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="font-semibold text-foreground mb-4">Company</h4>
+              <h4 className="font-semibold text-foreground mb-4">{t('practices:providers.footer.company.title')}</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link to="#" className="hover:text-foreground">About us</Link></li>
-                <li><Link to="#" className="hover:text-foreground">Careers</Link></li>
-                <li><Link to="#" className="hover:text-foreground">Press</Link></li>
-                <li><Link to="#" className="hover:text-foreground">Blog</Link></li>
+                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.company.about')}</Link></li>
+                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.company.careers')}</Link></li>
+                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.company.press')}</Link></li>
+                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.company.blog')}</Link></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="font-semibold text-foreground mb-4">Support</h4>
+              <h4 className="font-semibold text-foreground mb-4">{t('practices:providers.footer.support.title')}</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link to="#" className="hover:text-foreground">Help center</Link></li>
-                <li><Link to="#" className="hover:text-foreground">Contact us</Link></li>
-                <li><Link to="#" className="hover:text-foreground">Privacy policy</Link></li>
-                <li><Link to="#" className="hover:text-foreground">Terms of service</Link></li>
+                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.support.helpCenter')}</Link></li>
+                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.support.contact')}</Link></li>
+                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.support.privacy')}</Link></li>
+                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.support.terms')}</Link></li>
               </ul>
             </div>
           </div>
           
           <div className="border-t border-border mt-12 pt-8 text-center text-sm text-muted-foreground">
-            <p>© 2024 Zocdoc, Inc. All rights reserved.</p>
+            <p>{t('practices:providers.footer.copyright', { year: 2024 })}</p>
           </div>
         </div>
       </footer>

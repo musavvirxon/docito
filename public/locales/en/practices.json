@@ -20,10 +20,144 @@
     "urgentCare": "Urgent Care",
     "medicalCenter": "Medical Center"
   },
-  "card": {
-    "locationAvailable": "Location available",
-    "reviews": "reviews",
-    "visitWebsite": "Visit Website",
-    "viewPractice": "View Practice"
+  "providers": {
+    "header": "for Providers",
+    "nav": {
+      "findDoctors": "Find Doctors",
+      "specialties": "Specialties",
+      "features": "Features"
+    },
+    "hero": {
+      "title": "The easiest way to grow your practice",
+      "description": "Docito helps you bring in more new patients and keep them coming back – while saving your practice valuable time.",
+      "cta": "Get started",
+      "phone": "Want to speak to us? Call us at"
+    },
+    "products": {
+      "title": "Products you can start using today",
+      "findProviders": {
+        "title": "Docito is where patients find providers",
+        "subtitle": "Book local doctors who take your insurance"
+      },
+      "marketplace": {
+        "title": "Docito Marketplace",
+        "description": "List your practice on Docito to reach millions of people searching for care each month. Pay only for first-time new patient bookings.",
+        "cta": "Get started",
+        "learnMore": "See how it works"
+      }
+    },
+    "solutions": {
+      "title": "Docito Practice Solutions",
+      "description": "Fully manage your private practice. Reach, manage, and keep patients with free and easy-to-use tools. Take payments, view stats, add your own custom services or treatments, store patient history, view stats of your providers and staff.",
+      "free": "Free",
+      "learnMore": "Learn more",
+      "features": {
+        "scheduling": {
+          "title": "Online scheduling from your website",
+          "description": "Give patients a convenient way to book directly from your practice's website 24/7."
+        },
+        "intake": {
+          "title": "Intake",
+          "description": "Send text reminders and collect insurance cards, IDs, and your office forms online ahead of appointments."
+        },
+        "video": {
+          "title": "Video Service",
+          "description": "See patients virtually with an integrated, HIPAA compliant video experience."
+        },
+        "bookGoogle": {
+          "title": "Book from Google & other search engines",
+          "description": "Let patients book with you directly from the top places they are searching for care, like Google, Apple, Bing and others."
+        }
+      }
+    },
+    "whyLove": {
+      "title": "Why you'll love Docito",
+      "rightPatients": {
+        "title": "Get the right new patients for your practice",
+        "description": "Showcase your practice to the largest group of patients searching for care online. Only accept patients for the insurances and visit reasons you list.",
+        "cta": "How Marketplace works"
+      },
+      "easyBooking": {
+        "title": "Make it easy for patients to book with you online",
+        "description": "Turn patient interest into bookings anywhere patients find you online – whether that's through search engines (such as Google), your website, or the Docito Marketplace."
+      },
+      "saveTime": {
+        "title": "Save time collecting essential information from patients",
+        "description": "Receive insurance cards, IDs, and forms from all your patients, before they arrive for their appointment."
+      }
+    },
+    "noRisk": {
+      "title": "No risk to get started",
+      "subtitle": "No upfront fees or subscription costs.",
+      "cta": "Get started",
+      "features": {
+        "intakeReminders": "Intake and reminders",
+        "intakeDescription": "Collect insurance cards, IDs, and your office forms from all patients, even those who call to book.",
+        "existingPatients": "Your existing patients",
+        "existingDescription": "Bookings made by your existing patients through the Marketplace are free.",
+        "newPatients": "New patients from Docito.com",
+        "newPatientsDescription": "Receive bookings from new patients through Docito.com or the Docito mobile app.",
+        "oneTimeFee": "One-time fee for first booking",
+        "feeNote": "Varies by specialty and location"
+      }
+    },
+    "trust": {
+      "subtitle": "From solo practitioners to large health systems",
+      "illustrationPlaceholder": "Building Illustration",
+      "title": "Docito is trusted by 100,000+ providers",
+      "description1": "Docito is built for practices who care about delivering a great patient experience – from solo practitioners to the largest health systems in the country.",
+      "description2": "Primary care doctors, dentists, OB-GYNs, and more than 250 other specialties have turned to Docito for over 15 years to reach the patients they can best treat.",
+      "cta": "Get started",
+      "enterprise": "Docito for Enterprise"
+    },
+    "healthSystems": {
+      "title": "Docito for health systems",
+      "subtitle": "We're trusted by top health systems",
+      "cta": "Partner with Docito"
+    },
+    "cities": {
+      "title": "Find care in your city",
+      "subtitle": "Book appointments with top-rated doctors in your area"
+    },
+    "careers": {
+      "title": "Work at Docito",
+      "description": "Join our mission to give power to the patient. We're looking for passionate people to help us transform healthcare.",
+      "cta": "View open positions"
+    },
+    "visitReasons": {
+      "title": "Book by visit reason",
+      "subtitle": "Find the right care for your specific needs"
+    },
+    "footer": {
+      "tagline": "Making healthcare more human",
+      "discover": {
+        "title": "Discover",
+        "bookDoctor": "Book a doctor",
+        "readReviews": "Read reviews",
+        "findInsurance": "Find insurance",
+        "downloadApp": "Download our app"
+      },
+      "forProviders": {
+        "title": "For providers",
+        "listPractice": "List your practice",
+        "resources": "Provider resources",
+        "enterprise": "Enterprise solutions"
+      },
+      "company": {
+        "title": "Company",
+        "about": "About us",
+        "careers": "Careers",
+        "press": "Press",
+        "blog": "Blog"
+      },
+      "support": {
+        "title": "Support",
+        "helpCenter": "Help center",
+        "contact": "Contact us",
+        "privacy": "Privacy policy",
+        "terms": "Terms of service"
+      },
+      "copyright": "© {{year}} Docito, Inc. All rights reserved."
+    }
   }
 }

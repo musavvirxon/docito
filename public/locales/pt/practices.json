@@ -25,5 +25,145 @@
     "reviews": "avaliações",
     "visitWebsite": "Visitar Website",
     "viewPractice": "Ver Prática"
+  },
+  "providers": {
+    "header": "para Provedores",
+    "nav": {
+      "findDoctors": "Encontrar Médicos",
+      "specialties": "Especialidades",
+      "features": "Recursos"
+    },
+    "hero": {
+      "title": "A maneira mais fácil de expandir sua prática",
+      "description": "O Docito ajuda você a trazer mais pacientes novos e mantê-los voltando – economizando tempo valioso da sua prática.",
+      "cta": "Começar",
+      "phone": "Quer falar conosco? Ligue para"
+    },
+    "products": {
+      "title": "Produtos que você pode começar a usar hoje",
+      "findProviders": {
+        "title": "Docito é onde os pacientes encontram provedores",
+        "subtitle": "Reserve médicos locais que aceitam seu seguro"
+      },
+      "marketplace": {
+        "title": "Mercado Docito",
+        "description": "Liste sua prática no Docito para alcançar milhões de pessoas procurando cuidados a cada mês. Pague apenas por reservas de novos pacientes pela primeira vez.",
+        "cta": "Começar",
+        "learnMore": "Veja como funciona"
+      }
+    },
+    "solutions": {
+      "title": "Soluções de Prática Docito",
+      "description": "Gerencie completamente sua prática privada. Alcance, gerencie e mantenha pacientes com ferramentas gratuitas e fáceis de usar.",
+      "free": "Grátis",
+      "learnMore": "Saiba mais",
+      "features": {
+        "scheduling": {
+          "title": "Agendamento online do seu site",
+          "description": "Dê aos pacientes uma maneira conveniente de reservar diretamente do site da sua prática 24/7."
+        },
+        "intake": {
+          "title": "Admissão",
+          "description": "Envie lembretes por texto e colete cartões de seguro, IDs e formulários do seu consultório online antes das consultas."
+        },
+        "video": {
+          "title": "Serviço de Vídeo",
+          "description": "Veja pacientes virtualmente com uma experiência de vídeo integrada e compatível com HIPAA."
+        },
+        "bookGoogle": {
+          "title": "Reserve pelo Google e outros mecanismos de busca",
+          "description": "Permita que os pacientes reservem diretamente com você nos principais lugares onde procuram cuidados, como Google, Apple, Bing e outros."
+        }
+      }
+    },
+    "whyLove": {
+      "title": "Por que você vai amar o Docito",
+      "rightPatients": {
+        "title": "Obtenha os novos pacientes certos para sua prática",
+        "description": "Mostre sua prática ao maior grupo de pacientes procurando cuidados online.",
+        "cta": "Como o Mercado funciona"
+      },
+      "easyBooking": {
+        "title": "Facilite para os pacientes reservarem com você online",
+        "description": "Transforme o interesse do paciente em reservas onde quer que os pacientes te encontrem online."
+      },
+      "saveTime": {
+        "title": "Economize tempo coletando informações essenciais dos pacientes",
+        "description": "Receba cartões de seguro, IDs e formulários de todos os seus pacientes antes da consulta."
+      }
+    },
+    "noRisk": {
+      "title": "Sem risco para começar",
+      "subtitle": "Sem taxas iniciais ou custos de assinatura.",
+      "cta": "Começar",
+      "features": {
+        "intakeReminders": "Admissão e lembretes",
+        "intakeDescription": "Colete cartões de seguro, IDs e formulários de todos os pacientes.",
+        "existingPatients": "Seus pacientes existentes",
+        "existingDescription": "Reservas feitas por seus pacientes existentes são gratuitas.",
+        "newPatients": "Novos pacientes do Docito.com",
+        "newPatientsDescription": "Receba reservas de novos pacientes através do Docito.com.",
+        "oneTimeFee": "Taxa única para primeira reserva",
+        "feeNote": "Varia por especialidade e localização"
+      }
+    },
+    "trust": {
+      "subtitle": "De profissionais individuais a grandes sistemas de saúde",
+      "illustrationPlaceholder": "Ilustração do Edifício",
+      "title": "Docito é confiado por mais de 100.000 provedores",
+      "description1": "Docito é construído para práticas que se preocupam em oferecer uma ótima experiência ao paciente.",
+      "description2": "Médicos de atenção primária, dentistas e mais de 250 outras especialidades recorreram ao Docito.",
+      "cta": "Começar",
+      "enterprise": "Docito para Empresas"
+    },
+    "healthSystems": {
+      "title": "Docito para sistemas de saúde",
+      "subtitle": "Somos confiados pelos principais sistemas de saúde",
+      "cta": "Faça parceria com Docito"
+    },
+    "cities": {
+      "title": "Encontre cuidados na sua cidade",
+      "subtitle": "Reserve consultas com médicos bem avaliados na sua área"
+    },
+    "careers": {
+      "title": "Trabalhe no Docito",
+      "description": "Junte-se à nossa missão de dar poder ao paciente.",
+      "cta": "Ver vagas abertas"
+    },
+    "visitReasons": {
+      "title": "Reserve por motivo de visita",
+      "subtitle": "Encontre o cuidado certo para suas necessidades específicas"
+    },
+    "footer": {
+      "tagline": "Tornando a saúde mais humana",
+      "discover": {
+        "title": "Descobrir",
+        "bookDoctor": "Reservar um médico",
+        "readReviews": "Ler avaliações",
+        "findInsurance": "Encontrar seguro",
+        "downloadApp": "Baixar nosso aplicativo"
+      },
+      "forProviders": {
+        "title": "Para provedores",
+        "listPractice": "Listar sua prática",
+        "resources": "Recursos para provedores",
+        "enterprise": "Soluções empresariais"
+      },
+      "company": {
+        "title": "Empresa",
+        "about": "Sobre nós",
+        "careers": "Carreiras",
+        "press": "Imprensa",
+        "blog": "Blog"
+      },
+      "support": {
+        "title": "Suporte",
+        "helpCenter": "Central de ajuda",
+        "contact": "Contate-nos",
+        "privacy": "Política de privacidade",
+        "terms": "Termos de serviço"
+      },
+      "copyright": "© {{year}} Docito, Inc. Todos os direitos reservados."
+    }
   }
 }

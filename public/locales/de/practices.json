@@ -25,5 +25,145 @@
     "reviews": "Bewertungen",
     "visitWebsite": "Website besuchen",
     "viewPractice": "Praxis ansehen"
+  },
+  "providers": {
+    "header": "für Anbieter",
+    "nav": {
+      "findDoctors": "Ärzte finden",
+      "specialties": "Fachgebiete",
+      "features": "Funktionen"
+    },
+    "hero": {
+      "title": "Der einfachste Weg, Ihre Praxis zu vergrößern",
+      "description": "Docito hilft Ihnen, mehr neue Patienten zu gewinnen und sie zurückkommen zu lassen – während Sie wertvolle Zeit für Ihre Praxis sparen.",
+      "cta": "Jetzt starten",
+      "phone": "Möchten Sie mit uns sprechen? Rufen Sie uns an unter"
+    },
+    "products": {
+      "title": "Produkte, die Sie heute nutzen können",
+      "findProviders": {
+        "title": "Docito ist der Ort, an dem Patienten Anbieter finden",
+        "subtitle": "Buchen Sie lokale Ärzte, die Ihre Versicherung akzeptieren"
+      },
+      "marketplace": {
+        "title": "Docito Marktplatz",
+        "description": "Listen Sie Ihre Praxis auf Docito auf, um Millionen von Menschen zu erreichen, die jeden Monat nach Pflege suchen. Zahlen Sie nur für erstmalige neue Patientenbuchungen.",
+        "cta": "Jetzt starten",
+        "learnMore": "Sehen Sie, wie es funktioniert"
+      }
+    },
+    "solutions": {
+      "title": "Docito Praxislösungen",
+      "description": "Verwalten Sie Ihre Privatpraxis vollständig. Erreichen, verwalten und halten Sie Patienten mit kostenlosen und einfach zu bedienenden Tools. Nehmen Sie Zahlungen entgegen, sehen Sie Statistiken, fügen Sie Ihre eigenen benutzerdefinierten Dienste oder Behandlungen hinzu, speichern Sie Patientengeschichten, sehen Sie Statistiken Ihrer Anbieter und Mitarbeiter.",
+      "free": "Kostenlos",
+      "learnMore": "Mehr erfahren",
+      "features": {
+        "scheduling": {
+          "title": "Online-Terminplanung von Ihrer Website",
+          "description": "Geben Sie Patienten eine bequeme Möglichkeit, direkt von der Website Ihrer Praxis 24/7 zu buchen."
+        },
+        "intake": {
+          "title": "Aufnahme",
+          "description": "Senden Sie Texterinnerungen und sammeln Sie Versicherungskarten, Ausweise und Ihre Büroformulare online vor Terminen."
+        },
+        "video": {
+          "title": "Video-Service",
+          "description": "Sehen Sie Patienten virtuell mit einer integrierten, HIPAA-konformen Video-Erfahrung."
+        },
+        "bookGoogle": {
+          "title": "Von Google und anderen Suchmaschinen buchen",
+          "description": "Lassen Sie Patienten direkt bei Ihnen buchen von den Top-Orten, an denen sie nach Pflege suchen, wie Google, Apple, Bing und andere."
+        }
+      }
+    },
+    "whyLove": {
+      "title": "Warum Sie Docito lieben werden",
+      "rightPatients": {
+        "title": "Erhalten Sie die richtigen neuen Patienten für Ihre Praxis",
+        "description": "Präsentieren Sie Ihre Praxis der größten Gruppe von Patienten, die online nach Pflege suchen. Akzeptieren Sie nur Patienten für die Versicherungen und Besuchsgründe, die Sie auflisten.",
+        "cta": "Wie der Marktplatz funktioniert"
+      },
+      "easyBooking": {
+        "title": "Machen Sie es Patienten leicht, online bei Ihnen zu buchen",
+        "description": "Verwandeln Sie Patienteninteresse in Buchungen überall dort, wo Patienten Sie online finden – sei es über Suchmaschinen (wie Google), Ihre Website oder den Docito Marktplatz."
+      },
+      "saveTime": {
+        "title": "Sparen Sie Zeit beim Sammeln wesentlicher Informationen von Patienten",
+        "description": "Erhalten Sie Versicherungskarten, Ausweise und Formulare von allen Ihren Patienten, bevor sie zu ihrem Termin erscheinen."
+      }
+    },
+    "noRisk": {
+      "title": "Kein Risiko zum Starten",
+      "subtitle": "Keine Vorabgebühren oder Abonnementkosten.",
+      "cta": "Jetzt starten",
+      "features": {
+        "intakeReminders": "Aufnahme und Erinnerungen",
+        "intakeDescription": "Sammeln Sie Versicherungskarten, Ausweise und Ihre Büroformulare von allen Patienten, auch von denen, die anrufen, um zu buchen.",
+        "existingPatients": "Ihre bestehenden Patienten",
+        "existingDescription": "Buchungen Ihrer bestehenden Patienten über den Marktplatz sind kostenlos.",
+        "newPatients": "Neue Patienten von Docito.com",
+        "newPatientsDescription": "Erhalten Sie Buchungen von neuen Patienten über Docito.com oder die Docito-Mobile-App.",
+        "oneTimeFee": "Einmalige Gebühr für erste Buchung",
+        "feeNote": "Variiert je nach Fachgebiet und Standort"
+      }
+    },
+    "trust": {
+      "subtitle": "Von Einzelpraktikern bis zu großen Gesundheitssystemen",
+      "illustrationPlaceholder": "Gebäudeillustration",
+      "title": "Docito wird von über 100.000 Anbietern vertraut",
+      "description1": "Docito ist für Praxen gebaut, die sich um ein großartiges Patientenerlebnis kümmern – von Einzelpraktikern bis zu den größten Gesundheitssystemen im Land.",
+      "description2": "Hausärzte, Zahnärzte, Gynäkologen und mehr als 250 andere Fachgebiete haben sich seit über 15 Jahren an Docito gewandt, um die Patienten zu erreichen, die sie am besten behandeln können.",
+      "cta": "Jetzt starten",
+      "enterprise": "Docito für Unternehmen"
+    },
+    "healthSystems": {
+      "title": "Docito für Gesundheitssysteme",
+      "subtitle": "Wir werden von Top-Gesundheitssystemen vertraut",
+      "cta": "Partnerschaft mit Docito"
+    },
+    "cities": {
+      "title": "Finden Sie Pflege in Ihrer Stadt",
+      "subtitle": "Buchen Sie Termine mit Top-bewerteten Ärzten in Ihrer Nähe"
+    },
+    "careers": {
+      "title": "Arbeiten Sie bei Docito",
+      "description": "Schließen Sie sich unserer Mission an, dem Patienten Macht zu geben. Wir suchen leidenschaftliche Menschen, die uns helfen, das Gesundheitswesen zu transformieren.",
+      "cta": "Offene Stellen ansehen"
+    },
+    "visitReasons": {
+      "title": "Nach Besuchsgrund buchen",
+      "subtitle": "Finden Sie die richtige Pflege für Ihre spezifischen Bedürfnisse"
+    },
+    "footer": {
+      "tagline": "Das Gesundheitswesen menschlicher machen",
+      "discover": {
+        "title": "Entdecken",
+        "bookDoctor": "Arzt buchen",
+        "readReviews": "Bewertungen lesen",
+        "findInsurance": "Versicherung finden",
+        "downloadApp": "Unsere App herunterladen"
+      },
+      "forProviders": {
+        "title": "Für Anbieter",
+        "listPractice": "Ihre Praxis auflisten",
+        "resources": "Anbieter-Ressourcen",
+        "enterprise": "Unternehmenslösungen"
+      },
+      "company": {
+        "title": "Unternehmen",
+        "about": "Über uns",
+        "careers": "Karriere",
+        "press": "Presse",
+        "blog": "Blog"
+      },
+      "support": {
+        "title": "Support",
+        "helpCenter": "Hilfezentrum",
+        "contact": "Kontakt",
+        "privacy": "Datenschutzrichtlinie",
+        "terms": "Nutzungsbedingungen"
+      },
+      "copyright": "© {{year}} Docito, Inc. Alle Rechte vorbehalten."
+    }
   }
 }

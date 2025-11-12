@@ -25,5 +25,145 @@
     "reviews": "reseñas",
     "visitWebsite": "Visitar Sitio Web",
     "viewPractice": "Ver Práctica"
+  },
+  "providers": {
+    "header": "para Proveedores",
+    "nav": {
+      "findDoctors": "Buscar Doctores",
+      "specialties": "Especialidades",
+      "features": "Características"
+    },
+    "hero": {
+      "title": "La forma más fácil de hacer crecer tu práctica",
+      "description": "Docito te ayuda a atraer más pacientes nuevos y mantenerlos regresando, mientras ahorras tiempo valioso a tu práctica.",
+      "cta": "Comenzar",
+      "phone": "¿Quieres hablar con nosotros? Llámanos al"
+    },
+    "products": {
+      "title": "Productos que puedes comenzar a usar hoy",
+      "findProviders": {
+        "title": "Docito es donde los pacientes encuentran proveedores",
+        "subtitle": "Reserva doctores locales que aceptan tu seguro"
+      },
+      "marketplace": {
+        "title": "Mercado Docito",
+        "description": "Lista tu práctica en Docito para llegar a millones de personas que buscan atención cada mes. Paga solo por las reservas de pacientes nuevos por primera vez.",
+        "cta": "Comenzar",
+        "learnMore": "Ver cómo funciona"
+      }
+    },
+    "solutions": {
+      "title": "Soluciones de Práctica Docito",
+      "description": "Gestiona completamente tu práctica privada. Alcanza, gestiona y mantén pacientes con herramientas gratuitas y fáciles de usar. Acepta pagos, visualiza estadísticas, agrega tus propios servicios o tratamientos personalizados, almacena historial de pacientes, visualiza estadísticas de tus proveedores y personal.",
+      "free": "Gratis",
+      "learnMore": "Aprende más",
+      "features": {
+        "scheduling": {
+          "title": "Programación en línea desde tu sitio web",
+          "description": "Da a los pacientes una forma conveniente de reservar directamente desde el sitio web de tu práctica las 24/7."
+        },
+        "intake": {
+          "title": "Admisión",
+          "description": "Envía recordatorios por texto y recopila tarjetas de seguro, identificaciones y formularios de tu oficina en línea antes de las citas."
+        },
+        "video": {
+          "title": "Servicio de Video",
+          "description": "Atiende pacientes virtualmente con una experiencia de video integrada y compatible con HIPAA."
+        },
+        "bookGoogle": {
+          "title": "Reserva desde Google y otros buscadores",
+          "description": "Permite que los pacientes reserven contigo directamente desde los principales lugares donde buscan atención, como Google, Apple, Bing y otros."
+        }
+      }
+    },
+    "whyLove": {
+      "title": "Por qué amarás Docito",
+      "rightPatients": {
+        "title": "Obtén los pacientes nuevos adecuados para tu práctica",
+        "description": "Muestra tu práctica al grupo más grande de pacientes que buscan atención en línea. Solo acepta pacientes para los seguros y razones de visita que listes.",
+        "cta": "Cómo funciona el Mercado"
+      },
+      "easyBooking": {
+        "title": "Facilita que los pacientes reserven contigo en línea",
+        "description": "Convierte el interés del paciente en reservas dondequiera que los pacientes te encuentren en línea, ya sea a través de motores de búsqueda (como Google), tu sitio web o el Mercado Docito."
+      },
+      "saveTime": {
+        "title": "Ahorra tiempo recopilando información esencial de los pacientes",
+        "description": "Recibe tarjetas de seguro, identificaciones y formularios de todos tus pacientes, antes de que lleguen a su cita."
+      }
+    },
+    "noRisk": {
+      "title": "Sin riesgo para comenzar",
+      "subtitle": "Sin tarifas iniciales ni costos de suscripción.",
+      "cta": "Comenzar",
+      "features": {
+        "intakeReminders": "Admisión y recordatorios",
+        "intakeDescription": "Recopila tarjetas de seguro, identificaciones y formularios de tu oficina de todos los pacientes, incluso aquellos que llaman para reservar.",
+        "existingPatients": "Tus pacientes existentes",
+        "existingDescription": "Las reservas realizadas por tus pacientes existentes a través del Mercado son gratuitas.",
+        "newPatients": "Nuevos pacientes de Docito.com",
+        "newPatientsDescription": "Recibe reservas de nuevos pacientes a través de Docito.com o la aplicación móvil de Docito.",
+        "oneTimeFee": "Tarifa única por primera reserva",
+        "feeNote": "Varía según la especialidad y ubicación"
+      }
+    },
+    "trust": {
+      "subtitle": "Desde profesionales independientes hasta grandes sistemas de salud",
+      "illustrationPlaceholder": "Ilustración del Edificio",
+      "title": "Docito es confiado por más de 100,000 proveedores",
+      "description1": "Docito está diseñado para prácticas que se preocupan por brindar una gran experiencia al paciente, desde profesionales independientes hasta los sistemas de salud más grandes del país.",
+      "description2": "Médicos de atención primaria, dentistas, obstetras-ginecólogos y más de 250 otras especialidades han recurrido a Docito durante más de 15 años para llegar a los pacientes que mejor pueden tratar.",
+      "cta": "Comenzar",
+      "enterprise": "Docito para Empresas"
+    },
+    "healthSystems": {
+      "title": "Docito para sistemas de salud",
+      "subtitle": "Somos confiados por los principales sistemas de salud",
+      "cta": "Asociarse con Docito"
+    },
+    "cities": {
+      "title": "Encuentra atención en tu ciudad",
+      "subtitle": "Reserva citas con doctores mejor calificados en tu área"
+    },
+    "careers": {
+      "title": "Trabaja en Docito",
+      "description": "Únete a nuestra misión de dar poder al paciente. Estamos buscando personas apasionadas que nos ayuden a transformar la atención médica.",
+      "cta": "Ver posiciones abiertas"
+    },
+    "visitReasons": {
+      "title": "Reserva por motivo de visita",
+      "subtitle": "Encuentra la atención adecuada para tus necesidades específicas"
+    },
+    "footer": {
+      "tagline": "Haciendo la atención médica más humana",
+      "discover": {
+        "title": "Descubrir",
+        "bookDoctor": "Reservar un doctor",
+        "readReviews": "Leer reseñas",
+        "findInsurance": "Encontrar seguro",
+        "downloadApp": "Descargar nuestra aplicación"
+      },
+      "forProviders": {
+        "title": "Para proveedores",
+        "listPractice": "Lista tu práctica",
+        "resources": "Recursos para proveedores",
+        "enterprise": "Soluciones empresariales"
+      },
+      "company": {
+        "title": "Compañía",
+        "about": "Sobre nosotros",
+        "careers": "Carreras",
+        "press": "Prensa",
+        "blog": "Blog"
+      },
+      "support": {
+        "title": "Soporte",
+        "helpCenter": "Centro de ayuda",
+        "contact": "Contáctanos",
+        "privacy": "Política de privacidad",
+        "terms": "Términos de servicio"
+      },
+      "copyright": "© {{year}} Docito, Inc. Todos los derechos reservados."
+    }
   }
 }
