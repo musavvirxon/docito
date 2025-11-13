@@ -188,31 +188,31 @@ const DoctorSignUp = () => {
           bio: formData.bio,
           license_number: formData.license,
           consultation_fee: 0,
+          verified: false,
         })
         .select()
         .single();
 
       if (doctorError) throw doctorError;
 
-      // Submit for verification if documents provided
-      if (medicalLicense || professionalId) {
-        await submitForVerification(doctorData.id, {
-          specialty: formData.specialty || 'general',
-          bio: formData.bio || '',
-          license_number: formData.license || '',
-          consultation_fee: 0,
-          years_experience: formData.experience,
-          languages: selectedLanguages,
-          consultation_types: ['In-person', 'Video'],
-          documents: {
-            medical_license: medicalLicense || undefined,
-            professional_id: professionalId || undefined,
-          },
-        });
-      }
+      // Always submit for verification
+      await submitForVerification(doctorData.id, {
+        specialty: formData.specialty || 'general',
+        bio: formData.bio || '',
+        license_number: formData.license || '',
+        consultation_fee: 0,
+        years_experience: formData.experience,
+        languages: selectedLanguages,
+        consultation_types: ['In-person', 'Video'],
+        documents: {
+          medical_license: medicalLicense || undefined,
+          professional_id: professionalId || undefined,
+        },
+      });
 
       toast.success(t('doctorSignup.messages.profileCreated'));
-      setTimeout(() => navigateToDoctorDashboard(), 1500);
+      toast.info('Your application has been submitted for verification. You will be notified once it is reviewed.');
+      setTimeout(() => navigateToDoctorDashboard(), 2000);
     } catch (error: any) {
       console.error('Error creating doctor profile:', error);
       toast.error(error.message || t('doctorSignup.messages.profileError'));
@@ -875,12 +875,8 @@ const DoctorSignUp = () => {
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold"
                   disabled={isLoading || isSubmitting || uploading}
                 >
-                  {isLoading || isSubmitting ? t('doctorSignup.buttons.creatingProfile') : t('doctorSignup.buttons.createProfile')}
+                  {isLoading || isSubmitting ? t('doctorSignup.buttons.completingProfile') : t('doctorSignup.buttons.completeProfile')}
                 </Button>
-
-                <p className="text-center text-sm text-muted-foreground">
-                  {t('doctorSignup.footer.haveAccount')} <a href="#" className="text-blue-600 hover:underline">{t('doctorSignup.footer.login')}</a>
-                </p>
               </CardContent>
             </Card>
           </form>

@@ -67,15 +67,17 @@ export const useDoctorVerification = () => {
 
       if (doctorError) throw doctorError;
 
-      // Create verification request (cast to any to avoid type errors until migration)
+      // Create verification request
       const { data: verificationData, error: verificationError } = await (supabase as any)
-        .from('practice_verification')
+        .from('doctor_verification')
         .insert({
           doctor_id: doctorId,
-          status: 'under_review',
+          status: 'pending',
           submitted_at: new Date().toISOString(),
+          specialty: data.specialty,
+          license_number: data.license_number,
+          years_of_experience: data.years_experience,
           verification_data: {
-            years_experience: data.years_experience,
             languages: data.languages,
             consultation_types: data.consultation_types,
           }
@@ -84,34 +86,36 @@ export const useDoctorVerification = () => {
         .single();
 
       if (verificationError) {
-        console.error('Verification table error:', verificationError);
-        // If table doesn't exist yet, just show success for profile update
-        toast.success('Profile updated. Verification system will be available soon.');
-        return { success: true };
+        console.error('Verification error:', verificationError);
+        throw verificationError;
       }
 
       // Upload verification documents records
       if (verificationData && (medical_license_url || professional_id_url)) {
         const documents = [];
         if (medical_license_url) {
+          const urlParts = medical_license_url.split('/');
+          const fileName = urlParts[urlParts.length - 1];
           documents.push({
-            verification_id: verificationData.id,
+            doctor_verification_id: verificationData.id,
             document_type: 'medical_license',
-            document_url: medical_license_url,
-            uploaded_at: new Date().toISOString(),
+            file_path: medical_license_url,
+            file_name: fileName,
           });
         }
         if (professional_id_url) {
+          const urlParts = professional_id_url.split('/');
+          const fileName = urlParts[urlParts.length - 1];
           documents.push({
-            verification_id: verificationData.id,
+            doctor_verification_id: verificationData.id,
             document_type: 'professional_id',
-            document_url: professional_id_url,
-            uploaded_at: new Date().toISOString(),
+            file_path: professional_id_url,
+            file_name: fileName,
           });
         }
 
         const { error: docsError } = await (supabase as any)
-          .from('verification_documents')
+          .from('doctor_verification_documents')
           .insert(documents);
 
         if (docsError) {
