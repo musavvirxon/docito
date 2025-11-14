@@ -8,8 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
-import { Eye, EyeOff, Upload, Info, User, Briefcase, Building2, FileText, Settings, Shield, FileCheck } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Upload, Info, User, Briefcase, Building2, FileText, Settings, Shield, FileCheck } from "lucide-react";
 import { useSimpleForm } from "@/hooks/useSimpleForm";
 import { useQuickNavigate } from "@/hooks/useQuickNavigate";
 import { useFileUpload } from "@/hooks/useFileUpload";
@@ -18,12 +18,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
 const DoctorSignUp = () => {
   const { t } = useTranslation('auth');
-  const { user } = useAuth();
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
   const [hasAssociatedPractice, setHasAssociatedPractice] = useState<string>("");
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [languageSearch, setLanguageSearch] = useState("");
@@ -38,6 +38,14 @@ const DoctorSignUp = () => {
   const { navigateToDoctorDashboard } = useQuickNavigate();
   const { uploadFile, uploading } = useFileUpload();
   const { submitForVerification, isSubmitting } = useDoctorVerification();
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      toast.error('Please log in to complete your doctor profile');
+      navigate('/auth');
+    }
+  }, [user, loading, navigate]);
   
   const {
     formData,
@@ -52,9 +60,6 @@ const DoctorSignUp = () => {
     lastName: "",
     gender: "",
     phone: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
     specialty: "",
     degrees: "",
     experience: "",
@@ -104,18 +109,6 @@ const DoctorSignUp = () => {
     { id: 3, name: "Family Care Associates", address: "789 Pine St, Chicago, IL", verified: false }
   ];
 
-  const getPasswordStrength = (password: string) => {
-    if (password.length < 4) return { level: 0, text: t("doctorSignup.password.strength.tooWeak"), color: "text-red-500" };
-    if (password.length < 6) return { level: 1, text: t("doctorSignup.password.strength.weak"), color: "text-orange-500" };
-    if (password.length < 8) return { level: 2, text: t("doctorSignup.password.strength.fair"), color: "text-yellow-500" };
-    if (password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password)) 
-      return { level: 3, text: t("doctorSignup.password.strength.strong"), color: "text-green-500" };
-    return { level: 2, text: t("doctorSignup.password.strength.fair"), color: "text-yellow-500" };
-  };
-
-  const passwordStrength = getPasswordStrength(formData.password || "");
-  const passwordsMatch = formData.password && formData.confirmPassword && formData.password === formData.confirmPassword;
-
   const toggleLanguage = (language: string) => {
     setSelectedLanguages(prev => 
       prev.includes(language) 
@@ -157,35 +150,18 @@ const DoctorSignUp = () => {
     }
   };
 
-  const handleDoctorSignUp = async () => {
+  const handleDoctorOnboarding = async () => {
+    if (!user) {
+      toast.error('You must be logged in to complete your profile');
+      navigate('/auth');
+      return;
+    }
+
     try {
-      let currentUserId = user?.id;
-      
-      // Step 1: Create auth user only if not already logged in
-      if (!user) {
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/doctor-dashboard`,
-            data: {
-              full_name: `${formData.firstName} ${formData.lastName}`,
-              role: 'doctor'
-            }
-          }
-        });
-
-        if (authError) throw authError;
-        if (!authData.user) throw new Error('User creation failed');
-        currentUserId = authData.user.id;
-      }
-
-      if (!currentUserId) throw new Error('User ID not found');
-
       // Upload avatar if provided
       let avatar_url = '';
       if (avatar) {
-        const avatarResult = await uploadFile(avatar, 'avatars', `${currentUserId}/avatar-${Date.now()}.jpg`);
+        const avatarResult = await uploadFile(avatar, 'avatars', `${user.id}/avatar-${Date.now()}.jpg`);
         if (avatarResult) avatar_url = avatarResult.url;
       }
 
@@ -193,7 +169,7 @@ const DoctorSignUp = () => {
       const { data: existingDoctor } = await supabase
         .from('doctors')
         .select('id')
-        .eq('user_id', currentUserId)
+        .eq('user_id', user.id)
         .single();
 
       let doctorId: string;
@@ -203,7 +179,7 @@ const DoctorSignUp = () => {
         const { error: updateError } = await supabase
           .from('doctors')
           .update({
-            specialty: formData.specialty || 'general',
+            specialty: formData.specialty || 'General Practice',
             bio: formData.bio,
             license_number: formData.license,
             consultation_fee: 0,
@@ -213,12 +189,12 @@ const DoctorSignUp = () => {
         if (updateError) throw updateError;
         doctorId = existingDoctor.id;
       } else {
-        // Create new doctor profile
+        // Create new doctor profile (unverified by default)
         const { data: doctorData, error: doctorError } = await supabase
           .from('doctors')
           .insert({
-            user_id: currentUserId,
-            specialty: formData.specialty || 'general',
+            user_id: user.id,
+            specialty: formData.specialty || 'General Practice',
             bio: formData.bio,
             license_number: formData.license,
             consultation_fee: 0,
@@ -231,9 +207,9 @@ const DoctorSignUp = () => {
         doctorId = doctorData.id;
       }
 
-      // Always submit for verification
-      await submitForVerification(doctorId, {
-        specialty: formData.specialty || 'general',
+      // Submit for super-admin verification
+      const result = await submitForVerification(doctorId, {
+        specialty: formData.specialty || 'General Practice',
         bio: formData.bio || '',
         license_number: formData.license || '',
         consultation_fee: 0,
@@ -246,19 +222,38 @@ const DoctorSignUp = () => {
         },
       });
 
-      toast.success(t('doctorSignup.messages.profileCreated'));
-      toast.info('Your application has been submitted for verification. You will be notified once it is reviewed.');
-      setTimeout(() => navigateToDoctorDashboard(), 2000);
+      if (result.success) {
+        toast.success('Profile submitted for verification!');
+        toast.info('A super admin will review your application. You will be notified once it is reviewed.');
+        setTimeout(() => navigateToDoctorDashboard(), 2000);
+      }
     } catch (error: any) {
-      console.error('Error creating doctor profile:', error);
-      toast.error(error.message || t('doctorSignup.messages.profileError'));
+      console.error('Error submitting profile:', error);
+      toast.error(error.message || 'Failed to submit profile for verification');
     }
   };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await handleSubmit(handleDoctorSignUp, { skipValidation: true });
+    await handleSubmit(handleDoctorOnboarding, { skipValidation: true });
   };
+
+  // Show loading state while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated (will redirect)
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -269,11 +264,17 @@ const DoctorSignUp = () => {
           {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              {t('doctorSignup.title')}
+              Complete Your Doctor Profile
             </h1>
-            <p className="text-xl text-muted-foreground">
-              {t('doctorSignup.subtitle')}
+            <p className="text-xl text-muted-foreground mb-4">
+              Submit your profile for verification by our team
             </p>
+            <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 max-w-2xl mx-auto">
+              <p className="text-sm text-blue-900 dark:text-blue-100">
+                <Shield className="w-4 h-4 inline mr-2" />
+                Your profile will be reviewed by a super admin before becoming public. You'll receive a notification once verified.
+              </p>
+            </div>
           </div>
 
           {/* Progress Indicator */}
@@ -331,90 +332,6 @@ const DoctorSignUp = () => {
                     <Input id="phone" placeholder={t('doctorSignup.placeholders.phone')} />
                   </div>
                 </div>
-
-                <div>
-                  <Label htmlFor="email">{t('doctorSignup.fields.email')} ({t('doctorSignup.buttons.optional')})</Label>
-                  <Input 
-                    id="email" 
-                    type="email" 
-                    placeholder={t('doctorSignup.placeholders.email')}
-                    value={user?.email || formData.email}
-                    onChange={(e) => updateField('email', e.target.value)}
-                    disabled={!!user}
-                  />
-                  <p className="text-sm text-muted-foreground mt-1">{t('doctorSignup.help.emailUsage')}</p>
-                </div>
-
-                {!user && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <Label htmlFor="password">{t('doctorSignup.fields.password')} ({t('doctorSignup.buttons.optional')})</Label>
-                      <div className="relative">
-                        <Input 
-                          id="password" 
-                          type={showPassword ? "text" : "password"} 
-                          placeholder={t('doctorSignup.placeholders.password')}
-                          value={formData.password}
-                          onChange={(e) => updateField('password', e.target.value)}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-2 top-1/2 transform -translate-y-1/2"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </Button>
-                      </div>
-                      {formData.password && (
-                        <div className="mt-2">
-                          <div className="flex items-center space-x-2">
-                            <div className="flex-1 h-1 bg-muted rounded">
-                              <div 
-                                className={`h-full rounded transition-all duration-300 ${
-                                  passwordStrength.level === 0 ? 'w-1/4 bg-red-500' :
-                                  passwordStrength.level === 1 ? 'w-1/2 bg-orange-500' :
-                                  passwordStrength.level === 2 ? 'w-3/4 bg-yellow-500' :
-                                  'w-full bg-green-500'
-                                }`}
-                              />
-                            </div>
-                            <span className={`text-sm font-medium ${passwordStrength.color}`}>
-                              {passwordStrength.text}
-                            </span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      <Label htmlFor="confirmPassword">{t('doctorSignup.fields.confirmPassword')} ({t('doctorSignup.buttons.optional')})</Label>
-                      <div className="relative">
-                        <Input 
-                          id="confirmPassword" 
-                          type={showConfirmPassword ? "text" : "password"} 
-                          placeholder={t('doctorSignup.placeholders.confirmPassword')}
-                          value={formData.confirmPassword}
-                          onChange={(e) => updateField('confirmPassword', e.target.value)}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-2 top-1/2 transform -translate-y-1/2"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        >
-                          {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </Button>
-                      </div>
-                      {formData.confirmPassword && (
-                        <div className={`mt-2 text-sm font-medium ${passwordsMatch ? 'text-green-600' : 'text-red-600'}`}>
-                          {passwordsMatch ? t('doctorSignup.password.match') : t('doctorSignup.password.noMatch')}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
               </CardContent>
             </Card>
 
