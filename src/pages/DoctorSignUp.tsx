@@ -14,12 +14,14 @@ import { useSimpleForm } from "@/hooks/useSimpleForm";
 import { useQuickNavigate } from "@/hooks/useQuickNavigate";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { useDoctorVerification } from "@/hooks/useDoctorVerification";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
 const DoctorSignUp = () => {
   const { t } = useTranslation('auth');
+  const { user } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [hasAssociatedPractice, setHasAssociatedPractice] = useState<string>("");
@@ -157,46 +159,80 @@ const DoctorSignUp = () => {
 
   const handleDoctorSignUp = async () => {
     try {
-      // Create auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            full_name: `${formData.firstName} ${formData.lastName}`,
-            role: 'doctor'
+      let currentUserId = user?.id;
+      
+      // Step 1: Create auth user only if not already logged in
+      if (!user) {
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/doctor-dashboard`,
+            data: {
+              full_name: `${formData.firstName} ${formData.lastName}`,
+              role: 'doctor'
+            }
           }
-        }
-      });
+        });
 
-      if (authError) throw authError;
-      if (!authData.user) throw new Error('User creation failed');
+        if (authError) throw authError;
+        if (!authData.user) throw new Error('User creation failed');
+        currentUserId = authData.user.id;
+      }
+
+      if (!currentUserId) throw new Error('User ID not found');
 
       // Upload avatar if provided
       let avatar_url = '';
       if (avatar) {
-        const avatarResult = await uploadFile(avatar, 'avatars', `${authData.user.id}/avatar-${Date.now()}.jpg`);
+        const avatarResult = await uploadFile(avatar, 'avatars', `${currentUserId}/avatar-${Date.now()}.jpg`);
         if (avatarResult) avatar_url = avatarResult.url;
       }
 
-      // Create doctor profile
-      const { data: doctorData, error: doctorError } = await supabase
+      // Check if doctor profile already exists
+      const { data: existingDoctor } = await supabase
         .from('doctors')
-        .insert({
-          user_id: authData.user.id,
-          specialty: formData.specialty || 'general',
-          bio: formData.bio,
-          license_number: formData.license,
-          consultation_fee: 0,
-          verified: false,
-        })
-        .select()
+        .select('id')
+        .eq('user_id', currentUserId)
         .single();
 
-      if (doctorError) throw doctorError;
+      let doctorId: string;
+
+      if (existingDoctor) {
+        // Update existing doctor profile
+        const { error: updateError } = await supabase
+          .from('doctors')
+          .update({
+            specialty: formData.specialty || 'general',
+            bio: formData.bio,
+            license_number: formData.license,
+            consultation_fee: 0,
+          })
+          .eq('id', existingDoctor.id);
+
+        if (updateError) throw updateError;
+        doctorId = existingDoctor.id;
+      } else {
+        // Create new doctor profile
+        const { data: doctorData, error: doctorError } = await supabase
+          .from('doctors')
+          .insert({
+            user_id: currentUserId,
+            specialty: formData.specialty || 'general',
+            bio: formData.bio,
+            license_number: formData.license,
+            consultation_fee: 0,
+            verified: false,
+          })
+          .select()
+          .single();
+
+        if (doctorError) throw doctorError;
+        doctorId = doctorData.id;
+      }
 
       // Always submit for verification
-      await submitForVerification(doctorData.id, {
+      await submitForVerification(doctorId, {
         specialty: formData.specialty || 'general',
         bio: formData.bio || '',
         license_number: formData.license || '',
@@ -298,78 +334,87 @@ const DoctorSignUp = () => {
 
                 <div>
                   <Label htmlFor="email">{t('doctorSignup.fields.email')} ({t('doctorSignup.buttons.optional')})</Label>
-                  <Input id="email" type="email" placeholder={t('doctorSignup.placeholders.email')} />
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder={t('doctorSignup.placeholders.email')}
+                    value={user?.email || formData.email}
+                    onChange={(e) => updateField('email', e.target.value)}
+                    disabled={!!user}
+                  />
                   <p className="text-sm text-muted-foreground mt-1">{t('doctorSignup.help.emailUsage')}</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Label htmlFor="password">{t('doctorSignup.fields.password')} ({t('doctorSignup.buttons.optional')})</Label>
-                    <div className="relative">
-                      <Input 
-                        id="password" 
-                        type={showPassword ? "text" : "password"} 
-                        placeholder={t('doctorSignup.placeholders.password')}
-                        value={formData.password}
-                        onChange={(e) => updateField('password', e.target.value)}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </Button>
-                    </div>
-                    {formData.password && (
-                      <div className="mt-2">
-                        <div className="flex items-center space-x-2">
-                          <div className="flex-1 h-1 bg-muted rounded">
-                            <div 
-                              className={`h-full rounded transition-all duration-300 ${
-                                passwordStrength.level === 0 ? 'w-1/4 bg-red-500' :
-                                passwordStrength.level === 1 ? 'w-1/2 bg-orange-500' :
-                                passwordStrength.level === 2 ? 'w-3/4 bg-yellow-500' :
-                                'w-full bg-green-500'
-                              }`}
-                            />
+                {!user && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <Label htmlFor="password">{t('doctorSignup.fields.password')} ({t('doctorSignup.buttons.optional')})</Label>
+                      <div className="relative">
+                        <Input 
+                          id="password" 
+                          type={showPassword ? "text" : "password"} 
+                          placeholder={t('doctorSignup.placeholders.password')}
+                          value={formData.password}
+                          onChange={(e) => updateField('password', e.target.value)}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </Button>
+                      </div>
+                      {formData.password && (
+                        <div className="mt-2">
+                          <div className="flex items-center space-x-2">
+                            <div className="flex-1 h-1 bg-muted rounded">
+                              <div 
+                                className={`h-full rounded transition-all duration-300 ${
+                                  passwordStrength.level === 0 ? 'w-1/4 bg-red-500' :
+                                  passwordStrength.level === 1 ? 'w-1/2 bg-orange-500' :
+                                  passwordStrength.level === 2 ? 'w-3/4 bg-yellow-500' :
+                                  'w-full bg-green-500'
+                                }`}
+                              />
+                            </div>
+                            <span className={`text-sm font-medium ${passwordStrength.color}`}>
+                              {passwordStrength.text}
+                            </span>
                           </div>
-                          <span className={`text-sm font-medium ${passwordStrength.color}`}>
-                            {passwordStrength.text}
-                          </span>
                         </div>
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <Label htmlFor="confirmPassword">{t('doctorSignup.fields.confirmPassword')} ({t('doctorSignup.buttons.optional')})</Label>
-                    <div className="relative">
-                      <Input 
-                        id="confirmPassword" 
-                        type={showConfirmPassword ? "text" : "password"} 
-                        placeholder={t('doctorSignup.placeholders.confirmPassword')}
-                        value={formData.confirmPassword}
-                        onChange={(e) => updateField('confirmPassword', e.target.value)}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      >
-                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </Button>
+                      )}
                     </div>
-                    {formData.confirmPassword && (
-                      <div className={`mt-2 text-sm font-medium ${passwordsMatch ? 'text-green-600' : 'text-red-600'}`}>
-                        {passwordsMatch ? t('doctorSignup.password.match') : t('doctorSignup.password.noMatch')}
+                    <div>
+                      <Label htmlFor="confirmPassword">{t('doctorSignup.fields.confirmPassword')} ({t('doctorSignup.buttons.optional')})</Label>
+                      <div className="relative">
+                        <Input 
+                          id="confirmPassword" 
+                          type={showConfirmPassword ? "text" : "password"} 
+                          placeholder={t('doctorSignup.placeholders.confirmPassword')}
+                          value={formData.confirmPassword}
+                          onChange={(e) => updateField('confirmPassword', e.target.value)}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        >
+                          {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </Button>
                       </div>
-                    )}
+                      {formData.confirmPassword && (
+                        <div className={`mt-2 text-sm font-medium ${passwordsMatch ? 'text-green-600' : 'text-red-600'}`}>
+                          {passwordsMatch ? t('doctorSignup.password.match') : t('doctorSignup.password.noMatch')}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
               </CardContent>
             </Card>
 
