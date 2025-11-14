@@ -126,7 +126,7 @@ const DoctorSettingsSection = () => {
 
       <Tabs defaultValue="general" className="space-y-4">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="general">{$(doctor.settings.tabs.general)}</TabsTrigger>
+          <TabsTrigger value="general">{t("doctor.settings.tabs.general")}</TabsTrigger>
           <TabsTrigger value="notifications">{t("doctor.settings.tabs.notifications")}</TabsTrigger>
           <TabsTrigger value="calendar">{t("doctor.settings.tabs.calendar")}</TabsTrigger>
           <TabsTrigger value="security">{t("doctor.settings.tabs.security")}</TabsTrigger>
