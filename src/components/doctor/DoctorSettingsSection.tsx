@@ -6,7 +6,17 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Eye, EyeOff, Settings, Bell, Calendar, Shield, Trash2, RefreshCw, Loader2 } from "lucide-react";
 import { useSettings } from "@/hooks/useSettings";
 import { SecuritySettings } from "../dashboard/SecuritySettings";
@@ -26,7 +36,7 @@ const DoctorSettingsSection = () => {
     updateNotificationSettings,
     updateCalendarSync,
     updatePrivacySettings,
-    changePassword
+    changePassword,
   } = useSettings();
 
   // Local state for pending changes
@@ -52,21 +62,15 @@ const DoctorSettingsSection = () => {
 
   // Check for changes
   const checkAccountChanges = (newSettings: typeof accountSettings) => {
-    setHasAccountChanges(
-      JSON.stringify(newSettings) !== JSON.stringify(accountSettings)
-    );
+    setHasAccountChanges(JSON.stringify(newSettings) !== JSON.stringify(accountSettings));
   };
 
   const checkNotificationChanges = (newSettings: typeof notifications) => {
-    setHasNotificationChanges(
-      JSON.stringify(newSettings) !== JSON.stringify(notifications)
-    );
+    setHasNotificationChanges(JSON.stringify(newSettings) !== JSON.stringify(notifications));
   };
 
   const checkPrivacyChanges = (newSettings: typeof privacySettings) => {
-    setHasPrivacyChanges(
-      JSON.stringify(newSettings) !== JSON.stringify(privacySettings)
-    );
+    setHasPrivacyChanges(JSON.stringify(newSettings) !== JSON.stringify(privacySettings));
   };
 
   // Save handlers
@@ -122,7 +126,7 @@ const DoctorSettingsSection = () => {
 
       <Tabs defaultValue="general" className="space-y-4">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="general">{t("doctor.settings.tabs.general")}</TabsTrigger>
+          <TabsTrigger value="general">{$(doctor.settings.tabs.general)}</TabsTrigger>
           <TabsTrigger value="notifications">{t("doctor.settings.tabs.notifications")}</TabsTrigger>
           <TabsTrigger value="calendar">{t("doctor.settings.tabs.calendar")}</TabsTrigger>
           <TabsTrigger value="security">{t("doctor.settings.tabs.security")}</TabsTrigger>
@@ -139,9 +143,9 @@ const DoctorSettingsSection = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="email">{t("doctor.settings.account.email")}</Label>
-                  <Input 
-                    id="email" 
-                    type="email" 
+                  <Input
+                    id="email"
+                    type="email"
                     value={localAccountSettings.email}
                     onChange={(e) => {
                       const newSettings = { ...localAccountSettings, email: e.target.value };
@@ -152,7 +156,7 @@ const DoctorSettingsSection = () => {
                 </div>
                 <div>
                   <Label htmlFor="phone">{t("doctor.settings.account.phone")}</Label>
-                  <Input 
+                  <Input
                     id="phone"
                     value={localAccountSettings.phone}
                     onChange={(e) => {
@@ -163,11 +167,11 @@ const DoctorSettingsSection = () => {
                   />
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="timezone">{t("doctor.settings.account.timezone")}</Label>
-                  <Select 
+                  <Select
                     value={localAccountSettings.timezone}
                     onValueChange={(value) => {
                       const newSettings = { ...localAccountSettings, timezone: value };
@@ -188,7 +192,7 @@ const DoctorSettingsSection = () => {
                 </div>
                 <div>
                   <Label htmlFor="language">{t("doctor.settings.account.language")}</Label>
-                  <Select 
+                  <Select
                     value={localAccountSettings.language}
                     onValueChange={(value) => {
                       const newSettings = { ...localAccountSettings, language: value };
@@ -225,9 +229,11 @@ const DoctorSettingsSection = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="font-medium">{t("doctor.settings.privacy.profileVisibility")}</div>
-                  <div className="text-sm text-muted-foreground">{t("doctor.settings.privacy.profileVisibilityDesc")}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {t("doctor.settings.privacy.profileVisibilityDesc")}
+                  </div>
                 </div>
-                <Switch 
+                <Switch
                   checked={localPrivacySettings.profileVisibility}
                   onCheckedChange={(checked) => {
                     const newSettings = { ...localPrivacySettings, profileVisibility: checked };
@@ -236,13 +242,13 @@ const DoctorSettingsSection = () => {
                   }}
                 />
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div>
                   <div className="font-medium">{t("doctor.settings.privacy.shareAnalytics")}</div>
                   <div className="text-sm text-muted-foreground">{t("doctor.settings.privacy.shareAnalyticsDesc")}</div>
                 </div>
-                <Switch 
+                <Switch
                   checked={localPrivacySettings.shareAnalytics}
                   onCheckedChange={(checked) => {
                     const newSettings = { ...localPrivacySettings, shareAnalytics: checked };
@@ -251,13 +257,13 @@ const DoctorSettingsSection = () => {
                   }}
                 />
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div>
                   <div className="font-medium">{t("doctor.settings.privacy.marketingComms")}</div>
                   <div className="text-sm text-muted-foreground">{t("doctor.settings.privacy.marketingCommsDesc")}</div>
                 </div>
-                <Switch 
+                <Switch
                   checked={localPrivacySettings.marketingCommunications}
                   onCheckedChange={(checked) => {
                     const newSettings = { ...localPrivacySettings, marketingCommunications: checked };
@@ -292,9 +298,11 @@ const DoctorSettingsSection = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="font-medium">{t("doctor.settings.notificationPreferences.email.bookings")}</div>
-                      <div className="text-sm text-muted-foreground">{t("doctor.settings.notificationPreferences.email.bookingsDesc")}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {t("doctor.settings.notificationPreferences.email.bookingsDesc")}
+                      </div>
                     </div>
-                    <Switch 
+                    <Switch
                       checked={localNotifications.emailBookings}
                       onCheckedChange={(checked) => {
                         const newSettings = { ...localNotifications, emailBookings: checked };
@@ -303,13 +311,15 @@ const DoctorSettingsSection = () => {
                       }}
                     />
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="font-medium">{t("doctor.settings.notificationPreferences.email.reminders")}</div>
-                      <div className="text-sm text-muted-foreground">{t("doctor.settings.notificationPreferences.email.remindersDesc")}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {t("doctor.settings.notificationPreferences.email.remindersDesc")}
+                      </div>
                     </div>
-                    <Switch 
+                    <Switch
                       checked={localNotifications.emailReminders}
                       onCheckedChange={(checked) => {
                         const newSettings = { ...localNotifications, emailReminders: checked };
@@ -318,13 +328,17 @@ const DoctorSettingsSection = () => {
                       }}
                     />
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-medium">{t("doctor.settings.notificationPreferences.email.cancellations")}</div>
-                      <div className="text-sm text-muted-foreground">{t("doctor.settings.notificationPreferences.email.cancellationsDesc")}</div>
+                      <div className="font-medium">
+                        {t("doctor.settings.notificationPreferences.email.cancellations")}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {t("doctor.settings.notificationPreferences.email.cancellationsDesc")}
+                      </div>
                     </div>
-                    <Switch 
+                    <Switch
                       checked={localNotifications.emailCancellations}
                       onCheckedChange={(checked) => {
                         const newSettings = { ...localNotifications, emailCancellations: checked };
@@ -343,9 +357,11 @@ const DoctorSettingsSection = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="font-medium">{t("doctor.settings.notificationPreferences.sms.bookings")}</div>
-                      <div className="text-sm text-muted-foreground">{t("doctor.settings.notificationPreferences.sms.bookingsDesc")}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {t("doctor.settings.notificationPreferences.sms.bookingsDesc")}
+                      </div>
                     </div>
-                    <Switch 
+                    <Switch
                       checked={localNotifications.smsBookings}
                       onCheckedChange={(checked) => {
                         const newSettings = { ...localNotifications, smsBookings: checked };
@@ -354,13 +370,15 @@ const DoctorSettingsSection = () => {
                       }}
                     />
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="font-medium">{t("doctor.settings.notificationPreferences.sms.reminders")}</div>
-                      <div className="text-sm text-muted-foreground">{t("doctor.settings.notificationPreferences.sms.remindersDesc")}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {t("doctor.settings.notificationPreferences.sms.remindersDesc")}
+                      </div>
                     </div>
-                    <Switch 
+                    <Switch
                       checked={localNotifications.smsReminders}
                       onCheckedChange={(checked) => {
                         const newSettings = { ...localNotifications, smsReminders: checked };
@@ -369,13 +387,17 @@ const DoctorSettingsSection = () => {
                       }}
                     />
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-medium">{t("doctor.settings.notificationPreferences.sms.cancellations")}</div>
-                      <div className="text-sm text-muted-foreground">{t("doctor.settings.notificationPreferences.sms.cancellationsDesc")}</div>
+                      <div className="font-medium">
+                        {t("doctor.settings.notificationPreferences.sms.cancellations")}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {t("doctor.settings.notificationPreferences.sms.cancellationsDesc")}
+                      </div>
                     </div>
-                    <Switch 
+                    <Switch
                       checked={localNotifications.smsCancellations}
                       onCheckedChange={(checked) => {
                         const newSettings = { ...localNotifications, smsCancellations: checked };
@@ -393,9 +415,11 @@ const DoctorSettingsSection = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium">{t("doctor.settings.notificationPreferences.push.browser")}</div>
-                    <div className="text-sm text-muted-foreground">{t("doctor.settings.notificationPreferences.push.browserDesc")}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {t("doctor.settings.notificationPreferences.push.browserDesc")}
+                    </div>
                   </div>
-                  <Switch 
+                  <Switch
                     checked={localNotifications.pushNotifications}
                     onCheckedChange={(checked) => {
                       const newSettings = { ...localNotifications, pushNotifications: checked };
@@ -433,13 +457,15 @@ const DoctorSettingsSection = () => {
                     <div>
                       <div className="font-medium">{t("doctor.settings.calendar.google")}</div>
                       <div className="text-sm text-muted-foreground">
-                        {calendarSync.googleCalendar ? t("doctor.settings.calendar.connected") : t("doctor.settings.calendar.notConnected")}
+                        {calendarSync.googleCalendar
+                          ? t("doctor.settings.calendar.connected")
+                          : t("doctor.settings.calendar.notConnected")}
                       </div>
                     </div>
                   </div>
-                  <Switch 
+                  <Switch
                     checked={calendarSync.googleCalendar}
-                    onCheckedChange={(checked) => updateCalendarSync('googleCalendar', checked)}
+                    onCheckedChange={(checked) => updateCalendarSync("googleCalendar", checked)}
                     disabled={saving}
                   />
                 </div>
@@ -452,13 +478,15 @@ const DoctorSettingsSection = () => {
                     <div>
                       <div className="font-medium">{t("doctor.settings.calendar.outlook")}</div>
                       <div className="text-sm text-muted-foreground">
-                        {calendarSync.outlookCalendar ? t("doctor.settings.calendar.connected") : t("doctor.settings.calendar.notConnected")}
+                        {calendarSync.outlookCalendar
+                          ? t("doctor.settings.calendar.connected")
+                          : t("doctor.settings.calendar.notConnected")}
                       </div>
                     </div>
                   </div>
-                  <Switch 
+                  <Switch
                     checked={calendarSync.outlookCalendar}
-                    onCheckedChange={(checked) => updateCalendarSync('outlookCalendar', checked)}
+                    onCheckedChange={(checked) => updateCalendarSync("outlookCalendar", checked)}
                   />
                 </div>
 
@@ -470,13 +498,15 @@ const DoctorSettingsSection = () => {
                     <div>
                       <div className="font-medium">{t("doctor.settings.calendar.apple")}</div>
                       <div className="text-sm text-muted-foreground">
-                        {calendarSync.appleCalendar ? t("doctor.settings.calendar.connected") : t("doctor.settings.calendar.notConnected")}
+                        {calendarSync.appleCalendar
+                          ? t("doctor.settings.calendar.connected")
+                          : t("doctor.settings.calendar.notConnected")}
                       </div>
                     </div>
                   </div>
-                  <Switch 
+                  <Switch
                     checked={calendarSync.appleCalendar}
-                    onCheckedChange={(checked) => updateCalendarSync('appleCalendar', checked)}
+                    onCheckedChange={(checked) => updateCalendarSync("appleCalendar", checked)}
                   />
                 </div>
               </div>
