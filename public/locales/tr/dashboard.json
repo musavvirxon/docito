@@ -1125,6 +1125,20 @@
     },
     "footer": "© 2025 Docito Yönetici Platformu - Sadece Güvenli Erişim",
     "sessionExpired": "Oturum süresi doldu",
-    "sessionExpiredDesc": "Hareketsizlik nedeniyle çıkış yaptınız"
+    "sessionExpiredDesc": "Hareketsizlik nedeniyle çıkış yaptınız",
+    "performance": {
+      "title": "Performans Analizi",
+      "description": "Performans metriklerinizi ve içgörülerinizi takip edin",
+      "loading": "Performans verileri yükleniyor...",
+      "tabs": {
+        "overview": "Genel Bakış",
+        "services": "Hizmetler"
+      },
+      "overview": {
+        "performanceLevel": "Performans Seviyesi",
+        "totalAppointments": "Toplam Randevular",
+        "completed": "Tamamlandı"
+      }
+    }
   }
 }
