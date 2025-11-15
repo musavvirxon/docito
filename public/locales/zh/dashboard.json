@@ -728,6 +728,93 @@
       "revenue": "收入",
       "engagement": "参与度",
       "reports": "报告"
+    },
+    "performance": {
+      "title": "绩效分析",
+      "description": "跟踪您的绩效指标和洞察",
+      "loading": "加载绩效数据中...",
+      "errorLoading": "加载绩效数据错误",
+      "tryAgain": "重试",
+      "refresh": "刷新",
+      "export": "导出报告",
+      "exportComingSoon": "导出功能即将推出",
+      "dataRefreshed": "绩效数据刷新成功",
+      "newAchievement": "解锁新成就！",
+      "high": "高",
+      "medium": "中",
+      "low": "低",
+      "returning": "回访",
+      "new": "新",
+      "tabs": {
+        "overview": "概览",
+        "services": "服务",
+        "reviews": "评论",
+        "trends": "趋势"
+      },
+      "overview": {
+        "performanceLevel": "绩效水平",
+        "basedOn": "基于完成率、评分和活动",
+        "totalAppointments": "总预约数",
+        "inSelectedPeriod": "在选定期间内",
+        "completed": "已完成",
+        "completionRate": "完成率",
+        "cancelled": "已取消",
+        "noShows": "未到",
+        "activeDays": "活跃天数",
+        "daysWithAppointments": "有预约的天数",
+        "avgDailyPatients": "日均患者",
+        "patientsPerDay": "每个活跃日患者",
+        "avgDuration": "平均时长",
+        "perAppointment": "每次预约",
+        "appointmentTrends": "预约趋势",
+        "dailyBreakdown": "每日预约明细",
+        "total": "总计",
+        "performanceMetrics": "绩效指标",
+        "completionRateLabel": "完成率",
+        "cancellationRate": "取消率",
+        "noShowRate": "未到率"
+      },
+      "services": {
+        "title": "服务分析",
+        "minutes": "分钟",
+        "servicePerformance": "服务表现",
+        "revenueByService": "服务收入",
+        "service": "服务",
+        "bookings": "预订",
+        "revenue": "收入",
+        "avgCost": "平均成本",
+        "topPerformingServices": "表现最佳的服务",
+        "basedOnBookings": "基于预订数量",
+        "revenueBreakdown": "收入明细",
+        "byService": "按服务",
+        "noServicesData": "无可用服务数据"
+      }
+    },
+    "financial": {
+      "title": "财务概览",
+      "description": "跟踪您的收入和收益",
+      "tabs": {
+        "overview": "概览",
+        "services": "服务",
+        "payouts": "支付",
+        "pending": "待处理"
+      },
+      "overview": {
+        "totalRevenue": "总收入",
+        "totalEarnings": "总收益",
+        "allTime": "所有时间",
+        "thisMonth": "本月",
+        "monthlyIncome": "月收入",
+        "lastMonth": "上个月",
+        "pendingPayouts": "待处理支付",
+        "awaitingProcessing": "等待处理",
+        "avgPerAppointment": "每次预约平均",
+        "perBooking": "每次预订",
+        "completedAppointments": "已完成预约",
+        "paidAppointments": "已支付预约",
+        "revenueOverTime": "收入随时间变化",
+        "monthlyBreakdown": "月度明细"
+      }
     }
   }
 }

@@ -465,6 +465,110 @@ export type Database = {
         }
         Relationships: []
       }
+      doctor_verification: {
+        Row: {
+          created_at: string
+          doctor_id: string
+          id: string
+          license_number: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          specialty: string
+          status: string
+          submitted_at: string
+          updated_at: string
+          verification_data: Json | null
+          years_of_experience: string | null
+        }
+        Insert: {
+          created_at?: string
+          doctor_id: string
+          id?: string
+          license_number?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          specialty: string
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+          verification_data?: Json | null
+          years_of_experience?: string | null
+        }
+        Update: {
+          created_at?: string
+          doctor_id?: string
+          id?: string
+          license_number?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          specialty?: string
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+          verification_data?: Json | null
+          years_of_experience?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_verification_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: true
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_verification_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: true
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      doctor_verification_documents: {
+        Row: {
+          created_at: string
+          doctor_verification_id: string
+          document_type: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          id: string
+          uploaded_at: string
+        }
+        Insert: {
+          created_at?: string
+          doctor_verification_id: string
+          document_type: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+          uploaded_at?: string
+        }
+        Update: {
+          created_at?: string
+          doctor_verification_id?: string
+          document_type?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          uploaded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_verification_documents_doctor_verification_id_fkey"
+            columns: ["doctor_verification_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_verification"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       doctors: {
         Row: {
           accepts_new_patients: boolean | null
