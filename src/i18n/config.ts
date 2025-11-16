@@ -40,8 +40,11 @@ i18n
       escapeValue: false,
     },
 
-    ns: ['common', 'home', 'doctors', 'patients', 'auth', 'dashboard', 'support'],
+    ns: ['common', 'home', 'doctors', 'patients', 'auth', 'dashboard', 'support', 'about', 'contact', 'faqs', 'features', 'help', 'legal', 'practices', 'specialties'],
     defaultNS: 'common',
+    
+    // Load namespaces on demand
+    partialBundledLanguages: true,
 
     react: {
       useSuspense: false,
