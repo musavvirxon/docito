@@ -47,19 +47,19 @@ const Pricing = () => {
           
           <TrustIndicators />
           
-          <section id="patients">
+          <section id="patients" className="scroll-mt-20">
             <PatientPlans billingPeriod={billingPeriod} />
           </section>
           
-          <FeatureComparisonTable />
-          
-          <section id="doctors">
+          <section id="doctors" className="scroll-mt-20">
             <DoctorPlans billingPeriod={billingPeriod} />
           </section>
           
-          <section id="clinics">
+          <section id="clinics" className="scroll-mt-20">
             <ClinicPlans billingPeriod={billingPeriod} />
           </section>
+          
+          <FeatureComparisonTable />
           
           <EnterpriseContact />
           
