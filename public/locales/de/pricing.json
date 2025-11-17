@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "Preispläne - Docito Gesundheitsplattform",
+    "description": "Wählen Sie den perfekten Plan für Patienten, Ärzte oder Kliniken. Flexible Preise mit monatlichen und jährlichen Optionen.",
+    "keywords": "Gesundheitspreise, medizinische Plattformpläne, Arztabonnement, Klinikverwaltungspreise"
+  },
+  "header": {
+    "title": "Wählen Sie Ihren Perfekten Plan",
+    "subtitle": "Flexible Preise für Patienten, Ärzte und Kliniken. Skalieren Sie mit Ihrem Wachstum.",
+    "savingsBadge": "Sparen Sie 10% bei jährlicher Abrechnung"
+  },
+  "billing": {
+    "monthly": "Monatlich",
+    "yearly": "Jährlich",
+    "save": "10% Sparen"
+  },
+  "navigation": {
+    "forPatients": "Für Patienten",
+    "forDoctors": "Für Ärzte",
+    "forClinics": "Für Kliniken"
+  },
+  "trust": {
+    "hipaa": {
+      "title": "HIPAA-konform",
+      "description": "Ihre medizinischen Daten sind mit Unternehmenssicherheit geschützt"
+    },
+    "encryption": {
+      "title": "Verschlüsselung auf Bankniveau",
+      "description": "Alle Daten werden bei der Übertragung und im Ruhezustand mit AES-256 verschlüsselt"
+    },
+    "iso": {
+      "title": "ISO 27001 Zertifiziert",
+      "description": "Internationaler Standard für Informationssicherheitsmanagement"
+    },
+    "trusted": {
+      "title": "Vertraut von 50.000+",
+      "description": "Gesundheitsfachkräfte und Patienten weltweit"
+    }
+  },
+  "guarantee": {
+    "title": "3-Tage-Geld-zurück-Garantie",
+    "badge": "Risikofrei",
+    "description": "Testen Sie jeden kostenpflichtigen Plan 30 Tage lang risikofrei. Wenn Sie nicht vollständig zufrieden sind, erstatten wir Ihre Zahlung vollständig - keine Fragen, keine versteckten Gebühren."
+  },
+  "faq": {
+    "title": "Häufig Gestellte Fragen",
+    "subtitle": "Alles, was Sie über unsere Preise wissen müssen",
+    "cardTitle": "Häufige Fragen",
+    "questions": {
+      "changePlan": {
+        "q": "Kann ich meinen Plan jederzeit ändern?",
+        "a": "Ja! Sie können Ihren Plan jederzeit aktualisieren oder herabstufen. Änderungen werden sofort wirksam und wir verrechnen alle Gebühren oder Gutschriften anteilig."
+      },
+      "paymentMethods": {
+        "q": "Welche Zahlungsmethoden akzeptieren Sie?",
+        "a": "Wir akzeptieren alle gängigen Kreditkarten (Visa, Mastercard, American Express, Discover) sowie Banküberweisungen für Unternehmenspläne."
+      },
+      "freeTrial": {
+        "q": "Gibt es eine kostenlose Testversion?",
+        "a": "Ja! Alle neuen Benutzer beginnen mit unserem Access-Plan, der vollständig kostenlos ist. Sie können jederzeit auf einen kostenpflichtigen Plan upgraden, um zusätzliche Funktionen freizuschalten."
+      },
+      "dataDowngrade": {
+        "q": "Was passiert mit meinen Daten, wenn ich herabstufe?",
+        "a": "Ihre Daten sind bei uns immer sicher. Wenn Sie auf einen Plan mit weniger Speicher herabstufen, haben Sie 30 Tage Zeit, um überschüssige Daten herunterzuladen oder zu löschen, bevor ältere Datensätze archiviert werden."
+      },
+      "refunds": {
+        "q": "Bieten Sie Rückerstattungen an?",
+        "a": "Ja, wir bieten eine 30-Tage-Geld-zurück-Garantie für alle kostenpflichtigen Pläne. Wenn Sie nicht zufrieden sind, erstatten wir Ihre Zahlung vollständig, keine Fragen."
+      },
+      "hiddenFees": {
+        "q": "Gibt es Einrichtungsgebühren oder versteckte Kosten?",
+        "a": "Nein! Der Preis, den Sie sehen, ist der Preis, den Sie zahlen. Es gibt keine Einrichtungsgebühren, Stornierungsgebühren oder versteckte Kosten jeglicher Art."
+      },
+      "yearlyDiscount": {
+        "q": "Wie funktioniert der Jahresrabatt?",
+        "a": "Wenn Sie jährliche Abrechnung wählen, sparen Sie 10% im Vergleich zur monatlichen Abrechnung. Sie werden einmal pro Jahr statt jeden Monat belastet."
+      },
+      "separatePlans": {
+        "q": "Können Ärzte und Kliniken unterschiedliche Pläne haben?",
+        "a": "Absolut! Ärzte und Kliniken arbeiten unabhängig mit ihren eigenen separaten Abonnementplänen, die auf ihre spezifischen Bedürfnisse zugeschnitten sind."
+      }
+    }
+  },
+  "enterprise": {
+    "title": "Benötigen Sie eine Unternehmenslösung?",
+    "subtitle": "Für Krankenhäuser, große Kliniken und Gesundheitsnetzwerke",
+    "features": {
+      "customIntegration": "Benutzerdefinierte Integration mit bestehenden Systemen",
+      "accountManager": "Dedizierter Account Manager",
+      "prioritySupport": "24/7 Priority Support",
+      "sla": "Benutzerdefinierte SLA-Vereinbarungen",
+      "advancedSecurity": "Erweiterte Sicherheitsfunktionen",
+      "compliance": "Compliance-Beratung",
+      "unlimited": "Unbegrenzte Benutzer und Speicher",
+      "onPremise": "On-Premise-Bereitstellungsoptionen"
+    },
+    "emailButton": "E-Mail an Vertriebsteam",
+    "scheduleButton": "Anruf Planen",
+    "responseTime": "Antwortzeit: Innerhalb von 24 Stunden an Werktagen"
+  },
+  "cta": {
+    "title": "Bereit, Ihre Gesundheitserfahrung zu Transformieren?",
+    "subtitle": "Schließen Sie sich Tausenden zufriedener Patienten, Ärzte und Kliniken an, die bereits Docito verwenden",
+    "startButton": "Heute Kostenlos Starten",
+    "contactButton": "Vertrieb Kontaktieren",
+    "footer": "Keine Kreditkarte erforderlich • Jederzeit kündbar • 30-Tage-Geld-zurück-Garantie"
+  }
+}

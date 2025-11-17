@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "Pricing Plans - Docito Healthcare Platform",
+    "description": "Choose the perfect plan for patients, doctors, or clinics. Flexible pricing with monthly and yearly options.",
+    "keywords": "healthcare pricing, medical platform plans, doctor subscription, clinic management pricing"
+  },
+  "header": {
+    "title": "Choose Your Perfect Plan",
+    "subtitle": "Flexible pricing for patients, doctors, and clinics. Scale as you grow.",
+    "savingsBadge": "Save 10% with yearly billing"
+  },
+  "billing": {
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "save": "Save 10%"
+  },
+  "navigation": {
+    "forPatients": "For Patients",
+    "forDoctors": "For Doctors",
+    "forClinics": "For Clinics"
+  },
+  "trust": {
+    "hipaa": {
+      "title": "HIPAA Compliant",
+      "description": "Your medical data is protected with enterprise-grade security"
+    },
+    "encryption": {
+      "title": "Bank-Level Encryption",
+      "description": "All data encrypted in transit and at rest with AES-256"
+    },
+    "iso": {
+      "title": "ISO 27001 Certified",
+      "description": "International standard for information security management"
+    },
+    "trusted": {
+      "title": "Trusted by 50,000+",
+      "description": "Healthcare professionals and patients worldwide"
+    }
+  },
+  "guarantee": {
+    "title": "3-Day Money-Back Guarantee",
+    "badge": "Risk-Free",
+    "description": "Try any paid plan risk-free for 30 days. If you're not completely satisfied, we'll refund your payment in full—no questions asked, no hidden fees."
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Everything you need to know about our pricing",
+    "cardTitle": "Common Questions",
+    "questions": {
+      "changePlan": {
+        "q": "Can I change my plan at any time?",
+        "a": "Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately, and we'll prorate any charges or credits."
+      },
+      "paymentMethods": {
+        "q": "What payment methods do you accept?",
+        "a": "We accept all major credit cards (Visa, Mastercard, American Express, Discover), as well as bank transfers for enterprise plans."
+      },
+      "freeTrial": {
+        "q": "Is there a free trial available?",
+        "a": "Yes! All new users start with our Access plan which is completely free. You can upgrade to a paid plan at any time to unlock additional features."
+      },
+      "dataDowngrade": {
+        "q": "What happens to my data if I downgrade?",
+        "a": "Your data is always safe with us. If you downgrade to a plan with less storage, you'll have 30 days to download or delete excess data before older records are archived."
+      },
+      "refunds": {
+        "q": "Do you offer refunds?",
+        "a": "Yes, we offer a 30-day money-back guarantee on all paid plans. If you're not satisfied, we'll refund your payment in full, no questions asked."
+      },
+      "hiddenFees": {
+        "q": "Are there any setup fees or hidden charges?",
+        "a": "No! The price you see is the price you pay. There are no setup fees, cancellation fees, or hidden charges of any kind."
+      },
+      "yearlyDiscount": {
+        "q": "How does the yearly discount work?",
+        "a": "When you choose yearly billing, you save 10% compared to monthly billing. You'll be charged once per year instead of every month."
+      },
+      "separatePlans": {
+        "q": "Can doctors and clinics have different plans?",
+        "a": "Absolutely! Doctors and clinics operate independently with their own separate subscription plans tailored to their specific needs."
+      }
+    }
+  },
+  "enterprise": {
+    "title": "Need an Enterprise Solution?",
+    "subtitle": "For hospitals, large clinics, and healthcare networks",
+    "features": {
+      "customIntegration": "Custom integration with existing systems",
+      "accountManager": "Dedicated account manager",
+      "prioritySupport": "24/7 priority support",
+      "sla": "Custom SLA agreements",
+      "advancedSecurity": "Advanced security features",
+      "compliance": "Compliance consulting",
+      "unlimited": "Unlimited users and storage",
+      "onPremise": "On-premise deployment options"
+    },
+    "emailButton": "Email Sales Team",
+    "scheduleButton": "Schedule a Call",
+    "responseTime": "Response time: Within 24 hours on business days"
+  },
+  "cta": {
+    "title": "Ready to Transform Your Healthcare Experience?",
+    "subtitle": "Join thousands of satisfied patients, doctors, and clinics already using Docito",
+    "startButton": "Start Free Today",
+    "contactButton": "Contact Sales",
+    "footer": "No credit card required • Cancel anytime • 30-day money-back guarantee"
+  }
+}
