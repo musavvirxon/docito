@@ -48,8 +48,8 @@ export const PlanCard = ({ plan, popular, enterprise, billingPeriod }: PlanCardP
 
   return (
     <Card 
-      className={`relative flex flex-col transition-all duration-300 hover:shadow-xl ${
-        popular ? 'border-primary shadow-lg scale-105' : 'border-border'
+      className={`relative flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
+        popular ? 'border-primary shadow-lg scale-105 z-10' : 'border-border'
       } ${enterprise ? 'bg-gradient-to-br from-card to-primary/5' : 'bg-card'}`}
     >
       {popular && (
