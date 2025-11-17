@@ -41,7 +41,7 @@ export const useLanguagePreference = () => {
     loadLanguagePreference();
   }, [user, i18n]);
 
-  // Save language preference
+  // Save language preference (without reloading page)
   const saveLanguagePreference = useCallback(async (language: string) => {
     setLoading(true);
     try {
@@ -49,7 +49,7 @@ export const useLanguagePreference = () => {
       localStorage.setItem('i18nextLng', language);
       
       if (user) {
-        // Authenticated: save to database
+        // Authenticated: save to database (preserves auth state)
         const { error } = await supabase
           .from('user_preferences')
           .upsert({
@@ -63,7 +63,7 @@ export const useLanguagePreference = () => {
         if (error) throw error;
       }
 
-      // Change i18n language
+      // Change i18n language immediately
       await i18n.changeLanguage(language);
       
       // Update document direction for RTL languages
