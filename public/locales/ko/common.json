@@ -15,7 +15,12 @@
     "findDoctors": "의사 찾기",
     "features": "기능",
     "pricing": "가격",
-    "scheduleDemo": "데모 일정 잡기"
+    "scheduleDemo": "데모 일정 잡기",
+    "forDoctors": "의사용",
+    "forPractices": "민간 진료소용",
+    "myProfile": "내 프로필",
+    "notifications": "알림",
+    "settings": "설정"
   },
   "buttons": {
     "search": "검색",

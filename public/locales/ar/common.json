@@ -15,7 +15,12 @@
     "findDoctors": "البحث عن الأطباء",
     "features": "المميزات",
     "pricing": "الأسعار",
-    "scheduleDemo": "جدولة العرض التوضيحي"
+    "scheduleDemo": "جدولة العرض التوضيحي",
+    "forDoctors": "للأطباء",
+    "forPractices": "للعيادات الخاصة",
+    "myProfile": "ملفي الشخصي",
+    "notifications": "الإشعارات",
+    "settings": "الإعدادات"
   },
   "buttons": {
     "search": "بحث",

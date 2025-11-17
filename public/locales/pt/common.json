@@ -15,7 +15,12 @@
     "findDoctors": "Encontrar Médicos",
     "features": "Recursos",
     "pricing": "Preços",
-    "scheduleDemo": "Agendar Demo"
+    "scheduleDemo": "Agendar Demo",
+    "forDoctors": "Para Médicos",
+    "forPractices": "Para Consultórios Privados",
+    "myProfile": "Meu Perfil",
+    "notifications": "Notificações",
+    "settings": "Configurações"
   },
   "buttons": {
     "search": "Buscar",

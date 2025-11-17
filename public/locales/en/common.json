@@ -15,7 +15,12 @@
     "findDoctors": "Find Doctors",
     "features": "Features",
     "pricing": "Pricing",
-    "scheduleDemo": "Schedule Demo"
+    "scheduleDemo": "Schedule Demo",
+    "forDoctors": "For Doctors",
+    "forPractices": "For Private Practices",
+    "myProfile": "My Profile",
+    "notifications": "Notifications",
+    "settings": "Settings"
   },
   "buttons": {
     "search": "Search",
