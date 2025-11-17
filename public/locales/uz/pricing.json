@@ -118,5 +118,21 @@
       "title": "Klinikalar va Kasalxonalar Uchun",
       "subtitle": "Keng qamrovli yechimlar bilan butun muassasangizni boshqaring"
     }
+  },
+  "card": {
+    "free": "Bepul",
+    "unlimited": "Cheksiz",
+    "mostPopular": "Eng Mashhur",
+    "perMonth": "/oy",
+    "perYear": "/yil",
+    "subscribe": "Obuna Bo'lish",
+    "contactSales": "Savdo Bilan Bog'laning",
+    "storage": "Saqlash",
+    "maxRecords": "Maksimal Yozuvlar",
+    "maxDiagnoses": "Maksimal Tashxislar",
+    "maxTreatmentSummaries": "Davolash Xulosalari",
+    "maxDoctors": "Shifokorlar",
+    "maxFileSize": "Maksimal Fayl Hajmi",
+    "features": "Xususiyatlar"
   }
 }

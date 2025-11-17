@@ -118,5 +118,21 @@
       "title": "For Clinics & Hospitals",
       "subtitle": "Manage your entire facility with comprehensive solutions"
     }
+  },
+  "card": {
+    "free": "Free",
+    "unlimited": "Unlimited",
+    "mostPopular": "Most Popular",
+    "perMonth": "/mo",
+    "perYear": "/yr",
+    "subscribe": "Subscribe",
+    "contactSales": "Contact Sales",
+    "storage": "Storage",
+    "maxRecords": "Max Records",
+    "maxDiagnoses": "Max Diagnoses",
+    "maxTreatmentSummaries": "Treatment Summaries",
+    "maxDoctors": "Doctors",
+    "maxFileSize": "Max File Size",
+    "features": "Features"
   }
 }

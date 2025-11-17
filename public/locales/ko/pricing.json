@@ -118,5 +118,21 @@
       "title": "클리닉 및 병원을 위해",
       "subtitle": "포괄적인 솔루션으로 전체 시설을 관리하세요"
     }
+  },
+  "card": {
+    "free": "무료",
+    "unlimited": "무제한",
+    "mostPopular": "가장 인기 있는",
+    "perMonth": "/월",
+    "perYear": "/년",
+    "subscribe": "구독하기",
+    "contactSales": "영업 팀에 문의",
+    "storage": "저장 공간",
+    "maxRecords": "최대 기록 수",
+    "maxDiagnoses": "최대 진단 수",
+    "maxTreatmentSummaries": "치료 요약",
+    "maxDoctors": "의사 수",
+    "maxFileSize": "최대 파일 크기",
+    "features": "기능"
   }
 }

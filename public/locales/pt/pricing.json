@@ -118,5 +118,21 @@
       "title": "Para Clínicas e Hospitais",
       "subtitle": "Gerencie toda a sua instalação com soluções abrangentes"
     }
+  },
+  "card": {
+    "free": "Grátis",
+    "unlimited": "Ilimitado",
+    "mostPopular": "Mais Popular",
+    "perMonth": "/mês",
+    "perYear": "/ano",
+    "subscribe": "Assinar",
+    "contactSales": "Contatar Vendas",
+    "storage": "Armazenamento",
+    "maxRecords": "Máximo de Registros",
+    "maxDiagnoses": "Máximo de Diagnósticos",
+    "maxTreatmentSummaries": "Resumos de Tratamento",
+    "maxDoctors": "Médicos",
+    "maxFileSize": "Tamanho Máximo do Arquivo",
+    "features": "Recursos"
   }
 }
