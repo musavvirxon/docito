@@ -1,27 +1,30 @@
 import { Shield, Lock, Award, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { useTranslation } from "react-i18next";
 
 export const TrustIndicators = () => {
+  const { t } = useTranslation('pricing');
+  
   const indicators = [
     {
       icon: Shield,
-      title: "HIPAA Compliant",
-      description: "Your medical data is protected with enterprise-grade security"
+      title: t('trust.hipaa.title'),
+      description: t('trust.hipaa.description')
     },
     {
       icon: Lock,
-      title: "Bank-Level Encryption",
-      description: "All data encrypted in transit and at rest with AES-256"
+      title: t('trust.encryption.title'),
+      description: t('trust.encryption.description')
     },
     {
       icon: Award,
-      title: "ISO 27001 Certified",
-      description: "International standard for information security management"
+      title: t('trust.iso.title'),
+      description: t('trust.iso.description')
     },
     {
       icon: Users,
-      title: "Trusted by 50,000+",
-      description: "Healthcare professionals and patients worldwide"
+      title: t('trust.trusted.title'),
+      description: t('trust.trusted.description')
     }
   ];
 
