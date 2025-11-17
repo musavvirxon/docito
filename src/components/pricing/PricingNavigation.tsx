@@ -1,15 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { Users, Stethoscope, Building2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface PricingNavigationProps {
   onNavigate: (section: string) => void;
 }
 
 export const PricingNavigation = ({ onNavigate }: PricingNavigationProps) => {
+  const { t } = useTranslation('pricing');
+  
   const sections = [
-    { id: "patients", label: "For Patients", icon: Users },
-    { id: "doctors", label: "For Doctors", icon: Stethoscope },
-    { id: "clinics", label: "For Clinics", icon: Building2 },
+    { id: "patients", label: t('navigation.forPatients'), icon: Users },
+    { id: "doctors", label: t('navigation.forDoctors'), icon: Stethoscope },
+    { id: "clinics", label: t('navigation.forClinics'), icon: Building2 },
   ];
 
   return (

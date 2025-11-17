@@ -1,5 +1,6 @@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { useTranslation } from "react-i18next";
 
 interface BillingToggleProps {
   period: "monthly" | "yearly";
@@ -7,6 +8,8 @@ interface BillingToggleProps {
 }
 
 export const BillingToggle = ({ period, onToggle }: BillingToggleProps) => {
+  const { t } = useTranslation('pricing');
+  
   return (
     <div className="flex items-center justify-center gap-4">
       <Label 
@@ -15,7 +18,7 @@ export const BillingToggle = ({ period, onToggle }: BillingToggleProps) => {
           period === "monthly" ? "text-foreground" : "text-muted-foreground"
         }`}
       >
-        Monthly
+        {t('billing.monthly')}
       </Label>
       <Switch
         id="billing-toggle"
@@ -28,8 +31,8 @@ export const BillingToggle = ({ period, onToggle }: BillingToggleProps) => {
           period === "yearly" ? "text-foreground" : "text-muted-foreground"
         }`}
       >
-        Yearly
-        <span className="ml-2 text-sm text-primary">(Save 10%)</span>
+        {t('billing.yearly')}
+        <span className="ml-2 text-sm text-primary">({t('billing.save')})</span>
       </Label>
     </div>
   );

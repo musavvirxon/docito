@@ -1,17 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, Mail, Phone, CheckCircle2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export const EnterpriseContact = () => {
+  const { t } = useTranslation('pricing');
+  
   const enterpriseFeatures = [
-    "Custom integration with existing systems",
-    "Dedicated account manager",
-    "24/7 priority support",
-    "Custom SLA agreements",
-    "Advanced security features",
-    "Compliance consulting",
-    "Unlimited users and storage",
-    "On-premise deployment options"
+    t('enterprise.features.customIntegration'),
+    t('enterprise.features.accountManager'),
+    t('enterprise.features.prioritySupport'),
+    t('enterprise.features.sla'),
+    t('enterprise.features.advancedSecurity'),
+    t('enterprise.features.compliance'),
+    t('enterprise.features.unlimited'),
+    t('enterprise.features.onPremise')
   ];
 
   return (
@@ -21,10 +24,10 @@ export const EnterpriseContact = () => {
           <Building2 className="w-8 h-8 text-primary" />
         </div>
         <CardTitle className="text-3xl md:text-4xl">
-          Need an Enterprise Solution?
+          {t('enterprise.title')}
         </CardTitle>
         <CardDescription className="text-lg mt-2">
-          For hospitals, large clinics, and healthcare networks
+          {t('enterprise.subtitle')}
         </CardDescription>
       </CardHeader>
       
@@ -45,7 +48,7 @@ export const EnterpriseContact = () => {
             onClick={() => window.location.href = 'mailto:enterprise@docito.com?subject=Enterprise Plan Inquiry'}
           >
             <Mail className="w-5 h-5" />
-            Email Sales Team
+            {t('enterprise.emailButton')}
           </Button>
           <Button 
             size="lg" 
@@ -54,12 +57,12 @@ export const EnterpriseContact = () => {
             onClick={() => window.location.href = 'tel:+1234567890'}
           >
             <Phone className="w-5 h-5" />
-            Schedule a Call
+            {t('enterprise.scheduleButton')}
           </Button>
         </div>
 
         <p className="text-center text-sm text-muted-foreground">
-          Response time: Within 24 hours on business days
+          {t('enterprise.responseTime')}
         </p>
       </CardContent>
     </Card>

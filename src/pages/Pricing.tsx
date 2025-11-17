@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { SEOHead } from "@/components/SEOHead";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -16,14 +17,15 @@ import { MoneyBackGuarantee } from "@/components/pricing/MoneyBackGuarantee";
 import { CallToAction } from "@/components/pricing/CallToAction";
 
 const Pricing = () => {
+  const { t } = useTranslation('pricing');
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
 
   return (
     <>
       <SEOHead
-        title="Pricing Plans - Docito Healthcare Platform"
-        description="Choose the perfect plan for patients, doctors, or clinics. Flexible pricing with monthly and yearly options."
-        keywords="healthcare pricing, medical platform plans, doctor subscription, clinic management pricing"
+        title={t('seo.title')}
+        description={t('seo.description')}
+        keywords={t('seo.keywords')}
       />
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-primary/5 relative overflow-hidden">
         {/* Decorative elements */}
