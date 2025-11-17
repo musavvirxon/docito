@@ -32,9 +32,12 @@ i18n
       lookupLocalStorage: 'i18nextLng',
     },
 
-    backend: {
-      loadPath: '/locales/{{lng}}/{{ns}}.json',
+  backend: {
+    loadPath: '/locales/{{lng}}/{{ns}}.json',
+    requestOptions: {
+      cache: 'no-store',
     },
+  },
 
     interpolation: {
       escapeValue: false,
