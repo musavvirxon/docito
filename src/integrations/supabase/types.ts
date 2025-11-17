@@ -569,6 +569,61 @@ export type Database = {
           },
         ]
       }
+      doctor_verification_payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          doctor_id: string
+          id: string
+          paid_at: string | null
+          status: string
+          transaction_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          doctor_id: string
+          id?: string
+          paid_at?: string | null
+          status?: string
+          transaction_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          doctor_id?: string
+          id?: string
+          paid_at?: string | null
+          status?: string
+          transaction_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_verification_payments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_verification_payments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_verification_payments_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       doctors: {
         Row: {
           accepts_new_patients: boolean | null
@@ -856,6 +911,91 @@ export type Database = {
           views?: number | null
         }
         Relationships: []
+      }
+      invoices: {
+        Row: {
+          amount: number
+          billing_details: Json | null
+          created_at: string | null
+          currency: string | null
+          due_date: string | null
+          id: string
+          invoice_number: string
+          line_items: Json | null
+          paid_at: string | null
+          pdf_url: string | null
+          status: string
+          stripe_invoice_id: string | null
+          subscription_id: string | null
+          tax_amount: number | null
+          total_amount: number
+          transaction_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          billing_details?: Json | null
+          created_at?: string | null
+          currency?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_number: string
+          line_items?: Json | null
+          paid_at?: string | null
+          pdf_url?: string | null
+          status?: string
+          stripe_invoice_id?: string | null
+          subscription_id?: string | null
+          tax_amount?: number | null
+          total_amount: number
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          billing_details?: Json | null
+          created_at?: string | null
+          currency?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_number?: string
+          line_items?: Json | null
+          paid_at?: string | null
+          pdf_url?: string | null
+          status?: string
+          stripe_invoice_id?: string | null
+          subscription_id?: string | null
+          tax_amount?: number | null
+          total_amount?: number
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "user_subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       legal_pages: {
         Row: {
@@ -1222,6 +1362,109 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      payment_intents: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          id: string
+          metadata: Json | null
+          payment_type: string
+          status: string
+          stripe_client_secret: string | null
+          stripe_payment_intent_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          metadata?: Json | null
+          payment_type: string
+          status: string
+          stripe_client_secret?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          metadata?: Json | null
+          payment_type?: string
+          status?: string
+          stripe_client_secret?: string | null
+          stripe_payment_intent_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_intents_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      payment_methods: {
+        Row: {
+          billing_details: Json | null
+          card_brand: string | null
+          card_exp_month: number | null
+          card_exp_year: number | null
+          card_last4: string | null
+          created_at: string | null
+          id: string
+          is_default: boolean | null
+          stripe_payment_method_id: string
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          billing_details?: Json | null
+          card_brand?: string | null
+          card_exp_month?: number | null
+          card_exp_year?: number | null
+          card_last4?: string | null
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          stripe_payment_method_id: string
+          type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          billing_details?: Json | null
+          card_brand?: string | null
+          card_exp_month?: number | null
+          card_exp_year?: number | null
+          card_last4?: string | null
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          stripe_payment_method_id?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_methods_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       payments: {
         Row: {
@@ -1598,6 +1841,54 @@ export type Database = {
             columns: ["practice_id"]
             isOneToOne: false
             referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      practice_verification_payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          id: string
+          paid_at: string | null
+          practice_id: string
+          status: string
+          transaction_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          paid_at?: string | null
+          practice_id: string
+          status?: string
+          transaction_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          paid_at?: string | null
+          practice_id?: string
+          status?: string
+          transaction_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_verification_payments_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "practice_verification_payments_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
             referencedColumns: ["id"]
           },
         ]
@@ -2269,6 +2560,153 @@ export type Database = {
           },
         ]
       }
+      subscription_plans: {
+        Row: {
+          billing_interval: string
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          features: Json | null
+          id: string
+          is_active: boolean | null
+          name: string
+          plan_code: string
+          price: number
+          stripe_price_id: string | null
+          stripe_product_id: string | null
+          target_audience: string
+          trial_days: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          billing_interval: string
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          plan_code: string
+          price: number
+          stripe_price_id?: string | null
+          stripe_product_id?: string | null
+          target_audience: string
+          trial_days?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          billing_interval?: string
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          plan_code?: string
+          price?: number
+          stripe_price_id?: string | null
+          stripe_product_id?: string | null
+          target_audience?: string
+          trial_days?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          appointment_id: string | null
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          id: string
+          metadata: Json | null
+          payment_intent_id: string | null
+          refund_reason: string | null
+          status: string
+          stripe_charge_id: string | null
+          stripe_refund_id: string | null
+          subscription_id: string | null
+          transaction_type: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          appointment_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          payment_intent_id?: string | null
+          refund_reason?: string | null
+          status?: string
+          stripe_charge_id?: string | null
+          stripe_refund_id?: string | null
+          subscription_id?: string | null
+          transaction_type: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          appointment_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          payment_intent_id?: string | null
+          refund_reason?: string | null
+          status?: string
+          stripe_charge_id?: string | null
+          stripe_refund_id?: string | null
+          subscription_id?: string | null
+          transaction_type?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "patient_all_appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_payment_intent_id_fkey"
+            columns: ["payment_intent_id"]
+            isOneToOne: false
+            referencedRelation: "payment_intents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "user_subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       translation_glossary: {
         Row: {
           category: string | null
@@ -2799,6 +3237,69 @@ export type Database = {
         }
         Relationships: []
       }
+      user_subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean | null
+          canceled_at: string | null
+          created_at: string | null
+          current_period_end: string
+          current_period_start: string
+          id: string
+          plan_id: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          trial_end: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean | null
+          canceled_at?: string | null
+          created_at?: string | null
+          current_period_end: string
+          current_period_start: string
+          id?: string
+          plan_id: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          trial_end?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean | null
+          canceled_at?: string | null
+          created_at?: string | null
+          current_period_end?: string
+          current_period_start?: string
+          id?: string
+          plan_id?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          trial_end?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       verification_documents: {
         Row: {
           created_at: string
@@ -2854,6 +3355,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      webhook_logs: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          event_id: string
+          event_type: string
+          id: string
+          payload: Json
+          processed: boolean | null
+          processed_at: string | null
+          retry_count: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          event_id: string
+          event_type: string
+          id?: string
+          payload: Json
+          processed?: boolean | null
+          processed_at?: string | null
+          retry_count?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          event_id?: string
+          event_type?: string
+          id?: string
+          payload?: Json
+          processed?: boolean | null
+          processed_at?: string | null
+          retry_count?: number | null
+        }
+        Relationships: []
       }
     }
     Views: {
@@ -3053,6 +3590,7 @@ export type Database = {
         }
         Returns: Json
       }
+      generate_invoice_number: { Args: never; Returns: string }
       get_doctor_monthly_trends: {
         Args: { p_doctor_id: string; p_months?: number }
         Returns: {
