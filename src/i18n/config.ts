@@ -3,6 +3,9 @@ import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import Backend from 'i18next-http-backend';
 
+// Static cache buster - changes only on app reload
+const APP_VERSION = Date.now();
+
 export const languages = [
   { code: 'en', name: 'English', flag: '🇬🇧' },
   { code: 'ru', name: 'Русский', flag: '🇷🇺' },
@@ -23,7 +26,7 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: 'en',
-    debug: true, // Enable debug to see loading issues
+    debug: false, // Disable debug in production
     supportedLngs: languages.map(l => l.code),
     
     detection: {
@@ -32,16 +35,13 @@ i18n
       lookupLocalStorage: 'i18nextLng',
     },
 
-  backend: {
-    loadPath: (lng: string, ns: string) => {
-      // Use dynamic timestamp per request to bust cache
-      return `/locales/${lng}/${ns}.json?v=${Date.now()}`;
+    backend: {
+      loadPath: `/locales/{{lng}}/{{ns}}.json?v=${APP_VERSION}`,
+      requestOptions: {
+        cache: 'default',
+        mode: 'cors',
+      },
     },
-    requestOptions: {
-      cache: 'no-store',
-      mode: 'cors',
-    },
-  },
 
     interpolation: {
       escapeValue: false,
