@@ -29,7 +29,7 @@ const ModernNavbar = () => {
     { name: t('navigation.specialties'), href: "/browse-specialties", isRoute: true },
     { name: t('navigation.practices'), href: "/find-practices", isRoute: true },
     { name: t('navigation.features'), href: "/features", isRoute: true },
-    { name: t('navigation.help'), href: "/help-center", isRoute: true },
+    { name: t('navigation.pricing'), href: "/pricing", isRoute: true },
     { name: t('navigation.about'), href: "/about", isRoute: true },
   ];
 
