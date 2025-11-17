@@ -575,6 +575,10 @@ export type Database = {
           appointment_count: number | null
           average_rating: number | null
           bio: string | null
+          bio_ar: string | null
+          bio_en: string | null
+          bio_ru: string | null
+          bio_uz: string | null
           consultation_fee: number | null
           created_at: string | null
           id: string
@@ -582,6 +586,10 @@ export type Database = {
           num_reviews: number | null
           practice_id: string | null
           specialty: string
+          specialty_ar: string | null
+          specialty_en: string | null
+          specialty_ru: string | null
+          specialty_uz: string | null
           user_id: string | null
           verified: boolean | null
           weighted_rating: number | null
@@ -591,6 +599,10 @@ export type Database = {
           appointment_count?: number | null
           average_rating?: number | null
           bio?: string | null
+          bio_ar?: string | null
+          bio_en?: string | null
+          bio_ru?: string | null
+          bio_uz?: string | null
           consultation_fee?: number | null
           created_at?: string | null
           id?: string
@@ -598,6 +610,10 @@ export type Database = {
           num_reviews?: number | null
           practice_id?: string | null
           specialty: string
+          specialty_ar?: string | null
+          specialty_en?: string | null
+          specialty_ru?: string | null
+          specialty_uz?: string | null
           user_id?: string | null
           verified?: boolean | null
           weighted_rating?: number | null
@@ -607,6 +623,10 @@ export type Database = {
           appointment_count?: number | null
           average_rating?: number | null
           bio?: string | null
+          bio_ar?: string | null
+          bio_en?: string | null
+          bio_ru?: string | null
+          bio_uz?: string | null
           consultation_fee?: number | null
           created_at?: string | null
           id?: string
@@ -614,6 +634,10 @@ export type Database = {
           num_reviews?: number | null
           practice_id?: string | null
           specialty?: string
+          specialty_ar?: string | null
+          specialty_en?: string | null
+          specialty_ru?: string | null
+          specialty_uz?: string | null
           user_id?: string | null
           verified?: boolean | null
           weighted_rating?: number | null
@@ -1324,6 +1348,10 @@ export type Database = {
       practice_locations: {
         Row: {
           address: string | null
+          address_ar: string | null
+          address_en: string | null
+          address_ru: string | null
+          address_uz: string | null
           city: string | null
           country: string | null
           created_at: string
@@ -1331,6 +1359,10 @@ export type Database = {
           id: string
           is_primary: boolean | null
           name: string
+          name_ar: string | null
+          name_en: string | null
+          name_ru: string | null
+          name_uz: string | null
           operating_hours: Json | null
           phone: string | null
           photo_urls: string[] | null
@@ -1341,6 +1373,10 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          address_ar?: string | null
+          address_en?: string | null
+          address_ru?: string | null
+          address_uz?: string | null
           city?: string | null
           country?: string | null
           created_at?: string
@@ -1348,6 +1384,10 @@ export type Database = {
           id?: string
           is_primary?: boolean | null
           name: string
+          name_ar?: string | null
+          name_en?: string | null
+          name_ru?: string | null
+          name_uz?: string | null
           operating_hours?: Json | null
           phone?: string | null
           photo_urls?: string[] | null
@@ -1358,6 +1398,10 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          address_ar?: string | null
+          address_en?: string | null
+          address_ru?: string | null
+          address_uz?: string | null
           city?: string | null
           country?: string | null
           created_at?: string
@@ -1365,6 +1409,10 @@ export type Database = {
           id?: string
           is_primary?: boolean | null
           name?: string
+          name_ar?: string | null
+          name_en?: string | null
+          name_ru?: string | null
+          name_uz?: string | null
           operating_hours?: Json | null
           phone?: string | null
           photo_urls?: string[] | null
@@ -1568,12 +1616,20 @@ export type Database = {
           country: string | null
           created_at: string | null
           description: string | null
+          description_ar: string | null
+          description_en: string | null
+          description_ru: string | null
+          description_uz: string | null
           email: string | null
           how_heard_about_us: string | null
           id: string
           legal_business_name: string | null
           logo_url: string | null
           name: string
+          name_ar: string | null
+          name_en: string | null
+          name_ru: string | null
+          name_uz: string | null
           num_reviews: number | null
           operating_hours: Json | null
           phone: string | null
@@ -1603,12 +1659,20 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           description?: string | null
+          description_ar?: string | null
+          description_en?: string | null
+          description_ru?: string | null
+          description_uz?: string | null
           email?: string | null
           how_heard_about_us?: string | null
           id?: string
           legal_business_name?: string | null
           logo_url?: string | null
           name: string
+          name_ar?: string | null
+          name_en?: string | null
+          name_ru?: string | null
+          name_uz?: string | null
           num_reviews?: number | null
           operating_hours?: Json | null
           phone?: string | null
@@ -1638,12 +1702,20 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           description?: string | null
+          description_ar?: string | null
+          description_en?: string | null
+          description_ru?: string | null
+          description_uz?: string | null
           email?: string | null
           how_heard_about_us?: string | null
           id?: string
           legal_business_name?: string | null
           logo_url?: string | null
           name?: string
+          name_ar?: string | null
+          name_en?: string | null
+          name_ru?: string | null
+          name_uz?: string | null
           num_reviews?: number | null
           operating_hours?: Json | null
           phone?: string | null
@@ -2676,6 +2748,30 @@ export type Database = {
           policy_version?: string | null
           user_agent?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          created_at: string | null
+          id: string
+          preferred_language: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          preferred_language?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          preferred_language?: string | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
