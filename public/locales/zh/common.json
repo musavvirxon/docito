@@ -15,7 +15,12 @@
     "findDoctors": "查找医生",
     "features": "功能",
     "pricing": "价格",
-    "scheduleDemo": "安排演示"
+    "scheduleDemo": "安排演示",
+    "forDoctors": "医生专用",
+    "forPractices": "私人诊所专用",
+    "myProfile": "我的个人资料",
+    "notifications": "通知",
+    "settings": "设置"
   },
   "buttons": {
     "search": "搜索",

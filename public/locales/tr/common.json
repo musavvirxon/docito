@@ -15,7 +15,12 @@
     "findDoctors": "Doktor Bul",
     "features": "Özellikler",
     "pricing": "Fiyatlandırma",
-    "scheduleDemo": "Demo Planla"
+    "scheduleDemo": "Demo Planla",
+    "forDoctors": "Doktorlar İçin",
+    "forPractices": "Özel Muayenehaneler İçin",
+    "myProfile": "Profilim",
+    "notifications": "Bildirimler",
+    "settings": "Ayarlar"
   },
   "buttons": {
     "search": "Ara",

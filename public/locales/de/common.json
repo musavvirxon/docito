@@ -15,7 +15,12 @@
     "findDoctors": "Ärzte Finden",
     "features": "Funktionen",
     "pricing": "Preise",
-    "scheduleDemo": "Demo Planen"
+    "scheduleDemo": "Demo Planen",
+    "forDoctors": "Für Ärzte",
+    "forPractices": "Für Privatpraxen",
+    "myProfile": "Mein Profil",
+    "notifications": "Benachrichtigungen",
+    "settings": "Einstellungen"
   },
   "buttons": {
     "search": "Suchen",

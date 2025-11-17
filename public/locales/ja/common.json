@@ -15,7 +15,12 @@
     "findDoctors": "医師を探す",
     "features": "機能",
     "pricing": "料金",
-    "scheduleDemo": "デモを予約"
+    "scheduleDemo": "デモを予約",
+    "forDoctors": "医師向け",
+    "forPractices": "民間医療機関向け",
+    "myProfile": "マイプロフィール",
+    "notifications": "通知",
+    "settings": "設定"
   },
   "buttons": {
     "search": "検索",

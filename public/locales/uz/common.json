@@ -15,7 +15,12 @@
     "findDoctors": "Shifokorlarni topish",
     "features": "Imkoniyatlar",
     "pricing": "Narxlar",
-    "scheduleDemo": "Demoni rejalashtirish"
+    "scheduleDemo": "Demoni rejalashtirish",
+    "forDoctors": "Shifokorlar Uchun",
+    "forPractices": "Xususiy Klinikalar Uchun",
+    "myProfile": "Mening Profilim",
+    "notifications": "Bildirishnomalar",
+    "settings": "Sozlamalar"
   },
   "buttons": {
     "search": "Qidirish",

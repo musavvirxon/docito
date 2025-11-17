@@ -15,7 +15,12 @@
     "findDoctors": "Найти врачей",
     "features": "Возможности",
     "pricing": "Цены",
-    "scheduleDemo": "Запланировать демо"
+    "scheduleDemo": "Запланировать демо",
+    "forDoctors": "Для Врачей",
+    "forPractices": "Для Частных Клиник",
+    "myProfile": "Мой Профиль",
+    "notifications": "Уведомления",
+    "settings": "Настройки"
   },
   "buttons": {
     "search": "Поиск",

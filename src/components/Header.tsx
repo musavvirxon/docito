@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
+import { useTranslation } from 'react-i18next';
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const {
@@ -14,6 +15,7 @@ const Header = () => {
     signOut
   } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation('common');
   useEffect(() => {
     let ticking = false;
     const handleScroll = () => {
@@ -47,7 +49,7 @@ const Header = () => {
           // Authenticated user
           <>
                 <Button variant="secondary" className="font-medium text-sm h-9 px-4" onClick={() => navigate('/dashboard')}>
-                  Dashboard
+                  {t('navigation.dashboard')}
                 </Button>
                 
                 <NotificationDropdown />
@@ -66,20 +68,20 @@ const Header = () => {
                   <DropdownMenuContent className="w-56" align="end">
                     <DropdownMenuItem onClick={() => navigate('/dashboard')}>
                       <User className="mr-2 h-4 w-4" />
-                      <span>My Profile</span>
+                      <span>{t('navigation.myProfile')}</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate('/notifications')}>
                       <BellIcon className="mr-2 h-4 w-4" />
-                      <span>Notifications</span>
+                      <span>{t('navigation.notifications')}</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate('/patient-dashboard')}>
                       <Settings className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
+                      <span>{t('navigation.settings')}</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={signOut}>
                       <LogOut className="mr-2 h-4 w-4" />
-                      <span>Log out</span>
+                      <span>{t('navigation.logout')}</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -87,18 +89,18 @@ const Header = () => {
           // Non-authenticated user
           <>
                 <Button variant="secondary" className="font-medium text-sm h-9 px-4" onClick={() => navigate('/doctors')}>
-                  For Doctors
+                  {t('navigation.forDoctors')}
                 </Button>
                 <Button variant="secondary" className="font-medium text-sm h-9 px-4" onClick={() => navigate('/practices')}>
-                  For Private Practices
+                  {t('navigation.forPractices')}
                 </Button>
                 
                 <Button variant="outline" className="font-medium text-sm h-9 px-4" onClick={() => navigate('/auth')}>
-                  Log in
+                  {t('navigation.login')}
                 </Button>
                 
                 <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-medium text-sm h-9 px-4" onClick={() => navigate('/auth')}>
-                  Sign up
+                  {t('navigation.register')}
                 </Button>
               </>}
           </div>
