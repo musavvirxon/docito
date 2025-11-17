@@ -152,6 +152,7 @@ const LanguageRoutes = () => {
       
       <Route path="*" element={<NotFound />} />
     </Routes>
+    </LanguageRouter>
   );
 };
 
