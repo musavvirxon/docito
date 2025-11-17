@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, Globe, Save, Plus, Eye, FileText, Settings } from 'lucide-react';
+import { Loader2, Globe, Save, Plus, Eye, FileText, Settings, Languages } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { languages } from '@/i18n/config';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface PageContent {
   pageKey: string;
@@ -298,6 +299,15 @@ const TranslationManagement = () => {
 
   return (
     <div className="space-y-6">
+      <Alert>
+        <Languages className="h-4 w-4" />
+        <AlertTitle>Multilingual System Active</AlertTitle>
+        <AlertDescription>
+          Database supports English, Russian, Uzbek, and Arabic. Use the hooks <code>useDoctorsLocalized</code> and <code>usePracticesLocalized</code> to fetch localized data.
+          See <code>MULTILINGUAL_IMPLEMENTATION.md</code> for full documentation.
+        </AlertDescription>
+      </Alert>
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">

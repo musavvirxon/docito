@@ -17,6 +17,7 @@ const Auth = lazy(() => import("./pages/Auth"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Practices = lazy(() => import("./pages/Practices"));
 const Doctors = lazy(() => import("./pages/Doctors"));
+const DoctorsLocalized = lazy(() => import("./pages/DoctorsLocalized"));
 const RegisterPractice = lazy(() => import("./pages/RegisterPractice"));
 const ProcessingPractice = lazy(() => import("./pages/ProcessingPractice"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
@@ -77,6 +78,7 @@ const LanguageRoutes = () => {
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/practices" element={<Practices />} />
       <Route path="/doctors" element={<Doctors />} />
+      <Route path="/:lang/doctors" element={<DoctorsLocalized />} />
       <Route path="/register-practice" element={<RegisterPractice />} />
       <Route path="/processing-practice" element={<ProcessingPractice />} />
       <Route path="/admin-dashboard" element={<AdminDashboard />} />
@@ -116,7 +118,7 @@ const LanguageRoutes = () => {
       <Route path="/:lang/signup" element={<SignUp />} />
       <Route path="/:lang/dashboard" element={<Dashboard />} />
       <Route path="/:lang/practices" element={<Practices />} />
-      <Route path="/:lang/doctors" element={<Doctors />} />
+      <Route path="/:lang/doctors" element={<DoctorsLocalized />} />
       <Route path="/:lang/register-practice" element={<RegisterPractice />} />
       <Route path="/:lang/processing-practice" element={<ProcessingPractice />} />
       <Route path="/:lang/admin-dashboard" element={<AdminDashboard />} />
