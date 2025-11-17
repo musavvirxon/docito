@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguagePreference } from '@/hooks/useLanguagePreference';
 
@@ -13,57 +13,81 @@ export const LanguageRouter = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { currentLanguage, saveLanguagePreference } = useLanguagePreference();
-  const [hasRedirected, setHasRedirected] = useState(false);
+  const lastPathRef = useRef<string>('');
+  const redirectCountRef = useRef<number>(0);
 
   useEffect(() => {
-    // Prevent redirect loops
-    if (hasRedirected) return;
-
     const path = location.pathname;
+    
+    // CRITICAL: Prevent infinite redirect loops
+    // If we've seen this path before or redirected too many times, stop
+    if (lastPathRef.current === path) return;
+    if (redirectCountRef.current > 3) {
+      console.error('LanguageRouter: Too many redirects, stopping to prevent loop');
+      redirectCountRef.current = 0;
+      return;
+    }
+    
+    lastPathRef.current = path;
     const pathParts = path.split('/').filter(Boolean);
     const firstPart = pathParts[0];
-    const secondPart = pathParts[1];
 
-    // Check for duplicate language prefix (e.g., /en/en/, /de/de/)
-    if (supportedLanguages.includes(firstPart) && supportedLanguages.includes(secondPart)) {
-      const cleanPath = '/' + pathParts.slice(1).join('/');
-      navigate(cleanPath, { replace: true });
-      setHasRedirected(true);
+    // CRITICAL FIX: Detect infinite cascade (multiple language codes in path)
+    const languageCount = pathParts.filter(part => supportedLanguages.includes(part)).length;
+    if (languageCount > 1) {
+      // Path has multiple language codes like /de/de/de or /ru/de
+      // Clean it completely - navigate to root and let it redirect properly
+      console.warn('LanguageRouter: Detected cascading language prefixes, cleaning path');
+      navigate('/en/', { replace: true });
+      redirectCountRef.current++;
       return;
     }
 
-    // Check if this is a private page
-    const privatePages = ['/dashboard', '/auth', '/signup', '/notifications', '/admin-dashboard', 
-                          '/doctor-dashboard', '/patient-dashboard', '/doctor-signup', '/verify',
-                          '/register-practice', '/processing-practice', '/treatment-planning',
-                          '/procedure-library', '/doctor-procedures', '/doctor-schedule-settings'];
+    // Private pages list
+    const privatePages = ['dashboard', 'auth', 'signup', 'notifications', 'admin-dashboard', 
+                          'doctor-dashboard', 'patient-dashboard', 'doctor-signup', 'verify',
+                          'register-practice', 'processing-practice', 'treatment-planning',
+                          'procedure-library', 'doctor-procedures', 'doctor-schedule-settings',
+                          'booking-confirmation', 'book-appointment', 'legal-cms', 'super-admin-dashboard',
+                          'admin'];
     
-    const isPrivatePage = privatePages.some(prefix => path.startsWith(prefix) || 
-                          (supportedLanguages.includes(firstPart) && pathParts.slice(1).join('/').startsWith(prefix.slice(1))));
+    // Check if current path (without lang prefix) is a private page
+    const pathWithoutLang = supportedLanguages.includes(firstPart) 
+      ? pathParts.slice(1).join('/') 
+      : pathParts.join('/');
+    
+    const isPrivatePage = privatePages.some(prefix => 
+      pathWithoutLang.startsWith(prefix) || 
+      pathWithoutLang === prefix
+    );
 
     if (isPrivatePage) {
-      // Private pages: remove language prefix if present
+      // Private pages: MUST NOT have language prefix
       if (supportedLanguages.includes(firstPart)) {
         const newPath = '/' + pathParts.slice(1).join('/');
         navigate(newPath, { replace: true });
-        setHasRedirected(true);
+        redirectCountRef.current++;
+      } else {
+        // Private page without prefix - this is correct, do nothing
+        redirectCountRef.current = 0;
       }
     } else {
-      // Public pages: ensure language prefix exists
+      // Public pages: MUST have language prefix
       if (supportedLanguages.includes(firstPart)) {
-        // URL has language prefix, update user preference if different
+        // Has valid language prefix - update preference if needed
         if (firstPart !== currentLanguage) {
           saveLanguagePreference(firstPart);
         }
-      } else if (path === '/' || !supportedLanguages.includes(firstPart)) {
-        // Root or no language prefix - add current language
+        redirectCountRef.current = 0;
+      } else {
+        // No language prefix - add current language
         const targetPath = path === '/' ? '' : path;
         const newPath = `/${currentLanguage}${targetPath}`;
         navigate(newPath, { replace: true });
-        setHasRedirected(true);
+        redirectCountRef.current++;
       }
     }
-  }, [location.pathname, currentLanguage, navigate, saveLanguagePreference, hasRedirected]);
+  }, [location.pathname, currentLanguage, navigate, saveLanguagePreference]);
 
   return <>{children}</>;
 };
