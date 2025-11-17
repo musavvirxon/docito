@@ -118,5 +118,21 @@
       "title": "为诊所和医院",
       "subtitle": "使用全面的解决方案管理您的整个设施"
     }
+  },
+  "card": {
+    "free": "免费",
+    "unlimited": "无限制",
+    "mostPopular": "最受欢迎",
+    "perMonth": "/月",
+    "perYear": "/年",
+    "subscribe": "订阅",
+    "contactSales": "联系销售",
+    "storage": "存储空间",
+    "maxRecords": "最大记录数",
+    "maxDiagnoses": "最大诊断数",
+    "maxTreatmentSummaries": "治疗摘要",
+    "maxDoctors": "医生数",
+    "maxFileSize": "最大文件大小",
+    "features": "功能"
   }
 }

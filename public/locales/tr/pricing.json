@@ -118,5 +118,21 @@
       "title": "Klinikler ve Hastaneler İçin",
       "subtitle": "Kapsamlı çözümlerle tüm tesisizi yönetin"
     }
+  },
+  "card": {
+    "free": "Ücretsiz",
+    "unlimited": "Sınırsız",
+    "mostPopular": "En Popüler",
+    "perMonth": "/ay",
+    "perYear": "/yıl",
+    "subscribe": "Abone Ol",
+    "contactSales": "Satış Ekibiyle İletişime Geç",
+    "storage": "Depolama",
+    "maxRecords": "Maksimum Kayıt",
+    "maxDiagnoses": "Maksimum Teşhis",
+    "maxTreatmentSummaries": "Tedavi Özetleri",
+    "maxDoctors": "Doktorlar",
+    "maxFileSize": "Maksimum Dosya Boyutu",
+    "features": "Özellikler"
   }
 }

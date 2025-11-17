@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 interface PlanCardProps {
   plan: any;
@@ -15,9 +16,10 @@ interface PlanCardProps {
 export const PlanCard = ({ plan, popular, enterprise, billingPeriod }: PlanCardProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation('pricing');
 
   const formatPrice = (price: number) => {
-    if (price === 0) return "Free";
+    if (price === 0) return t('card.free');
     // Convert cents to dollars
     const dollars = price / 100;
     return new Intl.NumberFormat('en-US', {
@@ -35,13 +37,13 @@ export const PlanCard = ({ plan, popular, enterprise, billingPeriod }: PlanCardP
   };
 
   const formatRecords = (records: number | null | string) => {
-    if (!records || records === 'unlimited') return 'Unlimited';
+    if (!records || records === 'unlimited') return t('card.unlimited');
     if (typeof records === 'number' && records >= 1000) return `${(records / 1000).toFixed(0)}k`;
     return records.toString();
   };
 
   const formatDoctors = (doctors: number | null | string) => {
-    if (!doctors || doctors === 'unlimited') return 'Unlimited';
+    if (!doctors || doctors === 'unlimited') return t('card.unlimited');
     return doctors.toString();
   };
 
@@ -81,7 +83,7 @@ export const PlanCard = ({ plan, popular, enterprise, billingPeriod }: PlanCardP
     >
       {popular && (
         <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
-          Most Popular
+          {t('card.mostPopular')}
         </Badge>
       )}
       
@@ -96,7 +98,7 @@ export const PlanCard = ({ plan, popular, enterprise, billingPeriod }: PlanCardP
             </span>
             {plan.price > 0 && (
               <span className="text-muted-foreground">
-                /{billingPeriod === "monthly" ? "mo" : "yr"}
+                {billingPeriod === "monthly" ? t('card.perMonth') : t('card.perYear')}
               </span>
             )}
           </div>
@@ -113,7 +115,7 @@ export const PlanCard = ({ plan, popular, enterprise, billingPeriod }: PlanCardP
             <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5">
               <div className="w-2 h-2 rounded-full bg-primary" />
               <div>
-                <p className="text-sm font-medium">Storage</p>
+                <p className="text-sm font-medium">{t('card.storage')}</p>
                 <p className="text-xs text-muted-foreground">{storage}</p>
               </div>
             </div>
@@ -123,7 +125,7 @@ export const PlanCard = ({ plan, popular, enterprise, billingPeriod }: PlanCardP
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
               <div className="w-2 h-2 rounded-full bg-primary" />
               <div>
-                <p className="text-sm font-medium">Medical Records</p>
+                <p className="text-sm font-medium">{t('card.maxRecords')}</p>
                 <p className="text-xs text-muted-foreground">{records}</p>
               </div>
             </div>
@@ -133,7 +135,7 @@ export const PlanCard = ({ plan, popular, enterprise, billingPeriod }: PlanCardP
             <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5">
               <div className="w-2 h-2 rounded-full bg-primary" />
               <div>
-                <p className="text-sm font-medium">Diagnoses</p>
+                <p className="text-sm font-medium">{t('card.maxDiagnoses')}</p>
                 <p className="text-xs text-muted-foreground">{diagnoses}</p>
               </div>
             </div>
@@ -143,7 +145,7 @@ export const PlanCard = ({ plan, popular, enterprise, billingPeriod }: PlanCardP
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
               <div className="w-2 h-2 rounded-full bg-primary" />
               <div>
-                <p className="text-sm font-medium">Treatment Summaries</p>
+                <p className="text-sm font-medium">{t('card.maxTreatmentSummaries')}</p>
                 <p className="text-xs text-muted-foreground">{treatmentSummaries}</p>
               </div>
             </div>
@@ -153,7 +155,7 @@ export const PlanCard = ({ plan, popular, enterprise, billingPeriod }: PlanCardP
             <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5">
               <div className="w-2 h-2 rounded-full bg-primary" />
               <div>
-                <p className="text-sm font-medium">Doctor Accounts</p>
+                <p className="text-sm font-medium">{t('card.maxDoctors')}</p>
                 <p className="text-xs text-muted-foreground">{doctors}</p>
               </div>
             </div>
@@ -163,7 +165,7 @@ export const PlanCard = ({ plan, popular, enterprise, billingPeriod }: PlanCardP
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
               <div className="w-2 h-2 rounded-full bg-primary" />
               <div>
-                <p className="text-sm font-medium">Max File Upload</p>
+                <p className="text-sm font-medium">{t('card.maxFileSize')}</p>
                 <p className="text-xs text-muted-foreground">{maxFileSize}</p>
               </div>
             </div>
@@ -173,7 +175,7 @@ export const PlanCard = ({ plan, popular, enterprise, billingPeriod }: PlanCardP
         {/* Features List */}
         <div className="space-y-3 pt-4 border-t border-border">
           <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            Features
+            {t('card.features')}
           </p>
           {features.map((feature: string, index: number) => (
             <div key={index} className="flex items-start gap-3">

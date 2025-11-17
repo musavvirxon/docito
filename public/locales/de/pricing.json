@@ -118,5 +118,21 @@
       "title": "Für Kliniken und Krankenhäuser",
       "subtitle": "Verwalten Sie Ihre gesamte Einrichtung mit umfassenden Lösungen"
     }
+  },
+  "card": {
+    "free": "Kostenlos",
+    "unlimited": "Unbegrenzt",
+    "mostPopular": "Am Beliebtesten",
+    "perMonth": "/Monat",
+    "perYear": "/Jahr",
+    "subscribe": "Abonnieren",
+    "contactSales": "Vertrieb Kontaktieren",
+    "storage": "Speicher",
+    "maxRecords": "Max. Aufzeichnungen",
+    "maxDiagnoses": "Max. Diagnosen",
+    "maxTreatmentSummaries": "Behandlungszusammenfassungen",
+    "maxDoctors": "Ärzte",
+    "maxFileSize": "Max. Dateigröße",
+    "features": "Funktionen"
   }
 }
