@@ -106,9 +106,7 @@ export const TransactionsTable = () => {
                       </div>
                     </TableCell>
                     <TableCell className="capitalize">
-                      {transaction.metadata && typeof transaction.metadata === 'object' && 'type' in transaction.metadata 
-                        ? String(transaction.metadata.type) 
-                        : 'N/A'}
+                      {(transaction as any).type || 'N/A'}
                     </TableCell>
                     <TableCell>
                       {formatAmount(transaction.amount, transaction.currency || 'usd')}

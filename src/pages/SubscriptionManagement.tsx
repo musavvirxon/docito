@@ -1,3 +1,5 @@
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscriptions } from "@/hooks/useSubscriptions";
 import { SubscriptionPlansCard } from "@/components/subscription/SubscriptionPlansCard";
@@ -9,6 +11,15 @@ import { format } from "date-fns";
 
 const SubscriptionManagement = () => {
   const { user } = useAuth();
+  const location = useLocation();
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  
+  useEffect(() => {
+    if (location.state?.selectedPlan) {
+      setSelectedPlanId(location.state.selectedPlan);
+    }
+  }, [location.state]);
+  
   const { 
     plans, 
     plansLoading, 
@@ -111,6 +122,7 @@ const SubscriptionManagement = () => {
           currentPlanId={currentSubscription?.plan_id}
           onSelectPlan={handleSelectPlan}
           isLoading={createSubscription.isPending}
+          highlightedPlanId={selectedPlanId}
         />
       </div>
     </div>
