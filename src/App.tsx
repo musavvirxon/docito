@@ -6,6 +6,7 @@ import { Suspense, lazy, useEffect } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { RealTimeProvider } from "@/contexts/RealTimeContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { LanguageRouter } from "@/components/LanguageRouter";
 import { useTranslation } from "react-i18next";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import Index from "./pages/Index";
@@ -67,7 +68,8 @@ const LanguageRoutes = () => {
   }, [i18n.language]);
 
   return (
-    <Routes>
+    <LanguageRouter>
+      <Routes>
       {/* Default routes (no language prefix) */}
       <Route path="/" element={<Index />} />
       <Route path="/auth" element={<Auth />} />

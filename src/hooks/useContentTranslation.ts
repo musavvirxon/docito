@@ -121,10 +121,26 @@ export const useContentTranslation = () => {
     [currentLanguage]
   );
 
+  /**
+   * Build select query with language-specific fields
+   * @param baseFields - Array of base field names (e.g., ['name', 'description'])
+   * @param additionalFields - Additional non-translatable fields to select
+   */
+  const buildLocalizedSelect = useCallback(
+    (baseFields: string[], additionalFields: string[] = []): string => {
+      const langFields = baseFields.flatMap(field => 
+        ['en', 'ru', 'uz', 'ar'].map(lang => `${field}_${lang}`)
+      );
+      return [...additionalFields, ...langFields].join(', ');
+    },
+    []
+  );
+
   return {
     currentLanguage,
     getTranslatedContent,
     getPageTranslations,
     getTranslatedField,
+    buildLocalizedSelect,
   };
 };
