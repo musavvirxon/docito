@@ -6,15 +6,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
-
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const { user, profile, signOut } = useAuth();
+  const {
+    user,
+    profile,
+    signOut
+  } = useAuth();
   const navigate = useNavigate();
-
   useEffect(() => {
     let ticking = false;
-    
     const handleScroll = () => {
       if (!ticking) {
         requestAnimationFrame(() => {
@@ -24,15 +25,12 @@ const Header = () => {
         ticking = true;
       }
     };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('scroll', handleScroll, {
+      passive: true
+    });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  return (
-    <header className={`border-b border-border bg-background transition-all duration-300 z-50 ${
-      isScrolled ? 'fixed top-1.5 left-1.5 right-1.5 rounded-lg shadow-lg' : 'relative'
-    }`}>
+  return <header className={`border-b border-border bg-background transition-all duration-300 z-50 ${isScrolled ? 'fixed top-1.5 left-1.5 right-1.5 rounded-lg shadow-lg' : 'relative'}`}>
       <div className="container mx-auto px-4">
         <nav className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -41,24 +39,14 @@ const Header = () => {
           </Link>
 
           {/* Navigation Links */}
-          <div className="hidden lg:flex items-center space-x-6">
-            <div className="flex items-center space-x-1 cursor-pointer">
-              <span className="text-foreground text-sm">Browse</span>
-              <ChevronDown className="w-4 h-4 text-muted-foreground" />
-            </div>
-            <a href="#" className="text-foreground hover:text-primary text-sm">Help</a>
-          </div>
+          
 
           {/* Auth Section */}
           <div className="flex items-center space-x-3">
-            {user ? (
-              // Authenticated user
-              <>
-                <Button 
-                  variant="secondary" 
-                  className="font-medium text-sm h-9 px-4"
-                  onClick={() => navigate('/dashboard')}
-                >
+            {user ?
+          // Authenticated user
+          <>
+                <Button variant="secondary" className="font-medium text-sm h-9 px-4" onClick={() => navigate('/dashboard')}>
                   Dashboard
                 </Button>
                 
@@ -95,46 +83,27 @@ const Header = () => {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </>
-            ) : (
-              // Non-authenticated user
-              <>
-                <Button 
-                  variant="secondary" 
-                  className="font-medium text-sm h-9 px-4"
-                  onClick={() => navigate('/doctors')}
-                >
+              </> :
+          // Non-authenticated user
+          <>
+                <Button variant="secondary" className="font-medium text-sm h-9 px-4" onClick={() => navigate('/doctors')}>
                   For Doctors
                 </Button>
-                <Button 
-                  variant="secondary" 
-                  className="font-medium text-sm h-9 px-4"
-                  onClick={() => navigate('/practices')}
-                >
+                <Button variant="secondary" className="font-medium text-sm h-9 px-4" onClick={() => navigate('/practices')}>
                   For Private Practices
                 </Button>
                 
-                <Button 
-                  variant="outline"
-                  className="font-medium text-sm h-9 px-4"
-                  onClick={() => navigate('/auth')}
-                >
+                <Button variant="outline" className="font-medium text-sm h-9 px-4" onClick={() => navigate('/auth')}>
                   Log in
                 </Button>
                 
-                <Button 
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 font-medium text-sm h-9 px-4"
-                  onClick={() => navigate('/auth')}
-                >
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-medium text-sm h-9 px-4" onClick={() => navigate('/auth')}>
                   Sign up
                 </Button>
-              </>
-            )}
+              </>}
           </div>
         </nav>
       </div>
-    </header>
-  );
+    </header>;
 };
-
 export default Header;
