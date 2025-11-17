@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguagePreference } from '@/hooks/useLanguagePreference';
+import { languages } from '@/i18n/config';
 
-const supportedLanguages = ['en', 'ru', 'uz', 'ar'];
+const supportedLanguages = languages.map(l => l.code);
 
 /**
  * LanguageRouter handles language-based routing for SEO-friendly URLs
