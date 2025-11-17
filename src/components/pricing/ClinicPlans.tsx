@@ -44,7 +44,7 @@ export const ClinicPlans = ({ billingPeriod }: ClinicPlansProps) => {
     <section className="space-y-8">
       <div className="text-center space-y-2">
         <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-          For Clinics
+          For Clinics & Hospitals
         </h2>
         <p className="text-muted-foreground text-lg">
           Manage your entire facility with comprehensive solutions
