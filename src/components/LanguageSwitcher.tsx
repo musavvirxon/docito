@@ -16,18 +16,7 @@ export const LanguageSwitcher = () => {
 
   const handleLanguageChange = async (langCode: string) => {
     try {
-      // Force reload all namespaces for the new language
-      await i18n.changeLanguage(langCode);
-      
-      // Reload all loaded namespaces
-      const loadedNamespaces = Array.isArray(i18n.options.ns) ? i18n.options.ns : [i18n.options.ns || 'common'];
-      await Promise.all(
-        loadedNamespaces.map((ns: string) => 
-          i18n.reloadResources(langCode, ns)
-        )
-      );
-      
-      setCurrentLang(langCode);
+      // Save to localStorage FIRST before anything else
       localStorage.setItem('i18nextLng', langCode);
       
       // Update document direction for RTL languages
@@ -40,7 +29,7 @@ export const LanguageSwitcher = () => {
         document.documentElement.lang = langCode;
       }
       
-      // Force page reload to ensure all translations load
+      // Force page reload to load new language
       window.location.reload();
     } catch (error) {
       console.error('Failed to change language:', error);
