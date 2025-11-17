@@ -50,12 +50,13 @@ export const PlanCard = ({ plan, popular, enterprise, billingPeriod }: PlanCardP
   const doctors = plan.features?.maxDoctors ? formatDoctors(plan.features?.maxDoctors) : null;
   const savings = plan.features?.savings;
 
-  const handleSubscribe = () => {
+  const handleSubscribe = async () => {
     if (!user) {
       navigate('/auth');
       return;
     }
-    navigate('/subscription-management', { state: { selectedPlan: plan.id } });
+    // TODO: Implement direct subscription flow with payment modal
+    console.log('Subscribe to plan:', plan.id);
   };
 
   const handleContactSales = () => {

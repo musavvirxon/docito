@@ -62,7 +62,6 @@ const FAQs = lazy(() => import("./pages/FAQs"));
 const Support = lazy(() => import("./pages/Support"));
 const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
 const Pricing = lazy(() => import("./pages/Pricing"));
-const SubscriptionManagement = lazy(() => import("./pages/SubscriptionManagement"));
 
 const queryClient = new QueryClient();
 
@@ -124,7 +123,6 @@ const LanguageRoutes = () => {
       <Route path="/support" element={<Support />} />
       <Route path="/accept-invite/:token" element={<AcceptInvite />} />
       <Route path="/pricing" element={<Pricing />} />
-      <Route path="/subscription-management" element={<SubscriptionManagement />} />
       
       {/* Language-prefixed routes */}
       <Route path="/:lang/" element={<Index />} />
@@ -177,7 +175,6 @@ const LanguageRoutes = () => {
       <Route path="/:lang/support" element={<Support />} />
       <Route path="/:lang/accept-invite/:token" element={<AcceptInvite />} />
       <Route path="/:lang/pricing" element={<Pricing />} />
-      <Route path="/:lang/subscription-management" element={<SubscriptionManagement />} />
       
       <Route path="*" element={<NotFound />} />
     </Routes>
