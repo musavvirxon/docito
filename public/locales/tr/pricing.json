@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "Fiyatlandırma Planları - Docito Sağlık Platformu",
+    "description": "Hastalar, doktorlar veya klinikler için mükemmel planı seçin. Aylık ve yıllık seçeneklerle esnek fiyatlandırma.",
+    "keywords": "sağlık fiyatlandırması, tıbbi platform planları, doktor aboneliği, klinik yönetim fiyatlandırması"
+  },
+  "header": {
+    "title": "Mükemmel Planınızı Seçin",
+    "subtitle": "Hastalar, doktorlar ve klinikler için esnek fiyatlandırma. Büyüdükçe ölçeklendirin.",
+    "savingsBadge": "Yıllık faturalandırma ile %10 tasarruf edin"
+  },
+  "billing": {
+    "monthly": "Aylık",
+    "yearly": "Yıllık",
+    "save": "%10 Tasarruf"
+  },
+  "navigation": {
+    "forPatients": "Hastalar İçin",
+    "forDoctors": "Doktorlar İçin",
+    "forClinics": "Klinikler İçin"
+  },
+  "trust": {
+    "hipaa": {
+      "title": "HIPAA Uyumlu",
+      "description": "Tıbbi verileriniz kurumsal düzeyde güvenlik ile korunur"
+    },
+    "encryption": {
+      "title": "Banka Düzeyinde Şifreleme",
+      "description": "Tüm veriler AES-256 ile iletimde ve beklemede şifrelenir"
+    },
+    "iso": {
+      "title": "ISO 27001 Sertifikalı",
+      "description": "Bilgi güvenliği yönetimi için uluslararası standart"
+    },
+    "trusted": {
+      "title": "50.000+ Tarafından Güvenilir",
+      "description": "Dünya çapında sağlık profesyonelleri ve hastalar"
+    }
+  },
+  "guarantee": {
+    "title": "3 Günlük Para İade Garantisi",
+    "badge": "Risksiz",
+    "description": "Herhangi bir ücretli planı 30 gün boyunca risksiz deneyin. Tamamen memnun kalmazsanız, ödemenizi tamamen iade edeceğiz - soru sormadan, gizli ücret yok."
+  },
+  "faq": {
+    "title": "Sıkça Sorulan Sorular",
+    "subtitle": "Fiyatlandırmamız hakkında bilmeniz gereken her şey",
+    "cardTitle": "Yaygın Sorular",
+    "questions": {
+      "changePlan": {
+        "q": "Planımı istediğim zaman değiştirebilir miyim?",
+        "a": "Evet! Planınızı istediğiniz zaman yükseltebilir veya düşürebilirsiniz. Değişiklikler hemen yürürlüğe girer ve herhangi bir ücret veya kredileri oranlarız."
+      },
+      "paymentMethods": {
+        "q": "Hangi ödeme yöntemlerini kabul ediyorsunuz?",
+        "a": "Tüm büyük kredi kartlarını (Visa, Mastercard, American Express, Discover) ve kurumsal planlar için banka havalelerini kabul ediyoruz."
+      },
+      "freeTrial": {
+        "q": "Ücretsiz deneme mevcut mu?",
+        "a": "Evet! Tüm yeni kullanıcılar tamamen ücretsiz olan Access planımızla başlar. Ek özellikleri açmak için istediğiniz zaman ücretli bir plana yükseltebilirsiniz."
+      },
+      "dataDowngrade": {
+        "q": "Düşürsem verilerime ne olur?",
+        "a": "Verileriniz her zaman bizimle güvendedir. Daha az depolama alanına sahip bir plana düşerseniz, eski kayıtlar arşivlenmeden önce fazla verileri indirmek veya silmek için 30 gününüz olacaktır."
+      },
+      "refunds": {
+        "q": "Para iadesi sunuyor musunuz?",
+        "a": "Evet, tüm ücretli planlarda 30 günlük para iade garantisi sunuyoruz. Memnun kalmazsanız, ödemenizi tamamen iade edeceğiz, soru sormadan."
+      },
+      "hiddenFees": {
+        "q": "Kurulum ücretleri veya gizli ücretler var mı?",
+        "a": "Hayır! Gördüğünüz fiyat, ödediğiniz fiyattır. Herhangi bir kurulum ücreti, iptal ücreti veya gizli ücret yoktur."
+      },
+      "yearlyDiscount": {
+        "q": "Yıllık indirim nasıl çalışır?",
+        "a": "Yıllık faturalandırmayı seçtiğinizde, aylık faturalandırmaya kıyasla %10 tasarruf edersiniz. Her ay yerine yılda bir kez ücretlendirilirsiniz."
+      },
+      "separatePlans": {
+        "q": "Doktorlar ve klinikler farklı planlara sahip olabilir mi?",
+        "a": "Kesinlikle! Doktorlar ve klinikler, özel ihtiyaçlarına göre uyarlanmış kendi ayrı abonelik planlarıyla bağımsız olarak çalışır."
+      }
+    }
+  },
+  "enterprise": {
+    "title": "Kurumsal Çözüme İhtiyacınız Var mı?",
+    "subtitle": "Hastaneler, büyük klinikler ve sağlık ağları için",
+    "features": {
+      "customIntegration": "Mevcut sistemlerle özel entegrasyon",
+      "accountManager": "Özel hesap yöneticisi",
+      "prioritySupport": "7/24 öncelikli destek",
+      "sla": "Özel SLA anlaşmaları",
+      "advancedSecurity": "Gelişmiş güvenlik özellikleri",
+      "compliance": "Uyumluluk danışmanlığı",
+      "unlimited": "Sınırsız kullanıcı ve depolama",
+      "onPremise": "Yerinde dağıtım seçenekleri"
+    },
+    "emailButton": "Satış Ekibine E-posta Gönder",
+    "scheduleButton": "Arama Planla",
+    "responseTime": "Yanıt süresi: İş günlerinde 24 saat içinde"
+  },
+  "cta": {
+    "title": "Sağlık Deneyiminizi Dönüştürmeye Hazır mısınız?",
+    "subtitle": "Docito'yu zaten kullanan binlerce memnun hasta, doktor ve kliniğe katılın",
+    "startButton": "Bugün Ücretsiz Başlayın",
+    "contactButton": "Satışla İletişime Geçin",
+    "footer": "Kredi kartı gerekmez • İstediğiniz zaman iptal edin • 30 günlük para iade garantisi"
+  }
+}

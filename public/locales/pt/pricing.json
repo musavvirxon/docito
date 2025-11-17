@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "Planos de Preços - Plataforma de Saúde Docito",
+    "description": "Escolha o plano perfeito para pacientes, médicos ou clínicas. Preços flexíveis com opções mensais e anuais.",
+    "keywords": "preços de saúde, planos de plataforma médica, assinatura de médico, preços de gestão de clínica"
+  },
+  "header": {
+    "title": "Escolha Seu Plano Perfeito",
+    "subtitle": "Preços flexíveis para pacientes, médicos e clínicas. Escale conforme você cresce.",
+    "savingsBadge": "Economize 10% com cobrança anual"
+  },
+  "billing": {
+    "monthly": "Mensal",
+    "yearly": "Anual",
+    "save": "Economize 10%"
+  },
+  "navigation": {
+    "forPatients": "Para Pacientes",
+    "forDoctors": "Para Médicos",
+    "forClinics": "Para Clínicas"
+  },
+  "trust": {
+    "hipaa": {
+      "title": "Conformidade HIPAA",
+      "description": "Seus dados médicos são protegidos com segurança de nível empresarial"
+    },
+    "encryption": {
+      "title": "Criptografia de Nível Bancário",
+      "description": "Todos os dados criptografados em trânsito e em repouso com AES-256"
+    },
+    "iso": {
+      "title": "Certificado ISO 27001",
+      "description": "Padrão internacional para gerenciamento de segurança da informação"
+    },
+    "trusted": {
+      "title": "Confiado por 50.000+",
+      "description": "Profissionais de saúde e pacientes em todo o mundo"
+    }
+  },
+  "guarantee": {
+    "title": "Garantia de Devolução de 3 Dias",
+    "badge": "Sem Risco",
+    "description": "Experimente qualquer plano pago sem risco por 30 dias. Se você não estiver completamente satisfeito, reembolsaremos seu pagamento integralmente - sem perguntas, sem taxas ocultas."
+  },
+  "faq": {
+    "title": "Perguntas Frequentes",
+    "subtitle": "Tudo o que você precisa saber sobre nossos preços",
+    "cardTitle": "Perguntas Comuns",
+    "questions": {
+      "changePlan": {
+        "q": "Posso alterar meu plano a qualquer momento?",
+        "a": "Sim! Você pode fazer upgrade ou downgrade do seu plano a qualquer momento. As alterações entram em vigor imediatamente e proporcionalizaremos quaisquer cobranças ou créditos."
+      },
+      "paymentMethods": {
+        "q": "Quais métodos de pagamento vocês aceitam?",
+        "a": "Aceitamos todos os principais cartões de crédito (Visa, Mastercard, American Express, Discover), bem como transferências bancárias para planos empresariais."
+      },
+      "freeTrial": {
+        "q": "Há um teste gratuito disponível?",
+        "a": "Sim! Todos os novos usuários começam com nosso plano Access que é completamente gratuito. Você pode fazer upgrade para um plano pago a qualquer momento para desbloquear recursos adicionais."
+      },
+      "dataDowngrade": {
+        "q": "O que acontece com meus dados se eu fizer downgrade?",
+        "a": "Seus dados estão sempre seguros conosco. Se você fizer downgrade para um plano com menos armazenamento, terá 30 dias para baixar ou excluir dados excedentes antes que registros antigos sejam arquivados."
+      },
+      "refunds": {
+        "q": "Vocês oferecem reembolsos?",
+        "a": "Sim, oferecemos uma garantia de devolução de dinheiro de 30 dias em todos os planos pagos. Se você não estiver satisfeito, reembolsaremos seu pagamento integralmente, sem perguntas."
+      },
+      "hiddenFees": {
+        "q": "Existem taxas de configuração ou cobranças ocultas?",
+        "a": "Não! O preço que você vê é o preço que você paga. Não há taxas de configuração, taxas de cancelamento ou cobranças ocultas de qualquer tipo."
+      },
+      "yearlyDiscount": {
+        "q": "Como funciona o desconto anual?",
+        "a": "Quando você escolhe cobrança anual, economiza 10% em comparação com a cobrança mensal. Você será cobrado uma vez por ano em vez de todo mês."
+      },
+      "separatePlans": {
+        "q": "Médicos e clínicas podem ter planos diferentes?",
+        "a": "Absolutamente! Médicos e clínicas operam independentemente com seus próprios planos de assinatura separados adaptados às suas necessidades específicas."
+      }
+    }
+  },
+  "enterprise": {
+    "title": "Precisa de uma Solução Empresarial?",
+    "subtitle": "Para hospitais, grandes clínicas e redes de saúde",
+    "features": {
+      "customIntegration": "Integração personalizada com sistemas existentes",
+      "accountManager": "Gerente de conta dedicado",
+      "prioritySupport": "Suporte prioritário 24/7",
+      "sla": "Acordos SLA personalizados",
+      "advancedSecurity": "Recursos de segurança avançados",
+      "compliance": "Consultoria de conformidade",
+      "unlimited": "Usuários e armazenamento ilimitados",
+      "onPremise": "Opções de implantação local"
+    },
+    "emailButton": "Enviar Email para Equipe de Vendas",
+    "scheduleButton": "Agendar uma Chamada",
+    "responseTime": "Tempo de resposta: Dentro de 24 horas em dias úteis"
+  },
+  "cta": {
+    "title": "Pronto para Transformar Sua Experiência de Saúde?",
+    "subtitle": "Junte-se a milhares de pacientes, médicos e clínicas satisfeitos que já usam Docito",
+    "startButton": "Comece Grátis Hoje",
+    "contactButton": "Contatar Vendas",
+    "footer": "Não é necessário cartão de crédito • Cancele a qualquer momento • Garantia de devolução de dinheiro de 30 dias"
+  }
+}

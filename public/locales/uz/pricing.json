@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "Narx Rejasi - Docito Sog'liqni Saqlash Platformasi",
+    "description": "Bemorlar, shifokorlar yoki klinikalar uchun mukammal rejani tanlang. Oylik va yillik variantlar bilan moslashuvchan narxlar.",
+    "keywords": "sog'liqni saqlash narxlari, tibbiy platforma rejalari, shifokor obunasi, klinika boshqaruvi narxlari"
+  },
+  "header": {
+    "title": "Mukammal Rejangizni Tanlang",
+    "subtitle": "Bemorlar, shifokorlar va klinikalar uchun moslashuvchan narxlar. O'sish bilan birga kengaytirib boring.",
+    "savingsBadge": "Yillik hisob-kitob bilan 10% tejaymiz"
+  },
+  "billing": {
+    "monthly": "Oylik",
+    "yearly": "Yillik",
+    "save": "10% Tejash"
+  },
+  "navigation": {
+    "forPatients": "Bemorlar Uchun",
+    "forDoctors": "Shifokorlar Uchun",
+    "forClinics": "Klinikalar Uchun"
+  },
+  "trust": {
+    "hipaa": {
+      "title": "HIPAA Muvofiq",
+      "description": "Sizning tibbiy ma'lumotlaringiz korporativ darajadagi xavfsizlik bilan himoyalangan"
+    },
+    "encryption": {
+      "title": "Bank Darajasidagi Shifrlash",
+      "description": "Barcha ma'lumotlar AES-256 bilan uzatish va saqlash paytida shifrlanadi"
+    },
+    "iso": {
+      "title": "ISO 27001 Sertifikatlangan",
+      "description": "Axborot xavfsizligini boshqarish uchun xalqaro standart"
+    },
+    "trusted": {
+      "title": "50,000+ Tomonidan Ishonilgan",
+      "description": "Butun dunyo bo'ylab sog'liqni saqlash mutaxassislari va bemorlar"
+    }
+  },
+  "guarantee": {
+    "title": "3 Kunlik Pulni Qaytarish Kafolati",
+    "badge": "Xavfsiz",
+    "description": "Istalgan to'lovli rejani 30 kun davomida xavfsiz sinab ko'ring. Agar to'liq qoniqmasangiz, to'lovingizni to'liq qaytaramiz - savolsiz, yashirin to'lovsiz."
+  },
+  "faq": {
+    "title": "Tez-Tez So'raladigan Savollar",
+    "subtitle": "Narxlarimiz haqida bilishingiz kerak bo'lgan hamma narsa",
+    "cardTitle": "Umumiy Savollar",
+    "questions": {
+      "changePlan": {
+        "q": "Rejamni istalgan vaqtda o'zgartira olamanmi?",
+        "a": "Ha! Siz istalgan vaqtda rejangizni yangilashingiz yoki pasaytirishingiz mumkin. O'zgarishlar darhol kuchga kiradi va biz har qanday to'lovlar yoki kreditlarni proporsional taqsimlaymiz."
+      },
+      "paymentMethods": {
+        "q": "Qanday to'lov usullarini qabul qilasiz?",
+        "a": "Biz barcha asosiy kredit kartalarini (Visa, Mastercard, American Express, Discover), shuningdek, korporativ rejalar uchun bank o'tkazmalarini qabul qilamiz."
+      },
+      "freeTrial": {
+        "q": "Bepul sinov versiyasi mavjudmi?",
+        "a": "Ha! Barcha yangi foydalanuvchilar to'liq bepul bo'lgan Access rejamiz bilan boshlaydilar. Siz istalgan vaqtda qo'shimcha xususiyatlarni ochish uchun to'lovli rejaga o'tishingiz mumkin."
+      },
+      "dataDowngrade": {
+        "q": "Agar pasaytirsam, ma'lumotlarimga nima bo'ladi?",
+        "a": "Ma'lumotlaringiz biz bilan har doim xavfsizdir. Agar siz kamroq saqlash bo'lgan rejaga pasaytirsangiz, eski yozuvlar arxivlanishidan oldin ortiqcha ma'lumotlarni yuklab olish yoki o'chirish uchun 30 kuningiz bo'ladi."
+      },
+      "refunds": {
+        "q": "Pulni qaytarishni taklif qilasizmi?",
+        "a": "Ha, biz barcha to'lovli rejalarda 30 kunlik pulni qaytarish kafolatini taklif qilamiz. Agar qoniqmasangiz, to'lovingizni to'liq qaytaramiz, savolsiz."
+      },
+      "hiddenFees": {
+        "q": "O'rnatish to'lovlari yoki yashirin to'lovlar bormi?",
+        "a": "Yo'q! Ko'rayotgan narxingiz to'laydigan narxingiz. Hech qanday o'rnatish to'lovlari, bekor qilish to'lovlari yoki yashirin to'lovlar yo'q."
+      },
+      "yearlyDiscount": {
+        "q": "Yillik chegirma qanday ishlaydi?",
+        "a": "Yillik hisob-kitobni tanlaganingizda, oylik hisob-kitobga nisbatan 10% tejaysiz. Har oyda emas, yiliga bir marta to'lanadi."
+      },
+      "separatePlans": {
+        "q": "Shifokorlar va klinikalar turli rejalarga ega bo'lishlari mumkinmi?",
+        "a": "Albatta! Shifokorlar va klinikalar o'zlarining maxsus ehtiyojlariga moslashtirilgan alohida obuna rejalari bilan mustaqil ishlaydilar."
+      }
+    }
+  },
+  "enterprise": {
+    "title": "Korporativ Yechimga Muhtojmisiz?",
+    "subtitle": "Kasalxonalar, yirik klinikalar va sog'liqni saqlash tarmoqlari uchun",
+    "features": {
+      "customIntegration": "Mavjud tizimlar bilan maxsus integratsiya",
+      "accountManager": "Maxsus hisob menejeri",
+      "prioritySupport": "24/7 ustuvor qo'llab-quvvatlash",
+      "sla": "Maxsus SLA shartnomalari",
+      "advancedSecurity": "Ilg'or xavfsizlik xususiyatlari",
+      "compliance": "Muvofiqlik maslahati",
+      "unlimited": "Cheksiz foydalanuvchilar va saqlash",
+      "onPremise": "Joyida joylashtirish variantlari"
+    },
+    "emailButton": "Savdo Jamoasiga Xat Yuborish",
+    "scheduleButton": "Qo'ng'iroqni Rejalashtirish",
+    "responseTime": "Javob vaqti: Ish kunlari ichida 24 soat ichida"
+  },
+  "cta": {
+    "title": "Sog'liqni Saqlash Tajribangizni O'zgartirishga Tayyormisiz?",
+    "subtitle": "Docito'dan allaqachon foydalanayotgan minglab qoniqgan bemorlar, shifokorlar va klinikalarga qo'shiling",
+    "startButton": "Bugun Bepul Boshlang",
+    "contactButton": "Savdo Bilan Bog'laning",
+    "footer": "Kredit karta talab qilinmaydi • Istalgan vaqtda bekor qiling • 30 kunlik pulni qaytarish kafolati"
+  }
+}

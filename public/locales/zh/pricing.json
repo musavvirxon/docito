@@ -1,0 +1,108 @@
+{
+  "seo": {
+    "title": "价格计划 - Docito医疗平台",
+    "description": "为患者、医生或诊所选择完美的计划。灵活的月度和年度定价选项。",
+    "keywords": "医疗定价、医疗平台计划、医生订阅、诊所管理定价"
+  },
+  "header": {
+    "title": "选择您的完美计划",
+    "subtitle": "为患者、医生和诊所提供灵活的定价。随着增长而扩展。",
+    "savingsBadge": "年度计费节省10%"
+  },
+  "billing": {
+    "monthly": "月付",
+    "yearly": "年付",
+    "save": "节省10%"
+  },
+  "navigation": {
+    "forPatients": "患者专用",
+    "forDoctors": "医生专用",
+    "forClinics": "诊所专用"
+  },
+  "trust": {
+    "hipaa": {
+      "title": "符合HIPAA",
+      "description": "您的医疗数据受企业级安全保护"
+    },
+    "encryption": {
+      "title": "银行级加密",
+      "description": "所有数据在传输和静止状态下均使用AES-256加密"
+    },
+    "iso": {
+      "title": "ISO 27001认证",
+      "description": "信息安全管理的国际标准"
+    },
+    "trusted": {
+      "title": "受50,000+信赖",
+      "description": "全球医疗专业人士和患者"
+    }
+  },
+  "guarantee": {
+    "title": "3天退款保证",
+    "badge": "无风险",
+    "description": "试用任何付费计划30天无风险。如果您不完全满意，我们将全额退款——无需提问，无隐藏费用。"
+  },
+  "faq": {
+    "title": "常见问题",
+    "subtitle": "您需要了解的有关我们定价的所有信息",
+    "cardTitle": "常见问题",
+    "questions": {
+      "changePlan": {
+        "q": "我可以随时更改计划吗？",
+        "a": "是的！您可以随时升级或降级计划。更改立即生效，我们将按比例分配任何费用或积分。"
+      },
+      "paymentMethods": {
+        "q": "您接受哪些付款方式？",
+        "a": "我们接受所有主要信用卡（Visa、Mastercard、American Express、Discover），以及企业计划的银行转账。"
+      },
+      "freeTrial": {
+        "q": "有免费试用吗？",
+        "a": "是的！所有新用户都从完全免费的Access计划开始。您可以随时升级到付费计划以解锁其他功能。"
+      },
+      "dataDowngrade": {
+        "q": "如果我降级，我的数据会怎样？",
+        "a": "您的数据在我们这里始终是安全的。如果您降级到存储空间较少的计划，您将有30天的时间下载或删除多余数据，然后旧记录将被存档。"
+      },
+      "refunds": {
+        "q": "您提供退款吗？",
+        "a": "是的，我们对所有付费计划提供30天退款保证。如果您不满意，我们将全额退款，无需提问。"
+      },
+      "hiddenFees": {
+        "q": "有设置费用或隐藏费用吗？",
+        "a": "没有！您看到的价格就是您支付的价格。没有设置费用、取消费用或任何类型的隐藏费用。"
+      },
+      "yearlyDiscount": {
+        "q": "年度折扣如何运作？",
+        "a": "当您选择年度计费时，与月度计费相比可节省10%。您将每年收费一次，而不是每月收费。"
+      },
+      "separatePlans": {
+        "q": "医生和诊所可以有不同的计划吗？",
+        "a": "当然可以！医生和诊所独立运营，拥有针对其特定需求量身定制的独立订阅计划。"
+      }
+    }
+  },
+  "enterprise": {
+    "title": "需要企业解决方案吗？",
+    "subtitle": "适用于医院、大型诊所和医疗网络",
+    "features": {
+      "customIntegration": "与现有系统的自定义集成",
+      "accountManager": "专属客户经理",
+      "prioritySupport": "24/7优先支持",
+      "sla": "自定义SLA协议",
+      "advancedSecurity": "高级安全功能",
+      "compliance": "合规咨询",
+      "unlimited": "无限用户和存储",
+      "onPremise": "本地部署选项"
+    },
+    "emailButton": "发送电子邮件给销售团队",
+    "scheduleButton": "安排通话",
+    "responseTime": "响应时间：工作日内24小时内"
+  },
+  "cta": {
+    "title": "准备好改变您的医疗体验了吗？",
+    "subtitle": "加入已经使用Docito的数千名满意的患者、医生和诊所",
+    "startButton": "今天免费开始",
+    "contactButton": "联系销售",
+    "footer": "无需信用卡 • 随时取消 • 30天退款保证"
+  }
+}
