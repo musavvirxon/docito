@@ -18,11 +18,13 @@ export const PlanCard = ({ plan, popular, enterprise, billingPeriod }: PlanCardP
 
   const formatPrice = (price: number) => {
     if (price === 0) return "Free";
+    // Convert cents to dollars
+    const dollars = price / 100;
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
-    }).format(price);
+    }).format(dollars);
   };
 
   const formatStorage = (gb: number | null) => {
