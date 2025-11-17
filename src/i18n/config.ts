@@ -23,7 +23,7 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: 'en',
-    debug: false,
+    debug: true, // Enable debug to see loading issues
     supportedLngs: languages.map(l => l.code),
     
     detection: {
@@ -32,12 +32,12 @@ i18n
       lookupLocalStorage: 'i18nextLng',
     },
 
-  backend: {
-    loadPath: '/locales/{{lng}}/{{ns}}.json',
-    requestOptions: {
-      cache: 'no-store',
+    backend: {
+      loadPath: '/locales/{{lng}}/{{ns}}.json?v=' + Date.now(),
+      requestOptions: {
+        cache: 'no-store',
+      },
     },
-  },
 
     interpolation: {
       escapeValue: false,
