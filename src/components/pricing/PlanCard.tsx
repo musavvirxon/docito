@@ -22,16 +22,24 @@ export const PlanCard = ({ plan, popular, enterprise, billingPeriod }: PlanCardP
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
-    }).format(price / 100);
+    }).format(price);
+  };
+
+  const formatStorage = (gb: number | null) => {
+    if (!gb) return null;
+    if (gb >= 1024) return `${gb / 1024}TB`;
+    return `${gb}GB`;
+  };
+
+  const formatRecords = (records: number | null) => {
+    if (!records) return 'Unlimited';
+    if (records >= 1000) return `${(records / 1000).toFixed(0)}k`;
+    return records.toString();
   };
 
   const features = plan.features?.features || [];
-  const storage = plan.features?.storage;
-  const records = plan.features?.records;
-  const patientRecords = plan.features?.patient_records;
-  const attachmentLimit = plan.features?.attachment_limit;
-  const uploadLimit = plan.features?.upload_limit;
-  const staffAccounts = plan.features?.staff_accounts;
+  const storage = formatStorage(plan.storage_limit_gb);
+  const records = formatRecords(plan.max_records);
   const savings = plan.features?.savings;
 
   const handleSubscribe = () => {
@@ -102,35 +110,6 @@ export const PlanCard = ({ plan, popular, enterprise, billingPeriod }: PlanCardP
             </div>
           )}
           
-          {patientRecords && (
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-              <div className="w-2 h-2 rounded-full bg-primary" />
-              <div>
-                <p className="text-sm font-medium">Patient Records</p>
-                <p className="text-xs text-muted-foreground">{patientRecords}</p>
-              </div>
-            </div>
-          )}
-          
-          {(attachmentLimit || uploadLimit) && (
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-              <div className="w-2 h-2 rounded-full bg-primary" />
-              <div>
-                <p className="text-sm font-medium">File Upload Limit</p>
-                <p className="text-xs text-muted-foreground">{attachmentLimit || uploadLimit}</p>
-              </div>
-            </div>
-          )}
-          
-          {staffAccounts && (
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-              <div className="w-2 h-2 rounded-full bg-primary" />
-              <div>
-                <p className="text-sm font-medium">Staff Accounts</p>
-                <p className="text-xs text-muted-foreground">{staffAccounts}</p>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Features List */}
