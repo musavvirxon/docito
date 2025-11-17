@@ -104,5 +104,19 @@
     "startButton": "Comece Grátis Hoje",
     "contactButton": "Contatar Vendas",
     "footer": "Não é necessário cartão de crédito • Cancele a qualquer momento • Garantia de devolução de dinheiro de 30 dias"
+  },
+  "plans": {
+    "patients": {
+      "title": "Para Pacientes",
+      "subtitle": "Gerencie seus registros de saúde e consultas com facilidade"
+    },
+    "doctors": {
+      "title": "Para Médicos",
+      "subtitle": "Simplifique sua prática com ferramentas poderosas e prontuário eletrônico"
+    },
+    "clinics": {
+      "title": "Para Clínicas e Hospitais",
+      "subtitle": "Gerencie toda a sua instalação com soluções abrangentes"
+    }
   }
 }

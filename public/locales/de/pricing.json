@@ -104,5 +104,19 @@
     "startButton": "Heute Kostenlos Starten",
     "contactButton": "Vertrieb Kontaktieren",
     "footer": "Keine Kreditkarte erforderlich • Jederzeit kündbar • 30-Tage-Geld-zurück-Garantie"
+  },
+  "plans": {
+    "patients": {
+      "title": "Für Pflegesuchende",
+      "subtitle": "Verwalten Sie Ihre Gesundheitsakten und Termine mit Leichtigkeit"
+    },
+    "doctors": {
+      "title": "Für Ärzte",
+      "subtitle": "Optimieren Sie Ihre Praxis mit leistungsstarken Tools und elektronischen Patientenakten"
+    },
+    "clinics": {
+      "title": "Für Kliniken und Krankenhäuser",
+      "subtitle": "Verwalten Sie Ihre gesamte Einrichtung mit umfassenden Lösungen"
+    }
   }
 }
