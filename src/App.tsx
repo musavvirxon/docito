@@ -18,6 +18,16 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Practices = lazy(() => import("./pages/Practices"));
 const Doctors = lazy(() => import("./pages/Doctors"));
 const DoctorsLocalized = lazy(() => import("./pages/DoctorsLocalized"));
+const PracticesLocalized = lazy(() => import("./pages/PracticesLocalized"));
+const AboutLocalized = lazy(() => import("./pages/AboutLocalized"));
+const ContactLocalized = lazy(() => import("./pages/ContactLocalized"));
+const FAQsLocalized = lazy(() => import("./pages/FAQsLocalized"));
+const FeaturesLocalized = lazy(() => import("./pages/FeaturesLocalized"));
+const SupportLocalized = lazy(() => import("./pages/SupportLocalized"));
+const HelpCenterLocalized = lazy(() => import("./pages/HelpCenterLocalized"));
+const LegalLocalized = lazy(() => import("./pages/LegalLocalized"));
+const BrowseSpecialtiesLocalized = lazy(() => import("./pages/BrowseSpecialtiesLocalized"));
+const SearchDoctorsLocalized = lazy(() => import("./pages/SearchDoctorsLocalized"));
 const RegisterPractice = lazy(() => import("./pages/RegisterPractice"));
 const ProcessingPractice = lazy(() => import("./pages/ProcessingPractice"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
@@ -117,8 +127,19 @@ const LanguageRoutes = () => {
       <Route path="/:lang/auth" element={<Auth />} />
       <Route path="/:lang/signup" element={<SignUp />} />
       <Route path="/:lang/dashboard" element={<Dashboard />} />
-      <Route path="/:lang/practices" element={<Practices />} />
+      {/* Localized public pages with SEO */}
+      <Route path="/:lang/practices" element={<PracticesLocalized />} />
       <Route path="/:lang/doctors" element={<DoctorsLocalized />} />
+      <Route path="/:lang/about" element={<AboutLocalized />} />
+      <Route path="/:lang/contact" element={<ContactLocalized />} />
+      <Route path="/:lang/faqs" element={<FAQsLocalized />} />
+      <Route path="/:lang/features" element={<FeaturesLocalized />} />
+      <Route path="/:lang/support" element={<SupportLocalized />} />
+      <Route path="/:lang/help-center" element={<HelpCenterLocalized />} />
+      <Route path="/:lang/legal" element={<LegalLocalized />} />
+      <Route path="/:lang/browse-specialties" element={<BrowseSpecialtiesLocalized />} />
+      <Route path="/:lang/search-doctors" element={<SearchDoctorsLocalized />} />
+      
       <Route path="/:lang/register-practice" element={<RegisterPractice />} />
       <Route path="/:lang/processing-practice" element={<ProcessingPractice />} />
       <Route path="/:lang/admin-dashboard" element={<AdminDashboard />} />

@@ -9,10 +9,13 @@ import {
 import { languages } from '@/i18n/config';
 import { useLanguagePreference } from '@/hooks/useLanguagePreference';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export const LanguageSwitcher = () => {
   const { currentLanguage, saveLanguagePreference, loading } = useLanguagePreference();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLanguageChange = async (langCode: string) => {
     if (loading) return;
@@ -25,8 +28,11 @@ export const LanguageSwitcher = () => {
         description: `Switched to ${languages.find(l => l.code === langCode)?.name}`,
       });
       
-      // Reload page to apply translations throughout
-      window.location.reload();
+      // Navigate to the new language route to trigger re-render
+      // Remove old language prefix and add new one
+      const pathWithoutLang = location.pathname.replace(/^\/(en|ru|uz|tr|ar|es|de|zh|pt|ja|ko)/, '');
+      const newPath = `/${langCode}${pathWithoutLang || '/'}`;
+      navigate(newPath, { replace: true });
     } else {
       toast({
         title: 'Error',
