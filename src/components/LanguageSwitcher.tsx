@@ -14,19 +14,36 @@ export const LanguageSwitcher = () => {
   const { i18n } = useTranslation();
   const [currentLang, setCurrentLang] = useState(i18n.language);
 
-  const handleLanguageChange = (langCode: string) => {
-    i18n.changeLanguage(langCode);
-    setCurrentLang(langCode);
-    localStorage.setItem('i18nextLng', langCode);
-    
-    // Update document direction for RTL languages
-    const language = languages.find(l => l.code === langCode);
-    if (language?.dir === 'rtl') {
-      document.documentElement.dir = 'rtl';
-      document.documentElement.lang = langCode;
-    } else {
-      document.documentElement.dir = 'ltr';
-      document.documentElement.lang = langCode;
+  const handleLanguageChange = async (langCode: string) => {
+    try {
+      // Force reload all namespaces for the new language
+      await i18n.changeLanguage(langCode);
+      
+      // Reload all loaded namespaces
+      const loadedNamespaces = Array.isArray(i18n.options.ns) ? i18n.options.ns : [i18n.options.ns || 'common'];
+      await Promise.all(
+        loadedNamespaces.map((ns: string) => 
+          i18n.reloadResources(langCode, ns)
+        )
+      );
+      
+      setCurrentLang(langCode);
+      localStorage.setItem('i18nextLng', langCode);
+      
+      // Update document direction for RTL languages
+      const language = languages.find(l => l.code === langCode);
+      if (language?.dir === 'rtl') {
+        document.documentElement.dir = 'rtl';
+        document.documentElement.lang = langCode;
+      } else {
+        document.documentElement.dir = 'ltr';
+        document.documentElement.lang = langCode;
+      }
+      
+      // Force page reload to ensure all translations load
+      window.location.reload();
+    } catch (error) {
+      console.error('Failed to change language:', error);
     }
   };
 
