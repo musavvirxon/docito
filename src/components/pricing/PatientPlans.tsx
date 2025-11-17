@@ -8,13 +8,32 @@ interface PatientPlansProps {
 }
 
 export const PatientPlans = ({ billingPeriod }: PatientPlansProps) => {
-  const { data: plans, isLoading } = useQuery({
-    queryKey: ['patient-plans', billingPeriod],
+  // Fetch free plan separately (price = 0)
+  const { data: freePlan, isLoading: isFreeLoading } = useQuery({
+    queryKey: ['patient-free-plan'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('subscription_plans')
         .select('*')
         .eq('target_audience', 'patient')
+        .eq('price', 0)
+        .eq('is_active', true)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') throw error;
+      return data;
+    },
+  });
+
+  // Fetch paid plans based on billing period
+  const { data: paidPlans, isLoading: isPaidLoading } = useQuery({
+    queryKey: ['patient-paid-plans', billingPeriod],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('subscription_plans')
+        .select('*')
+        .eq('target_audience', 'patient')
+        .gt('price', 0)
         .eq('billing_interval', billingPeriod)
         .eq('is_active', true)
         .order('price');
@@ -23,6 +42,9 @@ export const PatientPlans = ({ billingPeriod }: PatientPlansProps) => {
       return data;
     },
   });
+
+  const isLoading = isFreeLoading || isPaidLoading;
+  const plans = freePlan ? [freePlan, ...(paidPlans || [])] : (paidPlans || []);
 
   if (isLoading) {
     return (
