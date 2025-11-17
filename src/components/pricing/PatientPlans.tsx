@@ -2,12 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PlanCard } from "./PlanCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "react-i18next";
+
 interface PatientPlansProps {
   billingPeriod: "monthly" | "yearly";
 }
-export const PatientPlans = ({
-  billingPeriod
-}: PatientPlansProps) => {
+
+export const PatientPlans = ({ billingPeriod }: PatientPlansProps) => {
+  const { t } = useTranslation('pricing');
   // Fetch free plan separately (price = 0)
   const {
     data: freePlan,
@@ -55,10 +57,10 @@ export const PatientPlans = ({
   return <section className="space-y-8">
       <div className="text-center space-y-2">
         <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-          For Care Seekers               
+          {t('plans.patients.title')}               
         </h2>
         <p className="text-muted-foreground text-lg">
-          Manage your health records and appointments with ease
+          {t('plans.patients.subtitle')}
         </p>
       </div>
       

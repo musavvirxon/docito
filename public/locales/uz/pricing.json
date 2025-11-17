@@ -104,5 +104,19 @@
     "startButton": "Bugun Bepul Boshlang",
     "contactButton": "Savdo Bilan Bog'laning",
     "footer": "Kredit karta talab qilinmaydi • Istalgan vaqtda bekor qiling • 30 kunlik pulni qaytarish kafolati"
+  },
+  "plans": {
+    "patients": {
+      "title": "Parvarish Qidirayotganlar Uchun",
+      "subtitle": "Sog'liq yozuvlaringiz va uchrashuvlaringizni osonlik bilan boshqaring"
+    },
+    "doctors": {
+      "title": "Shifokorlar Uchun",
+      "subtitle": "Kuchli vositalar va elektron tibbiy yozuvlar bilan amaliyotingizni soddalashtiring"
+    },
+    "clinics": {
+      "title": "Klinikalar va Kasalxonalar Uchun",
+      "subtitle": "Keng qamrovli yechimlar bilan butun muassasangizni boshqaring"
+    }
   }
 }

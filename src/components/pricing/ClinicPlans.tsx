@@ -2,12 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PlanCard } from "./PlanCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "react-i18next";
 
 interface ClinicPlansProps {
   billingPeriod: "monthly" | "yearly";
 }
 
 export const ClinicPlans = ({ billingPeriod }: ClinicPlansProps) => {
+  const { t } = useTranslation('pricing');
   const { data: plans, isLoading } = useQuery({
     queryKey: ['clinic-plans', billingPeriod],
     queryFn: async () => {
@@ -44,10 +46,10 @@ export const ClinicPlans = ({ billingPeriod }: ClinicPlansProps) => {
     <section className="space-y-8">
       <div className="text-center space-y-2">
         <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-          For Clinics & Hospitals
+          {t('plans.clinics.title')}
         </h2>
         <p className="text-muted-foreground text-lg">
-          Manage your entire facility with comprehensive solutions
+          {t('plans.clinics.subtitle')}
         </p>
       </div>
       

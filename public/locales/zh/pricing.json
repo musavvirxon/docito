@@ -104,5 +104,19 @@
     "startButton": "今天免费开始",
     "contactButton": "联系销售",
     "footer": "无需信用卡 • 随时取消 • 30天退款保证"
+  },
+  "plans": {
+    "patients": {
+      "title": "为护理寻求者",
+      "subtitle": "轻松管理您的健康记录和预约"
+    },
+    "doctors": {
+      "title": "为医生",
+      "subtitle": "使用强大的工具和电子病历简化您的实践"
+    },
+    "clinics": {
+      "title": "为诊所和医院",
+      "subtitle": "使用全面的解决方案管理您的整个设施"
+    }
   }
 }

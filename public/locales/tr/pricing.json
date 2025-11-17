@@ -104,5 +104,19 @@
     "startButton": "Bugün Ücretsiz Başlayın",
     "contactButton": "Satışla İletişime Geçin",
     "footer": "Kredi kartı gerekmez • İstediğiniz zaman iptal edin • 30 günlük para iade garantisi"
+  },
+  "plans": {
+    "patients": {
+      "title": "Bakım Arayanlar İçin",
+      "subtitle": "Sağlık kayıtlarınızı ve randevularınızı kolayca yönetin"
+    },
+    "doctors": {
+      "title": "Doktorlar İçin",
+      "subtitle": "Güçlü araçlar ve elektronik tıbbi kayıtlarla pratiğinizi kolaylaştırın"
+    },
+    "clinics": {
+      "title": "Klinikler ve Hastaneler İçin",
+      "subtitle": "Kapsamlı çözümlerle tüm tesisizi yönetin"
+    }
   }
 }

@@ -104,5 +104,19 @@
     "startButton": "Comienza Gratis Hoy",
     "contactButton": "Contactar Ventas",
     "footer": "No se requiere tarjeta de crédito • Cancela en cualquier momento • Garantía de devolución de dinero de 30 días"
+  },
+  "plans": {
+    "patients": {
+      "title": "Para Pacientes",
+      "subtitle": "Gestiona tus registros médicos y citas con facilidad"
+    },
+    "doctors": {
+      "title": "Para Médicos",
+      "subtitle": "Optimiza tu práctica con herramientas potentes y EMR"
+    },
+    "clinics": {
+      "title": "Para Clínicas y Hospitales",
+      "subtitle": "Gestiona toda tu instalación con soluciones integrales"
+    }
   }
 }

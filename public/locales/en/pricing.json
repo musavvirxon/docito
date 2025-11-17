@@ -104,5 +104,19 @@
     "startButton": "Start Free Today",
     "contactButton": "Contact Sales",
     "footer": "No credit card required • Cancel anytime • 30-day money-back guarantee"
+  },
+  "plans": {
+    "patients": {
+      "title": "For Care Seekers",
+      "subtitle": "Manage your health records and appointments with ease"
+    },
+    "doctors": {
+      "title": "For Doctors",
+      "subtitle": "Streamline your practice with powerful tools and EMR"
+    },
+    "clinics": {
+      "title": "For Clinics & Hospitals",
+      "subtitle": "Manage your entire facility with comprehensive solutions"
+    }
   }
 }
