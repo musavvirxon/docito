@@ -32,13 +32,16 @@ i18n
       lookupLocalStorage: 'i18nextLng',
     },
 
-    backend: {
-      loadPath: '/locales/{{lng}}/{{ns}}.json?v=' + Date.now(),
-      requestOptions: {
-        cache: 'no-store',
-        mode: 'cors',
-      },
+  backend: {
+    loadPath: (lng: string, ns: string) => {
+      // Use dynamic timestamp per request to bust cache
+      return `/locales/${lng}/${ns}.json?v=${Date.now()}`;
     },
+    requestOptions: {
+      cache: 'no-store',
+      mode: 'cors',
+    },
+  },
 
     interpolation: {
       escapeValue: false,
