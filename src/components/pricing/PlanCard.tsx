@@ -39,9 +39,15 @@ export const PlanCard = ({ plan, popular, enterprise, billingPeriod }: PlanCardP
     return records.toString();
   };
 
+  const formatDoctors = (doctors: number | null | string) => {
+    if (!doctors || doctors === 'unlimited') return 'Unlimited';
+    return doctors.toString();
+  };
+
   const features = plan.features?.features || [];
   const storage = formatStorage(plan.features?.storageGB);
   const records = formatRecords(plan.features?.maxRecords === 'unlimited' ? null : plan.features?.maxRecords);
+  const doctors = plan.features?.maxDoctors ? formatDoctors(plan.features?.maxDoctors) : null;
   const savings = plan.features?.savings;
 
   const handleSubscribe = () => {
@@ -112,6 +118,15 @@ export const PlanCard = ({ plan, popular, enterprise, billingPeriod }: PlanCardP
             </div>
           )}
           
+          {doctors && (
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5">
+              <div className="w-2 h-2 rounded-full bg-primary" />
+              <div>
+                <p className="text-sm font-medium">Doctor Accounts</p>
+                <p className="text-xs text-muted-foreground">{doctors}</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Features List */}
