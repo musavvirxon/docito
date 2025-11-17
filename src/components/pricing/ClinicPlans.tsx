@@ -14,7 +14,7 @@ export const ClinicPlans = ({ billingPeriod }: ClinicPlansProps) => {
       const { data, error } = await supabase
         .from('subscription_plans')
         .select('*')
-        .eq('target_audience', 'clinic')
+        .eq('target_audience', 'practice')
         .eq('billing_interval', billingPeriod)
         .eq('is_active', true)
         .order('price');
