@@ -21,13 +21,15 @@ interface SubscriptionPlansCardProps {
   currentPlanId?: string;
   onSelectPlan: (planId: string) => void;
   isLoading?: boolean;
+  highlightedPlanId?: string | null;
 }
 
 export const SubscriptionPlansCard = ({ 
   plans, 
   currentPlanId, 
   onSelectPlan, 
-  isLoading 
+  isLoading,
+  highlightedPlanId
 }: SubscriptionPlansCardProps) => {
   const formatPrice = (price: number, currency: string) => {
     return new Intl.NumberFormat('en-US', {
@@ -41,7 +43,13 @@ export const SubscriptionPlansCard = ({
       {plans?.map((plan) => (
         <Card 
           key={plan.id} 
-          className={`relative ${currentPlanId === plan.id ? 'border-primary' : ''}`}
+          className={`relative ${
+            currentPlanId === plan.id 
+              ? 'border-primary' 
+              : highlightedPlanId === plan.id 
+                ? 'border-primary/60 shadow-lg' 
+                : ''
+          }`}
         >
           {currentPlanId === plan.id && (
             <Badge className="absolute -top-2 right-4">Current Plan</Badge>
