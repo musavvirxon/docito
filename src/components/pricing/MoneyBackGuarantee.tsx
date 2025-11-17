@@ -1,10 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2 } from "lucide-react";
-
 export const MoneyBackGuarantee = () => {
-  return (
-    <Card className="max-w-3xl mx-auto bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800">
+  return <Card className="max-w-3xl mx-auto bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800">
       <CardContent className="pt-6">
         <div className="flex flex-col md:flex-row items-center gap-6">
           <div className="flex-shrink-0">
@@ -16,7 +14,7 @@ export const MoneyBackGuarantee = () => {
           <div className="flex-1 text-center md:text-left space-y-3">
             <div className="flex items-center gap-3 justify-center md:justify-start">
               <h3 className="text-2xl font-bold text-green-900 dark:text-green-100">
-                30-Day Money-Back Guarantee
+                3-Day Money-Back Guarantee
               </h3>
               <Badge variant="secondary" className="bg-green-500/20 text-green-700 dark:text-green-300">
                 Risk-Free
@@ -29,6 +27,5 @@ export const MoneyBackGuarantee = () => {
           </div>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
