@@ -27,15 +27,16 @@ export const PlanCard = ({ plan, popular, enterprise, billingPeriod }: PlanCardP
     }).format(dollars);
   };
 
-  const formatStorage = (gb: number | null) => {
+  const formatStorage = (gb: number | null, mb: number | null) => {
+    if (mb && mb < 1024) return `${mb}MB`;
     if (!gb) return null;
     if (gb >= 1024) return `${gb / 1024}TB`;
     return `${gb}GB`;
   };
 
-  const formatRecords = (records: number | null) => {
-    if (!records) return 'Unlimited';
-    if (records >= 1000) return `${(records / 1000).toFixed(0)}k`;
+  const formatRecords = (records: number | null | string) => {
+    if (!records || records === 'unlimited') return 'Unlimited';
+    if (typeof records === 'number' && records >= 1000) return `${(records / 1000).toFixed(0)}k`;
     return records.toString();
   };
 
@@ -44,10 +45,19 @@ export const PlanCard = ({ plan, popular, enterprise, billingPeriod }: PlanCardP
     return doctors.toString();
   };
 
+  const formatFileSize = (mb: number | null) => {
+    if (!mb) return null;
+    if (mb >= 1024) return `${(mb / 1024).toFixed(0)}GB`;
+    return `${mb}MB`;
+  };
+
   const features = plan.features?.features || [];
-  const storage = formatStorage(plan.features?.storageGB);
-  const records = formatRecords(plan.features?.maxRecords === 'unlimited' ? null : plan.features?.maxRecords);
+  const storage = formatStorage(plan.features?.storageGB, plan.features?.storageMB);
+  const records = formatRecords(plan.features?.maxRecords);
+  const diagnoses = formatRecords(plan.features?.maxDiagnoses);
+  const treatmentSummaries = formatRecords(plan.features?.maxTreatmentSummaries);
   const doctors = plan.features?.maxDoctors ? formatDoctors(plan.features?.maxDoctors) : null;
+  const maxFileSize = formatFileSize(plan.features?.maxFileSize);
   const savings = plan.features?.savings;
 
   const handleSubscribe = async () => {
@@ -118,6 +128,26 @@ export const PlanCard = ({ plan, popular, enterprise, billingPeriod }: PlanCardP
               </div>
             </div>
           )}
+
+          {diagnoses && (
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5">
+              <div className="w-2 h-2 rounded-full bg-primary" />
+              <div>
+                <p className="text-sm font-medium">Diagnoses</p>
+                <p className="text-xs text-muted-foreground">{diagnoses}</p>
+              </div>
+            </div>
+          )}
+
+          {treatmentSummaries && (
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+              <div className="w-2 h-2 rounded-full bg-primary" />
+              <div>
+                <p className="text-sm font-medium">Treatment Summaries</p>
+                <p className="text-xs text-muted-foreground">{treatmentSummaries}</p>
+              </div>
+            </div>
+          )}
           
           {doctors && (
             <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5">
@@ -125,6 +155,16 @@ export const PlanCard = ({ plan, popular, enterprise, billingPeriod }: PlanCardP
               <div>
                 <p className="text-sm font-medium">Doctor Accounts</p>
                 <p className="text-xs text-muted-foreground">{doctors}</p>
+              </div>
+            </div>
+          )}
+
+          {maxFileSize && (
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+              <div className="w-2 h-2 rounded-full bg-primary" />
+              <div>
+                <p className="text-sm font-medium">Max File Upload</p>
+                <p className="text-xs text-muted-foreground">{maxFileSize}</p>
               </div>
             </div>
           )}
