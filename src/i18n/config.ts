@@ -36,6 +36,7 @@ i18n
       loadPath: '/locales/{{lng}}/{{ns}}.json?v=' + Date.now(),
       requestOptions: {
         cache: 'no-store',
+        mode: 'cors',
       },
     },
 
