@@ -38,8 +38,8 @@ export const PlanCard = ({ plan, popular, enterprise, billingPeriod }: PlanCardP
   };
 
   const features = plan.features?.features || [];
-  const storage = formatStorage(plan.storage_limit_gb);
-  const records = formatRecords(plan.max_records);
+  const storage = formatStorage(plan.features?.storageGB);
+  const records = formatRecords(plan.features?.maxRecords === 'unlimited' ? null : plan.features?.maxRecords);
   const savings = plan.features?.savings;
 
   const handleSubscribe = () => {
