@@ -11,7 +11,15 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Ban, Trash2 } from "lucide-react";
+import { Eye, Ban, Trash2, FileText } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 interface ManagementTableProps {
   title: string;
@@ -21,10 +29,66 @@ interface ManagementTableProps {
 const ManagementTable = ({ title, type }: ManagementTableProps) => {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedDoctor, setSelectedDoctor] = useState<any>(null);
+  const [verification, setVerification] = useState<any>(null);
+  const [documents, setDocuments] = useState<any[]>([]);
 
   useEffect(() => {
     fetchData();
   }, [type]);
+
+  const fetchDoctorVerification = async (doctorId: string) => {
+    try {
+      const { data: verificationData, error: verificationError } = await (supabase as any)
+        .from("doctor_verification")
+        .select("*")
+        .eq("doctor_id", doctorId)
+        .maybeSingle();
+
+      if (verificationError) throw verificationError;
+      setVerification(verificationData);
+
+      if (verificationData?.id) {
+        const { data: docsData, error: docsError } = await (supabase as any)
+          .from("doctor_verification_documents")
+          .select("*")
+          .eq("doctor_verification_id", verificationData.id);
+
+        if (docsError) throw docsError;
+        setDocuments(docsData || []);
+      }
+    } catch (error) {
+      console.error("Error fetching verification:", error);
+      toast.error("Failed to load verification details");
+    }
+  };
+
+  const handleViewDoctorVerification = async (doctor: any) => {
+    setSelectedDoctor(doctor);
+    await fetchDoctorVerification(doctor.id);
+    setViewModalOpen(true);
+  };
+
+  const downloadDocument = async (filePath: string, fileName: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from("verification-documents")
+        .download(filePath);
+
+      if (error) throw error;
+
+      const url = window.URL.createObjectURL(data);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading document:", error);
+      toast.error("Failed to download document");
+    }
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -172,6 +236,13 @@ const ManagementTable = ({ title, type }: ManagementTableProps) => {
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
                   <Button variant="ghost" size="icon"><Eye className="w-4 h-4" /></Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => handleViewDoctorVerification(item)}
+                  >
+                    <FileText className="w-4 h-4" />
+                  </Button>
                   <Button variant="ghost" size="icon"><Ban className="w-4 h-4" /></Button>
                   <Button variant="ghost" size="icon"><Trash2 className="w-4 h-4 text-destructive" /></Button>
                 </div>
@@ -259,25 +330,138 @@ const ManagementTable = ({ title, type }: ManagementTableProps) => {
   };
 
   return (
-    <Card className="border-2 border-border">
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold">{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="rounded-lg border-2 border-border overflow-hidden">
-          <Table>
-            <TableHeader className="bg-muted/50">
-              <TableRow>
-                {renderTableHeaders()}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {renderTableRows()}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-    </Card>
+    <>
+      <Card className="border-2 border-border">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">{title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-lg border-2 border-border overflow-hidden">
+            <Table>
+              <TableHeader className="bg-muted/50">
+                <TableRow>
+                  {renderTableHeaders()}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {renderTableRows()}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Doctor Verification Modal */}
+      <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Doctor Verification Details</DialogTitle>
+            <DialogDescription>
+              View doctor verification information and uploaded documents
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedDoctor && (
+            <div className="space-y-6">
+              {/* Doctor Information */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Doctor Information</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Full Name</p>
+                    <p className="font-medium">{selectedDoctor.profiles?.full_name || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Email</p>
+                    <p className="font-medium">{selectedDoctor.profiles?.email || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Specialty</p>
+                    <p className="font-medium">{selectedDoctor.specialty}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">License Number</p>
+                    <p className="font-medium">{selectedDoctor.license_number || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Consultation Fee</p>
+                    <p className="font-medium">${selectedDoctor.consultation_fee || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Verification Status</p>
+                    <Badge variant={selectedDoctor.verified ? "default" : "secondary"}>
+                      {selectedDoctor.verified ? "Verified" : "Not Verified"}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* Verification Submission */}
+              {verification && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Verification Submission</h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Status</p>
+                      <Badge>{verification.status}</Badge>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Submitted At</p>
+                      <p className="font-medium">
+                        {verification.submitted_at ? new Date(verification.submitted_at).toLocaleDateString() : "N/A"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Years of Experience</p>
+                      <p className="font-medium">{verification.years_of_experience || "N/A"}</p>
+                    </div>
+                    {verification.reviewed_at && (
+                      <div>
+                        <p className="text-muted-foreground">Reviewed At</p>
+                        <p className="font-medium">
+                          {new Date(verification.reviewed_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Uploaded Documents */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Uploaded Documents ({documents.length})</h3>
+                <div className="space-y-2">
+                  {documents.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No documents uploaded</p>
+                  ) : (
+                    documents.map((doc: any) => (
+                      <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <FileText className="w-5 h-5 text-muted-foreground" />
+                          <div>
+                            <p className="font-medium text-sm">
+                              {doc.document_type.replace(/_/g, " ").toUpperCase()}
+                            </p>
+                            <p className="text-xs text-muted-foreground">{doc.file_name}</p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => downloadDocument(doc.file_path, doc.file_name)}
+                        >
+                          Download
+                        </Button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
