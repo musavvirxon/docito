@@ -91,7 +91,9 @@ export const useDoctorVerification = () => {
               consultation_types: formData.consultation_types,
             }
           })
-          .eq('id', existingVerification.id);
+          .eq('id', existingVerification.id)
+          .select()
+          .maybeSingle();
 
         if (verificationError) {
           console.error('Verification error:', verificationError);
