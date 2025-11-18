@@ -7,18 +7,15 @@ export const useQuickNavigate = () => {
   const { toast } = useToast();
 
   const quickNavigate = (path: string, message?: string) => {
-    if (DISABLE_VALIDATION) {
-      if (message) {
-        toast({
-          title: "Development Mode",
-          description: message,
-          duration: 2000,
-        });
-      }
-      navigate(path);
-      return true;
+    if (DISABLE_VALIDATION && message) {
+      toast({
+        title: "Development Mode",
+        description: message,
+        duration: 2000,
+      });
     }
-    return false;
+    navigate(path);
+    return true;
   };
 
   const navigateToPatientDashboard = () => {
