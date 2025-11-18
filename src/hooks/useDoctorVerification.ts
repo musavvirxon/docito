@@ -78,7 +78,7 @@ export const useDoctorVerification = () => {
       
       if (existingVerification) {
         // Update existing verification
-        const { data, error: verificationError } = await (supabase as any)
+        const { error: verificationError } = await (supabase as any)
           .from('doctor_verification')
           .update({
             status: 'pending',
@@ -91,15 +91,13 @@ export const useDoctorVerification = () => {
               consultation_types: formData.consultation_types,
             }
           })
-          .eq('id', existingVerification.id)
-          .select()
-          .single();
+          .eq('id', existingVerification.id);
 
         if (verificationError) {
           console.error('Verification error:', verificationError);
           throw verificationError;
         }
-        verificationData = data;
+        verificationData = existingVerification;
       } else {
         // Create new verification request
         const { data, error: verificationError } = await (supabase as any)
@@ -117,7 +115,7 @@ export const useDoctorVerification = () => {
             }
           })
           .select()
-          .single();
+          .maybeSingle();
 
         if (verificationError) {
           console.error('Verification error:', verificationError);
@@ -127,40 +125,44 @@ export const useDoctorVerification = () => {
       }
 
       // Upload verification documents records
-      if (verificationData && (medical_license_url || professional_id_url)) {
-        const documents = [];
-        if (medical_license_url) {
-          const urlParts = medical_license_url.split('/');
-          const fileName = urlParts[urlParts.length - 1];
-          documents.push({
-            doctor_verification_id: verificationData.id,
-            document_type: 'medical_license',
-            file_path: medical_license_url,
-            file_name: fileName,
-          });
-        }
-        if (professional_id_url) {
-          const urlParts = professional_id_url.split('/');
-          const fileName = urlParts[urlParts.length - 1];
-          documents.push({
-            doctor_verification_id: verificationData.id,
-            document_type: 'professional_id',
-            file_path: professional_id_url,
-            file_name: fileName,
-          });
-        }
+      if (verificationData || existingVerification) {
+        const verificationId = verificationData?.id || existingVerification?.id;
+        
+        if (verificationId && (medical_license_url || professional_id_url)) {
+          const documents = [];
+          if (medical_license_url) {
+            const urlParts = medical_license_url.split('/');
+            const fileName = urlParts[urlParts.length - 1];
+            documents.push({
+              doctor_verification_id: verificationId,
+              document_type: 'medical_license',
+              file_path: medical_license_url,
+              file_name: fileName,
+            });
+          }
+          if (professional_id_url) {
+            const urlParts = professional_id_url.split('/');
+            const fileName = urlParts[urlParts.length - 1];
+            documents.push({
+              doctor_verification_id: verificationId,
+              document_type: 'professional_id',
+              file_path: professional_id_url,
+              file_name: fileName,
+            });
+          }
 
-        const { error: docsError } = await (supabase as any)
-          .from('doctor_verification_documents')
-          .insert(documents);
+          const { error: docsError } = await (supabase as any)
+            .from('doctor_verification_documents')
+            .insert(documents);
 
-        if (docsError) {
-          console.error('Documents upload error:', docsError);
+          if (docsError) {
+            console.error('Documents upload error:', docsError);
+          }
         }
       }
 
       toast.success('Verification request submitted successfully!');
-      return { success: true, verificationId: verificationData?.id };
+      return { success: true, verificationId: verificationData?.id || existingVerification?.id };
     } catch (error: any) {
       console.error('Error submitting verification:', error);
       toast.error(error.message || 'Failed to submit verification request');
