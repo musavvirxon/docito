@@ -88,16 +88,23 @@ const DoctorVerificationTable = ({ title, status = "all" }: DoctorVerificationTa
     setViewModalOpen(true);
   };
 
-  const handleUpdateStatus = async (verificationId: string, newStatus: string, doctorId: string) => {
+  const handleUpdateStatus = async (verificationId: string, newStatus: string, doctorId: string, rejectionReason?: string) => {
     try {
       // Update verification status
+      const updateData: any = { 
+        status: newStatus,
+        reviewed_at: new Date().toISOString(),
+        reviewed_by: (await supabase.auth.getUser()).data.user?.id
+      };
+
+      // Add rejection reason if declining
+      if (newStatus === "declined" && rejectionReason) {
+        updateData.rejection_reason = rejectionReason;
+      }
+
       const { error: verificationError } = await supabase
         .from("doctor_verification" as any)
-        .update({ 
-          status: newStatus,
-          reviewed_at: new Date().toISOString(),
-          reviewed_by: (await supabase.auth.getUser()).data.user?.id
-        })
+        .update(updateData)
         .eq("id", verificationId);
 
       if (verificationError) throw verificationError;
@@ -157,7 +164,8 @@ const DoctorVerificationTable = ({ title, status = "all" }: DoctorVerificationTa
       pending: { color: "bg-yellow-100 text-yellow-800", icon: Clock },
       under_review: { color: "bg-blue-100 text-blue-800", icon: Clock },
       verified: { color: "bg-green-100 text-green-800", icon: CheckCircle },
-      rejected: { color: "bg-red-100 text-red-800", icon: XCircle },
+      declined: { color: "bg-red-100 text-red-800", icon: XCircle },
+      resubmitted: { color: "bg-purple-100 text-purple-800", icon: Clock },
     };
 
     const variant = variants[status] || variants.pending;
@@ -335,24 +343,43 @@ const DoctorVerificationTable = ({ title, status = "all" }: DoctorVerificationTa
                 </div>
               </div>
 
+              {/* Rejection Reason (if declined) */}
+              {selectedVerification.status === 'declined' && selectedVerification.rejection_reason && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Rejection Reason</h3>
+                  <p className="text-sm text-muted-foreground p-3 bg-destructive/10 rounded-lg">
+                    {selectedVerification.rejection_reason}
+                  </p>
+                </div>
+              )}
+
               {/* Actions */}
               <div className="flex gap-3 pt-4 border-t">
-                <Button
-                  onClick={() => handleUpdateStatus(selectedVerification.id, "verified", selectedVerification.doctor_id)}
-                  className="flex-1"
-                  variant="default"
-                >
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Approve Verification
-                </Button>
-                <Button
-                  onClick={() => handleUpdateStatus(selectedVerification.id, "rejected", selectedVerification.doctor_id)}
-                  className="flex-1"
-                  variant="destructive"
-                >
-                  <XCircle className="w-4 h-4 mr-2" />
-                  Reject
-                </Button>
+                {selectedVerification.status !== 'verified' && (
+                  <Button
+                    onClick={() => handleUpdateStatus(selectedVerification.id, "verified", selectedVerification.doctor_id)}
+                    className="flex-1"
+                    variant="default"
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Approve Verification
+                  </Button>
+                )}
+                {selectedVerification.status !== 'declined' && (
+                  <Button
+                    onClick={() => {
+                      const reason = prompt("Enter rejection reason:");
+                      if (reason) {
+                        handleUpdateStatus(selectedVerification.id, "declined", selectedVerification.doctor_id, reason);
+                      }
+                    }}
+                    className="flex-1"
+                    variant="destructive"
+                  >
+                    <XCircle className="w-4 h-4 mr-2" />
+                    Decline
+                  </Button>
+                )}
                 <Button
                   onClick={() => handleDelete(selectedVerification.id, selectedVerification.doctor_id)}
                   variant="outline"
