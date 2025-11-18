@@ -72,7 +72,7 @@ export const useDoctorVerification = () => {
         .from('doctor_verification')
         .select('id')
         .eq('doctor_id', doctorId)
-        .single();
+        .maybeSingle();
 
       let verificationData;
       
