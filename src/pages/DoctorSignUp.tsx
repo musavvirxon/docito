@@ -225,7 +225,7 @@ const DoctorSignUp = () => {
       if (result.success) {
         toast.success('Profile submitted for verification!');
         toast.info('A super admin will review your application. You will be notified once it is reviewed.');
-        setTimeout(() => navigateToDoctorDashboard(), 2000);
+        navigate('/doctor-dashboard');
       }
     } catch (error: any) {
       console.error('Error submitting profile:', error);
