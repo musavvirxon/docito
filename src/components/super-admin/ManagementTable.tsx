@@ -389,8 +389,17 @@ const ManagementTable = ({ title, type }: ManagementTableProps) => {
                   </div>
                   <div>
                     <p className="text-muted-foreground">Verification Status</p>
-                    <Badge variant={selectedDoctor.verified ? "default" : "secondary"}>
-                      {selectedDoctor.verified ? "Verified" : "Not Verified"}
+                    <Badge variant={
+                      verification?.status === "verified" ? "default" : 
+                      verification?.status === "declined" ? "destructive" :
+                      verification?.status === "resubmitted" ? "secondary" :
+                      "secondary"
+                    }>
+                      {verification?.status === "verified" ? "Verified" :
+                       verification?.status === "declined" ? "Declined" :
+                       verification?.status === "resubmitted" ? "Resubmitted" :
+                       verification?.status === "under_review" ? "Under Review" :
+                       "Pending"}
                     </Badge>
                   </div>
                 </div>

@@ -77,15 +77,19 @@ export const useDoctorVerification = () => {
       let verificationData;
       
       if (existingVerification) {
-        // Update existing verification
+        // Update existing verification - set to resubmitted if previously declined
+        const currentStatus = existingVerification.status;
+        const newStatus = (currentStatus === 'declined') ? 'resubmitted' : 'pending';
+        
         const { error: verificationError } = await (supabase as any)
           .from('doctor_verification')
           .update({
-            status: 'pending',
+            status: newStatus,
             submitted_at: new Date().toISOString(),
             specialty: formData.specialty,
             license_number: formData.license_number,
             years_of_experience: formData.years_experience,
+            rejection_reason: null, // Clear previous rejection reason
             verification_data: {
               languages: formData.languages,
               consultation_types: formData.consultation_types,
