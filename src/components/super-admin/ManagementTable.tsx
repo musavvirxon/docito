@@ -90,6 +90,21 @@ const ManagementTable = ({ title, type }: ManagementTableProps) => {
     }
   };
 
+  const viewDocument = async (filePath: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from("verification-documents")
+        .createSignedUrl(filePath, 3600);
+
+      if (error) throw error;
+
+      window.open(data.signedUrl, '_blank');
+    } catch (error) {
+      console.error("Error viewing document:", error);
+      toast.error("Failed to view document");
+    }
+  };
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -454,13 +469,22 @@ const ManagementTable = ({ title, type }: ManagementTableProps) => {
                             <p className="text-xs text-muted-foreground">{doc.file_name}</p>
                           </div>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => downloadDocument(doc.file_path, doc.file_name)}
-                        >
-                          Download
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => viewDocument(doc.file_path)}
+                          >
+                            View
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => downloadDocument(doc.file_path, doc.file_name)}
+                          >
+                            Download
+                          </Button>
+                        </div>
                       </div>
                     ))
                   )}

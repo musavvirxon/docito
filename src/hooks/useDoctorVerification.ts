@@ -28,29 +28,80 @@ export const useDoctorVerification = () => {
   const submitForVerification = async (doctorId: string, formData: DoctorVerificationData) => {
     setIsSubmitting(true);
     try {
+      // Check if verification already exists
+      const { data: existingVerification } = await (supabase as any)
+        .from('doctor_verification')
+        .select('id')
+        .eq('doctor_id', doctorId)
+        .maybeSingle();
+
       // Upload documents first
       let medical_license_url = formData.documents.medical_license_url;
       let professional_id_url = formData.documents.professional_id_url;
 
       if (formData.documents.medical_license) {
+        // Delete old medical license documents if they exist
+        if (existingVerification) {
+          const { data: oldDocs } = await (supabase as any)
+            .from('doctor_verification_documents')
+            .select('file_path')
+            .eq('doctor_verification_id', existingVerification.id)
+            .eq('document_type', 'medical_license');
+
+          if (oldDocs && oldDocs.length > 0) {
+            // Delete from storage
+            const filePaths = oldDocs.map((doc: any) => doc.file_path);
+            await supabase.storage.from('verification-documents').remove(filePaths);
+            
+            // Delete from database
+            await (supabase as any)
+              .from('doctor_verification_documents')
+              .delete()
+              .eq('doctor_verification_id', existingVerification.id)
+              .eq('document_type', 'medical_license');
+          }
+        }
+
         const result = await uploadFile(
           formData.documents.medical_license,
           'verification-documents',
           `doctors/${doctorId}/medical-license-${Date.now()}.pdf`
         );
         if (result) {
-          medical_license_url = result.url;
+          medical_license_url = result.path;
         }
       }
 
       if (formData.documents.professional_id) {
+        // Delete old professional ID documents if they exist
+        if (existingVerification) {
+          const { data: oldDocs } = await (supabase as any)
+            .from('doctor_verification_documents')
+            .select('file_path')
+            .eq('doctor_verification_id', existingVerification.id)
+            .eq('document_type', 'professional_id');
+
+          if (oldDocs && oldDocs.length > 0) {
+            // Delete from storage
+            const filePaths = oldDocs.map((doc: any) => doc.file_path);
+            await supabase.storage.from('verification-documents').remove(filePaths);
+            
+            // Delete from database
+            await (supabase as any)
+              .from('doctor_verification_documents')
+              .delete()
+              .eq('doctor_verification_id', existingVerification.id)
+              .eq('document_type', 'professional_id');
+          }
+        }
+
         const result = await uploadFile(
           formData.documents.professional_id,
           'verification-documents',
           `doctors/${doctorId}/professional-id-${Date.now()}.pdf`
         );
         if (result) {
-          professional_id_url = result.url;
+          professional_id_url = result.path;
         }
       }
 
@@ -66,13 +117,6 @@ export const useDoctorVerification = () => {
         .eq('id', doctorId);
 
       if (doctorError) throw doctorError;
-
-      // Check if verification already exists
-      const { data: existingVerification } = await (supabase as any)
-        .from('doctor_verification')
-        .select('id')
-        .eq('doctor_id', doctorId)
-        .maybeSingle();
 
       let verificationData;
       
@@ -137,23 +181,19 @@ export const useDoctorVerification = () => {
         if (verificationId && (medical_license_url || professional_id_url)) {
           const documents = [];
           if (medical_license_url) {
-            const urlParts = medical_license_url.split('/');
-            const fileName = urlParts[urlParts.length - 1];
             documents.push({
               doctor_verification_id: verificationId,
               document_type: 'medical_license',
               file_path: medical_license_url,
-              file_name: fileName,
+              file_name: `medical-license-${Date.now()}.pdf`,
             });
           }
           if (professional_id_url) {
-            const urlParts = professional_id_url.split('/');
-            const fileName = urlParts[urlParts.length - 1];
             documents.push({
               doctor_verification_id: verificationId,
               document_type: 'professional_id',
               file_path: professional_id_url,
-              file_name: fileName,
+              file_name: `professional-id-${Date.now()}.pdf`,
             });
           }
 
