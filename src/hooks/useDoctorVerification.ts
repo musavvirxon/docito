@@ -25,16 +25,16 @@ export const useDoctorVerification = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { uploadFile } = useFileUpload();
 
-  const submitForVerification = async (doctorId: string, data: DoctorVerificationData) => {
+  const submitForVerification = async (doctorId: string, formData: DoctorVerificationData) => {
     setIsSubmitting(true);
     try {
       // Upload documents first
-      let medical_license_url = data.documents.medical_license_url;
-      let professional_id_url = data.documents.professional_id_url;
+      let medical_license_url = formData.documents.medical_license_url;
+      let professional_id_url = formData.documents.professional_id_url;
 
-      if (data.documents.medical_license) {
+      if (formData.documents.medical_license) {
         const result = await uploadFile(
-          data.documents.medical_license,
+          formData.documents.medical_license,
           'verification-documents',
           `doctors/${doctorId}/medical-license-${Date.now()}.pdf`
         );
@@ -43,9 +43,9 @@ export const useDoctorVerification = () => {
         }
       }
 
-      if (data.documents.professional_id) {
+      if (formData.documents.professional_id) {
         const result = await uploadFile(
-          data.documents.professional_id,
+          formData.documents.professional_id,
           'verification-documents',
           `doctors/${doctorId}/professional-id-${Date.now()}.pdf`
         );
@@ -58,36 +58,72 @@ export const useDoctorVerification = () => {
       const { error: doctorError } = await supabase
         .from('doctors')
         .update({
-          specialty: data.specialty,
-          bio: data.bio,
-          license_number: data.license_number,
-          consultation_fee: data.consultation_fee,
+          specialty: formData.specialty,
+          bio: formData.bio,
+          license_number: formData.license_number,
+          consultation_fee: formData.consultation_fee,
         })
         .eq('id', doctorId);
 
       if (doctorError) throw doctorError;
 
-      // Create verification request
-      const { data: verificationData, error: verificationError } = await (supabase as any)
+      // Check if verification already exists
+      const { data: existingVerification } = await (supabase as any)
         .from('doctor_verification')
-        .insert({
-          doctor_id: doctorId,
-          status: 'pending',
-          submitted_at: new Date().toISOString(),
-          specialty: data.specialty,
-          license_number: data.license_number,
-          years_of_experience: data.years_experience,
-          verification_data: {
-            languages: data.languages,
-            consultation_types: data.consultation_types,
-          }
-        })
-        .select()
+        .select('id')
+        .eq('doctor_id', doctorId)
         .single();
 
-      if (verificationError) {
-        console.error('Verification error:', verificationError);
-        throw verificationError;
+      let verificationData;
+      
+      if (existingVerification) {
+        // Update existing verification
+        const { data, error: verificationError } = await (supabase as any)
+          .from('doctor_verification')
+          .update({
+            status: 'pending',
+            submitted_at: new Date().toISOString(),
+            specialty: formData.specialty,
+            license_number: formData.license_number,
+            years_of_experience: formData.years_experience,
+            verification_data: {
+              languages: formData.languages,
+              consultation_types: formData.consultation_types,
+            }
+          })
+          .eq('id', existingVerification.id)
+          .select()
+          .single();
+
+        if (verificationError) {
+          console.error('Verification error:', verificationError);
+          throw verificationError;
+        }
+        verificationData = data;
+      } else {
+        // Create new verification request
+        const { data, error: verificationError } = await (supabase as any)
+          .from('doctor_verification')
+          .insert({
+            doctor_id: doctorId,
+            status: 'pending',
+            submitted_at: new Date().toISOString(),
+            specialty: formData.specialty,
+            license_number: formData.license_number,
+            years_of_experience: formData.years_experience,
+            verification_data: {
+              languages: formData.languages,
+              consultation_types: formData.consultation_types,
+            }
+          })
+          .select()
+          .single();
+
+        if (verificationError) {
+          console.error('Verification error:', verificationError);
+          throw verificationError;
+        }
+        verificationData = data;
       }
 
       // Upload verification documents records
