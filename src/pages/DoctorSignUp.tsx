@@ -34,6 +34,8 @@ const DoctorSignUp = () => {
   const [avatarPreview, setAvatarPreview] = useState<string>("");
   const [medicalLicense, setMedicalLicense] = useState<File | null>(null);
   const [professionalId, setProfessionalId] = useState<File | null>(null);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [accuracyConfirmed, setAccuracyConfirmed] = useState(false);
   
   const { navigateToDoctorDashboard } = useQuickNavigate();
   const { uploadFile, uploading } = useFileUpload();
@@ -264,6 +266,59 @@ const DoctorSignUp = () => {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate required fields
+    const requiredFields = {
+      'First Name': formData.firstName,
+      'Last Name': formData.lastName,
+      'Gender': formData.gender,
+      'Phone': formData.phone,
+      'Specialty': formData.specialty,
+      'Degrees': formData.degrees,
+      'Years of Experience': formData.experience,
+      'License Number': formData.license,
+      'Country': formData.country,
+      'Region': formData.region,
+      'Bio': formData.bio,
+    };
+
+    const emptyFields = Object.entries(requiredFields)
+      .filter(([_, value]) => !value || value.trim() === '')
+      .map(([field, _]) => field);
+
+    if (emptyFields.length > 0) {
+      toast.error(`Please fill in all required fields: ${emptyFields.join(', ')}`);
+      return;
+    }
+
+    // Validate file uploads
+    if (!medicalLicense) {
+      toast.error('Please upload your medical license');
+      return;
+    }
+
+    if (!professionalId) {
+      toast.error('Please upload your professional ID');
+      return;
+    }
+
+    // Validate languages
+    if (selectedLanguages.length === 0) {
+      toast.error('Please select at least one language you speak');
+      return;
+    }
+
+    // Validate checkboxes
+    if (!accuracyConfirmed) {
+      toast.error('Please confirm the accuracy of your information');
+      return;
+    }
+
+    if (!termsAccepted) {
+      toast.error('Please accept the Terms of Service and Privacy Policy');
+      return;
+    }
+
     await handleSubmit(handleDoctorOnboarding, { skipValidation: true });
   };
 
@@ -332,19 +387,31 @@ const DoctorSignUp = () => {
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="firstName">{t('doctorSignup.fields.firstName')} ({t('doctorSignup.buttons.optional')})</Label>
-                    <Input id="firstName" placeholder={t('doctorSignup.placeholders.firstName')} />
+                    <Label htmlFor="firstName">{t('doctorSignup.fields.firstName')} <span className="text-red-500">*</span></Label>
+                    <Input 
+                      id="firstName" 
+                      placeholder={t('doctorSignup.placeholders.firstName')}
+                      value={formData.firstName}
+                      onChange={(e) => updateField('firstName', e.target.value)}
+                      required
+                    />
                   </div>
                   <div>
-                    <Label htmlFor="lastName">{t('doctorSignup.fields.lastName')} ({t('doctorSignup.buttons.optional')})</Label>
-                    <Input id="lastName" placeholder={t('doctorSignup.placeholders.lastName')} />
+                    <Label htmlFor="lastName">{t('doctorSignup.fields.lastName')} <span className="text-red-500">*</span></Label>
+                    <Input 
+                      id="lastName" 
+                      placeholder={t('doctorSignup.placeholders.lastName')}
+                      value={formData.lastName}
+                      onChange={(e) => updateField('lastName', e.target.value)}
+                      required
+                    />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="gender">{t('doctorSignup.fields.gender')} ({t('doctorSignup.buttons.optional')})</Label>
-                    <Select>
+                    <Label htmlFor="gender">{t('doctorSignup.fields.gender')} <span className="text-red-500">*</span></Label>
+                    <Select value={formData.gender} onValueChange={(value) => updateField('gender', value)}>
                       <SelectTrigger>
                         <SelectValue placeholder={t('doctorSignup.placeholders.selectGender')} />
                       </SelectTrigger>
@@ -357,8 +424,14 @@ const DoctorSignUp = () => {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="phone">{t('doctorSignup.fields.phone')} ({t('doctorSignup.buttons.optional')})</Label>
-                    <Input id="phone" placeholder={t('doctorSignup.placeholders.phone')} />
+                    <Label htmlFor="phone">{t('doctorSignup.fields.phone')} <span className="text-red-500">*</span></Label>
+                    <Input 
+                      id="phone" 
+                      placeholder={t('doctorSignup.placeholders.phone')}
+                      value={formData.phone}
+                      onChange={(e) => updateField('phone', e.target.value)}
+                      required
+                    />
                   </div>
                 </div>
               </CardContent>
@@ -374,8 +447,8 @@ const DoctorSignUp = () => {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <Label htmlFor="specialty">{t('doctorSignup.fields.specialty')} ({t('doctorSignup.buttons.optional')})</Label>
-                  <Select>
+                  <Label htmlFor="specialty">{t('doctorSignup.fields.specialty')} <span className="text-red-500">*</span></Label>
+                  <Select value={formData.specialty} onValueChange={(value) => updateField('specialty', value)}>
                     <SelectTrigger>
                       <SelectValue placeholder={t('doctorSignup.placeholders.selectSpecialty')} />
                     </SelectTrigger>
@@ -390,15 +463,21 @@ const DoctorSignUp = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="degrees">{t('doctorSignup.fields.degrees')}</Label>
-                  <Input id="degrees" placeholder={t('doctorSignup.placeholders.degrees')} />
+                  <Label htmlFor="degrees">{t('doctorSignup.fields.degrees')} <span className="text-red-500">*</span></Label>
+                  <Input 
+                    id="degrees" 
+                    placeholder={t('doctorSignup.placeholders.degrees')}
+                    value={formData.degrees}
+                    onChange={(e) => updateField('degrees', e.target.value)}
+                    required
+                  />
                   <p className="text-sm text-muted-foreground mt-1">{t('doctorSignup.help.degreesMultiple')}</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="experience">{t('doctorSignup.fields.experience')}</Label>
-                    <Select>
+                    <Label htmlFor="experience">{t('doctorSignup.fields.experience')} <span className="text-red-500">*</span></Label>
+                    <Select value={formData.experience} onValueChange={(value) => updateField('experience', value)}>
                       <SelectTrigger>
                         <SelectValue placeholder={t('doctorSignup.placeholders.selectExperience')} />
                       </SelectTrigger>
@@ -413,9 +492,15 @@ const DoctorSignUp = () => {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="license">{t('doctorSignup.fields.license')}</Label>
+                    <Label htmlFor="license">{t('doctorSignup.fields.license')} <span className="text-red-500">*</span></Label>
                     <div className="relative">
-                      <Input id="license" placeholder={t('doctorSignup.placeholders.license')} />
+                      <Input 
+                        id="license" 
+                        placeholder={t('doctorSignup.placeholders.license')}
+                        value={formData.license}
+                        onChange={(e) => updateField('license', e.target.value)}
+                        required
+                      />
                       <Info className="w-4 h-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">{t('doctorSignup.help.licenseVerification')}</p>
@@ -423,7 +508,7 @@ const DoctorSignUp = () => {
                 </div>
 
                 <div>
-                  <Label>{t('doctorSignup.fields.languages')}</Label>
+                  <Label>{t('doctorSignup.fields.languages')} <span className="text-red-500">*</span></Label>
                   <p className="text-sm text-muted-foreground mb-3">{t('doctorSignup.help.languagesSelect')}</p>
                   
                   {/* Selected Languages */}
@@ -492,7 +577,7 @@ const DoctorSignUp = () => {
                 {/* Country and Region */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="country">{t('doctorSignup.fields.country')} ({t('doctorSignup.buttons.optional')})</Label>
+                    <Label htmlFor="country">{t('doctorSignup.fields.country')} <span className="text-red-500">*</span></Label>
                     <Select value={formData.country} onValueChange={(value) => updateField('country', value)}>
                       <SelectTrigger>
                         <SelectValue placeholder={t('doctorSignup.placeholders.selectCountry')} />
@@ -507,7 +592,7 @@ const DoctorSignUp = () => {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="region">{t('doctorSignup.fields.region')} ({t('doctorSignup.buttons.optional')})</Label>
+                    <Label htmlFor="region">{t('doctorSignup.fields.region')} <span className="text-red-500">*</span></Label>
                     <Select value={formData.region} onValueChange={(value) => updateField('region', value)} disabled={!formData.country}>
                       <SelectTrigger>
                         <SelectValue placeholder={t('doctorSignup.placeholders.selectRegion')} />
@@ -662,13 +747,14 @@ const DoctorSignUp = () => {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <Label htmlFor="bio">{t('doctorSignup.fields.bio')}</Label>
+                  <Label htmlFor="bio">{t('doctorSignup.fields.bio')} <span className="text-red-500">*</span></Label>
                   <Textarea 
                     id="bio" 
                     placeholder={t('doctorSignup.placeholders.bio')}
                     className="min-h-[100px]"
                     value={formData.bio}
                     onChange={(e) => updateField('bio', e.target.value)}
+                    required
                   />
                   <p className="text-sm text-muted-foreground mt-1">{t('doctorSignup.help.bioLength')}</p>
                 </div>
@@ -712,7 +798,7 @@ const DoctorSignUp = () => {
                     <p className="text-sm text-muted-foreground mt-1">{t('doctorSignup.help.professionalHeadshot')}</p>
                   </div>
                   <div>
-                    <Label>{t('doctorSignup.fields.medicalLicense')}</Label>
+                    <Label>{t('doctorSignup.fields.medicalLicense')} <span className="text-red-500">*</span></Label>
                     <div className={`border-2 border-dashed rounded-lg p-6 text-center mb-3 ${
                       medicalLicense ? 'border-green-500 bg-green-50' : 'border-border'
                     }`}>
@@ -744,7 +830,7 @@ const DoctorSignUp = () => {
                       </Button>
                     </div>
                     
-                    <Label>{t('doctorSignup.fields.professionalId')}</Label>
+                    <Label>{t('doctorSignup.fields.professionalId')} <span className="text-red-500">*</span></Label>
                     <div className={`border-2 border-dashed rounded-lg p-6 text-center ${
                       professionalId ? 'border-green-500 bg-green-50' : 'border-border'
                     }`}>
@@ -829,16 +915,26 @@ const DoctorSignUp = () => {
               <CardContent className="space-y-6">
                 <div className="space-y-4">
                   <div className="flex items-start space-x-3">
-                    <Checkbox id="accuracy" className="mt-1" />
+                    <Checkbox 
+                      id="accuracy" 
+                      className="mt-1"
+                      checked={accuracyConfirmed}
+                      onCheckedChange={(checked) => setAccuracyConfirmed(checked as boolean)}
+                    />
                     <Label htmlFor="accuracy" className="text-sm leading-relaxed">
-                      {t('doctorSignup.security.accuracyConfirm')}
+                      {t('doctorSignup.security.accuracyConfirm')} <span className="text-red-500">*</span>
                     </Label>
                   </div>
                   
                   <div className="flex items-start space-x-3">
-                    <Checkbox id="terms" className="mt-1" />
+                    <Checkbox 
+                      id="terms" 
+                      className="mt-1"
+                      checked={termsAccepted}
+                      onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
+                    />
                     <Label htmlFor="terms" className="text-sm leading-relaxed">
-                      {t('doctorSignup.security.termsAgree')} <a href="#" className="text-blue-600 hover:underline">{t('doctorSignup.security.termsOfService')}</a> {t('doctorSignup.security.and')} <a href="#" className="text-blue-600 hover:underline">{t('doctorSignup.security.privacyPolicy')}</a>
+                      {t('doctorSignup.security.termsAgree')} <a href="#" className="text-blue-600 hover:underline">{t('doctorSignup.security.termsOfService')}</a> {t('doctorSignup.security.and')} <a href="#" className="text-blue-600 hover:underline">{t('doctorSignup.security.privacyPolicy')}</a> <span className="text-red-500">*</span>
                     </Label>
                   </div>
                 </div>
