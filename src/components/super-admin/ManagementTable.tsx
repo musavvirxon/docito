@@ -439,6 +439,18 @@ const ManagementTable = ({ title, type }: ManagementTableProps) => {
               {/* Doctor Information */}
               <div>
                 <h3 className="text-lg font-semibold mb-3">Doctor Information</h3>
+                
+                {/* Profile Photo */}
+                {selectedDoctor.profiles?.avatar_url && (
+                  <div className="mb-4 flex justify-center">
+                    <img 
+                      src={selectedDoctor.profiles.avatar_url} 
+                      alt="Doctor profile" 
+                      className="w-32 h-32 rounded-full object-cover border-4 border-primary/20"
+                    />
+                  </div>
+                )}
+                
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-muted-foreground">Full Name</p>
@@ -447,6 +459,14 @@ const ManagementTable = ({ title, type }: ManagementTableProps) => {
                   <div>
                     <p className="text-muted-foreground">Email</p>
                     <p className="font-medium">{selectedDoctor.profiles?.email || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Phone</p>
+                    <p className="font-medium">{selectedDoctor.profiles?.phone || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Gender</p>
+                    <p className="font-medium capitalize">{selectedDoctor.profiles?.gender || "N/A"}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Specialty</p>
@@ -475,38 +495,129 @@ const ManagementTable = ({ title, type }: ManagementTableProps) => {
                        "Pending"}
                     </Badge>
                   </div>
+                  {selectedDoctor.bio && (
+                    <div className="col-span-2">
+                      <p className="text-muted-foreground">Bio</p>
+                      <p className="font-medium text-sm">{selectedDoctor.bio}</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Verification Submission */}
               {verification && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">Verification Submission</h3>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Status</p>
-                      <Badge>{verification.status}</Badge>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Submitted At</p>
-                      <p className="font-medium">
-                        {verification.submitted_at ? new Date(verification.submitted_at).toLocaleDateString() : "N/A"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Years of Experience</p>
-                      <p className="font-medium">{verification.years_of_experience || "N/A"}</p>
-                    </div>
-                    {verification.reviewed_at && (
+                <>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3">Verification Submission</h3>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <p className="text-muted-foreground">Reviewed At</p>
+                        <p className="text-muted-foreground">Status</p>
+                        <Badge>{verification.status}</Badge>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Submitted At</p>
                         <p className="font-medium">
-                          {new Date(verification.reviewed_at).toLocaleDateString()}
+                          {verification.submitted_at ? new Date(verification.submitted_at).toLocaleDateString() : "N/A"}
                         </p>
                       </div>
-                    )}
+                      <div>
+                        <p className="text-muted-foreground">Years of Experience</p>
+                        <p className="font-medium">{verification.years_of_experience || "N/A"}</p>
+                      </div>
+                      {verification.reviewed_at && (
+                        <div>
+                          <p className="text-muted-foreground">Reviewed At</p>
+                          <p className="font-medium">
+                            {new Date(verification.reviewed_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
+
+                  {/* Additional Information from verification_data */}
+                  {verification.verification_data && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3">Additional Information</h3>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        {verification.verification_data.additional_info?.first_name && (
+                          <div>
+                            <p className="text-muted-foreground">First Name</p>
+                            <p className="font-medium">{verification.verification_data.additional_info.first_name}</p>
+                          </div>
+                        )}
+                        {verification.verification_data.additional_info?.last_name && (
+                          <div>
+                            <p className="text-muted-foreground">Last Name</p>
+                            <p className="font-medium">{verification.verification_data.additional_info.last_name}</p>
+                          </div>
+                        )}
+                        {verification.verification_data.additional_info?.gender && (
+                          <div>
+                            <p className="text-muted-foreground">Gender</p>
+                            <p className="font-medium capitalize">{verification.verification_data.additional_info.gender}</p>
+                          </div>
+                        )}
+                        {verification.verification_data.additional_info?.phone && (
+                          <div>
+                            <p className="text-muted-foreground">Phone</p>
+                            <p className="font-medium">{verification.verification_data.additional_info.phone}</p>
+                          </div>
+                        )}
+                        {verification.verification_data.additional_info?.degrees && (
+                          <div>
+                            <p className="text-muted-foreground">Degrees</p>
+                            <p className="font-medium">{verification.verification_data.additional_info.degrees}</p>
+                          </div>
+                        )}
+                        {verification.verification_data.additional_info?.country && (
+                          <div>
+                            <p className="text-muted-foreground">Country</p>
+                            <p className="font-medium capitalize">{verification.verification_data.additional_info.country}</p>
+                          </div>
+                        )}
+                        {verification.verification_data.additional_info?.region && (
+                          <div>
+                            <p className="text-muted-foreground">Region/State</p>
+                            <p className="font-medium capitalize">{verification.verification_data.additional_info.region}</p>
+                          </div>
+                        )}
+                        {verification.verification_data.additional_info?.avatar_uploaded !== undefined && (
+                          <div>
+                            <p className="text-muted-foreground">Profile Photo</p>
+                            <p className="font-medium">
+                              {verification.verification_data.additional_info.avatar_uploaded ? "✓ Uploaded" : "Not uploaded"}
+                            </p>
+                          </div>
+                        )}
+                        {verification.verification_data.languages && verification.verification_data.languages.length > 0 && (
+                          <div className="col-span-2">
+                            <p className="text-muted-foreground">Languages</p>
+                            <p className="font-medium">{verification.verification_data.languages.join(", ")}</p>
+                          </div>
+                        )}
+                        {verification.verification_data.consultation_types && verification.verification_data.consultation_types.length > 0 && (
+                          <div className="col-span-2">
+                            <p className="text-muted-foreground">Consultation Types</p>
+                            <p className="font-medium">{verification.verification_data.consultation_types.join(", ")}</p>
+                          </div>
+                        )}
+                        {verification.verification_data.additional_info?.practice_association && (
+                          <div className="col-span-2">
+                            <p className="text-muted-foreground">Practice Association</p>
+                            <p className="font-medium">{verification.verification_data.additional_info.practice_association}</p>
+                          </div>
+                        )}
+                        {verification.verification_data.additional_info?.selected_clinic && (
+                          <div className="col-span-2">
+                            <p className="text-muted-foreground">Selected Clinic</p>
+                            <p className="font-medium">{verification.verification_data.additional_info.selected_clinic}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
 
               {/* Uploaded Documents */}
