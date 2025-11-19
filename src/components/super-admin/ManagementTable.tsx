@@ -53,10 +53,21 @@ const ManagementTable = ({ title, type }: ManagementTableProps) => {
         const { data: docsData, error: docsError } = await (supabase as any)
           .from("doctor_verification_documents")
           .select("*")
-          .eq("doctor_verification_id", verificationData.id);
+          .eq("doctor_verification_id", verificationData.id)
+          .order("uploaded_at", { ascending: false });
 
         if (docsError) throw docsError;
-        setDocuments(docsData || []);
+        
+        // Keep only the latest document per type
+        const latestDocs = docsData?.reduce((acc: any[], doc: any) => {
+          const existingDoc = acc.find((d: any) => d.document_type === doc.document_type);
+          if (!existingDoc) {
+            acc.push(doc);
+          }
+          return acc;
+        }, []);
+        
+        setDocuments(latestDocs || []);
       }
     } catch (error) {
       console.error("Error fetching verification:", error);
@@ -72,11 +83,17 @@ const ManagementTable = ({ title, type }: ManagementTableProps) => {
 
   const downloadDocument = async (filePath: string, fileName: string) => {
     try {
+      // Remove any leading slashes and ensure proper path format
+      const cleanPath = filePath.replace(/^\/+/, '');
+      
       const { data, error } = await supabase.storage
         .from("verification-documents")
-        .download(filePath);
+        .download(cleanPath);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Storage download error:", error);
+        throw error;
+      }
 
       const url = window.URL.createObjectURL(data);
       const a = document.createElement("a");
@@ -84,24 +101,35 @@ const ManagementTable = ({ title, type }: ManagementTableProps) => {
       a.download = fileName;
       a.click();
       window.URL.revokeObjectURL(url);
-    } catch (error) {
+      toast.success("Document downloaded successfully");
+    } catch (error: any) {
       console.error("Error downloading document:", error);
-      toast.error("Failed to download document");
+      toast.error(error.message || "Failed to download document");
     }
   };
 
   const viewDocument = async (filePath: string) => {
     try {
+      // Remove any leading slashes and ensure proper path format
+      const cleanPath = filePath.replace(/^\/+/, '');
+      
       const { data, error } = await supabase.storage
         .from("verification-documents")
-        .createSignedUrl(filePath, 3600);
+        .createSignedUrl(cleanPath, 3600);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Storage signed URL error:", error);
+        throw error;
+      }
+
+      if (!data.signedUrl) {
+        throw new Error("No signed URL returned");
+      }
 
       window.open(data.signedUrl, '_blank');
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error viewing document:", error);
-      toast.error("Failed to view document");
+      toast.error(error.message || "Failed to view document");
     }
   };
 

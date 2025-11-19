@@ -49,16 +49,26 @@ export const useDoctorVerification = () => {
             .eq('document_type', 'medical_license');
 
           if (oldDocs && oldDocs.length > 0) {
-            // Delete from storage
-            const filePaths = oldDocs.map((doc: any) => doc.file_path);
-            await supabase.storage.from('verification-documents').remove(filePaths);
+            // Delete from storage first
+            const filePaths = oldDocs.map((doc: any) => doc.file_path.replace(/^\/+/, ''));
+            const { error: storageError } = await supabase.storage
+              .from('verification-documents')
+              .remove(filePaths);
             
-            // Delete from database
-            await (supabase as any)
+            if (storageError) {
+              console.error('Error deleting old files from storage:', storageError);
+            }
+            
+            // Then delete from database
+            const { error: dbError } = await (supabase as any)
               .from('doctor_verification_documents')
               .delete()
               .eq('doctor_verification_id', existingVerification.id)
               .eq('document_type', 'medical_license');
+              
+            if (dbError) {
+              console.error('Error deleting old documents from DB:', dbError);
+            }
           }
         }
 
@@ -82,16 +92,26 @@ export const useDoctorVerification = () => {
             .eq('document_type', 'professional_id');
 
           if (oldDocs && oldDocs.length > 0) {
-            // Delete from storage
-            const filePaths = oldDocs.map((doc: any) => doc.file_path);
-            await supabase.storage.from('verification-documents').remove(filePaths);
+            // Delete from storage first
+            const filePaths = oldDocs.map((doc: any) => doc.file_path.replace(/^\/+/, ''));
+            const { error: storageError } = await supabase.storage
+              .from('verification-documents')
+              .remove(filePaths);
             
-            // Delete from database
-            await (supabase as any)
+            if (storageError) {
+              console.error('Error deleting old files from storage:', storageError);
+            }
+            
+            // Then delete from database
+            const { error: dbError } = await (supabase as any)
               .from('doctor_verification_documents')
               .delete()
               .eq('doctor_verification_id', existingVerification.id)
               .eq('document_type', 'professional_id');
+              
+            if (dbError) {
+              console.error('Error deleting old documents from DB:', dbError);
+            }
           }
         }
 
