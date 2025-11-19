@@ -131,6 +131,20 @@ const DoctorSignUp = () => {
   );
 
   const handleAvatarUpload = (file: File) => {
+    // Validate file type
+    const allowedTypes = ['image/png', 'image/jpg', 'image/jpeg'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Invalid file format. Only PNG and JPG files are allowed.');
+      return;
+    }
+    
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      toast.error('File size exceeds 5MB limit.');
+      return;
+    }
+    
     setAvatar(file);
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -141,6 +155,20 @@ const DoctorSignUp = () => {
   };
 
   const handleDocumentUpload = (type: 'medical_license' | 'professional_id', file: File) => {
+    // Validate file type
+    const allowedTypes = ['application/pdf', 'image/png', 'image/jpg', 'image/jpeg'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Invalid file format. Only PDF, PNG, and JPG files are allowed.');
+      return;
+    }
+    
+    // Validate file size (max 10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      toast.error('File size exceeds 10MB limit.');
+      return;
+    }
+    
     if (type === 'medical_license') {
       setMedicalLicense(file);
       toast.success(t('doctorSignup.messages.licenseSelected'));
@@ -161,7 +189,8 @@ const DoctorSignUp = () => {
       // Upload avatar if provided
       let avatar_url = '';
       if (avatar) {
-        const avatarResult = await uploadFile(avatar, 'avatars', `${user.id}/avatar-${Date.now()}.jpg`);
+        const fileExt = avatar.name.split('.').pop() || 'jpg';
+        const avatarResult = await uploadFile(avatar, 'avatars', `${user.id}/avatar-${Date.now()}.${fileExt}`);
         if (avatarResult) avatar_url = avatarResult.url;
       }
 
@@ -669,7 +698,7 @@ const DoctorSignUp = () => {
                         onClick={() => {
                           const input = document.createElement('input');
                           input.type = 'file';
-                          input.accept = 'image/*';
+                          input.accept = '.png,.jpg,.jpeg';
                           input.onchange = (e) => {
                             const file = (e.target as HTMLInputElement)?.files?.[0];
                             if (file) handleAvatarUpload(file);
