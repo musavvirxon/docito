@@ -29,6 +29,8 @@ const DoctorSignUp = () => {
   } = useAuth();
   const navigate = useNavigate();
   const [hasAssociatedPractice, setHasAssociatedPractice] = useState<string>("");
+  const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
+  const [specialtySearch, setSpecialtySearch] = useState("");
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [languageSearch, setLanguageSearch] = useState("");
   const [clinicSearch, setClinicSearch] = useState("");
@@ -80,7 +82,40 @@ const DoctorSignUp = () => {
     region: "",
     bio: ""
   }, 'doctor');
-  const specialties = ["Family Medicine", "Internal Medicine", "Cardiology", "Dermatology", "Pediatrics", "Orthopedics", "Psychiatry", "Neurology", "Gastroenterology", "Obstetrics & Gynecology", "Radiology", "Anesthesiology", "Emergency Medicine", "Pediatric Dentist", "General Dentist", "Orthodontist", "Endodontist"];
+  const allSpecialties = [
+    // Primary Care
+    "Family Medicine", "Internal Medicine", "General Practice", "Pediatrics",
+    // Surgical Specialties
+    "General Surgery", "Cardiothoracic Surgery", "Neurosurgery", "Orthopedic Surgery", "Plastic Surgery", "Vascular Surgery", "Pediatric Surgery", "Trauma Surgery", "Colorectal Surgery",
+    // Medical Specialties
+    "Cardiology", "Dermatology", "Endocrinology", "Gastroenterology", "Geriatrics", "Hematology", "Infectious Disease", "Nephrology", "Oncology", "Pulmonology", "Rheumatology",
+    // Surgical Sub-specialties
+    "Oral and Maxillofacial Surgery", "Ophthalmic Surgery", "Otolaryngology (ENT)", "Urology", "Gynecologic Oncology",
+    // Women's Health
+    "Obstetrics & Gynecology", "Maternal-Fetal Medicine", "Reproductive Endocrinology",
+    // Children's Health
+    "Pediatric Cardiology", "Pediatric Endocrinology", "Pediatric Gastroenterology", "Pediatric Hematology-Oncology", "Pediatric Neurology", "Pediatric Pulmonology", "Neonatology",
+    // Mental Health
+    "Psychiatry", "Child and Adolescent Psychiatry", "Addiction Medicine", "Geriatric Psychiatry",
+    // Nervous System
+    "Neurology", "Neuromuscular Medicine", "Epilepsy", "Stroke Medicine",
+    // Emergency & Critical Care
+    "Emergency Medicine", "Critical Care Medicine", "Intensive Care Medicine", "Disaster Medicine",
+    // Anesthesia & Pain
+    "Anesthesiology", "Pain Medicine", "Palliative Care", "Hospice Care",
+    // Diagnostic Specialties
+    "Radiology", "Nuclear Medicine", "Interventional Radiology", "Neuroradiology", "Pathology", "Clinical Pathology", "Anatomical Pathology",
+    // Rehabilitation
+    "Physical Medicine and Rehabilitation", "Sports Medicine", "Occupational Medicine",
+    // Allergy & Immunology
+    "Allergy and Immunology", "Clinical Immunology",
+    // Ophthalmology
+    "Ophthalmology", "Retina Specialist", "Glaucoma Specialist", "Cornea Specialist", "Pediatric Ophthalmology",
+    // Dentistry
+    "General Dentistry", "Orthodontics", "Endodontics", "Periodontics", "Prosthodontics", "Oral Surgery", "Pediatric Dentistry", "Cosmetic Dentistry",
+    // Other Specialties
+    "Dermatopathology", "Medical Genetics", "Clinical Genetics", "Sleep Medicine", "Bariatric Medicine", "Preventive Medicine", "Public Health", "Occupational Health", "Tropical Medicine"
+  ];
   const allLanguages = ["English", "Spanish", "Mandarin", "Hindi", "Arabic", "Portuguese", "Russian", "Japanese", "German", "French", "Italian", "Korean", "Chinese", "Urdu", "Persian", "Turkish", "Uzbek", "Vietnamese", "Thai", "Indonesian", "Malay", "Filipino", "Dutch", "Swedish", "Norwegian", "Danish", "Finnish", "Polish", "Czech", "Hungarian", "Romanian", "Bulgarian", "Greek", "Hebrew", "Swahili", "Amharic"];
   const countries = ["United States", "Canada", "United Kingdom", "Australia", "Germany", "France", "Spain", "Italy", "Netherlands", "Sweden", "Norway"];
   const usStates = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"];
@@ -100,6 +135,26 @@ const DoctorSignUp = () => {
     address: "789 Pine St, Chicago, IL",
     verified: false
   }];
+  const toggleSpecialty = (specialty: string) => {
+    setSelectedSpecialties(prev => {
+      if (prev.includes(specialty)) {
+        return prev.filter(s => s !== specialty);
+      }
+      if (prev.length >= 5) {
+        toast.error('You can select up to 5 specialties');
+        return prev;
+      }
+      return [...prev, specialty];
+    });
+  };
+  const removeSpecialty = (specialty: string) => {
+    setSelectedSpecialties(prev => prev.filter(s => s !== specialty));
+  };
+  const filteredSpecialties = allSpecialties.filter(spec => 
+    spec.toLowerCase().includes(specialtySearch.toLowerCase()) && 
+    !selectedSpecialties.includes(spec)
+  );
+  
   const toggleLanguage = (language: string) => {
     setSelectedLanguages(prev => prev.includes(language) ? prev.filter(l => l !== language) : [...prev, language]);
   };
@@ -216,7 +271,7 @@ const DoctorSignUp = () => {
 
       // Submit for super-admin verification with all information
       const result = await submitForVerification(doctorId, {
-        specialty: formData.specialty || 'General Practice',
+        specialty: selectedSpecialties[0] || 'General Practice', // Primary specialty
         bio: formData.bio || '',
         license_number: formData.license || '',
         consultation_fee: 0,
@@ -238,7 +293,8 @@ const DoctorSignUp = () => {
           region: formData.region,
           avatar_uploaded: !!avatar,
           practice_association: hasAssociatedPractice,
-          selected_clinic: selectedClinic?.name || null
+          selected_clinic: selectedClinic?.name || null,
+          all_specialties: selectedSpecialties
         }
       });
       if (result.success) {
@@ -260,7 +316,6 @@ const DoctorSignUp = () => {
       'Last Name': formData.lastName,
       'Gender': formData.gender,
       'Phone': formData.phone,
-      'Specialty': formData.specialty,
       'Degrees': formData.degrees,
       'Years of Experience': formData.experience,
       'License Number': formData.license,
@@ -284,6 +339,12 @@ const DoctorSignUp = () => {
       return;
     }
 
+    // Validate specialties
+    if (selectedSpecialties.length === 0) {
+      toast.error('Please select at least one specialty');
+      return;
+    }
+    
     // Validate languages
     if (selectedLanguages.length === 0) {
       toast.error('Please select at least one language you speak');
@@ -396,17 +457,35 @@ const DoctorSignUp = () => {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <Label htmlFor="specialty">{t('doctorSignup.fields.specialty')} <span className="text-red-500">*</span></Label>
-                  <Select value={formData.specialty} onValueChange={value => updateField('specialty', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={t('doctorSignup.placeholders.selectSpecialty')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {specialties.map(specialty => <SelectItem key={specialty} value={specialty.toLowerCase().replace(/\s+/g, '-')}>
-                          {specialty}
-                        </SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <Label>{t('doctorSignup.fields.specialty')} <span className="text-red-500">*</span></Label>
+                  <p className="text-sm text-muted-foreground mb-3">Select up to 5 specialties that match your expertise</p>
+                  
+                  {/* Selected Specialties */}
+                  {selectedSpecialties.length > 0 && <div className="mb-4">
+                      <div className="flex flex-wrap gap-2">
+                        {selectedSpecialties.map(specialty => <Badge key={specialty} variant="secondary" className="px-3 py-1">
+                            {specialty}
+                            <Button type="button" variant="ghost" size="sm" className="ml-2 h-auto p-0 text-muted-foreground hover:text-foreground" onClick={() => removeSpecialty(specialty)}>
+                              ×
+                            </Button>
+                          </Badge>)}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">{selectedSpecialties.length} of 5 selected</p>
+                    </div>}
+
+                  {/* Specialty Search */}
+                  <div className="relative mb-3">
+                    <Input placeholder="Search specialties..." value={specialtySearch} onChange={e => setSpecialtySearch(e.target.value)} />
+                  </div>
+
+                  {/* Specialty Options */}
+                  <div className="max-h-60 overflow-y-auto border rounded-md p-2">
+                    {filteredSpecialties.slice(0, 15).map(specialty => <div key={specialty} className="flex items-center space-x-2 p-2 hover:bg-muted rounded cursor-pointer" onClick={() => toggleSpecialty(specialty)}>
+                        <Checkbox id={`specialty-${specialty}`} checked={selectedSpecialties.includes(specialty)} />
+                        <Label htmlFor={`specialty-${specialty}`} className="text-sm cursor-pointer flex-1">{specialty}</Label>
+                      </div>)}
+                    {filteredSpecialties.length === 0 && <p className="text-sm text-muted-foreground p-2">No specialties found</p>}
+                  </div>
                 </div>
 
                 <div>
