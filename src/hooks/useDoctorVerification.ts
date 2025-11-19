@@ -30,6 +30,7 @@ interface DoctorVerificationData {
     avatar_uploaded?: boolean;
     practice_association?: string;
     selected_clinic?: string | null;
+    all_specialties?: string[];
   };
 }
 
