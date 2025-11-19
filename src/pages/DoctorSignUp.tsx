@@ -19,10 +19,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-
 const DoctorSignUp = () => {
-  const { t } = useTranslation('auth');
-  const { user, loading } = useAuth();
+  const {
+    t
+  } = useTranslation('auth');
+  const {
+    user,
+    loading
+  } = useAuth();
   const navigate = useNavigate();
   const [hasAssociatedPractice, setHasAssociatedPractice] = useState<string>("");
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
@@ -36,10 +40,17 @@ const DoctorSignUp = () => {
   const [professionalId, setProfessionalId] = useState<File | null>(null);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [accuracyConfirmed, setAccuracyConfirmed] = useState(false);
-  
-  const { navigateToDoctorDashboard } = useQuickNavigate();
-  const { uploadFile, uploading } = useFileUpload();
-  const { submitForVerification, isSubmitting } = useDoctorVerification();
+  const {
+    navigateToDoctorDashboard
+  } = useQuickNavigate();
+  const {
+    uploadFile,
+    uploading
+  } = useFileUpload();
+  const {
+    submitForVerification,
+    isSubmitting
+  } = useDoctorVerification();
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -48,7 +59,6 @@ const DoctorSignUp = () => {
       navigate('/auth');
     }
   }, [user, loading, navigate]);
-  
   const {
     formData,
     updateField,
@@ -70,68 +80,34 @@ const DoctorSignUp = () => {
     region: "",
     bio: ""
   }, 'doctor');
-
-  const specialties = [
-    "Family Medicine", "Internal Medicine", "Cardiology", "Dermatology", 
-    "Pediatrics", "Orthopedics", "Psychiatry", "Neurology", "Gastroenterology",
-    "Obstetrics & Gynecology", "Radiology", "Anesthesiology", "Emergency Medicine",
-    "Pediatric Dentist", "General Dentist", "Orthodontist", "Endodontist"
-  ];
-
-  const allLanguages = [
-    "English", "Spanish", "Mandarin", "Hindi", "Arabic", "Portuguese", 
-    "Russian", "Japanese", "German", "French", "Italian", "Korean",
-    "Chinese", "Urdu", "Persian", "Turkish", "Uzbek", "Vietnamese",
-    "Thai", "Indonesian", "Malay", "Filipino", "Dutch", "Swedish",
-    "Norwegian", "Danish", "Finnish", "Polish", "Czech", "Hungarian",
-    "Romanian", "Bulgarian", "Greek", "Hebrew", "Swahili", "Amharic"
-  ];
-
-  const countries = [
-    "United States", "Canada", "United Kingdom", "Australia", "Germany",
-    "France", "Spain", "Italy", "Netherlands", "Sweden", "Norway"
-  ];
-
-  const usStates = [
-    "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
-    "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
-    "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana",
-    "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota",
-    "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada",
-    "New Hampshire", "New Jersey", "New Mexico", "New York",
-    "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon",
-    "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
-    "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington",
-    "West Virginia", "Wisconsin", "Wyoming"
-  ];
-
-  const mockClinics = [
-    { id: 1, name: "Metro Medical Center", address: "123 Main St, New York, NY", verified: true },
-    { id: 2, name: "Downtown Health Clinic", address: "456 Oak Ave, Los Angeles, CA", verified: true },
-    { id: 3, name: "Family Care Associates", address: "789 Pine St, Chicago, IL", verified: false }
-  ];
-
+  const specialties = ["Family Medicine", "Internal Medicine", "Cardiology", "Dermatology", "Pediatrics", "Orthopedics", "Psychiatry", "Neurology", "Gastroenterology", "Obstetrics & Gynecology", "Radiology", "Anesthesiology", "Emergency Medicine", "Pediatric Dentist", "General Dentist", "Orthodontist", "Endodontist"];
+  const allLanguages = ["English", "Spanish", "Mandarin", "Hindi", "Arabic", "Portuguese", "Russian", "Japanese", "German", "French", "Italian", "Korean", "Chinese", "Urdu", "Persian", "Turkish", "Uzbek", "Vietnamese", "Thai", "Indonesian", "Malay", "Filipino", "Dutch", "Swedish", "Norwegian", "Danish", "Finnish", "Polish", "Czech", "Hungarian", "Romanian", "Bulgarian", "Greek", "Hebrew", "Swahili", "Amharic"];
+  const countries = ["United States", "Canada", "United Kingdom", "Australia", "Germany", "France", "Spain", "Italy", "Netherlands", "Sweden", "Norway"];
+  const usStates = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"];
+  const mockClinics = [{
+    id: 1,
+    name: "Metro Medical Center",
+    address: "123 Main St, New York, NY",
+    verified: true
+  }, {
+    id: 2,
+    name: "Downtown Health Clinic",
+    address: "456 Oak Ave, Los Angeles, CA",
+    verified: true
+  }, {
+    id: 3,
+    name: "Family Care Associates",
+    address: "789 Pine St, Chicago, IL",
+    verified: false
+  }];
   const toggleLanguage = (language: string) => {
-    setSelectedLanguages(prev => 
-      prev.includes(language) 
-        ? prev.filter(l => l !== language)
-        : [...prev, language]
-    );
+    setSelectedLanguages(prev => prev.includes(language) ? prev.filter(l => l !== language) : [...prev, language]);
   };
-
   const removeLanguage = (language: string) => {
     setSelectedLanguages(prev => prev.filter(l => l !== language));
   };
-
-  const filteredLanguages = allLanguages.filter(lang => 
-    lang.toLowerCase().includes(languageSearch.toLowerCase()) &&
-    !selectedLanguages.includes(lang)
-  );
-
-  const filteredClinics = mockClinics.filter(clinic =>
-    clinic.name.toLowerCase().includes(clinicSearch.toLowerCase())
-  );
-
+  const filteredLanguages = allLanguages.filter(lang => lang.toLowerCase().includes(languageSearch.toLowerCase()) && !selectedLanguages.includes(lang));
+  const filteredClinics = mockClinics.filter(clinic => clinic.name.toLowerCase().includes(clinicSearch.toLowerCase()));
   const handleAvatarUpload = (file: File) => {
     // Validate file type
     const allowedTypes = ['image/png', 'image/jpg', 'image/jpeg'];
@@ -139,14 +115,13 @@ const DoctorSignUp = () => {
       toast.error('Invalid file format. Only PNG and JPG files are allowed.');
       return;
     }
-    
+
     // Validate file size (max 5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
       toast.error('File size exceeds 5MB limit.');
       return;
     }
-    
     setAvatar(file);
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -155,7 +130,6 @@ const DoctorSignUp = () => {
     reader.readAsDataURL(file);
     toast.success(t('doctorSignup.messages.photoSelected'));
   };
-
   const handleDocumentUpload = (type: 'medical_license' | 'professional_id', file: File) => {
     // Validate file type
     const allowedTypes = ['application/pdf', 'image/png', 'image/jpg', 'image/jpeg'];
@@ -163,14 +137,13 @@ const DoctorSignUp = () => {
       toast.error('Invalid file format. Only PDF, PNG, and JPG files are allowed.');
       return;
     }
-    
+
     // Validate file size (max 10MB)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
       toast.error('File size exceeds 10MB limit.');
       return;
     }
-    
     if (type === 'medical_license') {
       setMedicalLicense(file);
       toast.success(t('doctorSignup.messages.licenseSelected'));
@@ -179,14 +152,12 @@ const DoctorSignUp = () => {
       toast.success(t('doctorSignup.messages.idSelected'));
     }
   };
-
   const handleDoctorOnboarding = async () => {
     if (!user) {
       toast.error('You must be logged in to complete your profile');
       navigate('/auth');
       return;
     }
-
     try {
       // Upload avatar if provided
       let avatar_url = '';
@@ -197,58 +168,48 @@ const DoctorSignUp = () => {
       }
 
       // Update user profile with personal information
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({
-          full_name: `${formData.firstName} ${formData.lastName}`.trim(),
-          phone: formData.phone,
-          gender: formData.gender as any,
-          address: `${formData.region}, ${formData.country}`,
-          avatar_url: avatar_url || undefined,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', user.id);
-
+      const {
+        error: profileError
+      } = await supabase.from('profiles').update({
+        full_name: `${formData.firstName} ${formData.lastName}`.trim(),
+        phone: formData.phone,
+        gender: formData.gender as any,
+        address: `${formData.region}, ${formData.country}`,
+        avatar_url: avatar_url || undefined,
+        updated_at: new Date().toISOString()
+      }).eq('user_id', user.id);
       if (profileError) throw profileError;
 
       // Check if doctor profile already exists
-      const { data: existingDoctor } = await supabase
-        .from('doctors')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
+      const {
+        data: existingDoctor
+      } = await supabase.from('doctors').select('id').eq('user_id', user.id).single();
       let doctorId: string;
-
       if (existingDoctor) {
         // Update existing doctor profile
-        const { error: updateError } = await supabase
-          .from('doctors')
-          .update({
-            specialty: formData.specialty || 'General Practice',
-            bio: formData.bio,
-            license_number: formData.license,
-            consultation_fee: 0,
-          })
-          .eq('id', existingDoctor.id);
-
+        const {
+          error: updateError
+        } = await supabase.from('doctors').update({
+          specialty: formData.specialty || 'General Practice',
+          bio: formData.bio,
+          license_number: formData.license,
+          consultation_fee: 0
+        }).eq('id', existingDoctor.id);
         if (updateError) throw updateError;
         doctorId = existingDoctor.id;
       } else {
         // Create new doctor profile (unverified by default)
-        const { data: doctorData, error: doctorError } = await supabase
-          .from('doctors')
-          .insert({
-            user_id: user.id,
-            specialty: formData.specialty || 'General Practice',
-            bio: formData.bio,
-            license_number: formData.license,
-            consultation_fee: 0,
-            verified: false,
-          })
-          .select()
-          .single();
-
+        const {
+          data: doctorData,
+          error: doctorError
+        } = await supabase.from('doctors').insert({
+          user_id: user.id,
+          specialty: formData.specialty || 'General Practice',
+          bio: formData.bio,
+          license_number: formData.license,
+          consultation_fee: 0,
+          verified: false
+        }).select().single();
         if (doctorError) throw doctorError;
         doctorId = doctorData.id;
       }
@@ -264,7 +225,7 @@ const DoctorSignUp = () => {
         consultation_types: ['In-person', 'Video'],
         documents: {
           medical_license: medicalLicense || undefined,
-          professional_id: professionalId || undefined,
+          professional_id: professionalId || undefined
         },
         // Additional information for super admin review
         additional_data: {
@@ -277,10 +238,9 @@ const DoctorSignUp = () => {
           region: formData.region,
           avatar_uploaded: !!avatar,
           practice_association: hasAssociatedPractice,
-          selected_clinic: selectedClinic?.name || null,
-        },
+          selected_clinic: selectedClinic?.name || null
+        }
       });
-
       if (result.success) {
         toast.success('Profile submitted for verification!');
         toast.info('A super admin will review your application. You will be notified once it is reviewed.');
@@ -291,10 +251,9 @@ const DoctorSignUp = () => {
       toast.error(error.message || 'Failed to submit profile for verification');
     }
   };
-
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate required fields
     const requiredFields = {
       'First Name': formData.firstName,
@@ -307,13 +266,9 @@ const DoctorSignUp = () => {
       'License Number': formData.license,
       'Country': formData.country,
       'Region': formData.region,
-      'Bio': formData.bio,
+      'Bio': formData.bio
     };
-
-    const emptyFields = Object.entries(requiredFields)
-      .filter(([_, value]) => !value || value.trim() === '')
-      .map(([field, _]) => field);
-
+    const emptyFields = Object.entries(requiredFields).filter(([_, value]) => !value || value.trim() === '').map(([field, _]) => field);
     if (emptyFields.length > 0) {
       toast.error(`Please fill in all required fields: ${emptyFields.join(', ')}`);
       return;
@@ -324,7 +279,6 @@ const DoctorSignUp = () => {
       toast.error('Please upload your medical license');
       return;
     }
-
     if (!professionalId) {
       toast.error('Please upload your professional ID');
       return;
@@ -341,34 +295,30 @@ const DoctorSignUp = () => {
       toast.error('Please confirm the accuracy of your information');
       return;
     }
-
     if (!termsAccepted) {
       toast.error('Please accept the Terms of Service and Privacy Policy');
       return;
     }
-
-    await handleSubmit(handleDoctorOnboarding, { skipValidation: true });
+    await handleSubmit(handleDoctorOnboarding, {
+      skipValidation: true
+    });
   };
 
   // Show loading state while checking auth
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+    return <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading...</p>
         </div>
-      </div>
-    );
+      </div>;
   }
 
   // Don't render if not authenticated (will redirect)
   if (!user) {
     return null;
   }
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       <Header />
       
       <div className="pt-24 pb-20">
@@ -391,16 +341,7 @@ const DoctorSignUp = () => {
 
           {/* Progress Indicator */}
           <div className="flex justify-center mb-12">
-            <div className="flex items-center space-x-2">
-              {[1, 2, 3, 4, 5, 6].map((step) => (
-                <div key={step} className="flex items-center">
-                  <div className="w-8 h-8 rounded-full bg-blue-600 text-white text-sm flex items-center justify-center font-medium">
-                    {step}
-                  </div>
-                  {step < 6 && <div className="w-8 h-0.5 bg-blue-200"></div>}
-                </div>
-              ))}
-            </div>
+            
           </div>
 
           <form onSubmit={onSubmit} className="space-y-8">
@@ -416,30 +357,18 @@ const DoctorSignUp = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label htmlFor="firstName">{t('doctorSignup.fields.firstName')} <span className="text-red-500">*</span></Label>
-                    <Input 
-                      id="firstName" 
-                      placeholder={t('doctorSignup.placeholders.firstName')}
-                      value={formData.firstName}
-                      onChange={(e) => updateField('firstName', e.target.value)}
-                      required
-                    />
+                    <Input id="firstName" placeholder={t('doctorSignup.placeholders.firstName')} value={formData.firstName} onChange={e => updateField('firstName', e.target.value)} required />
                   </div>
                   <div>
                     <Label htmlFor="lastName">{t('doctorSignup.fields.lastName')} <span className="text-red-500">*</span></Label>
-                    <Input 
-                      id="lastName" 
-                      placeholder={t('doctorSignup.placeholders.lastName')}
-                      value={formData.lastName}
-                      onChange={(e) => updateField('lastName', e.target.value)}
-                      required
-                    />
+                    <Input id="lastName" placeholder={t('doctorSignup.placeholders.lastName')} value={formData.lastName} onChange={e => updateField('lastName', e.target.value)} required />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label htmlFor="gender">{t('doctorSignup.fields.gender')} <span className="text-red-500">*</span></Label>
-                    <Select value={formData.gender} onValueChange={(value) => updateField('gender', value)}>
+                    <Select value={formData.gender} onValueChange={value => updateField('gender', value)}>
                       <SelectTrigger>
                         <SelectValue placeholder={t('doctorSignup.placeholders.selectGender')} />
                       </SelectTrigger>
@@ -451,13 +380,7 @@ const DoctorSignUp = () => {
                   </div>
                   <div>
                     <Label htmlFor="phone">{t('doctorSignup.fields.phone')} <span className="text-red-500">*</span></Label>
-                    <Input 
-                      id="phone" 
-                      placeholder={t('doctorSignup.placeholders.phone')}
-                      value={formData.phone}
-                      onChange={(e) => updateField('phone', e.target.value)}
-                      required
-                    />
+                    <Input id="phone" placeholder={t('doctorSignup.placeholders.phone')} value={formData.phone} onChange={e => updateField('phone', e.target.value)} required />
                   </div>
                 </div>
               </CardContent>
@@ -474,36 +397,28 @@ const DoctorSignUp = () => {
               <CardContent className="space-y-6">
                 <div>
                   <Label htmlFor="specialty">{t('doctorSignup.fields.specialty')} <span className="text-red-500">*</span></Label>
-                  <Select value={formData.specialty} onValueChange={(value) => updateField('specialty', value)}>
+                  <Select value={formData.specialty} onValueChange={value => updateField('specialty', value)}>
                     <SelectTrigger>
                       <SelectValue placeholder={t('doctorSignup.placeholders.selectSpecialty')} />
                     </SelectTrigger>
                     <SelectContent>
-                      {specialties.map((specialty) => (
-                        <SelectItem key={specialty} value={specialty.toLowerCase().replace(/\s+/g, '-')}>
+                      {specialties.map(specialty => <SelectItem key={specialty} value={specialty.toLowerCase().replace(/\s+/g, '-')}>
                           {specialty}
-                        </SelectItem>
-                      ))}
+                        </SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
                   <Label htmlFor="degrees">{t('doctorSignup.fields.degrees')} <span className="text-red-500">*</span></Label>
-                  <Input 
-                    id="degrees" 
-                    placeholder={t('doctorSignup.placeholders.degrees')}
-                    value={formData.degrees}
-                    onChange={(e) => updateField('degrees', e.target.value)}
-                    required
-                  />
+                  <Input id="degrees" placeholder={t('doctorSignup.placeholders.degrees')} value={formData.degrees} onChange={e => updateField('degrees', e.target.value)} required />
                   <p className="text-sm text-muted-foreground mt-1">{t('doctorSignup.help.degreesMultiple')}</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label htmlFor="experience">{t('doctorSignup.fields.experience')} <span className="text-red-500">*</span></Label>
-                    <Select value={formData.experience} onValueChange={(value) => updateField('experience', value)}>
+                    <Select value={formData.experience} onValueChange={value => updateField('experience', value)}>
                       <SelectTrigger>
                         <SelectValue placeholder={t('doctorSignup.placeholders.selectExperience')} />
                       </SelectTrigger>
@@ -520,13 +435,7 @@ const DoctorSignUp = () => {
                   <div>
                     <Label htmlFor="license">{t('doctorSignup.fields.license')} <span className="text-red-500">*</span></Label>
                     <div className="relative">
-                      <Input 
-                        id="license" 
-                        placeholder={t('doctorSignup.placeholders.license')}
-                        value={formData.license}
-                        onChange={(e) => updateField('license', e.target.value)}
-                        required
-                      />
+                      <Input id="license" placeholder={t('doctorSignup.placeholders.license')} value={formData.license} onChange={e => updateField('license', e.target.value)} required />
                       <Info className="w-4 h-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">{t('doctorSignup.help.licenseVerification')}</p>
@@ -538,54 +447,29 @@ const DoctorSignUp = () => {
                   <p className="text-sm text-muted-foreground mb-3">{t('doctorSignup.help.languagesSelect')}</p>
                   
                   {/* Selected Languages */}
-                  {selectedLanguages.length > 0 && (
-                    <div className="mb-4">
+                  {selectedLanguages.length > 0 && <div className="mb-4">
                       <div className="flex flex-wrap gap-2">
-                        {selectedLanguages.map((language) => (
-                          <Badge key={language} variant="secondary" className="px-3 py-1">
+                        {selectedLanguages.map(language => <Badge key={language} variant="secondary" className="px-3 py-1">
                             {language}
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="ml-2 h-auto p-0 text-muted-foreground hover:text-foreground"
-                              onClick={() => removeLanguage(language)}
-                            >
+                            <Button type="button" variant="ghost" size="sm" className="ml-2 h-auto p-0 text-muted-foreground hover:text-foreground" onClick={() => removeLanguage(language)}>
                               ×
                             </Button>
-                          </Badge>
-                        ))}
+                          </Badge>)}
                       </div>
-                    </div>
-                  )}
+                    </div>}
 
                   {/* Language Search */}
                   <div className="relative mb-3">
-                    <Input
-                      placeholder={t('doctorSignup.placeholders.searchLanguages')}
-                      value={languageSearch}
-                      onChange={(e) => setLanguageSearch(e.target.value)}
-                    />
+                    <Input placeholder={t('doctorSignup.placeholders.searchLanguages')} value={languageSearch} onChange={e => setLanguageSearch(e.target.value)} />
                   </div>
 
                   {/* Language Options */}
                   <div className="max-h-40 overflow-y-auto border rounded-md p-2">
-                    {filteredLanguages.slice(0, 10).map((language) => (
-                      <div 
-                        key={language} 
-                        className="flex items-center space-x-2 p-2 hover:bg-muted rounded cursor-pointer"
-                        onClick={() => toggleLanguage(language)}
-                      >
-                        <Checkbox 
-                          id={language}
-                          checked={selectedLanguages.includes(language)}
-                        />
+                    {filteredLanguages.slice(0, 10).map(language => <div key={language} className="flex items-center space-x-2 p-2 hover:bg-muted rounded cursor-pointer" onClick={() => toggleLanguage(language)}>
+                        <Checkbox id={language} checked={selectedLanguages.includes(language)} />
                         <Label htmlFor={language} className="text-sm cursor-pointer">{language}</Label>
-                      </div>
-                    ))}
-                    {filteredLanguages.length === 0 && (
-                      <p className="text-sm text-muted-foreground p-2">{t('doctorSignup.messages.noLanguagesFound')}</p>
-                    )}
+                      </div>)}
+                    {filteredLanguages.length === 0 && <p className="text-sm text-muted-foreground p-2">{t('doctorSignup.messages.noLanguagesFound')}</p>}
                   </div>
                 </div>
               </CardContent>
@@ -604,31 +488,27 @@ const DoctorSignUp = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="country">{t('doctorSignup.fields.country')} <span className="text-red-500">*</span></Label>
-                    <Select value={formData.country} onValueChange={(value) => updateField('country', value)}>
+                    <Select value={formData.country} onValueChange={value => updateField('country', value)}>
                       <SelectTrigger>
                         <SelectValue placeholder={t('doctorSignup.placeholders.selectCountry')} />
                       </SelectTrigger>
                       <SelectContent>
-                        {countries.map((countryOption) => (
-                          <SelectItem key={countryOption} value={countryOption.toLowerCase()}>
+                        {countries.map(countryOption => <SelectItem key={countryOption} value={countryOption.toLowerCase()}>
                             {countryOption}
-                          </SelectItem>
-                        ))}
+                          </SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
                     <Label htmlFor="region">{t('doctorSignup.fields.region')} <span className="text-red-500">*</span></Label>
-                    <Select value={formData.region} onValueChange={(value) => updateField('region', value)} disabled={!formData.country}>
+                    <Select value={formData.region} onValueChange={value => updateField('region', value)} disabled={!formData.country}>
                       <SelectTrigger>
                         <SelectValue placeholder={t('doctorSignup.placeholders.selectRegion')} />
                       </SelectTrigger>
                       <SelectContent>
-                        {formData.country === "united states" && usStates.map((state) => (
-                          <SelectItem key={state} value={state.toLowerCase()}>
+                        {formData.country === "united states" && usStates.map(state => <SelectItem key={state} value={state.toLowerCase()}>
                             {state}
-                          </SelectItem>
-                        ))}
+                          </SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
@@ -641,64 +521,35 @@ const DoctorSignUp = () => {
                     {t('doctorSignup.help.clinicSearch')}
                   </p>
                   <div className="relative">
-                    <Input
-                      id="clinic-search"
-                      placeholder={t('doctorSignup.placeholders.clinicSearch')}
-                      value={clinicSearch}
-                      onChange={(e) => setClinicSearch(e.target.value)}
-                    />
+                    <Input id="clinic-search" placeholder={t('doctorSignup.placeholders.clinicSearch')} value={clinicSearch} onChange={e => setClinicSearch(e.target.value)} />
                   </div>
 
                   {/* Search Results */}
-                  {clinicSearch && (
-                    <div className="mt-3 border rounded-lg max-h-60 overflow-y-auto">
-                      {filteredClinics.length > 0 ? (
-                        filteredClinics.map((clinic) => (
-                          <div
-                            key={clinic.id}
-                            className={`p-4 border-b last:border-b-0 cursor-pointer hover:bg-muted ${
-                              selectedClinic?.id === clinic.id ? 'bg-blue-50 border-blue-200' : ''
-                            }`}
-                            onClick={() => setSelectedClinic(clinic)}
-                          >
+                  {clinicSearch && <div className="mt-3 border rounded-lg max-h-60 overflow-y-auto">
+                      {filteredClinics.length > 0 ? filteredClinics.map(clinic => <div key={clinic.id} className={`p-4 border-b last:border-b-0 cursor-pointer hover:bg-muted ${selectedClinic?.id === clinic.id ? 'bg-blue-50 border-blue-200' : ''}`} onClick={() => setSelectedClinic(clinic)}>
                             <div className="flex items-center justify-between">
                               <div>
                                 <h4 className="font-medium">{clinic.name}</h4>
                                 <p className="text-sm text-muted-foreground">{clinic.address}</p>
                               </div>
                               <div className="flex items-center space-x-2">
-                                {clinic.verified && (
-                                  <Badge variant="default" className="text-xs">{t('doctorSignup.clinic.verified')}</Badge>
-                                )}
-                                {selectedClinic?.id === clinic.id && (
-                                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                                )}
+                                {clinic.verified && <Badge variant="default" className="text-xs">{t('doctorSignup.clinic.verified')}</Badge>}
+                                {selectedClinic?.id === clinic.id && <div className="w-2 h-2 bg-blue-600 rounded-full"></div>}
                               </div>
                             </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="p-4 text-center">
+                          </div>) : <div className="p-4 text-center">
                           <p className="text-sm text-muted-foreground mb-3">
                             {t('doctorSignup.clinic.noClinicFound')}
                           </p>
-                          <Button 
-                            type="button"
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => setShowManualClinic(true)}
-                          >
+                          <Button type="button" variant="outline" size="sm" onClick={() => setShowManualClinic(true)}>
                             {t('doctorSignup.clinic.addManually')}
                           </Button>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                        </div>}
+                    </div>}
                 </div>
 
                 {/* Manual Clinic Entry */}
-                {(showManualClinic || (!clinicSearch && !selectedClinic)) && (
-                  <Card className="border-orange-200 bg-orange-50/30">
+                {(showManualClinic || !clinicSearch && !selectedClinic) && <Card className="border-orange-200 bg-orange-50/30">
                     <CardHeader>
                       <CardTitle className="text-lg flex items-center">
                         <Info className="w-5 h-5 mr-2 text-orange-600" />
@@ -725,11 +576,7 @@ const DoctorSignUp = () => {
                       </div>
                       <div>
                         <Label htmlFor="practice-address">{t('doctorSignup.fields.practiceAddress')} {t('doctorSignup.clinic.required')}</Label>
-                        <Textarea 
-                          id="practice-address" 
-                          placeholder={t('doctorSignup.placeholders.practiceAddress')}
-                          className="min-h-[80px]"
-                        />
+                        <Textarea id="practice-address" placeholder={t('doctorSignup.placeholders.practiceAddress')} className="min-h-[80px]" />
                       </div>
                       <div className="bg-amber-50 p-3 rounded-lg">
                         <p className="text-sm text-amber-700">
@@ -737,29 +584,21 @@ const DoctorSignUp = () => {
                         </p>
                       </div>
                     </CardContent>
-                  </Card>
-                )}
+                  </Card>}
 
                 {/* Selected Clinic Display */}
-                {selectedClinic && (
-                  <div className="bg-green-50 p-4 rounded-lg">
+                {selectedClinic && <div className="bg-green-50 p-4 rounded-lg">
                     <div className="flex items-center justify-between">
                       <div>
                         <h4 className="font-semibold text-green-800">{t('doctorSignup.clinic.selectedClinic')}</h4>
                         <p className="text-green-700">{selectedClinic.name}</p>
                         <p className="text-sm text-green-600">{selectedClinic.address}</p>
                       </div>
-                      <Button 
-                        type="button"
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setSelectedClinic(null)}
-                      >
+                      <Button type="button" variant="outline" size="sm" onClick={() => setSelectedClinic(null)}>
                         {t('doctorSignup.clinic.change')}
                       </Button>
                     </div>
-                  </div>
-                )}
+                  </div>}
               </CardContent>
             </Card>
 
@@ -774,50 +613,31 @@ const DoctorSignUp = () => {
               <CardContent className="space-y-6">
                 <div>
                   <Label htmlFor="bio">{t('doctorSignup.fields.bio')} <span className="text-red-500">*</span></Label>
-                  <Textarea 
-                    id="bio" 
-                    placeholder={t('doctorSignup.placeholders.bio')}
-                    className="min-h-[100px]"
-                    value={formData.bio}
-                    onChange={(e) => updateField('bio', e.target.value)}
-                    required
-                  />
+                  <Textarea id="bio" placeholder={t('doctorSignup.placeholders.bio')} className="min-h-[100px]" value={formData.bio} onChange={e => updateField('bio', e.target.value)} required />
                   <p className="text-sm text-muted-foreground mt-1">{t('doctorSignup.help.bioLength')}</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label>{t('doctorSignup.fields.profilePhoto')}</Label>
-                    <div className={`border-2 border-dashed rounded-lg p-6 text-center ${
-                      avatar ? 'border-green-500 bg-green-50' : 'border-border'
-                    }`}>
-                      {avatarPreview ? (
-                        <div className="space-y-2">
+                    <div className={`border-2 border-dashed rounded-lg p-6 text-center ${avatar ? 'border-green-500 bg-green-50' : 'border-border'}`}>
+                      {avatarPreview ? <div className="space-y-2">
                           <img src={avatarPreview} alt="Avatar preview" className="w-24 h-24 mx-auto rounded-full object-cover" />
                           <FileCheck className="w-6 h-6 mx-auto text-green-600" />
-                        </div>
-                      ) : (
-                        <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                      )}
+                        </div> : <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />}
                       <p className="text-sm text-muted-foreground mb-2">
                         {avatar ? avatar.name : t('doctorSignup.placeholders.uploadPhoto')}
                       </p>
-                      <Button 
-                        type="button"
-                        variant="outline" 
-                        size="sm"
-                        disabled={uploading}
-                        onClick={() => {
-                          const input = document.createElement('input');
-                          input.type = 'file';
-                          input.accept = '.png,.jpg,.jpeg';
-                          input.onchange = (e) => {
-                            const file = (e.target as HTMLInputElement)?.files?.[0];
-                            if (file) handleAvatarUpload(file);
-                          };
-                          input.click();
-                        }}
-                      >
+                      <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => {
+                      const input = document.createElement('input');
+                      input.type = 'file';
+                      input.accept = '.png,.jpg,.jpeg';
+                      input.onchange = e => {
+                        const file = (e.target as HTMLInputElement)?.files?.[0];
+                        if (file) handleAvatarUpload(file);
+                      };
+                      input.click();
+                    }}>
                         {avatar ? t('doctorSignup.buttons.changeFile') : t('doctorSignup.buttons.chooseFile')}
                       </Button>
                     </div>
@@ -825,65 +645,41 @@ const DoctorSignUp = () => {
                   </div>
                   <div>
                     <Label>{t('doctorSignup.fields.medicalLicense')} <span className="text-red-500">*</span></Label>
-                    <div className={`border-2 border-dashed rounded-lg p-6 text-center mb-3 ${
-                      medicalLicense ? 'border-green-500 bg-green-50' : 'border-border'
-                    }`}>
-                      {medicalLicense ? (
-                        <FileCheck className="w-8 h-8 mx-auto mb-2 text-green-600" />
-                      ) : (
-                        <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                      )}
+                    <div className={`border-2 border-dashed rounded-lg p-6 text-center mb-3 ${medicalLicense ? 'border-green-500 bg-green-50' : 'border-border'}`}>
+                      {medicalLicense ? <FileCheck className="w-8 h-8 mx-auto mb-2 text-green-600" /> : <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />}
                       <p className="text-sm text-muted-foreground mb-2">
                         {medicalLicense ? medicalLicense.name : t('doctorSignup.placeholders.uploadLicense')}
                       </p>
-                      <Button 
-                        type="button"
-                        variant="outline" 
-                        size="sm"
-                        disabled={uploading}
-                        onClick={() => {
-                          const input = document.createElement('input');
-                          input.type = 'file';
-                          input.accept = '.pdf,.jpg,.jpeg,.png';
-                          input.onchange = (e) => {
-                            const file = (e.target as HTMLInputElement)?.files?.[0];
-                            if (file) handleDocumentUpload('medical_license', file);
-                          };
-                          input.click();
-                        }}
-                      >
+                      <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => {
+                      const input = document.createElement('input');
+                      input.type = 'file';
+                      input.accept = '.pdf,.jpg,.jpeg,.png';
+                      input.onchange = e => {
+                        const file = (e.target as HTMLInputElement)?.files?.[0];
+                        if (file) handleDocumentUpload('medical_license', file);
+                      };
+                      input.click();
+                    }}>
                         {medicalLicense ? t('doctorSignup.buttons.changeFile') : t('doctorSignup.buttons.chooseFile')}
                       </Button>
                     </div>
                     
                     <Label>{t('doctorSignup.fields.professionalId')} <span className="text-red-500">*</span></Label>
-                    <div className={`border-2 border-dashed rounded-lg p-6 text-center ${
-                      professionalId ? 'border-green-500 bg-green-50' : 'border-border'
-                    }`}>
-                      {professionalId ? (
-                        <FileCheck className="w-8 h-8 mx-auto mb-2 text-green-600" />
-                      ) : (
-                        <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                      )}
+                    <div className={`border-2 border-dashed rounded-lg p-6 text-center ${professionalId ? 'border-green-500 bg-green-50' : 'border-border'}`}>
+                      {professionalId ? <FileCheck className="w-8 h-8 mx-auto mb-2 text-green-600" /> : <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />}
                       <p className="text-sm text-muted-foreground mb-2">
                         {professionalId ? professionalId.name : t('doctorSignup.placeholders.uploadId')}
                       </p>
-                      <Button 
-                        type="button"
-                        variant="outline" 
-                        size="sm"
-                        disabled={uploading}
-                        onClick={() => {
-                          const input = document.createElement('input');
-                          input.type = 'file';
-                          input.accept = '.pdf,.jpg,.jpeg,.png';
-                          input.onchange = (e) => {
-                            const file = (e.target as HTMLInputElement)?.files?.[0];
-                            if (file) handleDocumentUpload('professional_id', file);
-                          };
-                          input.click();
-                        }}
-                      >
+                      <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => {
+                      const input = document.createElement('input');
+                      input.type = 'file';
+                      input.accept = '.pdf,.jpg,.jpeg,.png';
+                      input.onchange = e => {
+                        const file = (e.target as HTMLInputElement)?.files?.[0];
+                        if (file) handleDocumentUpload('professional_id', file);
+                      };
+                      input.click();
+                    }}>
                         {professionalId ? t('doctorSignup.buttons.changeFile') : t('doctorSignup.buttons.chooseFile')}
                       </Button>
                     </div>
@@ -905,17 +701,22 @@ const DoctorSignUp = () => {
                 <div>
                   <Label>{t('doctorSignup.fields.appointmentTypes')}</Label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
-                    {[
-                      { id: "in-person", label: t('doctorSignup.appointmentTypes.inPerson') },
-                      { id: "video", label: t('doctorSignup.appointmentTypes.video') },
-                      { id: "home-visit", label: t('doctorSignup.appointmentTypes.homeVisit') },
-                      { id: "chat", label: t('doctorSignup.appointmentTypes.chat') }
-                    ].map((type) => (
-                      <div key={type.id} className="flex items-center space-x-2">
+                    {[{
+                    id: "in-person",
+                    label: t('doctorSignup.appointmentTypes.inPerson')
+                  }, {
+                    id: "video",
+                    label: t('doctorSignup.appointmentTypes.video')
+                  }, {
+                    id: "home-visit",
+                    label: t('doctorSignup.appointmentTypes.homeVisit')
+                  }, {
+                    id: "chat",
+                    label: t('doctorSignup.appointmentTypes.chat')
+                  }].map(type => <div key={type.id} className="flex items-center space-x-2">
                         <Checkbox id={type.id} />
                         <Label htmlFor={type.id} className="text-sm">{type.label}</Label>
-                      </div>
-                    ))}
+                      </div>)}
                   </div>
                 </div>
 
@@ -941,24 +742,14 @@ const DoctorSignUp = () => {
               <CardContent className="space-y-6">
                 <div className="space-y-4">
                   <div className="flex items-start space-x-3">
-                    <Checkbox 
-                      id="accuracy" 
-                      className="mt-1"
-                      checked={accuracyConfirmed}
-                      onCheckedChange={(checked) => setAccuracyConfirmed(checked as boolean)}
-                    />
+                    <Checkbox id="accuracy" className="mt-1" checked={accuracyConfirmed} onCheckedChange={checked => setAccuracyConfirmed(checked as boolean)} />
                     <Label htmlFor="accuracy" className="text-sm leading-relaxed">
                       {t('doctorSignup.security.accuracyConfirm')} <span className="text-red-500">*</span>
                     </Label>
                   </div>
                   
                   <div className="flex items-start space-x-3">
-                    <Checkbox 
-                      id="terms" 
-                      className="mt-1"
-                      checked={termsAccepted}
-                      onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
-                    />
+                    <Checkbox id="terms" className="mt-1" checked={termsAccepted} onCheckedChange={checked => setTermsAccepted(checked as boolean)} />
                     <Label htmlFor="terms" className="text-sm leading-relaxed">
                       {t('doctorSignup.security.termsAgree')} <a href="#" className="text-blue-600 hover:underline">{t('doctorSignup.security.termsOfService')}</a> {t('doctorSignup.security.and')} <a href="#" className="text-blue-600 hover:underline">{t('doctorSignup.security.privacyPolicy')}</a> <span className="text-red-500">*</span>
                     </Label>
@@ -983,11 +774,7 @@ const DoctorSignUp = () => {
                   </div>
                 </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold"
-                  disabled={isLoading || isSubmitting || uploading}
-                >
+                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold" disabled={isLoading || isSubmitting || uploading}>
                   {isLoading || isSubmitting ? t('doctorSignup.buttons.completingProfile') : t('doctorSignup.buttons.completeProfile')}
                 </Button>
               </CardContent>
@@ -997,8 +784,6 @@ const DoctorSignUp = () => {
       </div>
 
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default DoctorSignUp;
