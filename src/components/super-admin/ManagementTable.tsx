@@ -83,8 +83,20 @@ const ManagementTable = ({ title, type }: ManagementTableProps) => {
 
   const downloadDocument = async (filePath: string, fileName: string) => {
     try {
-      // Remove any leading slashes and ensure proper path format
-      const cleanPath = filePath.replace(/^\/+/, '');
+      // Extract the actual file path if it's a full URL
+      let cleanPath = filePath;
+      
+      // Check if it's a full URL containing the storage path
+      if (filePath.includes('verification-documents/')) {
+        // Extract everything after 'verification-documents/'
+        const match = filePath.match(/verification-documents\/(.+?)(?:\?|$)/);
+        if (match && match[1]) {
+          cleanPath = match[1];
+        }
+      }
+      
+      // Clean any remaining leading slashes
+      cleanPath = cleanPath.replace(/^\/+/, '');
       
       const { data, error } = await supabase.storage
         .from("verification-documents")
@@ -110,8 +122,20 @@ const ManagementTable = ({ title, type }: ManagementTableProps) => {
 
   const viewDocument = async (filePath: string) => {
     try {
-      // Remove any leading slashes and ensure proper path format
-      const cleanPath = filePath.replace(/^\/+/, '');
+      // Extract the actual file path if it's a full URL
+      let cleanPath = filePath;
+      
+      // Check if it's a full URL containing the storage path
+      if (filePath.includes('verification-documents/')) {
+        // Extract everything after 'verification-documents/'
+        const match = filePath.match(/verification-documents\/(.+?)(?:\?|$)/);
+        if (match && match[1]) {
+          cleanPath = match[1];
+        }
+      }
+      
+      // Clean any remaining leading slashes
+      cleanPath = cleanPath.replace(/^\/+/, '');
       
       const { data, error } = await supabase.storage
         .from("verification-documents")
