@@ -19,6 +19,18 @@ interface DoctorVerificationData {
   languages?: string[];
   consultation_types?: string[];
   documents: VerificationDocuments;
+  additional_data?: {
+    first_name?: string;
+    last_name?: string;
+    gender?: string;
+    phone?: string;
+    degrees?: string;
+    country?: string;
+    region?: string;
+    avatar_uploaded?: boolean;
+    practice_association?: string;
+    selected_clinic?: string | null;
+  };
 }
 
 export const useDoctorVerification = () => {
@@ -157,6 +169,7 @@ export const useDoctorVerification = () => {
             verification_data: {
               languages: formData.languages,
               consultation_types: formData.consultation_types,
+              additional_info: formData.additional_data || {},
             }
           })
           .eq('id', existingVerification.id)
@@ -182,6 +195,7 @@ export const useDoctorVerification = () => {
             verification_data: {
               languages: formData.languages,
               consultation_types: formData.consultation_types,
+              additional_info: formData.additional_data || {},
             }
           })
           .select()

@@ -196,6 +196,21 @@ const DoctorSignUp = () => {
         if (avatarResult) avatar_url = avatarResult.url;
       }
 
+      // Update user profile with personal information
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          full_name: `${formData.firstName} ${formData.lastName}`.trim(),
+          phone: formData.phone,
+          gender: formData.gender as any,
+          address: `${formData.region}, ${formData.country}`,
+          avatar_url: avatar_url || undefined,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', user.id);
+
+      if (profileError) throw profileError;
+
       // Check if doctor profile already exists
       const { data: existingDoctor } = await supabase
         .from('doctors')
@@ -238,7 +253,7 @@ const DoctorSignUp = () => {
         doctorId = doctorData.id;
       }
 
-      // Submit for super-admin verification
+      // Submit for super-admin verification with all information
       const result = await submitForVerification(doctorId, {
         specialty: formData.specialty || 'General Practice',
         bio: formData.bio || '',
@@ -250,6 +265,19 @@ const DoctorSignUp = () => {
         documents: {
           medical_license: medicalLicense || undefined,
           professional_id: professionalId || undefined,
+        },
+        // Additional information for super admin review
+        additional_data: {
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          gender: formData.gender,
+          phone: formData.phone,
+          degrees: formData.degrees,
+          country: formData.country,
+          region: formData.region,
+          avatar_uploaded: !!avatar,
+          practice_association: hasAssociatedPractice,
+          selected_clinic: selectedClinic?.name || null,
         },
       });
 
