@@ -98,6 +98,11 @@ const ManagementTable = ({ title, type }: ManagementTableProps) => {
       // Clean any remaining leading slashes
       cleanPath = cleanPath.replace(/^\/+/, '');
       
+      // Extract file extension from the path
+      const pathParts = cleanPath.split('/');
+      const actualFileName = pathParts[pathParts.length - 1];
+      const extension = actualFileName.includes('.') ? actualFileName.split('.').pop() : 'pdf';
+      
       const { data, error } = await supabase.storage
         .from("verification-documents")
         .download(cleanPath);
@@ -107,10 +112,11 @@ const ManagementTable = ({ title, type }: ManagementTableProps) => {
         throw error;
       }
 
+      // Create download with correct extension
       const url = window.URL.createObjectURL(data);
       const a = document.createElement("a");
       a.href = url;
-      a.download = fileName;
+      a.download = fileName.includes('.') ? fileName : `${fileName}.${extension}`;
       a.click();
       window.URL.revokeObjectURL(url);
       toast.success("Document downloaded successfully");
