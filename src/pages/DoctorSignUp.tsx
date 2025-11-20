@@ -42,6 +42,16 @@ const DoctorSignUp = () => {
   const [professionalId, setProfessionalId] = useState<File | null>(null);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [accuracyConfirmed, setAccuracyConfirmed] = useState(false);
+  
+  // Additional fields for verification
+  const [selectedAppointmentTypes, setSelectedAppointmentTypes] = useState<string[]>([]);
+  const [consultationFeeFrom, setConsultationFeeFrom] = useState<string>("");
+  const [consultationFeeTo, setConsultationFeeTo] = useState<string>("");
+  const [manualClinicName, setManualClinicName] = useState<string>("");
+  const [manualClinicPhone, setManualClinicPhone] = useState<string>("");
+  const [manualClinicEmail, setManualClinicEmail] = useState<string>("");
+  const [manualClinicAddress, setManualClinicAddress] = useState<string>("");
+  
   const {
     navigateToDoctorDashboard
   } = useQuickNavigate();
@@ -514,7 +524,17 @@ const DoctorSignUp = () => {
           avatar_uploaded: !!avatar,
           practice_association: hasAssociatedPractice,
           selected_clinic: selectedClinic?.name || null,
-          all_specialties: selectedSpecialties
+          linked_clinic_id: selectedClinic?.id || null,
+          manual_clinic: showManualClinic || (!clinicSearch && !selectedClinic) ? {
+            name: manualClinicName,
+            phone: manualClinicPhone,
+            email: manualClinicEmail,
+            address: manualClinicAddress
+          } : null,
+          all_specialties: selectedSpecialties,
+          preferred_appointment_types: selectedAppointmentTypes,
+          consultation_fee_from: consultationFeeFrom,
+          consultation_fee_to: consultationFeeTo
         }
       });
       if (result.success) {
@@ -930,21 +950,43 @@ const DoctorSignUp = () => {
                     <CardContent className="space-y-4">
                       <div>
                         <Label htmlFor="practice-name">{t('doctorSignup.fields.practiceName')} ({t('doctorSignup.buttons.optional')})</Label>
-                        <Input id="practice-name" placeholder={t('doctorSignup.placeholders.practiceName')} />
+                        <Input 
+                          id="practice-name" 
+                          placeholder={t('doctorSignup.placeholders.practiceName')}
+                          value={manualClinicName}
+                          onChange={(e) => setManualClinicName(e.target.value)}
+                        />
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="practice-phone">{t('doctorSignup.fields.practicePhone')}</Label>
-                          <Input id="practice-phone" placeholder={t('doctorSignup.placeholders.phone')} />
+                          <Input 
+                            id="practice-phone" 
+                            placeholder={t('doctorSignup.placeholders.phone')}
+                            value={manualClinicPhone}
+                            onChange={(e) => setManualClinicPhone(e.target.value)}
+                          />
                         </div>
                         <div>
                           <Label htmlFor="practice-email">{t('doctorSignup.fields.practiceEmail')}</Label>
-                          <Input id="practice-email" type="email" placeholder={t('doctorSignup.placeholders.email')} />
+                          <Input 
+                            id="practice-email" 
+                            type="email" 
+                            placeholder={t('doctorSignup.placeholders.email')}
+                            value={manualClinicEmail}
+                            onChange={(e) => setManualClinicEmail(e.target.value)}
+                          />
                         </div>
                       </div>
                       <div>
                         <Label htmlFor="practice-address">{t('doctorSignup.fields.practiceAddress')} {t('doctorSignup.clinic.required')}</Label>
-                        <Textarea id="practice-address" placeholder={t('doctorSignup.placeholders.practiceAddress')} className="min-h-[80px]" />
+                        <Textarea 
+                          id="practice-address" 
+                          placeholder={t('doctorSignup.placeholders.practiceAddress')} 
+                          className="min-h-[80px]"
+                          value={manualClinicAddress}
+                          onChange={(e) => setManualClinicAddress(e.target.value)}
+                        />
                       </div>
                       <div className="bg-amber-50 p-3 rounded-lg">
                         <p className="text-sm text-amber-700">
@@ -1082,8 +1124,18 @@ const DoctorSignUp = () => {
                     id: "chat",
                     label: t('doctorSignup.appointmentTypes.chat')
                   }].map(type => <div key={type.id} className="flex items-center space-x-2">
-                        <Checkbox id={type.id} />
-                        <Label htmlFor={type.id} className="text-sm">{type.label}</Label>
+                        <Checkbox 
+                          id={type.id}
+                          checked={selectedAppointmentTypes.includes(type.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedAppointmentTypes([...selectedAppointmentTypes, type.id]);
+                            } else {
+                              setSelectedAppointmentTypes(selectedAppointmentTypes.filter(t => t !== type.id));
+                            }
+                          }}
+                        />
+                        <Label htmlFor={type.id} className="text-sm cursor-pointer">{type.label}</Label>
                       </div>)}
                   </div>
                 </div>
@@ -1091,8 +1143,18 @@ const DoctorSignUp = () => {
                 <div>
                   <Label htmlFor="consultation-fee">{t('doctorSignup.fields.consultationFee')}</Label>
                   <div className="grid grid-cols-2 gap-4 mt-2">
-                    <Input placeholder={t('doctorSignup.placeholders.feeFrom')} />
-                    <Input placeholder={t('doctorSignup.placeholders.feeTo')} />
+                    <Input 
+                      placeholder={t('doctorSignup.placeholders.feeFrom')}
+                      type="number"
+                      value={consultationFeeFrom}
+                      onChange={(e) => setConsultationFeeFrom(e.target.value)}
+                    />
+                    <Input 
+                      placeholder={t('doctorSignup.placeholders.feeTo')}
+                      type="number"
+                      value={consultationFeeTo}
+                      onChange={(e) => setConsultationFeeTo(e.target.value)}
+                    />
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">{t('doctorSignup.help.adjustFee')}</p>
                 </div>
