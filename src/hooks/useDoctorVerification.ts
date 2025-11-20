@@ -30,7 +30,17 @@ interface DoctorVerificationData {
     avatar_uploaded?: boolean;
     practice_association?: string;
     selected_clinic?: string | null;
+    linked_clinic_id?: string | null;
+    manual_clinic?: {
+      name?: string;
+      phone?: string;
+      email?: string;
+      address?: string;
+    } | null;
     all_specialties?: string[];
+    preferred_appointment_types?: string[];
+    consultation_fee_from?: string;
+    consultation_fee_to?: string;
   };
 }
 

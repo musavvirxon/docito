@@ -272,43 +272,167 @@ const DoctorVerificationTable = ({ title, status = "all" }: DoctorVerificationTa
 
           {selectedVerification && (
             <div className="space-y-6">
-              {/* Doctor Information */}
+              {/* Personal Information */}
               <div>
-                <h3 className="text-lg font-semibold mb-3">Doctor Information</h3>
+                <h3 className="text-lg font-semibold mb-3">Personal Information</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-muted-foreground">Full Name</p>
-                    <p className="font-medium">{selectedVerification.full_name}</p>
+                    <p className="text-muted-foreground">First Name</p>
+                    <p className="font-medium">{selectedVerification.verification_data?.additional_data?.first_name || "N/A"}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Specialty</p>
-                    <p className="font-medium">{selectedVerification.specialty}</p>
+                    <p className="text-muted-foreground">Last Name</p>
+                    <p className="font-medium">{selectedVerification.verification_data?.additional_data?.last_name || "N/A"}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Email</p>
-                    <p className="font-medium">{selectedVerification.email}</p>
+                    <p className="text-muted-foreground">Gender</p>
+                    <p className="font-medium">{selectedVerification.verification_data?.additional_data?.gender || "N/A"}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Phone</p>
-                    <p className="font-medium">{selectedVerification.phone}</p>
+                    <p className="font-medium">{selectedVerification.verification_data?.additional_data?.phone || selectedVerification.phone || "N/A"}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">License Number</p>
-                    <p className="font-medium">{selectedVerification.license_number || "N/A"}</p>
+                    <p className="text-muted-foreground">Email</p>
+                    <p className="font-medium">{selectedVerification.email || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Profile Photo</p>
+                    <p className="font-medium">{selectedVerification.verification_data?.additional_data?.avatar_uploaded ? "✓ Uploaded" : "Not uploaded"}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Professional Information */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Professional Information</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Primary Specialty</p>
+                    <p className="font-medium">{selectedVerification.specialty}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-muted-foreground">All Specialties (up to 5)</p>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {selectedVerification.verification_data?.additional_data?.all_specialties?.length > 0 ? (
+                        selectedVerification.verification_data.additional_data.all_specialties.map((spec: string) => (
+                          <Badge key={spec} variant="secondary">{spec}</Badge>
+                        ))
+                      ) : (
+                        <p className="font-medium text-muted-foreground">N/A</p>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Degrees & Certifications</p>
+                    <p className="font-medium">{selectedVerification.verification_data?.additional_data?.degrees || "N/A"}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Years of Experience</p>
                     <p className="font-medium">{selectedVerification.years_of_experience || "N/A"}</p>
                   </div>
-                  {selectedVerification.medical_school && (
-                    <div className="col-span-2">
-                      <p className="text-muted-foreground">Medical School</p>
-                      <p className="font-medium">
-                        {selectedVerification.medical_school}
-                        {selectedVerification.graduation_year && ` (${selectedVerification.graduation_year})`}
-                      </p>
+                  <div>
+                    <p className="text-muted-foreground">Medical License Number</p>
+                    <p className="font-medium">{selectedVerification.license_number || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Languages Spoken</p>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {selectedVerification.verification_data?.languages?.length > 0 ? (
+                        selectedVerification.verification_data.languages.map((lang: string) => (
+                          <Badge key={lang} variant="outline">{lang}</Badge>
+                        ))
+                      ) : (
+                        <p className="font-medium text-muted-foreground">N/A</p>
+                      )}
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Location & Clinic Information */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Location & Clinic Information</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Country</p>
+                    <p className="font-medium">{selectedVerification.verification_data?.additional_data?.country || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Region/State</p>
+                    <p className="font-medium">{selectedVerification.verification_data?.additional_data?.region || "N/A"}</p>
+                  </div>
+                  
+                  {selectedVerification.verification_data?.additional_data?.selected_clinic && (
+                    <>
+                      <div className="col-span-2">
+                        <p className="text-muted-foreground">Linked Clinic (from database)</p>
+                        <p className="font-medium">{selectedVerification.verification_data.additional_data.selected_clinic}</p>
+                        {selectedVerification.verification_data?.additional_data?.linked_clinic_id && (
+                          <p className="text-xs text-muted-foreground">ID: {selectedVerification.verification_data.additional_data.linked_clinic_id}</p>
+                        )}
+                      </div>
+                    </>
                   )}
+
+                  {selectedVerification.verification_data?.additional_data?.manual_clinic && (
+                    <>
+                      <div className="col-span-2">
+                        <p className="text-muted-foreground font-semibold">Manual Clinic Entry (⚠️ Requires Verification)</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Clinic Name</p>
+                        <p className="font-medium">{selectedVerification.verification_data.additional_data.manual_clinic.name || "N/A"}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Clinic Phone</p>
+                        <p className="font-medium">{selectedVerification.verification_data.additional_data.manual_clinic.phone || "N/A"}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Clinic Email</p>
+                        <p className="font-medium">{selectedVerification.verification_data.additional_data.manual_clinic.email || "N/A"}</p>
+                      </div>
+                      <div className="col-span-2">
+                        <p className="text-muted-foreground">Clinic Address</p>
+                        <p className="font-medium">{selectedVerification.verification_data.additional_data.manual_clinic.address || "N/A"}</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Bio */}
+              {selectedVerification.verification_data?.bio && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Bio</h3>
+                  <p className="text-sm text-muted-foreground">{selectedVerification.verification_data.bio}</p>
+                </div>
+              )}
+
+              {/* Availability & Preferences */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Availability & Preferences</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Preferred Appointment Types</p>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {selectedVerification.verification_data?.additional_data?.preferred_appointment_types?.length > 0 ? (
+                        selectedVerification.verification_data.additional_data.preferred_appointment_types.map((type: string) => (
+                          <Badge key={type} variant="secondary">{type}</Badge>
+                        ))
+                      ) : (
+                        <p className="font-medium text-muted-foreground">N/A</p>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Consultation Fee Range</p>
+                    <p className="font-medium">
+                      {selectedVerification.verification_data?.additional_data?.consultation_fee_from && selectedVerification.verification_data?.additional_data?.consultation_fee_to
+                        ? `$${selectedVerification.verification_data.additional_data.consultation_fee_from} - $${selectedVerification.verification_data.additional_data.consultation_fee_to}`
+                        : "N/A"}
+                    </p>
+                  </div>
                 </div>
               </div>
 
