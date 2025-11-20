@@ -83,38 +83,256 @@ const DoctorSignUp = () => {
     bio: ""
   }, 'doctor');
   const allSpecialties = [
-    // Primary Care
-    "Family Medicine", "Internal Medicine", "General Practice", "Pediatrics",
-    // Surgical Specialties
-    "General Surgery", "Cardiothoracic Surgery", "Neurosurgery", "Orthopedic Surgery", "Plastic Surgery", "Vascular Surgery", "Pediatric Surgery", "Trauma Surgery", "Colorectal Surgery",
-    // Medical Specialties
-    "Cardiology", "Dermatology", "Endocrinology", "Gastroenterology", "Geriatrics", "Hematology", "Infectious Disease", "Nephrology", "Oncology", "Pulmonology", "Rheumatology",
-    // Surgical Sub-specialties
-    "Oral and Maxillofacial Surgery", "Ophthalmic Surgery", "Otolaryngology (ENT)", "Urology", "Gynecologic Oncology",
-    // Women's Health
-    "Obstetrics & Gynecology", "Maternal-Fetal Medicine", "Reproductive Endocrinology",
-    // Children's Health
-    "Pediatric Cardiology", "Pediatric Endocrinology", "Pediatric Gastroenterology", "Pediatric Hematology-Oncology", "Pediatric Neurology", "Pediatric Pulmonology", "Neonatology",
-    // Mental Health
-    "Psychiatry", "Child and Adolescent Psychiatry", "Addiction Medicine", "Geriatric Psychiatry",
-    // Nervous System
-    "Neurology", "Neuromuscular Medicine", "Epilepsy", "Stroke Medicine",
-    // Emergency & Critical Care
-    "Emergency Medicine", "Critical Care Medicine", "Intensive Care Medicine", "Disaster Medicine",
-    // Anesthesia & Pain
-    "Anesthesiology", "Pain Medicine", "Palliative Care", "Hospice Care",
-    // Diagnostic Specialties
-    "Radiology", "Nuclear Medicine", "Interventional Radiology", "Neuroradiology", "Pathology", "Clinical Pathology", "Anatomical Pathology",
-    // Rehabilitation
-    "Physical Medicine and Rehabilitation", "Sports Medicine", "Occupational Medicine",
-    // Allergy & Immunology
-    "Allergy and Immunology", "Clinical Immunology",
+    // Internal Medicine + Subspecialties
+    "Internal Medicine",
+    "Internal Medicine - Cardiology",
+    "Internal Medicine - Endocrinology",
+    "Internal Medicine - Gastroenterology",
+    "Internal Medicine - Hepatology",
+    "Internal Medicine - Nephrology",
+    "Internal Medicine - Pulmonology / Respiratory Medicine",
+    "Internal Medicine - Rheumatology",
+    "Internal Medicine - Infectious Diseases",
+    "Internal Medicine - Hematology",
+    "Internal Medicine - Oncology",
+    "Internal Medicine - Allergy & Immunology",
+    "Internal Medicine - Geriatric Medicine",
+    "Internal Medicine - Adolescent Medicine",
+    "Internal Medicine - Hospital Medicine",
+
+    // Pediatrics + Pediatric Subspecialties
+    "Pediatrics",
+    "Pediatric Cardiology",
+    "Pediatric Neurology",
+    "Pediatric Endocrinology",
+    "Pediatric Gastroenterology",
+    "Pediatric Pulmonology",
+    "Pediatric Nephrology",
+    "Pediatric Hematology & Oncology",
+    "Neonatology",
+    "Pediatric Surgery",
+    "Pediatric Intensive Care",
+
+    // Obstetrics & Gynecology
+    "Obstetrics & Gynecology",
+    "Maternal–Fetal Medicine",
+    "Reproductive Endocrinology & Infertility",
+    "Gynecologic Oncology",
+    "Urogynecology",
+
+    // Neurology + Subspecialties
+    "Neurology",
+    "Clinical Neurophysiology",
+    "Neuromuscular Medicine",
+    "Vascular Neurology (Stroke)",
+    "Neurocritical Care",
+    "Epileptology",
+    "Movement Disorders",
+    "Headache Medicine",
+    "Sleep Medicine",
+
+    // Psychiatry + Subspecialties
+    "Psychiatry",
+    "Child & Adolescent Psychiatry",
+    "Geriatric Psychiatry",
+    "Addiction Psychiatry",
+    "Forensic Psychiatry",
+    "Consultation–Liaison Psychiatry",
+    "Sleep Psychiatry",
+
+    // Dermatology
+    "Dermatology",
+    "Cosmetic Dermatology",
+    "Dermatopathology",
+    "Pediatric Dermatology",
+    "Mohs Surgery",
+
+    // Emergency Medicine
+    "Emergency Medicine",
+    "Emergency Medicine - Medical Toxicology",
+    "Emergency Medicine - Sports Medicine",
+    "Emergency Medicine - Pediatric Emergency Medicine",
+    "Emergency Medicine - Disaster Medicine",
+    "Emergency Medicine - Critical Care",
+
+    // Family Medicine / General Practice
+    "Family Medicine",
+    "Family Medicine - Sports Medicine",
+    "Family Medicine - Geriatric Medicine",
+    "Family Medicine - Preventive Medicine",
+
+    // Anesthesiology
+    "Anesthesiology",
+    "Cardiothoracic Anesthesia",
+    "Neuroanesthesia",
+    "Pediatric Anesthesia",
+    "Anesthesia - Critical Care",
+    "Pain Medicine",
+
+    // Radiology
+    "Radiology",
+    "Neuroradiology",
+    "Musculoskeletal Radiology",
+    "Abdominal Imaging",
+    "Breast Imaging",
+    "Pediatric Radiology",
+    "Vascular & Interventional Radiology",
+    "Nuclear Medicine",
+
+    // Pathology
+    "Pathology",
+    "Anatomical Pathology",
+    "Clinical Pathology",
+    "Cytopathology",
+    "Hematopathology",
+    "Forensic Pathology",
+    "Molecular Pathology",
+
+    // Rehabilitation & Physical Medicine
+    "Physical Medicine & Rehabilitation (PM&R)",
+    "PM&R - Sports Medicine",
+    "PM&R - Pain Medicine",
+    "Spinal Cord Injury Medicine",
+
+    // Oncology
+    "Medical Oncology",
+    "Surgical Oncology",
+    "Radiation Oncology",
+    "Gynecologic Oncology",
+    "Hematologic Oncology",
+
+    // General Surgery
+    "General Surgery",
+    "Bariatric Surgery",
+    "Breast Surgery",
+    "Transplant Surgery",
+    "Trauma Surgery",
+    "Colorectal Surgery",
+    "Minimally Invasive Surgery",
+
+    // Orthopedic Surgery
+    "Orthopedic Surgery",
+    "Spine Surgery",
+    "Joint Replacement",
+    "Orthopedic Sports Medicine",
+    "Hand Surgery",
+    "Pediatric Orthopedics",
+    "Trauma Orthopedics",
+
+    // Neurosurgery
+    "Neurosurgery",
+    "Skull Base Surgery",
+    "Neurosurgery - Spine Surgery",
+    "Vascular Neurosurgery",
+    "Pediatric Neurosurgery",
+    "Functional Neurosurgery",
+    "Neuro-Oncology",
+
+    // Cardiothoracic Surgery
+    "Cardiothoracic Surgery",
+    "Adult Cardiac Surgery",
+    "Thoracic Surgery",
+    "Congenital Heart Surgery",
+
+    // Plastic and Reconstructive Surgery
+    "Plastic Surgery",
+    "Aesthetic (Cosmetic) Surgery",
+    "Craniofacial Surgery",
+    "Burn Surgery",
+    "Plastic Surgery - Hand Surgery",
+    "Microsurgery",
+
+    // Urology
+    "Urology",
+    "Endourology",
+    "Pediatric Urology",
+    "Andrology",
+    "Oncologic Urology",
+    "Female Urology",
+
+    // Vascular Surgery
+    "Vascular Surgery",
+    "Endovascular Surgery",
+    "Aortic Surgery",
+    "Peripheral Vascular Surgery",
+
+    // ENT (Otolaryngology)
+    "Otolaryngology (ENT)",
+    "Rhinology",
+    "Laryngology",
+    "Otology & Neurotology",
+    "Head & Neck Surgery",
+    "Pediatric ENT",
+    "Facial Plastics",
+
     // Ophthalmology
-    "Ophthalmology", "Retina Specialist", "Glaucoma Specialist", "Cornea Specialist", "Pediatric Ophthalmology",
-    // Dentistry
-    "General Dentistry", "Orthodontics", "Endodontics", "Periodontics", "Prosthodontics", "Oral Surgery", "Pediatric Dentistry", "Cosmetic Dentistry",
-    // Other Specialties
-    "Dermatopathology", "Medical Genetics", "Clinical Genetics", "Sleep Medicine", "Bariatric Medicine", "Preventive Medicine", "Public Health", "Occupational Health", "Tropical Medicine"
+    "Ophthalmology",
+    "Retina & Vitreous",
+    "Cornea & External Disease",
+    "Glaucoma",
+    "Oculoplastics",
+    "Neuro-ophthalmology",
+    "Pediatric Ophthalmology",
+    "Refractive Surgery",
+
+    // Dental Specialties
+    "General Dentistry",
+    "Orthodontics & Dentofacial Orthopedics",
+    "Oral & Maxillofacial Surgery",
+    "Implant Surgery",
+    "Orthognathic Surgery",
+    "TMJ Surgery",
+    "Facial Trauma",
+    "Dentoalveolar Surgery",
+    "Periodontics",
+    "Periodontal Surgery",
+    "Soft Tissue Grafting",
+    "Implant Periodontics",
+    "Prosthodontics",
+    "Fixed Prosthodontics",
+    "Removable Prosthodontics",
+    "Implant Prosthodontics",
+    "Endodontics",
+    "Pediatric Dentistry",
+    "Oral Medicine",
+    "Oral Mucosal Diseases",
+    "Orofacial Pain",
+    "Dental Sleep Medicine",
+    "Oral & Maxillofacial Radiology",
+    "Oral & Maxillofacial Pathology",
+
+    // Allied Health & Medical Support
+    "Physiotherapy",
+    "Occupational Therapy",
+    "Speech & Language Therapy",
+    "Dietetics / Nutrition",
+    "Audiology",
+    "Optometry",
+    "Radiography",
+    "Laboratory Medicine",
+    "Pharmacy",
+    "Midwifery",
+    "Nursing",
+    "Critical Care Nursing",
+    "ER Nursing",
+    "Oncology Nursing",
+    "Pediatric Nursing",
+
+    // Public Health
+    "Public Health",
+    "Epidemiology",
+    "Health Policy",
+    "Environmental Health",
+    "Preventive Medicine",
+    "Lifestyle Medicine",
+    "Aerospace Medicine",
+
+    // Integrative & Alternative Medicine
+    "Integrative Medicine",
+    "Acupuncture",
+    "Chiropractic",
+    "Traditional Chinese Medicine",
+    "Homeopathy",
   ];
   const allLanguages = ["English", "Spanish", "Mandarin", "Hindi", "Arabic", "Portuguese", "Russian", "Japanese", "German", "French", "Italian", "Korean", "Chinese", "Urdu", "Persian", "Turkish", "Uzbek", "Vietnamese", "Thai", "Indonesian", "Malay", "Filipino", "Dutch", "Swedish", "Norwegian", "Danish", "Finnish", "Polish", "Czech", "Hungarian", "Romanian", "Bulgarian", "Greek", "Hebrew", "Swahili", "Amharic"];
   const countries = ["United States", "Canada", "United Kingdom", "Australia", "Germany", "France", "Spain", "Italy", "Netherlands", "Sweden", "Norway"];
