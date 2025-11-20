@@ -426,7 +426,7 @@ const ManagementTable = ({ title, type }: ManagementTableProps) => {
 
       {/* Doctor Verification Modal */}
       <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Doctor Verification Details</DialogTitle>
             <DialogDescription>
@@ -612,6 +612,19 @@ const ManagementTable = ({ title, type }: ManagementTableProps) => {
                           <div className="col-span-2">
                             <p className="text-muted-foreground">Selected Clinic</p>
                             <p className="font-medium">{verification.verification_data.additional_info.selected_clinic}</p>
+                          </div>
+                        )}
+                        {verification.verification_data.additional_info?.all_specialties && 
+                         verification.verification_data.additional_info.all_specialties.length > 0 && (
+                          <div className="col-span-2">
+                            <p className="text-muted-foreground mb-2">All Specialties ({verification.verification_data.additional_info.all_specialties.length})</p>
+                            <div className="flex flex-wrap gap-2">
+                              {verification.verification_data.additional_info.all_specialties.map((spec: string, idx: number) => (
+                                <Badge key={idx} variant="outline" className="text-xs">
+                                  {spec}
+                                </Badge>
+                              ))}
+                            </div>
                           </div>
                         )}
                       </div>
