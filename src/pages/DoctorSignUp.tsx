@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
-import { Upload, Info, User, Briefcase, Building2, FileText, Settings, Shield, FileCheck } from "lucide-react";
+import { Upload, Info, User, Briefcase, Building2, FileText, Settings, Shield, FileCheck, ChevronDown, ChevronRight } from "lucide-react";
 import { useSimpleForm } from "@/hooks/useSimpleForm";
 import { useQuickNavigate } from "@/hooks/useQuickNavigate";
 import { useFileUpload } from "@/hooks/useFileUpload";
@@ -82,258 +82,239 @@ const DoctorSignUp = () => {
     region: "",
     bio: ""
   }, 'doctor');
-  const allSpecialties = [
-    // Internal Medicine + Subspecialties
-    "Internal Medicine",
-    "Internal Medicine - Cardiology",
-    "Internal Medicine - Endocrinology",
-    "Internal Medicine - Gastroenterology",
-    "Internal Medicine - Hepatology",
-    "Internal Medicine - Nephrology",
-    "Internal Medicine - Pulmonology / Respiratory Medicine",
-    "Internal Medicine - Rheumatology",
-    "Internal Medicine - Infectious Diseases",
-    "Internal Medicine - Hematology",
-    "Internal Medicine - Oncology",
-    "Internal Medicine - Allergy & Immunology",
-    "Internal Medicine - Geriatric Medicine",
-    "Internal Medicine - Adolescent Medicine",
-    "Internal Medicine - Hospital Medicine",
+  const specialtyCategories = {
+    "Internal Medicine": [
+      "Cardiology",
+      "Endocrinology",
+      "Gastroenterology",
+      "Hepatology",
+      "Nephrology",
+      "Pulmonology / Respiratory Medicine",
+      "Rheumatology",
+      "Infectious Diseases",
+      "Hematology",
+      "Oncology",
+      "Allergy & Immunology",
+      "Geriatric Medicine",
+      "Adolescent Medicine",
+      "Hospital Medicine",
+    ],
+    "Pediatrics": [
+      "Pediatric Cardiology",
+      "Pediatric Neurology",
+      "Pediatric Endocrinology",
+      "Pediatric Gastroenterology",
+      "Pediatric Pulmonology",
+      "Pediatric Nephrology",
+      "Pediatric Hematology & Oncology",
+      "Neonatology",
+      "Pediatric Surgery",
+      "Pediatric Intensive Care",
+    ],
+    "Obstetrics & Gynecology": [
+      "Maternal–Fetal Medicine",
+      "Reproductive Endocrinology & Infertility",
+      "Gynecologic Oncology",
+      "Urogynecology",
+    ],
+    "Neurology": [
+      "Clinical Neurophysiology",
+      "Neuromuscular Medicine",
+      "Vascular Neurology (Stroke)",
+      "Neurocritical Care",
+      "Epileptology",
+      "Movement Disorders",
+      "Headache Medicine",
+      "Sleep Medicine",
+    ],
+    "Psychiatry": [
+      "Child & Adolescent Psychiatry",
+      "Geriatric Psychiatry",
+      "Addiction Psychiatry",
+      "Forensic Psychiatry",
+      "Consultation–Liaison Psychiatry",
+      "Sleep Psychiatry",
+    ],
+    "Dermatology": [
+      "Cosmetic Dermatology",
+      "Dermatopathology",
+      "Pediatric Dermatology",
+      "Mohs Surgery",
+    ],
+    "Emergency Medicine": [
+      "Medical Toxicology",
+      "Sports Medicine",
+      "Pediatric Emergency Medicine",
+      "Disaster Medicine",
+      "Critical Care",
+    ],
+    "Family Medicine": [
+      "Sports Medicine",
+      "Geriatric Medicine",
+      "Preventive Medicine",
+    ],
+    "Anesthesiology": [
+      "Cardiothoracic Anesthesia",
+      "Neuroanesthesia",
+      "Pediatric Anesthesia",
+      "Critical Care",
+      "Pain Medicine",
+    ],
+    "Radiology": [
+      "Neuroradiology",
+      "Musculoskeletal Radiology",
+      "Abdominal Imaging",
+      "Breast Imaging",
+      "Pediatric Radiology",
+      "Vascular & Interventional Radiology",
+      "Nuclear Medicine",
+    ],
+    "Pathology": [
+      "Anatomical Pathology",
+      "Clinical Pathology",
+      "Cytopathology",
+      "Hematopathology",
+      "Forensic Pathology",
+      "Molecular Pathology",
+    ],
+    "Physical Medicine & Rehabilitation": [
+      "Sports Medicine",
+      "Pain Medicine",
+      "Spinal Cord Injury Medicine",
+    ],
+    "Oncology": [
+      "Medical Oncology",
+      "Surgical Oncology",
+      "Radiation Oncology",
+      "Gynecologic Oncology",
+      "Hematologic Oncology",
+    ],
+    "General Surgery": [
+      "Bariatric Surgery",
+      "Breast Surgery",
+      "Transplant Surgery",
+      "Trauma Surgery",
+      "Colorectal Surgery",
+      "Minimally Invasive Surgery",
+    ],
+    "Orthopedic Surgery": [
+      "Spine Surgery",
+      "Joint Replacement",
+      "Sports Medicine",
+      "Hand Surgery",
+      "Pediatric Orthopedics",
+      "Trauma Orthopedics",
+    ],
+    "Neurosurgery": [
+      "Skull Base Surgery",
+      "Spine Surgery",
+      "Vascular Neurosurgery",
+      "Pediatric Neurosurgery",
+      "Functional Neurosurgery",
+      "Neuro-Oncology",
+    ],
+    "Cardiothoracic Surgery": [
+      "Adult Cardiac Surgery",
+      "Thoracic Surgery",
+      "Congenital Heart Surgery",
+    ],
+    "Plastic Surgery": [
+      "Aesthetic (Cosmetic) Surgery",
+      "Craniofacial Surgery",
+      "Burn Surgery",
+      "Hand Surgery",
+      "Microsurgery",
+    ],
+    "Urology": [
+      "Endourology",
+      "Pediatric Urology",
+      "Andrology",
+      "Oncologic Urology",
+      "Female Urology",
+    ],
+    "Vascular Surgery": [
+      "Endovascular Surgery",
+      "Aortic Surgery",
+      "Peripheral Vascular Surgery",
+    ],
+    "Otolaryngology (ENT)": [
+      "Rhinology",
+      "Laryngology",
+      "Otology & Neurotology",
+      "Head & Neck Surgery",
+      "Pediatric ENT",
+      "Facial Plastics",
+    ],
+    "Ophthalmology": [
+      "Retina & Vitreous",
+      "Cornea & External Disease",
+      "Glaucoma",
+      "Oculoplastics",
+      "Neuro-ophthalmology",
+      "Pediatric Ophthalmology",
+      "Refractive Surgery",
+    ],
+    "General Dentistry": [],
+    "Orthodontics & Dentofacial Orthopedics": [],
+    "Oral & Maxillofacial Surgery": [
+      "Implant Surgery",
+      "Orthognathic Surgery",
+      "TMJ Surgery",
+      "Facial Trauma",
+      "Dentoalveolar Surgery",
+    ],
+    "Periodontics": [
+      "Periodontal Surgery",
+      "Soft Tissue Grafting",
+      "Implant Periodontics",
+    ],
+    "Prosthodontics": [
+      "Fixed Prosthodontics",
+      "Removable Prosthodontics",
+      "Implant Prosthodontics",
+    ],
+    "Endodontics": [],
+    "Pediatric Dentistry": [],
+    "Oral Medicine": [
+      "Oral Mucosal Diseases",
+      "Orofacial Pain",
+      "Dental Sleep Medicine",
+    ],
+    "Oral & Maxillofacial Radiology": [],
+    "Oral & Maxillofacial Pathology": [],
+    "Physiotherapy": [],
+    "Occupational Therapy": [],
+    "Speech & Language Therapy": [],
+    "Dietetics / Nutrition": [],
+    "Audiology": [],
+    "Optometry": [],
+    "Radiography": [],
+    "Laboratory Medicine": [],
+    "Pharmacy": [],
+    "Midwifery": [],
+    "Nursing": [
+      "Critical Care Nursing",
+      "ER Nursing",
+      "Oncology Nursing",
+      "Pediatric Nursing",
+    ],
+    "Public Health": [
+      "Epidemiology",
+      "Health Policy",
+      "Environmental Health",
+      "Preventive Medicine",
+      "Lifestyle Medicine",
+      "Aerospace Medicine",
+    ],
+    "Integrative Medicine": [
+      "Acupuncture",
+      "Chiropractic",
+      "Traditional Chinese Medicine",
+      "Homeopathy",
+    ],
+  };
 
-    // Pediatrics + Pediatric Subspecialties
-    "Pediatrics",
-    "Pediatric Cardiology",
-    "Pediatric Neurology",
-    "Pediatric Endocrinology",
-    "Pediatric Gastroenterology",
-    "Pediatric Pulmonology",
-    "Pediatric Nephrology",
-    "Pediatric Hematology & Oncology",
-    "Neonatology",
-    "Pediatric Surgery",
-    "Pediatric Intensive Care",
-
-    // Obstetrics & Gynecology
-    "Obstetrics & Gynecology",
-    "Maternal–Fetal Medicine",
-    "Reproductive Endocrinology & Infertility",
-    "Gynecologic Oncology",
-    "Urogynecology",
-
-    // Neurology + Subspecialties
-    "Neurology",
-    "Clinical Neurophysiology",
-    "Neuromuscular Medicine",
-    "Vascular Neurology (Stroke)",
-    "Neurocritical Care",
-    "Epileptology",
-    "Movement Disorders",
-    "Headache Medicine",
-    "Sleep Medicine",
-
-    // Psychiatry + Subspecialties
-    "Psychiatry",
-    "Child & Adolescent Psychiatry",
-    "Geriatric Psychiatry",
-    "Addiction Psychiatry",
-    "Forensic Psychiatry",
-    "Consultation–Liaison Psychiatry",
-    "Sleep Psychiatry",
-
-    // Dermatology
-    "Dermatology",
-    "Cosmetic Dermatology",
-    "Dermatopathology",
-    "Pediatric Dermatology",
-    "Mohs Surgery",
-
-    // Emergency Medicine
-    "Emergency Medicine",
-    "Emergency Medicine - Medical Toxicology",
-    "Emergency Medicine - Sports Medicine",
-    "Emergency Medicine - Pediatric Emergency Medicine",
-    "Emergency Medicine - Disaster Medicine",
-    "Emergency Medicine - Critical Care",
-
-    // Family Medicine / General Practice
-    "Family Medicine",
-    "Family Medicine - Sports Medicine",
-    "Family Medicine - Geriatric Medicine",
-    "Family Medicine - Preventive Medicine",
-
-    // Anesthesiology
-    "Anesthesiology",
-    "Cardiothoracic Anesthesia",
-    "Neuroanesthesia",
-    "Pediatric Anesthesia",
-    "Anesthesia - Critical Care",
-    "Pain Medicine",
-
-    // Radiology
-    "Radiology",
-    "Neuroradiology",
-    "Musculoskeletal Radiology",
-    "Abdominal Imaging",
-    "Breast Imaging",
-    "Pediatric Radiology",
-    "Vascular & Interventional Radiology",
-    "Nuclear Medicine",
-
-    // Pathology
-    "Pathology",
-    "Anatomical Pathology",
-    "Clinical Pathology",
-    "Cytopathology",
-    "Hematopathology",
-    "Forensic Pathology",
-    "Molecular Pathology",
-
-    // Rehabilitation & Physical Medicine
-    "Physical Medicine & Rehabilitation (PM&R)",
-    "PM&R - Sports Medicine",
-    "PM&R - Pain Medicine",
-    "Spinal Cord Injury Medicine",
-
-    // Oncology
-    "Medical Oncology",
-    "Surgical Oncology",
-    "Radiation Oncology",
-    "Gynecologic Oncology",
-    "Hematologic Oncology",
-
-    // General Surgery
-    "General Surgery",
-    "Bariatric Surgery",
-    "Breast Surgery",
-    "Transplant Surgery",
-    "Trauma Surgery",
-    "Colorectal Surgery",
-    "Minimally Invasive Surgery",
-
-    // Orthopedic Surgery
-    "Orthopedic Surgery",
-    "Spine Surgery",
-    "Joint Replacement",
-    "Orthopedic Sports Medicine",
-    "Hand Surgery",
-    "Pediatric Orthopedics",
-    "Trauma Orthopedics",
-
-    // Neurosurgery
-    "Neurosurgery",
-    "Skull Base Surgery",
-    "Neurosurgery - Spine Surgery",
-    "Vascular Neurosurgery",
-    "Pediatric Neurosurgery",
-    "Functional Neurosurgery",
-    "Neuro-Oncology",
-
-    // Cardiothoracic Surgery
-    "Cardiothoracic Surgery",
-    "Adult Cardiac Surgery",
-    "Thoracic Surgery",
-    "Congenital Heart Surgery",
-
-    // Plastic and Reconstructive Surgery
-    "Plastic Surgery",
-    "Aesthetic (Cosmetic) Surgery",
-    "Craniofacial Surgery",
-    "Burn Surgery",
-    "Plastic Surgery - Hand Surgery",
-    "Microsurgery",
-
-    // Urology
-    "Urology",
-    "Endourology",
-    "Pediatric Urology",
-    "Andrology",
-    "Oncologic Urology",
-    "Female Urology",
-
-    // Vascular Surgery
-    "Vascular Surgery",
-    "Endovascular Surgery",
-    "Aortic Surgery",
-    "Peripheral Vascular Surgery",
-
-    // ENT (Otolaryngology)
-    "Otolaryngology (ENT)",
-    "Rhinology",
-    "Laryngology",
-    "Otology & Neurotology",
-    "Head & Neck Surgery",
-    "Pediatric ENT",
-    "Facial Plastics",
-
-    // Ophthalmology
-    "Ophthalmology",
-    "Retina & Vitreous",
-    "Cornea & External Disease",
-    "Glaucoma",
-    "Oculoplastics",
-    "Neuro-ophthalmology",
-    "Pediatric Ophthalmology",
-    "Refractive Surgery",
-
-    // Dental Specialties
-    "General Dentistry",
-    "Orthodontics & Dentofacial Orthopedics",
-    "Oral & Maxillofacial Surgery",
-    "Implant Surgery",
-    "Orthognathic Surgery",
-    "TMJ Surgery",
-    "Facial Trauma",
-    "Dentoalveolar Surgery",
-    "Periodontics",
-    "Periodontal Surgery",
-    "Soft Tissue Grafting",
-    "Implant Periodontics",
-    "Prosthodontics",
-    "Fixed Prosthodontics",
-    "Removable Prosthodontics",
-    "Implant Prosthodontics",
-    "Endodontics",
-    "Pediatric Dentistry",
-    "Oral Medicine",
-    "Oral Mucosal Diseases",
-    "Orofacial Pain",
-    "Dental Sleep Medicine",
-    "Oral & Maxillofacial Radiology",
-    "Oral & Maxillofacial Pathology",
-
-    // Allied Health & Medical Support
-    "Physiotherapy",
-    "Occupational Therapy",
-    "Speech & Language Therapy",
-    "Dietetics / Nutrition",
-    "Audiology",
-    "Optometry",
-    "Radiography",
-    "Laboratory Medicine",
-    "Pharmacy",
-    "Midwifery",
-    "Nursing",
-    "Critical Care Nursing",
-    "ER Nursing",
-    "Oncology Nursing",
-    "Pediatric Nursing",
-
-    // Public Health
-    "Public Health",
-    "Epidemiology",
-    "Health Policy",
-    "Environmental Health",
-    "Preventive Medicine",
-    "Lifestyle Medicine",
-    "Aerospace Medicine",
-
-    // Integrative & Alternative Medicine
-    "Integrative Medicine",
-    "Acupuncture",
-    "Chiropractic",
-    "Traditional Chinese Medicine",
-    "Homeopathy",
-  ];
+  const [expandedSpecialty, setExpandedSpecialty] = useState<string | null>(null);
   const allLanguages = ["English", "Spanish", "Mandarin", "Hindi", "Arabic", "Portuguese", "Russian", "Japanese", "German", "French", "Italian", "Korean", "Chinese", "Urdu", "Persian", "Turkish", "Uzbek", "Vietnamese", "Thai", "Indonesian", "Malay", "Filipino", "Dutch", "Swedish", "Norwegian", "Danish", "Finnish", "Polish", "Czech", "Hungarian", "Romanian", "Bulgarian", "Greek", "Hebrew", "Swahili", "Amharic"];
   const countries = ["United States", "Canada", "United Kingdom", "Australia", "Germany", "France", "Spain", "Italy", "Netherlands", "Sweden", "Norway"];
   const usStates = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"];
@@ -353,25 +334,38 @@ const DoctorSignUp = () => {
     address: "789 Pine St, Chicago, IL",
     verified: false
   }];
-  const toggleSpecialty = (specialty: string) => {
+  const toggleSpecialty = (specialty: string, isSubspecialty: boolean = false, parentSpecialty?: string) => {
+    const fullName = isSubspecialty && parentSpecialty ? `${parentSpecialty} - ${specialty}` : specialty;
+    
     setSelectedSpecialties(prev => {
-      if (prev.includes(specialty)) {
-        return prev.filter(s => s !== specialty);
+      if (prev.includes(fullName)) {
+        return prev.filter(s => s !== fullName);
       }
       if (prev.length >= 5) {
         toast.error('You can select up to 5 specialties');
         return prev;
       }
-      return [...prev, specialty];
+      return [...prev, fullName];
     });
   };
+
   const removeSpecialty = (specialty: string) => {
     setSelectedSpecialties(prev => prev.filter(s => s !== specialty));
   };
-  const filteredSpecialties = allSpecialties.filter(spec => 
-    spec.toLowerCase().includes(specialtySearch.toLowerCase()) && 
-    !selectedSpecialties.includes(spec)
+
+  // Flatten all specialties for search
+  const allSpecialtiesFlat = Object.entries(specialtyCategories).flatMap(([main, subs]) => [
+    main,
+    ...subs.map(sub => `${main} - ${sub}`)
+  ]);
+
+  const filteredMainSpecialties = Object.keys(specialtyCategories).filter(spec => 
+    spec.toLowerCase().includes(specialtySearch.toLowerCase())
   );
+
+  const toggleExpandSpecialty = (specialty: string) => {
+    setExpandedSpecialty(prev => prev === specialty ? null : specialty);
+  };
   
   const toggleLanguage = (language: string) => {
     setSelectedLanguages(prev => prev.includes(language) ? prev.filter(l => l !== language) : [...prev, language]);
@@ -697,12 +691,83 @@ const DoctorSignUp = () => {
                   </div>
 
                   {/* Specialty Options */}
-                  <div className="max-h-60 overflow-y-auto border rounded-md p-2">
-                    {filteredSpecialties.slice(0, 15).map(specialty => <div key={specialty} className="flex items-center space-x-2 p-2 hover:bg-muted rounded cursor-pointer" onClick={() => toggleSpecialty(specialty)}>
-                        <Checkbox id={`specialty-${specialty}`} checked={selectedSpecialties.includes(specialty)} />
-                        <Label htmlFor={`specialty-${specialty}`} className="text-sm cursor-pointer flex-1">{specialty}</Label>
-                      </div>)}
-                    {filteredSpecialties.length === 0 && <p className="text-sm text-muted-foreground p-2">No specialties found</p>}
+                  {/* Specialty Selection */}
+                  <div className="max-h-96 overflow-y-auto border rounded-md">
+                    {filteredMainSpecialties.map(mainSpecialty => {
+                      const subs = specialtyCategories[mainSpecialty as keyof typeof specialtyCategories];
+                      const isExpanded = expandedSpecialty === mainSpecialty;
+                      const isMainSelected = selectedSpecialties.includes(mainSpecialty);
+                      
+                      return (
+                        <div key={mainSpecialty} className="border-b last:border-b-0">
+                          {/* Main Specialty Row */}
+                          <div className="flex items-center p-3 hover:bg-muted/50">
+                            <div 
+                              className="flex items-center space-x-2 flex-1 cursor-pointer"
+                              onClick={() => toggleSpecialty(mainSpecialty)}
+                            >
+                              <Checkbox 
+                                id={`specialty-${mainSpecialty}`} 
+                                checked={isMainSelected}
+                              />
+                              <Label 
+                                htmlFor={`specialty-${mainSpecialty}`} 
+                                className="text-sm font-medium cursor-pointer flex-1"
+                              >
+                                {mainSpecialty}
+                              </Label>
+                            </div>
+                            {subs.length > 0 && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                onClick={() => toggleExpandSpecialty(mainSpecialty)}
+                              >
+                                {isExpanded ? (
+                                  <ChevronDown className="h-4 w-4" />
+                                ) : (
+                                  <ChevronRight className="h-4 w-4" />
+                                )}
+                              </Button>
+                            )}
+                          </div>
+
+                          {/* Subspecialties Dropdown */}
+                          {isExpanded && subs.length > 0 && (
+                            <div className="bg-muted/30 border-t">
+                              {subs.map(subSpecialty => {
+                                const fullName = `${mainSpecialty} - ${subSpecialty}`;
+                                const isSubSelected = selectedSpecialties.includes(fullName);
+                                
+                                return (
+                                  <div 
+                                    key={subSpecialty} 
+                                    className="flex items-center space-x-2 p-2 pl-10 hover:bg-muted cursor-pointer"
+                                    onClick={() => toggleSpecialty(subSpecialty, true, mainSpecialty)}
+                                  >
+                                    <Checkbox 
+                                      id={`subspecialty-${fullName}`} 
+                                      checked={isSubSelected}
+                                    />
+                                    <Label 
+                                      htmlFor={`subspecialty-${fullName}`} 
+                                      className="text-sm cursor-pointer flex-1"
+                                    >
+                                      {subSpecialty}
+                                    </Label>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {filteredMainSpecialties.length === 0 && (
+                      <p className="text-sm text-muted-foreground p-3">No specialties found</p>
+                    )}
                   </div>
                 </div>
 
