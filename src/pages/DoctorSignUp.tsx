@@ -334,15 +334,15 @@ const DoctorSignUp = () => {
     address: "789 Pine St, Chicago, IL",
     verified: false
   }];
-  const toggleSpecialty = (specialty: string, isSubspecialty: boolean = false, parentSpecialty?: string) => {
-    const fullName = isSubspecialty && parentSpecialty ? `${parentSpecialty} - ${specialty}` : specialty;
+  const toggleSpecialty = (specialty: string, parentSpecialty: string) => {
+    const fullName = `${parentSpecialty} - ${specialty}`;
     
     setSelectedSpecialties(prev => {
       if (prev.includes(fullName)) {
         return prev.filter(s => s !== fullName);
       }
       if (prev.length >= 5) {
-        toast.error('You can select up to 5 specialties');
+        toast.error('You can select up to 5 subspecialties');
         return prev;
       }
       return [...prev, fullName];
@@ -354,14 +354,22 @@ const DoctorSignUp = () => {
   };
 
   // Flatten all specialties for search
-  const allSpecialtiesFlat = Object.entries(specialtyCategories).flatMap(([main, subs]) => [
-    main,
-    ...subs.map(sub => `${main} - ${sub}`)
-  ]);
-
-  const filteredMainSpecialties = Object.keys(specialtyCategories).filter(spec => 
-    spec.toLowerCase().includes(specialtySearch.toLowerCase())
+  const allSpecialtiesFlat = Object.entries(specialtyCategories).flatMap(([main, subs]) => 
+    subs.map(sub => `${main} - ${sub}`)
   );
+
+  const filteredMainSpecialties = Object.keys(specialtyCategories).filter(spec => {
+    const subs = specialtyCategories[spec as keyof typeof specialtyCategories];
+    // Only show main specialties that have subspecialties
+    if (subs.length === 0) return false;
+    // Filter by search
+    if (specialtySearch) {
+      const searchLower = specialtySearch.toLowerCase();
+      return spec.toLowerCase().includes(searchLower) || 
+             subs.some(sub => sub.toLowerCase().includes(searchLower));
+    }
+    return true;
+  });
 
   const toggleExpandSpecialty = (specialty: string) => {
     setExpandedSpecialty(prev => prev === specialty ? null : specialty);
@@ -670,20 +678,30 @@ const DoctorSignUp = () => {
               <CardContent className="space-y-6">
                 <div>
                   <Label>{t('doctorSignup.fields.specialty')} <span className="text-red-500">*</span></Label>
-                  <p className="text-sm text-muted-foreground mb-3">Select up to 5 specialties that match your expertise</p>
+                  <p className="text-sm text-muted-foreground mb-3">Select up to 5 subspecialties from the categories below</p>
                   
                   {/* Selected Specialties */}
-                  {selectedSpecialties.length > 0 && <div className="mb-4">
+                  {selectedSpecialties.length > 0 && (
+                    <div className="mb-4">
+                      <p className="text-sm font-medium mb-2">Selected ({selectedSpecialties.length}/5):</p>
                       <div className="flex flex-wrap gap-2">
-                        {selectedSpecialties.map(specialty => <Badge key={specialty} variant="secondary" className="px-3 py-1">
+                        {selectedSpecialties.map(specialty => (
+                          <Badge key={specialty} variant="secondary" className="px-3 py-1">
                             {specialty}
-                            <Button type="button" variant="ghost" size="sm" className="ml-2 h-auto p-0 text-muted-foreground hover:text-foreground" onClick={() => removeSpecialty(specialty)}>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="ml-2 h-auto p-0 text-muted-foreground hover:text-foreground"
+                              onClick={() => removeSpecialty(specialty)}
+                            >
                               ×
                             </Button>
-                          </Badge>)}
+                          </Badge>
+                        ))}
                       </div>
-                      <p className="text-xs text-muted-foreground mt-2">{selectedSpecialties.length} of 5 selected</p>
-                    </div>}
+                    </div>
+                  )}
 
                   {/* Specialty Search */}
                   <div className="relative mb-3">
@@ -691,55 +709,34 @@ const DoctorSignUp = () => {
                   </div>
 
                   {/* Specialty Options */}
-                  {/* Specialty Selection */}
-                  <div className="max-h-96 overflow-y-auto border rounded-md">
+                  <div className="max-h-96 overflow-y-auto border rounded-md bg-background">
                     {filteredMainSpecialties.map(mainSpecialty => {
                       const subs = specialtyCategories[mainSpecialty as keyof typeof specialtyCategories];
                       const isExpanded = expandedSpecialty === mainSpecialty;
-                      const isMainSelected = selectedSpecialties.includes(mainSpecialty);
                       
                       return (
                         <div key={mainSpecialty} className="border-b last:border-b-0">
-                          {/* Main Specialty Row */}
-                          <div className="flex items-center p-3 hover:bg-muted/50">
-                            <div className="flex items-center space-x-2 flex-1">
-                              <Checkbox 
-                                id={`specialty-${mainSpecialty}`} 
-                                checked={isMainSelected}
-                                onCheckedChange={() => toggleSpecialty(mainSpecialty)}
-                              />
-                              <Label 
-                                htmlFor={`specialty-${mainSpecialty}`} 
-                                className="text-sm font-medium cursor-pointer flex-1"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  toggleSpecialty(mainSpecialty);
-                                }}
-                              >
+                          {/* Main Specialty Header - Not selectable, just expandable */}
+                          <div 
+                            className="flex items-center justify-between p-3 hover:bg-muted/50 cursor-pointer"
+                            onClick={() => toggleExpandSpecialty(mainSpecialty)}
+                          >
+                            <div className="flex items-center space-x-2">
+                              <span className="text-sm font-semibold text-foreground">
                                 {mainSpecialty}
-                              </Label>
+                              </span>
+                              <Badge variant="outline" className="text-xs">
+                                {subs.length}
+                              </Badge>
                             </div>
-                            {subs.length > 0 && (
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toggleExpandSpecialty(mainSpecialty);
-                                }}
-                              >
-                                {isExpanded ? (
-                                  <ChevronDown className="h-4 w-4" />
-                                ) : (
-                                  <ChevronRight className="h-4 w-4" />
-                                )}
-                              </Button>
+                            {isExpanded ? (
+                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4 text-muted-foreground" />
                             )}
                           </div>
 
-                          {/* Subspecialties Dropdown */}
+                          {/* Subspecialties Dropdown - These are selectable */}
                           {isExpanded && subs.length > 0 && (
                             <div className="bg-muted/30 border-t">
                               {subs.map(subSpecialty => {
@@ -754,14 +751,14 @@ const DoctorSignUp = () => {
                                     <Checkbox 
                                       id={`subspecialty-${fullName}`} 
                                       checked={isSubSelected}
-                                      onCheckedChange={() => toggleSpecialty(subSpecialty, true, mainSpecialty)}
+                                      onCheckedChange={() => toggleSpecialty(subSpecialty, mainSpecialty)}
                                     />
                                     <Label 
                                       htmlFor={`subspecialty-${fullName}`} 
                                       className="text-sm cursor-pointer flex-1"
                                       onClick={(e) => {
                                         e.preventDefault();
-                                        toggleSpecialty(subSpecialty, true, mainSpecialty);
+                                        toggleSpecialty(subSpecialty, mainSpecialty);
                                       }}
                                     >
                                       {subSpecialty}
