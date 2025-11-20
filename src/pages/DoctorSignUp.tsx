@@ -325,7 +325,34 @@ const DoctorSignUp = () => {
   };
 
   const [expandedSpecialty, setExpandedSpecialty] = useState<string | null>(null);
-  const allLanguages = ["English", "Spanish", "Mandarin", "Hindi", "Arabic", "Portuguese", "Russian", "Japanese", "German", "French", "Italian", "Korean", "Chinese", "Urdu", "Persian", "Turkish", "Uzbek", "Vietnamese", "Thai", "Indonesian", "Malay", "Filipino", "Dutch", "Swedish", "Norwegian", "Danish", "Finnish", "Polish", "Czech", "Hungarian", "Romanian", "Bulgarian", "Greek", "Hebrew", "Swahili", "Amharic"];
+  const allLanguages = [
+    "Afar", "Abkhazian", "Avestan", "Afrikaans", "Akan", "Amharic", "Aragonese", "Arabic", "Assamese", "Avaric", "Aymara", "Azerbaijani",
+    "Bashkir", "Belarusian", "Bulgarian", "Bihari", "Bislama", "Bambara", "Bengali", "Tibetan", "Breton", "Bosnian",
+    "Catalan", "Chechen", "Chamorro", "Corsican", "Cree", "Czech", "Church Slavic", "Chuvash", "Welsh",
+    "Danish", "German", "Divehi", "Dzongkha",
+    "Ewe", "Greek", "English", "Esperanto", "Spanish", "Estonian", "Basque",
+    "Persian (Farsi)", "Fulah", "Finnish", "Fijian", "Faroese", "French", "Western Frisian",
+    "Irish", "Scottish Gaelic", "Galician", "Guarani", "Gujarati", "Manx",
+    "Hausa", "Hebrew", "Hindi", "Hiri Motu", "Croatian", "Haitian Creole", "Hungarian", "Armenian", "Herero",
+    "Interlingua", "Indonesian", "Interlingue", "Igbo", "Sichuan Yi", "Inupiaq", "Ido", "Icelandic", "Italian", "Inuktitut",
+    "Japanese", "Javanese",
+    "Georgian", "Kongo", "Kikuyu", "Kuanyama", "Kazakh", "Kalaallisut", "Khmer", "Kannada", "Korean", "Kanuri", "Kashmiri", "Kurdish", "Komi", "Cornish", "Kyrgyz",
+    "Latin", "Luxembourgish", "Ganda", "Limburgan", "Lingala", "Lao", "Lithuanian", "Luba-Katanga", "Latvian",
+    "Malagasy", "Marshallese", "Maori", "Macedonian", "Malayalam", "Mongolian", "Marathi", "Malay", "Maltese", "Burmese",
+    "Nauru", "Norwegian Bokmål", "North Ndebele", "Nepali", "Ndonga", "Dutch", "Norwegian Nynorsk", "Norwegian", "South Ndebele", "Navajo", "Chichewa",
+    "Occitan", "Ojibwa", "Oromo", "Oriya", "Ossetian",
+    "Punjabi", "Pali", "Polish", "Pashto", "Portuguese",
+    "Quechua",
+    "Romansh", "Rundi", "Romanian", "Russian", "Kinyarwanda",
+    "Sanskrit", "Sardinian", "Sindhi", "Northern Sami", "Sango", "Sinhala", "Slovak", "Slovenian", "Samoan", "Shona", "Somali", "Albanian", "Serbian", "Swati", "Southern Sotho", "Sundanese", "Swedish", "Swahili",
+    "Tamil", "Telugu", "Tajik", "Thai", "Tigrinya", "Turkmen", "Tagalog", "Tswana", "Tongan", "Turkish", "Tsonga", "Tatar", "Twi", "Tahitian",
+    "Uyghur", "Ukrainian", "Urdu", "Uzbek",
+    "Venda", "Vietnamese", "Volapük",
+    "Walloon", "Wolof",
+    "Xhosa",
+    "Yiddish", "Yoruba",
+    "Zhuang", "Chinese", "Zulu"
+  ];
   const countries = ["United States", "Canada", "United Kingdom", "Australia", "Germany", "France", "Spain", "Italy", "Netherlands", "Sweden", "Norway"];
   const usStates = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"];
   const mockClinics = [{
