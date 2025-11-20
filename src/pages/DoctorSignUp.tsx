@@ -702,17 +702,19 @@ const DoctorSignUp = () => {
                         <div key={mainSpecialty} className="border-b last:border-b-0">
                           {/* Main Specialty Row */}
                           <div className="flex items-center p-3 hover:bg-muted/50">
-                            <div 
-                              className="flex items-center space-x-2 flex-1 cursor-pointer"
-                              onClick={() => toggleSpecialty(mainSpecialty)}
-                            >
+                            <div className="flex items-center space-x-2 flex-1">
                               <Checkbox 
                                 id={`specialty-${mainSpecialty}`} 
                                 checked={isMainSelected}
+                                onCheckedChange={() => toggleSpecialty(mainSpecialty)}
                               />
                               <Label 
                                 htmlFor={`specialty-${mainSpecialty}`} 
                                 className="text-sm font-medium cursor-pointer flex-1"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  toggleSpecialty(mainSpecialty);
+                                }}
                               >
                                 {mainSpecialty}
                               </Label>
@@ -723,7 +725,10 @@ const DoctorSignUp = () => {
                                 variant="ghost"
                                 size="sm"
                                 className="h-8 w-8 p-0"
-                                onClick={() => toggleExpandSpecialty(mainSpecialty)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleExpandSpecialty(mainSpecialty);
+                                }}
                               >
                                 {isExpanded ? (
                                   <ChevronDown className="h-4 w-4" />
@@ -744,16 +749,20 @@ const DoctorSignUp = () => {
                                 return (
                                   <div 
                                     key={subSpecialty} 
-                                    className="flex items-center space-x-2 p-2 pl-10 hover:bg-muted cursor-pointer"
-                                    onClick={() => toggleSpecialty(subSpecialty, true, mainSpecialty)}
+                                    className="flex items-center space-x-2 p-2 pl-10 hover:bg-muted"
                                   >
                                     <Checkbox 
                                       id={`subspecialty-${fullName}`} 
                                       checked={isSubSelected}
+                                      onCheckedChange={() => toggleSpecialty(subSpecialty, true, mainSpecialty)}
                                     />
                                     <Label 
                                       htmlFor={`subspecialty-${fullName}`} 
                                       className="text-sm cursor-pointer flex-1"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        toggleSpecialty(subSpecialty, true, mainSpecialty);
+                                      }}
                                     >
                                       {subSpecialty}
                                     </Label>
