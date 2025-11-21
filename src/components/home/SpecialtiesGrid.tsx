@@ -1,8 +1,24 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { Heart, Users, Pill, Brain, Eye, Activity, Bone, Baby, Banana } from "lucide-react";
+import { Heart, Users, Pill, Brain, Eye, Activity, Bone, Baby } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
+
+export const ToothIcon = ({ className = "w-8 h-8" }) => {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M12 2c-3 0-6 2-6 6 0 2 .5 3.5 1.5 5.5.5 1 .9 2.2 1 3.5.2 1.7 1 5 3.5 5s3.3-3.3 3.5-5c.1-1.3.5-2.5 1-3.5C17.5 11.5 18 10 18 8c0-4-3-6-6-6z" />
+    </svg>
+  );
+};
 
 const SpecialtiesGrid = () => {
   const { t } = useTranslation("home");
@@ -10,7 +26,7 @@ const SpecialtiesGrid = () => {
 
   const specialties = [
     { name: t("specialties.cardiology"), icon: Heart, color: "text-red-500" },
-    { name: t("specialties.dentist"), icon: Banana, color: "text-cyan-500" },
+    { name: t("specialties.dentist"), icon: ToothIcon, color: "text-cyan-500" },
     { name: t("specialties.obGyn"), icon: Users, color: "text-purple-500" },
     { name: t("specialties.dermatology"), icon: Pill, color: "text-orange-500" },
     { name: t("specialties.psychiatry"), icon: Brain, color: "text-indigo-500" },
