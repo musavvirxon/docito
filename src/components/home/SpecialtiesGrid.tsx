@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { Heart, Users, Pill, Brain, Eye, Activity, Bone, Baby } from "lucide-react";
+import { Heart, Users, Pill, Brain, Eye, Activity, Bone, Baby, RiToothLine  } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 
@@ -10,7 +10,7 @@ const SpecialtiesGrid = () => {
 
   const specialties = [
     { name: t("specialties.cardiology"), icon: Heart, color: "text-red-500" },
-    { name: t("specialties.dentist"), icon: () => <span className="text-3xl">🦷</span>, color: "text-cyan-500" },
+    { name: t("specialties.dentist"), icon: RiToothLine , color: "text-cyan-500 },
     { name: t("specialties.obGyn"), icon: Users, color: "text-purple-500" },
     { name: t("specialties.dermatology"), icon: Pill, color: "text-orange-500" },
     { name: t("specialties.psychiatry"), icon: Brain, color: "text-indigo-500" },
