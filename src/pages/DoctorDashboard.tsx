@@ -38,6 +38,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/lib/api/supabase-api";
 import QuickActionModals from "@/components/doctor/QuickActionModals";
 import ThemeToggle from "@/components/home/ThemeToggle";
+import { DoctorVerificationStatusCard } from "@/components/doctor/DoctorVerificationStatusCard";
 
 type DoctorStatus = "independent" | "clinic-member";
 
@@ -261,28 +262,9 @@ const DoctorDashboardContent = () => {
               </Card>
             )}
 
-            {/* Verification Status (for independent doctors) */}
-            {doctorStatus === "independent" && doctorProfile && !doctorProfile.verified && (
-              <Card className="border-destructive/20 bg-destructive/5">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-destructive">
-                    <Badge variant="outline" className="bg-destructive/10 text-destructive">
-                      {t("doctor.verification.pending")}
-                    </Badge>
-                  </CardTitle>
-                  <p className="text-destructive/80">
-                    {t("doctor.verification.message")}
-                  </p>
-                  <div className="flex gap-2 mt-4">
-                    <Button size="sm" variant="destructive" onClick={() => navigate('/doctor-signup')}>
-                      {t("doctor.verification.completeProfile")}
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => setActiveSection("profile")}>
-                      {t("doctor.verification.viewProfile")}
-                    </Button>
-                  </div>
-                </CardHeader>
-              </Card>
+            {/* Verification Status */}
+            {!doctorProfile.verified && (
+              <DoctorVerificationStatusCard />
             )}
 
             {/* Profile Completion Progress */}
