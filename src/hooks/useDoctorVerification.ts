@@ -24,6 +24,7 @@ interface DoctorVerificationData {
     last_name?: string;
     gender?: string;
     phone?: string;
+    email?: string;
     degrees?: string;
     country?: string;
     region?: string;

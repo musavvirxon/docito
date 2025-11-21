@@ -166,6 +166,26 @@ export const DoctorVerificationStatusCard = () => {
               </div>
             )}
 
+            {additionalInfo.email && (
+              <div className="flex items-start gap-2">
+                <User className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                <div>
+                  <p className="font-medium">Email</p>
+                  <p className="text-muted-foreground">{additionalInfo.email}</p>
+                </div>
+              </div>
+            )}
+
+            {additionalInfo.phone && (
+              <div className="flex items-start gap-2">
+                <User className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                <div>
+                  <p className="font-medium">Phone</p>
+                  <p className="text-muted-foreground">{additionalInfo.phone}</p>
+                </div>
+              </div>
+            )}
+
             {/* Professional Information */}
             <div className="flex items-start gap-2">
               <Briefcase className="h-4 w-4 mt-0.5 text-muted-foreground" />
@@ -183,6 +203,16 @@ export const DoctorVerificationStatusCard = () => {
                   <p className="text-muted-foreground text-xs">
                     {additionalInfo.all_specialties.join(', ')}
                   </p>
+                </div>
+              </div>
+            )}
+
+            {additionalInfo.degrees && (
+              <div className="flex items-start gap-2">
+                <FileText className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                <div>
+                  <p className="font-medium">Degrees & Certifications</p>
+                  <p className="text-muted-foreground text-xs">{additionalInfo.degrees}</p>
                 </div>
               </div>
             )}
@@ -226,7 +256,7 @@ export const DoctorVerificationStatusCard = () => {
               <div className="flex items-start gap-2">
                 <Languages className="h-4 w-4 mt-0.5 text-muted-foreground" />
                 <div>
-                  <p className="font-medium">Languages</p>
+                  <p className="font-medium">Languages Spoken</p>
                   <p className="text-muted-foreground text-xs">
                     {verificationStatus.verification_data.languages.join(', ')}
                   </p>
@@ -239,9 +269,22 @@ export const DoctorVerificationStatusCard = () => {
               <div className="flex items-start gap-2">
                 <DollarSign className="h-4 w-4 mt-0.5 text-muted-foreground" />
                 <div>
-                  <p className="font-medium">Consultation Fee</p>
+                  <p className="font-medium">Consultation Fee Range</p>
                   <p className="text-muted-foreground">
                     ${additionalInfo.consultation_fee_from || '0'} - ${additionalInfo.consultation_fee_to || '0'}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Appointment Types */}
+            {additionalInfo.preferred_appointment_types && additionalInfo.preferred_appointment_types.length > 0 && (
+              <div className="flex items-start gap-2">
+                <Calendar className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                <div>
+                  <p className="font-medium">Preferred Appointment Types</p>
+                  <p className="text-muted-foreground text-xs">
+                    {additionalInfo.preferred_appointment_types.join(', ')}
                   </p>
                 </div>
               </div>
@@ -283,6 +326,17 @@ export const DoctorVerificationStatusCard = () => {
               </div>
             </div>
           )}
+
+          {/* Bio Section */}
+          <div className="border-t pt-3">
+            <p className="font-medium text-sm mb-2">Professional Bio</p>
+            <p className="text-xs text-muted-foreground whitespace-pre-wrap">
+              {verificationStatus.specialty ? `Bio not available in current data structure` : 'No bio provided'}
+            </p>
+            <p className="text-xs text-muted-foreground mt-2 italic">
+              Note: Your full bio is stored in your profile and will be visible once verified.
+            </p>
+          </div>
         </div>
 
         {/* Action Buttons */}
