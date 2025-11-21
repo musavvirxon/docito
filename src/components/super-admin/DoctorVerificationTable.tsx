@@ -278,27 +278,27 @@ const DoctorVerificationTable = ({ title, status = "all" }: DoctorVerificationTa
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-muted-foreground">First Name</p>
-                    <p className="font-medium">{selectedVerification.verification_data?.additional_data?.first_name || "N/A"}</p>
+                    <p className="font-medium">{selectedVerification.verification_data?.additional_info?.first_name || "N/A"}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Last Name</p>
-                    <p className="font-medium">{selectedVerification.verification_data?.additional_data?.last_name || "N/A"}</p>
+                    <p className="font-medium">{selectedVerification.verification_data?.additional_info?.last_name || "N/A"}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Gender</p>
-                    <p className="font-medium">{selectedVerification.verification_data?.additional_data?.gender || "N/A"}</p>
+                    <p className="font-medium">{selectedVerification.verification_data?.additional_info?.gender || "N/A"}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Phone</p>
-                    <p className="font-medium">{selectedVerification.verification_data?.additional_data?.phone || selectedVerification.phone || "N/A"}</p>
+                    <p className="font-medium">{selectedVerification.verification_data?.additional_info?.phone || selectedVerification.phone || "N/A"}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Email</p>
-                    <p className="font-medium">{selectedVerification.email || "N/A"}</p>
+                    <p className="font-medium">{selectedVerification.verification_data?.additional_info?.email || selectedVerification.email || "N/A"}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Profile Photo</p>
-                    <p className="font-medium">{selectedVerification.verification_data?.additional_data?.avatar_uploaded ? "✓ Uploaded" : "Not uploaded"}</p>
+                    <p className="font-medium">{selectedVerification.verification_data?.additional_info?.avatar_uploaded ? "✓ Uploaded" : "Not uploaded"}</p>
                   </div>
                 </div>
               </div>
@@ -312,11 +312,11 @@ const DoctorVerificationTable = ({ title, status = "all" }: DoctorVerificationTa
                     <p className="font-medium">{selectedVerification.specialty}</p>
                   </div>
                   <div className="col-span-2">
-                    <p className="text-muted-foreground">All Specialties (up to 5)</p>
+                    <p className="text-muted-foreground">All Selected Specialties (up to 5)</p>
                     <div className="flex flex-wrap gap-2 mt-1">
-                      {selectedVerification.verification_data?.additional_data?.all_specialties?.length > 0 ? (
-                        selectedVerification.verification_data.additional_data.all_specialties.map((spec: string) => (
-                          <Badge key={spec} variant="secondary">{spec}</Badge>
+                      {selectedVerification.verification_data?.additional_info?.all_specialties?.length > 0 ? (
+                        selectedVerification.verification_data.additional_info.all_specialties.map((spec: string, idx: number) => (
+                          <Badge key={idx} variant="secondary">{spec}</Badge>
                         ))
                       ) : (
                         <p className="font-medium text-muted-foreground">N/A</p>
@@ -325,7 +325,7 @@ const DoctorVerificationTable = ({ title, status = "all" }: DoctorVerificationTa
                   </div>
                   <div>
                     <p className="text-muted-foreground">Degrees & Certifications</p>
-                    <p className="font-medium">{selectedVerification.verification_data?.additional_data?.degrees || "N/A"}</p>
+                    <p className="font-medium">{selectedVerification.verification_data?.additional_info?.degrees || "N/A"}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Years of Experience</p>
@@ -335,12 +335,12 @@ const DoctorVerificationTable = ({ title, status = "all" }: DoctorVerificationTa
                     <p className="text-muted-foreground">Medical License Number</p>
                     <p className="font-medium">{selectedVerification.license_number || "N/A"}</p>
                   </div>
-                  <div>
+                  <div className="col-span-2">
                     <p className="text-muted-foreground">Languages Spoken</p>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {selectedVerification.verification_data?.languages?.length > 0 ? (
-                        selectedVerification.verification_data.languages.map((lang: string) => (
-                          <Badge key={lang} variant="outline">{lang}</Badge>
+                        selectedVerification.verification_data.languages.map((lang: string, idx: number) => (
+                          <Badge key={idx} variant="outline">{lang}</Badge>
                         ))
                       ) : (
                         <p className="font-medium text-muted-foreground">N/A</p>
@@ -356,45 +356,45 @@ const DoctorVerificationTable = ({ title, status = "all" }: DoctorVerificationTa
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-muted-foreground">Country</p>
-                    <p className="font-medium">{selectedVerification.verification_data?.additional_data?.country || "N/A"}</p>
+                    <p className="font-medium">{selectedVerification.verification_data?.additional_info?.country || "N/A"}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Region/State</p>
-                    <p className="font-medium">{selectedVerification.verification_data?.additional_data?.region || "N/A"}</p>
+                    <p className="font-medium">{selectedVerification.verification_data?.additional_info?.region || "N/A"}</p>
                   </div>
                   
-                  {selectedVerification.verification_data?.additional_data?.selected_clinic && (
+                  {selectedVerification.verification_data?.additional_info?.selected_clinic && (
                     <>
                       <div className="col-span-2">
                         <p className="text-muted-foreground">Linked Clinic (from database)</p>
-                        <p className="font-medium">{selectedVerification.verification_data.additional_data.selected_clinic}</p>
-                        {selectedVerification.verification_data?.additional_data?.linked_clinic_id && (
-                          <p className="text-xs text-muted-foreground">ID: {selectedVerification.verification_data.additional_data.linked_clinic_id}</p>
+                        <p className="font-medium">{selectedVerification.verification_data.additional_info.selected_clinic}</p>
+                        {selectedVerification.verification_data?.additional_info?.linked_clinic_id && (
+                          <p className="text-xs text-muted-foreground">ID: {selectedVerification.verification_data.additional_info.linked_clinic_id}</p>
                         )}
                       </div>
                     </>
                   )}
 
-                  {selectedVerification.verification_data?.additional_data?.manual_clinic && (
+                  {selectedVerification.verification_data?.additional_info?.manual_clinic && (
                     <>
                       <div className="col-span-2">
                         <p className="text-muted-foreground font-semibold">Manual Clinic Entry (⚠️ Requires Verification)</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">Clinic Name</p>
-                        <p className="font-medium">{selectedVerification.verification_data.additional_data.manual_clinic.name || "N/A"}</p>
+                        <p className="font-medium">{selectedVerification.verification_data.additional_info.manual_clinic.name || "N/A"}</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">Clinic Phone</p>
-                        <p className="font-medium">{selectedVerification.verification_data.additional_data.manual_clinic.phone || "N/A"}</p>
+                        <p className="font-medium">{selectedVerification.verification_data.additional_info.manual_clinic.phone || "N/A"}</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">Clinic Email</p>
-                        <p className="font-medium">{selectedVerification.verification_data.additional_data.manual_clinic.email || "N/A"}</p>
+                        <p className="font-medium">{selectedVerification.verification_data.additional_info.manual_clinic.email || "N/A"}</p>
                       </div>
                       <div className="col-span-2">
                         <p className="text-muted-foreground">Clinic Address</p>
-                        <p className="font-medium">{selectedVerification.verification_data.additional_data.manual_clinic.address || "N/A"}</p>
+                        <p className="font-medium">{selectedVerification.verification_data.additional_info.manual_clinic.address || "N/A"}</p>
                       </div>
                     </>
                   )}
@@ -402,23 +402,23 @@ const DoctorVerificationTable = ({ title, status = "all" }: DoctorVerificationTa
               </div>
 
               {/* Bio */}
-              {selectedVerification.verification_data?.bio && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">Bio</h3>
-                  <p className="text-sm text-muted-foreground">{selectedVerification.verification_data.bio}</p>
-                </div>
-              )}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Bio</h3>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                  {selectedVerification.doctors?.bio || "No bio provided"}
+                </p>
+              </div>
 
               {/* Availability & Preferences */}
               <div>
                 <h3 className="text-lg font-semibold mb-3">Availability & Preferences</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
+                  <div className="col-span-2">
                     <p className="text-muted-foreground">Preferred Appointment Types</p>
                     <div className="flex flex-wrap gap-2 mt-1">
-                      {selectedVerification.verification_data?.additional_data?.preferred_appointment_types?.length > 0 ? (
-                        selectedVerification.verification_data.additional_data.preferred_appointment_types.map((type: string) => (
-                          <Badge key={type} variant="secondary">{type}</Badge>
+                      {selectedVerification.verification_data?.additional_info?.preferred_appointment_types?.length > 0 ? (
+                        selectedVerification.verification_data.additional_info.preferred_appointment_types.map((type: string, idx: number) => (
+                          <Badge key={idx} variant="secondary">{type}</Badge>
                         ))
                       ) : (
                         <p className="font-medium text-muted-foreground">N/A</p>
@@ -428,8 +428,8 @@ const DoctorVerificationTable = ({ title, status = "all" }: DoctorVerificationTa
                   <div>
                     <p className="text-muted-foreground">Consultation Fee Range</p>
                     <p className="font-medium">
-                      {selectedVerification.verification_data?.additional_data?.consultation_fee_from && selectedVerification.verification_data?.additional_data?.consultation_fee_to
-                        ? `$${selectedVerification.verification_data.additional_data.consultation_fee_from} - $${selectedVerification.verification_data.additional_data.consultation_fee_to}`
+                      {selectedVerification.verification_data?.additional_info?.consultation_fee_from && selectedVerification.verification_data?.additional_info?.consultation_fee_to
+                        ? `$${selectedVerification.verification_data.additional_info.consultation_fee_from} - $${selectedVerification.verification_data.additional_info.consultation_fee_to}`
                         : "N/A"}
                     </p>
                   </div>

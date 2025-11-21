@@ -545,6 +545,7 @@ const DoctorSignUp = () => {
           last_name: formData.lastName,
           gender: formData.gender,
           phone: formData.phone,
+          email: user?.email || '',
           degrees: formData.degrees,
           country: formData.country,
           region: formData.region,
