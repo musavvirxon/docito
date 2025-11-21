@@ -9,10 +9,15 @@ import { useTranslation } from "react-i18next";
 const SpecialtiesGrid = () => {
   const { t } = useTranslation('home');
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
-
   const specialties = [
     { name: t('specialties.cardiology'), icon: Heart, color: "text-red-500" },
-    { name: t('specialties.dentist'), icon: toothIcon, color: "text-cyan-500", isImage: true },
+    {
+  name: t('specialties.dentist'),
+  isImage: true,
+  imagePng: toothIcon,
+  imageWebp: toothIconWebP,
+  color: "text-cyan-500"
+},
     { name: t('specialties.obGyn'), icon: Users, color: "text-purple-500" },
     { name: t('specialties.dermatology'), icon: Pill, color: "text-orange-500" },
     { name: t('specialties.psychiatry'), icon: Brain, color: "text-indigo-500" },
@@ -86,22 +91,24 @@ const SpecialtiesGrid = () => {
                         ? "bg-primary/20 dark:bg-primary/30"
                         : "bg-primary/10 dark:bg-primary/20"
                     )}>
-                      {specialty.isImage ? (
-                        <picture>
-                          <source srcSet={toothIconWebP} type="image/webp" />
-                          <img 
-                            src={toothIcon} 
-                            alt={specialty.name} 
-                            className="w-8 h-8 object-contain"
-                            width={32}
-                            height={32}
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        </picture>
-                      ) : (
-                        IconComponent && <IconComponent className={`w-8 h-8 ${specialty.color}`} />
-                      )}
+                     {specialty.isImage ? (
+    {specialty.imageWebp && (
+      <source srcSet={specialty.imageWebp} type="image/webp" />
+    )}
+    <img
+      src={specialty.imagePng}
+      alt={specialty.name}
+      className="w-8 h-8 object-contain"
+      width={32}
+      height={32}
+      loading="lazy"
+      decoding="async"
+    />
+  </picture>
+) : (
+  IconComponent && <IconComponent className={`w-8 h-8 ${specialty.color}`} />
+)}
+
                     </div>
                   </div>
                   <h3 className="text-lg font-semibold text-foreground relative z-10">
