@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { Heart, Users, Pill, Brain, Eye, Activity, Bone, Baby, RiToothLine } from "lucide-react";
+import { Heart, Users, Pill, Brain, Eye, Activity, Bone, Baby } from "lucide-react";
+import { RiToothLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 
