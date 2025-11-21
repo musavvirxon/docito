@@ -89,8 +89,45 @@ const SpecialtiesGrid = () => {
                           : "bg-primary/10 dark:bg-primary/20",
                       )}
                     >
-                      const IconComponent = specialty.icon;
-                      <IconComponent className={`w-8 h-8 ${specialty.color}`} />
+                      {specialties.map((specialty, index) => {
+                        const IconComponent = specialty.icon; // <-- declare here, outside JSX
+
+                        return (
+                          <motion.div
+                            key={specialty.name}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: index * 0.05, duration: 0.4 }}
+                            whileHover={{ y: -5 }}
+                            onClick={() => handleSpecialtyClick(specialty.name)}
+                            className="relative group cursor-pointer"
+                          >
+                            <div
+                              className={cn(
+                                "bg-card dark:bg-card rounded-2xl p-8 h-full flex flex-col items-center justify-center text-center border-2 transition-all duration-300 shadow-lg hover:shadow-xl dark:hover:shadow-glow-blue",
+                                selectedSpecialty === specialty.name
+                                  ? "border-primary dark:border-primary shadow-2xl dark:shadow-glow-blue-lg scale-105"
+                                  : "border-border dark:border-border hover:border-primary/50 dark:hover:border-primary",
+                              )}
+                            >
+                              <div className="relative z-10 mb-4">
+                                <div
+                                  className={cn(
+                                    "w-16 h-16 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300",
+                                    selectedSpecialty === specialty.name
+                                      ? "bg-primary/20 dark:bg-primary/30"
+                                      : "bg-primary/10 dark:bg-primary/20",
+                                  )}
+                                >
+                                  <IconComponent className={`w-8 h-8 ${specialty.color}`} />
+                                </div>
+                              </div>
+                              <h3 className="text-lg font-semibold text-foreground relative z-10">{specialty.name}</h3>
+                            </div>
+                          </motion.div>
+                        );
+                      })}
                     </div>
                   </div>
                   <h3 className="text-lg font-semibold text-foreground relative z-10">{specialty.name}</h3>
