@@ -6,8 +6,10 @@ import { toast } from 'sonner';
 interface VerificationDocuments {
   medical_license?: File;
   professional_id?: File;
+  specialty_documents?: File[];
   medical_license_url?: string;
   professional_id_url?: string;
+  specialty_documents_urls?: string[];
 }
 
 interface DoctorVerificationData {
@@ -63,6 +65,7 @@ export const useDoctorVerification = () => {
       // Upload documents first
       let medical_license_url = formData.documents.medical_license_url;
       let professional_id_url = formData.documents.professional_id_url;
+      let specialty_documents_urls: string[] = formData.documents.specialty_documents_urls || [];
 
       if (formData.documents.medical_license) {
         // Delete old medical license documents if they exist
@@ -150,6 +153,22 @@ export const useDoctorVerification = () => {
         }
       }
 
+      // Upload specialty documents
+      if (formData.documents.specialty_documents && formData.documents.specialty_documents.length > 0) {
+        specialty_documents_urls = [];
+        for (let i = 0; i < formData.documents.specialty_documents.length; i++) {
+          const doc = formData.documents.specialty_documents[i];
+          const result = await uploadFile(
+            doc,
+            'verification-documents',
+            `doctors/${doctorId}/specialty-doc-${i + 1}-${Date.now()}.pdf`
+          );
+          if (result) {
+            specialty_documents_urls.push(result.path);
+          }
+        }
+      }
+
       // Update doctor profile
       const { error: doctorError } = await supabase
         .from('doctors')
@@ -225,7 +244,7 @@ export const useDoctorVerification = () => {
       if (verificationData || existingVerification) {
         const verificationId = verificationData?.id || existingVerification?.id;
         
-        if (verificationId && (medical_license_url || professional_id_url)) {
+        if (verificationId && (medical_license_url || professional_id_url || specialty_documents_urls.length > 0)) {
           const documents = [];
           if (medical_license_url) {
             documents.push({
@@ -243,6 +262,15 @@ export const useDoctorVerification = () => {
               file_name: `professional-id-${Date.now()}.pdf`,
             });
           }
+          // Add specialty documents
+          specialty_documents_urls.forEach((url, index) => {
+            documents.push({
+              doctor_verification_id: verificationId,
+              document_type: 'specialty_document',
+              file_path: url,
+              file_name: `specialty-document-${index + 1}-${Date.now()}.pdf`,
+            });
+          });
 
           const { error: docsError } = await (supabase as any)
             .from('doctor_verification_documents')

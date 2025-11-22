@@ -40,6 +40,7 @@ const DoctorSignUp = () => {
   const [avatarPreview, setAvatarPreview] = useState<string>("");
   const [medicalLicense, setMedicalLicense] = useState<File | null>(null);
   const [professionalId, setProfessionalId] = useState<File | null>(null);
+  const [specialtyDocuments, setSpecialtyDocuments] = useState<File[]>([]);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [accuracyConfirmed, setAccuracyConfirmed] = useState(false);
   
@@ -464,6 +465,36 @@ const DoctorSignUp = () => {
       toast.success(t('doctorSignup.messages.idSelected'));
     }
   };
+
+  const handleSpecialtyDocumentUpload = (file: File) => {
+    // Validate file type
+    const allowedTypes = ['application/pdf', 'image/png', 'image/jpg', 'image/jpeg'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Invalid file format. Only PDF, PNG, and JPG files are allowed.');
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      toast.error('File size exceeds 10MB limit.');
+      return;
+    }
+
+    // Check if we have reached the limit
+    if (specialtyDocuments.length >= selectedSpecialties.length) {
+      toast.error(`You can only upload up to ${selectedSpecialties.length} specialty documents (one per specialty).`);
+      return;
+    }
+
+    setSpecialtyDocuments(prev => [...prev, file]);
+    toast.success(`Specialty document ${specialtyDocuments.length + 1} added successfully`);
+  };
+
+  const removeSpecialtyDocument = (index: number) => {
+    setSpecialtyDocuments(prev => prev.filter((_, i) => i !== index));
+    toast.info('Document removed');
+  };
   const handleDoctorOnboarding = async () => {
     if (!user) {
       toast.error('You must be logged in to complete your profile');
@@ -502,7 +533,7 @@ const DoctorSignUp = () => {
         const {
           error: updateError
         } = await supabase.from('doctors').update({
-          specialty: formData.specialty || 'General Practice',
+          specialty: selectedSpecialties[0] || 'General Practice',
           bio: formData.bio,
           license_number: formData.license,
           consultation_fee: 0
@@ -516,7 +547,7 @@ const DoctorSignUp = () => {
           error: doctorError
         } = await supabase.from('doctors').insert({
           user_id: user.id,
-          specialty: formData.specialty || 'General Practice',
+          specialty: selectedSpecialties[0] || 'General Practice',
           bio: formData.bio,
           license_number: formData.license,
           consultation_fee: 0,
@@ -537,7 +568,8 @@ const DoctorSignUp = () => {
         consultation_types: ['In-person', 'Video'],
         documents: {
           medical_license: medicalLicense || undefined,
-          professional_id: professionalId || undefined
+          professional_id: professionalId || undefined,
+          specialty_documents: specialtyDocuments.length > 0 ? specialtyDocuments : undefined
         },
         // Additional information for super admin review
         additional_data: {
@@ -1125,6 +1157,72 @@ const DoctorSignUp = () => {
                     <p className="text-sm text-muted-foreground mt-1">{t('doctorSignup.help.pdfOrImage')}</p>
                   </div>
                 </div>
+
+                {/* Specialty Documents */}
+                {selectedSpecialties.length > 0 && (
+                  <div>
+                    <Label>
+                      Specialty Documents <Badge variant="secondary">Optional</Badge>
+                    </Label>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Upload up to {selectedSpecialties.length} additional documents related to your specialties 
+                      (certificates, training records, etc.)
+                    </p>
+                    
+                    {/* Display uploaded documents */}
+                    {specialtyDocuments.length > 0 && (
+                      <div className="space-y-2 mb-3">
+                        {specialtyDocuments.map((doc, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                            <div className="flex items-center space-x-2">
+                              <FileCheck className="w-5 h-5 text-green-600" />
+                              <span className="text-sm font-medium">{doc.name}</span>
+                              <Badge variant="outline" className="text-xs">
+                                {(doc.size / 1024 / 1024).toFixed(2)} MB
+                              </Badge>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeSpecialtyDocument(index)}
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Upload button */}
+                    {specialtyDocuments.length < selectedSpecialties.length && (
+                      <div className="border-2 border-dashed rounded-lg p-6 text-center">
+                        <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground mb-2">
+                          {specialtyDocuments.length} of {selectedSpecialties.length} documents uploaded
+                        </p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={uploading}
+                          onClick={() => {
+                            const input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = '.pdf,.jpg,.jpeg,.png';
+                            input.onchange = (e) => {
+                              const file = (e.target as HTMLInputElement)?.files?.[0];
+                              if (file) handleSpecialtyDocumentUpload(file);
+                            };
+                            input.click();
+                          }}
+                        >
+                          Upload Document {specialtyDocuments.length + 1}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
