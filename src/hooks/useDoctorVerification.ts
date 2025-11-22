@@ -29,6 +29,7 @@ interface DoctorVerificationData {
     country?: string;
     region?: string;
     avatar_uploaded?: boolean;
+    avatar_url?: string;
     practice_association?: string;
     selected_clinic?: string | null;
     linked_clinic_id?: string | null;
