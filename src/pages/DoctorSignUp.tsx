@@ -550,6 +550,7 @@ const DoctorSignUp = () => {
           country: formData.country,
           region: formData.region,
           avatar_uploaded: !!avatar,
+          avatar_url: avatar_url || '',
           practice_association: hasAssociatedPractice,
           selected_clinic: selectedClinic?.name || null,
           linked_clinic_id: selectedClinic?.id || null,

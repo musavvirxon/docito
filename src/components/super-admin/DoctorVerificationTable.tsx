@@ -262,7 +262,7 @@ const DoctorVerificationTable = ({ title, status = "all" }: DoctorVerificationTa
 
       {/* View Details Modal */}
       <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Doctor Verification Details</DialogTitle>
             <DialogDescription>
@@ -296,9 +296,17 @@ const DoctorVerificationTable = ({ title, status = "all" }: DoctorVerificationTa
                     <p className="text-muted-foreground">Email</p>
                     <p className="font-medium">{selectedVerification.verification_data?.additional_info?.email || selectedVerification.email || "N/A"}</p>
                   </div>
-                  <div>
+                  <div className="col-span-2">
                     <p className="text-muted-foreground">Profile Photo</p>
-                    <p className="font-medium">{selectedVerification.verification_data?.additional_info?.avatar_uploaded ? "✓ Uploaded" : "Not uploaded"}</p>
+                    {selectedVerification.verification_data?.additional_info?.avatar_url ? (
+                      <img 
+                        src={selectedVerification.verification_data.additional_info.avatar_url} 
+                        alt="Profile" 
+                        className="w-24 h-24 rounded-full object-cover mt-2 border-2 border-border"
+                      />
+                    ) : (
+                      <p className="font-medium text-muted-foreground">Not uploaded</p>
+                    )}
                   </div>
                 </div>
               </div>
