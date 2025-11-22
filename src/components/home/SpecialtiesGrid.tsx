@@ -3,23 +3,7 @@ import { useState } from "react";
 import { Heart, Users, Pill, Brain, Eye, Activity, Bone, Baby } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
-
-export const ToothIcon = ({ className = "w-8 h-8" }) => {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M12 2c-2.8 0-5 2.3-5 5.2 0 1.8.6 3.3 1.3 4.5.4.8.7 1.6.8 2.4.2 1.4.8 4.9 2.9 4.9s2.7-3.5 2.9-4.9c.1-.8.4-1.6.8-2.4.7-1.2 1.3-2.7 1.3-4.5C17 4.3 14.8 2 12 2z" />
-      <path d="M10 11c.5.3 1.2.5 2 .5s1.5-.2 2-.5" />
-    </svg>
-  );
-};
+import toothImg from "@/assets/tooth.png";
 
 const SpecialtiesGrid = () => {
   const { t } = useTranslation("home");
@@ -27,7 +11,7 @@ const SpecialtiesGrid = () => {
 
   const specialties = [
     { name: t("specialties.cardiology"), icon: Heart, color: "text-red-500" },
-    { name: t("specialties.dentist"), icon: ToothIcon, color: "text-cyan-500" },
+    { name: t("specialties.dentist"), icon: toothImg, isImage: true },
     { name: t("specialties.obGyn"), icon: Users, color: "text-purple-500" },
     { name: t("specialties.dermatology"), icon: Pill, color: "text-orange-500" },
     { name: t("specialties.psychiatry"), icon: Brain, color: "text-indigo-500" },
@@ -78,8 +62,8 @@ const SpecialtiesGrid = () => {
 
         {/* Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
-          {specialties.map((specialty, index) => {
-            const Icon = specialty.icon;
+        {specialties.map((specialty, index) => {
+            const Icon = specialty.isImage ? null : specialty.icon;
 
             return (
               <motion.div
@@ -109,7 +93,16 @@ const SpecialtiesGrid = () => {
                           : "bg-primary/10 dark:bg-primary/20",
                       )}
                     >
-                      <Icon className={cn("w-8 h-8", specialty.color)} />
+                      {specialty.isImage ? (
+                        <img
+                          src={specialty.icon as string}
+                          alt={specialty.name}
+                          className="w-8 h-8 object-contain"
+                          loading="lazy"
+                        />
+                      ) : (
+                        Icon && <Icon className={cn("w-8 h-8", specialty.color)} />
+                      )}
                     </div>
                   </div>
 
