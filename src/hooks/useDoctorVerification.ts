@@ -7,9 +7,11 @@ interface VerificationDocuments {
   medical_license?: File;
   professional_id?: File;
   specialty_documents?: File[];
+  country_specific_documents?: Record<string, File>;
   medical_license_url?: string;
   professional_id_url?: string;
   specialty_documents_urls?: string[];
+  country_specific_documents_urls?: Record<string, string>;
 }
 
 interface DoctorVerificationData {
@@ -66,6 +68,7 @@ export const useDoctorVerification = () => {
       let medical_license_url = formData.documents.medical_license_url;
       let professional_id_url = formData.documents.professional_id_url;
       let specialty_documents_urls: string[] = formData.documents.specialty_documents_urls || [];
+      let country_specific_documents_urls: Record<string, string> = formData.documents.country_specific_documents_urls || {};
 
       if (formData.documents.medical_license) {
         // Delete old medical license documents if they exist
@@ -169,6 +172,22 @@ export const useDoctorVerification = () => {
         }
       }
 
+      // Upload country-specific documents
+      if (formData.documents.country_specific_documents) {
+        country_specific_documents_urls = {};
+        for (const [docKey, docFile] of Object.entries(formData.documents.country_specific_documents)) {
+          const fileExt = docFile.name.split('.').pop() || 'pdf';
+          const result = await uploadFile(
+            docFile,
+            'verification-documents',
+            `doctors/${doctorId}/${docKey}-${Date.now()}.${fileExt}`
+          );
+          if (result) {
+            country_specific_documents_urls[docKey] = result.path;
+          }
+        }
+      }
+
       // Update doctor profile
       const { error: doctorError } = await supabase
         .from('doctors')
@@ -244,7 +263,7 @@ export const useDoctorVerification = () => {
       if (verificationData || existingVerification) {
         const verificationId = verificationData?.id || existingVerification?.id;
         
-        if (verificationId && (medical_license_url || professional_id_url || specialty_documents_urls.length > 0)) {
+        if (verificationId && (medical_license_url || professional_id_url || specialty_documents_urls.length > 0 || Object.keys(country_specific_documents_urls).length > 0)) {
           const documents = [];
           if (medical_license_url) {
             documents.push({
@@ -269,6 +288,15 @@ export const useDoctorVerification = () => {
               document_type: 'specialty_document',
               file_path: url,
               file_name: `specialty-document-${index + 1}-${Date.now()}.pdf`,
+            });
+          });
+          // Add country-specific documents
+          Object.entries(country_specific_documents_urls).forEach(([docKey, url]) => {
+            documents.push({
+              doctor_verification_id: verificationId,
+              document_type: docKey,
+              file_path: url,
+              file_name: `${docKey}-${Date.now()}`,
             });
           });
 
