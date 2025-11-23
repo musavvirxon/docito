@@ -447,40 +447,99 @@ const DoctorVerificationTable = ({ title, status = "all" }: DoctorVerificationTa
               {/* Documents */}
               <div>
                 <h3 className="text-lg font-semibold mb-3">Uploaded Documents ({documents.length})</h3>
-                <div className="space-y-2">
+                <div className="space-y-4">
                   {documents.length === 0 ? (
                     <p className="text-sm text-muted-foreground">No documents uploaded</p>
                   ) : (
-                    documents.map((doc: any) => {
-                      const docTypeLabel = doc.document_type === 'medical_license' 
-                        ? 'Medical License'
-                        : doc.document_type === 'professional_id'
-                        ? 'Government ID / Passport'
-                        : doc.document_type === 'specialty_document'
-                        ? 'Specialty Certificate/Training'
-                        : doc.document_type.replace(/_/g, " ").toUpperCase();
-                      
-                      return (
-                        <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <FileText className="w-5 h-5 text-muted-foreground" />
-                            <div>
-                              <p className="font-medium text-sm">
-                                {docTypeLabel}
-                              </p>
-                              <p className="text-xs text-muted-foreground">{doc.file_name}</p>
-                            </div>
+                    <>
+                      {/* Identity Documents */}
+                      {documents.filter((doc: any) => ['medical_license', 'professional_id', 'primary_id'].includes(doc.document_type)).length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-semibold text-muted-foreground mb-2">Identity & Basic Credentials</h4>
+                          <div className="space-y-2">
+                            {documents.filter((doc: any) => ['medical_license', 'professional_id', 'primary_id'].includes(doc.document_type)).map((doc: any) => (
+                              <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
+                                <div className="flex items-center gap-3">
+                                  <FileText className="w-5 h-5 text-blue-600" />
+                                  <div>
+                                    <p className="font-medium text-sm">
+                                      {doc.document_type === 'medical_license' ? 'Medical License' :
+                                       doc.document_type === 'professional_id' ? 'Professional ID / Government ID' :
+                                       doc.document_type === 'primary_id' ? 'Primary ID (Passport/National ID)' :
+                                       doc.document_type}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">{doc.file_name}</p>
+                                  </div>
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => downloadDocument(doc.file_path, doc.file_name)}
+                                >
+                                  Download
+                                </Button>
+                              </div>
+                            ))}
                           </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => downloadDocument(doc.file_path, doc.file_name)}
-                          >
-                            Download
-                          </Button>
                         </div>
-                      );
-                    })
+                      )}
+
+                      {/* Specialty Documents */}
+                      {documents.filter((doc: any) => doc.document_type === 'specialty_document').length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-semibold text-muted-foreground mb-2">Specialty Certificates & Training</h4>
+                          <div className="space-y-2">
+                            {documents.filter((doc: any) => doc.document_type === 'specialty_document').map((doc: any) => (
+                              <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
+                                <div className="flex items-center gap-3">
+                                  <FileText className="w-5 h-5 text-purple-600" />
+                                  <div>
+                                    <p className="font-medium text-sm">Specialty Certificate/Training</p>
+                                    <p className="text-xs text-muted-foreground">{doc.file_name}</p>
+                                  </div>
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => downloadDocument(doc.file_path, doc.file_name)}
+                                >
+                                  Download
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Country-Specific Documents */}
+                      {documents.filter((doc: any) => !['medical_license', 'professional_id', 'specialty_document', 'primary_id'].includes(doc.document_type)).length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-semibold text-muted-foreground mb-2">Country-Specific Documents</h4>
+                          <div className="space-y-2">
+                            {documents.filter((doc: any) => !['medical_license', 'professional_id', 'specialty_document', 'primary_id'].includes(doc.document_type)).map((doc: any) => (
+                              <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
+                                <div className="flex items-center gap-3">
+                                  <FileText className="w-5 h-5 text-green-600" />
+                                  <div>
+                                    <p className="font-medium text-sm capitalize">
+                                      {doc.document_type.replace(/_/g, ' ')}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">{doc.file_name}</p>
+                                  </div>
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => downloadDocument(doc.file_path, doc.file_name)}
+                                >
+                                   Download
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>

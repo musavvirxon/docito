@@ -19,6 +19,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { getCountryRequirements, getAllCountries, DocumentRequirement } from "@/config/countryDocumentRequirements";
+
 const DoctorSignUp = () => {
   const {
     t
@@ -52,6 +54,11 @@ const DoctorSignUp = () => {
   const [manualClinicPhone, setManualClinicPhone] = useState<string>("");
   const [manualClinicEmail, setManualClinicEmail] = useState<string>("");
   const [manualClinicAddress, setManualClinicAddress] = useState<string>("");
+
+  // Country-specific documents state
+  const [countryDocuments, setCountryDocuments] = useState<Record<string, File>>({});
+  const [selectedCountryCode, setSelectedCountryCode] = useState<string>("");
+  const [requiredDocuments, setRequiredDocuments] = useState<DocumentRequirement[]>([]);
   
   const {
     navigateToDoctorDashboard
@@ -354,8 +361,16 @@ const DoctorSignUp = () => {
     "Yiddish", "Yoruba",
     "Zhuang", "Chinese", "Zulu"
   ];
-  const countries = ["United States", "Canada", "United Kingdom", "Australia", "Germany", "France", "Spain", "Italy", "Netherlands", "Sweden", "Norway"];
+  const availableCountries = getAllCountries();
   const usStates = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"];
+
+  // Update required documents when country changes
+  useEffect(() => {
+    if (selectedCountryCode) {
+      const docs = getCountryRequirements(selectedCountryCode);
+      setRequiredDocuments(docs);
+    }
+  }, [selectedCountryCode]);
   const mockClinics = [{
     id: 1,
     name: "Metro Medical Center",
@@ -495,6 +510,34 @@ const DoctorSignUp = () => {
     setSpecialtyDocuments(prev => prev.filter((_, i) => i !== index));
     toast.info('Document removed');
   };
+
+  const handleCountryDocumentUpload = (docKey: string, file: File) => {
+    // Validate file type
+    const allowedTypes = ['application/pdf', 'image/png', 'image/jpg', 'image/jpeg'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Invalid file format. Only PDF, PNG, and JPG files are allowed.');
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      toast.error('File size exceeds 10MB limit.');
+      return;
+    }
+
+    setCountryDocuments(prev => ({ ...prev, [docKey]: file }));
+    toast.success('Document uploaded successfully');
+  };
+
+  const removeCountryDocument = (docKey: string) => {
+    setCountryDocuments(prev => {
+      const newDocs = { ...prev };
+      delete newDocs[docKey];
+      return newDocs;
+    });
+    toast.info('Document removed');
+  };
   const handleDoctorOnboarding = async () => {
     if (!user) {
       toast.error('You must be logged in to complete your profile');
@@ -569,7 +612,8 @@ const DoctorSignUp = () => {
         documents: {
           medical_license: medicalLicense || undefined,
           professional_id: professionalId || undefined,
-          specialty_documents: specialtyDocuments.length > 0 ? specialtyDocuments : undefined
+          specialty_documents: specialtyDocuments.length > 0 ? specialtyDocuments : undefined,
+          country_specific_documents: countryDocuments
         },
         // Additional information for super admin review
         additional_data: {
@@ -630,14 +674,31 @@ const DoctorSignUp = () => {
       return;
     }
 
-    // Validate file uploads
-    if (!medicalLicense) {
-      toast.error('Please upload your medical license');
-      return;
-    }
-    if (!professionalId) {
-      toast.error('Please upload your professional ID');
-      return;
+    // Validate country-specific required documents
+    if (selectedCountryCode && requiredDocuments.length > 0) {
+      const missingDocs = requiredDocuments
+        .filter(doc => doc.required)
+        .filter(doc => {
+          if (doc.key === 'medical_license') return !medicalLicense;
+          if (doc.key === 'professional_id') return !professionalId;
+          return !countryDocuments[doc.key];
+        })
+        .map(doc => doc.label);
+
+      if (missingDocs.length > 0) {
+        toast.error(`Please upload required documents: ${missingDocs.join(', ')}`);
+        return;
+      }
+    } else {
+      // Fallback if no country selected
+      if (!medicalLicense) {
+        toast.error('Please upload your medical license');
+        return;
+      }
+      if (!professionalId) {
+        toast.error('Please upload your professional ID');
+        return;
+      }
     }
 
     // Validate specialties
@@ -937,14 +998,21 @@ const DoctorSignUp = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="country">{t('doctorSignup.fields.country')} <span className="text-red-500">*</span></Label>
-                    <Select value={formData.country} onValueChange={value => updateField('country', value)}>
+                    <Select 
+                      value={formData.country} 
+                      onValueChange={value => {
+                        updateField('country', value);
+                        const country = availableCountries.find(c => c.name === value);
+                        if (country) {
+                          setSelectedCountryCode(country.code);
+                        }
+                      }}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder={t('doctorSignup.placeholders.selectCountry')} />
                       </SelectTrigger>
                       <SelectContent>
-                        {countries.map(countryOption => <SelectItem key={countryOption} value={countryOption.toLowerCase()}>
-                            {countryOption}
-                          </SelectItem>)}
+                        {availableCountries.map(country => <SelectItem key={country.code} value={country.name}>{country.name}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
@@ -1114,48 +1182,93 @@ const DoctorSignUp = () => {
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">{t('doctorSignup.help.professionalHeadshot')}</p>
                   </div>
-                  <div>
-                    <Label>{t('doctorSignup.fields.medicalLicense')} <span className="text-red-500">*</span></Label>
-                    <div className={`border-2 border-dashed rounded-lg p-6 text-center mb-3 ${medicalLicense ? 'border-green-500 bg-green-50' : 'border-border'}`}>
-                      {medicalLicense ? <FileCheck className="w-8 h-8 mx-auto mb-2 text-green-600" /> : <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />}
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {medicalLicense ? medicalLicense.name : t('doctorSignup.placeholders.uploadLicense')}
-                      </p>
-                      <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => {
-                      const input = document.createElement('input');
-                      input.type = 'file';
-                      input.accept = '.pdf,.jpg,.jpeg,.png';
-                      input.onchange = e => {
-                        const file = (e.target as HTMLInputElement)?.files?.[0];
-                        if (file) handleDocumentUpload('medical_license', file);
-                      };
-                      input.click();
-                    }}>
-                        {medicalLicense ? t('doctorSignup.buttons.changeFile') : t('doctorSignup.buttons.chooseFile')}
-                      </Button>
+
+                  {/* Country-Specific Document Requirements */}
+                  {requiredDocuments.length > 0 && (
+                    <div className="space-y-4">
+                      <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                        <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                          Required Documents for {formData.country}
+                        </h4>
+                        <p className="text-sm text-blue-800 dark:text-blue-200">
+                          Please upload all required documents for verification. Documents marked with * are mandatory.
+                        </p>
+                      </div>
+
+                      {requiredDocuments.map((doc) => {
+                        const isUploaded = doc.key === 'medical_license' ? !!medicalLicense :
+                                          doc.key === 'professional_id' ? !!professionalId :
+                                          !!countryDocuments[doc.key];
+                        const file = doc.key === 'medical_license' ? medicalLicense :
+                                    doc.key === 'professional_id' ? professionalId :
+                                    countryDocuments[doc.key];
+
+                        return (
+                          <div key={doc.key}>
+                            <Label>
+                              {doc.label} {doc.required && <span className="text-red-500">*</span>}
+                            </Label>
+                            {doc.description && (
+                              <p className="text-xs text-muted-foreground mb-2">{doc.description}</p>
+                            )}
+                            <div className={`border-2 border-dashed rounded-lg p-6 text-center ${isUploaded ? 'border-green-500 bg-green-50 dark:bg-green-950/20' : 'border-border'}`}>
+                              {isUploaded ? (
+                                <>
+                                  <FileCheck className="w-8 h-8 mx-auto mb-2 text-green-600" />
+                                  <p className="text-sm text-muted-foreground mb-2">{file?.name}</p>
+                                </>
+                              ) : (
+                                <>
+                                  <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                                  <p className="text-sm text-muted-foreground mb-2">
+                                    Click to upload {doc.label.toLowerCase()}
+                                  </p>
+                                </>
+                              )}
+                              <div className="flex gap-2 justify-center">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={uploading}
+                                  onClick={() => {
+                                    const input = document.createElement('input');
+                                    input.type = 'file';
+                                    input.accept = doc.acceptedFormats;
+                                    input.onchange = (e) => {
+                                      const selectedFile = (e.target as HTMLInputElement)?.files?.[0];
+                                      if (selectedFile) {
+                                        if (doc.key === 'medical_license') {
+                                          handleDocumentUpload('medical_license', selectedFile);
+                                        } else if (doc.key === 'professional_id') {
+                                          handleDocumentUpload('professional_id', selectedFile);
+                                        } else {
+                                          handleCountryDocumentUpload(doc.key, selectedFile);
+                                        }
+                                      }
+                                    };
+                                    input.click();
+                                  }}
+                                >
+                                  {isUploaded ? 'Change File' : 'Choose File'}
+                                </Button>
+                                {isUploaded && !['medical_license', 'professional_id'].includes(doc.key) && (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeCountryDocument(doc.key)}
+                                  >
+                                    Remove
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                    
-                    <Label>{t('doctorSignup.fields.professionalId')} <span className="text-red-500">*</span></Label>
-                    <div className={`border-2 border-dashed rounded-lg p-6 text-center ${professionalId ? 'border-green-500 bg-green-50' : 'border-border'}`}>
-                      {professionalId ? <FileCheck className="w-8 h-8 mx-auto mb-2 text-green-600" /> : <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />}
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {professionalId ? professionalId.name : t('doctorSignup.placeholders.uploadId')}
-                      </p>
-                      <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => {
-                      const input = document.createElement('input');
-                      input.type = 'file';
-                      input.accept = '.pdf,.jpg,.jpeg,.png';
-                      input.onchange = e => {
-                        const file = (e.target as HTMLInputElement)?.files?.[0];
-                        if (file) handleDocumentUpload('professional_id', file);
-                      };
-                      input.click();
-                    }}>
-                        {professionalId ? t('doctorSignup.buttons.changeFile') : t('doctorSignup.buttons.chooseFile')}
-                      </Button>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">{t('doctorSignup.help.pdfOrImage')}</p>
-                  </div>
+                  )}
                 </div>
 
                 {/* Specialty Documents */}
