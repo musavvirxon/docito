@@ -636,6 +636,7 @@ export type Database = {
           bio_uz: string | null
           consultation_fee: number | null
           created_at: string | null
+          custom_profile_link: string | null
           id: string
           license_number: string | null
           num_reviews: number | null
@@ -660,6 +661,7 @@ export type Database = {
           bio_uz?: string | null
           consultation_fee?: number | null
           created_at?: string | null
+          custom_profile_link?: string | null
           id?: string
           license_number?: string | null
           num_reviews?: number | null
@@ -684,6 +686,7 @@ export type Database = {
           bio_uz?: string | null
           consultation_fee?: number | null
           created_at?: string | null
+          custom_profile_link?: string | null
           id?: string
           license_number?: string | null
           num_reviews?: number | null
@@ -2242,11 +2245,13 @@ export type Database = {
           notification_settings: Json | null
           phone: string | null
           privacy_settings: Json | null
+          profile_visibility: string | null
           role: Database["public"]["Enums"]["user_role"]
           timezone: string | null
           token_expires_at: string | null
           updated_at: string | null
           user_id: string
+          username: string | null
           verification_token: string | null
         }
         Insert: {
@@ -2263,11 +2268,13 @@ export type Database = {
           notification_settings?: Json | null
           phone?: string | null
           privacy_settings?: Json | null
+          profile_visibility?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           timezone?: string | null
           token_expires_at?: string | null
           updated_at?: string | null
           user_id: string
+          username?: string | null
           verification_token?: string | null
         }
         Update: {
@@ -2284,11 +2291,13 @@ export type Database = {
           notification_settings?: Json | null
           phone?: string | null
           privacy_settings?: Json | null
+          profile_visibility?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           timezone?: string | null
           token_expires_at?: string | null
           updated_at?: string | null
           user_id?: string
+          username?: string | null
           verification_token?: string | null
         }
         Relationships: []
