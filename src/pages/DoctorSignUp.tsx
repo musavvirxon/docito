@@ -1156,45 +1156,46 @@ const DoctorSignUp = () => {
                   <p className="text-sm text-muted-foreground mt-1">{t('doctorSignup.help.bioLength')}</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Label>{t('doctorSignup.fields.profilePhoto')}</Label>
-                    <div className={`border-2 border-dashed rounded-lg p-6 text-center ${avatar ? 'border-green-500 bg-green-50' : 'border-border'}`}>
-                      {avatarPreview ? <div className="space-y-2">
-                          <img src={avatarPreview} alt="Avatar preview" className="w-24 h-24 mx-auto rounded-full object-cover" />
-                          <FileCheck className="w-6 h-6 mx-auto text-green-600" />
-                        </div> : <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />}
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {avatar ? avatar.name : t('doctorSignup.placeholders.uploadPhoto')}
-                      </p>
-                      <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => {
-                      const input = document.createElement('input');
-                      input.type = 'file';
-                      input.accept = '.png,.jpg,.jpeg';
-                      input.onchange = e => {
-                        const file = (e.target as HTMLInputElement)?.files?.[0];
-                        if (file) handleAvatarUpload(file);
-                      };
-                      input.click();
-                    }}>
-                        {avatar ? t('doctorSignup.buttons.changeFile') : t('doctorSignup.buttons.chooseFile')}
-                      </Button>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">{t('doctorSignup.help.professionalHeadshot')}</p>
+                {/* Profile Photo */}
+                <div>
+                  <Label>{t('doctorSignup.fields.profilePhoto')}</Label>
+                  <div className={`border-2 border-dashed rounded-lg p-6 text-center ${avatar ? 'border-green-500 bg-green-50' : 'border-border'}`}>
+                    {avatarPreview ? <div className="space-y-2">
+                        <img src={avatarPreview} alt="Avatar preview" className="w-24 h-24 mx-auto rounded-full object-cover" />
+                        <FileCheck className="w-6 h-6 mx-auto text-green-600" />
+                      </div> : <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />}
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {avatar ? avatar.name : t('doctorSignup.placeholders.uploadPhoto')}
+                    </p>
+                    <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = '.png,.jpg,.jpeg';
+                    input.onchange = e => {
+                      const file = (e.target as HTMLInputElement)?.files?.[0];
+                      if (file) handleAvatarUpload(file);
+                    };
+                    input.click();
+                  }}>
+                      {avatar ? t('doctorSignup.buttons.changeFile') : t('doctorSignup.buttons.chooseFile')}
+                    </Button>
                   </div>
+                  <p className="text-sm text-muted-foreground mt-1">{t('doctorSignup.help.professionalHeadshot')}</p>
+                </div>
 
-                  {/* Country-Specific Document Requirements */}
-                  {requiredDocuments.length > 0 && (
-                    <div className="space-y-4">
-                      <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                        <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                          Required Documents for {formData.country}
-                        </h4>
-                        <p className="text-sm text-blue-800 dark:text-blue-200">
-                          Please upload all required documents for verification. Documents marked with * are mandatory.
-                        </p>
-                      </div>
+                {/* Country-Specific Document Requirements */}
+                {requiredDocuments.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                      <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                        Required Documents for {formData.country}
+                      </h4>
+                      <p className="text-sm text-blue-800 dark:text-blue-200">
+                        Please upload all required documents for verification. Documents marked with * are mandatory.
+                      </p>
+                    </div>
 
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {requiredDocuments.map((doc) => {
                         const isUploaded = doc.key === 'medical_license' ? !!medicalLicense :
                                           doc.key === 'professional_id' ? !!professionalId :
@@ -1205,23 +1206,23 @@ const DoctorSignUp = () => {
 
                         return (
                           <div key={doc.key}>
-                            <Label>
+                            <Label className="text-sm">
                               {doc.label} {doc.required && <span className="text-red-500">*</span>}
                             </Label>
                             {doc.description && (
                               <p className="text-xs text-muted-foreground mb-2">{doc.description}</p>
                             )}
-                            <div className={`border-2 border-dashed rounded-lg p-6 text-center ${isUploaded ? 'border-green-500 bg-green-50 dark:bg-green-950/20' : 'border-border'}`}>
+                            <div className={`border-2 border-dashed rounded-lg p-4 text-center ${isUploaded ? 'border-green-500 bg-green-50 dark:bg-green-950/20' : 'border-border'}`}>
                               {isUploaded ? (
                                 <>
-                                  <FileCheck className="w-8 h-8 mx-auto mb-2 text-green-600" />
-                                  <p className="text-sm text-muted-foreground mb-2">{file?.name}</p>
+                                  <FileCheck className="w-6 h-6 mx-auto mb-1 text-green-600" />
+                                  <p className="text-xs text-muted-foreground mb-2 truncate">{file?.name}</p>
                                 </>
                               ) : (
                                 <>
-                                  <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                                  <p className="text-sm text-muted-foreground mb-2">
-                                    Click to upload {doc.label.toLowerCase()}
+                                  <Upload className="w-6 h-6 mx-auto mb-1 text-muted-foreground" />
+                                  <p className="text-xs text-muted-foreground mb-2">
+                                    Upload {doc.label.toLowerCase()}
                                   </p>
                                 </>
                               )}
@@ -1250,7 +1251,7 @@ const DoctorSignUp = () => {
                                     input.click();
                                   }}
                                 >
-                                  {isUploaded ? 'Change File' : 'Choose File'}
+                                  {isUploaded ? 'Change' : 'Choose'}
                                 </Button>
                                 {isUploaded && !['medical_license', 'professional_id'].includes(doc.key) && (
                                   <Button
@@ -1268,8 +1269,8 @@ const DoctorSignUp = () => {
                         );
                       })}
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* Specialty Documents */}
                 {selectedSpecialties.length > 0 && (
@@ -1282,58 +1283,53 @@ const DoctorSignUp = () => {
                       (certificates, training records, etc.)
                     </p>
                     
-                    {/* Display uploaded documents */}
-                    {specialtyDocuments.length > 0 && (
-                      <div className="space-y-2 mb-3">
-                        {specialtyDocuments.map((doc, index) => (
-                          <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                            <div className="flex items-center space-x-2">
-                              <FileCheck className="w-5 h-5 text-green-600" />
-                              <span className="text-sm font-medium">{doc.name}</span>
-                              <Badge variant="outline" className="text-xs">
-                                {(doc.size / 1024 / 1024).toFixed(2)} MB
-                              </Badge>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeSpecialtyDocument(index)}
-                            >
-                              Remove
-                            </Button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Display uploaded documents */}
+                      {specialtyDocuments.map((doc, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                          <div className="flex items-center space-x-2 overflow-hidden">
+                            <FileCheck className="w-5 h-5 text-green-600 flex-shrink-0" />
+                            <span className="text-sm font-medium truncate">{doc.name}</span>
                           </div>
-                        ))}
-                      </div>
-                    )}
-                    
-                    {/* Upload button */}
-                    {specialtyDocuments.length < selectedSpecialties.length && (
-                      <div className="border-2 border-dashed rounded-lg p-6 text-center">
-                        <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                        <p className="text-sm text-muted-foreground mb-2">
-                          {specialtyDocuments.length} of {selectedSpecialties.length} documents uploaded
-                        </p>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          disabled={uploading}
-                          onClick={() => {
-                            const input = document.createElement('input');
-                            input.type = 'file';
-                            input.accept = '.pdf,.jpg,.jpeg,.png';
-                            input.onchange = (e) => {
-                              const file = (e.target as HTMLInputElement)?.files?.[0];
-                              if (file) handleSpecialtyDocumentUpload(file);
-                            };
-                            input.click();
-                          }}
-                        >
-                          Upload Document {specialtyDocuments.length + 1}
-                        </Button>
-                      </div>
-                    )}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeSpecialtyDocument(index)}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      ))}
+                      
+                      {/* Upload button */}
+                      {specialtyDocuments.length < selectedSpecialties.length && (
+                        <div className="border-2 border-dashed rounded-lg p-4 text-center flex flex-col items-center justify-center">
+                          <Upload className="w-6 h-6 mb-2 text-muted-foreground" />
+                          <p className="text-xs text-muted-foreground mb-2">
+                            {specialtyDocuments.length} of {selectedSpecialties.length} uploaded
+                          </p>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={uploading}
+                            onClick={() => {
+                              const input = document.createElement('input');
+                              input.type = 'file';
+                              input.accept = '.pdf,.jpg,.jpeg,.png';
+                              input.onchange = (e) => {
+                                const file = (e.target as HTMLInputElement)?.files?.[0];
+                                if (file) handleSpecialtyDocumentUpload(file);
+                              };
+                              input.click();
+                            }}
+                          >
+                            Upload Doc {specialtyDocuments.length + 1}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </CardContent>
