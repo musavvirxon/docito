@@ -109,13 +109,36 @@ const DoctorVerificationTable = ({ title, status = "all" }: DoctorVerificationTa
 
       if (verificationError) throw verificationError;
 
-      // Update doctor verified status
+      // Update doctor verified status - set to true only if verified
       const { error: doctorError } = await supabase
         .from("doctors")
         .update({ verified: newStatus === "verified" })
         .eq("id", doctorId);
 
       if (doctorError) throw doctorError;
+
+      // If declining, delete all documents to allow fresh resubmission
+      if (newStatus === "declined") {
+        // Get all documents for this verification
+        const { data: docsToDelete } = await supabase
+          .from("doctor_verification_documents" as any)
+          .select("file_path")
+          .eq("doctor_verification_id", verificationId);
+
+        if (docsToDelete && docsToDelete.length > 0) {
+          // Delete from storage
+          const filePaths = docsToDelete.map((doc: any) => doc.file_path.replace(/^\/+/, ''));
+          await supabase.storage
+            .from('verification-documents')
+            .remove(filePaths);
+          
+          // Delete from database
+          await supabase
+            .from("doctor_verification_documents" as any)
+            .delete()
+            .eq("doctor_verification_id", verificationId);
+        }
+      }
 
       toast.success(`Doctor verification ${newStatus}`);
       fetchData();
@@ -363,12 +386,20 @@ const DoctorVerificationTable = ({ title, status = "all" }: DoctorVerificationTa
                 <h3 className="text-lg font-semibold mb-3">Location & Clinic Information</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-muted-foreground">Country</p>
+                    <p className="text-muted-foreground">Country (Selected)</p>
                     <p className="font-medium">{selectedVerification.verification_data?.additional_info?.country || "N/A"}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Region/State</p>
                     <p className="font-medium">{selectedVerification.verification_data?.additional_info?.region || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Submission Country (Live IP)</p>
+                    <p className="font-medium">{selectedVerification.verification_data?.additional_info?.submission_country || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">IP Address</p>
+                    <p className="font-medium font-mono text-xs">{selectedVerification.verification_data?.additional_info?.submission_ip || "N/A"}</p>
                   </div>
                   
                   {selectedVerification.verification_data?.additional_info?.selected_clinic && (
@@ -558,35 +589,35 @@ const DoctorVerificationTable = ({ title, status = "all" }: DoctorVerificationTa
               <div className="flex gap-3 pt-4 border-t">
                 {selectedVerification.status !== 'verified' && (
                   <Button
-                    onClick={() => handleUpdateStatus(selectedVerification.id, "verified", selectedVerification.doctor_id)}
+                    onClick={() => handleUpdateStatus(selectedVerification.id, "verified", selectedVerification.doctors.id)}
                     className="flex-1"
                     variant="default"
                   >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Approve Verification
+                    <Eye className="w-4 h-4 mr-2" />
+                    Approve & Make Public
                   </Button>
                 )}
                 {selectedVerification.status !== 'declined' && (
                   <Button
                     onClick={() => {
-                      const reason = prompt("Enter rejection reason:");
+                      const reason = prompt("Enter rejection reason (doctor can resubmit after this):");
                       if (reason) {
-                        handleUpdateStatus(selectedVerification.id, "declined", selectedVerification.doctor_id, reason);
+                        handleUpdateStatus(selectedVerification.id, "declined", selectedVerification.doctors.id, reason);
                       }
                     }}
                     className="flex-1"
                     variant="destructive"
                   >
                     <XCircle className="w-4 h-4 mr-2" />
-                    Decline
+                    Reject Application
                   </Button>
                 )}
                 <Button
-                  onClick={() => handleDelete(selectedVerification.id, selectedVerification.doctor_id)}
+                  onClick={() => handleDelete(selectedVerification.id, selectedVerification.doctors.id)}
                   variant="outline"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Delete
+                  Delete Permanently
                 </Button>
               </div>
             </div>

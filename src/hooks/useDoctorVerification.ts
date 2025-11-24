@@ -57,6 +57,22 @@ export const useDoctorVerification = () => {
   const submitForVerification = async (doctorId: string, formData: DoctorVerificationData) => {
     setIsSubmitting(true);
     try {
+      // Get IP address and country
+      let ipAddress = '';
+      let submissionCountry = '';
+      try {
+        const ipResponse = await fetch('https://api.ipify.org?format=json');
+        const ipData = await ipResponse.json();
+        ipAddress = ipData.ip;
+        
+        // Get country from IP
+        const geoResponse = await fetch(`https://ipapi.co/${ipAddress}/json/`);
+        const geoData = await geoResponse.json();
+        submissionCountry = geoData.country_name || '';
+      } catch (error) {
+        console.error('Error fetching IP/country:', error);
+      }
+
       // Check if verification already exists
       const { data: existingVerification } = await (supabase as any)
         .from('doctor_verification')
@@ -220,7 +236,11 @@ export const useDoctorVerification = () => {
             verification_data: {
               languages: formData.languages,
               consultation_types: formData.consultation_types,
-              additional_info: formData.additional_data || {},
+              additional_info: {
+                ...formData.additional_data,
+                submission_ip: ipAddress,
+                submission_country: submissionCountry,
+              },
             }
           })
           .eq('id', existingVerification.id)
@@ -246,7 +266,11 @@ export const useDoctorVerification = () => {
             verification_data: {
               languages: formData.languages,
               consultation_types: formData.consultation_types,
-              additional_info: formData.additional_data || {},
+              additional_info: {
+                ...formData.additional_data,
+                submission_ip: ipAddress,
+                submission_country: submissionCountry,
+              },
             }
           })
           .select()
