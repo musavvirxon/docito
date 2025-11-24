@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
-import { Upload, Info, User, Briefcase, Building2, FileText, Settings, Shield, FileCheck, ChevronDown, ChevronRight } from "lucide-react";
+import { Upload, Info, User, Briefcase, Building2, FileText, Settings, Shield, FileCheck, ChevronDown, ChevronRight, GraduationCap, Award } from "lucide-react";
 import { useSimpleForm } from "@/hooks/useSimpleForm";
 import { useQuickNavigate } from "@/hooks/useQuickNavigate";
 import { useFileUpload } from "@/hooks/useFileUpload";
@@ -45,6 +45,11 @@ const DoctorSignUp = () => {
   const [specialtyDocuments, setSpecialtyDocuments] = useState<File[]>([]);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [accuracyConfirmed, setAccuracyConfirmed] = useState(false);
+  
+  // Username and profile visibility
+  const [username, setUsername] = useState<string>("");
+  const [profileVisibility, setProfileVisibility] = useState<string>("public");
+  const [customLink, setCustomLink] = useState<string>("");
   
   // Additional fields for verification
   const [selectedAppointmentTypes, setSelectedAppointmentTypes] = useState<string[]>([]);
@@ -562,9 +567,16 @@ const DoctorSignUp = () => {
         gender: formData.gender as any,
         address: `${formData.region}, ${formData.country}`,
         avatar_url: avatar_url || undefined,
+        username: username || null,
+        profile_visibility: profileVisibility || 'public',
         updated_at: new Date().toISOString()
       }).eq('user_id', user.id);
       if (profileError) throw profileError;
+
+      // Generate custom link for doctor profile
+      const generatedLink = profileVisibility === 'private' 
+        ? `doctor-${user.id.substring(0, 8)}-${Date.now()}`
+        : (username || null);
 
       // Check if doctor profile already exists
       const {
@@ -579,7 +591,8 @@ const DoctorSignUp = () => {
           specialty: selectedSpecialties[0] || 'General Practice',
           bio: formData.bio,
           license_number: formData.license,
-          consultation_fee: 0
+          consultation_fee: 0,
+          custom_profile_link: generatedLink
         }).eq('id', existingDoctor.id);
         if (updateError) throw updateError;
         doctorId = existingDoctor.id;
@@ -594,7 +607,8 @@ const DoctorSignUp = () => {
           bio: formData.bio,
           license_number: formData.license,
           consultation_fee: 0,
-          verified: false
+          verified: false,
+          custom_profile_link: generatedLink
         }).select().single();
         if (doctorError) throw doctorError;
         doctorId = doctorData.id;
@@ -1183,6 +1197,76 @@ const DoctorSignUp = () => {
                   <p className="text-sm text-muted-foreground mt-1">{t('doctorSignup.help.professionalHeadshot')}</p>
                 </div>
 
+                {/* Profile Visibility & Username */}
+                <Card className="border-blue-200 bg-blue-50/30">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center">
+                      <User className="w-5 h-5 mr-2 text-blue-600" />
+                      Profile Visibility Settings
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor="profileVisibility">Profile Visibility</Label>
+                      <Select value={profileVisibility} onValueChange={setProfileVisibility}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="public">Public (Searchable & Visible)</SelectItem>
+                          <SelectItem value="private">Private (Link Only)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {profileVisibility === 'public' 
+                          ? 'Your profile will be searchable and visible to all users.' 
+                          : 'Your profile will only be accessible via direct link.'}
+                      </p>
+                    </div>
+
+                    {profileVisibility === 'public' && (
+                      <div>
+                        <Label htmlFor="username">Custom Username <Badge variant="secondary">Optional</Badge></Label>
+                        <Input 
+                          id="username"
+                          placeholder="e.g., dr-sarah-johnson"
+                          value={username}
+                          onChange={(e) => {
+                            const value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+                            setUsername(value);
+                            setCustomLink(value);
+                          }}
+                        />
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Your profile URL: /doctor/{username || 'your-username'}
+                        </p>
+                      </div>
+                    )}
+
+                    {profileVisibility === 'private' && (
+                      <div className="bg-amber-50 p-3 rounded-lg">
+                        <p className="text-sm text-amber-800">
+                          <strong>Private Link:</strong> A unique link will be generated for you. You can share this link with patients.
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </CardContent>
+            </Card>
+
+            {/* Section 5: Education Documents */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <GraduationCap className="w-5 h-5 mr-2 text-blue-600" />
+                  Education Documents
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Upload your educational credentials and qualifications
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 {/* Country-Specific Document Requirements */}
                 {requiredDocuments.length > 0 && (
                   <div className="space-y-4">
@@ -1272,6 +1356,21 @@ const DoctorSignUp = () => {
                   </div>
                 )}
 
+              </CardContent>
+            </Card>
+
+            {/* Section 6: Certificates & Specialty Documents */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Award className="w-5 h-5 mr-2 text-blue-600" />
+                  Certificates & Specialty Documents
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Upload your specialty certifications and additional credentials
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 {/* Specialty Documents */}
                 {selectedSpecialties.length > 0 && (
                   <div>
@@ -1335,7 +1434,7 @@ const DoctorSignUp = () => {
               </CardContent>
             </Card>
 
-            {/* Section 5: Availability & Preferences */}
+            {/* Section 7: Availability & Preferences */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -1397,7 +1496,7 @@ const DoctorSignUp = () => {
               </CardContent>
             </Card>
 
-            {/* Section 6: Security & Agreements */}
+            {/* Section 8: Security & Agreements */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
