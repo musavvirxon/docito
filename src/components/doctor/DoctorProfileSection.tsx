@@ -45,9 +45,9 @@ interface DoctorProfileSectionProps {
 
 const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSectionProps) => {
   const { t } = useTranslation("dashboard");
-  const { doctorProfile: profile, loading, updateProfile, stats } = useDoctorData();
+  const { doctorProfile: profile, loading, updateProfile, stats, refreshAll } = useDoctorData();
   const doctorProfile = propProfile || profile;
-  const profileCompletion = stats.profileCompletion;
+  const profileCompletion = stats?.profileCompletion || 0;
   const { uploadFile, uploading } = useFileUpload();
   const { submitForVerification, isSubmitting } = useDoctorVerification();
   
@@ -57,9 +57,10 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
     license_number: '',
     consultation_fee: '',
     years_experience: '',
-    languages: ['English'],
-    consultation_types: ['In-person', 'Video'],
-    phone: ''
+    phone: '',
+    username: '',
+    profile_visibility: 'public',
+    custom_link: ''
   });
 
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(["English"]);
@@ -72,18 +73,36 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
   }>({});
   
   useEffect(() => {
-    if (doctorProfile) {
-      setFormData({
-        specialty: doctorProfile.specialty || '',
-        bio: doctorProfile.bio || '',
-        license_number: doctorProfile.license_number || '',
-        consultation_fee: doctorProfile.consultation_fee?.toString() || '',
-        years_experience: '5', // Default or from profile
-        languages: ['English'], // Default or from profile
-        consultation_types: ['In-person', 'Video'], // Default or from profile
-        phone: doctorProfile.profiles?.phone || ''
-      });
-    }
+    const fetchProfileData = async () => {
+      if (doctorProfile) {
+        // Fetch username and profile_visibility from profiles table
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('username, profile_visibility')
+          .eq('user_id', doctorProfile.user_id)
+          .single();
+
+        setFormData({
+          specialty: doctorProfile.specialty || '',
+          bio: doctorProfile.bio || '',
+          license_number: doctorProfile.license_number || '',
+          consultation_fee: doctorProfile.consultation_fee?.toString() || '',
+          years_experience: (doctorProfile as any).years_experience?.toString() || '5',
+          phone: doctorProfile.profiles?.phone || '',
+          username: profileData?.username || '',
+          profile_visibility: profileData?.profile_visibility || 'public',
+          custom_link: (doctorProfile as any).custom_profile_link || ''
+        });
+
+        if ((doctorProfile as any).languages) {
+          setSelectedLanguages((doctorProfile as any).languages);
+        }
+        if ((doctorProfile as any).consultation_types) {
+          setSelectedConsultationTypes((doctorProfile as any).consultation_types);
+        }
+      }
+    };
+    fetchProfileData();
   }, [doctorProfile]);
 
   const verificationStatus: "pending" | "verified" = doctorProfile?.verified ? "verified" : "pending";
@@ -103,29 +122,53 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
   const handleSaveChanges = async () => {
     if (!updateProfile || !doctorProfile?.user_id) return;
 
-    // Update phone in profiles table
-    if (formData.phone) {
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ phone: formData.phone })
-        .eq('user_id', doctorProfile.user_id);
-
-      if (profileError) {
-        toast.error('Failed to update phone number');
-        return;
-      }
+    // Update profiles table (phone, username, profile_visibility)
+    const profileUpdates: any = { phone: formData.phone };
+    
+    if (formData.username) {
+      profileUpdates.username = formData.username;
+    }
+    if (formData.profile_visibility) {
+      profileUpdates.profile_visibility = formData.profile_visibility;
     }
 
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update(profileUpdates)
+      .eq('user_id', doctorProfile.user_id);
+
+    if (profileError) {
+      toast.error('Failed to update profile information');
+      return;
+    }
+
+    // Generate custom link if needed
+    let customLink = formData.custom_link;
+    if (formData.profile_visibility === 'public' && formData.username) {
+      customLink = formData.username.toLowerCase().replace(/\s+/g, '-');
+    } else if (formData.profile_visibility === 'private') {
+      customLink = `private-${doctorProfile.id.substring(0, 8)}`;
+    }
+
+    // Update doctors table
     const updates = {
       specialty: formData.specialty,
       bio: formData.bio,
       license_number: formData.license_number,
       consultation_fee: formData.consultation_fee ? parseFloat(formData.consultation_fee) : undefined,
+      custom_profile_link: customLink,
+      years_experience: parseInt(formData.years_experience) || 5,
+      languages: selectedLanguages,
+      consultation_types: selectedConsultationTypes,
     };
 
     const result = await updateProfile(updates);
     if (result.success) {
       toast.success('Profile updated successfully');
+      // Refresh all data to update completion percentage
+      if (refreshAll) {
+        await refreshAll();
+      }
     }
   };
 
@@ -355,6 +398,64 @@ const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSecti
                   <Label htmlFor={language} className="text-sm">{language}</Label>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Profile Visibility Settings */}
+          <div className="border-t pt-6">
+            <Label className="text-base mb-3 block">Profile Visibility</Label>
+            <div className="space-y-4">
+              <div className="flex items-start space-x-3">
+                <input
+                  type="radio"
+                  id="public"
+                  name="visibility"
+                  checked={formData.profile_visibility === 'public'}
+                  onChange={() => setFormData(prev => ({ ...prev, profile_visibility: 'public' }))}
+                  className="mt-1"
+                />
+                <div>
+                  <Label htmlFor="public" className="font-medium">Public Profile</Label>
+                  <p className="text-sm text-muted-foreground">Your profile will be searchable and visible to everyone</p>
+                </div>
+              </div>
+              
+              {formData.profile_visibility === 'public' && (
+                <div className="ml-6">
+                  <Label htmlFor="username">Custom Username</Label>
+                  <Input
+                    id="username"
+                    value={formData.username}
+                    onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
+                    placeholder="dr-john-smith"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Your profile will be: {window.location.origin}/doctor/{formData.username || 'your-username'}
+                  </p>
+                </div>
+              )}
+
+              <div className="flex items-start space-x-3">
+                <input
+                  type="radio"
+                  id="private"
+                  name="visibility"
+                  checked={formData.profile_visibility === 'private'}
+                  onChange={() => setFormData(prev => ({ ...prev, profile_visibility: 'private' }))}
+                  className="mt-1"
+                />
+                <div>
+                  <Label htmlFor="private" className="font-medium">Private Profile</Label>
+                  <p className="text-sm text-muted-foreground">Only accessible via direct link (not searchable)</p>
+                </div>
+              </div>
+
+              {formData.custom_link && (
+                <div className="ml-6 p-3 bg-muted rounded-md">
+                  <p className="text-xs text-muted-foreground mb-1">Your private profile link:</p>
+                  <p className="text-sm font-mono">{window.location.origin}/doctor/{formData.custom_link}</p>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>

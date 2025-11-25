@@ -635,9 +635,11 @@ export type Database = {
           bio_ru: string | null
           bio_uz: string | null
           consultation_fee: number | null
+          consultation_types: string[] | null
           created_at: string | null
           custom_profile_link: string | null
           id: string
+          languages: string[] | null
           license_number: string | null
           num_reviews: number | null
           practice_id: string | null
@@ -649,6 +651,7 @@ export type Database = {
           user_id: string | null
           verified: boolean | null
           weighted_rating: number | null
+          years_experience: number | null
         }
         Insert: {
           accepts_new_patients?: boolean | null
@@ -660,9 +663,11 @@ export type Database = {
           bio_ru?: string | null
           bio_uz?: string | null
           consultation_fee?: number | null
+          consultation_types?: string[] | null
           created_at?: string | null
           custom_profile_link?: string | null
           id?: string
+          languages?: string[] | null
           license_number?: string | null
           num_reviews?: number | null
           practice_id?: string | null
@@ -674,6 +679,7 @@ export type Database = {
           user_id?: string | null
           verified?: boolean | null
           weighted_rating?: number | null
+          years_experience?: number | null
         }
         Update: {
           accepts_new_patients?: boolean | null
@@ -685,9 +691,11 @@ export type Database = {
           bio_ru?: string | null
           bio_uz?: string | null
           consultation_fee?: number | null
+          consultation_types?: string[] | null
           created_at?: string | null
           custom_profile_link?: string | null
           id?: string
+          languages?: string[] | null
           license_number?: string | null
           num_reviews?: number | null
           practice_id?: string | null
@@ -699,6 +707,7 @@ export type Database = {
           user_id?: string | null
           verified?: boolean | null
           weighted_rating?: number | null
+          years_experience?: number | null
         }
         Relationships: [
           {
