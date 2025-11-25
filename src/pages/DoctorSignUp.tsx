@@ -43,6 +43,7 @@ const DoctorSignUp = () => {
   const [medicalLicense, setMedicalLicense] = useState<File | null>(null);
   const [professionalId, setProfessionalId] = useState<File | null>(null);
   const [specialtyDocuments, setSpecialtyDocuments] = useState<File[]>([]);
+  const [additionalCertificates, setAdditionalCertificates] = useState<File[]>([]);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [accuracyConfirmed, setAccuracyConfirmed] = useState(false);
   
@@ -516,6 +517,36 @@ const DoctorSignUp = () => {
     toast.info('Document removed');
   };
 
+  const handleAdditionalCertificateUpload = (file: File) => {
+    // Validate file type
+    const allowedTypes = ['application/pdf', 'image/png', 'image/jpg', 'image/jpeg'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Invalid file format. Only PDF, PNG, and JPG files are allowed.');
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      toast.error('File size exceeds 10MB limit.');
+      return;
+    }
+
+    // Limit to 10 additional certificates
+    if (additionalCertificates.length >= 10) {
+      toast.error('You can upload a maximum of 10 additional certificates.');
+      return;
+    }
+
+    setAdditionalCertificates(prev => [...prev, file]);
+    toast.success('Additional certificate added successfully');
+  };
+
+  const removeAdditionalCertificate = (index: number) => {
+    setAdditionalCertificates(prev => prev.filter((_, i) => i !== index));
+    toast.info('Certificate removed');
+  };
+
   const handleCountryDocumentUpload = (docKey: string, file: File) => {
     // Validate file type
     const allowedTypes = ['application/pdf', 'image/png', 'image/jpg', 'image/jpeg'];
@@ -627,6 +658,7 @@ const DoctorSignUp = () => {
           medical_license: medicalLicense || undefined,
           professional_id: professionalId || undefined,
           specialty_documents: specialtyDocuments.length > 0 ? specialtyDocuments : undefined,
+          additional_certificates: additionalCertificates.length > 0 ? additionalCertificates : undefined,
           country_specific_documents: countryDocuments
         },
         // Additional information for super admin review
@@ -1431,6 +1463,71 @@ const DoctorSignUp = () => {
                     </div>
                   </div>
                 )}
+
+                {/* Additional Certificates Section */}
+                <div className="mt-6 pt-6 border-t">
+                  <Label>
+                    Additional Certificates <Badge variant="secondary">Optional</Badge>
+                  </Label>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Upload any additional certificates, awards, or credentials (up to 10 files)
+                  </p>
+                  
+                  <div className="space-y-3">
+                    {/* Display uploaded certificates */}
+                    {additionalCertificates.length > 0 && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {additionalCertificates.map((cert, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                            <div className="flex items-center space-x-2 overflow-hidden">
+                              <FileCheck className="w-5 h-5 text-green-600 flex-shrink-0" />
+                              <span className="text-sm font-medium truncate">{cert.name}</span>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeAdditionalCertificate(index)}
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Upload button */}
+                    {additionalCertificates.length < 10 && (
+                      <div className="border-2 border-dashed rounded-lg p-6 text-center">
+                        <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground mb-3">
+                          {additionalCertificates.length === 0 
+                            ? 'Upload additional certificates' 
+                            : `${additionalCertificates.length} of 10 uploaded`}
+                        </p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={uploading}
+                          onClick={() => {
+                            const input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = '.pdf,.jpg,.jpeg,.png';
+                            input.onchange = (e) => {
+                              const file = (e.target as HTMLInputElement)?.files?.[0];
+                              if (file) handleAdditionalCertificateUpload(file);
+                            };
+                            input.click();
+                          }}
+                        >
+                          <Upload className="w-4 h-4 mr-2" />
+                          Add Certificate
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
