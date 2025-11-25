@@ -33,6 +33,7 @@ const ManagementTable = ({ title, type }: ManagementTableProps) => {
   const [selectedDoctor, setSelectedDoctor] = useState<any>(null);
   const [verification, setVerification] = useState<any>(null);
   const [documents, setDocuments] = useState<any[]>([]);
+  const [verificationStatuses, setVerificationStatuses] = useState<Record<string, any>>({});
 
   useEffect(() => {
     fetchData();
@@ -163,6 +164,111 @@ const ManagementTable = ({ title, type }: ManagementTableProps) => {
     }
   };
 
+  const handleApproveDoctor = async (doctorId: string) => {
+    try {
+      // Update doctor as verified
+      const { error: doctorError } = await supabase
+        .from("doctors")
+        .update({ verified: true })
+        .eq("id", doctorId);
+
+      if (doctorError) throw doctorError;
+
+      // Update verification status
+      const { error: verificationError } = await (supabase as any)
+        .from("doctor_verification")
+        .update({ 
+          status: "verified",
+          reviewed_at: new Date().toISOString()
+        })
+        .eq("doctor_id", doctorId);
+
+      if (verificationError) throw verificationError;
+
+      toast.success("Doctor approved successfully");
+      fetchData();
+    } catch (error: any) {
+      console.error("Error approving doctor:", error);
+      toast.error(error.message || "Failed to approve doctor");
+    }
+  };
+
+  const handleRejectDoctor = async (doctorId: string) => {
+    try {
+      // Update verification status to declined
+      const { error: verificationError } = await (supabase as any)
+        .from("doctor_verification")
+        .update({ 
+          status: "declined",
+          reviewed_at: new Date().toISOString()
+        })
+        .eq("doctor_id", doctorId);
+
+      if (verificationError) throw verificationError;
+
+      toast.success("Doctor application rejected");
+      fetchData();
+    } catch (error: any) {
+      console.error("Error rejecting doctor:", error);
+      toast.error(error.message || "Failed to reject doctor");
+    }
+  };
+
+  const handleDeleteDoctor = async (doctorId: string) => {
+    if (!confirm("Are you sure you want to permanently delete this doctor? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      // First get verification ID if exists
+      const { data: verification } = await (supabase as any)
+        .from("doctor_verification")
+        .select("id")
+        .eq("doctor_id", doctorId)
+        .maybeSingle();
+
+      // Delete verification documents from storage and DB if they exist
+      if (verification?.id) {
+        const { data: docs } = await (supabase as any)
+          .from("doctor_verification_documents")
+          .select("file_path")
+          .eq("doctor_verification_id", verification.id);
+
+        if (docs && docs.length > 0) {
+          const filePaths = docs.map((doc: any) => doc.file_path.replace(/^\/+/, ''));
+          await supabase.storage
+            .from("verification-documents")
+            .remove(filePaths);
+
+          await (supabase as any)
+            .from("doctor_verification_documents")
+            .delete()
+            .eq("doctor_verification_id", verification.id);
+        }
+
+        // Delete verification record
+        await (supabase as any)
+          .from("doctor_verification")
+          .delete()
+          .eq("id", verification.id);
+      }
+
+      // Delete doctor record
+      const { error: doctorError } = await supabase
+        .from("doctors")
+        .delete()
+        .eq("id", doctorId);
+
+      if (doctorError) throw doctorError;
+
+      toast.success("Doctor deleted permanently");
+      fetchData();
+    } catch (error: any) {
+      console.error("Error deleting doctor:", error);
+      toast.error(error.message || "Failed to delete doctor");
+    }
+  };
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -207,6 +313,23 @@ const ManagementTable = ({ title, type }: ManagementTableProps) => {
       const { data: result, error } = await query;
       if (error) throw error;
       setData(result || []);
+
+      // Fetch verification statuses for doctors
+      if (type === "doctors" && result && result.length > 0) {
+        const doctorIds = result.map((d: any) => d.id);
+        const { data: verifications, error: verError } = await (supabase as any)
+          .from("doctor_verification")
+          .select("doctor_id, status")
+          .in("doctor_id", doctorIds);
+
+        if (!verError && verifications) {
+          const statusMap: Record<string, any> = {};
+          verifications.forEach((v: any) => {
+            statusMap[v.doctor_id] = v;
+          });
+          setVerificationStatuses(statusMap);
+        }
+      }
     } catch (error) {
       console.error(`Error fetching ${type}:`, error);
     } finally {
@@ -302,22 +425,64 @@ const ManagementTable = ({ title, type }: ManagementTableProps) => {
               <TableCell>{item.specialty}</TableCell>
               <TableCell>{item.average_rating?.toFixed(1) || "0.0"} ⭐</TableCell>
               <TableCell>
-                <Badge variant={item.verified ? "default" : "secondary"}>
-                  {item.verified ? "Verified" : "Pending"}
-                </Badge>
+                {(() => {
+                  const verificationStatus = verificationStatuses[item.id];
+                  if (!verificationStatus) {
+                    return <Badge variant="secondary">Not Submitted</Badge>;
+                  }
+                  
+                  switch (verificationStatus.status) {
+                    case "verified":
+                      return <Badge variant="default">Verified</Badge>;
+                    case "pending":
+                      return <Badge variant="secondary">Pending Review</Badge>;
+                    case "declined":
+                      return <Badge variant="destructive">Declined</Badge>;
+                    case "resubmitted":
+                      return <Badge variant="outline">Resubmitted</Badge>;
+                    case "under_review":
+                      return <Badge variant="secondary">Under Review</Badge>;
+                    default:
+                      return <Badge variant="secondary">{verificationStatus.status}</Badge>;
+                  }
+                })()}
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
-                  <Button variant="ghost" size="icon"><Eye className="w-4 h-4" /></Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => handleApproveDoctor(item.id)}
+                    disabled={item.verified || !verificationStatuses[item.id]}
+                    title="Approve & Make Public"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </Button>
                   <Button 
                     variant="ghost" 
                     size="icon"
                     onClick={() => handleViewDoctorVerification(item)}
+                    title="View Verification Details"
                   >
                     <FileText className="w-4 h-4" />
                   </Button>
-                  <Button variant="ghost" size="icon"><Ban className="w-4 h-4" /></Button>
-                  <Button variant="ghost" size="icon"><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => handleRejectDoctor(item.id)}
+                    disabled={!verificationStatuses[item.id] || verificationStatuses[item.id]?.status === "declined"}
+                    title="Reject Application"
+                  >
+                    <Ban className="w-4 h-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => handleDeleteDoctor(item.id)}
+                    title="Delete Permanently"
+                  >
+                    <Trash2 className="w-4 h-4 text-destructive" />
+                  </Button>
                 </div>
               </TableCell>
             </TableRow>
