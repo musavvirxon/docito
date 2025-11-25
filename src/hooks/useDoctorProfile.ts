@@ -17,6 +17,7 @@ interface DoctorProfileData {
   weighted_rating: number;
   appointment_count: number;
   practice_id?: string;
+  custom_profile_link?: string;
   years_experience?: number;
   languages?: string[];
   consultation_types?: string[];
@@ -25,6 +26,8 @@ interface DoctorProfileData {
     email: string;
     avatar_url?: string;
     phone?: string;
+    username?: string;
+    profile_visibility?: string;
   };
   practices?: {
     name: string;
@@ -55,7 +58,9 @@ export const useDoctorProfile = () => {
             full_name,
             email,
             avatar_url,
-            phone
+            phone,
+            username,
+            profile_visibility
           ),
           practices:practice_id (
             name,
@@ -70,12 +75,7 @@ export const useDoctorProfile = () => {
       if (error) throw error;
 
       if (data) {
-        setProfile({
-          ...data,
-          languages: ['English'], // Default languages
-          consultation_types: ['In-person', 'Video'], // Default consultation types
-          years_experience: 5 // Default years of experience
-        });
+        setProfile(data);
       }
     } catch (err: any) {
       console.error('Error fetching doctor profile:', err);
@@ -111,16 +111,18 @@ export const useDoctorProfile = () => {
     if (!profile) return 0;
     
     let completion = 0;
-    const totalFields = 8;
+    const totalFields = 10;
 
     if (profile.profiles?.avatar_url) completion += 1;
     if (profile.specialty) completion += 1;
-    if (profile.bio) completion += 1;
+    if (profile.bio && profile.bio.length > 50) completion += 1;
     if (profile.license_number) completion += 1;
     if (profile.consultation_fee) completion += 1;
     if (profile.profiles?.phone) completion += 1;
     if (profile.practice_id || profile.verified) completion += 1;
     if (profile.years_experience) completion += 1;
+    if (profile.languages && profile.languages.length > 0) completion += 1;
+    if (profile.consultation_types && profile.consultation_types.length > 0) completion += 1;
 
     return Math.round((completion / totalFields) * 100);
   };

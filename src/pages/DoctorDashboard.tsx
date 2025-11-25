@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Bell, Settings, User, Calendar, BarChart3, Search, Briefcase, MapPin, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2 } from "lucide-react";
 import { DoctorDataProvider, useDoctorData } from "@/contexts/DoctorDataContext";
 import { useTranslation } from "react-i18next";
@@ -54,6 +54,14 @@ const DoctorDashboardContent = () => {
   const { t } = useTranslation("dashboard");
 
   const doctorStatus: DoctorStatus = doctorProfile?.practice_id ? "clinic-member" : "independent";
+  
+  // Expose refresh function globally for child components
+  useEffect(() => {
+    (window as any).refreshDoctorProfile = refreshAll;
+    return () => {
+      delete (window as any).refreshDoctorProfile;
+    };
+  }, [refreshAll]);
   
   const handleLogout = async () => {
     await authApi.signOut();
@@ -266,20 +274,6 @@ const DoctorDashboardContent = () => {
             {!doctorProfile.verified && (
               <DoctorVerificationStatusCard />
             )}
-
-            {/* Profile Completion Progress */}
-            <Card>
-              <CardHeader>
-                <CardTitle>{t("doctor.profileCompletion.title")}</CardTitle>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>{t("doctor.profileCompletion.message")}</span>
-                    <span className="font-medium">{profileCompletion}%</span>
-                  </div>
-                  <Progress value={profileCompletion} className="h-2" />
-                </div>
-              </CardHeader>
-            </Card>
 
             {/* Key Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
