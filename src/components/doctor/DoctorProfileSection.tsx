@@ -9,61 +9,34 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, CheckCircle, AlertCircle, Clock, FileCheck } from "lucide-react";
+import { Upload, CheckCircle, AlertCircle, Clock, FileCheck, Lock, ExternalLink } from "lucide-react";
 import { useDoctorData } from "@/contexts/DoctorDataContext";
 import { useFileUpload } from "@/hooks/useFileUpload";
-import { useDoctorVerification } from "@/hooks/useDoctorVerification";
+import { useDoctorVerificationStatus } from "@/hooks/useDoctorVerificationStatus";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+
 interface DoctorProfileSectionProps {
-  doctorProfile?: {
-    id: string;
-    user_id: string;
-    specialty: string;
-    bio?: string;
-    verified: boolean;
-    license_number?: string;
-    consultation_fee?: number;
-    average_rating: number;
-    num_reviews: number;
-    profiles?: {
-      full_name: string;
-      email: string;
-      avatar_url?: string;
-      phone?: string;
-    };
-    practices?: {
-      name: string;
-      city: string;
-      country: string;
-      verified: boolean;
-    };
-  };
+  doctorProfile?: any;
 }
-const DoctorProfileSection = ({
-  doctorProfile: propProfile
-}: DoctorProfileSectionProps) => {
-  const {
-    t
-  } = useTranslation("dashboard");
-  const {
-    doctorProfile: profile,
-    loading,
-    updateProfile,
-    stats,
-    refreshAll
-  } = useDoctorData();
+
+const DoctorProfileSection = ({ doctorProfile: propProfile }: DoctorProfileSectionProps) => {
+  const { t } = useTranslation("dashboard");
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { doctorProfile: profile, loading, stats, refreshAll } = useDoctorData();
+  const { verificationStatus, loading: verificationLoading } = useDoctorVerificationStatus();
+  const { uploadFile, uploading } = useFileUpload();
+
   const doctorProfile = propProfile || profile;
   const profileCompletion = stats?.profileCompletion || 0;
-  const {
-    uploadFile,
-    uploading
-  } = useFileUpload();
-  const {
-    submitForVerification,
-    isSubmitting
-  } = useDoctorVerification();
+
+  // Check if editing is locked based on verification status
+  const isEditingLocked = verificationStatus?.status === 'pending' || verificationStatus?.status === 'resubmitted';
+
   const [formData, setFormData] = useState({
     specialty: '',
     bio: '',
@@ -75,21 +48,20 @@ const DoctorProfileSection = ({
     profile_visibility: 'public',
     custom_link: ''
   });
+
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(["English"]);
   const [selectedConsultationTypes, setSelectedConsultationTypes] = useState<string[]>(["In-person", "Video"]);
-  const [documents, setDocuments] = useState<{
-    medical_license?: File;
-    professional_id?: File;
-    medical_license_url?: string;
-    professional_id_url?: string;
-  }>({});
+
   useEffect(() => {
     const fetchProfileData = async () => {
-      if (doctorProfile) {
+      if (doctorProfile && user) {
         // Fetch username and profile_visibility from profiles table
-        const {
-          data: profileData
-        } = await supabase.from('profiles').select('username, profile_visibility').eq('user_id', doctorProfile.user_id).single();
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('username, profile_visibility')
+          .eq('user_id', user.id)
+          .single();
+
         setFormData({
           specialty: doctorProfile.specialty || '',
           bio: doctorProfile.bio || '',
@@ -101,6 +73,7 @@ const DoctorProfileSection = ({
           profile_visibility: profileData?.profile_visibility || 'public',
           custom_link: (doctorProfile as any).custom_profile_link || ''
         });
+
         if ((doctorProfile as any).languages) {
           setSelectedLanguages((doctorProfile as any).languages);
         }
@@ -109,137 +82,190 @@ const DoctorProfileSection = ({
         }
       }
     };
-    fetchProfileData();
-  }, [doctorProfile]);
-  const verificationStatus: "pending" | "verified" = doctorProfile?.verified ? "verified" : "pending";
-  const specialties = ["Cardiology", "Dermatology", "Family Medicine", "Internal Medicine", "Pediatrics", "Orthopedics", "Psychiatry", "Neurology", "Gastroenterology", "Obstetrics & Gynecology"];
-  const languages = ["English", "Spanish", "Mandarin", "Hindi", "Arabic", "Portuguese", "Russian", "Japanese", "German", "French", "Italian", "Korean"];
-  const consultationTypes = ["In-person", "Video", "Chat"];
-  const handleSaveChanges = async () => {
-    if (!updateProfile || !doctorProfile?.user_id) return;
 
-    // Update profiles table (phone, username, profile_visibility)
-    const profileUpdates: any = {
-      phone: formData.phone
-    };
-    if (formData.username) {
-      profileUpdates.username = formData.username;
-    }
-    if (formData.profile_visibility) {
-      profileUpdates.profile_visibility = formData.profile_visibility;
-    }
-    const {
-      error: profileError
-    } = await supabase.from('profiles').update(profileUpdates).eq('user_id', doctorProfile.user_id);
-    if (profileError) {
-      toast.error('Failed to update profile information');
+    fetchProfileData();
+  }, [doctorProfile, user]);
+
+  const verificationStatusText: "pending" | "verified" = doctorProfile?.verified ? "verified" : "pending";
+
+  const specialties = [
+    "Cardiology", "Dermatology", "Family Medicine", "Internal Medicine", 
+    "Pediatrics", "Orthopedics", "Psychiatry", "Neurology", 
+    "Gastroenterology", "Obstetrics & Gynecology"
+  ];
+
+  const languages = [
+    "English", "Spanish", "Mandarin", "Hindi", "Arabic", "Portuguese", 
+    "Russian", "Japanese", "German", "French", "Italian", "Korean"
+  ];
+
+  const consultationTypes = ["In-person", "Video", "Chat"];
+
+  const handleSaveChanges = async () => {
+    if (!user || !doctorProfile) {
+      toast.error("User not authenticated");
       return;
     }
 
-    // Generate custom link if needed
-    let customLink = formData.custom_link;
-    if (formData.profile_visibility === 'public' && formData.username) {
-      customLink = formData.username.toLowerCase().replace(/\s+/g, '-');
-    } else if (formData.profile_visibility === 'private') {
-      customLink = `private-${doctorProfile.id.substring(0, 8)}`;
+    if (isEditingLocked) {
+      toast.error("Profile editing is locked while verification is pending");
+      return;
     }
 
-    // Update doctors table
-    const updates = {
-      specialty: formData.specialty,
-      bio: formData.bio,
-      license_number: formData.license_number,
-      consultation_fee: formData.consultation_fee ? parseFloat(formData.consultation_fee) : undefined,
-      custom_profile_link: customLink,
-      years_experience: parseInt(formData.years_experience) || 5,
-      languages: selectedLanguages,
-      consultation_types: selectedConsultationTypes
-    };
-    const result = await updateProfile(updates);
-    if (result.success) {
+    try {
+      // Update profiles table (phone, username, profile_visibility)
+      const profileUpdates: any = {
+        phone: formData.phone
+      };
+      if (formData.username) {
+        profileUpdates.username = formData.username;
+      }
+      if (formData.profile_visibility) {
+        profileUpdates.profile_visibility = formData.profile_visibility;
+      }
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update(profileUpdates)
+        .eq('user_id', user.id);
+
+      if (profileError) {
+        toast.error('Failed to update profile information');
+        return;
+      }
+
+      // Generate custom link
+      let customLink = formData.custom_link;
+      if (formData.profile_visibility === 'public' && formData.username) {
+        customLink = formData.username.toLowerCase().replace(/\s+/g, '-');
+      } else if (formData.profile_visibility === 'private') {
+        customLink = `private-${doctorProfile.id.substring(0, 8)}`;
+      }
+
+      // Update doctors table
+      const { error: doctorError } = await supabase
+        .from('doctors')
+        .update({
+          specialty: formData.specialty,
+          bio: formData.bio,
+          license_number: formData.license_number,
+          consultation_fee: formData.consultation_fee ? parseFloat(formData.consultation_fee) : undefined,
+          custom_profile_link: customLink,
+          years_experience: parseInt(formData.years_experience) || 5,
+          languages: selectedLanguages,
+          consultation_types: selectedConsultationTypes
+        })
+        .eq('user_id', user.id);
+
+      if (doctorError) throw doctorError;
+
       toast.success('Profile updated successfully');
-      // Refresh all data to update completion percentage
+      
+      // Refresh all data
+      if (refreshAll) {
+        await refreshAll();
+      }
+    } catch (error: any) {
+      console.error("Error updating profile:", error);
+      toast.error(error.message || "Failed to update profile");
+    }
+  };
+
+  const handleAvatarUpload = async (file: File) => {
+    if (!user) return;
+    const result = await uploadFile(file, 'avatars', `${user.id}/avatar-${Date.now()}.jpg`);
+    if (result) {
+      await supabase
+        .from('profiles')
+        .update({ avatar_url: result.url })
+        .eq('user_id', user.id);
+      
+      toast.success('Avatar uploaded successfully');
+      
       if (refreshAll) {
         await refreshAll();
       }
     }
   };
-  const handleAvatarUpload = async (file: File) => {
-    if (!doctorProfile?.user_id) return;
-    const result = await uploadFile(file, 'avatars', `${doctorProfile.user_id}/avatar-${Date.now()}.jpg`);
-    if (result) {
-      toast.success('Avatar uploaded successfully');
-      // Refresh profile to show new avatar
-    }
-  };
-  const handleDocumentUpload = (type: 'medical_license' | 'professional_id', file: File) => {
-    setDocuments(prev => ({
-      ...prev,
-      [type]: file
-    }));
-    toast.success(`${type === 'medical_license' ? 'Medical License' : 'Professional ID'} selected`);
-  };
-  const handleSubmitVerification = async () => {
-    if (!doctorProfile?.id) {
-      toast.error('Doctor profile not found');
-      return;
-    }
-    if (!formData.license_number) {
-      toast.error('License number is required for verification');
-      return;
-    }
-    if (!documents.medical_license && !documents.medical_license_url) {
-      toast.error('Medical license document is required');
-      return;
-    }
-    const result = await submitForVerification(doctorProfile.id, {
-      specialty: formData.specialty,
-      bio: formData.bio,
-      license_number: formData.license_number,
-      consultation_fee: formData.consultation_fee ? parseFloat(formData.consultation_fee) : 0,
-      years_experience: formData.years_experience,
-      languages: selectedLanguages,
-      consultation_types: selectedConsultationTypes,
-      documents
-    });
-    if (result.success) {
-      // Clear documents after successful submission
-      setDocuments({});
-    }
-  };
+
   const toggleLanguage = (language: string) => {
-    setSelectedLanguages(prev => prev.includes(language) ? prev.filter(l => l !== language) : [...prev, language]);
+    if (isEditingLocked) return;
+    setSelectedLanguages(prev => 
+      prev.includes(language) ? prev.filter(l => l !== language) : [...prev, language]
+    );
   };
+
   const toggleConsultationType = (type: string) => {
-    setSelectedConsultationTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]);
+    if (isEditingLocked) return;
+    setSelectedConsultationTypes(prev => 
+      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
+    );
   };
+
   if (loading) {
-    return <div className="flex items-center justify-center p-8">
+    return (
+      <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>;
+      </div>
+    );
   }
+
   if (!doctorProfile) {
-    return <div className="text-center p-8">
-        <p className="text-muted-foreground">{t("doctor.profile.description")}</p>
-      </div>;
+    return (
+      <div className="text-center p-8">
+        <p className="text-muted-foreground">{t("doctor.profile.noProfile")}</p>
+      </div>
+    );
   }
+
   const getVerificationIcon = () => {
-    switch (verificationStatus) {
+    switch (verificationStatusText) {
       case "verified":
         return <CheckCircle className="w-5 h-5 text-green-600" />;
       default:
         return <Clock className="w-5 h-5 text-amber-600" />;
     }
   };
+
   const getVerificationBadge = () => {
-    switch (verificationStatus) {
+    switch (verificationStatusText) {
       case "verified":
         return <Badge className="bg-green-100 text-green-700">{t("doctor.profile.verified")}</Badge>;
       default:
         return <Badge className="bg-amber-100 text-amber-700">{t("doctor.profile.pendingVerification")}</Badge>;
     }
   };
-  return <div className="space-y-6">
+
+  return (
+    <div className="space-y-6">
+      {/* Verification Status Alert */}
+      {isEditingLocked && (
+        <Card className="border-yellow-200 bg-gradient-to-r from-yellow-50 to-yellow-100/50 dark:from-yellow-950/20 dark:to-yellow-900/20 dark:border-yellow-800">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3">
+              <Lock className="w-5 h-5 text-yellow-600 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-yellow-900 dark:text-yellow-100">
+                  Verification Pending
+                </h3>
+                <p className="text-sm text-yellow-700 dark:text-yellow-200 mt-1">
+                  Your profile is locked for editing while your verification is being reviewed. 
+                  You can view the status and manage documents in the Doctor Signup page.
+                </p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-3"
+                  onClick={() => navigate('/doctor-signup')}
+                >
+                  View Verification Status <ExternalLink className="w-3 h-3 ml-2" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Profile Completion Header */}
       <Card>
         <CardHeader>
@@ -253,13 +279,13 @@ const DoctorProfileSection = ({
             </div>
             {getVerificationBadge()}
           </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>{t("doctor.profile.progress")}</span>
-                <span className="font-medium">{profileCompletion}%</span>
-              </div>
-              <Progress value={profileCompletion} className="h-2" />
+          <div className="space-y-2 mt-4">
+            <div className="flex justify-between text-sm">
+              <span>{t("doctor.profile.progress")}</span>
+              <span className="font-medium">{profileCompletion}%</span>
             </div>
+            <Progress value={profileCompletion} className="h-2" />
+          </div>
         </CardHeader>
       </Card>
 
@@ -277,18 +303,23 @@ const DoctorProfileSection = ({
               </AvatarFallback>
             </Avatar>
             <div className="space-y-2">
-              <Button variant="outline" size="sm" disabled={uploading} onClick={() => {
-              const input = document.createElement('input');
-              input.type = 'file';
-              input.accept = 'image/*';
-              input.onchange = e => {
-                const file = (e.target as HTMLInputElement)?.files?.[0];
-                if (file) {
-                  handleAvatarUpload(file);
-                }
-              };
-              input.click();
-            }}>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={uploading || isEditingLocked}
+                onClick={() => {
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = 'image/*';
+                  input.onchange = (e) => {
+                    const file = (e.target as HTMLInputElement)?.files?.[0];
+                    if (file) {
+                      handleAvatarUpload(file);
+                    }
+                  };
+                  input.click();
+                }}
+              >
                 <Upload className="w-4 h-4 mr-2" />
                 {uploading ? t("doctor.profile.uploading") : t("doctor.profile.uploadPhoto")}
               </Button>
@@ -299,14 +330,20 @@ const DoctorProfileSection = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Label htmlFor="fullName">{t("doctor.profile.fullName")}</Label>
-              <Input id="fullName" value={doctorProfile.profiles?.full_name || ''} readOnly className="bg-muted" />
+              <Input
+                id="fullName"
+                value={doctorProfile.profiles?.full_name || ''}
+                readOnly
+                className="bg-muted"
+              />
             </div>
             <div>
-              <Label htmlFor="degree">{t("doctor.profile.yearsExperience")}</Label>
-              <Select value={formData.years_experience} onValueChange={value => setFormData(prev => ({
-              ...prev,
-              years_experience: value
-            }))}>
+              <Label htmlFor="yearsExp">{t("doctor.profile.yearsExperience")}</Label>
+              <Select
+                value={formData.years_experience}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, years_experience: value }))}
+                disabled={isEditingLocked}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -325,42 +362,61 @@ const DoctorProfileSection = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Label htmlFor="specialty">{t("doctor.profile.specialty")} *</Label>
-              <Select value={formData.specialty.toLowerCase()} onValueChange={value => setFormData(prev => ({
-              ...prev,
-              specialty: value
-            }))}>
+              <Select
+                value={formData.specialty}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, specialty: value }))}
+                disabled={isEditingLocked}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {specialties.map(specialty => <SelectItem key={specialty} value={specialty.toLowerCase()}>
+                  {specialties.map((specialty) => (
+                    <SelectItem key={specialty} value={specialty}>
                       {specialty}
-                    </SelectItem>)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <div>
               <Label htmlFor="email">{t("doctor.profile.email")}</Label>
-              <Input id="email" value={doctorProfile.profiles?.email || ''} readOnly className="bg-muted" />
+              <Input
+                id="email"
+                value={doctorProfile.profiles?.email || ''}
+                readOnly
+                className="bg-muted"
+              />
             </div>
           </div>
 
           <div>
             <Label htmlFor="bio">{t("doctor.profile.aboutMe")}</Label>
-            <Textarea id="bio" placeholder={t("doctor.profile.bioPlaceholder")} className="min-h-[100px]" value={formData.bio} onChange={e => setFormData(prev => ({
-            ...prev,
-            bio: e.target.value
-          }))} />
+            <Textarea
+              id="bio"
+              placeholder={t("doctor.profile.bioPlaceholder")}
+              className="min-h-[100px]"
+              value={formData.bio}
+              onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+              disabled={isEditingLocked}
+            />
           </div>
 
           <div>
             <Label>{t("doctor.profile.languagesSpoken")}</Label>
             <p className="text-sm text-muted-foreground mb-3">{t("doctor.profile.languagesDescription")}</p>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-              {languages.map(language => <div key={language} className="flex items-center space-x-2">
-                  <Checkbox id={language} checked={selectedLanguages.includes(language)} onCheckedChange={() => toggleLanguage(language)} />
+              {languages.map((language) => (
+                <div key={language} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={language}
+                    checked={selectedLanguages.includes(language)}
+                    onCheckedChange={() => toggleLanguage(language)}
+                    disabled={isEditingLocked}
+                  />
                   <Label htmlFor={language} className="text-sm">{language}</Label>
-                </div>)}
+                </div>
+              ))}
             </div>
           </div>
 
@@ -369,42 +425,56 @@ const DoctorProfileSection = ({
             <Label className="text-base mb-3 block">Profile Visibility</Label>
             <div className="space-y-4">
               <div className="flex items-start space-x-3">
-                <input type="radio" id="public" name="visibility" checked={formData.profile_visibility === 'public'} onChange={() => setFormData(prev => ({
-                ...prev,
-                profile_visibility: 'public'
-              }))} className="mt-1" />
+                <input
+                  type="radio"
+                  id="public"
+                  name="visibility"
+                  checked={formData.profile_visibility === 'public'}
+                  onChange={() => !isEditingLocked && setFormData(prev => ({ ...prev, profile_visibility: 'public' }))}
+                  disabled={isEditingLocked}
+                  className="mt-1"
+                />
                 <div>
                   <Label htmlFor="public" className="font-medium">Public Profile</Label>
-                  <p className="text-sm text-muted-foreground">Your profile will be searchable and visible to everyone</p>
+                  <p className="text-sm text-muted-foreground">
+                    Your profile will be searchable and visible to everyone
+                  </p>
                 </div>
               </div>
-              
-              {formData.profile_visibility === 'public' && <div className="ml-6">
+
+              {formData.profile_visibility === 'public' && (
+                <div className="ml-6">
                   <Label htmlFor="username">Custom Username</Label>
-                  <Input id="username" value={formData.username} onChange={e => setFormData(prev => ({
-                ...prev,
-                username: e.target.value
-              }))} placeholder="dr-john-smith" />
+                  <Input
+                    id="username"
+                    value={formData.username}
+                    onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
+                    placeholder="dr-john-smith"
+                    disabled={isEditingLocked}
+                  />
                   <p className="text-xs text-muted-foreground mt-1">
                     Your profile will be: {window.location.origin}/doctor/{formData.username || 'your-username'}
                   </p>
-                </div>}
+                </div>
+              )}
 
               <div className="flex items-start space-x-3">
-                <input type="radio" id="private" name="visibility" checked={formData.profile_visibility === 'private'} onChange={() => setFormData(prev => ({
-                ...prev,
-                profile_visibility: 'private'
-              }))} className="mt-1" />
+                <input
+                  type="radio"
+                  id="private"
+                  name="visibility"
+                  checked={formData.profile_visibility === 'private'}
+                  onChange={() => !isEditingLocked && setFormData(prev => ({ ...prev, profile_visibility: 'private' }))}
+                  disabled={isEditingLocked}
+                  className="mt-1"
+                />
                 <div>
                   <Label htmlFor="private" className="font-medium">Private Profile</Label>
-                  <p className="text-sm text-muted-foreground">Only accessible via direct link (not searchable)</p>
+                  <p className="text-sm text-muted-foreground">
+                    Only accessible via direct link (not searchable)
+                  </p>
                 </div>
               </div>
-
-              {formData.custom_link && <div className="ml-6 p-3 bg-muted rounded-md">
-                  <p className="text-xs text-muted-foreground mb-1">Your private profile link:</p>
-                  <p className="text-sm font-mono">{window.location.origin}/doctor/{formData.custom_link}</p>
-                </div>}
             </div>
           </div>
         </CardContent>
@@ -419,99 +489,97 @@ const DoctorProfileSection = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Label htmlFor="license">{t("doctor.profile.medicalLicense")}</Label>
-              <Input id="license" placeholder={t("doctor.profile.licenseNumber")} value={formData.license_number} onChange={e => setFormData(prev => ({
-              ...prev,
-              license_number: e.target.value
-            }))} />
+              <Input
+                id="license"
+                placeholder={t("doctor.profile.licenseNumber")}
+                value={formData.license_number}
+                onChange={(e) => setFormData(prev => ({ ...prev, license_number: e.target.value }))}
+                disabled={isEditingLocked}
+              />
             </div>
             <div>
               <Label htmlFor="phone">{t("doctor.profile.phoneNumber")}</Label>
-              <Input id="phone" placeholder={t("doctor.profile.phoneNumber")} value={formData.phone || doctorProfile.profiles?.phone || ''} onChange={e => setFormData(prev => ({
-              ...prev,
-              phone: e.target.value
-            }))} />
+              <Input
+                id="phone"
+                placeholder={t("doctor.profile.phoneNumberPlaceholder")}
+                value={formData.phone}
+                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                disabled={isEditingLocked}
+              />
             </div>
           </div>
 
           <div>
             <Label>{t("doctor.profile.consultationTypes")}</Label>
-            <div className="flex space-x-4 mt-2">
-              {consultationTypes.map(type => <div key={type} className="flex items-center space-x-2">
-                  <Checkbox id={type} checked={selectedConsultationTypes.includes(type)} onCheckedChange={() => toggleConsultationType(type)} />
-                  <Label htmlFor={type} className="text-sm">{type}</Label>
-                </div>)}
+            <div className="grid grid-cols-3 gap-4 mt-2">
+              {consultationTypes.map((type) => (
+                <div key={type} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={type}
+                    checked={selectedConsultationTypes.includes(type)}
+                    onCheckedChange={() => toggleConsultationType(type)}
+                    disabled={isEditingLocked}
+                  />
+                  <Label htmlFor={type}>{type}</Label>
+                </div>
+              ))}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <Label htmlFor="defaultPrice">{t("doctor.profile.defaultPrice")}</Label>
-              <Input id="defaultPrice" placeholder="150" type="number" value={formData.consultation_fee} onChange={e => setFormData(prev => ({
-              ...prev,
-              consultation_fee: e.target.value
-            }))} />
-            </div>
-            <div>
-              <Label htmlFor="location">{t("doctor.profile.primaryLocation")}</Label>
-              <Input id="location" placeholder="City, State" defaultValue={doctorProfile.practices ? `${doctorProfile.practices.city}, ${doctorProfile.practices.country}` : ''} />
+          <div>
+            <Label htmlFor="fee">{t("doctor.profile.consultationFee")}</Label>
+            <Input
+              id="fee"
+              type="number"
+              placeholder={t("doctor.profile.consultationFeePlaceholder")}
+              value={formData.consultation_fee}
+              onChange={(e) => setFormData(prev => ({ ...prev, consultation_fee: e.target.value }))}
+              disabled={isEditingLocked}
+            />
+          </div>
+
+          {/* Note about verification documents */}
+          <div className="border-t pt-6">
+            <div className="bg-muted/50 rounded-lg p-4">
+              <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                <AlertCircle className="w-5 h-5" />
+                Verification Documents
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                To upload or update verification documents (medical license, professional ID, specialty certificates), 
+                please visit the Doctor Signup page.
+              </p>
+              <Button 
+                variant="link" 
+                className="px-0 mt-2"
+                onClick={() => navigate('/doctor-signup')}
+              >
+                Go to Doctor Signup <ExternalLink className="w-3 h-3 ml-1" />
+              </Button>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Verification Documents */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("doctor.profile.verificationDocuments")}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className={`border-2 border-dashed rounded-lg p-6 text-center ${documents.medical_license ? 'border-green-500 bg-green-50' : 'border-border'}`}>
-              {documents.medical_license ? <FileCheck className="w-8 h-8 mx-auto mb-2 text-green-600" /> : <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />}
-              <p className="text-sm font-medium mb-1">{t("doctor.profile.medicalLicenseDoc")}</p>
-              <p className="text-xs text-muted-foreground mb-2">
-                {documents.medical_license ? documents.medical_license.name : t("doctor.profile.uploadLicenseDoc")}
-              </p>
-              <Button variant="outline" size="sm" disabled={uploading} onClick={() => {
-              const input = document.createElement('input');
-              input.type = 'file';
-              input.accept = '.pdf,.jpg,.jpeg,.png';
-              input.onchange = e => {
-                const file = (e.target as HTMLInputElement)?.files?.[0];
-                if (file) handleDocumentUpload('medical_license', file);
-              };
-              input.click();
-            }}>
-                {documents.medical_license ? t("doctor.profile.changeFile") : t("doctor.profile.chooseFile")}
-              </Button>
-            </div>
-            <div className={`border-2 border-dashed rounded-lg p-6 text-center ${documents.professional_id ? 'border-green-500 bg-green-50' : 'border-border'}`}>
-              {documents.professional_id ? <FileCheck className="w-8 h-8 mx-auto mb-2 text-green-600" /> : <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />}
-              <p className="text-sm font-medium mb-1">Professional ID</p>
-              <p className="text-xs text-muted-foreground mb-2">
-                {documents.professional_id ? documents.professional_id.name : 'Government issued ID (PDF, JPG, PNG)'}
-              </p>
-              <Button variant="outline" size="sm" disabled={uploading} onClick={() => {
-              const input = document.createElement('input');
-              input.type = 'file';
-              input.accept = '.pdf,.jpg,.jpeg,.png';
-              input.onchange = e => {
-                const file = (e.target as HTMLInputElement)?.files?.[0];
-                if (file) handleDocumentUpload('professional_id', file);
-              };
-              input.click();
-            }}>
-                {documents.professional_id ? 'Change File' : 'Choose File'}
-              </Button>
-            </div>
-          </div>
-          
-          <div className="flex gap-2">
-            <Button onClick={handleSaveChanges} disabled={isSubmitting}>Save Changes</Button>
-            
-          </div>
-        </CardContent>
-      </Card>
-    </div>;
+      {/* Save Button */}
+      <div className="flex justify-end">
+        <Button
+          onClick={handleSaveChanges}
+          disabled={isEditingLocked}
+          size="lg"
+        >
+          {isEditingLocked ? (
+            <>
+              <Lock className="w-4 h-4 mr-2" />
+              Profile Locked
+            </>
+          ) : (
+            'Save Changes'
+          )}
+        </Button>
+      </div>
+    </div>
+  );
 };
+
 export default DoctorProfileSection;
