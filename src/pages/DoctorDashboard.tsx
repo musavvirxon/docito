@@ -152,6 +152,7 @@ const DoctorDashboardContent = () => {
         </div>
       </div>;
   }
+  // Independent doctors don't have "My Services" - moved to Clinic Admin
   const sidebarItems = doctorStatus === "independent" ? [{
     id: "dashboard",
     label: t("doctor.navigation.dashboard"),
@@ -160,10 +161,6 @@ const DoctorDashboardContent = () => {
     id: "profile",
     label: t("doctor.navigation.myProfile"),
     icon: User
-  }, {
-    id: "services",
-    label: t("doctor.navigation.myServices"),
-    icon: Briefcase
   }, {
     id: "schedule",
     label: t("doctor.navigation.scheduleSettings"),
