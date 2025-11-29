@@ -1,7 +1,8 @@
 // Shared data between DoctorSignUp and DoctorProfileSection
 
-export const specialtyCategories = {
+export const specialtyCategories: Record<string, string[]> = {
   "Internal Medicine": [
+    "Internal Medicine (General)",
     "Cardiology",
     "Endocrinology",
     "Gastroenterology",
@@ -18,6 +19,7 @@ export const specialtyCategories = {
     "Hospital Medicine",
   ],
   "Pediatrics": [
+    "Pediatrics (General)",
     "Pediatric Cardiology",
     "Pediatric Neurology",
     "Pediatric Endocrinology",
@@ -30,12 +32,14 @@ export const specialtyCategories = {
     "Pediatric Intensive Care",
   ],
   "Obstetrics & Gynecology": [
+    "Obstetrics & Gynecology (General)",
     "Maternal–Fetal Medicine",
     "Reproductive Endocrinology & Infertility",
     "Gynecologic Oncology",
     "Urogynecology",
   ],
   "Neurology": [
+    "Neurology (General)",
     "Clinical Neurophysiology",
     "Neuromuscular Medicine",
     "Vascular Neurology (Stroke)",
@@ -46,6 +50,7 @@ export const specialtyCategories = {
     "Sleep Medicine",
   ],
   "Psychiatry": [
+    "Psychiatry (General)",
     "Child & Adolescent Psychiatry",
     "Geriatric Psychiatry",
     "Addiction Psychiatry",
@@ -54,12 +59,14 @@ export const specialtyCategories = {
     "Sleep Psychiatry",
   ],
   "Dermatology": [
+    "Dermatology (General)",
     "Cosmetic Dermatology",
     "Dermatopathology",
     "Pediatric Dermatology",
     "Mohs Surgery",
   ],
   "Emergency Medicine": [
+    "Emergency Medicine (General)",
     "Medical Toxicology",
     "Sports Medicine",
     "Pediatric Emergency Medicine",
@@ -67,11 +74,13 @@ export const specialtyCategories = {
     "Critical Care",
   ],
   "Family Medicine": [
+    "Family Medicine (General)",
     "Sports Medicine",
     "Geriatric Medicine",
     "Preventive Medicine",
   ],
   "Anesthesiology": [
+    "Anesthesiology (General)",
     "Cardiothoracic Anesthesia",
     "Neuroanesthesia",
     "Pediatric Anesthesia",
@@ -79,6 +88,7 @@ export const specialtyCategories = {
     "Pain Medicine",
   ],
   "Radiology": [
+    "Radiology (General)",
     "Neuroradiology",
     "Musculoskeletal Radiology",
     "Abdominal Imaging",
@@ -88,6 +98,7 @@ export const specialtyCategories = {
     "Nuclear Medicine",
   ],
   "Pathology": [
+    "Pathology (General)",
     "Anatomical Pathology",
     "Clinical Pathology",
     "Cytopathology",
@@ -96,11 +107,13 @@ export const specialtyCategories = {
     "Molecular Pathology",
   ],
   "Physical Medicine & Rehabilitation": [
+    "Physical Medicine & Rehabilitation (General)",
     "Sports Medicine",
     "Pain Medicine",
     "Spinal Cord Injury Medicine",
   ],
   "Oncology": [
+    "Oncology (General)",
     "Medical Oncology",
     "Surgical Oncology",
     "Radiation Oncology",
@@ -108,6 +121,7 @@ export const specialtyCategories = {
     "Hematologic Oncology",
   ],
   "General Surgery": [
+    "General Surgery",
     "Bariatric Surgery",
     "Breast Surgery",
     "Transplant Surgery",
@@ -116,6 +130,7 @@ export const specialtyCategories = {
     "Minimally Invasive Surgery",
   ],
   "Orthopedic Surgery": [
+    "Orthopedic Surgery (General)",
     "Spine Surgery",
     "Joint Replacement",
     "Sports Medicine",
@@ -124,6 +139,7 @@ export const specialtyCategories = {
     "Trauma Orthopedics",
   ],
   "Neurosurgery": [
+    "Neurosurgery (General)",
     "Skull Base Surgery",
     "Spine Surgery",
     "Vascular Neurosurgery",
@@ -132,11 +148,13 @@ export const specialtyCategories = {
     "Neuro-Oncology",
   ],
   "Cardiothoracic Surgery": [
+    "Cardiothoracic Surgery (General)",
     "Adult Cardiac Surgery",
     "Thoracic Surgery",
     "Congenital Heart Surgery",
   ],
   "Plastic Surgery": [
+    "Plastic Surgery (General)",
     "Aesthetic (Cosmetic) Surgery",
     "Craniofacial Surgery",
     "Burn Surgery",
@@ -144,6 +162,7 @@ export const specialtyCategories = {
     "Microsurgery",
   ],
   "Urology": [
+    "Urology (General)",
     "Endourology",
     "Pediatric Urology",
     "Andrology",
@@ -151,11 +170,13 @@ export const specialtyCategories = {
     "Female Urology",
   ],
   "Vascular Surgery": [
+    "Vascular Surgery (General)",
     "Endovascular Surgery",
     "Aortic Surgery",
     "Peripheral Vascular Surgery",
   ],
   "Otolaryngology (ENT)": [
+    "Otolaryngology (General)",
     "Rhinology",
     "Laryngology",
     "Otology & Neurotology",
@@ -164,6 +185,7 @@ export const specialtyCategories = {
     "Facial Plastics",
   ],
   "Ophthalmology": [
+    "Ophthalmology (General)",
     "Retina & Vitreous",
     "Cornea & External Disease",
     "Glaucoma",
@@ -172,9 +194,10 @@ export const specialtyCategories = {
     "Pediatric Ophthalmology",
     "Refractive Surgery",
   ],
-  "General Dentistry": [],
-  "Orthodontics & Dentofacial Orthopedics": [],
+  "General Dentistry": ["General Dentistry"],
+  "Orthodontics & Dentofacial Orthopedics": ["Orthodontics & Dentofacial Orthopedics"],
   "Oral & Maxillofacial Surgery": [
+    "Oral & Maxillofacial Surgery (General)",
     "Implant Surgery",
     "Orthognathic Surgery",
     "TMJ Surgery",
@@ -182,41 +205,46 @@ export const specialtyCategories = {
     "Dentoalveolar Surgery",
   ],
   "Periodontics": [
+    "Periodontics (General)",
     "Periodontal Surgery",
     "Soft Tissue Grafting",
     "Implant Periodontics",
   ],
   "Prosthodontics": [
+    "Prosthodontics (General)",
     "Fixed Prosthodontics",
     "Removable Prosthodontics",
     "Implant Prosthodontics",
   ],
-  "Endodontics": [],
-  "Pediatric Dentistry": [],
+  "Endodontics": ["Endodontics"],
+  "Pediatric Dentistry": ["Pediatric Dentistry"],
   "Oral Medicine": [
+    "Oral Medicine (General)",
     "Oral Mucosal Diseases",
     "Orofacial Pain",
     "Dental Sleep Medicine",
   ],
-  "Oral & Maxillofacial Radiology": [],
-  "Oral & Maxillofacial Pathology": [],
-  "Physiotherapy": [],
-  "Occupational Therapy": [],
-  "Speech & Language Therapy": [],
-  "Dietetics / Nutrition": [],
-  "Audiology": [],
-  "Optometry": [],
-  "Radiography": [],
-  "Laboratory Medicine": [],
-  "Pharmacy": [],
-  "Midwifery": [],
+  "Oral & Maxillofacial Radiology": ["Oral & Maxillofacial Radiology"],
+  "Oral & Maxillofacial Pathology": ["Oral & Maxillofacial Pathology"],
+  "Physiotherapy": ["Physiotherapy"],
+  "Occupational Therapy": ["Occupational Therapy"],
+  "Speech & Language Therapy": ["Speech & Language Therapy"],
+  "Dietetics / Nutrition": ["Dietetics / Nutrition"],
+  "Audiology": ["Audiology"],
+  "Optometry": ["Optometry"],
+  "Radiography": ["Radiography"],
+  "Laboratory Medicine": ["Laboratory Medicine"],
+  "Pharmacy": ["Pharmacy"],
+  "Midwifery": ["Midwifery"],
   "Nursing": [
+    "Nursing (General)",
     "Critical Care Nursing",
     "ER Nursing",
     "Oncology Nursing",
     "Pediatric Nursing",
   ],
   "Public Health": [
+    "Public Health (General)",
     "Epidemiology",
     "Health Policy",
     "Environmental Health",
@@ -225,6 +253,7 @@ export const specialtyCategories = {
     "Aerospace Medicine",
   ],
   "Integrative Medicine": [
+    "Integrative Medicine (General)",
     "Acupuncture",
     "Chiropractic",
     "Traditional Chinese Medicine",
@@ -233,35 +262,33 @@ export const specialtyCategories = {
 };
 
 export const allLanguages = [
-  "Afar", "Abkhazian", "Avestan", "Afrikaans", "Akan", "Amharic", "Aragonese", "Arabic", "Assamese", "Avaric", "Aymara", "Azerbaijani",
-  "Bashkir", "Belarusian", "Bulgarian", "Bihari", "Bislama", "Bambara", "Bengali", "Tibetan", "Breton", "Bosnian",
-  "Catalan", "Chechen", "Chamorro", "Corsican", "Cree", "Czech", "Church Slavic", "Chuvash", "Welsh",
-  "Danish", "German", "Divehi", "Dzongkha",
-  "Ewe", "Greek", "English", "Esperanto", "Spanish", "Estonian", "Basque",
-  "Persian (Farsi)", "Fulah", "Finnish", "Fijian", "Faroese", "French", "Western Frisian",
-  "Irish", "Scottish Gaelic", "Galician", "Guarani", "Gujarati", "Manx",
-  "Hausa", "Hebrew", "Hindi", "Hiri Motu", "Croatian", "Haitian Creole", "Hungarian", "Armenian", "Herero",
-  "Interlingua", "Indonesian", "Interlingue", "Igbo", "Sichuan Yi", "Inupiaq", "Ido", "Icelandic", "Italian", "Inuktitut",
-  "Japanese", "Javanese",
-  "Georgian", "Kongo", "Kikuyu", "Kuanyama", "Kazakh", "Kalaallisut", "Khmer", "Kannada", "Korean", "Kanuri", "Kashmiri", "Kurdish", "Komi", "Cornish", "Kyrgyz",
-  "Latin", "Luxembourgish", "Ganda", "Limburgan", "Lingala", "Lao", "Lithuanian", "Luba-Katanga", "Latvian",
-  "Malagasy", "Marshallese", "Maori", "Macedonian", "Malayalam", "Mongolian", "Marathi", "Malay", "Maltese", "Burmese",
-  "Nauru", "Norwegian Bokmål", "North Ndebele", "Nepali", "Ndonga", "Dutch", "Norwegian Nynorsk", "Norwegian", "South Ndebele", "Navajo", "Chichewa",
-  "Occitan", "Ojibwa", "Oromo", "Oriya", "Ossetian",
-  "Punjabi", "Pali", "Polish", "Pashto", "Portuguese",
-  "Quechua",
-  "Romansh", "Rundi", "Romanian", "Russian", "Kinyarwanda",
-  "Sanskrit", "Sardinian", "Sindhi", "Northern Sami", "Sango", "Sinhala", "Slovak", "Slovenian", "Samoan", "Shona", "Somali", "Albanian", "Serbian", "Swati", "Southern Sotho", "Sundanese", "Swedish", "Swahili",
-  "Tamil", "Telugu", "Tajik", "Thai", "Tigrinya", "Turkmen", "Tagalog", "Tswana", "Tongan", "Turkish", "Tsonga", "Tatar", "Twi", "Tahitian",
-  "Uyghur", "Ukrainian", "Urdu", "Uzbek",
-  "Venda", "Vietnamese", "Volapük",
-  "Walloon", "Wolof",
-  "Xhosa",
-  "Yiddish", "Yoruba",
-  "Zhuang", "Chinese", "Zulu"
+  // Major world languages first (sorted by speakers)
+  "English", "Mandarin Chinese", "Hindi", "Spanish", "French", "Arabic", "Bengali", "Portuguese", "Russian", "Japanese",
+  "German", "Korean", "Vietnamese", "Turkish", "Italian", "Thai", "Polish", "Ukrainian", "Dutch", "Greek",
+  "Czech", "Swedish", "Hungarian", "Finnish", "Danish", "Norwegian", "Romanian", "Bulgarian", "Slovak", "Croatian",
+  "Serbian", "Slovenian", "Lithuanian", "Latvian", "Estonian", "Albanian", "Macedonian", "Bosnian",
+  // Asian languages
+  "Cantonese", "Wu Chinese", "Min Chinese", "Hakka Chinese", "Taiwanese",
+  "Indonesian", "Malay", "Tagalog", "Filipino", "Javanese", "Sundanese",
+  "Tamil", "Telugu", "Marathi", "Gujarati", "Kannada", "Malayalam", "Punjabi", "Urdu", "Sindhi", "Nepali", "Sinhala",
+  "Burmese", "Khmer", "Lao",
+  // Middle Eastern languages
+  "Hebrew", "Persian (Farsi)", "Kurdish", "Pashto", "Dari", "Azerbaijani",
+  // African languages
+  "Swahili", "Amharic", "Hausa", "Yoruba", "Igbo", "Zulu", "Xhosa", "Afrikaans", "Somali", "Oromo", "Tigrinya",
+  // Central Asian languages
+  "Uzbek", "Kazakh", "Kyrgyz", "Tajik", "Turkmen", "Uyghur", "Mongolian",
+  // Other European languages
+  "Catalan", "Basque", "Galician", "Welsh", "Irish", "Scottish Gaelic", "Icelandic", "Maltese", "Luxembourgish",
+  // South American indigenous
+  "Quechua", "Guarani", "Aymara",
+  // Sign languages
+  "American Sign Language (ASL)", "British Sign Language (BSL)", "International Sign Language",
+  // Other
+  "Esperanto", "Latin"
 ];
 
-export const consultationTypes = ["In-person", "Video", "Chat"];
+export const consultationTypes = ["In-person", "Video", "Phone", "Chat", "Home Visit"];
 
 export const experienceOptions = [
   { value: "0-2", label: "0-2 years" },
@@ -276,11 +303,7 @@ export const experienceOptions = [
 export const getAllSpecialtiesFlat = (): string[] => {
   const result: string[] = [];
   Object.entries(specialtyCategories).forEach(([main, subs]) => {
-    if (subs.length === 0) {
-      result.push(main);
-    } else {
-      subs.forEach(sub => result.push(`${main} - ${sub}`));
-    }
+    subs.forEach(sub => result.push(`${main} - ${sub}`));
   });
   return result;
 };
@@ -288,4 +311,23 @@ export const getAllSpecialtiesFlat = (): string[] => {
 // Get main specialties only (for simple dropdown)
 export const getMainSpecialties = (): string[] => {
   return Object.keys(specialtyCategories);
+};
+
+// Phone number validation - basic international format check
+export const validatePhoneNumber = (phone: string): { isValid: boolean; message: string } => {
+  if (!phone) return { isValid: false, message: "Phone number is required" };
+  
+  // Remove all spaces, dashes, and parentheses
+  const cleaned = phone.replace(/[\s\-\(\)]/g, '');
+  
+  // Check if it starts with + and has 7-15 digits after
+  const internationalPattern = /^\+[1-9]\d{6,14}$/;
+  // Or just digits (7-15 digits for local numbers)
+  const localPattern = /^[0-9]{7,15}$/;
+  
+  if (internationalPattern.test(cleaned) || localPattern.test(cleaned)) {
+    return { isValid: true, message: "Valid phone number" };
+  }
+  
+  return { isValid: false, message: "Please enter a valid phone number (e.g., +1234567890)" };
 };
