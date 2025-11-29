@@ -8,8 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useState, useEffect } from "react";
-import { Upload, Info, User, Briefcase, Building2, FileText, Settings, Shield, FileCheck, ChevronDown, ChevronRight, GraduationCap, Award } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Upload, Info, User, Briefcase, Building2, FileText, Settings, Shield, FileCheck, ChevronDown, ChevronRight, GraduationCap, Award, Save, AlertCircle, Phone, CheckCircle2 } from "lucide-react";
 import { useSimpleForm } from "@/hooks/useSimpleForm";
 import { useQuickNavigate } from "@/hooks/useQuickNavigate";
 import { useFileUpload } from "@/hooks/useFileUpload";
@@ -20,15 +20,11 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { getCountryRequirements, getAllCountries, DocumentRequirement } from "@/config/countryDocumentRequirements";
+import { specialtyCategories, allLanguages, consultationTypes, experienceOptions, validatePhoneNumber } from "@/config/doctorFormData";
 
 const DoctorSignUp = () => {
-  const {
-    t
-  } = useTranslation('auth');
-  const {
-    user,
-    loading
-  } = useAuth();
+  const { t } = useTranslation('auth');
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [hasAssociatedPractice, setHasAssociatedPractice] = useState<string>("");
   const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
@@ -52,6 +48,13 @@ const DoctorSignUp = () => {
   const [profileVisibility, setProfileVisibility] = useState<string>("public");
   const [customLink, setCustomLink] = useState<string>("");
   
+  // Phone numbers
+  const [smsPhone, setSmsPhone] = useState<string>("");
+  const [useSamePhoneForSms, setUseSamePhoneForSms] = useState(true);
+  const [phoneValidation, setPhoneValidation] = useState({ isValid: false, message: "" });
+  const [smsPhoneValidation, setSmsPhoneValidation] = useState({ isValid: false, message: "" });
+  const [smsVerified, setSmsVerified] = useState(false);
+  
   // Additional fields for verification
   const [selectedAppointmentTypes, setSelectedAppointmentTypes] = useState<string[]>([]);
   const [consultationFeeFrom, setConsultationFeeFrom] = useState<string>("");
@@ -66,17 +69,12 @@ const DoctorSignUp = () => {
   const [selectedCountryCode, setSelectedCountryCode] = useState<string>("");
   const [requiredDocuments, setRequiredDocuments] = useState<DocumentRequirement[]>([]);
   
-  const {
-    navigateToDoctorDashboard
-  } = useQuickNavigate();
-  const {
-    uploadFile,
-    uploading
-  } = useFileUpload();
-  const {
-    submitForVerification,
-    isSubmitting
-  } = useDoctorVerification();
+  // Draft saving state
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  
+  const { navigateToDoctorDashboard } = useQuickNavigate();
+  const { uploadFile, uploading } = useFileUpload();
+  const { submitForVerification, isSubmitting } = useDoctorVerification();
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -85,15 +83,30 @@ const DoctorSignUp = () => {
       navigate('/auth');
     }
   }, [user, loading, navigate]);
-  const {
-    formData,
-    updateField,
-    fillDummyData,
-    isLoading,
-    handleSubmit,
-    canFillDummy,
-    isDevMode
-  } = useSimpleForm({
+
+  // Load draft data on mount
+  useEffect(() => {
+    const loadDraft = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from('doctors')
+        .select('*, profiles:user_id(full_name, phone)')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (data) {
+        if (data.specialty) setSelectedSpecialties([data.specialty]);
+        if (data.languages) setSelectedLanguages(data.languages);
+        if (data.consultation_types) setSelectedAppointmentTypes(data.consultation_types);
+        if (data.bio) updateField('bio', data.bio);
+        if (data.license_number) updateField('license', data.license_number);
+        if (data.profiles?.phone) updateField('phone', data.profiles.phone);
+      }
+    };
+    loadDraft();
+  }, [user]);
+
+  const { formData, updateField, fillDummyData, isLoading, handleSubmit, canFillDummy, isDevMode } = useSimpleForm({
     firstName: "",
     lastName: "",
     gender: "",
@@ -106,267 +119,22 @@ const DoctorSignUp = () => {
     region: "",
     bio: ""
   }, 'doctor');
-  const specialtyCategories = {
-    "Internal Medicine": [
-      "Cardiology",
-      "Endocrinology",
-      "Gastroenterology",
-      "Hepatology",
-      "Nephrology",
-      "Pulmonology / Respiratory Medicine",
-      "Rheumatology",
-      "Infectious Diseases",
-      "Hematology",
-      "Oncology",
-      "Allergy & Immunology",
-      "Geriatric Medicine",
-      "Adolescent Medicine",
-      "Hospital Medicine",
-    ],
-    "Pediatrics": [
-      "Pediatric Cardiology",
-      "Pediatric Neurology",
-      "Pediatric Endocrinology",
-      "Pediatric Gastroenterology",
-      "Pediatric Pulmonology",
-      "Pediatric Nephrology",
-      "Pediatric Hematology & Oncology",
-      "Neonatology",
-      "Pediatric Surgery",
-      "Pediatric Intensive Care",
-    ],
-    "Obstetrics & Gynecology": [
-      "Maternal–Fetal Medicine",
-      "Reproductive Endocrinology & Infertility",
-      "Gynecologic Oncology",
-      "Urogynecology",
-    ],
-    "Neurology": [
-      "Clinical Neurophysiology",
-      "Neuromuscular Medicine",
-      "Vascular Neurology (Stroke)",
-      "Neurocritical Care",
-      "Epileptology",
-      "Movement Disorders",
-      "Headache Medicine",
-      "Sleep Medicine",
-    ],
-    "Psychiatry": [
-      "Child & Adolescent Psychiatry",
-      "Geriatric Psychiatry",
-      "Addiction Psychiatry",
-      "Forensic Psychiatry",
-      "Consultation–Liaison Psychiatry",
-      "Sleep Psychiatry",
-    ],
-    "Dermatology": [
-      "Cosmetic Dermatology",
-      "Dermatopathology",
-      "Pediatric Dermatology",
-      "Mohs Surgery",
-    ],
-    "Emergency Medicine": [
-      "Medical Toxicology",
-      "Sports Medicine",
-      "Pediatric Emergency Medicine",
-      "Disaster Medicine",
-      "Critical Care",
-    ],
-    "Family Medicine": [
-      "Sports Medicine",
-      "Geriatric Medicine",
-      "Preventive Medicine",
-    ],
-    "Anesthesiology": [
-      "Cardiothoracic Anesthesia",
-      "Neuroanesthesia",
-      "Pediatric Anesthesia",
-      "Critical Care",
-      "Pain Medicine",
-    ],
-    "Radiology": [
-      "Neuroradiology",
-      "Musculoskeletal Radiology",
-      "Abdominal Imaging",
-      "Breast Imaging",
-      "Pediatric Radiology",
-      "Vascular & Interventional Radiology",
-      "Nuclear Medicine",
-    ],
-    "Pathology": [
-      "Anatomical Pathology",
-      "Clinical Pathology",
-      "Cytopathology",
-      "Hematopathology",
-      "Forensic Pathology",
-      "Molecular Pathology",
-    ],
-    "Physical Medicine & Rehabilitation": [
-      "Sports Medicine",
-      "Pain Medicine",
-      "Spinal Cord Injury Medicine",
-    ],
-    "Oncology": [
-      "Medical Oncology",
-      "Surgical Oncology",
-      "Radiation Oncology",
-      "Gynecologic Oncology",
-      "Hematologic Oncology",
-    ],
-    "General Surgery": [
-      "Bariatric Surgery",
-      "Breast Surgery",
-      "Transplant Surgery",
-      "Trauma Surgery",
-      "Colorectal Surgery",
-      "Minimally Invasive Surgery",
-    ],
-    "Orthopedic Surgery": [
-      "Spine Surgery",
-      "Joint Replacement",
-      "Sports Medicine",
-      "Hand Surgery",
-      "Pediatric Orthopedics",
-      "Trauma Orthopedics",
-    ],
-    "Neurosurgery": [
-      "Skull Base Surgery",
-      "Spine Surgery",
-      "Vascular Neurosurgery",
-      "Pediatric Neurosurgery",
-      "Functional Neurosurgery",
-      "Neuro-Oncology",
-    ],
-    "Cardiothoracic Surgery": [
-      "Adult Cardiac Surgery",
-      "Thoracic Surgery",
-      "Congenital Heart Surgery",
-    ],
-    "Plastic Surgery": [
-      "Aesthetic (Cosmetic) Surgery",
-      "Craniofacial Surgery",
-      "Burn Surgery",
-      "Hand Surgery",
-      "Microsurgery",
-    ],
-    "Urology": [
-      "Endourology",
-      "Pediatric Urology",
-      "Andrology",
-      "Oncologic Urology",
-      "Female Urology",
-    ],
-    "Vascular Surgery": [
-      "Endovascular Surgery",
-      "Aortic Surgery",
-      "Peripheral Vascular Surgery",
-    ],
-    "Otolaryngology (ENT)": [
-      "Rhinology",
-      "Laryngology",
-      "Otology & Neurotology",
-      "Head & Neck Surgery",
-      "Pediatric ENT",
-      "Facial Plastics",
-    ],
-    "Ophthalmology": [
-      "Retina & Vitreous",
-      "Cornea & External Disease",
-      "Glaucoma",
-      "Oculoplastics",
-      "Neuro-ophthalmology",
-      "Pediatric Ophthalmology",
-      "Refractive Surgery",
-    ],
-    "General Dentistry": [],
-    "Orthodontics & Dentofacial Orthopedics": [],
-    "Oral & Maxillofacial Surgery": [
-      "Implant Surgery",
-      "Orthognathic Surgery",
-      "TMJ Surgery",
-      "Facial Trauma",
-      "Dentoalveolar Surgery",
-    ],
-    "Periodontics": [
-      "Periodontal Surgery",
-      "Soft Tissue Grafting",
-      "Implant Periodontics",
-    ],
-    "Prosthodontics": [
-      "Fixed Prosthodontics",
-      "Removable Prosthodontics",
-      "Implant Prosthodontics",
-    ],
-    "Endodontics": [],
-    "Pediatric Dentistry": [],
-    "Oral Medicine": [
-      "Oral Mucosal Diseases",
-      "Orofacial Pain",
-      "Dental Sleep Medicine",
-    ],
-    "Oral & Maxillofacial Radiology": [],
-    "Oral & Maxillofacial Pathology": [],
-    "Physiotherapy": [],
-    "Occupational Therapy": [],
-    "Speech & Language Therapy": [],
-    "Dietetics / Nutrition": [],
-    "Audiology": [],
-    "Optometry": [],
-    "Radiography": [],
-    "Laboratory Medicine": [],
-    "Pharmacy": [],
-    "Midwifery": [],
-    "Nursing": [
-      "Critical Care Nursing",
-      "ER Nursing",
-      "Oncology Nursing",
-      "Pediatric Nursing",
-    ],
-    "Public Health": [
-      "Epidemiology",
-      "Health Policy",
-      "Environmental Health",
-      "Preventive Medicine",
-      "Lifestyle Medicine",
-      "Aerospace Medicine",
-    ],
-    "Integrative Medicine": [
-      "Acupuncture",
-      "Chiropractic",
-      "Traditional Chinese Medicine",
-      "Homeopathy",
-    ],
-  };
 
+  // Phone validation effect
+  useEffect(() => {
+    if (formData.phone) {
+      setPhoneValidation(validatePhoneNumber(formData.phone));
+    }
+  }, [formData.phone]);
+
+  useEffect(() => {
+    if (!useSamePhoneForSms && smsPhone) {
+      setSmsPhoneValidation(validatePhoneNumber(smsPhone));
+    }
+  }, [smsPhone, useSamePhoneForSms]);
+  // Use specialtyCategories from doctorFormData.ts
   const [expandedSpecialty, setExpandedSpecialty] = useState<string | null>(null);
-  const allLanguages = [
-    "Afar", "Abkhazian", "Avestan", "Afrikaans", "Akan", "Amharic", "Aragonese", "Arabic", "Assamese", "Avaric", "Aymara", "Azerbaijani",
-    "Bashkir", "Belarusian", "Bulgarian", "Bihari", "Bislama", "Bambara", "Bengali", "Tibetan", "Breton", "Bosnian",
-    "Catalan", "Chechen", "Chamorro", "Corsican", "Cree", "Czech", "Church Slavic", "Chuvash", "Welsh",
-    "Danish", "German", "Divehi", "Dzongkha",
-    "Ewe", "Greek", "English", "Esperanto", "Spanish", "Estonian", "Basque",
-    "Persian (Farsi)", "Fulah", "Finnish", "Fijian", "Faroese", "French", "Western Frisian",
-    "Irish", "Scottish Gaelic", "Galician", "Guarani", "Gujarati", "Manx",
-    "Hausa", "Hebrew", "Hindi", "Hiri Motu", "Croatian", "Haitian Creole", "Hungarian", "Armenian", "Herero",
-    "Interlingua", "Indonesian", "Interlingue", "Igbo", "Sichuan Yi", "Inupiaq", "Ido", "Icelandic", "Italian", "Inuktitut",
-    "Japanese", "Javanese",
-    "Georgian", "Kongo", "Kikuyu", "Kuanyama", "Kazakh", "Kalaallisut", "Khmer", "Kannada", "Korean", "Kanuri", "Kashmiri", "Kurdish", "Komi", "Cornish", "Kyrgyz",
-    "Latin", "Luxembourgish", "Ganda", "Limburgan", "Lingala", "Lao", "Lithuanian", "Luba-Katanga", "Latvian",
-    "Malagasy", "Marshallese", "Maori", "Macedonian", "Malayalam", "Mongolian", "Marathi", "Malay", "Maltese", "Burmese",
-    "Nauru", "Norwegian Bokmål", "North Ndebele", "Nepali", "Ndonga", "Dutch", "Norwegian Nynorsk", "Norwegian", "South Ndebele", "Navajo", "Chichewa",
-    "Occitan", "Ojibwa", "Oromo", "Oriya", "Ossetian",
-    "Punjabi", "Pali", "Polish", "Pashto", "Portuguese",
-    "Quechua",
-    "Romansh", "Rundi", "Romanian", "Russian", "Kinyarwanda",
-    "Sanskrit", "Sardinian", "Sindhi", "Northern Sami", "Sango", "Sinhala", "Slovak", "Slovenian", "Samoan", "Shona", "Somali", "Albanian", "Serbian", "Swati", "Southern Sotho", "Sundanese", "Swedish", "Swahili",
-    "Tamil", "Telugu", "Tajik", "Thai", "Tigrinya", "Turkmen", "Tagalog", "Tswana", "Tongan", "Turkish", "Tsonga", "Tatar", "Twi", "Tahitian",
-    "Uyghur", "Ukrainian", "Urdu", "Uzbek",
-    "Venda", "Vietnamese", "Volapük",
-    "Walloon", "Wolof",
-    "Xhosa",
-    "Yiddish", "Yoruba",
-    "Zhuang", "Chinese", "Zulu"
-  ];
+  
   const availableCountries = getAllCountries();
   const usStates = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"];
 
@@ -377,6 +145,7 @@ const DoctorSignUp = () => {
       setRequiredDocuments(docs);
     }
   }, [selectedCountryCode]);
+  
   const mockClinics = [{
     id: 1,
     name: "Metro Medical Center",
@@ -393,45 +162,77 @@ const DoctorSignUp = () => {
     address: "789 Pine St, Chicago, IL",
     verified: false
   }];
+  
   const toggleSpecialty = (specialty: string, parentSpecialty: string) => {
     const fullName = `${parentSpecialty} - ${specialty}`;
-    
     setSelectedSpecialties(prev => {
-      if (prev.includes(fullName)) {
-        return prev.filter(s => s !== fullName);
-      }
-      if (prev.length >= 5) {
-        toast.error('You can select up to 5 subspecialties');
-        return prev;
-      }
+      if (prev.includes(fullName)) return prev.filter(s => s !== fullName);
+      if (prev.length >= 5) { toast.error('Max 5 specialties allowed'); return prev; }
       return [...prev, fullName];
     });
   };
 
-  const removeSpecialty = (specialty: string) => {
-    setSelectedSpecialties(prev => prev.filter(s => s !== specialty));
-  };
+  const removeSpecialty = (specialty: string) => setSelectedSpecialties(prev => prev.filter(s => s !== specialty));
 
-  // Flatten all specialties for search
-  const allSpecialtiesFlat = Object.entries(specialtyCategories).flatMap(([main, subs]) => 
-    subs.map(sub => `${main} - ${sub}`)
-  );
-
+  // Show ALL main specialties (including those with single entry like "General Dentistry")
   const filteredMainSpecialties = Object.keys(specialtyCategories).filter(spec => {
-    const subs = specialtyCategories[spec as keyof typeof specialtyCategories];
-    // Only show main specialties that have subspecialties
-    if (subs.length === 0) return false;
-    // Filter by search
     if (specialtySearch) {
       const searchLower = specialtySearch.toLowerCase();
-      return spec.toLowerCase().includes(searchLower) || 
-             subs.some(sub => sub.toLowerCase().includes(searchLower));
+      const subs = specialtyCategories[spec as keyof typeof specialtyCategories];
+      return spec.toLowerCase().includes(searchLower) || subs.some(sub => sub.toLowerCase().includes(searchLower));
     }
     return true;
   });
 
-  const toggleExpandSpecialty = (specialty: string) => {
-    setExpandedSpecialty(prev => prev === specialty ? null : specialty);
+  const toggleExpandSpecialty = (specialty: string) => setExpandedSpecialty(prev => prev === specialty ? null : specialty);
+
+  // Save draft function
+  const handleSaveDraft = async () => {
+    if (!user) { toast.error('Please log in first'); return; }
+    setIsSavingDraft(true);
+    
+    try {
+      // Upload avatar if provided
+      let avatar_url = '';
+      if (avatar) {
+        const fileExt = avatar.name.split('.').pop() || 'jpg';
+        const avatarResult = await uploadFile(avatar, 'avatars', `${user.id}/avatar-${Date.now()}.${fileExt}`);
+        if (avatarResult) avatar_url = avatarResult.url;
+      }
+
+      // Update profile
+      await supabase.from('profiles').update({
+        full_name: `${formData.firstName} ${formData.lastName}`.trim() || undefined,
+        phone: formData.phone || undefined,
+        gender: formData.gender as any || undefined,
+        avatar_url: avatar_url || undefined,
+      }).eq('user_id', user.id);
+
+      // Check if doctor record exists
+      const { data: existingDoctor } = await supabase.from('doctors').select('id').eq('user_id', user.id).maybeSingle();
+      
+      const doctorData = {
+        specialty: selectedSpecialties[0] || 'General Practice',
+        bio: formData.bio || null,
+        license_number: formData.license || null,
+        languages: selectedLanguages.length > 0 ? selectedLanguages : null,
+        consultation_types: selectedAppointmentTypes.length > 0 ? selectedAppointmentTypes : null,
+        years_experience: formData.experience ? parseInt(formData.experience.split('-')[0]) : null,
+      };
+
+      if (existingDoctor) {
+        await supabase.from('doctors').update(doctorData).eq('id', existingDoctor.id);
+      } else {
+        await supabase.from('doctors').insert({ ...doctorData, user_id: user.id, verified: false });
+      }
+
+      toast.success('Draft saved! You can continue later.');
+    } catch (error: any) {
+      console.error('Error saving draft:', error);
+      toast.error('Failed to save draft');
+    } finally {
+      setIsSavingDraft(false);
+    }
   };
   
   const toggleLanguage = (language: string) => {
@@ -848,10 +649,60 @@ const DoctorSignUp = () => {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="phone">{t('doctorSignup.fields.phone')} <span className="text-red-500">*</span></Label>
-                    <Input id="phone" placeholder={t('doctorSignup.placeholders.phone')} value={formData.phone} onChange={e => updateField('phone', e.target.value)} required />
+                    <Label htmlFor="phone"><Phone className="w-4 h-4 inline mr-1" />Display Phone <span className="text-red-500">*</span></Label>
+                    <Input 
+                      id="phone" 
+                      placeholder="+1234567890" 
+                      value={formData.phone} 
+                      onChange={e => updateField('phone', e.target.value)} 
+                      className={phoneValidation.isValid ? 'border-green-500' : formData.phone ? 'border-red-500' : ''} 
+                      required 
+                    />
+                    {formData.phone && (
+                      <p className={`text-xs mt-1 ${phoneValidation.isValid ? 'text-green-600' : 'text-red-600'}`}>
+                        {phoneValidation.isValid ? <><CheckCircle2 className="w-3 h-3 inline mr-1" />Valid</> : phoneValidation.message}
+                      </p>
+                    )}
                   </div>
                 </div>
+                
+                {/* SMS Phone Number */}
+                <Card className="border-blue-200 bg-blue-50/30 dark:bg-blue-950/20">
+                  <CardContent className="pt-4 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Checkbox 
+                        id="useSamePhone" 
+                        checked={useSamePhoneForSms} 
+                        onCheckedChange={(checked) => setUseSamePhoneForSms(checked as boolean)} 
+                      />
+                      <Label htmlFor="useSamePhone" className="text-sm cursor-pointer">Use same phone for SMS notifications</Label>
+                    </div>
+                    
+                    {!useSamePhoneForSms && (
+                      <div>
+                        <Label htmlFor="smsPhone">SMS Phone Number <span className="text-red-500">*</span></Label>
+                        <p className="text-xs text-muted-foreground mb-2">This number will receive appointment reminders and verification codes</p>
+                        <div className="flex gap-2">
+                          <Input 
+                            id="smsPhone"
+                            placeholder="+1234567890"
+                            value={smsPhone}
+                            onChange={(e) => setSmsPhone(e.target.value)}
+                            className={smsPhoneValidation.isValid ? 'border-green-500' : smsPhone ? 'border-red-500' : ''}
+                          />
+                          <Button type="button" variant="outline" size="sm" disabled={!smsPhoneValidation.isValid || smsVerified}>
+                            {smsVerified ? <><CheckCircle2 className="w-4 h-4 mr-1" />Verified</> : 'Verify'}
+                          </Button>
+                        </div>
+                        {smsPhone && !smsVerified && (
+                          <p className={`text-xs mt-1 ${smsPhoneValidation.isValid ? 'text-green-600' : 'text-red-600'}`}>
+                            {smsPhoneValidation.isValid ? 'Valid format - click Verify to confirm' : smsPhoneValidation.message}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </CardContent>
             </Card>
 
@@ -1636,9 +1487,25 @@ const DoctorSignUp = () => {
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold" disabled={isLoading || isSubmitting || uploading}>
-                  {isLoading || isSubmitting ? t('doctorSignup.buttons.completingProfile') : t('doctorSignup.buttons.completeProfile')}
-                </Button>
+                <div className="flex gap-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="flex-1 py-4" 
+                    onClick={handleSaveDraft}
+                    disabled={isSavingDraft || isLoading || isSubmitting}
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    {isSavingDraft ? 'Saving...' : 'Save as Draft'}
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg font-semibold" 
+                    disabled={isLoading || isSubmitting || uploading}
+                  >
+                    {isLoading || isSubmitting ? t('doctorSignup.buttons.completingProfile') : t('doctorSignup.buttons.completeProfile')}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </form>
