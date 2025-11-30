@@ -47,45 +47,58 @@ const DoctorProcedureLibrarySection = () => {
   const [showManageCategoriesModal, setShowManageCategoriesModal] = useState(false);
   const [showManageTypesModal, setShowManageTypesModal] = useState(false);
 
-  // Default enum values from database
-  const defaultCategories = [{
-    value: "general",
-    label: "General"
-  }, {
-    value: "preventive",
-    label: "Preventive"
-  }, {
-    value: "restorative",
-    label: "Restorative"
-  }, {
-    value: "cosmetic",
-    label: "Cosmetic"
-  }, {
-    value: "orthodontic",
-    label: "Orthodontic"
-  }, {
-    value: "oral_surgery",
-    label: "Oral Surgery"
-  }, {
-    value: "endodontic",
-    label: "Endodontic"
-  }, {
-    value: "periodontic",
-    label: "Periodontic"
-  }];
-  const defaultTypes = [{
-    value: "single_visit",
-    label: "Single Visit"
-  }, {
-    value: "multi_visit",
-    label: "Multi Visit"
-  }, {
-    value: "tooth_based",
-    label: "Tooth Based"
-  }, {
-    value: "full_mouth",
-    label: "Full Mouth"
-  }];
+  // Comprehensive treatment categories for medicine and dentistry
+  const defaultCategories = [
+    // General Medicine
+    { value: "general_consultation", label: "General Consultation" },
+    { value: "preventive_care", label: "Preventive Care" },
+    { value: "diagnostic_testing", label: "Diagnostic Testing" },
+    { value: "vaccination", label: "Vaccination & Immunization" },
+    { value: "chronic_disease", label: "Chronic Disease Management" },
+    { value: "acute_care", label: "Acute Care" },
+    { value: "minor_surgery", label: "Minor Surgery" },
+    { value: "physical_therapy", label: "Physical Therapy" },
+    { value: "mental_health", label: "Mental Health" },
+    { value: "womens_health", label: "Women's Health" },
+    { value: "pediatric_care", label: "Pediatric Care" },
+    { value: "geriatric_care", label: "Geriatric Care" },
+    { value: "cardiology", label: "Cardiology" },
+    { value: "dermatology", label: "Dermatology" },
+    { value: "orthopedics", label: "Orthopedics" },
+    { value: "neurology", label: "Neurology" },
+    { value: "gastroenterology", label: "Gastroenterology" },
+    { value: "pulmonology", label: "Pulmonology" },
+    { value: "endocrinology", label: "Endocrinology" },
+    { value: "nephrology", label: "Nephrology" },
+    { value: "urology", label: "Urology" },
+    { value: "ophthalmology", label: "Ophthalmology" },
+    { value: "ent", label: "ENT (Ear, Nose, Throat)" },
+    { value: "allergy_immunology", label: "Allergy & Immunology" },
+    // Dentistry
+    { value: "dental_examination", label: "Dental Examination" },
+    { value: "dental_cleaning", label: "Dental Cleaning & Prophylaxis" },
+    { value: "restorative", label: "Restorative (Fillings)" },
+    { value: "crowns_bridges", label: "Crowns & Bridges" },
+    { value: "root_canal", label: "Root Canal (Endodontics)" },
+    { value: "extractions", label: "Extractions" },
+    { value: "dental_implants", label: "Dental Implants" },
+    { value: "dentures", label: "Dentures & Partials" },
+    { value: "orthodontics", label: "Orthodontics" },
+    { value: "periodontics", label: "Periodontics (Gum Treatment)" },
+    { value: "cosmetic_dentistry", label: "Cosmetic Dentistry" },
+    { value: "teeth_whitening", label: "Teeth Whitening" },
+    { value: "veneers", label: "Veneers" },
+    { value: "pediatric_dentistry", label: "Pediatric Dentistry" },
+    { value: "oral_surgery", label: "Oral Surgery" },
+    { value: "tmj_treatment", label: "TMJ Treatment" },
+    { value: "emergency_dental", label: "Emergency Dental Care" },
+  ];
+  const defaultTypes = [
+    { value: "single_visit", label: "Single Visit" },
+    { value: "multi_visit", label: "Multi Visit" },
+    { value: "tooth_based", label: "Tooth Based" },
+    { value: "full_mouth", label: "Full Mouth" },
+  ];
   const [customCategories, setCustomCategories] = useState<{
     value: string;
     label: string;
