@@ -88,7 +88,8 @@ export const useProcedurePrescription = () => {
   const updateConsentStatus = async (
     appointmentProcedureId: string, 
     status: 'accepted' | 'declined',
-    signature?: string
+    signature?: string,
+    procedureName?: string
   ) => {
     if (!user) {
       toast.error('You must be logged in');
@@ -116,6 +117,17 @@ export const useProcedurePrescription = () => {
 
       if (error) throw error;
 
+      // Get the appointment procedure details to find the doctor
+      const { data: appointmentProcedure } = await supabase
+        .from('appointment_procedures')
+        .select(`
+          *,
+          appointments!inner(doctor_id, patient_id),
+          procedures(name)
+        `)
+        .eq('id', appointmentProcedureId)
+        .single();
+
       // If accepted, also create a consent form record
       if (status === 'accepted' && signature) {
         const { error: consentError } = await supabase
@@ -131,6 +143,44 @@ export const useProcedurePrescription = () => {
 
         if (consentError) {
           console.error('Error creating consent form:', consentError);
+        }
+      }
+
+      // If declined, notify the doctor
+      if (status === 'declined' && appointmentProcedure?.appointments?.doctor_id) {
+        // Get doctor's user_id from doctors table
+        const { data: doctor } = await supabase
+          .from('doctors')
+          .select('user_id')
+          .eq('id', appointmentProcedure.appointments.doctor_id)
+          .single();
+
+        if (doctor?.user_id) {
+          // Get patient name
+          const { data: patient } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('user_id', appointmentProcedure.appointments.patient_id)
+            .single();
+
+          const procedureNameToShow = procedureName || appointmentProcedure.procedures?.name || 'Unknown Procedure';
+          const patientName = patient?.full_name || 'A patient';
+
+          // Send notification to doctor about declined consent
+          await sendNotification({
+            recipient_user_id: doctor.user_id,
+            notification_type: 'consent_declined',
+            title: '⚠️ Patient Declined Procedure Consent',
+            message: `${patientName} has declined consent for ${procedureNameToShow}. Please discuss alternative options with the patient.`,
+            data: {
+              appointmentProcedureId,
+              appointmentId: appointmentProcedure.appointment_id,
+              procedureName: procedureNameToShow,
+              patientId: appointmentProcedure.appointments.patient_id,
+              patientName,
+              declinedAt: new Date().toISOString(),
+            },
+          });
         }
       }
 

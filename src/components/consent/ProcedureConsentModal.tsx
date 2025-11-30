@@ -61,11 +61,13 @@ export const ProcedureConsentModal = ({
     try {
       const result = await updateConsentStatus(
         data.appointmentProcedureId,
-        'declined'
+        'declined',
+        undefined,
+        data.procedureName
       );
 
       if (result.success) {
-        toast.info('Procedure consent declined');
+        toast.info('Procedure consent declined. Your doctor has been notified.');
         onComplete();
       }
     } catch (error) {
