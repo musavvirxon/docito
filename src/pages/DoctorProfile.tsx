@@ -69,8 +69,11 @@ const DoctorProfile = () => {
       if (!id) return;
 
       try {
+        // Get current user to allow doctors to view their own profile
+        const { data: { user } } = await supabase.auth.getUser();
+        
         // Try to fetch by custom link first, then by ID
-        const { data, error } = await supabase
+        let query = supabase
           .from('doctors')
           .select(`
             *,
@@ -88,14 +91,28 @@ const DoctorProfile = () => {
               phone
             )
           `)
-          .or(`id.eq.${id},custom_profile_link.eq.${id}`)
-          .eq('verified', true)
-          .single();
+          .or(`id.eq.${id},custom_profile_link.eq.${id}`);
+
+        // First try without verified filter (for own profile preview)
+        const { data, error } = await query.single();
 
         if (error) throw error;
 
+        // Check if this is the doctor's own profile or if they're verified
+        const isOwnProfile = user && data.user_id === user.id;
+        
+        if (!data.verified && !isOwnProfile) {
+          toast({
+            title: "Profile Not Found",
+            description: "This doctor profile is not yet verified.",
+            variant: "destructive"
+          });
+          navigate('/doctors');
+          return;
+        }
+
         // Check if profile is private and accessed via direct link
-        if (data.profiles?.profile_visibility === 'private' && !data.custom_profile_link) {
+        if (data.profiles?.profile_visibility === 'private' && !data.custom_profile_link && !isOwnProfile) {
           toast({
             title: "Profile Not Found",
             description: "This profile is private or doesn't exist.",
