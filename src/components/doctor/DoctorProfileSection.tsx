@@ -359,11 +359,12 @@ const DoctorProfileSection = ({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input placeholder="Search..." value={languageSearch} onChange={e => setLanguageSearch(e.target.value)} className="pl-10" disabled={isEditingLocked} />
           </div>
-          <div className="border rounded-lg max-h-[150px] overflow-y-auto p-2 grid grid-cols-3 gap-1">
-            {filteredLanguages.slice(0, 30).map(l => <label key={l} className="flex items-center gap-2 p-1 text-sm cursor-pointer">
+          <div className="border rounded-lg max-h-[250px] overflow-y-auto p-2 grid grid-cols-3 gap-1">
+            {filteredLanguages.map(l => <label key={l} className="flex items-center gap-2 p-1 text-sm cursor-pointer hover:bg-muted/50 rounded">
                 <Checkbox checked={selectedLanguages.includes(l)} onCheckedChange={() => toggleLanguage(l)} disabled={isEditingLocked} />
                 {l}
               </label>)}
+            {filteredLanguages.length === 0 && <p className="text-sm text-muted-foreground col-span-3 p-2">No languages found</p>}
           </div>
         </CardContent>
       </Card>

@@ -871,12 +871,12 @@ const DoctorSignUp = () => {
                   </div>
 
                   {/* Language Options */}
-                  <div className="max-h-40 overflow-y-auto border rounded-md p-2">
-                    {filteredLanguages.slice(0, 10).map(language => <div key={language} className="flex items-center space-x-2 p-2 hover:bg-muted rounded cursor-pointer" onClick={() => toggleLanguage(language)}>
+                  <div className="max-h-60 overflow-y-auto border rounded-md p-2 grid grid-cols-2 md:grid-cols-3 gap-1">
+                    {filteredLanguages.map(language => <div key={language} className="flex items-center space-x-2 p-2 hover:bg-muted rounded cursor-pointer" onClick={() => toggleLanguage(language)}>
                         <Checkbox id={language} checked={selectedLanguages.includes(language)} />
                         <Label htmlFor={language} className="text-sm cursor-pointer">{language}</Label>
                       </div>)}
-                    {filteredLanguages.length === 0 && <p className="text-sm text-muted-foreground p-2">{t('doctorSignup.messages.noLanguagesFound')}</p>}
+                    {filteredLanguages.length === 0 && <p className="text-sm text-muted-foreground p-2 col-span-3">{t('doctorSignup.messages.noLanguagesFound')}</p>}
                   </div>
                 </div>
               </CardContent>
