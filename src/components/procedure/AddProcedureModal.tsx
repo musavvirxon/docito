@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -27,7 +27,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ToothSelector from "./ToothSelector";
-import { CalendarPlus } from "lucide-react";
+import { CalendarPlus, FileText, Upload, X, AlertCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 // Comprehensive medical and dental treatment categories
 const treatmentCategories = [
@@ -64,6 +65,8 @@ const formSchema = z.object({
   has_followup: z.boolean().default(false),
   followup_count: z.number().min(1).max(10).optional(),
   followup_interval_days: z.number().min(1).max(365).optional(),
+  requires_consent: z.boolean().default(false),
+  consent_text: z.string().optional(),
 });
 
 interface AddProcedureModalProps {
@@ -85,6 +88,10 @@ const AddProcedureModal = ({
   const [loading, setLoading] = useState(false);
   const [selectedTeeth, setSelectedTeeth] = useState<number[]>([]);
   const [hasFollowup, setHasFollowup] = useState(false);
+  const [requiresConsent, setRequiresConsent] = useState(false);
+  const [consentFile, setConsentFile] = useState<File | null>(null);
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -97,8 +104,35 @@ const AddProcedureModal = ({
       has_followup: false,
       followup_count: 1,
       followup_interval_days: 7,
+      requires_consent: false,
+      consent_text: "",
     },
   });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type (PDF, DOC, DOCX, TXT)
+      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error('Please upload a PDF, DOC, DOCX, or TXT file');
+        return;
+      }
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('File size must be less than 5MB');
+        return;
+      }
+      setConsentFile(file);
+    }
+  };
+
+  const removeConsentFile = () => {
+    setConsentFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
@@ -111,6 +145,34 @@ const AddProcedureModal = ({
         return;
       }
 
+      let consentTemplate = values.consent_text || null;
+
+      // If a consent file was uploaded, upload it to storage
+      if (consentFile && requiresConsent) {
+        setUploadingFile(true);
+        const fileExt = consentFile.name.split('.').pop();
+        const filePath = `${user?.id || 'dev-user'}/${Date.now()}.${fileExt}`;
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('medical-documents')
+          .upload(filePath, consentFile);
+
+        if (uploadError) {
+          console.error('File upload error:', uploadError);
+          toast.error('Failed to upload consent file');
+        } else {
+          // Get public URL and add it to consent template
+          const { data: { publicUrl } } = supabase.storage
+            .from('medical-documents')
+            .getPublicUrl(filePath);
+          
+          consentTemplate = consentTemplate 
+            ? `${consentTemplate}\n\n[Consent Document: ${consentFile.name}]\nFile URL: ${publicUrl}`
+            : `[Consent Document: ${consentFile.name}]\nFile URL: ${publicUrl}`;
+        }
+        setUploadingFile(false);
+      }
+
       const procedureData = {
         dentist_id: user?.id || 'dev-user-123',
         name: values.name,
@@ -119,6 +181,7 @@ const AddProcedureModal = ({
         default_cost: values.default_cost || null,
         notes: values.notes || null,
         tooth_range: selectedTeeth.length > 0 ? selectedTeeth : null,
+        informed_consent_template: requiresConsent ? consentTemplate : null,
       };
 
       const { error } = await supabase
@@ -138,6 +201,8 @@ const AddProcedureModal = ({
       form.reset();
       setSelectedTeeth([]);
       setHasFollowup(false);
+      setRequiresConsent(false);
+      setConsentFile(null);
       onSuccess();
     } catch (error: any) {
       toast.error("Failed to create procedure: " + error.message);
@@ -150,6 +215,8 @@ const AddProcedureModal = ({
     form.reset();
     setSelectedTeeth([]);
     setHasFollowup(false);
+    setRequiresConsent(false);
+    setConsentFile(null);
     onOpenChange(false);
   };
 
@@ -304,6 +371,102 @@ const AddProcedureModal = ({
               </CardContent>
             </Card>
 
+            {/* Patient Consent Section */}
+            <Card className="border-orange-200 bg-orange-50/30 dark:bg-orange-950/20">
+              <CardContent className="pt-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-orange-600" />
+                    <Label htmlFor="consent-toggle" className="font-medium cursor-pointer">
+                      Require Patient Consent
+                    </Label>
+                  </div>
+                  <Switch
+                    id="consent-toggle"
+                    checked={requiresConsent}
+                    onCheckedChange={(checked) => {
+                      setRequiresConsent(checked);
+                      form.setValue('requires_consent', checked);
+                    }}
+                  />
+                </div>
+
+                {requiresConsent && (
+                  <div className="space-y-4 pt-2">
+                    <div className="flex items-start gap-2 p-3 bg-orange-100/50 dark:bg-orange-900/20 rounded-lg">
+                      <AlertCircle className="w-4 h-4 text-orange-600 mt-0.5 shrink-0" />
+                      <p className="text-sm text-muted-foreground">
+                        Patient must read and accept this consent before the procedure can be performed. 
+                        If declined, you will receive an alert notification.
+                      </p>
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="consent_text"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Consent Text</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Enter the informed consent text that the patient must agree to before the procedure..."
+                              className="min-h-[150px]"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="space-y-2">
+                      <Label>Or Upload Consent Document</Label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleFileChange}
+                          accept=".pdf,.doc,.docx,.txt"
+                          className="hidden"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="flex items-center gap-2"
+                        >
+                          <Upload className="w-4 h-4" />
+                          Upload File
+                        </Button>
+                        <span className="text-xs text-muted-foreground">
+                          PDF, DOC, DOCX, or TXT (max 5MB)
+                        </span>
+                      </div>
+
+                      {consentFile && (
+                        <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
+                          <FileText className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm flex-1 truncate">{consentFile.name}</span>
+                          <Badge variant="secondary" className="text-xs">
+                            {(consentFile.size / 1024).toFixed(1)} KB
+                          </Badge>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={removeConsentFile}
+                            className="h-6 w-6 p-0"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             <FormField
               control={form.control}
               name="notes"
@@ -343,8 +506,8 @@ const AddProcedureModal = ({
               <Button type="button" variant="outline" onClick={handleClose}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={loading}>
-                {loading ? "Creating..." : "Create Procedure"}
+              <Button type="submit" disabled={loading || uploadingFile}>
+                {loading || uploadingFile ? "Creating..." : "Create Procedure"}
               </Button>
             </div>
           </form>
