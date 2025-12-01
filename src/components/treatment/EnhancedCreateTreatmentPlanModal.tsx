@@ -48,6 +48,14 @@ interface EnhancedCreateTreatmentPlanModalProps {
   onSuccess?: () => void;
   preSelectedPatientId?: string;
   preSelectedAppointmentId?: string;
+  initialTemplateData?: {
+    title?: string;
+    description?: string;
+    procedures?: any[];
+    medications?: any[];
+    estimated_duration_weeks?: number;
+    priority?: string;
+  };
 }
 
 interface ProcedureItem {
@@ -71,6 +79,7 @@ const EnhancedCreateTreatmentPlanModal = ({
   onOpenChange,
   onSuccess,
   preSelectedPatientId,
+  initialTemplateData,
 }: EnhancedCreateTreatmentPlanModalProps) => {
   const { user } = useAuth();
   const { procedures } = useProcedures();
@@ -107,6 +116,42 @@ const EnhancedCreateTreatmentPlanModal = ({
       form.setValue("patient_id", preSelectedPatientId);
     }
   }, [preSelectedPatientId, form]);
+
+  // Populate form with template data when provided
+  useEffect(() => {
+    if (initialTemplateData && open) {
+      if (initialTemplateData.title) {
+        form.setValue("title", initialTemplateData.title);
+      }
+      if (initialTemplateData.description) {
+        form.setValue("description", initialTemplateData.description);
+      }
+      if (initialTemplateData.priority) {
+        form.setValue("priority", initialTemplateData.priority as any);
+      }
+      // Convert template procedures to procedure items
+      if (initialTemplateData.procedures && initialTemplateData.procedures.length > 0) {
+        const templateProcedures: ProcedureItem[] = initialTemplateData.procedures.map((p: any) => ({
+          procedure_id: p.procedure_id || p.procedure?.id || "",
+          priority: p.priority || "medium",
+          notes: p.notes || "",
+          tooth_numbers: p.tooth_numbers || [],
+        }));
+        setProcedureItems(templateProcedures);
+      }
+    }
+  }, [initialTemplateData, open, form]);
+
+  // Reset form when modal closes
+  useEffect(() => {
+    if (!open) {
+      form.reset();
+      setProcedureItems([]);
+      setCurrentProcedure({ procedure_id: "", priority: "medium" });
+      setSelectedTeeth([]);
+      setSelectedPatientName("");
+    }
+  }, [open, form]);
 
   useEffect(() => {
     // Calculate total cost and duration
