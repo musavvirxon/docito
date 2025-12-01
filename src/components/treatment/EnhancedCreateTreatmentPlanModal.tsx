@@ -9,11 +9,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Plus, Trash2, Save, Send, X } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { CalendarIcon, Plus, Trash2, Save, Send, Clock, DollarSign, AlertTriangle, Info } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,6 +28,7 @@ import { cn } from "@/lib/utils";
 const procedureFormSchema = z.object({
   procedure_id: z.string().min(1, "Select a procedure"),
   appointment_date: z.date().optional(),
+  appointment_time: z.string().optional(),
   priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
   notes: z.string().optional(),
   tooth_numbers: z.array(z.number()).optional(),
@@ -51,10 +53,18 @@ interface EnhancedCreateTreatmentPlanModalProps {
 interface ProcedureItem {
   procedure_id: string;
   appointment_date?: Date;
+  appointment_time?: string;
   priority?: "low" | "medium" | "high" | "urgent";
   notes?: string;
   tooth_numbers?: number[];
 }
+
+const timeSlots = [
+  "08:00", "08:30", "09:00", "09:30", "10:00", "10:30",
+  "11:00", "11:30", "12:00", "12:30", "13:00", "13:30",
+  "14:00", "14:30", "15:00", "15:30", "16:00", "16:30",
+  "17:00", "17:30", "18:00"
+];
 
 const EnhancedCreateTreatmentPlanModal = ({
   open,
@@ -76,6 +86,7 @@ const EnhancedCreateTreatmentPlanModal = ({
   const [selectedTeeth, setSelectedTeeth] = useState<number[]>([]);
   const [totalCost, setTotalCost] = useState(0);
   const [totalDuration, setTotalDuration] = useState(0);
+  const [selectedPatientName, setSelectedPatientName] = useState<string>("");
 
   const isDentist = profile?.specialty?.toLowerCase().includes("dent") || 
                     profile?.specialty?.toLowerCase().includes("oral");
@@ -154,9 +165,50 @@ const EnhancedCreateTreatmentPlanModal = ({
     return procedures.find(p => p.id === procedureId)?.name || "Unknown";
   };
 
+  const getProcedureCost = (procedureId: string) => {
+    return procedures.find(p => p.id === procedureId)?.default_cost || 0;
+  };
+
+  const createAppointment = async (
+    doctorId: string, 
+    patientId: string, 
+    date: Date, 
+    time: string,
+    procedureName: string,
+    durationMinutes: number
+  ) => {
+    const [hours, minutes] = time.split(':').map(Number);
+    const endHours = hours + Math.floor((minutes + durationMinutes) / 60);
+    const endMinutes = (minutes + durationMinutes) % 60;
+    const endTime = `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
+
+    const { data, error } = await supabase
+      .from('appointments')
+      .insert({
+        doctor_id: doctorId,
+        patient_id: patientId,
+        appointment_date: format(date, 'yyyy-MM-dd'),
+        start_time: time,
+        end_time: endTime,
+        status: 'confirmed',
+        notes: `Treatment Plan Procedure: ${procedureName}`
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  };
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (procedureItems.length === 0) {
       toast.error("Please add at least one procedure");
+      return;
+    }
+
+    // Validate patient is selected when not saving as template
+    if (!saveAsTemplate && !values.patient_id) {
+      toast.error("Please select a patient for the treatment plan");
       return;
     }
 
@@ -206,7 +258,7 @@ const EnhancedCreateTreatmentPlanModal = ({
         .from("treatment_plans")
         .insert([{
           doctor_id: doctorData.id,
-          patient_id: values.patient_id || null,
+          patient_id: values.patient_id,
           title: values.title,
           notes: values.description,
           status: "draft",
@@ -218,18 +270,42 @@ const EnhancedCreateTreatmentPlanModal = ({
 
       if (planError || !planData) throw planError;
 
-      // Add procedures to treatment plan
-      const proceduresToInsert = procedureItems.map((item, index) => ({
-        treatment_plan_id: planData.id,
-        procedure_id: item.procedure_id,
-        sequence_order: index + 1,
-        scheduled_date: item.appointment_date || null,
-        status: "pending",
-        priority: item.priority,
-        notes: item.notes,
-        tooth_numbers: item.tooth_numbers,
-        cost: procedures.find(p => p.id === item.procedure_id)?.default_cost || 0,
-      }));
+      // Add procedures to treatment plan and create appointments if scheduled
+      const proceduresToInsert = await Promise.all(
+        procedureItems.map(async (item, index) => {
+          const procedure = procedures.find(p => p.id === item.procedure_id);
+          let appointmentId = null;
+
+          // Create appointment if date and time are specified
+          if (item.appointment_date && item.appointment_time && values.patient_id) {
+            try {
+              const appointment = await createAppointment(
+                doctorData.id,
+                values.patient_id,
+                item.appointment_date,
+                item.appointment_time,
+                procedure?.name || 'Procedure',
+                procedure?.duration_minutes || 30
+              );
+              appointmentId = appointment.id;
+            } catch (err) {
+              console.error('Failed to create appointment:', err);
+            }
+          }
+
+          return {
+            treatment_plan_id: planData.id,
+            procedure_id: item.procedure_id,
+            sequence_order: index + 1,
+            scheduled_date: item.appointment_date ? format(item.appointment_date, 'yyyy-MM-dd') : null,
+            status: "pending",
+            priority: item.priority,
+            notes: item.notes,
+            tooth_numbers: item.tooth_numbers,
+            cost: procedure?.default_cost || 0,
+          };
+        })
+      );
 
       const { error: proceduresError } = await supabase
         .from("treatment_plan_procedures")
@@ -237,14 +313,36 @@ const EnhancedCreateTreatmentPlanModal = ({
 
       if (proceduresError) throw proceduresError;
 
-      // Send notification and email if patient is selected
+      // Build detailed notification message for patient
+      const procedureDetails = procedureItems.map(item => {
+        const proc = procedures.find(p => p.id === item.procedure_id);
+        return `- ${proc?.name || 'Procedure'}: $${proc?.default_cost || 0}${
+          item.appointment_date ? ` (Scheduled: ${format(item.appointment_date, 'PPP')}${item.appointment_time ? ` at ${item.appointment_time}` : ''})` : ''
+        }`;
+      }).join('\n');
+
+      const notificationMessage = `
+A new treatment plan "${values.title}" has been created for you.
+
+📋 Procedures:
+${procedureDetails}
+
+💰 Total Estimated Cost: $${totalCost.toFixed(2)}
+⏱️ Total Duration: ${totalDuration} minutes
+
+⚠️ Important: Please note that the final cost may vary depending on findings during the procedure or if additional treatment is required.
+
+Please review and confirm the treatment plan in your dashboard.
+      `.trim();
+
+      // Send notification to patient
       if (values.patient_id) {
         await supabase.rpc("send_notification_to_user", {
           recipient_user_id: values.patient_id,
           notification_type: "treatment_plan",
           title: "New Treatment Plan Created",
-          message: `A new treatment plan "${values.title}" has been created for you.`,
-          data: { treatment_plan_id: planData.id },
+          message: notificationMessage,
+          data: { treatment_plan_id: planData.id, total_cost: totalCost },
         });
 
         toast.success("Treatment plan created and patient notified");
@@ -269,6 +367,7 @@ const EnhancedCreateTreatmentPlanModal = ({
     setSelectedTeeth([]);
     setEditingProcedureIndex(null);
     setSaveAsTemplate(false);
+    setSelectedPatientName("");
     onOpenChange(false);
   };
 
@@ -320,19 +419,23 @@ const EnhancedCreateTreatmentPlanModal = ({
                 )}
               />
 
-              {/* Patient Selection */}
+              {/* Patient Selection - Required when not template */}
               {!saveAsTemplate && (
                 <FormField
                   control={form.control}
                   name="patient_id"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Patient (Optional)</FormLabel>
+                      <FormLabel>Patient *</FormLabel>
                       <FormControl>
                         <PatientSelector
                           value={field.value}
-                          onSelect={(patient) => field.onChange(patient.id)}
-                          placeholder="Select patient or leave empty"
+                          onSelect={(patient) => {
+                            field.onChange(patient.id);
+                            setSelectedPatientName(patient.name);
+                          }}
+                          placeholder="Search by name, email, or phone"
+                          required={!saveAsTemplate}
                         />
                       </FormControl>
                       <FormMessage />
@@ -347,7 +450,7 @@ const EnhancedCreateTreatmentPlanModal = ({
                 name="priority"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Overall Priority (Optional)</FormLabel>
+                    <FormLabel>Overall Priority</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -373,7 +476,7 @@ const EnhancedCreateTreatmentPlanModal = ({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description (Optional)</FormLabel>
+                  <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="Additional details about the treatment plan..."
@@ -389,7 +492,7 @@ const EnhancedCreateTreatmentPlanModal = ({
 
             {/* Add Procedure Section */}
             <div className="space-y-4">
-              <h3 className="font-semibold">Add Procedures</h3>
+              <h3 className="font-semibold">Add Procedures *</h3>
               
               <Card>
                 <CardContent className="pt-6 space-y-4">
@@ -416,10 +519,31 @@ const EnhancedCreateTreatmentPlanModal = ({
                       </Select>
                     </div>
 
+                    {/* Priority */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Priority</label>
+                      <Select
+                        value={currentProcedure.priority}
+                        onValueChange={(value: any) =>
+                          setCurrentProcedure({ ...currentProcedure, priority: value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="low">Low</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="high">High</SelectItem>
+                          <SelectItem value="urgent">Urgent</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
                     {/* Date Selection */}
                     {!saveAsTemplate && (
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Date (Optional)</label>
+                        <label className="text-sm font-medium">Schedule Date</label>
                         <Popover>
                           <PopoverTrigger asChild>
                             <Button
@@ -444,6 +568,7 @@ const EnhancedCreateTreatmentPlanModal = ({
                               onSelect={(date) =>
                                 setCurrentProcedure({ ...currentProcedure, appointment_date: date })
                               }
+                              disabled={(date) => date < new Date()}
                               initialFocus
                             />
                           </PopoverContent>
@@ -451,31 +576,43 @@ const EnhancedCreateTreatmentPlanModal = ({
                       </div>
                     )}
 
-                    {/* Priority */}
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Priority (Optional)</label>
-                      <Select
-                        value={currentProcedure.priority}
-                        onValueChange={(value: any) =>
-                          setCurrentProcedure({ ...currentProcedure, priority: value })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
-                          <SelectItem value="urgent">Urgent</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    {/* Time Selection - only show if date is selected */}
+                    {!saveAsTemplate && currentProcedure.appointment_date && (
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Schedule Time</label>
+                        <Select
+                          value={currentProcedure.appointment_time}
+                          onValueChange={(value) =>
+                            setCurrentProcedure({ ...currentProcedure, appointment_time: value })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select time">
+                              {currentProcedure.appointment_time ? (
+                                <span className="flex items-center">
+                                  <Clock className="w-4 h-4 mr-2" />
+                                  {currentProcedure.appointment_time}
+                                </span>
+                              ) : (
+                                "Select time"
+                              )}
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {timeSlots.map((time) => (
+                              <SelectItem key={time} value={time}>
+                                {time}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                   </div>
 
                   {/* Notes */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Notes (Optional)</label>
+                    <label className="text-sm font-medium">Notes</label>
                     <Textarea
                       value={currentProcedure.notes || ""}
                       onChange={(e) =>
@@ -517,10 +654,6 @@ const EnhancedCreateTreatmentPlanModal = ({
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <h3 className="font-semibold">Added Procedures ({procedureItems.length})</h3>
-                  <div className="text-sm space-x-4">
-                    <span>Duration: <strong>{totalDuration} min</strong></span>
-                    <span>Cost: <strong>${totalCost.toFixed(2)}</strong></span>
-                  </div>
                 </div>
 
                 {procedureItems.map((item, index) => (
@@ -530,6 +663,7 @@ const EnhancedCreateTreatmentPlanModal = ({
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <span className="font-medium">{getProcedureName(item.procedure_id)}</span>
+                            <Badge variant="outline">${getProcedureCost(item.procedure_id)}</Badge>
                             {item.priority && (
                               <Badge className={priorityColors[item.priority]}>
                                 {item.priority}
@@ -539,6 +673,7 @@ const EnhancedCreateTreatmentPlanModal = ({
                           {item.appointment_date && (
                             <p className="text-sm text-muted-foreground">
                               📅 {format(item.appointment_date, "PPP")}
+                              {item.appointment_time && ` at ${item.appointment_time}`}
                             </p>
                           )}
                           {item.tooth_numbers && item.tooth_numbers.length > 0 && (
@@ -572,7 +707,58 @@ const EnhancedCreateTreatmentPlanModal = ({
                     </CardContent>
                   </Card>
                 ))}
+
+                {/* Cost Summary Card */}
+                <Card className="bg-primary/5 border-primary/20">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-5 h-5 text-muted-foreground" />
+                          <span className="text-sm">Total Duration:</span>
+                          <strong>{totalDuration} min</strong>
+                        </div>
+                        <Separator orientation="vertical" className="h-6" />
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="w-5 h-5 text-primary" />
+                          <span className="text-sm">Total Estimated Cost:</span>
+                          <strong className="text-lg text-primary">${totalCost.toFixed(2)}</strong>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Cost Warning Alert */}
+                {!saveAsTemplate && (
+                  <Alert variant="default" className="border-amber-500/50 bg-amber-500/10">
+                    <AlertTriangle className="h-4 w-4 text-amber-600" />
+                    <AlertTitle className="text-amber-700">Cost Disclaimer</AlertTitle>
+                    <AlertDescription className="text-amber-600 text-sm">
+                      The total cost shown is an estimate. Final costs may vary based on findings 
+                      during the procedure, additional treatments required, or changes in the 
+                      treatment plan. The patient will be notified of this when receiving the plan.
+                    </AlertDescription>
+                  </Alert>
+                )}
               </div>
+            )}
+
+            {/* Patient Info Alert */}
+            {!saveAsTemplate && form.watch('patient_id') && (
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertTitle>Patient Notification</AlertTitle>
+                <AlertDescription className="text-sm">
+                  {selectedPatientName || 'The patient'} will receive a detailed notification including:
+                  <ul className="list-disc list-inside mt-1 text-muted-foreground">
+                    <li>Complete list of procedures with individual costs</li>
+                    <li>Scheduled appointment dates and times (if set)</li>
+                    <li>Total estimated cost and duration</li>
+                    <li>Important disclaimer about potential cost changes</li>
+                  </ul>
+                </AlertDescription>
+              </Alert>
             )}
 
             {/* Action Buttons */}
@@ -580,7 +766,10 @@ const EnhancedCreateTreatmentPlanModal = ({
               <Button type="button" variant="outline" onClick={handleClose}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={loading || procedureItems.length === 0}>
+              <Button 
+                type="submit" 
+                disabled={loading || procedureItems.length === 0 || (!saveAsTemplate && !form.watch('patient_id'))}
+              >
                 {loading ? (
                   "Creating..."
                 ) : saveAsTemplate ? (
@@ -591,7 +780,7 @@ const EnhancedCreateTreatmentPlanModal = ({
                 ) : (
                   <>
                     <Send className="w-4 h-4 mr-2" />
-                    Create Plan
+                    Create & Send Plan
                   </>
                 )}
               </Button>
