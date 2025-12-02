@@ -23,6 +23,8 @@ import { CreateClinicModal } from "@/components/dashboard/CreateClinicModal";
 import { ViewRequirementsModal } from "@/components/dashboard/ViewRequirementsModal";
 import VerificationSuccessModal from "@/components/dashboard/VerificationSuccessModal";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
+import { useAdvancedFinancialMetrics } from "@/hooks/useAdvancedFinancialMetrics";
+import AdvancedFinancialMetrics from "@/components/financial/AdvancedFinancialMetrics";
 import { useVerificationStatus } from "@/hooks/useVerificationStatus";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
@@ -48,6 +50,8 @@ const AdminDashboard = () => {
     practice, stats, doctors, appointments, services, staff, locations, 
     patients, payments, messages, metrics, loading, error, refreshData 
   } = useAdminDashboard();
+  
+  const { metrics: advancedMetrics, refreshData: refreshAdvancedMetrics } = useAdvancedFinancialMetrics(stats.totalRevenue, 'practice', practice?.id);
   const [activeTab, setActiveTab] = useState("overview");
   
   // Modal states
@@ -795,6 +799,17 @@ const AdminDashboard = () => {
                   </div>
                 </CardContent>
               </Card>
+            </div>
+            
+            <div className="mt-6">
+              <AdvancedFinancialMetrics 
+                metrics={advancedMetrics} 
+                revenue={stats.totalRevenue}
+                onUpdateInputs={() => {
+                  refreshData();
+                  refreshAdvancedMetrics();
+                }}
+              />
             </div>
           </TabsContent>
         </Tabs>

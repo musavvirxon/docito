@@ -726,6 +726,69 @@ export type Database = {
           },
         ]
       }
+      financial_inputs: {
+        Row: {
+          ad_cost: number | null
+          avg_customer_lifetime_months: number | null
+          cogs: number | null
+          created_at: string
+          current_assets: number | null
+          current_liabilities: number | null
+          depreciation_expense: number | null
+          entity_id: string
+          entity_type: string
+          fixed_costs: number | null
+          id: string
+          interest_expense: number | null
+          marketing_spend: number | null
+          operating_expenses: number | null
+          price_per_unit: number | null
+          tax_expense: number | null
+          updated_at: string
+          variable_cost_per_unit: number | null
+        }
+        Insert: {
+          ad_cost?: number | null
+          avg_customer_lifetime_months?: number | null
+          cogs?: number | null
+          created_at?: string
+          current_assets?: number | null
+          current_liabilities?: number | null
+          depreciation_expense?: number | null
+          entity_id: string
+          entity_type: string
+          fixed_costs?: number | null
+          id?: string
+          interest_expense?: number | null
+          marketing_spend?: number | null
+          operating_expenses?: number | null
+          price_per_unit?: number | null
+          tax_expense?: number | null
+          updated_at?: string
+          variable_cost_per_unit?: number | null
+        }
+        Update: {
+          ad_cost?: number | null
+          avg_customer_lifetime_months?: number | null
+          cogs?: number | null
+          created_at?: string
+          current_assets?: number | null
+          current_liabilities?: number | null
+          depreciation_expense?: number | null
+          entity_id?: string
+          entity_type?: string
+          fixed_costs?: number | null
+          id?: string
+          interest_expense?: number | null
+          marketing_spend?: number | null
+          operating_expenses?: number | null
+          price_per_unit?: number | null
+          tax_expense?: number | null
+          updated_at?: string
+          variable_cost_per_unit?: number | null
+        }
+        Relationships: []
+      }
       google_calendar_sync: {
         Row: {
           access_token: string | null

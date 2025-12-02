@@ -135,6 +135,27 @@
       "past": "과거",
       "noAppointments": "예약이 없습니다",
       "viewAll": "모두 보기"
+    },
+    "financialStats": {
+      "title": "재무 통계",
+      "description": "수익 및 지불 추적",
+      "tabs": {
+        "earningsChart": "수익 차트",
+        "byService": "서비스별",
+        "payouts": "지불",
+        "pending": "대기 중",
+        "insights": "인사이트"
+      }
+    },
+    "performance": {
+      "title": "성과",
+      "description": "성과 지표 추적",
+      "tabs": {
+        "overview": "개요",
+        "services": "서비스",
+        "reviews": "리뷰",
+        "trends": "트렌드"
+      }
     }
   }
 }

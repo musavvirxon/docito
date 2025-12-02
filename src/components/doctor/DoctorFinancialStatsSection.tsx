@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Download, RefreshCw, FileText } from "lucide-react";
 import { useFinancialStats } from "@/hooks/useFinancialStats";
+import { useAdvancedFinancialMetrics } from "@/hooks/useAdvancedFinancialMetrics";
+import AdvancedFinancialMetrics from "@/components/financial/AdvancedFinancialMetrics";
 import { FinancialOverview } from "./FinancialOverview";
 import { FinancialChart } from "./FinancialChart";
 import { FinancialServices } from "./FinancialServices";
@@ -36,6 +38,8 @@ export const DoctorFinancialStatsSection = () => {
     error,
     refreshData
   } = useFinancialStats(dateRange.from, dateRange.to);
+  
+  const { metrics: advancedMetrics, refreshData: refreshAdvancedMetrics } = useAdvancedFinancialMetrics(stats.earningsThisMonth, 'doctor');
 
   const handleDatePresetChange = (preset: '7days' | '30days' | '90days') => {
     setDatePreset(preset);
@@ -158,12 +162,13 @@ export const DoctorFinancialStatsSection = () => {
 
       {/* Tabs */}
       <Tabs defaultValue="chart" className="space-y-6">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="chart">{t("doctor.financialStats.tabs.earningsChart")}</TabsTrigger>
           <TabsTrigger value="services">{t("doctor.financialStats.tabs.byService")}</TabsTrigger>
           <TabsTrigger value="payouts">{t("doctor.financialStats.tabs.payouts")}</TabsTrigger>
           <TabsTrigger value="pending">{t("doctor.financialStats.tabs.pending")}</TabsTrigger>
           <TabsTrigger value="insights">{t("doctor.financialStats.tabs.insights")}</TabsTrigger>
+          <TabsTrigger value="advanced">Advanced KPIs</TabsTrigger>
         </TabsList>
 
         <TabsContent value="chart" className="space-y-6">
@@ -184,6 +189,17 @@ export const DoctorFinancialStatsSection = () => {
 
         <TabsContent value="insights" className="space-y-6">
           <FinancialInsights insights={insights} />
+        </TabsContent>
+        
+        <TabsContent value="advanced" className="space-y-6">
+          <AdvancedFinancialMetrics 
+            metrics={advancedMetrics} 
+            revenue={stats.earningsThisMonth}
+            onUpdateInputs={() => {
+              refreshData();
+              refreshAdvancedMetrics();
+            }}
+          />
         </TabsContent>
       </Tabs>
     </div>
