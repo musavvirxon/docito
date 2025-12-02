@@ -11,6 +11,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useInactivityTimer } from "@/hooks/useInactivityTimer";
 import { InactivityWarningModal } from "@/components/InactivityWarningModal";
 import SuperAdminSidebar from "@/components/super-admin/SuperAdminSidebar";
+import { useAdvancedFinancialMetrics } from "@/hooks/useAdvancedFinancialMetrics";
+import { useDashboardStats } from "@/hooks/useSuperAdminData";
+import AdvancedFinancialMetrics from "@/components/financial/AdvancedFinancialMetrics";
 import SuperAdminTopBar from "@/components/super-admin/SuperAdminTopBar";
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import ThemeToggle from '@/components/home/ThemeToggle';
@@ -159,6 +162,9 @@ const SuperAdminDashboard = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState<boolean | null>(null);
   const [checkingRole, setCheckingRole] = useState(true);
+  
+  const { data: stats } = useDashboardStats();
+  const { metrics: advancedMetrics, refreshData: refreshAdvancedMetrics } = useAdvancedFinancialMetrics(stats?.totalRevenue || 0, 'platform');
 
   // Inactivity timer - auto logout after 30 minutes
   const handleInactive = async () => {
@@ -328,6 +334,14 @@ const SuperAdminDashboard = () => {
               <p className="text-muted-foreground mt-1">{t("superAdmin.analytics.subtitle")}</p>
             </div>
             <AnalyticsCharts showAll />
+            
+            <div className="mt-8">
+              <AdvancedFinancialMetrics 
+                metrics={advancedMetrics} 
+                revenue={stats?.totalRevenue || 0}
+                onUpdateInputs={refreshAdvancedMetrics}
+              />
+            </div>
           </div>
         );
       

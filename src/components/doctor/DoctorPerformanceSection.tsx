@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Download, RefreshCw, Award } from "lucide-react";
 import { useDoctorPerformance } from "@/hooks/useDoctorPerformance";
+import { useAdvancedFinancialMetrics } from "@/hooks/useAdvancedFinancialMetrics";
+import AdvancedFinancialMetrics from "@/components/financial/AdvancedFinancialMetrics";
 import { motion, AnimatePresence } from "framer-motion";
 import { PerformanceOverview } from "./PerformanceOverview";
 import { PerformanceServices } from "./PerformanceServices";
@@ -43,6 +45,8 @@ const DoctorPerformanceSection = ({ doctorProfile, stats: providedStats }: Docto
     error,
     refreshData
   } = useDoctorPerformance(dateRange.from, dateRange.to);
+  
+  const { metrics: advancedMetrics, refreshData: refreshAdvancedMetrics } = useAdvancedFinancialMetrics(stats.monthlyRevenue, 'doctor');
 
   const handleExport = () => {
     toast.success(t("doctor.performance.exportComingSoon"));
@@ -127,11 +131,12 @@ const DoctorPerformanceSection = ({ doctorProfile, stats: providedStats }: Docto
 
       {/* Tabs for Different Sections */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">{t("doctor.performance.tabs.overview")}</TabsTrigger>
           <TabsTrigger value="services">{t("doctor.performance.tabs.services")}</TabsTrigger>
           <TabsTrigger value="reviews">{t("doctor.performance.tabs.reviews")}</TabsTrigger>
           <TabsTrigger value="trends">{t("doctor.performance.tabs.trends")}</TabsTrigger>
+          <TabsTrigger value="advanced">Advanced KPIs</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
@@ -155,6 +160,17 @@ const DoctorPerformanceSection = ({ doctorProfile, stats: providedStats }: Docto
             dailyTrends={dailyTrends as any}
             popularTimeSlots={popularTimeSlots as any}
             stats={stats}
+          />
+        </TabsContent>
+        
+        <TabsContent value="advanced">
+          <AdvancedFinancialMetrics 
+            metrics={advancedMetrics} 
+            revenue={stats.monthlyRevenue}
+            onUpdateInputs={() => {
+              refreshData();
+              refreshAdvancedMetrics();
+            }}
           />
         </TabsContent>
       </Tabs>
