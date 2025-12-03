@@ -11,9 +11,11 @@ import CTASection from "@/components/home/CTASection";
 import ModernFooter from "@/components/home/ModernFooter";
 import { SEOHead } from "@/components/SEOHead";
 import { useTranslation } from "react-i18next";
+import { useSmoothScroll } from "@/hooks/useSmoothScroll";
 
 const Index = () => {
   const { t } = useTranslation(['home', 'common']);
+  useSmoothScroll(0.06); // Slower, smoother scrolling
   
   return (
     <ThemeProvider>
