@@ -406,6 +406,41 @@
       "noAppointments": "No upcoming appointments",
       "scheduleIsClear": "Your schedule is clear for now"
     },
+    "currentAppointment": {
+      "title": "Current/Upcoming Appointment",
+      "today": "Today's Appointment",
+      "upcoming": "Next Appointment",
+      "noAppointments": "No upcoming appointments",
+      "scheduleEmpty": "Your schedule is clear"
+    },
+    "appointmentDetails": {
+      "title": "Appointment Details",
+      "date": "Date",
+      "time": "Time",
+      "status": "Status",
+      "notes": "Notes",
+      "viewPatient": "View Patient Details"
+    },
+    "patientDetails": {
+      "overview": "Overview",
+      "medical": "Medical Records",
+      "medications": "Medications",
+      "treatments": "Treatments",
+      "history": "Appointment History",
+      "personalInfo": "Personal Information",
+      "age": "Age",
+      "gender": "Gender",
+      "summary": "Medical Summary",
+      "totalVisits": "Total Visits",
+      "activeMeds": "Active Medications",
+      "treatmentPlans": "Treatment Plans",
+      "medicalRecords": "Medical Records",
+      "procedures": "Procedures",
+      "noRecords": "No medical records found",
+      "noMedications": "No medications found",
+      "noTreatments": "No treatment plans found",
+      "noHistory": "No appointment history found"
+    },
     "quickActions": {
       "title": "Quick Actions",
       "updateSettings": "Update Schedule Settings",

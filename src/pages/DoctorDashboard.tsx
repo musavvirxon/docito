@@ -22,6 +22,7 @@ import TreatmentPlanningSection from "@/components/doctor/TreatmentPlanningSecti
 import DoctorScheduleSettingsSection from "@/components/doctor/DoctorScheduleSettingsSection";
 import DoctorProcedureLibrarySection from "@/components/doctor/DoctorProcedureLibrarySection";
 import { DoctorFinancialStatsSection } from "@/components/doctor/DoctorFinancialStatsSection";
+import { UpcomingAppointmentCard } from "@/components/doctor/UpcomingAppointmentCard";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/lib/api/supabase-api";
@@ -304,6 +305,15 @@ const DoctorDashboardContent = () => {
 
             {/* Verification Status */}
             {!doctorProfile.verified && <DoctorVerificationStatusCard />}
+
+            {/* Current/Upcoming Appointment Card */}
+            <UpcomingAppointmentCard appointments={upcomingAppointments.map(apt => ({
+              ...apt,
+              patient_name: apt.patient_name,
+              patient_email: apt.patient_email,
+              patient_phone: apt.patient_phone,
+              patient_avatar: apt.patient_avatar
+            }))} />
 
             {/* Key Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
