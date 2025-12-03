@@ -15,7 +15,7 @@ import { useSmoothScroll } from "@/hooks/useSmoothScroll";
 
 const Index = () => {
   const { t } = useTranslation(['home', 'common']);
-  useSmoothScroll(0.12); // Balanced smooth scrolling
+  useSmoothScroll(0.2); // Smooth scrolling
   
   return (
     <ThemeProvider>
