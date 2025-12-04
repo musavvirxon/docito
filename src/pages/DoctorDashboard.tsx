@@ -308,12 +308,12 @@ const DoctorDashboardContent = () => {
 
             {/* Current/Upcoming Appointment Card */}
             <UpcomingAppointmentCard appointments={upcomingAppointments.map(apt => ({
-              ...apt,
-              patient_name: apt.patient_name,
-              patient_email: apt.patient_email,
-              patient_phone: apt.patient_phone,
-              patient_avatar: apt.patient_avatar
-            }))} />
+            ...apt,
+            patient_name: apt.patient_name,
+            patient_email: apt.patient_email,
+            patient_phone: apt.patient_phone,
+            patient_avatar: apt.patient_avatar
+          }))} />
 
             {/* Key Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -411,13 +411,7 @@ const DoctorDashboardContent = () => {
                     <Clock className="w-4 h-4 mr-2" />
                     {t("doctor.quickActions.updateSettings")}
                   </Button>
-                  <Button className="w-full justify-start" variant="outline" onClick={() => setQuickActionModal({
-                  isOpen: true,
-                  action: 'procedures'
-                })}>
-                    <Briefcase className="w-4 h-4 mr-2" />
-                    {t("doctor.quickActions.addService")}
-                  </Button>
+                  
                   {!doctorProfile?.practice_id && doctorStatus === "independent" ? <Button className="w-full justify-start" variant="outline" onClick={() => setActiveSection("clinic-finder")}>
                       <Search className="w-4 h-4 mr-2" />
                       {t("doctor.navigation.clinicFinder")}
