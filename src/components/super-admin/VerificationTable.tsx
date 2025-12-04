@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, CheckCircle, XCircle, Clock, FileText } from "lucide-react";
+import { Eye, CheckCircle, XCircle, Clock } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -30,7 +30,6 @@ const VerificationTable = ({ title, status = "all" }: VerificationTableProps) =>
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedVerification, setSelectedVerification] = useState<any>(null);
-  const [documents, setDocuments] = useState<any[]>([]);
   const [viewModalOpen, setViewModalOpen] = useState(false);
 
   useEffect(() => {
@@ -40,17 +39,15 @@ const VerificationTable = ({ title, status = "all" }: VerificationTableProps) =>
   const fetchData = async () => {
     setLoading(true);
     try {
+      // Query practices table directly using verification_status column
       let query = supabase
-        .from("practice_verification" as any)
-        .select(`
-          *,
-          practices!inner(name, email, phone)
-        `)
-        .order("submitted_at", { ascending: false })
+        .from("practices")
+        .select("*")
+        .order("created_at", { ascending: false })
         .limit(50);
 
       if (status !== "all") {
-        query = query.eq("status", status);
+        query = query.eq("verification_status", status);
       }
 
       const { data: result, error } = await query;
@@ -63,37 +60,14 @@ const VerificationTable = ({ title, status = "all" }: VerificationTableProps) =>
     }
   };
 
-  const fetchDocuments = async (verificationId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("verification_documents" as any)
-        .select("*")
-        .eq("verification_id", verificationId);
-
-      if (error) throw error;
-      setDocuments(data || []);
-    } catch (error) {
-      console.error("Error fetching documents:", error);
-    }
-  };
-
-  const handleView = async (verification: any) => {
-    setSelectedVerification(verification);
-    await fetchDocuments(verification.id);
+  const handleView = (practice: any) => {
+    setSelectedVerification(practice);
     setViewModalOpen(true);
   };
 
-  const handleUpdateStatus = async (verificationId: string, newStatus: string, practiceId: string) => {
+  const handleUpdateStatus = async (practiceId: string, newStatus: string) => {
     try {
-      // Update verification status
-      const { error: verificationError } = await supabase
-        .from("practice_verification" as any)
-        .update({ status: newStatus })
-        .eq("id", verificationId);
-
-      if (verificationError) throw verificationError;
-
-      // Update practice verification status
+      // Update practice verification status directly
       const { error: practiceError } = await supabase
         .from("practices")
         .update({ 
@@ -104,7 +78,7 @@ const VerificationTable = ({ title, status = "all" }: VerificationTableProps) =>
 
       if (practiceError) throw practiceError;
 
-      toast.success(`Verification ${newStatus}`);
+      toast.success(`Practice ${newStatus === "verified" ? "approved" : newStatus}`);
       fetchData();
       setViewModalOpen(false);
     } catch (error: any) {
@@ -130,26 +104,6 @@ const VerificationTable = ({ title, status = "all" }: VerificationTableProps) =>
         {status.replace("_", " ").toUpperCase()}
       </Badge>
     );
-  };
-
-  const downloadDocument = async (filePath: string, fileName: string) => {
-    try {
-      const { data, error } = await supabase.storage
-        .from("verification-documents")
-        .download(filePath);
-
-      if (error) throw error;
-
-      const url = window.URL.createObjectURL(data);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      a.click();
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Error downloading document:", error);
-      toast.error("Failed to download document");
-    }
   };
 
   return (
@@ -186,13 +140,13 @@ const VerificationTable = ({ title, status = "all" }: VerificationTableProps) =>
               ) : (
                 data.map((item: any) => (
                   <TableRow key={item.id}>
-                    <TableCell className="font-medium">{item.business_name || item.practices?.name}</TableCell>
-                    <TableCell>{item.business_type || "N/A"}</TableCell>
-                    <TableCell>{item.city}, {item.state}</TableCell>
+                    <TableCell className="font-medium">{item.name}</TableCell>
+                    <TableCell>{item.practice_type || "N/A"}</TableCell>
+                    <TableCell>{item.city || "N/A"}, {item.state || ""}</TableCell>
                     <TableCell>
-                      {item.submitted_at ? new Date(item.submitted_at).toLocaleDateString() : "N/A"}
+                      {item.created_at ? new Date(item.created_at).toLocaleDateString() : "N/A"}
                     </TableCell>
-                    <TableCell>{getStatusBadge(item.status)}</TableCell>
+                    <TableCell>{getStatusBadge(item.verification_status || "pending")}</TableCell>
                     <TableCell className="text-right">
                       <Button
                         variant="ghost"
@@ -228,127 +182,77 @@ const VerificationTable = ({ title, status = "all" }: VerificationTableProps) =>
                 <h3 className="text-lg font-semibold mb-3">Business Information</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-muted-foreground">Business Name</p>
-                    <p className="font-medium">{selectedVerification.business_name}</p>
+                    <p className="text-muted-foreground">Practice Name</p>
+                    <p className="font-medium">{selectedVerification.name}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Business Type</p>
-                    <p className="font-medium">{selectedVerification.business_type}</p>
+                    <p className="text-muted-foreground">Practice Type</p>
+                    <p className="font-medium">{selectedVerification.practice_type || "N/A"}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Email</p>
-                    <p className="font-medium">{selectedVerification.business_email}</p>
+                    <p className="font-medium">{selectedVerification.email || "N/A"}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Phone</p>
-                    <p className="font-medium">{selectedVerification.phone}</p>
+                    <p className="font-medium">{selectedVerification.phone || "N/A"}</p>
                   </div>
                   <div className="col-span-2">
                     <p className="text-muted-foreground">Address</p>
-                    <p className="font-medium">{selectedVerification.full_address}</p>
+                    <p className="font-medium">{selectedVerification.address || "N/A"}</p>
                     <p className="font-medium">
-                      {selectedVerification.city}, {selectedVerification.state} {selectedVerification.zip_code}
+                      {selectedVerification.city || ""}{selectedVerification.city && selectedVerification.state ? ", " : ""}{selectedVerification.state || ""} {selectedVerification.postal_code || ""}
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Specialties & Services */}
-              {(selectedVerification.specialties?.length > 0 || selectedVerification.services_offered?.length > 0) && (
+              {/* Specialties */}
+              {selectedVerification.specialties?.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-3">Specialties & Services</h3>
-                  {selectedVerification.specialties?.length > 0 && (
-                    <div className="mb-3">
-                      <p className="text-sm text-muted-foreground mb-2">Specialties</p>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedVerification.specialties.map((spec: string, idx: number) => (
-                          <Badge key={idx} variant="secondary">{spec}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {selectedVerification.services_offered?.length > 0 && (
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-2">Services</p>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedVerification.services_offered.map((service: string, idx: number) => (
-                          <Badge key={idx} variant="outline">{service}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  <h3 className="text-lg font-semibold mb-3">Specialties</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedVerification.specialties.map((spec: string, idx: number) => (
+                      <Badge key={idx} variant="secondary">{spec}</Badge>
+                    ))}
+                  </div>
                 </div>
               )}
 
-              {/* Documents */}
+              {/* Additional Info */}
               <div>
-                <h3 className="text-lg font-semibold mb-3">Uploaded Documents ({documents.length})</h3>
-                <div className="space-y-2">
-                  {documents.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No documents uploaded</p>
-                  ) : (
-                    documents.map((doc: any) => (
-                      <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <FileText className="w-5 h-5 text-muted-foreground" />
-                          <div>
-                            <p className="font-medium text-sm">
-                              {doc.document_type.replace(/_/g, " ").toUpperCase()}
-                            </p>
-                            <p className="text-xs text-muted-foreground">{doc.file_name}</p>
-                          </div>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => downloadDocument(doc.file_path, doc.file_name)}
-                        >
-                          Download
-                        </Button>
-                      </div>
-                    ))
-                  )}
+                <h3 className="text-lg font-semibold mb-3">Additional Information</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Website</p>
+                    <p className="font-medium">{selectedVerification.website || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Verified Status</p>
+                    <p className="font-medium">{selectedVerification.verified ? "Verified" : "Not Verified"}</p>
+                  </div>
                 </div>
               </div>
 
               {/* Actions */}
               <div className="flex gap-3 pt-4 border-t">
                 <Button
-                  onClick={() => handleUpdateStatus(selectedVerification.id, "verified", selectedVerification.practice_id)}
+                  onClick={() => handleUpdateStatus(selectedVerification.id, "verified")}
                   className="flex-1"
                   variant="default"
+                  disabled={selectedVerification.verification_status === "verified"}
                 >
                   <CheckCircle className="w-4 h-4 mr-2" />
-                  Approve Verification
+                  Approve
                 </Button>
                 <Button
-                  onClick={() => handleUpdateStatus(selectedVerification.id, "rejected", selectedVerification.practice_id)}
+                  onClick={() => handleUpdateStatus(selectedVerification.id, "rejected")}
                   className="flex-1"
                   variant="destructive"
+                  disabled={selectedVerification.verification_status === "rejected"}
                 >
                   <XCircle className="w-4 h-4 mr-2" />
                   Reject
-                </Button>
-                <Button
-                  onClick={async () => {
-                    if (!confirm("Are you sure you want to delete this verification? This cannot be undone.")) return;
-                    try {
-                      const { error } = await supabase
-                        .from("practice_verification" as any)
-                        .delete()
-                        .eq("id", selectedVerification.id);
-                      if (error) throw error;
-                      toast.success("Verification deleted");
-                      fetchData();
-                      setViewModalOpen(false);
-                    } catch (error: any) {
-                      toast.error("Failed to delete verification");
-                    }
-                  }}
-                  variant="outline"
-                >
-                  <XCircle className="w-4 h-4 mr-2" />
-                  Delete
                 </Button>
               </div>
             </div>
