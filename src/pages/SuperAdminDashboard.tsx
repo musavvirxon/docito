@@ -293,9 +293,16 @@ const SuperAdminDashboard = () => {
             </div>
             <ManagementTable title={t("superAdmin.practices.allPractices")} type="practices" />
             
-            <div className="mt-8">
-              <h2 className="text-2xl font-bold text-foreground mb-4">{t("superAdmin.practices.verifications")}</h2>
-              <VerificationTable title={t("superAdmin.practices.pendingVerifications")} status="under_review" />
+            <div className="mt-8 space-y-6">
+              <h2 className="text-2xl font-bold text-foreground">{t("superAdmin.practices.verifications")}</h2>
+              
+              <VerificationTable title="Pending Verifications" status="pending" />
+              
+              <VerificationTable title="Under Review" status="under_review" />
+              
+              <VerificationTable title="Verified Practices" status="verified" />
+              
+              <VerificationTable title="Rejected Applications" status="rejected" />
             </div>
           </div>
         );
