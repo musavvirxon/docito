@@ -41,14 +41,14 @@ const DoctorVerificationTable = ({ title, status = "all" }: DoctorVerificationTa
     setLoading(true);
     try {
       let query = supabase
-        .from("doctor_verification" as any)
+        .from("doctor_verification")
         .select(`
           *,
-          doctors!inner(
+          doctors(
             id,
             specialty,
             user_id,
-            profiles!doctors_user_id_fkey(full_name, email, phone)
+            verified
           )
         `)
         .order("submitted_at", { ascending: false })
@@ -59,10 +59,38 @@ const DoctorVerificationTable = ({ title, status = "all" }: DoctorVerificationTa
       }
 
       const { data: result, error } = await query;
-      if (error) throw error;
-      setData(result || []);
+      
+      if (error) {
+        console.error("Error fetching doctor verifications:", error);
+        throw error;
+      }
+
+      // Fetch profile data for each doctor
+      if (result && result.length > 0) {
+        const userIds = result.map((r: any) => r.doctors?.user_id).filter(Boolean);
+        
+        if (userIds.length > 0) {
+          const { data: profiles } = await supabase
+            .from("profiles")
+            .select("user_id, full_name, email, phone")
+            .in("user_id", userIds);
+
+          // Merge profile data
+          const enrichedData = result.map((item: any) => ({
+            ...item,
+            profile: profiles?.find((p: any) => p.user_id === item.doctors?.user_id)
+          }));
+          
+          setData(enrichedData);
+        } else {
+          setData(result || []);
+        }
+      } else {
+        setData([]);
+      }
     } catch (error) {
       console.error("Error fetching doctor verifications:", error);
+      setData([]);
     } finally {
       setLoading(false);
     }
@@ -257,7 +285,7 @@ const DoctorVerificationTable = ({ title, status = "all" }: DoctorVerificationTa
                 data.map((item: any) => (
                   <TableRow key={item.id}>
                     <TableCell className="font-medium">
-                      {item.full_name || item.doctors?.profiles?.full_name}
+                      {item.profile?.full_name || item.verification_data?.additional_info?.first_name || "N/A"}
                     </TableCell>
                     <TableCell>{item.specialty || item.doctors?.specialty}</TableCell>
                     <TableCell>{item.license_number || "N/A"}</TableCell>
