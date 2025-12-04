@@ -270,9 +270,16 @@ const SuperAdminDashboard = () => {
             </div>
             <ManagementTable title={t("superAdmin.doctors.allDoctors")} type="doctors" />
             
-            <div className="mt-8">
-              <h2 className="text-2xl font-bold text-foreground mb-4">{t("superAdmin.doctors.verifications")}</h2>
-              <DoctorVerificationTable title={t("superAdmin.doctors.pendingVerifications")} status="pending" />
+            <div className="mt-8 space-y-6">
+              <h2 className="text-2xl font-bold text-foreground">{t("superAdmin.doctors.verifications")}</h2>
+              
+              <DoctorVerificationTable title="Pending Verifications" status="pending" />
+              
+              <DoctorVerificationTable title="Under Review" status="under_review" />
+              
+              <DoctorVerificationTable title="Verified Doctors" status="verified" />
+              
+              <DoctorVerificationTable title="Rejected Applications" status="rejected" />
             </div>
           </div>
         );
