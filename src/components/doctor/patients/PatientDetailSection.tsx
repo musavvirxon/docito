@@ -10,10 +10,11 @@ import { Progress } from "@/components/ui/progress";
 import { 
   ArrowLeft, User, Phone, Mail, MapPin, Calendar, FileText, 
   Edit, Trash2, Download, Clock, DollarSign, Pill, AlertTriangle,
-  Plus, Eye, Paperclip
+  Plus, Eye, Paperclip, Loader2
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { generateProfilePatientPDF } from "./PatientSummaryPDF";
 import { toast } from "sonner";
 
 interface PatientDetailSectionProps {
@@ -70,6 +71,8 @@ const PatientDetailSection = ({ patientId, onBack }: PatientDetailSectionProps) 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [medicalRecords, setMedicalRecords] = useState<MedicalRecord[]>([]);
   const [treatmentPlans, setTreatmentPlans] = useState<TreatmentPlan[]>([]);
+  const [downloadingPDF, setDownloadingPDF] = useState(false);
+  const [doctorId, setDoctorId] = useState<string | null>(null);
   const [stats, setStats] = useState({
     totalVisits: 0,
     lastVisit: null as string | null,
@@ -95,6 +98,7 @@ const PatientDetailSection = ({ patientId, onBack }: PatientDetailSectionProps) 
         .single();
 
       if (!doctorData) return;
+      setDoctorId(doctorData.id);
 
       // Fetch patient profile
       const { data: profileData, error: profileError } = await supabase
@@ -165,6 +169,16 @@ const PatientDetailSection = ({ patientId, onBack }: PatientDetailSectionProps) 
       age--;
     }
     return age;
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!patient || !doctorId) return;
+    setDownloadingPDF(true);
+    try {
+      await generateProfilePatientPDF(patient.user_id, doctorId);
+    } finally {
+      setDownloadingPDF(false);
+    }
   };
 
   if (loading) {
@@ -267,9 +281,18 @@ const PatientDetailSection = ({ patientId, onBack }: PatientDetailSectionProps) 
                 <Edit className="w-4 h-4 mr-2" />
                 Edit Patient
               </Button>
-              <Button variant="outline" size="sm">
-                <Download className="w-4 h-4 mr-2" />
-                Download Summary
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleDownloadPDF}
+                disabled={downloadingPDF}
+              >
+                {downloadingPDF ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4 mr-2" />
+                )}
+                Download Summary (PDF)
               </Button>
               <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
                 <Trash2 className="w-4 h-4 mr-2" />
