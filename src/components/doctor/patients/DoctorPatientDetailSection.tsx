@@ -9,9 +9,12 @@ import { Progress } from "@/components/ui/progress";
 import { 
   ArrowLeft, User, Phone, Mail, MapPin, Calendar, FileText, 
   Edit, Trash2, Download, Clock, DollarSign, Pill, AlertTriangle,
-  Plus, Heart
+  Plus, Heart, Loader2
 } from "lucide-react";
 import { useDoctorPatientsV2, DoctorPatient } from "@/hooks/useDoctorPatientsV2";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { generateDoctorPatientPDF } from "./PatientSummaryPDF";
 import { toast } from "sonner";
 
 interface DoctorPatientDetailSectionProps {
@@ -20,9 +23,26 @@ interface DoctorPatientDetailSectionProps {
 }
 
 const DoctorPatientDetailSection = ({ patientId, onBack }: DoctorPatientDetailSectionProps) => {
+  const { user } = useAuth();
   const { getPatientById, deletePatient } = useDoctorPatientsV2();
   const [loading, setLoading] = useState(true);
   const [patient, setPatient] = useState<DoctorPatient | null>(null);
+  const [downloadingPDF, setDownloadingPDF] = useState(false);
+  const [doctorId, setDoctorId] = useState<string | null>(null);
+
+  // Fetch doctor ID
+  useEffect(() => {
+    const fetchDoctorId = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from("doctors")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+      if (data) setDoctorId(data.id);
+    };
+    fetchDoctorId();
+  }, [user]);
 
   useEffect(() => {
     const loadPatient = async () => {
@@ -42,6 +62,16 @@ const DoctorPatientDetailSection = ({ patientId, onBack }: DoctorPatientDetailSe
     const result = await deletePatient(patient.id);
     if (result.success) {
       onBack();
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!patient || !doctorId) return;
+    setDownloadingPDF(true);
+    try {
+      await generateDoctorPatientPDF(patient.id, doctorId);
+    } finally {
+      setDownloadingPDF(false);
     }
   };
 
@@ -137,9 +167,18 @@ const DoctorPatientDetailSection = ({ patientId, onBack }: DoctorPatientDetailSe
                 <Edit className="w-4 h-4 mr-2" />
                 Edit Patient
               </Button>
-              <Button variant="outline" size="sm">
-                <Download className="w-4 h-4 mr-2" />
-                Download Summary
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleDownloadPDF}
+                disabled={downloadingPDF}
+              >
+                {downloadingPDF ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4 mr-2" />
+                )}
+                Download Summary (PDF)
               </Button>
               <Button 
                 variant="ghost" 

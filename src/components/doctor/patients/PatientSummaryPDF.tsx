@@ -1,0 +1,648 @@
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+
+interface PatientPDFData {
+  // Personal Details
+  id: string;
+  full_name: string;
+  profile_photo_url?: string | null;
+  date_of_birth?: string | null;
+  age?: number | null;
+  gender?: string | null;
+  status?: string | null;
+  
+  // Contact Information
+  phone?: string | null;
+  email?: string | null;
+  address?: string | null;
+  emergency_contact_name?: string | null;
+  emergency_contact_phone?: string | null;
+  
+  // Medical Information
+  allergies?: string | null;
+  medical_history?: string | null;
+  dental_history?: string | null;
+  current_medications?: string | null;
+  
+  // Administrative
+  registration_date?: string | null;
+  notes?: string | null;
+}
+
+interface AppointmentData {
+  id: string;
+  appointment_date: string;
+  start_time: string;
+  end_time: string;
+  status: string;
+  notes?: string | null;
+  doctor_name?: string;
+  purpose?: string;
+  diagnosis?: string;
+  treatment?: string;
+}
+
+interface PrescriptionData {
+  id: string;
+  drug_name: string;
+  dosage: string;
+  instructions?: string;
+  issued_date: string;
+}
+
+interface TreatmentPlanData {
+  id: string;
+  title: string;
+  status: string;
+  start_date?: string;
+  progress?: number;
+  total_cost?: number;
+}
+
+interface PracticeInfo {
+  name?: string;
+  logo_url?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+}
+
+// Helper to format date
+const formatDate = (dateStr: string | null | undefined): string => {
+  if (!dateStr) return "—";
+  try {
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+};
+
+// Helper to add section title
+const addSectionTitle = (doc: jsPDF, title: string, y: number): number => {
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(37, 99, 235); // Primary blue
+  doc.text(title, 14, y);
+  
+  // Draw underline
+  doc.setDrawColor(229, 231, 235); // Light gray
+  doc.line(14, y + 2, 196, y + 2);
+  
+  return y + 10;
+};
+
+// Helper to add info row
+const addInfoRow = (
+  doc: jsPDF,
+  label: string,
+  value: string,
+  x: number,
+  y: number,
+  maxWidth: number = 80
+): number => {
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(107, 114, 128); // Gray
+  doc.text(label, x, y);
+  
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(31, 41, 55); // Dark gray
+  const lines = doc.splitTextToSize(value || "—", maxWidth);
+  doc.text(lines, x, y + 4);
+  
+  return y + 4 + (lines.length * 4);
+};
+
+// Main PDF generator function
+export const generatePatientSummaryPDF = async (
+  patient: PatientPDFData,
+  appointments: AppointmentData[] = [],
+  prescriptions: PrescriptionData[] = [],
+  treatmentPlans: TreatmentPlanData[] = [],
+  practiceInfo?: PracticeInfo
+): Promise<void> => {
+  try {
+    toast.loading("Generating PDF...");
+    
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    let currentY = 15;
+    
+    // ========== HEADER ==========
+    doc.setFillColor(37, 99, 235); // Primary blue
+    doc.rect(0, 0, pageWidth, 35, "F");
+    
+    // Docito branding
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(255, 255, 255);
+    doc.text("DOCITO", 14, 15);
+    
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text("docito.app", 14, 22);
+    
+    // Practice info (right side)
+    if (practiceInfo?.name) {
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text(practiceInfo.name, pageWidth - 14, 15, { align: "right" });
+      
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      if (practiceInfo.phone) {
+        doc.text(practiceInfo.phone, pageWidth - 14, 21, { align: "right" });
+      }
+      if (practiceInfo.email) {
+        doc.text(practiceInfo.email, pageWidth - 14, 26, { align: "right" });
+      }
+    }
+    
+    // Document title
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(255, 255, 255);
+    doc.text("Patient Summary Report", pageWidth / 2, 32, { align: "center" });
+    
+    currentY = 45;
+    
+    // ========== PATIENT INFO SECTION ==========
+    currentY = addSectionTitle(doc, "Personal Information", currentY);
+    
+    // Two-column layout
+    const col1X = 14;
+    const col2X = 110;
+    let col1Y = currentY;
+    let col2Y = currentY;
+    
+    // Column 1
+    col1Y = addInfoRow(doc, "Full Name", patient.full_name, col1X, col1Y);
+    col1Y = addInfoRow(doc, "Patient ID", patient.id.slice(0, 8).toUpperCase(), col1X, col1Y + 4);
+    col1Y = addInfoRow(doc, "Date of Birth", formatDate(patient.date_of_birth), col1X, col1Y + 4);
+    col1Y = addInfoRow(doc, "Age", patient.age ? `${patient.age} years` : "—", col1X, col1Y + 4);
+    col1Y = addInfoRow(doc, "Gender", patient.gender ? patient.gender.charAt(0).toUpperCase() + patient.gender.slice(1) : "—", col1X, col1Y + 4);
+    
+    // Column 2
+    col2Y = addInfoRow(doc, "Status", patient.status ? patient.status.charAt(0).toUpperCase() + patient.status.slice(1) : "Active", col2X, col2Y);
+    col2Y = addInfoRow(doc, "Registration Date", formatDate(patient.registration_date), col2X, col2Y + 4);
+    
+    currentY = Math.max(col1Y, col2Y) + 10;
+    
+    // ========== CONTACT INFORMATION ==========
+    currentY = addSectionTitle(doc, "Contact Information", currentY);
+    
+    col1Y = currentY;
+    col2Y = currentY;
+    
+    col1Y = addInfoRow(doc, "Phone", patient.phone || "—", col1X, col1Y);
+    col1Y = addInfoRow(doc, "Email", patient.email || "—", col1X, col1Y + 4);
+    col1Y = addInfoRow(doc, "Address", patient.address || "—", col1X, col1Y + 4);
+    
+    col2Y = addInfoRow(doc, "Emergency Contact", patient.emergency_contact_name || "—", col2X, col2Y);
+    col2Y = addInfoRow(doc, "Emergency Phone", patient.emergency_contact_phone || "—", col2X, col2Y + 4);
+    
+    currentY = Math.max(col1Y, col2Y) + 10;
+    
+    // ========== MEDICAL INFORMATION ==========
+    currentY = addSectionTitle(doc, "Medical Information", currentY);
+    
+    // Allergies
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(220, 38, 38); // Red for allergies
+    doc.text("⚠ Allergies:", col1X, currentY);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(31, 41, 55);
+    const allergiesText = patient.allergies || "No known allergies";
+    const allergiesLines = doc.splitTextToSize(allergiesText, 170);
+    doc.text(allergiesLines, col1X, currentY + 5);
+    currentY += 5 + (allergiesLines.length * 4) + 5;
+    
+    // Current Medications
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(37, 99, 235);
+    doc.text("💊 Current Medications:", col1X, currentY);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(31, 41, 55);
+    const medsText = patient.current_medications || "No current medications";
+    const medsLines = doc.splitTextToSize(medsText, 170);
+    doc.text(medsLines, col1X, currentY + 5);
+    currentY += 5 + (medsLines.length * 4) + 5;
+    
+    // Medical History
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(107, 114, 128);
+    doc.text("Medical History:", col1X, currentY);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(31, 41, 55);
+    const historyText = patient.medical_history || "No medical history recorded";
+    const historyLines = doc.splitTextToSize(historyText, 170);
+    doc.text(historyLines, col1X, currentY + 5);
+    currentY += 5 + (historyLines.length * 4) + 5;
+    
+    // Dental History
+    if (patient.dental_history) {
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(107, 114, 128);
+      doc.text("Dental History:", col1X, currentY);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(31, 41, 55);
+      const dentalLines = doc.splitTextToSize(patient.dental_history, 170);
+      doc.text(dentalLines, col1X, currentY + 5);
+      currentY += 5 + (dentalLines.length * 4) + 5;
+    }
+    
+    // Check if we need a new page
+    if (currentY > pageHeight - 60) {
+      doc.addPage();
+      currentY = 20;
+    }
+    
+    // ========== APPOINTMENTS TABLE ==========
+    if (appointments.length > 0) {
+      currentY = addSectionTitle(doc, "Appointments / Visits", currentY);
+      
+      autoTable(doc, {
+        startY: currentY,
+        head: [["Date", "Time", "Status", "Notes"]],
+        body: appointments.slice(0, 10).map((apt) => [
+          formatDate(apt.appointment_date),
+          `${apt.start_time} - ${apt.end_time}`,
+          apt.status.charAt(0).toUpperCase() + apt.status.slice(1),
+          apt.notes?.slice(0, 50) || "—",
+        ]),
+        theme: "grid",
+        headStyles: {
+          fillColor: [37, 99, 235],
+          textColor: 255,
+          fontSize: 9,
+          fontStyle: "bold",
+        },
+        bodyStyles: {
+          fontSize: 8,
+          textColor: [31, 41, 55],
+        },
+        alternateRowStyles: {
+          fillColor: [249, 250, 251],
+        },
+        margin: { left: 14, right: 14 },
+      });
+      
+      currentY = (doc as any).lastAutoTable.finalY + 10;
+    }
+    
+    // Check if we need a new page
+    if (currentY > pageHeight - 60) {
+      doc.addPage();
+      currentY = 20;
+    }
+    
+    // ========== TREATMENT PLANS TABLE ==========
+    if (treatmentPlans.length > 0) {
+      currentY = addSectionTitle(doc, "Treatment Plans", currentY);
+      
+      autoTable(doc, {
+        startY: currentY,
+        head: [["Treatment", "Start Date", "Status", "Progress", "Cost"]],
+        body: treatmentPlans.map((plan) => [
+          plan.title,
+          formatDate(plan.start_date),
+          plan.status.charAt(0).toUpperCase() + plan.status.slice(1),
+          plan.progress ? `${plan.progress}%` : "—",
+          plan.total_cost ? `$${plan.total_cost.toFixed(2)}` : "—",
+        ]),
+        theme: "grid",
+        headStyles: {
+          fillColor: [37, 99, 235],
+          textColor: 255,
+          fontSize: 9,
+          fontStyle: "bold",
+        },
+        bodyStyles: {
+          fontSize: 8,
+          textColor: [31, 41, 55],
+        },
+        alternateRowStyles: {
+          fillColor: [249, 250, 251],
+        },
+        margin: { left: 14, right: 14 },
+      });
+      
+      currentY = (doc as any).lastAutoTable.finalY + 10;
+    }
+    
+    // ========== PRESCRIPTIONS TABLE ==========
+    if (prescriptions.length > 0) {
+      // Check if we need a new page
+      if (currentY > pageHeight - 60) {
+        doc.addPage();
+        currentY = 20;
+      }
+      
+      currentY = addSectionTitle(doc, "Prescriptions", currentY);
+      
+      autoTable(doc, {
+        startY: currentY,
+        head: [["Drug Name", "Dosage", "Instructions", "Issued Date"]],
+        body: prescriptions.map((rx) => [
+          rx.drug_name,
+          rx.dosage,
+          rx.instructions || "—",
+          formatDate(rx.issued_date),
+        ]),
+        theme: "grid",
+        headStyles: {
+          fillColor: [37, 99, 235],
+          textColor: 255,
+          fontSize: 9,
+          fontStyle: "bold",
+        },
+        bodyStyles: {
+          fontSize: 8,
+          textColor: [31, 41, 55],
+        },
+        alternateRowStyles: {
+          fillColor: [249, 250, 251],
+        },
+        margin: { left: 14, right: 14 },
+      });
+      
+      currentY = (doc as any).lastAutoTable.finalY + 10;
+    }
+    
+    // ========== INTERNAL NOTES ==========
+    if (patient.notes) {
+      // Check if we need a new page
+      if (currentY > pageHeight - 40) {
+        doc.addPage();
+        currentY = 20;
+      }
+      
+      currentY = addSectionTitle(doc, "Internal Notes", currentY);
+      
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "italic");
+      doc.setTextColor(107, 114, 128);
+      const notesLines = doc.splitTextToSize(patient.notes, 170);
+      doc.text(notesLines, 14, currentY);
+    }
+    
+    // ========== FOOTER ON ALL PAGES ==========
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      
+      // Footer line
+      doc.setDrawColor(229, 231, 235);
+      doc.line(14, pageHeight - 20, pageWidth - 14, pageHeight - 20);
+      
+      // Footer text
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(156, 163, 175);
+      
+      doc.text("Generated by Docito - Medical Practice Management", 14, pageHeight - 14);
+      doc.text(`Generated on ${new Date().toLocaleString()}`, 14, pageHeight - 9);
+      
+      doc.text(`Page ${i} of ${pageCount}`, pageWidth - 14, pageHeight - 12, { align: "right" });
+    }
+    
+    // Generate filename and save
+    const sanitizedName = patient.full_name.replace(/[^a-zA-Z0-9]/g, "-");
+    const dateStr = new Date().toLocaleDateString("en-GB").replace(/\//g, "-");
+    const filename = `patient-summary-${sanitizedName}-${dateStr}.pdf`;
+    
+    doc.save(filename);
+    
+    toast.dismiss();
+    toast.success("PDF successfully generated");
+    
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    toast.dismiss();
+    toast.error("Failed to generate PDF. Please try again.");
+  }
+};
+
+// Fetch and generate PDF for a doctor's patient
+export const generateDoctorPatientPDF = async (
+  patientId: string,
+  doctorId: string
+): Promise<void> => {
+  try {
+    toast.loading("Fetching patient data...");
+    
+    // Fetch patient from doctor_patients table
+    const { data: patient, error: patientError } = await supabase
+      .from("doctor_patients")
+      .select("*")
+      .eq("id", patientId)
+      .eq("doctor_id", doctorId)
+      .single();
+    
+    if (patientError || !patient) {
+      toast.dismiss();
+      toast.error("Patient not found");
+      return;
+    }
+    
+    // Fetch practice info
+    const { data: doctorData } = await supabase
+      .from("doctors")
+      .select("practice_id, practices(name, phone, email, address)")
+      .eq("id", doctorId)
+      .single();
+    
+    const practiceInfo: PracticeInfo = doctorData?.practices ? {
+      name: (doctorData.practices as any).name,
+      phone: (doctorData.practices as any).phone,
+      email: (doctorData.practices as any).email,
+      address: (doctorData.practices as any).address,
+    } : {};
+    
+    // Calculate age from DOB
+    let age: number | null = null;
+    if (patient.date_of_birth) {
+      const birthDate = new Date(patient.date_of_birth);
+      const today = new Date();
+      age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+    }
+    
+    const patientData: PatientPDFData = {
+      id: patient.id,
+      full_name: patient.full_name,
+      profile_photo_url: patient.profile_photo_url,
+      date_of_birth: patient.date_of_birth,
+      age,
+      gender: patient.gender,
+      status: patient.status,
+      phone: patient.phone,
+      email: patient.email,
+      address: patient.address,
+      emergency_contact_name: patient.emergency_contact_name,
+      emergency_contact_phone: patient.emergency_contact_phone,
+      allergies: patient.allergies,
+      medical_history: patient.medical_history,
+      dental_history: patient.dental_history,
+      current_medications: patient.current_medications,
+      registration_date: patient.registration_date,
+      notes: patient.notes,
+    };
+    
+    toast.dismiss();
+    await generatePatientSummaryPDF(patientData, [], [], [], practiceInfo);
+    
+  } catch (error) {
+    console.error("Error:", error);
+    toast.dismiss();
+    toast.error("Failed to generate PDF");
+  }
+};
+
+// Fetch and generate PDF for a profile-based patient
+export const generateProfilePatientPDF = async (
+  patientUserId: string,
+  doctorId: string
+): Promise<void> => {
+  try {
+    toast.loading("Fetching patient data...");
+    
+    // Fetch patient profile
+    const { data: patient, error: patientError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_id", patientUserId)
+      .single();
+    
+    if (patientError || !patient) {
+      toast.dismiss();
+      toast.error("Patient not found");
+      return;
+    }
+    
+    // Fetch appointments
+    const { data: appointments } = await supabase
+      .from("appointments")
+      .select("*")
+      .eq("doctor_id", doctorId)
+      .eq("patient_id", patientUserId)
+      .order("appointment_date", { ascending: false })
+      .limit(20);
+    
+    // Fetch treatment plans
+    const { data: treatmentPlans } = await supabase
+      .from("treatment_plans")
+      .select("*")
+      .eq("patient_id", patientUserId)
+      .eq("doctor_id", doctorId)
+      .order("created_at", { ascending: false });
+    
+    // Fetch prescriptions/medications
+    const { data: medications } = await supabase
+      .from("medications")
+      .select("*")
+      .eq("patient_id", patientUserId)
+      .eq("doctor_id", doctorId)
+      .order("created_at", { ascending: false });
+    
+    // Fetch practice info
+    const { data: doctorData } = await supabase
+      .from("doctors")
+      .select("practice_id, practices(name, phone, email, address)")
+      .eq("id", doctorId)
+      .single();
+    
+    const practiceInfo: PracticeInfo = doctorData?.practices ? {
+      name: (doctorData.practices as any).name,
+      phone: (doctorData.practices as any).phone,
+      email: (doctorData.practices as any).email,
+      address: (doctorData.practices as any).address,
+    } : {};
+    
+    // Calculate age
+    let age: number | null = null;
+    if (patient.date_of_birth) {
+      const birthDate = new Date(patient.date_of_birth);
+      const today = new Date();
+      age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+    }
+    
+    const patientData: PatientPDFData = {
+      id: patient.user_id,
+      full_name: patient.full_name || "Unknown",
+      profile_photo_url: patient.avatar_url,
+      date_of_birth: patient.date_of_birth,
+      age,
+      gender: patient.gender,
+      status: "active",
+      phone: patient.phone,
+      email: patient.email,
+      address: patient.address,
+      emergency_contact_name: null,
+      emergency_contact_phone: null,
+      allergies: null,
+      medical_history: null,
+      dental_history: null,
+      current_medications: null,
+      registration_date: patient.created_at,
+      notes: null,
+    };
+    
+    const appointmentsData: AppointmentData[] = (appointments || []).map((apt) => ({
+      id: apt.id,
+      appointment_date: apt.appointment_date,
+      start_time: apt.start_time,
+      end_time: apt.end_time,
+      status: apt.status || "pending",
+      notes: apt.notes,
+    }));
+    
+    const treatmentPlansData: TreatmentPlanData[] = (treatmentPlans || []).map((plan) => ({
+      id: plan.id,
+      title: plan.title,
+      status: plan.status,
+      start_date: plan.created_at,
+      progress: 0,
+      total_cost: plan.total_cost,
+    }));
+    
+    const prescriptionsData: PrescriptionData[] = (medications || []).map((med) => ({
+      id: med.id,
+      drug_name: med.name,
+      dosage: med.dosage,
+      instructions: med.instructions || undefined,
+      issued_date: med.created_at,
+    }));
+    
+    toast.dismiss();
+    await generatePatientSummaryPDF(
+      patientData,
+      appointmentsData,
+      prescriptionsData,
+      treatmentPlansData,
+      practiceInfo
+    );
+    
+  } catch (error) {
+    console.error("Error:", error);
+    toast.dismiss();
+    toast.error("Failed to generate PDF");
+  }
+};
+
+export default generatePatientSummaryPDF;
