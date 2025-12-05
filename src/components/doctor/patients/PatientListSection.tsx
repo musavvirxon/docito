@@ -7,36 +7,84 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Users, Calendar, FileText, Plus, ArrowUpDown, Phone, ChevronRight } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Search, Users, Calendar, FileText, Plus, ArrowUpDown, Phone, ChevronRight, UserPlus } from "lucide-react";
 import { useDoctorPatients } from "@/hooks/useDoctorPatients";
+import { useDoctorPatientsV2, DoctorPatient } from "@/hooks/useDoctorPatientsV2";
 import { useTranslation } from "react-i18next";
 
 interface PatientListSectionProps {
   onSelectPatient: (patientId: string) => void;
+  onSelectDirectPatient?: (patientId: string) => void;
   onAddPatient: () => void;
 }
 
 type SortOption = "name-asc" | "name-desc" | "newest" | "oldest";
 
-const PatientListSection = ({ onSelectPatient, onAddPatient }: PatientListSectionProps) => {
+const PatientListSection = ({ onSelectPatient, onSelectDirectPatient, onAddPatient }: PatientListSectionProps) => {
   const { t } = useTranslation("patients");
-  const { patients, loading, error } = useDoctorPatients();
+  const { patients: appointmentPatients, loading: loadingAppointment } = useDoctorPatients();
+  const { patients: directPatients, loading: loadingDirect } = useDoctorPatientsV2();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [genderFilter, setGenderFilter] = useState<string>("all");
   const [sortOption, setSortOption] = useState<SortOption>("name-asc");
+  const [activeTab, setActiveTab] = useState<string>("all");
 
-  const filteredAndSortedPatients = useMemo(() => {
-    let result = [...patients];
+  const loading = loadingAppointment || loadingDirect;
+
+  // Combine both patient sources for "all" tab
+  const allPatients = useMemo(() => {
+    const appointmentMapped = appointmentPatients.map(p => ({
+      id: p.id,
+      name: p.full_name || "Unknown",
+      email: p.email,
+      phone: p.phone,
+      age: p.age,
+      gender: p.gender,
+      avatar: p.avatar_url,
+      status: p.status,
+      lastVisit: p.lastVisit,
+      totalVisits: p.totalVisits,
+      created_at: p.created_at,
+      type: 'appointment' as const,
+      userId: p.user_id,
+    }));
+
+    const directMapped = directPatients.map(p => ({
+      id: p.id,
+      name: p.full_name,
+      email: p.email,
+      phone: p.phone,
+      age: p.age,
+      gender: p.gender,
+      avatar: p.profile_photo_url,
+      status: p.status,
+      lastVisit: null,
+      totalVisits: 0,
+      created_at: p.created_at,
+      type: 'direct' as const,
+      userId: p.id,
+    }));
+
+    return [...appointmentMapped, ...directMapped];
+  }, [appointmentPatients, directPatients]);
+
+  const filteredPatients = useMemo(() => {
+    let result = activeTab === "direct" 
+      ? allPatients.filter(p => p.type === 'direct')
+      : activeTab === "appointment" 
+        ? allPatients.filter(p => p.type === 'appointment')
+        : allPatients;
 
     // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter(
         (p) =>
-          p.full_name?.toLowerCase().includes(query) ||
+          p.name?.toLowerCase().includes(query) ||
           p.phone?.toLowerCase().includes(query) ||
-          p.user_id?.toLowerCase().includes(query)
+          p.id?.toLowerCase().includes(query)
       );
     }
 
@@ -53,10 +101,10 @@ const PatientListSection = ({ onSelectPatient, onAddPatient }: PatientListSectio
     // Sort
     switch (sortOption) {
       case "name-asc":
-        result.sort((a, b) => (a.full_name || "").localeCompare(b.full_name || ""));
+        result.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
         break;
       case "name-desc":
-        result.sort((a, b) => (b.full_name || "").localeCompare(a.full_name || ""));
+        result.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
         break;
       case "newest":
         result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
@@ -67,15 +115,23 @@ const PatientListSection = ({ onSelectPatient, onAddPatient }: PatientListSectio
     }
 
     return result;
-  }, [patients, searchQuery, statusFilter, genderFilter, sortOption]);
+  }, [allPatients, activeTab, searchQuery, statusFilter, genderFilter, sortOption]);
 
   const stats = useMemo(() => ({
-    total: patients.length,
-    active: patients.filter((p) => p.status === "active").length,
-    inactive: patients.filter((p) => p.status === "inactive").length,
-    withUpcoming: patients.filter((p) => p.nextAppointment).length,
-    totalVisits: patients.reduce((sum, p) => sum + (p.totalVisits || 0), 0),
-  }), [patients]);
+    total: allPatients.length,
+    active: allPatients.filter((p) => p.status === "active").length,
+    inactive: allPatients.filter((p) => p.status === "inactive").length,
+    fromAppointments: appointmentPatients.length,
+    directlyAdded: directPatients.length,
+  }), [allPatients, appointmentPatients, directPatients]);
+
+  const handlePatientClick = (patient: typeof filteredPatients[0]) => {
+    if (patient.type === 'direct' && onSelectDirectPatient) {
+      onSelectDirectPatient(patient.id);
+    } else {
+      onSelectPatient(patient.userId);
+    }
+  };
 
   if (loading) {
     return (
@@ -213,20 +269,20 @@ const PatientListSection = ({ onSelectPatient, onAddPatient }: PatientListSectio
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Upcoming Appointments</CardTitle>
+            <CardTitle className="text-sm font-medium">From Appointments</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.withUpcoming}</div>
+            <div className="text-2xl font-bold">{stats.fromAppointments}</div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Visits</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Directly Added</CardTitle>
+            <UserPlus className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalVisits}</div>
+            <div className="text-2xl font-bold">{stats.directlyAdded}</div>
           </CardContent>
         </Card>
       </div>
@@ -241,13 +297,13 @@ const PatientListSection = ({ onSelectPatient, onAddPatient }: PatientListSectio
                 <TableHead>Age</TableHead>
                 <TableHead>Gender</TableHead>
                 <TableHead>Phone</TableHead>
-                <TableHead>Last Visit</TableHead>
+                <TableHead>Source</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredAndSortedPatients.length === 0 ? (
+              {filteredPatients.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-12">
                     <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
@@ -259,22 +315,22 @@ const PatientListSection = ({ onSelectPatient, onAddPatient }: PatientListSectio
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredAndSortedPatients.map((patient) => (
+                filteredPatients.map((patient) => (
                   <TableRow
-                    key={patient.id}
+                    key={`${patient.type}-${patient.id}`}
                     className="cursor-pointer hover:bg-muted/50 transition-colors"
-                    onClick={() => onSelectPatient(patient.user_id)}
+                    onClick={() => handlePatientClick(patient)}
                   >
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-9 w-9">
-                          <AvatarImage src={patient.avatar_url || undefined} />
+                          <AvatarImage src={patient.avatar || undefined} />
                           <AvatarFallback>
-                            {patient.full_name?.split(" ").map((n) => n[0]).join("") || "P"}
+                            {patient.name?.split(" ").map((n) => n[0]).join("") || "P"}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-medium">{patient.full_name || "Unknown"}</p>
+                          <p className="font-medium">{patient.name || "Unknown"}</p>
                           <p className="text-xs text-muted-foreground">{patient.email}</p>
                         </div>
                       </div>
@@ -292,9 +348,9 @@ const PatientListSection = ({ onSelectPatient, onAddPatient }: PatientListSectio
                       )}
                     </TableCell>
                     <TableCell>
-                      {patient.lastVisit
-                        ? new Date(patient.lastVisit).toLocaleDateString()
-                        : "Never"}
+                      <Badge variant="outline" className="text-xs">
+                        {patient.type === 'direct' ? 'Added' : 'Appointment'}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <Badge
@@ -321,7 +377,7 @@ const PatientListSection = ({ onSelectPatient, onAddPatient }: PatientListSectio
 
       {/* Patients Cards - Mobile */}
       <div className="md:hidden space-y-3">
-        {filteredAndSortedPatients.length === 0 ? (
+        {filteredPatients.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
               <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
@@ -329,23 +385,23 @@ const PatientListSection = ({ onSelectPatient, onAddPatient }: PatientListSectio
             </CardContent>
           </Card>
         ) : (
-          filteredAndSortedPatients.map((patient) => (
+          filteredPatients.map((patient) => (
             <Card
-              key={patient.id}
+              key={`${patient.type}-${patient.id}`}
               className="cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => onSelectPatient(patient.user_id)}
+              onClick={() => handlePatientClick(patient)}
             >
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-12 w-12">
-                      <AvatarImage src={patient.avatar_url || undefined} />
+                      <AvatarImage src={patient.avatar || undefined} />
                       <AvatarFallback>
-                        {patient.full_name?.split(" ").map((n) => n[0]).join("") || "P"}
+                        {patient.name?.split(" ").map((n) => n[0]).join("") || "P"}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="font-medium">{patient.full_name || "Unknown"}</p>
+                      <p className="font-medium">{patient.name || "Unknown"}</p>
                       <p className="text-sm text-muted-foreground">
                         {patient.age ? `${patient.age} yrs` : ""} {patient.gender ? `• ${patient.gender}` : ""}
                       </p>
@@ -367,12 +423,14 @@ const PatientListSection = ({ onSelectPatient, onAddPatient }: PatientListSectio
                     >
                       {patient.status}
                     </Badge>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    <Badge variant="outline" className="text-xs">
+                      {patient.type === 'direct' ? 'Added' : 'Appt'}
+                    </Badge>
                   </div>
                 </div>
                 <div className="mt-3 pt-3 border-t flex justify-between text-sm text-muted-foreground">
-                  <span>{patient.totalVisits} visits</span>
-                  <span>Last: {patient.lastVisit ? new Date(patient.lastVisit).toLocaleDateString() : "Never"}</span>
+                  <span className="capitalize">{patient.type}</span>
+                  <ChevronRight className="w-4 h-4" />
                 </div>
               </CardContent>
             </Card>
