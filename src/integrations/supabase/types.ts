@@ -465,6 +465,90 @@ export type Database = {
         }
         Relationships: []
       }
+      doctor_patients: {
+        Row: {
+          address: string | null
+          allergies: string | null
+          created_at: string
+          current_medications: string | null
+          date_of_birth: string
+          dental_history: string | null
+          doctor_id: string
+          email: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          full_name: string
+          gender: string | null
+          id: string
+          medical_history: string | null
+          notes: string | null
+          phone: string
+          profile_photo_url: string | null
+          registration_date: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          allergies?: string | null
+          created_at?: string
+          current_medications?: string | null
+          date_of_birth: string
+          dental_history?: string | null
+          doctor_id: string
+          email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          full_name: string
+          gender?: string | null
+          id?: string
+          medical_history?: string | null
+          notes?: string | null
+          phone: string
+          profile_photo_url?: string | null
+          registration_date?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          allergies?: string | null
+          created_at?: string
+          current_medications?: string | null
+          date_of_birth?: string
+          dental_history?: string | null
+          doctor_id?: string
+          email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          full_name?: string
+          gender?: string | null
+          id?: string
+          medical_history?: string | null
+          notes?: string | null
+          phone?: string
+          profile_photo_url?: string | null
+          registration_date?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_patients_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_patients_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       doctor_verification: {
         Row: {
           created_at: string
