@@ -16,7 +16,7 @@ import DoctorCalendarSection from "@/components/doctor/DoctorCalendarSection";
 import DoctorPerformanceSection from "@/components/doctor/DoctorPerformanceSection";
 import ClinicFinderSection from "@/components/doctor/ClinicFinderSection";
 import DoctorSettingsSection from "@/components/doctor/DoctorSettingsSection";
-import AssignedPatientsSection from "@/components/doctor/AssignedPatientsSection";
+import DoctorPatientsSection from "@/components/doctor/patients/DoctorPatientsSection";
 import InternalMessagingSection from "@/components/doctor/InternalMessagingSection";
 import TreatmentPlanningSection from "@/components/doctor/TreatmentPlanningSection";
 import DoctorScheduleSettingsSection from "@/components/doctor/DoctorScheduleSettingsSection";
@@ -175,6 +175,10 @@ const DoctorDashboardContent = () => {
     label: t("doctor.navigation.treatmentPlanning"),
     icon: Calendar
   }, {
+    id: "assigned-patients",
+    label: t("doctor.navigation.myPatients"),
+    icon: Users
+  }, {
     id: "calendar",
     label: t("doctor.navigation.calendar"),
     icon: Calendar
@@ -262,7 +266,7 @@ const DoctorDashboardContent = () => {
       case "clinic-finder":
         return <ClinicFinderSection />;
       case "assigned-patients":
-        return <AssignedPatientsSection />;
+        return <DoctorPatientsSection />;
       case "messages":
         return <InternalMessagingSection />;
       case "procedure-library":
