@@ -6,6 +6,9 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePatientPrescriptions } from "@/hooks/usePatientPrescriptions";
+import { usePatientFiles } from "@/hooks/usePatientFiles";
+import { usePatientNotes } from "@/hooks/usePatientNotes";
 
 import PatientDashboardHeader from "./PatientDashboardHeader";
 import QuickOverviewCards from "./QuickOverviewCards";
@@ -29,9 +32,11 @@ const PatientDashboardView = ({ patientId, patientType, onBack }: PatientDashboa
   const [activeTab, setActiveTab] = useState("overview");
   const [patientData, setPatientData] = useState<any>(null);
   const [appointments, setAppointments] = useState<any[]>([]);
-  const [prescriptions, setPrescriptions] = useState<any[]>([]);
-  const [files, setFiles] = useState<any[]>([]);
-  const [notes, setNotes] = useState<any[]>([]);
+
+  // Use hooks for prescriptions, files, and notes
+  const { prescriptions, loading: prescriptionsLoading, addPrescription } = usePatientPrescriptions(patientId);
+  const { files, loading: filesLoading, uploading, uploadFiles, deleteFile, downloadFile } = usePatientFiles(patientId);
+  const { notes, loading: notesLoading, addNote, updateNote, deleteNote, togglePin } = usePatientNotes(patientId);
 
   useEffect(() => {
     fetchPatientData();
@@ -71,7 +76,7 @@ const PatientDashboardView = ({ patientId, patientType, onBack }: PatientDashboa
           .from("appointments")
           .select("*")
           .eq("doctor_id", doctorData.id)
-          .eq("patient_id", patientType === "direct" ? patientId : patientId)
+          .eq("patient_id", patientId)
           .order("appointment_date", { ascending: false });
         setAppointments(appts || []);
       }
@@ -114,6 +119,51 @@ const PatientDashboardView = ({ patientId, patientType, onBack }: PatientDashboa
     outstandingBalance: 0,
   };
 
+  // Build timeline from appointments, prescriptions, files, and notes
+  const timeline = [
+    ...appointments.map((a) => ({
+      id: a.id,
+      type: "appointment" as const,
+      title: `Appointment - ${a.status}`,
+      date: a.appointment_date,
+      description: a.notes || "No notes",
+    })),
+    ...prescriptions.map((p) => ({
+      id: p.id,
+      type: "prescription" as const,
+      title: `Prescription: ${p.medication}`,
+      date: p.start_date,
+      description: `${p.dosage} - ${p.frequency}`,
+    })),
+    ...files.map((f) => ({
+      id: f.id,
+      type: "file" as const,
+      title: `File uploaded: ${f.name}`,
+      date: f.date,
+      description: f.category || "Document",
+    })),
+    ...notes.map((n) => ({
+      id: n.id,
+      type: "note" as const,
+      title: "Note added",
+      date: n.created_at,
+      description: n.content.substring(0, 100) + (n.content.length > 100 ? "..." : ""),
+    })),
+  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  const handleAddPrescription = () => {
+    // For now, show a toast - in a full implementation, open a modal
+    toast.info("Add prescription modal coming soon");
+  };
+
+  const handleExportPDF = () => {
+    toast.info("PDF export coming soon");
+  };
+
+  const handleSendToPatient = () => {
+    toast.info("Send to patient coming soon");
+  };
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <PatientDashboardHeader
@@ -139,25 +189,67 @@ const PatientDashboardView = ({ patientId, patientType, onBack }: PatientDashboa
         </TabsList>
 
         <TabsContent value="overview" className="mt-6">
-          <OverviewTab timeline={[]} recentFiles={[]} metrics={{ totalAppointments: appointments.length, totalPrescriptions: prescriptions.length, firstVisit: completedVisits[completedVisits.length - 1]?.appointment_date, lastVisit: completedVisits[0]?.appointment_date }} onViewFile={() => {}} />
+          <OverviewTab 
+            timeline={timeline} 
+            recentFiles={files.slice(0, 3)} 
+            metrics={{ 
+              totalAppointments: appointments.length, 
+              totalPrescriptions: prescriptions.length, 
+              firstVisit: completedVisits[completedVisits.length - 1]?.appointment_date, 
+              lastVisit: completedVisits[0]?.appointment_date 
+            }} 
+            onViewFile={(file) => {
+              if (file.url) {
+                window.open(file.url, "_blank");
+              }
+            }} 
+          />
         </TabsContent>
         <TabsContent value="profile" className="mt-6">
           <ProfileTab profile={patientData} onEdit={() => toast.info("Edit coming soon")} />
         </TabsContent>
         <TabsContent value="appointments" className="mt-6">
-          <AppointmentsTab appointments={appointments.map(a => ({ ...a, date: a.appointment_date }))} onSchedule={() => toast.info("Schedule coming soon")} onReschedule={() => {}} onCancel={() => {}} onView={() => {}} />
+          <AppointmentsTab 
+            appointments={appointments.map(a => ({ ...a, date: a.appointment_date }))} 
+            onSchedule={() => toast.info("Schedule coming soon")} 
+            onReschedule={() => {}} 
+            onCancel={() => {}} 
+            onView={() => {}} 
+          />
         </TabsContent>
         <TabsContent value="history" className="mt-6">
           <HistoryTab medicalHistory={[]} dentalHistory={[]} diagnosesLog={[]} />
         </TabsContent>
         <TabsContent value="prescriptions" className="mt-6">
-          <PrescriptionsTab prescriptions={prescriptions} onAddPrescription={() => toast.info("Add prescription coming soon")} onExportPDF={() => {}} onSendToPatient={() => {}} />
+          <PrescriptionsTab 
+            prescriptions={prescriptions} 
+            onAddPrescription={handleAddPrescription} 
+            onExportPDF={handleExportPDF} 
+            onSendToPatient={handleSendToPatient} 
+          />
         </TabsContent>
         <TabsContent value="files" className="mt-6">
-          <FilesTab files={files} onUpload={() => {}} onDownload={() => {}} onDelete={() => {}} onPreview={() => {}} />
+          <FilesTab 
+            files={files} 
+            onUpload={uploadFiles} 
+            onDownload={downloadFile} 
+            onDelete={deleteFile} 
+            onPreview={(file) => {
+              if (file.url) {
+                window.open(file.url, "_blank");
+              }
+            }}
+            isUploading={uploading}
+          />
         </TabsContent>
         <TabsContent value="notes" className="mt-6">
-          <NotesTab notes={notes} onAddNote={() => {}} onUpdateNote={() => {}} onDeleteNote={() => {}} onTogglePin={() => {}} />
+          <NotesTab 
+            notes={notes} 
+            onAddNote={addNote} 
+            onUpdateNote={updateNote} 
+            onDeleteNote={deleteNote} 
+            onTogglePin={togglePin} 
+          />
         </TabsContent>
       </Tabs>
     </motion.div>

@@ -1522,6 +1522,117 @@ export type Database = {
         }
         Relationships: []
       }
+      patient_files: {
+        Row: {
+          category: string | null
+          created_at: string
+          doctor_id: string | null
+          file_path: string
+          file_size: number | null
+          file_type: string
+          id: string
+          name: string
+          patient_id: string
+          thumbnail_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          doctor_id?: string | null
+          file_path: string
+          file_size?: number | null
+          file_type: string
+          id?: string
+          name: string
+          patient_id: string
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          doctor_id?: string | null
+          file_path?: string
+          file_size?: number | null
+          file_type?: string
+          id?: string
+          name?: string
+          patient_id?: string
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_files_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_files_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patient_notes: {
+        Row: {
+          author_name: string | null
+          content: string
+          created_at: string
+          doctor_id: string | null
+          id: string
+          is_pinned: boolean | null
+          is_private: boolean | null
+          patient_id: string
+          tags: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          author_name?: string | null
+          content: string
+          created_at?: string
+          doctor_id?: string | null
+          id?: string
+          is_pinned?: boolean | null
+          is_private?: boolean | null
+          patient_id: string
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          author_name?: string | null
+          content?: string
+          created_at?: string
+          doctor_id?: string | null
+          id?: string
+          is_pinned?: boolean | null
+          is_private?: boolean | null
+          patient_id?: string
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_notes_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_notes_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_intents: {
         Row: {
           amount: number
