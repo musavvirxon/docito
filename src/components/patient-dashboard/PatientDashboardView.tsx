@@ -12,6 +12,7 @@ import { usePatientNotes } from "@/hooks/usePatientNotes";
 
 import PatientDashboardHeader from "./PatientDashboardHeader";
 import QuickOverviewCards from "./QuickOverviewCards";
+import EditPatientModal from "./EditPatientModal";
 import OverviewTab from "./tabs/OverviewTab";
 import ProfileTab from "./tabs/ProfileTab";
 import AppointmentsTab from "./tabs/AppointmentsTab";
@@ -32,7 +33,7 @@ const PatientDashboardView = ({ patientId, patientType, onBack }: PatientDashboa
   const [activeTab, setActiveTab] = useState("overview");
   const [patientData, setPatientData] = useState<any>(null);
   const [appointments, setAppointments] = useState<any[]>([]);
-
+  const [editModalOpen, setEditModalOpen] = useState(false);
   // Use hooks for prescriptions, files, and notes
   const { prescriptions, loading: prescriptionsLoading, addPrescription } = usePatientPrescriptions(patientId);
   const { files, loading: filesLoading, uploading, uploadFiles, deleteFile, downloadFile } = usePatientFiles(patientId);
@@ -169,10 +170,18 @@ const PatientDashboardView = ({ patientId, patientType, onBack }: PatientDashboa
       <PatientDashboardHeader
         patient={patientData}
         onBack={onBack}
-        onEdit={() => toast.info("Edit patient coming soon")}
+        onEdit={() => setEditModalOpen(true)}
         onDelete={() => toast.info("Delete patient coming soon")}
         onDownloadPDF={() => toast.info("PDF download coming soon")}
         onPrint={() => window.print()}
+      />
+
+      <EditPatientModal
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        patient={patientData}
+        patientType={patientType}
+        onSuccess={fetchPatientData}
       />
 
       <QuickOverviewCards stats={overviewStats} />
@@ -206,7 +215,7 @@ const PatientDashboardView = ({ patientId, patientType, onBack }: PatientDashboa
           />
         </TabsContent>
         <TabsContent value="profile" className="mt-6">
-          <ProfileTab profile={patientData} onEdit={() => toast.info("Edit coming soon")} />
+          <ProfileTab profile={patientData} onEdit={() => setEditModalOpen(true)} />
         </TabsContent>
         <TabsContent value="appointments" className="mt-6">
           <AppointmentsTab 
