@@ -6,6 +6,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// UUID validation regex
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isValidUUID(value: unknown): value is string {
+  return typeof value === 'string' && UUID_REGEX.test(value);
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -23,9 +30,29 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    const { plan_id, action = 'create' } = await req.json();
+    // Parse request body once
+    const body = await req.json();
+    const action = body.action ?? 'create';
+
+    // Validate action
+    if (action !== 'create' && action !== 'cancel') {
+      return new Response(
+        JSON.stringify({ error: 'Invalid action. Must be "create" or "cancel".' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     if (action === 'create') {
+      const { plan_id } = body;
+
+      // Validate plan_id
+      if (!isValidUUID(plan_id)) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid plan_id. Must be a valid UUID.' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       // Get plan details
       const { data: plan, error: planError } = await supabaseClient
         .from('subscription_plans')
@@ -59,15 +86,22 @@ serve(async (req) => {
 
       if (error) throw error;
 
-      // TODO: Create payment intent with your processor
-      // TODO: Create transaction record
+      console.log(`Subscription created for user ${user.id}, plan ${plan_id}`);
 
       return new Response(
         JSON.stringify({ subscription }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     } else if (action === 'cancel') {
-      const { subscription_id } = await req.json();
+      const { subscription_id } = body;
+
+      // Validate subscription_id
+      if (!isValidUUID(subscription_id)) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid subscription_id. Must be a valid UUID.' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
       
       const { data: subscription, error } = await supabaseClient
         .from('user_subscriptions')
@@ -82,6 +116,8 @@ serve(async (req) => {
 
       if (error) throw error;
 
+      console.log(`Subscription ${subscription_id} canceled for user ${user.id}`);
+
       return new Response(
         JSON.stringify({ subscription }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -90,6 +126,7 @@ serve(async (req) => {
 
     throw new Error('Invalid action');
   } catch (error) {
+    console.error('Subscription processing error:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

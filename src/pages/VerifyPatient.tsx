@@ -27,6 +27,17 @@ export default function VerifyPatient() {
 
   const verifyToken = async () => {
     try {
+      // Validate token format (hex string, 64 chars for 32 bytes)
+      if (!token || !/^[a-f0-9]{64}$/i.test(token)) {
+        toast({
+          title: "Invalid Link",
+          description: "This verification link is invalid.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -43,6 +54,15 @@ export default function VerifyPatient() {
         });
         return;
       }
+
+      // Invalidate token immediately after first access (single-use token)
+      await supabase
+        .from('profiles')
+        .update({ 
+          verification_token: null,
+          token_expires_at: null 
+        })
+        .eq('id', data.id);
 
       setProfile(data);
     } catch (error) {
@@ -97,16 +117,15 @@ export default function VerifyPatient() {
       }
 
       // Update profile with auth user_id and mark as verified
+      // Token was already invalidated during verification, so we use the profile id
       const { error: updateError } = await supabase
         .from('profiles')
         .update({
           user_id: authData.user.id,
           is_verified: true,
-          verification_token: null,
-          token_expires_at: null,
           updated_at: new Date().toISOString()
         })
-        .eq('verification_token', token);
+        .eq('id', profile.id);
 
       if (updateError) throw updateError;
 
