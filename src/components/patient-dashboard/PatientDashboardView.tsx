@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePatientPrescriptions } from "@/hooks/usePatientPrescriptions";
 import { usePatientFiles } from "@/hooks/usePatientFiles";
 import { usePatientNotes } from "@/hooks/usePatientNotes";
+import { downloadPatientSummaryPDF } from "@/utils/generatePatientPDF";
 
 import PatientDashboardHeader from "./PatientDashboardHeader";
 import QuickOverviewCards from "./QuickOverviewCards";
@@ -34,6 +35,9 @@ const PatientDashboardView = ({ patientId, patientType, onBack }: PatientDashboa
   const [patientData, setPatientData] = useState<any>(null);
   const [appointments, setAppointments] = useState<any[]>([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
+  const [doctorName, setDoctorName] = useState<string | null>(null);
+
   // Use hooks for prescriptions, files, and notes
   const { prescriptions, loading: prescriptionsLoading, addPrescription } = usePatientPrescriptions(patientId);
   const { files, loading: filesLoading, uploading, uploadFiles, deleteFile, downloadFile } = usePatientFiles(patientId);
@@ -70,9 +74,16 @@ const PatientDashboardView = ({ patientId, patientType, onBack }: PatientDashboa
         }
       }
 
-      // Fetch appointments
-      const { data: doctorData } = await supabase.from("doctors").select("id").eq("user_id", user.id).single();
+      // Fetch appointments and doctor info
+      const { data: doctorData } = await supabase
+        .from("doctors")
+        .select("id, user_id, profiles!fk_doctors_user_id(full_name)")
+        .eq("user_id", user.id)
+        .single();
+      
       if (doctorData) {
+        setDoctorName((doctorData.profiles as any)?.full_name || null);
+        
         const { data: appts } = await supabase
           .from("appointments")
           .select("*")
@@ -86,6 +97,38 @@ const PatientDashboardView = ({ patientId, patientType, onBack }: PatientDashboa
       toast.error("Failed to load patient data");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!patientData) return;
+    
+    setIsDownloadingPDF(true);
+    try {
+      await downloadPatientSummaryPDF({
+        patient: patientData,
+        appointments: appointments.map(a => ({
+          ...a,
+          appointment_date: a.appointment_date,
+        })),
+        prescriptions: prescriptions.map(p => ({
+          id: p.id,
+          medication: p.medication,
+          dosage: p.dosage,
+          frequency: p.frequency,
+          start_date: p.start_date,
+          end_date: p.end_date,
+          status: p.status,
+          instructions: p.instructions,
+        })),
+        doctorName: doctorName || undefined,
+      });
+      toast.success("PDF downloaded successfully");
+    } catch (err) {
+      console.error("Error generating PDF:", err);
+      toast.error("Failed to generate PDF");
+    } finally {
+      setIsDownloadingPDF(false);
     }
   };
 
@@ -172,8 +215,9 @@ const PatientDashboardView = ({ patientId, patientType, onBack }: PatientDashboa
         onBack={onBack}
         onEdit={() => setEditModalOpen(true)}
         onDelete={() => toast.info("Delete patient coming soon")}
-        onDownloadPDF={() => toast.info("PDF download coming soon")}
+        onDownloadPDF={handleDownloadPDF}
         onPrint={() => window.print()}
+        isDownloading={isDownloadingPDF}
       />
 
       <EditPatientModal
