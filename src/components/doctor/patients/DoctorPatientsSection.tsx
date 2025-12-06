@@ -1,8 +1,7 @@
 import { useState } from "react";
 import PatientListSection from "./PatientListSection";
-import PatientDetailSection from "./PatientDetailSection";
 import AddPatientModal from "./AddPatientModal";
-import DoctorPatientDetailSection from "./DoctorPatientDetailSection";
+import PatientDashboardView from "@/components/patient-dashboard/PatientDashboardView";
 import { useDoctorPatientsV2 } from "@/hooks/useDoctorPatientsV2";
 
 const DoctorPatientsSection = () => {
@@ -28,7 +27,6 @@ const DoctorPatientsSection = () => {
   const handleCreateSuccess = (patientId: string) => {
     setShowCreateModal(false);
     refreshPatients();
-    // Navigate to the newly created patient
     setSelectedPatientId(patientId);
     setSelectedPatientType('direct');
   };
@@ -36,11 +34,11 @@ const DoctorPatientsSection = () => {
   return (
     <>
       {selectedPatientId ? (
-        selectedPatientType === 'direct' ? (
-          <DoctorPatientDetailSection patientId={selectedPatientId} onBack={handleBack} />
-        ) : (
-          <PatientDetailSection patientId={selectedPatientId} onBack={handleBack} />
-        )
+        <PatientDashboardView
+          patientId={selectedPatientId}
+          patientType={selectedPatientType}
+          onBack={handleBack}
+        />
       ) : (
         <PatientListSection
           onSelectPatient={handleSelectAppointmentPatient}
