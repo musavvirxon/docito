@@ -382,6 +382,58 @@ export type Database = {
           },
         ]
       }
+      clinic_insurance: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          id: string
+          is_accepted: boolean | null
+          plan_id: string | null
+          provider_id: string
+          updated_at: string
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          id?: string
+          is_accepted?: boolean | null
+          plan_id?: string | null
+          provider_id: string
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          id?: string
+          is_accepted?: boolean | null
+          plan_id?: string | null
+          provider_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_insurance_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinic_insurance_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinic_insurance_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       consent_forms: {
         Row: {
           content: string
@@ -464,6 +516,78 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      doctor_insurance: {
+        Row: {
+          clinic_id: string | null
+          created_at: string
+          doctor_id: string
+          id: string
+          is_accepted: boolean | null
+          is_inherited: boolean | null
+          plan_id: string | null
+          provider_id: string
+          updated_at: string
+        }
+        Insert: {
+          clinic_id?: string | null
+          created_at?: string
+          doctor_id: string
+          id?: string
+          is_accepted?: boolean | null
+          is_inherited?: boolean | null
+          plan_id?: string | null
+          provider_id: string
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string | null
+          created_at?: string
+          doctor_id?: string
+          id?: string
+          is_accepted?: boolean | null
+          is_inherited?: boolean | null
+          plan_id?: string | null
+          provider_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_insurance_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_insurance_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_insurance_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_insurance_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_insurance_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_providers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       doctor_patients: {
         Row: {
@@ -1071,6 +1195,77 @@ export type Database = {
         }
         Relationships: []
       }
+      insurance_plans: {
+        Row: {
+          coverage_type: string
+          created_at: string
+          description: string | null
+          id: string
+          plan_name: string
+          provider_id: string
+          updated_at: string
+        }
+        Insert: {
+          coverage_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          plan_name: string
+          provider_id: string
+          updated_at?: string
+        }
+        Update: {
+          coverage_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          plan_name?: string
+          provider_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insurance_plans_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      insurance_providers: {
+        Row: {
+          country: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_global: boolean | null
+          logo_url: string | null
+          provider_name: string
+          updated_at: string
+        }
+        Insert: {
+          country: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_global?: boolean | null
+          logo_url?: string | null
+          provider_name: string
+          updated_at?: string
+        }
+        Update: {
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_global?: boolean | null
+          logo_url?: string | null
+          provider_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       invoices: {
         Row: {
           amount: number
@@ -1575,6 +1770,63 @@ export type Database = {
             columns: ["doctor_id"]
             isOneToOne: false
             referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patient_insurance: {
+        Row: {
+          created_at: string
+          file_url: string | null
+          id: string
+          is_primary: boolean | null
+          member_id: string | null
+          patient_id: string
+          plan_id: string | null
+          provider_id: string
+          status: string | null
+          updated_at: string
+          valid_until: string | null
+        }
+        Insert: {
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          is_primary?: boolean | null
+          member_id?: string | null
+          patient_id: string
+          plan_id?: string | null
+          provider_id: string
+          status?: string | null
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Update: {
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          is_primary?: boolean | null
+          member_id?: string | null
+          patient_id?: string
+          plan_id?: string | null
+          provider_id?: string
+          status?: string | null
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_insurance_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_insurance_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_providers"
             referencedColumns: ["id"]
           },
         ]
@@ -3877,6 +4129,12 @@ export type Database = {
           revenue: number
         }[]
       }
+      get_doctors_by_insurance: {
+        Args: { p_plan_id?: string; p_provider_id: string }
+        Returns: {
+          doctor_id: string
+        }[]
+      }
       get_practice_stats: { Args: { p_practice_id: string }; Returns: Json }
       get_user_profile_by_uid: { Args: never; Returns: Json }
       get_user_role: {
@@ -3893,6 +4151,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      inherit_clinic_insurance_to_doctor: {
+        Args: { p_clinic_id: string; p_doctor_id: string }
+        Returns: undefined
       }
       log_account_activity: {
         Args: {
