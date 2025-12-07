@@ -1,0 +1,10 @@
+export { VisitPage } from "./VisitPage";
+export { VisitHeader } from "./VisitHeader";
+export { VisitSidebar } from "./VisitSidebar";
+export { DentalChart } from "./DentalChart";
+export { DiagnosisTab } from "./tabs/DiagnosisTab";
+export { TreatmentTab } from "./tabs/TreatmentTab";
+export { PrescriptionTab } from "./tabs/PrescriptionTab";
+export { FilesTab } from "./tabs/FilesTab";
+export { NotesTab } from "./tabs/NotesTab";
+export * from "./types";
