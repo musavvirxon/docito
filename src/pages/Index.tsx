@@ -7,6 +7,9 @@ import TopSpecialistsSection from "@/components/TopSpecialistsSection";
 import TopMedicalPracticesSection from "@/components/TopMedicalPracticesSection";
 import HowItWorksSection from "@/components/home/HowItWorksSection";
 import FeaturesGrid from "@/components/home/FeaturesGrid";
+import DashboardPreviewSection from "@/components/home/DashboardPreviewSection";
+import CollaborationSection from "@/components/home/CollaborationSection";
+import MobileFriendlySection from "@/components/home/MobileFriendlySection";
 import CTASection from "@/components/home/CTASection";
 import ModernFooter from "@/components/home/ModernFooter";
 import { SEOHead } from "@/components/SEOHead";
@@ -34,6 +37,9 @@ const Index = () => {
           <TopMedicalPracticesSection />
           <HowItWorksSection />
           <FeaturesGrid />
+          <DashboardPreviewSection />
+          <CollaborationSection />
+          <MobileFriendlySection />
           <CTASection />
         </main>
         <ModernFooter />
