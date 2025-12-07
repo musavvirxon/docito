@@ -1235,6 +1235,7 @@ export type Database = {
       }
       insurance_providers: {
         Row: {
+          clinic_id: string | null
           country: string
           created_at: string
           created_by: string | null
@@ -1242,9 +1243,11 @@ export type Database = {
           is_global: boolean | null
           logo_url: string | null
           provider_name: string
+          status: string | null
           updated_at: string
         }
         Insert: {
+          clinic_id?: string | null
           country: string
           created_at?: string
           created_by?: string | null
@@ -1252,9 +1255,11 @@ export type Database = {
           is_global?: boolean | null
           logo_url?: string | null
           provider_name: string
+          status?: string | null
           updated_at?: string
         }
         Update: {
+          clinic_id?: string | null
           country?: string
           created_at?: string
           created_by?: string | null
@@ -1262,9 +1267,18 @@ export type Database = {
           is_global?: boolean | null
           logo_url?: string | null
           provider_name?: string
+          status?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "insurance_providers_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invoices: {
         Row: {
@@ -2848,6 +2862,66 @@ export type Database = {
         }
         Relationships: []
       }
+      public_insurance_requests: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          id: string
+          original_data: Json | null
+          processed_at: string | null
+          provider_id: string | null
+          request_type: string
+          reviewer_id: string | null
+          reviewer_notes: string | null
+          status: string
+          submitted_at: string
+          updated_at: string
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          id?: string
+          original_data?: Json | null
+          processed_at?: string | null
+          provider_id?: string | null
+          request_type?: string
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          id?: string
+          original_data?: Json | null
+          processed_at?: string | null
+          provider_id?: string | null
+          request_type?: string
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_insurance_requests_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "public_insurance_requests_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       real_time_notifications: {
         Row: {
           created_at: string
@@ -4196,6 +4270,10 @@ export type Database = {
         Args: { notification_id: string }
         Returns: Json
       }
+      process_insurance_request: {
+        Args: { p_action: string; p_notes?: string; p_request_id: string }
+        Returns: Json
+      }
       refresh_all_ratings: { Args: never; Returns: undefined }
       request_account_action: {
         Args: { p_notes?: string; p_request_type: string }
@@ -4231,6 +4309,10 @@ export type Database = {
           patient_full_name: string
           patient_signature?: string
         }
+        Returns: Json
+      }
+      submit_insurance_for_approval: {
+        Args: { p_clinic_id: string; p_provider_id: string }
         Returns: Json
       }
       update_appointment_counts: { Args: never; Returns: undefined }

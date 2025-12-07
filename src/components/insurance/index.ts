@@ -6,3 +6,5 @@ export { InsuranceCompatibilityBadge } from './InsuranceCompatibilityBadge';
 export { PatientInsuranceForm } from './PatientInsuranceForm';
 export { DoctorInsuranceSidebar } from './DoctorInsuranceSidebar';
 export { ClinicInsuranceSettings } from './ClinicInsuranceSettings';
+export { ClinicInsuranceManager } from './ClinicInsuranceManager';
+export { AdminInsuranceApproval } from './AdminInsuranceApproval';
