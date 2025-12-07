@@ -1776,40 +1776,67 @@ export type Database = {
       }
       patient_insurance: {
         Row: {
+          annual_limit: number | null
+          card_back_url: string | null
+          card_front_url: string | null
+          co_pay: number | null
+          covers_emergency: boolean | null
           created_at: string
+          deductible: number | null
           file_url: string | null
+          group_number: string | null
           id: string
           is_primary: boolean | null
           member_id: string | null
+          notes: string | null
           patient_id: string
           plan_id: string | null
           provider_id: string
+          provider_phone: string | null
           status: string | null
           updated_at: string
           valid_until: string | null
         }
         Insert: {
+          annual_limit?: number | null
+          card_back_url?: string | null
+          card_front_url?: string | null
+          co_pay?: number | null
+          covers_emergency?: boolean | null
           created_at?: string
+          deductible?: number | null
           file_url?: string | null
+          group_number?: string | null
           id?: string
           is_primary?: boolean | null
           member_id?: string | null
+          notes?: string | null
           patient_id: string
           plan_id?: string | null
           provider_id: string
+          provider_phone?: string | null
           status?: string | null
           updated_at?: string
           valid_until?: string | null
         }
         Update: {
+          annual_limit?: number | null
+          card_back_url?: string | null
+          card_front_url?: string | null
+          co_pay?: number | null
+          covers_emergency?: boolean | null
           created_at?: string
+          deductible?: number | null
           file_url?: string | null
+          group_number?: string | null
           id?: string
           is_primary?: boolean | null
           member_id?: string | null
+          notes?: string | null
           patient_id?: string
           plan_id?: string | null
           provider_id?: string
+          provider_phone?: string | null
           status?: string | null
           updated_at?: string
           valid_until?: string | null

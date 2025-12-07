@@ -54,6 +54,16 @@ export interface PatientInsurance {
   file_url: string | null;
   is_primary: boolean;
   status: string;
+  created_at: string;
+  group_number?: string | null;
+  card_front_url?: string | null;
+  card_back_url?: string | null;
+  co_pay?: number | null;
+  deductible?: number | null;
+  annual_limit?: number | null;
+  provider_phone?: string | null;
+  notes?: string | null;
+  covers_emergency?: boolean;
   provider?: InsuranceProvider;
   plan?: InsurancePlan;
 }
