@@ -29,13 +29,13 @@ const Tag = ({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full font-medium whitespace-nowrap",
+        "inline-flex items-center rounded-full font-medium max-w-full overflow-hidden",
         variantClasses[variant],
         sizeClasses[size],
         className
       )}
     >
-      {children}
+      <span className="truncate">{children}</span>
     </span>
   );
 };

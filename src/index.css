@@ -91,6 +91,18 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Prevent text overflow in interactive elements */
+  button, 
+  [role="button"],
+  .btn {
+    @apply overflow-hidden;
+  }
+
+  button > span,
+  [role="button"] > span {
+    @apply truncate;
+  }
 }
 
 @keyframes gradient {
