@@ -1,32 +1,21 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const SpecialtiesSection = () => {
   const navigate = useNavigate();
+  const { lang } = useParams();
   
   const specialties = [
-    { name: "Primary Care", icon: "💝", color: "bg-yellow-100" },
-    { name: "Dentist", icon: "🦷", color: "bg-yellow-100" },
-    { name: "OB-GYN", icon: "👥", color: "bg-yellow-100" },
-    { name: "Dermatologist", icon: "🧴", color: "bg-yellow-100" },
-    { name: "Psychiatrist", icon: "🧠", color: "bg-yellow-100" },
-    { name: "Eye Doctor", icon: "👁️", color: "bg-yellow-100" }
+    { name: "Primary Care", key: "generalPractice", icon: "💝", color: "bg-yellow-100" },
+    { name: "Dentist", key: "dentistry", icon: "🦷", color: "bg-yellow-100" },
+    { name: "OB-GYN", key: "obgyn", icon: "👥", color: "bg-yellow-100" },
+    { name: "Dermatologist", key: "dermatology", icon: "🧴", color: "bg-yellow-100" },
+    { name: "Psychiatrist", key: "psychiatry", icon: "🧠", color: "bg-yellow-100" },
+    { name: "Eye Doctor", key: "ophthalmology", icon: "👁️", color: "bg-yellow-100" }
   ];
   
-  const handleSpecialtyClick = (specialtyName: string) => {
-    // Scroll to search results section on homepage
-    const resultsSection = document.getElementById('search-results');
-    if (resultsSection) {
-      resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-    
-    // Trigger search with specialty pre-filled
-    window.dispatchEvent(new CustomEvent('homepage-search', { 
-      detail: {
-        specialty: specialtyName,
-        location: '',
-        insurance: ''
-      }
-    }));
+  const handleSpecialtyClick = (specialtyKey: string) => {
+    const basePath = lang ? `/${lang}` : '';
+    navigate(`${basePath}/search-doctors?specialty=${specialtyKey}`);
   };
 
   return (
@@ -37,9 +26,9 @@ const SpecialtiesSection = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
           {specialties.map((specialty) => (
             <div 
-              key={specialty.name} 
+              key={specialty.key} 
               className={`${specialty.color} rounded-lg p-6 text-center cursor-pointer hover:shadow-md transition-shadow`}
-              onClick={() => handleSpecialtyClick(specialty.name)}
+              onClick={() => handleSpecialtyClick(specialty.key)}
             >
               <div className="bg-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl">{specialty.icon}</span>

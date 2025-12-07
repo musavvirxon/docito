@@ -1,18 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Logo } from '@/components/Logo';
 import Footer from '@/components/Footer';
 import { Search, MapPin, Star, Clock, DollarSign, Filter } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 export default function SearchDoctors() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t } = useTranslation('doctors');
-  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Initialize from URL params
+  const initialSpecialty = searchParams.get('specialty') || 'all';
+  const initialQuery = searchParams.get('q') || '';
+  
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [location, setLocation] = useState('');
-  const [specialty, setSpecialty] = useState('all');
+  const [specialty, setSpecialty] = useState(initialSpecialty);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     minRating: 0,
@@ -20,6 +26,14 @@ export default function SearchDoctors() {
     availability: 'any',
     insurance: 'any'
   });
+  
+  // Update state when URL params change
+  useEffect(() => {
+    const urlSpecialty = searchParams.get('specialty');
+    const urlQuery = searchParams.get('q');
+    if (urlSpecialty) setSpecialty(urlSpecialty);
+    if (urlQuery) setSearchQuery(urlQuery);
+  }, [searchParams]);
 
   const { data: doctors, isLoading } = useQuery({
     queryKey: ['search-doctors', searchQuery, location, specialty, filters],
