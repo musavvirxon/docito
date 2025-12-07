@@ -1,0 +1,331 @@
+{
+  "providers": [
+    {
+      "country": "USA",
+      "providers": [
+        {
+          "name": "Blue Cross Blue Shield",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "Blue Cross Basic", "description": "Basic health coverage", "coverage_type": "medical" },
+            { "name": "Blue Cross PPO", "description": "Preferred provider organization plan", "coverage_type": "full" },
+            { "name": "Blue Dental Plus", "description": "Comprehensive dental coverage", "coverage_type": "dental" }
+          ]
+        },
+        {
+          "name": "Kaiser Permanente",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "Kaiser Bronze", "description": "Essential health plan", "coverage_type": "medical" },
+            { "name": "Kaiser Gold", "description": "Comprehensive coverage", "coverage_type": "full" },
+            { "name": "Kaiser Dental", "description": "Dental care plan", "coverage_type": "dental" }
+          ]
+        },
+        {
+          "name": "Aetna",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "Aetna Basic", "description": "Basic health insurance", "coverage_type": "medical" },
+            { "name": "Aetna PPO", "description": "PPO network plan", "coverage_type": "full" },
+            { "name": "Aetna Dental DMO", "description": "Dental maintenance organization", "coverage_type": "dental" }
+          ]
+        },
+        {
+          "name": "Cigna",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "Cigna Connect", "description": "Connected care plan", "coverage_type": "medical" },
+            { "name": "Cigna Open Access Plus", "description": "Open access network", "coverage_type": "full" },
+            { "name": "Cigna Dental Care", "description": "Dental coverage", "coverage_type": "dental" }
+          ]
+        },
+        {
+          "name": "Delta Dental",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "Delta Dental PPO", "description": "PPO dental plan", "coverage_type": "dental" },
+            { "name": "Delta Dental Premier", "description": "Premier dental coverage", "coverage_type": "dental" },
+            { "name": "DeltaCare USA", "description": "DHMO dental plan", "coverage_type": "dental" }
+          ]
+        },
+        {
+          "name": "MetLife",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "MetLife PDP", "description": "Preferred dentist program", "coverage_type": "dental" },
+            { "name": "MetLife TakeAlong Dental", "description": "Portable dental coverage", "coverage_type": "dental" }
+          ]
+        },
+        {
+          "name": "UnitedHealthcare",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "UHC Choice Plus", "description": "Choice network plan", "coverage_type": "full" },
+            { "name": "UHC Navigate", "description": "Navigate network", "coverage_type": "medical" },
+            { "name": "UHC Dental", "description": "Dental benefits", "coverage_type": "dental" }
+          ]
+        }
+      ]
+    },
+    {
+      "country": "UK",
+      "providers": [
+        {
+          "name": "NHS",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "NHS Standard", "description": "National health service coverage", "coverage_type": "full" },
+            { "name": "NHS Dental", "description": "NHS dental services", "coverage_type": "dental" }
+          ]
+        },
+        {
+          "name": "AXA Health",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "AXA Health Essential", "description": "Essential health plan", "coverage_type": "medical" },
+            { "name": "AXA Health Comprehensive", "description": "Full coverage plan", "coverage_type": "full" }
+          ]
+        },
+        {
+          "name": "BUPA",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "BUPA By You", "description": "Personalized health plan", "coverage_type": "full" },
+            { "name": "BUPA Dental Insurance", "description": "Dental coverage", "coverage_type": "dental" }
+          ]
+        },
+        {
+          "name": "SimplyHealth",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "SimplyHealth Cash Plan", "description": "Health cash plan", "coverage_type": "medical" },
+            { "name": "SimplyHealth Denplan", "description": "Dental plan", "coverage_type": "dental" }
+          ]
+        }
+      ]
+    },
+    {
+      "country": "EU",
+      "providers": [
+        {
+          "name": "Allianz",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "Allianz Global Care", "description": "International health coverage", "coverage_type": "full" },
+            { "name": "Allianz Dental Plus", "description": "Dental benefits", "coverage_type": "dental" }
+          ]
+        },
+        {
+          "name": "Generali",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "Generali Health", "description": "Health insurance plan", "coverage_type": "medical" },
+            { "name": "Generali Complete", "description": "Comprehensive coverage", "coverage_type": "full" }
+          ]
+        },
+        {
+          "name": "DKV",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "DKV Integral", "description": "Integrated health plan", "coverage_type": "full" },
+            { "name": "DKV Dentisalud", "description": "Dental health plan", "coverage_type": "dental" }
+          ]
+        },
+        {
+          "name": "Sanitas",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "Sanitas Más Salud", "description": "Health plus plan", "coverage_type": "medical" },
+            { "name": "Sanitas Dental", "description": "Dental coverage", "coverage_type": "dental" }
+          ]
+        }
+      ]
+    },
+    {
+      "country": "Middle East",
+      "providers": [
+        {
+          "name": "Daman",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "Daman Basic", "description": "Basic health plan", "coverage_type": "medical" },
+            { "name": "Daman Enhanced", "description": "Enhanced coverage", "coverage_type": "full" }
+          ]
+        },
+        {
+          "name": "Thiqa",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "Thiqa Standard", "description": "Standard coverage", "coverage_type": "full" },
+            { "name": "Thiqa Premium", "description": "Premium benefits", "coverage_type": "full" }
+          ]
+        },
+        {
+          "name": "Oman Insurance",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "Oman Health", "description": "Health insurance", "coverage_type": "medical" },
+            { "name": "Oman Complete", "description": "Complete coverage", "coverage_type": "full" }
+          ]
+        },
+        {
+          "name": "Bupa Arabia",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "Bupa Arabia Gold", "description": "Gold tier plan", "coverage_type": "full" },
+            { "name": "Bupa Arabia Dental", "description": "Dental plan", "coverage_type": "dental" }
+          ]
+        },
+        {
+          "name": "Tawuniya",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "Tawuniya Vita", "description": "Vita health plan", "coverage_type": "full" },
+            { "name": "Tawuniya Dental", "description": "Dental coverage", "coverage_type": "dental" }
+          ]
+        }
+      ]
+    },
+    {
+      "country": "CIS",
+      "providers": [
+        {
+          "name": "UzMed Insurance",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "UzMed Basic", "description": "Basic medical coverage", "coverage_type": "medical" },
+            { "name": "UzMed Premium", "description": "Premium health plan", "coverage_type": "full" }
+          ]
+        },
+        {
+          "name": "Madad",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "Madad Health", "description": "Health insurance", "coverage_type": "medical" },
+            { "name": "Madad Family", "description": "Family coverage", "coverage_type": "full" }
+          ]
+        },
+        {
+          "name": "RosGosStrakh",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "RGS Medical", "description": "Medical insurance", "coverage_type": "medical" },
+            { "name": "RGS Complete", "description": "Full coverage", "coverage_type": "full" }
+          ]
+        },
+        {
+          "name": "Ingo",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "Ingo Health", "description": "Health plan", "coverage_type": "medical" },
+            { "name": "Ingo Dental", "description": "Dental plan", "coverage_type": "dental" }
+          ]
+        },
+        {
+          "name": "Alfa Insurance",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "Alfa Med", "description": "Medical coverage", "coverage_type": "medical" },
+            { "name": "Alfa Premium", "description": "Premium plan", "coverage_type": "full" }
+          ]
+        }
+      ]
+    },
+    {
+      "country": "Asia",
+      "providers": [
+        {
+          "name": "LIC Health",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "LIC Jeevan Arogya", "description": "Health protection plan", "coverage_type": "medical" },
+            { "name": "LIC Cancer Cover", "description": "Cancer protection", "coverage_type": "medical" }
+          ]
+        },
+        {
+          "name": "MaxBupa",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "MaxBupa Health Companion", "description": "Health companion plan", "coverage_type": "full" },
+            { "name": "MaxBupa GoActive", "description": "Active health plan", "coverage_type": "medical" }
+          ]
+        },
+        {
+          "name": "Nippon Life",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "Nippon Medical", "description": "Medical insurance", "coverage_type": "medical" },
+            { "name": "Nippon Complete", "description": "Complete coverage", "coverage_type": "full" }
+          ]
+        },
+        {
+          "name": "AIA",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "AIA HealthShield", "description": "Health shield plan", "coverage_type": "full" },
+            { "name": "AIA Critical Care", "description": "Critical illness coverage", "coverage_type": "medical" }
+          ]
+        }
+      ]
+    },
+    {
+      "country": "Africa",
+      "providers": [
+        {
+          "name": "Jubilee Insurance",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "Jubilee Health", "description": "Health coverage", "coverage_type": "medical" },
+            { "name": "Jubilee Family", "description": "Family health plan", "coverage_type": "full" }
+          ]
+        },
+        {
+          "name": "Old Mutual",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "Old Mutual Health", "description": "Health insurance", "coverage_type": "medical" },
+            { "name": "Old Mutual Complete", "description": "Comprehensive plan", "coverage_type": "full" }
+          ]
+        },
+        {
+          "name": "Momentum Health",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "Momentum Custom", "description": "Custom health plan", "coverage_type": "medical" },
+            { "name": "Momentum Ingwe", "description": "Ingwe option", "coverage_type": "full" }
+          ]
+        }
+      ]
+    },
+    {
+      "country": "Australia",
+      "providers": [
+        {
+          "name": "Medibank",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "Medibank Basic", "description": "Basic hospital cover", "coverage_type": "medical" },
+            { "name": "Medibank Complete", "description": "Complete health cover", "coverage_type": "full" },
+            { "name": "Medibank Dental", "description": "Dental extras", "coverage_type": "dental" }
+          ]
+        },
+        {
+          "name": "Bupa Australia",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "Bupa Silver Plus", "description": "Silver tier hospital", "coverage_type": "medical" },
+            { "name": "Bupa Gold", "description": "Gold tier complete", "coverage_type": "full" }
+          ]
+        },
+        {
+          "name": "HCF",
+          "logo_url": "/placeholder.svg",
+          "plans": [
+            { "name": "HCF Hospital Cover", "description": "Hospital coverage", "coverage_type": "medical" },
+            { "name": "HCF Top Extras", "description": "Premium extras cover", "coverage_type": "full" }
+          ]
+        }
+      ]
+    }
+  ]
+}
