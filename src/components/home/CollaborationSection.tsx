@@ -62,6 +62,28 @@ const CollaborationSection = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="relative h-96 flex items-center justify-center"
           >
+            {/* Connecting Lines SVG */}
+            <svg
+              className="absolute inset-0 w-full h-full pointer-events-none"
+              style={{ zIndex: 0 }}
+            >
+              {teamMembers.map((member, index) => (
+                <motion.line
+                  key={`line-${member.id}`}
+                  x1="50%"
+                  y1="50%"
+                  x2={`calc(50% + ${member.position.x}px)`}
+                  y2={`calc(50% + ${member.position.y}px)`}
+                  stroke="hsl(var(--primary))"
+                  strokeWidth="2"
+                  strokeDasharray="5,5"
+                  initial={{ opacity: 0 }}
+                  animate={isInView ? { opacity: 0.4 } : {}}
+                  transition={{ duration: 0.8, delay: 0.5 + index * 0.2 }}
+                />
+              ))}
+            </svg>
+
             {/* Central Patient File */}
             <motion.div
               animate={isInView ? { 
@@ -87,44 +109,27 @@ const CollaborationSection = () => {
               </motion.div>
             </motion.div>
 
-            {/* Team Members with Connecting Lines */}
+            {/* Team Members */}
             {teamMembers.map((member, index) => (
-              <div key={member.id}>
-                {/* Connecting Line */}
-                <svg
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none"
-                  style={{ zIndex: 0 }}
-                >
-                  <motion.line
-                    x1="50%"
-                    y1="50%"
-                    x2={`calc(50% + ${member.position.x}px)`}
-                    y2={`calc(50% + ${member.position.y}px)`}
-                    stroke="hsl(var(--primary))"
-                    strokeWidth="2"
-                    strokeDasharray="5,5"
-                    initial={{ pathLength: 0, opacity: 0 }}
-                    animate={isInView ? { pathLength: 1, opacity: 0.5 } : {}}
-                    transition={{ duration: 0.8, delay: 0.5 + index * 0.2 }}
-                  />
-                </svg>
-
-                {/* Team Member Avatar */}
+              <motion.div
+                key={member.id}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={isInView ? { opacity: 1, scale: 1 } : {}}
+                transition={{ duration: 0.4, delay: 0.5 + index * 0.2 }}
+                className="absolute"
+                style={{ 
+                  left: `calc(50% + ${member.position.x}px)`,
+                  top: `calc(50% + ${member.position.y}px)`,
+                  transform: 'translate(-50%, -50%)'
+                }}
+              >
                 <motion.div
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={isInView ? { 
-                    opacity: 1, 
-                    scale: 1,
-                    y: [0, -5, 0]
-                  } : {}}
-                  transition={{
-                    opacity: { duration: 0.4, delay: 0.5 + index * 0.2 },
-                    scale: { duration: 0.4, delay: 0.5 + index * 0.2 },
-                    y: { duration: 2 + index * 0.3, repeat: Infinity, ease: "easeInOut" }
-                  }}
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-                  style={{ 
-                    transform: `translate(calc(-50% + ${member.position.x}px), calc(-50% + ${member.position.y}px))`
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ 
+                    duration: 2.5 + index * 0.3, 
+                    repeat: Infinity, 
+                    ease: "easeInOut",
+                    delay: index * 0.2
                   }}
                 >
                   <div className={`w-16 h-16 rounded-full ${member.color} flex items-center justify-center shadow-lg border-4 border-background`}>
@@ -137,26 +142,46 @@ const CollaborationSection = () => {
                   </div>
                 </motion.div>
 
-                {/* Activity indicator */}
+                {/* Pulse effect */}
                 <motion.div
-                  animate={isInView ? {
-                    scale: [0, 1, 0],
-                    opacity: [0, 1, 0]
-                  } : {}}
+                  animate={{
+                    scale: [1, 1.5, 1],
+                    opacity: [0.5, 0, 0.5]
+                  }}
                   transition={{
                     duration: 2,
                     delay: 1 + index * 0.5,
                     repeat: Infinity,
-                    repeatDelay: 3
                   }}
-                  className="absolute top-1/2 left-1/2"
-                  style={{ 
-                    transform: `translate(calc(-50% + ${member.position.x * 0.5}px), calc(-50% + ${member.position.y * 0.5}px))`
-                  }}
-                >
-                  <div className="w-4 h-4 rounded-full bg-primary/50" />
-                </motion.div>
-              </div>
+                  className={`absolute top-0 left-0 w-16 h-16 rounded-full ${member.color} opacity-30`}
+                  style={{ transform: 'translate(0, 0)' }}
+                />
+              </motion.div>
+            ))}
+
+            {/* Data flow particles */}
+            {teamMembers.map((member, index) => (
+              <motion.div
+                key={`particle-${member.id}`}
+                className="absolute w-2 h-2 rounded-full bg-primary z-20"
+                style={{
+                  left: '50%',
+                  top: '50%',
+                }}
+                animate={{
+                  x: [0, member.position.x * 0.8, 0],
+                  y: [0, member.position.y * 0.8, 0],
+                  opacity: [0, 1, 0],
+                  scale: [0.5, 1, 0.5],
+                }}
+                transition={{
+                  duration: 2.5,
+                  delay: 1.5 + index * 0.7,
+                  repeat: Infinity,
+                  repeatDelay: 2,
+                  ease: "easeInOut"
+                }}
+              />
             ))}
           </motion.div>
         </div>
