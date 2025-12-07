@@ -38,35 +38,45 @@ const ModernHeroSection = () => {
         searchPractices(specialty, location),
       ]);
 
-      const transformedDoctors = doctorsResults.map((doctor) => ({
-        id: doctor.id,
-        type: "doctor" as const,
-        name: doctor.profiles ? (doctor.profiles as any).full_name || "Doctor" : "Doctor",
-        image: doctor.profiles ? (doctor.profiles as any).avatar_url : undefined,
-        specialty: doctor.specialty,
-        rating: doctor.weighted_rating || doctor.average_rating || 4.8,
-        reviewCount: doctor.num_reviews || 0,
-        affiliatedPractice: doctor.practices ? (doctor.practices as any).name : "Independent Doctor",
-        location: doctor.practices
-          ? `${(doctor.practices as any).city || "City"}, ${(doctor.practices as any).country || "Country"}`
-          : "Location",
-        consultationFee: doctor.consultation_fee,
-        availability: "Available Today",
-        acceptsInsurance: true,
-        acceptsNewPatients: doctor.accepts_new_patients,
-      }));
+      const transformedDoctors = doctorsResults
+        .filter((doctor) => doctor.profiles?.full_name)
+        .map((doctor) => {
+          const practice = doctor.practices as any;
+          const profile = doctor.profiles as any;
+          const hasLocation = practice?.city && practice?.country;
+          
+          return {
+            id: doctor.id,
+            type: "doctor" as const,
+            name: profile?.full_name,
+            image: profile?.avatar_url,
+            specialty: doctor.specialty,
+            rating: doctor.weighted_rating || doctor.average_rating,
+            reviewCount: doctor.num_reviews || 0,
+            affiliatedPractice: practice?.name,
+            location: hasLocation ? `${practice.city}, ${practice.country}` : undefined,
+            consultationFee: doctor.consultation_fee,
+            acceptsNewPatients: doctor.accepts_new_patients,
+            languages: doctor.languages,
+          };
+        });
 
-      const transformedPractices = practicesResults.map((practice) => ({
-        id: practice.id,
-        type: "practice" as const,
-        name: practice.name,
-        image: practice.logo_url,
-        location: `${practice.city || "City"}, ${practice.country || "Country"}`,
-        rating: practice.weighted_rating || practice.average_rating || 4.7,
-        reviewCount: practice.num_reviews || 0,
-        availability: "Open Today",
-        acceptsInsurance: true,
-      }));
+      const transformedPractices = practicesResults
+        .filter((practice) => practice.name)
+        .map((practice) => {
+          const hasLocation = practice.city && practice.country;
+          
+          return {
+            id: practice.id,
+            type: "practice" as const,
+            name: practice.name,
+            logoUrl: practice.logo_url,
+            location: hasLocation ? `${practice.city}, ${practice.country}` : undefined,
+            rating: practice.weighted_rating || practice.average_rating,
+            reviewCount: practice.num_reviews || 0,
+            specialties: practice.specialties,
+          };
+        });
 
       setSearchResults([...transformedDoctors, ...transformedPractices]);
       setShowResults(true);
