@@ -200,21 +200,25 @@ const SearchResults = ({
                   )}
 
                   {/* Rating and Location Row */}
-                  <div className="flex items-center space-x-4 mb-3">
-                    <div className="flex items-center space-x-1">
-                      <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                      <span className="text-sm font-medium">{result.rating}</span>
-                      {result.reviewCount && (
-                        <span className="text-xs text-muted-foreground">({result.reviewCount} reviews)</span>
-                      )}
-                    </div>
+                  <div className="flex items-center flex-wrap gap-4 mb-3">
+                    {result.rating && (
+                      <div className="flex items-center space-x-1">
+                        <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                        <span className="text-sm font-medium">{result.rating}</span>
+                        {result.reviewCount > 0 && (
+                          <span className="text-xs text-muted-foreground">({result.reviewCount} reviews)</span>
+                        )}
+                      </div>
+                    )}
                     
-                    <div className="flex items-center space-x-1">
-                      <MapPin className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">
-                        {result.location}
-                      </span>
-                    </div>
+                    {result.location && (
+                      <div className="flex items-center space-x-1">
+                        <MapPin className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          {result.location}
+                        </span>
+                      </div>
+                    )}
 
                     {result.distance && (
                       <div className="flex items-center space-x-1">
@@ -257,21 +261,23 @@ const SearchResults = ({
                     )}
                   </div>
 
-                  {/* Status Badges */}
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {result.acceptsNewPatients && (
-                      <Badge variant="outline" className="text-blue-600 border-blue-600 text-xs">
-                        <CheckCircle className="w-3 h-3 mr-1" />
-                        New patients
-                      </Badge>
-                    )}
-                    {result.acceptsInsurance && (
-                      <Badge variant="outline" className="text-purple-600 border-purple-600 text-xs">
-                        <CreditCard className="w-3 h-3 mr-1" />
-                        Insurance
-                      </Badge>
-                    )}
-                  </div>
+                  {/* Status Badges - only show if we have real data */}
+                  {(result.acceptsNewPatients || result.acceptsInsurance) && (
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {result.acceptsNewPatients && (
+                        <Badge variant="outline" className="text-blue-600 border-blue-600 text-xs">
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          New patients
+                        </Badge>
+                      )}
+                      {result.acceptsInsurance && (
+                        <Badge variant="outline" className="text-purple-600 border-purple-600 text-xs">
+                          <CreditCard className="w-3 h-3 mr-1" />
+                          Insurance
+                        </Badge>
+                      )}
+                    </div>
+                  )}
 
                   {/* Action Buttons */}
                   <div className="flex gap-2 mt-3">
