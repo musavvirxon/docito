@@ -11,7 +11,7 @@ const CollaborationSection = () => {
     { id: 1, role: "Doctor", color: "bg-primary", position: { x: -120, y: -80 } },
     { id: 2, role: "Nurse", color: "bg-accent", position: { x: 120, y: -80 } },
     { id: 3, role: "Admin", color: "bg-secondary", position: { x: -120, y: 80 } },
-    { id: 4, role: "Specialist", color: "bg-green-500", position: { x: 120, y: 80 } },
+    { id: 4, role: "Platform admins", color: "bg-green-500", position: { x: 120, y: 80 } },
   ];
 
   return (
