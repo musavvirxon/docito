@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useTranslation } from "react-i18next";
+import { PracticesIllustration } from "@/components/Visuals/illustrations";
 
 const Practices = () => {
   const { t } = useTranslation(['common', 'practices']);
@@ -55,8 +56,8 @@ const Practices = () => {
                 </Link>
               </p>
             </div>
-            <div className="bg-muted/30 h-96 rounded-lg flex items-center justify-center">
-              <span className="text-muted-foreground">Illustration Placeholder</span>
+            <div className="flex items-center justify-center">
+              <PracticesIllustration className="w-full max-w-md" />
             </div>
           </div>
         </div>

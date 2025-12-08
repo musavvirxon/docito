@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { SupportIllustration } from '@/components/Visuals/illustrations';
 
 export default function Support() {
   const navigate = useNavigate();
@@ -90,12 +91,19 @@ export default function Support() {
         </div>
       </nav>
 
-      <div className="bg-gradient-to-br from-primary/90 to-primary py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-primary-foreground mb-6">{t('support:hero.title')}</h1>
-          <p className="text-xl text-primary-foreground/80 max-w-3xl mx-auto">
-            {t('support:hero.subtitle')}
-          </p>
+      <div className="bg-gradient-to-br from-primary/90 to-primary py-16">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div className="text-center md:text-left">
+              <h1 className="text-4xl md:text-5xl font-bold text-primary-foreground mb-6">{t('support:hero.title')}</h1>
+              <p className="text-xl text-primary-foreground/80 max-w-xl">
+                {t('support:hero.subtitle')}
+              </p>
+            </div>
+            <div className="hidden md:flex justify-center">
+              <SupportIllustration className="w-full max-w-sm" />
+            </div>
+          </div>
         </div>
       </div>
 

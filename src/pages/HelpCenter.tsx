@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useContentTranslation } from '@/hooks/useContentTranslation';
+import { HelpCenterIllustration } from '@/components/Visuals/illustrations';
 
 export default function HelpCenter() {
   const navigate = useNavigate();
@@ -114,22 +115,29 @@ export default function HelpCenter() {
         </div>
       </nav>
 
-      <div className="bg-gradient-to-br from-primary/90 to-primary py-20">
-        <div className="container mx-auto px-4 text-center">
-          <HelpCircle className="w-16 h-16 text-primary-foreground mx-auto mb-6" />
-          <h1 className="text-5xl font-bold text-primary-foreground mb-6">{t('help:hero.title')}</h1>
-          <p className="text-xl text-primary-foreground/80 mb-8">{t('help:hero.subtitle')}</p>
+      <div className="bg-gradient-to-br from-primary/90 to-primary py-16">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div className="text-center md:text-left">
+              <HelpCircle className="w-14 h-14 text-primary-foreground mb-4 mx-auto md:mx-0" />
+              <h1 className="text-4xl md:text-5xl font-bold text-primary-foreground mb-4">{t('help:hero.title')}</h1>
+              <p className="text-lg text-primary-foreground/80 mb-6">{t('help:hero.subtitle')}</p>
 
-          <div className="max-w-2xl mx-auto">
-            <div className="relative">
-              <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder={t('help:hero.searchPlaceholder')}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-16 pr-6 py-5 rounded-2xl text-lg border-none shadow-2xl bg-card text-foreground"
-              />
+              <div className="max-w-xl">
+                <div className="relative">
+                  <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder={t('help:hero.searchPlaceholder')}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-14 pr-6 py-4 rounded-xl text-base border-none shadow-xl bg-card text-foreground"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="hidden md:flex justify-center">
+              <HelpCenterIllustration className="w-full max-w-sm" />
             </div>
           </div>
         </div>

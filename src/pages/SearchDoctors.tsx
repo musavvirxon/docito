@@ -11,6 +11,7 @@ import { useBookingAuth } from '@/hooks/useBookingAuth';
 import { Search, MapPin, Filter, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { DoctorSearchIllustration } from '@/components/Visuals/illustrations';
 import {
   Select,
   SelectContent,
@@ -183,18 +184,22 @@ export default function SearchDoctors() {
       {/* Search Header */}
       <div className="bg-gradient-to-br from-primary/90 to-primary py-12">
         <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-8"
-          >
-            <h1 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-2">
-              {t('page.title')}
-            </h1>
-            <p className="text-primary-foreground/80">
-              {t('page.subtitle')}
-            </p>
-          </motion.div>
+          <div className="grid md:grid-cols-2 gap-8 items-center mb-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <h1 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-2">
+                {t('page.title')}
+              </h1>
+              <p className="text-primary-foreground/80">
+                {t('page.subtitle')}
+              </p>
+            </motion.div>
+            <div className="hidden md:flex justify-end">
+              <DoctorSearchIllustration className="w-full max-w-xs" />
+            </div>
+          </div>
 
           {/* Search Form */}
           <motion.form

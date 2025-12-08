@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Shield, FileText, Cookie, Info, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
 import { useContentTranslation } from '@/hooks/useContentTranslation';
+import { LegalIllustration } from '@/components/Visuals/illustrations';
 
 interface LegalPage {
   id: string;
@@ -63,22 +64,33 @@ export default function Legal() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      <div className="container mx-auto px-4 py-12 max-w-6xl">
-        <div className="mb-8">
-          <Link to="/">
-            <Button variant="ghost" size="sm" className="mb-4">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              {t('legal:backHome')}
-            </Button>
-          </Link>
-          
-          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            {t('legal:title')}
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-3xl">
-            {t('legal:subtitle')}
-          </p>
+      {/* Hero Section */}
+      <div className="bg-gradient-to-r from-primary/10 to-accent/10 py-12">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <Link to="/">
+                <Button variant="ghost" size="sm" className="mb-4">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  {t('legal:backHome')}
+                </Button>
+              </Link>
+              
+              <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                {t('legal:title')}
+              </h1>
+              <p className="text-lg text-muted-foreground max-w-xl">
+                {t('legal:subtitle')}
+              </p>
+            </div>
+            <div className="hidden md:flex justify-center">
+              <LegalIllustration className="w-full max-w-xs" />
+            </div>
+          </div>
         </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-12 max-w-6xl">
 
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
