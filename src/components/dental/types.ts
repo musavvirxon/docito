@@ -28,7 +28,7 @@ export interface ToothProcedure {
   id: string;
   name: string;
   code?: string;
-  status: "planned" | "in_progress" | "completed";
+  status: "planned" | "in_progress" | "completed" | "cancelled";
   date?: string;
   notes?: string;
 }
