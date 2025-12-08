@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { SpecialtiesIllustration } from '@/components/Visuals/illustrations';
 
 export default function BrowseSpecialties() {
   const navigate = useNavigate();
@@ -171,13 +172,20 @@ export default function BrowseSpecialties() {
       </nav>
 
       <div className="bg-gradient-to-br from-primary/90 to-primary py-16">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-primary-foreground mb-4">
-            {t('specialties:page.title')}
-          </h1>
-          <p className="text-xl text-primary-foreground/80 max-w-2xl mx-auto">
-            {t('specialties:page.subtitle')}
-          </p>
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col lg:flex-row items-center gap-8">
+            <div className="flex-1 text-center lg:text-left">
+              <h1 className="text-4xl md:text-5xl font-bold text-primary-foreground mb-4">
+                {t('specialties:page.title')}
+              </h1>
+              <p className="text-xl text-primary-foreground/80 max-w-2xl">
+                {t('specialties:page.subtitle')}
+              </p>
+            </div>
+            <div className="w-full max-w-xs lg:max-w-sm">
+              <SpecialtiesIllustration className="w-full h-auto" />
+            </div>
+          </div>
         </div>
       </div>
 

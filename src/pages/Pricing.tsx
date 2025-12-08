@@ -15,6 +15,7 @@ import { TrustIndicators } from "@/components/pricing/TrustIndicators";
 import { EnterpriseContact } from "@/components/pricing/EnterpriseContact";
 import { MoneyBackGuarantee } from "@/components/pricing/MoneyBackGuarantee";
 import { CallToAction } from "@/components/pricing/CallToAction";
+import { PricingIllustration } from "@/components/Visuals/illustrations";
 
 const Pricing = () => {
   const { t } = useTranslation('pricing');
@@ -38,7 +39,14 @@ const Pricing = () => {
           <Header />
         
         <main className="flex-1 container mx-auto px-4 py-16 space-y-20">
-          <PricingHeader />
+          <div className="flex flex-col lg:flex-row items-center gap-8">
+            <div className="flex-1">
+              <PricingHeader />
+            </div>
+            <div className="w-full max-w-xs lg:max-w-sm">
+              <PricingIllustration className="w-full h-auto" />
+            </div>
+          </div>
           
           <BillingToggle 
             period={billingPeriod} 

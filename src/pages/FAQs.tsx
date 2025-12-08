@@ -4,6 +4,7 @@ import { Logo } from '@/components/Logo';
 import Footer from '@/components/Footer';
 import { Search, ChevronDown, HelpCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { FAQsIllustration } from '@/components/Visuals/illustrations';
 
 export default function FAQs() {
   const navigate = useNavigate();
@@ -135,21 +136,28 @@ export default function FAQs() {
       </nav>
 
       <div className="bg-gradient-to-br from-primary/90 to-primary py-16">
-        <div className="container mx-auto px-4 text-center">
-          <HelpCircle className="w-16 h-16 text-primary-foreground mx-auto mb-6" />
-          <h1 className="text-5xl font-bold text-primary-foreground mb-4">{t('faqs:hero.title')}</h1>
-          <p className="text-xl text-primary-foreground/80 mb-8">{t('faqs:hero.subtitle')}</p>
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col lg:flex-row items-center gap-8">
+            <div className="flex-1 text-center lg:text-left">
+              <HelpCircle className="w-16 h-16 text-primary-foreground mb-6 mx-auto lg:mx-0" />
+              <h1 className="text-5xl font-bold text-primary-foreground mb-4">{t('faqs:hero.title')}</h1>
+              <p className="text-xl text-primary-foreground/80 mb-8">{t('faqs:hero.subtitle')}</p>
 
-          <div className="max-w-2xl mx-auto">
-            <div className="relative">
-              <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder={t('faqs:search.placeholder')}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-16 pr-6 py-5 rounded-2xl text-lg border-2 border-input bg-background text-foreground shadow-2xl"
-              />
+              <div className="max-w-2xl">
+                <div className="relative">
+                  <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder={t('faqs:search.placeholder')}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-16 pr-6 py-5 rounded-2xl text-lg border-2 border-input bg-background text-foreground shadow-2xl"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="w-full max-w-xs lg:max-w-sm hidden lg:block">
+              <FAQsIllustration className="w-full h-auto" />
             </div>
           </div>
         </div>
