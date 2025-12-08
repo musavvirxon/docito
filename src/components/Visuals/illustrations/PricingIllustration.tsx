@@ -9,24 +9,60 @@ export const PricingIllustration = ({ className = "" }: PricingIllustrationProps
   const prefersReducedMotion = useReducedMotion();
 
   const plans = [
-    { x: 40, height: 80, color: "fill-muted", delay: 0 },
-    { x: 100, height: 110, color: "fill-primary", delay: 0.2, featured: true },
-    { x: 160, height: 90, color: "fill-muted", delay: 0.4 },
+    { x: 30, height: 70, color: "fill-muted", delay: 0, price: "$" },
+    { x: 95, height: 100, color: "fill-primary", delay: 0.2, featured: true, price: "$$" },
+    { x: 160, height: 80, color: "fill-muted", delay: 0.4, price: "$$$" },
   ];
 
   return (
     <div className={`relative ${className}`}>
       <svg viewBox="0 0 240 180" className="w-full h-full">
-        {/* Background */}
-        <rect x="20" y="140" width="200" height="4" rx="2" className="fill-border" />
+        {/* Background gradient circle */}
+        <motion.circle
+          cx="120"
+          cy="90"
+          r="75"
+          className="fill-primary/5"
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 0.6 }}
+        />
+
+        {/* Base line */}
+        <motion.rect 
+          x="20" 
+          y="145" 
+          width="200" 
+          height="4" 
+          rx="2" 
+          className="fill-border"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ duration: 0.5 }}
+          style={{ originX: 0.5 }}
+        />
         
         {/* Pricing tier cards */}
         {plans.map((plan, i) => (
           <motion.g key={i}>
+            {/* Card shadow */}
+            <motion.rect
+              x={plan.x + 3}
+              y={145 - plan.height + 3}
+              width="50"
+              height={plan.height}
+              rx="8"
+              className="fill-foreground/5"
+              initial={{ scaleY: 0, opacity: 0 }}
+              animate={{ scaleY: 1, opacity: 1 }}
+              transition={{ duration: 0.5, delay: plan.delay }}
+              style={{ originY: 1 }}
+            />
+            
             {/* Card */}
             <motion.rect
               x={plan.x}
-              y={140 - plan.height}
+              y={145 - plan.height}
               width="50"
               height={plan.height}
               rx="8"
@@ -41,8 +77,8 @@ export const PricingIllustration = ({ className = "" }: PricingIllustrationProps
             {/* Price circle */}
             <motion.circle
               cx={plan.x + 25}
-              cy={140 - plan.height + 25}
-              r="15"
+              cy={145 - plan.height + 22}
+              r="14"
               className={plan.featured ? "fill-primary-foreground/20" : "fill-background/50"}
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -52,14 +88,14 @@ export const PricingIllustration = ({ className = "" }: PricingIllustrationProps
             {/* Price indicator */}
             <motion.text
               x={plan.x + 25}
-              y={140 - plan.height + 30}
+              y={145 - plan.height + 27}
               textAnchor="middle"
-              className={`text-[10px] font-bold ${plan.featured ? "fill-primary-foreground" : "fill-foreground"}`}
+              className={`text-[9px] font-bold ${plan.featured ? "fill-primary-foreground" : "fill-foreground"}`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: plan.delay + 0.4 }}
             >
-              $
+              {plan.price}
             </motion.text>
             
             {/* Feature lines */}
@@ -67,7 +103,7 @@ export const PricingIllustration = ({ className = "" }: PricingIllustrationProps
               <motion.rect
                 key={line}
                 x={plan.x + 10}
-                y={140 - plan.height + 50 + line * 12}
+                y={145 - plan.height + 45 + line * 12}
                 width="30"
                 height="4"
                 rx="2"
@@ -87,20 +123,38 @@ export const PricingIllustration = ({ className = "" }: PricingIllustrationProps
               >
                 <rect
                   x={plan.x + 5}
-                  y={140 - plan.height - 15}
+                  y={145 - plan.height - 18}
                   width="40"
-                  height="18"
-                  rx="9"
+                  height="16"
+                  rx="8"
                   className="fill-accent"
                 />
                 <text
                   x={plan.x + 25}
-                  y={140 - plan.height - 3}
+                  y={145 - plan.height - 7}
                   textAnchor="middle"
-                  className="fill-accent-foreground text-[8px] font-bold"
+                  className="fill-accent-foreground text-[7px] font-bold"
                 >
                   BEST
                 </text>
+              </motion.g>
+            )}
+
+            {/* Checkmarks */}
+            {plan.featured && (
+              <motion.g
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1 }}
+              >
+                <circle cx={plan.x + 43} cy={145 - plan.height + 50} r="5" className="fill-accent" />
+                <path
+                  d={`M ${plan.x + 40} ${145 - plan.height + 50} l 2 2 l 4 -4`}
+                  className="stroke-accent-foreground"
+                  strokeWidth="1.5"
+                  fill="none"
+                  strokeLinecap="round"
+                />
               </motion.g>
             )}
           </motion.g>
@@ -110,8 +164,8 @@ export const PricingIllustration = ({ className = "" }: PricingIllustrationProps
         {!prefersReducedMotion && (
           <>
             <motion.circle
-              cx="90"
-              cy="25"
+              cx="85"
+              cy="30"
               r="3"
               className="fill-accent"
               animate={{ 
@@ -121,8 +175,8 @@ export const PricingIllustration = ({ className = "" }: PricingIllustrationProps
               transition={{ duration: 1.5, repeat: Infinity }}
             />
             <motion.circle
-              cx="160"
-              cy="35"
+              cx="155"
+              cy="40"
               r="2"
               className="fill-primary"
               animate={{ 
@@ -132,8 +186,8 @@ export const PricingIllustration = ({ className = "" }: PricingIllustrationProps
               transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }}
             />
             <motion.circle
-              cx="80"
-              cy="45"
+              cx="75"
+              cy="50"
               r="2"
               className="fill-accent"
               animate={{ 
@@ -141,6 +195,28 @@ export const PricingIllustration = ({ className = "" }: PricingIllustrationProps
                 opacity: [0, 1, 0]
               }}
               transition={{ duration: 1.5, repeat: Infinity, delay: 1 }}
+            />
+            
+            {/* Arrow pointing to featured */}
+            <motion.path
+              d="M 120 25 L 120 35"
+              className="stroke-primary"
+              strokeWidth="2"
+              strokeLinecap="round"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 0.5, delay: 1.2 }}
+            />
+            <motion.path
+              d="M 116 32 L 120 38 L 124 32"
+              className="stroke-primary"
+              strokeWidth="2"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.5 }}
             />
           </>
         )}
