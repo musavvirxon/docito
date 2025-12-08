@@ -5,6 +5,8 @@ import Footer from '@/components/Footer';
 import { Mail, Phone, MapPin, Send, MessageSquare, Clock, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { ContactIllustration } from '@/components/Visuals/illustrations';
+import { motion } from 'framer-motion';
 
 export default function Contact() {
   const navigate = useNavigate();
@@ -89,11 +91,28 @@ export default function Contact() {
       </nav>
 
       <div className="bg-gradient-to-br from-primary/90 to-primary py-16">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl font-bold text-primary-foreground mb-4">{t('contact:hero.title')}</h1>
-          <p className="text-xl text-primary-foreground/80 max-w-2xl mx-auto">
-            {t('contact:hero.subtitle')}
-          </p>
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-2 gap-8 items-center max-w-5xl mx-auto">
+            <motion.div 
+              className="text-center md:text-left"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <h1 className="text-5xl font-bold text-primary-foreground mb-4">{t('contact:hero.title')}</h1>
+              <p className="text-xl text-primary-foreground/80">
+                {t('contact:hero.subtitle')}
+              </p>
+            </motion.div>
+            <motion.div 
+              className="hidden md:block"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <ContactIllustration className="w-full max-w-sm mx-auto" />
+            </motion.div>
+          </div>
         </div>
       </div>
 

@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { FeaturesIllustration } from '@/components/Visuals/illustrations';
+import { motion } from 'framer-motion';
 
 export default function Features() {
   const navigate = useNavigate();
@@ -146,20 +148,49 @@ export default function Features() {
         </div>
       </nav>
 
-      <div className="bg-gradient-to-br from-primary/90 to-primary py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-primary-foreground mb-6">
-            {t('features:hero.title')}
-          </h1>
-          <p className="text-xl text-primary-foreground/80 max-w-3xl mx-auto mb-8">
-            {t('features:hero.subtitle')}
-          </p>
-          <button
-            onClick={() => navigate('/signup')}
-            className="px-8 py-4 rounded-lg bg-background text-foreground hover:bg-background/90 font-semibold text-lg"
-          >
-            {t('features:hero.cta')}
-          </button>
+      <div className="bg-gradient-to-br from-primary/90 to-primary py-20 overflow-hidden">
+        <div className="container mx-auto px-4">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <motion.div 
+              className="text-center lg:text-left"
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <h1 className="text-5xl md:text-6xl font-bold text-primary-foreground mb-6">
+                {t('features:hero.title')}
+              </h1>
+              <p className="text-xl text-primary-foreground/80 max-w-xl mb-8">
+                {t('features:hero.subtitle')}
+              </p>
+              <button
+                onClick={() => navigate('/signup')}
+                className="px-8 py-4 rounded-lg bg-background text-foreground hover:bg-background/90 font-semibold text-lg transition-transform hover:scale-105"
+              >
+                {t('features:hero.cta')}
+              </button>
+            </motion.div>
+            
+            <motion.div 
+              className="hidden lg:grid grid-cols-2 gap-4"
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4">
+                <FeaturesIllustration feature="appointments" className="w-full" />
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 mt-8">
+                <FeaturesIllustration feature="prescriptions" className="w-full" />
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 -mt-4">
+                <FeaturesIllustration feature="files" className="w-full" />
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 mt-4">
+                <FeaturesIllustration feature="analytics" className="w-full" />
+              </div>
+            </motion.div>
+          </div>
         </div>
       </div>
 
