@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DENTAL_PROCEDURES, ToothProcedure } from "./types";
+import { DentalProcedure } from "@/hooks/useDentalChart";
 import { Check, Stethoscope, Baby, Sparkles, Scissors, Shield } from "lucide-react";
 
 interface ProcedureModalProps {
@@ -20,6 +21,7 @@ interface ProcedureModalProps {
   onOpenChange: (open: boolean) => void;
   selectedTeeth: number[];
   onAssignProcedure: (procedure: Omit<ToothProcedure, "id">) => void;
+  dbProcedures?: DentalProcedure[];
 }
 
 const CATEGORY_ICONS: Record<string, React.ElementType> = {
@@ -30,6 +32,8 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
   pediatric: Baby,
   cosmetic: Sparkles,
   prosthetic: Stethoscope,
+  diagnostic: Stethoscope,
+  periodontic: Stethoscope,
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -40,6 +44,8 @@ const CATEGORY_COLORS: Record<string, string> = {
   pediatric: "bg-pink-100 text-pink-700 border-pink-200",
   cosmetic: "bg-amber-100 text-amber-700 border-amber-200",
   prosthetic: "bg-slate-100 text-slate-700 border-slate-200",
+  diagnostic: "bg-cyan-100 text-cyan-700 border-cyan-200",
+  periodontic: "bg-indigo-100 text-indigo-700 border-indigo-200",
 };
 
 export const ProcedureModal = ({
@@ -47,21 +53,27 @@ export const ProcedureModal = ({
   onOpenChange,
   selectedTeeth,
   onAssignProcedure,
+  dbProcedures,
 }: ProcedureModalProps) => {
   const [selectedProcedure, setSelectedProcedure] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
 
-  const categories = ["all", ...new Set(DENTAL_PROCEDURES.map((p) => p.category))];
+  // Use database procedures if available, otherwise fallback to static list
+  const proceduresList = dbProcedures?.length 
+    ? dbProcedures.map(p => ({ id: p.code || p.id, name: p.name, category: p.category }))
+    : DENTAL_PROCEDURES;
+
+  const categories = ["all", ...new Set(proceduresList.map((p) => p.category))];
 
   const filteredProcedures =
     activeCategory === "all"
-      ? DENTAL_PROCEDURES
-      : DENTAL_PROCEDURES.filter((p) => p.category === activeCategory);
+      ? proceduresList
+      : proceduresList.filter((p) => p.category === activeCategory);
 
   const handleAssign = () => {
     if (!selectedProcedure) return;
-    const procedure = DENTAL_PROCEDURES.find((p) => p.id === selectedProcedure);
+    const procedure = proceduresList.find((p) => p.id === selectedProcedure);
     if (!procedure) return;
 
     onAssignProcedure({
