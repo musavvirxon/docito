@@ -487,6 +487,68 @@ export type Database = {
           },
         ]
       }
+      clinic_staff: {
+        Row: {
+          can_book_appointments: boolean | null
+          can_manage_billing: boolean | null
+          can_manage_patients: boolean | null
+          can_view_medical_records: boolean | null
+          can_view_schedule: boolean | null
+          created_at: string | null
+          department: string | null
+          hire_date: string | null
+          id: string
+          invited_by: string | null
+          practice_id: string
+          staff_role: string
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          can_book_appointments?: boolean | null
+          can_manage_billing?: boolean | null
+          can_manage_patients?: boolean | null
+          can_view_medical_records?: boolean | null
+          can_view_schedule?: boolean | null
+          created_at?: string | null
+          department?: string | null
+          hire_date?: string | null
+          id?: string
+          invited_by?: string | null
+          practice_id: string
+          staff_role: string
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          can_book_appointments?: boolean | null
+          can_manage_billing?: boolean | null
+          can_manage_patients?: boolean | null
+          can_view_medical_records?: boolean | null
+          can_view_schedule?: boolean | null
+          created_at?: string | null
+          department?: string | null
+          hire_date?: string | null
+          id?: string
+          invited_by?: string | null
+          practice_id?: string
+          staff_role?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_staff_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       consent_forms: {
         Row: {
           content: string
@@ -4577,6 +4639,7 @@ export type Database = {
         }[]
       }
       get_practice_stats: { Args: { p_practice_id: string }; Returns: Json }
+      get_staff_permissions: { Args: { p_user_id: string }; Returns: Json }
       get_user_profile_by_uid: { Args: never; Returns: Json }
       get_user_role: {
         Args: { _user_id: string }
@@ -4596,6 +4659,10 @@ export type Database = {
       inherit_clinic_insurance_to_doctor: {
         Args: { p_clinic_id: string; p_doctor_id: string }
         Returns: undefined
+      }
+      is_practice_staff: {
+        Args: { p_practice_id: string; p_user_id: string }
+        Returns: boolean
       }
       is_verified_dentist: { Args: { p_user_id: string }; Returns: boolean }
       log_account_activity: {
@@ -4678,7 +4745,15 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "patient" | "doctor" | "admin" | "staff" | "super_admin"
+      app_role:
+        | "patient"
+        | "doctor"
+        | "admin"
+        | "staff"
+        | "super_admin"
+        | "receptionist"
+        | "nurse"
+        | "billing_manager"
       appointment_status:
         | "pending"
         | "confirmed"
@@ -4868,7 +4943,16 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["patient", "doctor", "admin", "staff", "super_admin"],
+      app_role: [
+        "patient",
+        "doctor",
+        "admin",
+        "staff",
+        "super_admin",
+        "receptionist",
+        "nurse",
+        "billing_manager",
+      ],
       appointment_status: [
         "pending",
         "confirmed",
