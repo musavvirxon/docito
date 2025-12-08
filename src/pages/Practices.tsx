@@ -3,7 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
-import { Logo } from "@/components/Logo";
+import ModernNavbar from "@/components/home/ModernNavbar";
+import ModernFooter from "@/components/home/ModernFooter";
 import { useTranslation } from "react-i18next";
 import { PracticesIllustration } from "@/components/Visuals/illustrations";
 
@@ -11,32 +12,10 @@ const Practices = () => {
   const { t } = useTranslation(['common', 'practices']);
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-background">
-        <div className="container mx-auto px-4">
-          <nav className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center">
-              <Logo variant="horizontal" size="sm" />
-              <span className="ml-2 text-muted-foreground">{t('practices:providers.header')}</span>
-            </Link>
-            
-            <div className="flex items-center space-x-6">
-              <div className="hidden lg:flex items-center space-x-6">
-                <Link to="/search-doctors" className="text-foreground hover:text-primary cursor-pointer">{t('practices:providers.nav.findDoctors')}</Link>
-                <Link to="/browse-specialties" className="text-foreground hover:text-primary cursor-pointer">{t('practices:providers.nav.specialties')}</Link>
-                <Link to="/features" className="text-foreground hover:text-primary cursor-pointer">{t('practices:providers.nav.features')}</Link>
-                <Link to="/auth" className="text-foreground hover:text-primary cursor-pointer">{t('common:auth.signIn')}</Link>
-              </div>
-              <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium">
-                <Link to="/register-practice">{t('common:auth.signUp')}</Link>
-              </Button>
-            </div>
-          </nav>
-        </div>
-      </header>
+      <ModernNavbar />
 
       {/* Hero Section */}
-      <section className="py-20 bg-background">
+      <section className="py-20 pt-32 bg-background">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
@@ -541,62 +520,7 @@ const Practices = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-muted py-16">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-            <div className="lg:col-span-1">
-              <Logo variant="horizontal" size="sm" className="mb-4" />
-              <p className="text-muted-foreground text-sm">
-                {t('practices:providers.footer.tagline')}
-              </p>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold text-foreground mb-4">{t('practices:providers.footer.discover.title')}</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.discover.bookDoctor')}</Link></li>
-                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.discover.readReviews')}</Link></li>
-                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.discover.findInsurance')}</Link></li>
-                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.discover.downloadApp')}</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold text-foreground mb-4">{t('practices:providers.footer.forProviders.title')}</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.forProviders.listPractice')}</Link></li>
-                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.forProviders.resources')}</Link></li>
-                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.forProviders.enterprise')}</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold text-foreground mb-4">{t('practices:providers.footer.company.title')}</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.company.about')}</Link></li>
-                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.company.careers')}</Link></li>
-                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.company.press')}</Link></li>
-                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.company.blog')}</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold text-foreground mb-4">{t('practices:providers.footer.support.title')}</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.support.helpCenter')}</Link></li>
-                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.support.contact')}</Link></li>
-                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.support.privacy')}</Link></li>
-                <li><Link to="#" className="hover:text-foreground">{t('practices:providers.footer.support.terms')}</Link></li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="border-t border-border mt-12 pt-8 text-center text-sm text-muted-foreground">
-            <p>{t('practices:providers.footer.copyright', { year: 2024 })}</p>
-          </div>
-        </div>
-      </footer>
+      <ModernFooter />
     </div>
   );
 };

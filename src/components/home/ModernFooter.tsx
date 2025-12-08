@@ -176,7 +176,7 @@ const ModernFooter = () => {
             </Link>
             <div className="ml-4 flex items-center gap-2">
               <LanguageSwitcher />
-              <ThemeToggle className="text-[sidebar-accent-foreground] text-stone-950" />
+              <ThemeToggle />
             </div>
           </div>
         </div>

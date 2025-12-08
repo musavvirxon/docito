@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import ModernNavbar from '@/components/home/ModernNavbar';
+import ModernFooter from '@/components/home/ModernFooter';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -53,15 +55,10 @@ export default function About() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      <ModernNavbar />
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-primary to-accent text-primary-foreground py-20">
+      <div className="bg-gradient-to-r from-primary to-accent text-primary-foreground py-20 pt-32">
         <div className="container mx-auto px-4 max-w-6xl">
-          <Link to="/">
-            <Button variant="ghost" size="sm" className="mb-8 text-primary-foreground hover:bg-white/20">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              {t('about:hero.backButton')}
-            </Button>
-          </Link>
           
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
@@ -181,6 +178,7 @@ export default function About() {
           </Link>
         </div>
       </div>
+      <ModernFooter />
     </div>
   );
 }

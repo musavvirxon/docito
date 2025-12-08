@@ -1,5 +1,5 @@
-import { Logo } from '@/components/Logo';
-import Footer from '@/components/Footer';
+import ModernNavbar from '@/components/home/ModernNavbar';
+import ModernFooter from '@/components/home/ModernFooter';
 import { 
   Calendar, Users, FileText, Bell, Shield, BarChart3, 
   Clock, CreditCard, MessageSquare, Video, Pill, 
@@ -134,21 +134,9 @@ export default function Features() {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="bg-card border-b border-border">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Logo variant="horizontal" size="sm" onClick={() => navigate('/')} className="cursor-pointer" />
-            <button
-              onClick={() => navigate('/auth')}
-              className="px-6 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              {t('common:nav.signIn')}
-            </button>
-          </div>
-        </div>
-      </nav>
+      <ModernNavbar />
 
-      <div className="bg-gradient-to-br from-primary/90 to-primary py-20 overflow-hidden">
+      <div className="bg-gradient-to-br from-primary/90 to-primary py-20 pt-32 overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div 
@@ -249,7 +237,7 @@ export default function Features() {
         </div>
       </div>
 
-      <Footer />
+      <ModernFooter />
     </div>
   );
 }
