@@ -1,7 +1,7 @@
 export { VisitPage } from "./VisitPage";
 export { VisitHeader } from "./VisitHeader";
 export { VisitSidebar } from "./VisitSidebar";
-export { DentalChart } from "./DentalChart";
+export { EnhancedDentalChart as DentalChart } from "@/components/dental";
 export { DiagnosisTab } from "./tabs/DiagnosisTab";
 export { TreatmentTab } from "./tabs/TreatmentTab";
 export { PrescriptionTab } from "./tabs/PrescriptionTab";
