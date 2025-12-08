@@ -112,7 +112,7 @@ const AnimatedIllustration = ({ name, isPlaying }: { name: string; isPlaying: bo
   }
 };
 
-// Hero Search Animation
+// Hero Search Animation - Fixed for light/dark mode visibility
 const HeroSearchAnimation = ({ isPlaying }: { isPlaying: boolean }) => (
   <motion.svg
     viewBox="0 0 200 200"
@@ -121,15 +121,17 @@ const HeroSearchAnimation = ({ isPlaying }: { isPlaying: boolean }) => (
     animate={isPlaying ? { opacity: [0.8, 1, 0.8] } : {}}
     transition={{ duration: 3, repeat: Infinity }}
   >
-    {/* Search magnifier */}
+    {/* Background circle for visibility in both modes */}
+    <circle cx="100" cy="100" r="90" className="fill-muted/30" />
+    
+    {/* Search magnifier - using explicit colors for visibility */}
     <motion.circle
       cx="85"
       cy="85"
       r="35"
       fill="none"
-      stroke="currentColor"
-      strokeWidth="4"
-      className="text-primary"
+      strokeWidth="5"
+      className="stroke-primary"
       initial={{ pathLength: 0 }}
       animate={{ pathLength: 1 }}
       transition={{ duration: 1, ease: "easeOut" }}
@@ -137,28 +139,31 @@ const HeroSearchAnimation = ({ isPlaying }: { isPlaying: boolean }) => (
     <motion.line
       x1="110"
       y1="110"
-      x2="140"
-      y2="140"
-      stroke="currentColor"
-      strokeWidth="4"
+      x2="145"
+      y2="145"
+      strokeWidth="6"
       strokeLinecap="round"
-      className="text-primary"
+      className="stroke-primary"
       initial={{ pathLength: 0 }}
       animate={{ pathLength: 1 }}
       transition={{ duration: 0.5, delay: 0.8 }}
     />
     
-    {/* Floating dots */}
+    {/* Inner magnifier details */}
+    <circle cx="85" cy="85" r="20" className="fill-primary/10" />
+    
+    {/* Floating dots with better contrast */}
     {[
-      { cx: 50, cy: 40, delay: 0 },
-      { cx: 150, cy: 60, delay: 0.3 },
-      { cx: 160, cy: 130, delay: 0.6 },
+      { cx: 45, cy: 35, delay: 0 },
+      { cx: 155, cy: 55, delay: 0.3 },
+      { cx: 165, cy: 135, delay: 0.6 },
+      { cx: 35, cy: 145, delay: 0.9 },
     ].map((dot, i) => (
       <motion.circle
         key={i}
         cx={dot.cx}
         cy={dot.cy}
-        r="6"
+        r="8"
         className="fill-accent"
         initial={{ scale: 0, opacity: 0 }}
         animate={isPlaying ? { 
@@ -171,6 +176,35 @@ const HeroSearchAnimation = ({ isPlaying }: { isPlaying: boolean }) => (
           repeat: Infinity,
           delay: dot.delay,
           ease: "easeInOut"
+        }}
+      />
+    ))}
+    
+    {/* Search result cards floating animation */}
+    {[
+      { x: 30, y: 160, width: 50, delay: 0.2 },
+      { x: 90, y: 165, width: 45, delay: 0.4 },
+      { x: 145, y: 158, width: 40, delay: 0.6 },
+    ].map((card, i) => (
+      <motion.rect
+        key={i}
+        x={card.x}
+        y={card.y}
+        width={card.width}
+        height="25"
+        rx="4"
+        className="fill-card stroke-border"
+        strokeWidth="1"
+        initial={{ y: 200, opacity: 0 }}
+        animate={isPlaying ? { 
+          y: [200, card.y, card.y - 5, card.y],
+          opacity: [0, 1, 1, 0.8]
+        } : { y: card.y, opacity: 0.8 }}
+        transition={{ 
+          duration: 3,
+          repeat: Infinity,
+          delay: card.delay,
+          ease: "easeOut"
         }}
       />
     ))}
