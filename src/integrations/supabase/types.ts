@@ -382,6 +382,59 @@ export type Database = {
           },
         ]
       }
+      bones: {
+        Row: {
+          bone_category: string
+          clinical_notes: string | null
+          created_at: string
+          description: string | null
+          english_name: string
+          id: string
+          latin_name: string
+          parent_bone_id: string | null
+          position_x: number | null
+          position_y: number | null
+          position_z: number | null
+          updated_at: string
+        }
+        Insert: {
+          bone_category: string
+          clinical_notes?: string | null
+          created_at?: string
+          description?: string | null
+          english_name: string
+          id?: string
+          latin_name: string
+          parent_bone_id?: string | null
+          position_x?: number | null
+          position_y?: number | null
+          position_z?: number | null
+          updated_at?: string
+        }
+        Update: {
+          bone_category?: string
+          clinical_notes?: string | null
+          created_at?: string
+          description?: string | null
+          english_name?: string
+          id?: string
+          latin_name?: string
+          parent_bone_id?: string | null
+          position_x?: number | null
+          position_y?: number | null
+          position_z?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bones_parent_bone_id_fkey"
+            columns: ["parent_bone_id"]
+            isOneToOne: false
+            referencedRelation: "bones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clinic_insurance: {
         Row: {
           clinic_id: string
@@ -1769,6 +1822,67 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      patient_bone_annotations: {
+        Row: {
+          annotation_type: string
+          bone_id: string
+          created_at: string
+          diagnosis_date: string | null
+          doctor_id: string
+          id: string
+          notes: string | null
+          patient_id: string
+          severity: string | null
+          updated_at: string
+        }
+        Insert: {
+          annotation_type: string
+          bone_id: string
+          created_at?: string
+          diagnosis_date?: string | null
+          doctor_id: string
+          id?: string
+          notes?: string | null
+          patient_id: string
+          severity?: string | null
+          updated_at?: string
+        }
+        Update: {
+          annotation_type?: string
+          bone_id?: string
+          created_at?: string
+          diagnosis_date?: string | null
+          doctor_id?: string
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          severity?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_bone_annotations_bone_id_fkey"
+            columns: ["bone_id"]
+            isOneToOne: false
+            referencedRelation: "bones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_bone_annotations_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_bone_annotations_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       patient_files: {
         Row: {
