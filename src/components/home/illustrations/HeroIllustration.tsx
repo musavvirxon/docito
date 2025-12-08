@@ -1,8 +1,63 @@
 import { motion } from "framer-motion";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 const HeroIllustration = () => {
+  const prefersReducedMotion = useReducedMotion();
+
+  // Static fallback for reduced motion users
+  if (prefersReducedMotion) {
+    return (
+      <div 
+        className="relative w-full max-w-lg mx-auto"
+        role="img"
+        aria-label="Dashboard preview showing patient management interface"
+      >
+        <div className="relative bg-card rounded-2xl shadow-2xl border-2 border-border p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <div>
+                <div className="h-3 w-24 bg-foreground/20 rounded-full" />
+                <div className="h-2 w-16 bg-muted-foreground/30 rounded-full mt-1" />
+              </div>
+            </div>
+          </div>
+          <div className="flex items-end justify-between h-32 gap-2 mb-6">
+            {[60, 80, 45, 90, 65, 75, 85].map((height, index) => (
+              <div
+                key={index}
+                className="flex-1 bg-gradient-to-t from-primary to-primary/50 rounded-t-lg"
+                style={{ height: `${height}%` }}
+              />
+            ))}
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            {[
+              { label: "Patients", value: "1,247" },
+              { label: "Today", value: "24" },
+              { label: "Rating", value: "4.9★" },
+            ].map((stat) => (
+              <div key={stat.label} className="bg-muted/50 rounded-xl p-3 text-center">
+                <div className="text-lg font-bold text-foreground">{stat.value}</div>
+                <div className="text-xs text-muted-foreground">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="relative w-full max-w-lg mx-auto">
+    <div 
+      className="relative w-full max-w-lg mx-auto"
+      role="img"
+      aria-label="Animated dashboard preview showing patient management interface"
+    >
       {/* Main Dashboard */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -13,20 +68,28 @@ const HeroIllustration = () => {
         {/* Dashboard Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+            <motion.div 
+              className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center"
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            >
               <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
-            </div>
+            </motion.div>
             <div>
               <div className="h-3 w-24 bg-foreground/20 rounded-full" />
               <div className="h-2 w-16 bg-muted-foreground/30 rounded-full mt-1" />
             </div>
           </div>
           <div className="flex gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <motion.div 
+              className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center"
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
               <div className="w-3 h-3 rounded-full bg-primary" />
-            </div>
+            </motion.div>
           </div>
         </div>
 
@@ -62,7 +125,8 @@ const HeroIllustration = () => {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: 1.2 + index * 0.1 }}
-              className="bg-muted/50 rounded-xl p-3 text-center"
+              whileHover={{ scale: 1.05 }}
+              className="bg-muted/50 rounded-xl p-3 text-center cursor-default"
             >
               <div className="text-lg font-bold text-foreground">{stat.value}</div>
               <div className="text-xs text-muted-foreground">{stat.label}</div>
@@ -126,6 +190,16 @@ const HeroIllustration = () => {
           3
         </motion.div>
       </motion.div>
+
+      {/* Ambient glow effect */}
+      <motion.div
+        className="absolute -inset-8 rounded-3xl bg-primary/5 blur-3xl -z-10"
+        animate={{ 
+          opacity: [0.3, 0.5, 0.3],
+          scale: [1, 1.02, 1]
+        }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+      />
     </div>
   );
 };

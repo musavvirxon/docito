@@ -223,5 +223,37 @@
       "cookies": "Cookies",
       "about": "About"
     }
+  },
+  "visuals": {
+    "hero": {
+      "altText": "Dashboard preview showing patient management interface"
+    },
+    "appointments": {
+      "altText": "Calendar illustration with animated dates"
+    },
+    "prescriptions": {
+      "altText": "Digital prescription form being filled"
+    },
+    "files": {
+      "altText": "Files organizing into secure folders"
+    },
+    "notes": {
+      "altText": "Clinical notes being written"
+    },
+    "dashboard": {
+      "altText": "Interactive dashboard with charts and metrics"
+    },
+    "collaboration": {
+      "altText": "Team members collaborating on patient files"
+    },
+    "mobile": {
+      "altText": "Mobile app interface demonstration"
+    },
+    "success": {
+      "altText": "Success celebration animation"
+    },
+    "security": {
+      "altText": "Security shield protecting data"
+    }
   }
 }

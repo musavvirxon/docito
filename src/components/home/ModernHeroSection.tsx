@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 import { ChevronDown, CreditCard, Calendar, FileText, BarChart3 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import ProminentSearchBar from "./ProminentSearchBar";
@@ -10,11 +9,15 @@ import { usePractices } from "@/hooks/usePractices";
 import { useBookingAuth } from "@/hooks/useBookingAuth";
 import { Logo } from "@/components/Logo";
 import HeroIllustration from "./illustrations/HeroIllustration";
+import SearchBarAnimation from "./illustrations/SearchBarAnimation";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 const ModernHeroSection = () => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [searching, setSearching] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
   const { t } = useTranslation('home');
   const { searchDoctors } = useDoctors();
   const { searchPractices } = usePractices();
@@ -136,8 +139,16 @@ const ModernHeroSection = () => {
             <Logo variant="horizontal" size="xl" />
           </motion.div>
 
-          {/* Search Bar - PROMINENT */}
-          <ProminentSearchBar onSearch={handleSearch} searching={searching} />
+          {/* Search Bar - PROMINENT with animation */}
+          <div className="relative">
+            {!prefersReducedMotion && (
+              <SearchBarAnimation isTyping={isTyping} showSuggestions={false} />
+            )}
+            <ProminentSearchBar 
+              onSearch={handleSearch} 
+              searching={searching}
+            />
+          </div>
 
           {/* Professional Badge */}
           <motion.div
