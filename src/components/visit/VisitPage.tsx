@@ -4,7 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { VisitHeader } from "./VisitHeader";
 import { VisitSidebar } from "./VisitSidebar";
-import { DentalChart } from "./DentalChart";
+import { EnhancedDentalChart, ToothProcedure } from "@/components/dental";
 import { DiagnosisTab } from "./tabs/DiagnosisTab";
 import { TreatmentTab } from "./tabs/TreatmentTab";
 import { PrescriptionTab } from "./tabs/PrescriptionTab";
@@ -158,6 +158,21 @@ export const VisitPage = ({
     );
   };
 
+  const handleAssignProcedure = (teeth: number[], procedure: Omit<ToothProcedure, "id">) => {
+    const newTreatment: Treatment = {
+      id: crypto.randomUUID(),
+      name: procedure.name,
+      code: procedure.code,
+      notes: procedure.notes,
+      status: "planned",
+      toothNumbers: teeth,
+      createdAt: new Date().toISOString(),
+    };
+    updateVisit({ treatments: [...visit.treatments, newTreatment] });
+    setSelectedTeeth([]);
+    toast.success(`${procedure.name} assigned to ${teeth.length} tooth${teeth.length > 1 ? "es" : ""}`);
+  };
+
   const handleEndVisit = () => {
     updateVisit({ status: "completed" });
     onEndVisit?.();
@@ -194,11 +209,12 @@ export const VisitPage = ({
           <ScrollArea className="h-full">
             <div className="p-6 space-y-6">
               {showDentalChart && (
-                <DentalChart
+                <EnhancedDentalChart
                   teethData={visit.dentalChart || []}
-                  mode={mode}
+                  isEditable={mode === "current"}
                   selectedTeeth={selectedTeeth}
                   onToothSelect={handleToothSelect}
+                  onAssignProcedure={handleAssignProcedure}
                 />
               )}
 

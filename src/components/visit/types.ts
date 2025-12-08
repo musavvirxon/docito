@@ -1,12 +1,10 @@
+import type { ToothData as DentalToothData, ToothType, ToothStatus, ToothProcedure } from "@/components/dental/types";
+
 export type VisitMode = "current" | "past";
 
-export interface ToothData {
-  toothNumber: number;
-  status: "healthy" | "caries" | "filled" | "missing" | "crown" | "implant" | "watch";
-  diagnoses: string[];
-  treatments: string[];
-  notes?: string;
-}
+// Re-export dental types for backward compatibility
+export type ToothData = DentalToothData;
+export type { ToothType, ToothStatus, ToothProcedure };
 
 export interface Diagnosis {
   id: string;
