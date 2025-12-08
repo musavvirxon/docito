@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { Heart, Brain, Baby, Bone, Eye, Stethoscope } from "lucide-react";
 
 interface SpecialtiesIllustrationProps {
   className?: string;
@@ -9,86 +10,29 @@ export const SpecialtiesIllustration = ({ className = "" }: SpecialtiesIllustrat
   const prefersReducedMotion = useReducedMotion();
 
   const specialtyIcons = [
-    { cx: 60, cy: 50, color: "fill-primary", delay: 0 },
-    { cx: 120, cy: 35, color: "fill-accent", delay: 0.15 },
-    { cx: 180, cy: 55, color: "fill-primary", delay: 0.3 },
-    { cx: 80, cy: 100, color: "fill-accent", delay: 0.45 },
-    { cx: 160, cy: 110, color: "fill-primary", delay: 0.6 },
+    { x: 40, y: 30, Icon: Heart, color: "text-rose-500", bgColor: "bg-rose-100 dark:bg-rose-900/30", delay: 0 },
+    { x: 120, y: 20, Icon: Brain, color: "text-purple-500", bgColor: "bg-purple-100 dark:bg-purple-900/30", delay: 0.15 },
+    { x: 200, y: 35, Icon: Eye, color: "text-sky-500", bgColor: "bg-sky-100 dark:bg-sky-900/30", delay: 0.3 },
+    { x: 60, y: 100, Icon: Baby, color: "text-pink-500", bgColor: "bg-pink-100 dark:bg-pink-900/30", delay: 0.45 },
+    { x: 140, y: 110, Icon: Bone, color: "text-amber-500", bgColor: "bg-amber-100 dark:bg-amber-900/30", delay: 0.6 },
+    { x: 220, y: 95, Icon: Stethoscope, color: "text-emerald-500", bgColor: "bg-emerald-100 dark:bg-emerald-900/30", delay: 0.75 },
   ];
 
   return (
     <div className={`relative ${className}`}>
-      <svg viewBox="0 0 240 160" className="w-full h-full">
-        {/* Background grid */}
-        <motion.rect
-          x="20"
-          y="20"
-          width="200"
-          height="120"
-          rx="16"
-          className="fill-muted/30 stroke-border"
-          strokeWidth="2"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        />
+      {/* Background decoration */}
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 rounded-2xl"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      />
 
-        {/* Specialty circles with icons */}
-        {specialtyIcons.map((icon, i) => (
-          <motion.g key={i}>
-            {/* Outer ring */}
-            <motion.circle
-              cx={icon.cx}
-              cy={icon.cy}
-              r="22"
-              className="fill-background stroke-border"
-              strokeWidth="2"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.4, delay: icon.delay }}
-            />
-            
-            {/* Inner colored circle */}
-            <motion.circle
-              cx={icon.cx}
-              cy={icon.cy}
-              r="15"
-              className={icon.color}
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.3, delay: icon.delay + 0.2 }}
-            />
-
-            {/* Icon placeholder (cross/medical symbol) */}
-            <motion.g
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: icon.delay + 0.3 }}
-            >
-              <rect
-                x={icon.cx - 6}
-                y={icon.cy - 2}
-                width="12"
-                height="4"
-                rx="1"
-                className="fill-primary-foreground"
-              />
-              <rect
-                x={icon.cx - 2}
-                y={icon.cy - 6}
-                width="4"
-                height="12"
-                rx="1"
-                className="fill-primary-foreground"
-              />
-            </motion.g>
-          </motion.g>
-        ))}
-
-        {/* Connecting lines */}
+      {/* Connecting lines SVG */}
+      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 280 160">
         <motion.path
-          d="M 60 50 Q 90 70 120 35"
-          className="stroke-primary/30"
+          d="M 55 45 Q 90 50 135 35"
+          className="stroke-primary/20"
           strokeWidth="2"
           fill="none"
           strokeDasharray="4 4"
@@ -97,8 +41,8 @@ export const SpecialtiesIllustration = ({ className = "" }: SpecialtiesIllustrat
           transition={{ duration: 0.8, delay: 0.5 }}
         />
         <motion.path
-          d="M 120 35 Q 150 45 180 55"
-          className="stroke-primary/30"
+          d="M 135 35 Q 170 40 215 50"
+          className="stroke-accent/20"
           strokeWidth="2"
           fill="none"
           strokeDasharray="4 4"
@@ -107,8 +51,8 @@ export const SpecialtiesIllustration = ({ className = "" }: SpecialtiesIllustrat
           transition={{ duration: 0.8, delay: 0.7 }}
         />
         <motion.path
-          d="M 60 50 Q 70 75 80 100"
-          className="stroke-accent/30"
+          d="M 55 45 Q 60 75 75 115"
+          className="stroke-primary/20"
           strokeWidth="2"
           fill="none"
           strokeDasharray="4 4"
@@ -117,8 +61,8 @@ export const SpecialtiesIllustration = ({ className = "" }: SpecialtiesIllustrat
           transition={{ duration: 0.8, delay: 0.9 }}
         />
         <motion.path
-          d="M 180 55 Q 170 82 160 110"
-          className="stroke-accent/30"
+          d="M 75 115 Q 110 120 155 125"
+          className="stroke-accent/20"
           strokeWidth="2"
           fill="none"
           strokeDasharray="4 4"
@@ -126,37 +70,63 @@ export const SpecialtiesIllustration = ({ className = "" }: SpecialtiesIllustrat
           animate={{ pathLength: 1 }}
           transition={{ duration: 0.8, delay: 1.1 }}
         />
-
-        {/* Floating sparkles */}
-        {!prefersReducedMotion && (
-          <>
-            <motion.circle
-              cx="40"
-              cy="30"
-              r="3"
-              className="fill-accent"
-              animate={{ scale: [0, 1, 0], opacity: [0, 1, 0] }}
-              transition={{ duration: 2, repeat: Infinity, delay: 0 }}
-            />
-            <motion.circle
-              cx="200"
-              cy="80"
-              r="2"
-              className="fill-primary"
-              animate={{ scale: [0, 1, 0], opacity: [0, 1, 0] }}
-              transition={{ duration: 2, repeat: Infinity, delay: 0.7 }}
-            />
-            <motion.circle
-              cx="120"
-              cy="130"
-              r="2.5"
-              className="fill-accent"
-              animate={{ scale: [0, 1, 0], opacity: [0, 1, 0] }}
-              transition={{ duration: 2, repeat: Infinity, delay: 1.4 }}
-            />
-          </>
-        )}
+        <motion.path
+          d="M 215 50 Q 220 75 235 110"
+          className="stroke-primary/20"
+          strokeWidth="2"
+          fill="none"
+          strokeDasharray="4 4"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 0.8, delay: 1.3 }}
+        />
       </svg>
+
+      {/* Specialty Icons */}
+      <div className="relative w-full h-40">
+        {specialtyIcons.map((specialty, i) => (
+          <motion.div
+            key={i}
+            className={`absolute flex items-center justify-center w-12 h-12 rounded-full ${specialty.bgColor} shadow-lg`}
+            style={{ left: specialty.x, top: specialty.y }}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ 
+              duration: 0.4, 
+              delay: specialty.delay,
+              type: "spring",
+              stiffness: 200
+            }}
+            whileHover={!prefersReducedMotion ? { scale: 1.15, y: -5 } : undefined}
+          >
+            <specialty.Icon className={`w-6 h-6 ${specialty.color}`} strokeWidth={1.5} />
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Floating sparkles */}
+      {!prefersReducedMotion && (
+        <>
+          <motion.div
+            className="absolute w-2 h-2 rounded-full bg-accent"
+            style={{ left: 20, top: 60 }}
+            animate={{ scale: [0, 1, 0], opacity: [0, 1, 0] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 0 }}
+          />
+          <motion.div
+            className="absolute w-1.5 h-1.5 rounded-full bg-primary"
+            style={{ left: 180, top: 70 }}
+            animate={{ scale: [0, 1, 0], opacity: [0, 1, 0] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 0.7 }}
+          />
+          <motion.div
+            className="absolute w-2 h-2 rounded-full bg-accent"
+            style={{ left: 100, top: 140 }}
+            animate={{ scale: [0, 1, 0], opacity: [0, 1, 0] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 1.4 }}
+          />
+        </>
+      )}
     </div>
   );
 };
