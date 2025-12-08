@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SEOHead } from "@/components/SEOHead";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import ModernNavbar from "@/components/home/ModernNavbar";
+import ModernFooter from "@/components/home/ModernFooter";
 import { PricingHeader } from "@/components/pricing/PricingHeader";
 import { BillingToggle } from "@/components/pricing/BillingToggle";
 import { PricingNavigation } from "@/components/pricing/PricingNavigation";
@@ -36,9 +36,9 @@ const Pricing = () => {
         </div>
         
         <div className="relative z-10 flex flex-col min-h-screen">
-          <Header />
+          <ModernNavbar />
         
-        <main className="flex-1 container mx-auto px-4 py-16 space-y-20">
+        <main className="flex-1 container mx-auto px-4 py-16 pt-28 space-y-20">
           <div className="flex flex-col lg:flex-row items-center gap-8">
             <div className="flex-1">
               <PricingHeader />
@@ -80,7 +80,7 @@ const Pricing = () => {
           <CallToAction />
         </main>
           
-          <Footer />
+          <ModernFooter />
         </div>
       </div>
     </>

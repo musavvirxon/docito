@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { Logo } from '@/components/Logo';
-import Footer from '@/components/Footer';
+import ModernNavbar from '@/components/home/ModernNavbar';
+import ModernFooter from '@/components/home/ModernFooter';
 import SearchResults from '@/components/patient/SearchResults';
 import { useDoctors } from '@/hooks/useDoctors';
 import { usePractices } from '@/hooks/usePractices';
@@ -166,23 +166,10 @@ export default function SearchDoctors() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <nav className="bg-card border-b border-border sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Logo variant="horizontal" size="sm" onClick={() => navigate('/')} className="cursor-pointer" />
-            <Button
-              onClick={() => navigate('/auth')}
-              variant="default"
-            >
-              {t('page.signIn')}
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <ModernNavbar />
 
       {/* Search Header */}
-      <div className="bg-gradient-to-br from-primary/90 to-primary py-12">
+      <div className="bg-gradient-to-br from-primary/90 to-primary py-12 pt-32">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-8 items-center mb-8">
             <motion.div
@@ -295,7 +282,7 @@ export default function SearchDoctors() {
         </motion.div>
       </div>
 
-      <Footer />
+      <ModernFooter />
     </div>
   );
 }

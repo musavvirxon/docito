@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Logo } from '@/components/Logo';
-import Footer from '@/components/Footer';
+import ModernNavbar from '@/components/home/ModernNavbar';
+import ModernFooter from '@/components/home/ModernFooter';
 import { Search, MapPin, Building2, Users, Star, Phone, Mail, Globe, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -55,21 +55,9 @@ export default function FindPractices() {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="bg-card border-b border-border">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Logo variant="horizontal" size="sm" onClick={() => navigate('/')} className="cursor-pointer" />
-            <button
-              onClick={() => navigate('/auth')}
-              className="px-6 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              {t('common:auth.signIn')}
-            </button>
-          </div>
-        </div>
-      </nav>
+      <ModernNavbar />
 
-      <div className="bg-gradient-to-br from-primary/90 to-primary py-16">
+      <div className="bg-gradient-to-br from-primary/90 to-primary py-16 pt-32">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-8 items-center">
             <motion.div
@@ -174,7 +162,7 @@ export default function FindPractices() {
         )}
       </div>
 
-      <Footer />
+      <ModernFooter />
     </div>
   );
 }

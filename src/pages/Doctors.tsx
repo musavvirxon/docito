@@ -1,5 +1,5 @@
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import ModernNavbar from "@/components/home/ModernNavbar";
+import ModernFooter from "@/components/home/ModernFooter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
@@ -159,10 +159,10 @@ const Doctors = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <ModernNavbar />
       
       {/* Hero Section */}
-      <section className="pt-24 pb-20 bg-gradient-to-br from-blue-50 to-white">
+      <section className="pt-32 pb-20 bg-gradient-to-br from-blue-50 to-white dark:from-muted/30 dark:to-background">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
@@ -526,7 +526,7 @@ const Doctors = () => {
         </div>
       </div>
 
-      <Footer />
+      <ModernFooter />
     </div>
   );
 };
