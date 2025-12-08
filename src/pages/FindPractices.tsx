@@ -6,6 +6,8 @@ import Footer from '@/components/Footer';
 import { Search, MapPin, Building2, Users, Star, Phone, Mail, Globe, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
+import { FindPracticesIllustration } from '@/components/Visuals/illustrations';
 
 export default function FindPractices() {
   const navigate = useNavigate();
@@ -69,12 +71,29 @@ export default function FindPractices() {
 
       <div className="bg-gradient-to-br from-primary/90 to-primary py-16">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-bold text-primary-foreground text-center mb-4">
-            {t('practices:page.title')}
-          </h1>
-          <p className="text-xl text-primary-foreground/80 text-center mb-8">
-            {t('practices:page.subtitle')}
-          </p>
+          <div className="grid lg:grid-cols-2 gap-8 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <h1 className="text-4xl md:text-5xl font-bold text-primary-foreground mb-4">
+                {t('practices:page.title')}
+              </h1>
+              <p className="text-xl text-primary-foreground/80 mb-8">
+                {t('practices:page.subtitle')}
+              </p>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="hidden lg:flex justify-center"
+            >
+              <FindPracticesIllustration className="w-full max-w-xs" />
+            </motion.div>
+          </div>
 
           <div className="max-w-4xl mx-auto bg-card rounded-2xl shadow-2xl p-4">
             <div className="grid md:grid-cols-3 gap-4">
