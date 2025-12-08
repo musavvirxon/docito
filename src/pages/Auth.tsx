@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,8 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, User, Stethoscope, Building2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { AuthIllustration } from "@/components/Visuals/illustrations";
 
 const Auth = () => {
   const { t } = useTranslation('auth');
@@ -96,6 +96,11 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
+        {/* Auth Illustration */}
+        <div className="flex justify-center mb-6">
+          <AuthIllustration variant={activeTab === "signin" ? "signin" : "signup"} className="w-40 h-40" />
+        </div>
+        
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-primary mb-2">{t('auth.appTitle')}</h1>
           <p className="text-muted-foreground">{t('auth.appSubtitle')}</p>

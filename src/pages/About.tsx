@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Target, Eye, Heart, Shield } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { useContentTranslation } from '@/hooks/useContentTranslation';
+import { AboutIllustration } from '@/components/Visuals/illustrations';
 
 interface AboutSection {
   id: string;
@@ -62,12 +63,19 @@ export default function About() {
             </Button>
           </Link>
           
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {t('about:hero.title')}
-          </h1>
-          <p className="text-xl md:text-2xl text-primary-foreground/90 max-w-3xl animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
-            {t('about:hero.subtitle')}
-          </p>
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <h1 className="text-5xl md:text-6xl font-bold mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                {t('about:hero.title')}
+              </h1>
+              <p className="text-xl md:text-2xl text-primary-foreground/90 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
+                {t('about:hero.subtitle')}
+              </p>
+            </div>
+            <div className="hidden md:block">
+              <AboutIllustration className="w-full max-w-md mx-auto" />
+            </div>
+          </div>
         </div>
       </div>
 
