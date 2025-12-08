@@ -5,6 +5,7 @@ export { default as ContactIllustration } from './ContactIllustration';
 export { default as DoctorSearchIllustration } from './DoctorSearchIllustration';
 export { default as FAQsIllustration } from './FAQsIllustration';
 export { default as FeaturesIllustration } from './FeaturesIllustration';
+export { default as FindPracticesIllustration } from './FindPracticesIllustration';
 export { default as HelpCenterIllustration } from './HelpCenterIllustration';
 export { default as LegalIllustration } from './LegalIllustration';
 export { default as NotFoundIllustration } from './NotFoundIllustration';

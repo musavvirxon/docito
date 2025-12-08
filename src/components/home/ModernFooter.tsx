@@ -4,30 +4,32 @@ import { Logo } from "@/components/Logo";
 import ThemeToggle from "./ThemeToggle";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
+import { useLocalizedPath } from "@/hooks/useLocalizedPath";
 
 const ModernFooter = () => {
   const { t } = useTranslation("home");
+  const { getLocalizedPath } = useLocalizedPath();
   
   const platformLinks = [
-    { name: t("footer.platform.searchDoctors"), href: "/search-doctors" },
-    { name: t("footer.platform.browseSpecialties"), href: "/browse-specialties" },
-    { name: t("footer.platform.findPractices"), href: "/find-practices" },
-    { name: t("footer.platform.features"), href: "/features" },
+    { name: t("footer.platform.searchDoctors"), href: "search-doctors" },
+    { name: t("footer.platform.browseSpecialties"), href: "browse-specialties" },
+    { name: t("footer.platform.findPractices"), href: "find-practices" },
+    { name: t("footer.platform.features"), href: "features" },
   ];
 
   const supportLinks = [
-    { name: t("footer.support.helpCenter"), href: "/help-center" },
-    { name: t("footer.support.contact"), href: "/contact" },
-    { name: t("footer.support.faqs"), href: "/faqs" },
-    { name: t("footer.support.support"), href: "/support" },
+    { name: t("footer.support.helpCenter"), href: "help-center" },
+    { name: t("footer.support.contact"), href: "contact" },
+    { name: t("footer.support.faqs"), href: "faqs" },
+    { name: t("footer.support.support"), href: "support" },
   ];
 
   const legalLinks = [
-    { name: t("footer.legal.about"), href: "/about" },
-    { name: t("footer.legal.privacy"), href: "/legal/privacy-policy" },
-    { name: t("footer.legal.terms"), href: "/legal/terms-of-service" },
-    { name: t("footer.legal.cookies"), href: "/legal/cookie-policy" },
-    { name: t("footer.legal.legalCenter"), href: "/legal" },
+    { name: t("footer.legal.about"), href: "about" },
+    { name: t("footer.legal.privacy"), href: "legal/privacy-policy" },
+    { name: t("footer.legal.terms"), href: "legal/terms-of-service" },
+    { name: t("footer.legal.cookies"), href: "legal/cookie-policy" },
+    { name: t("footer.legal.legalCenter"), href: "legal" },
   ];
 
   const socialLinks = [
@@ -76,7 +78,7 @@ const ModernFooter = () => {
               {platformLinks.map((link) => (
                 <li key={link.name}>
                   <Link
-                    to={link.href}
+                    to={getLocalizedPath(link.href)}
                     className="text-sm text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors"
                   >
                     {link.name}
@@ -93,7 +95,7 @@ const ModernFooter = () => {
               {supportLinks.map((link) => (
                 <li key={link.name}>
                   <Link
-                    to={link.href}
+                    to={getLocalizedPath(link.href)}
                     className="text-sm text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors"
                   >
                     {link.name}
@@ -110,7 +112,7 @@ const ModernFooter = () => {
               {legalLinks.map((link) => (
                 <li key={link.name}>
                   <Link
-                    to={link.href}
+                    to={getLocalizedPath(link.href)}
                     className="text-sm text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors"
                   >
                     {link.name}
@@ -152,16 +154,16 @@ const ModernFooter = () => {
             </div>
           </div>
           <div className="flex flex-wrap justify-center items-center gap-6">
-            <Link to="/legal/terms-of-service" className="text-xs text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors">
+            <Link to={getLocalizedPath("legal/terms-of-service")} className="text-xs text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors">
               {t("footer.links.terms")}
             </Link>
-            <Link to="/legal/privacy-policy" className="text-xs text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors">
+            <Link to={getLocalizedPath("legal/privacy-policy")} className="text-xs text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors">
               {t("footer.links.privacy")}
             </Link>
-            <Link to="/legal/cookie-policy" className="text-xs text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors">
+            <Link to={getLocalizedPath("legal/cookie-policy")} className="text-xs text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors">
               {t("footer.links.cookies")}
             </Link>
-            <Link to="/about" className="text-xs text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors">
+            <Link to={getLocalizedPath("about")} className="text-xs text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors">
               {t("footer.links.about")}
             </Link>
             <div className="ml-4 flex items-center gap-2">
