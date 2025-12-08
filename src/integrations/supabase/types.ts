@@ -331,6 +331,96 @@ export type Database = {
           },
         ]
       }
+      billing_transactions: {
+        Row: {
+          amount: number
+          appointment_id: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          payment_hold_id: string | null
+          practice_id: string | null
+          provider_data: Json | null
+          provider_transaction_id: string | null
+          status: string
+          subscription_id: string | null
+          transaction_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          appointment_id?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          payment_hold_id?: string | null
+          practice_id?: string | null
+          provider_data?: Json | null
+          provider_transaction_id?: string | null
+          status?: string
+          subscription_id?: string | null
+          transaction_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          appointment_id?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          payment_hold_id?: string | null
+          practice_id?: string | null
+          provider_data?: Json | null
+          provider_transaction_id?: string | null
+          status?: string
+          subscription_id?: string | null
+          transaction_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_transactions_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_transactions_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "patient_all_appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_transactions_payment_hold_id_fkey"
+            columns: ["payment_hold_id"]
+            isOneToOne: false
+            referencedRelation: "payment_holds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_transactions_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_transactions_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "user_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blocked_times: {
         Row: {
           block_type: string | null
@@ -2141,6 +2231,81 @@ export type Database = {
           },
         ]
       }
+      payment_holds: {
+        Row: {
+          amount: number
+          appointment_id: string | null
+          captured_at: string | null
+          created_at: string
+          currency: string
+          hold_expires_at: string | null
+          id: string
+          metadata: Json | null
+          payment_provider: string | null
+          provider_hold_id: string | null
+          provider_payment_id: string | null
+          refund_reason: string | null
+          refunded_at: string | null
+          released_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          appointment_id?: string | null
+          captured_at?: string | null
+          created_at?: string
+          currency?: string
+          hold_expires_at?: string | null
+          id?: string
+          metadata?: Json | null
+          payment_provider?: string | null
+          provider_hold_id?: string | null
+          provider_payment_id?: string | null
+          refund_reason?: string | null
+          refunded_at?: string | null
+          released_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          appointment_id?: string | null
+          captured_at?: string | null
+          created_at?: string
+          currency?: string
+          hold_expires_at?: string | null
+          id?: string
+          metadata?: Json | null
+          payment_provider?: string | null
+          provider_hold_id?: string | null
+          provider_payment_id?: string | null
+          refund_reason?: string | null
+          refunded_at?: string | null
+          released_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_holds_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_holds_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "patient_all_appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_intents: {
         Row: {
           amount: number
@@ -2301,6 +2466,71 @@ export type Database = {
           },
           {
             foreignKeyName: "payments_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      practice_invitations: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          custom_message: string | null
+          email: string | null
+          expires_at: string
+          full_name: string | null
+          id: string
+          invite_token: string | null
+          invite_type: string
+          invited_by: string
+          invited_user_id: string | null
+          phone: string | null
+          practice_id: string
+          role: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          custom_message?: string | null
+          email?: string | null
+          expires_at?: string
+          full_name?: string | null
+          id?: string
+          invite_token?: string | null
+          invite_type?: string
+          invited_by: string
+          invited_user_id?: string | null
+          phone?: string | null
+          practice_id: string
+          role: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          custom_message?: string | null
+          email?: string | null
+          expires_at?: string
+          full_name?: string | null
+          id?: string
+          invite_token?: string | null
+          invite_type?: string
+          invited_by?: string
+          invited_user_id?: string | null
+          phone?: string | null
+          practice_id?: string
+          role?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_invitations_practice_id_fkey"
             columns: ["practice_id"]
             isOneToOne: false
             referencedRelation: "practices"
@@ -4536,6 +4766,10 @@ export type Database = {
       }
     }
     Functions: {
+      accept_practice_invitation: {
+        Args: { p_invite_token: string }
+        Returns: Json
+      }
       add_medication_to_treatment_plan: {
         Args: {
           dosage: string
@@ -4588,6 +4822,7 @@ export type Database = {
         }
         Returns: Json
       }
+      capture_payment_hold: { Args: { p_hold_id: string }; Returns: Json }
       check_and_award_achievements: {
         Args: { p_doctor_id: string }
         Returns: {
@@ -4603,6 +4838,21 @@ export type Database = {
           resource_type: string
         }
         Returns: boolean
+      }
+      check_user_exists: {
+        Args: { p_email: string; p_phone?: string }
+        Returns: {
+          found_user_id: string
+          user_exists: boolean
+        }[]
+      }
+      create_appointment_hold: {
+        Args: {
+          p_amount: number
+          p_appointment_id: string
+          p_currency?: string
+        }
+        Returns: Json
       }
       create_guest_patient_profile: {
         Args: { p_email: string; p_full_name: string; p_phone?: string }
@@ -4683,6 +4933,10 @@ export type Database = {
         Returns: Json
       }
       refresh_all_ratings: { Args: never; Returns: undefined }
+      release_payment_hold: {
+        Args: { p_hold_id: string; p_reason?: string }
+        Returns: Json
+      }
       request_account_action: {
         Args: { p_notes?: string; p_request_type: string }
         Returns: Json
