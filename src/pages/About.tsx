@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Target, Eye, Heart, Shield } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { useContentTranslation } from '@/hooks/useContentTranslation';
-import { AboutIllustration } from '@/components/Visuals/illustrations';
+import { ImprovedAboutIllustration } from '@/components/Visuals/illustrations';
 
 interface AboutSection {
   id: string;
@@ -72,8 +72,8 @@ export default function About() {
                 {t('about:hero.subtitle')}
               </p>
             </div>
-            <div className="hidden md:block">
-              <AboutIllustration className="w-full max-w-md mx-auto" />
+            <div className="hidden md:flex items-center justify-center">
+              <ImprovedAboutIllustration className="w-full max-w-lg mx-auto" />
             </div>
           </div>
         </div>
