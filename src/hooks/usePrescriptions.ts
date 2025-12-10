@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface PrescriptionItem {
   id?: string;
@@ -55,6 +55,13 @@ export interface FulfillmentOrder {
   prescription?: Prescription;
 }
 
+interface RpcResponse {
+  success: boolean;
+  error?: string;
+  prescription_id?: string;
+  fulfillment_id?: string;
+}
+
 export const usePrescriptions = (options?: { 
   doctorId?: string; 
   patientId?: string; 
@@ -100,7 +107,7 @@ export const usePrescriptions = (options?: {
         items: p.prescription_items
       })) || [];
       
-      setPrescriptions(formatted);
+      setPrescriptions(formatted as Prescription[]);
     } catch (error) {
       console.error('Error fetching prescriptions:', error);
     } finally {
@@ -129,7 +136,7 @@ export const usePrescriptions = (options?: {
         prescription: o.prescriptions
       })) || [];
       
-      setFulfillmentOrders(formatted);
+      setFulfillmentOrders(formatted as FulfillmentOrder[]);
     } catch (error) {
       console.error('Error fetching fulfillment orders:', error);
     }
@@ -143,20 +150,34 @@ export const usePrescriptions = (options?: {
     notes?: string
   ) => {
     try {
+      // Convert items to JSON-compatible format
+      const jsonItems = items.map(item => ({
+        medication_name: item.medication_name,
+        medication_code: item.medication_code || null,
+        dosage: item.dosage,
+        frequency: item.frequency,
+        quantity: item.quantity,
+        unit: item.unit || 'tablets',
+        instructions: item.instructions || null,
+        substitutions_allowed: item.substitutions_allowed ?? true
+      }));
+
       const { data, error } = await supabase.rpc('create_prescription', {
         p_patient_id: patientId,
         p_doctor_id: doctorId,
-        p_items: items,
+        p_items: jsonItems,
         p_refills: refills,
         p_notes: notes
       });
 
       if (error) throw error;
-      if (!data.success) throw new Error(data.error);
+      
+      const response = data as unknown as RpcResponse;
+      if (!response.success) throw new Error(response.error);
 
       toast.success('Prescription created successfully');
       fetchPrescriptions();
-      return data.prescription_id;
+      return response.prescription_id;
     } catch (error: any) {
       toast.error(error.message || 'Failed to create prescription');
       throw error;
@@ -171,11 +192,13 @@ export const usePrescriptions = (options?: {
       });
 
       if (error) throw error;
-      if (!data.success) throw new Error(data.error);
+      
+      const response = data as unknown as RpcResponse;
+      if (!response.success) throw new Error(response.error);
 
       toast.success('Prescription sent to pharmacy');
       fetchPrescriptions();
-      return data.fulfillment_id;
+      return response.fulfillment_id;
     } catch (error: any) {
       toast.error(error.message || 'Failed to send prescription');
       throw error;
@@ -191,11 +214,13 @@ export const usePrescriptions = (options?: {
       });
 
       if (error) throw error;
-      if (!data.success) throw new Error(data.error);
+      
+      const response = data as unknown as RpcResponse;
+      if (!response.success) throw new Error(response.error);
 
       toast.success(`Order ${action.replace('_', ' ')}`);
       fetchFulfillmentOrders();
-      return data;
+      return response;
     } catch (error: any) {
       toast.error(error.message || 'Failed to process order');
       throw error;

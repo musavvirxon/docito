@@ -43,13 +43,13 @@ export const usePharmacyInventory = (pharmacyId?: string) => {
         .order('medication_name');
 
       if (error) throw error;
-      setInventory(data || []);
+      setInventory((data || []) as InventoryItem[]);
 
       // Calculate low stock items
       const lowStock = (data || []).filter(item => 
         item.quantity_on_hand - item.quantity_reserved <= item.reorder_level
       );
-      setLowStockItems(lowStock);
+      setLowStockItems(lowStock as InventoryItem[]);
 
       // Calculate expiring items (within 30 days)
       const thirtyDaysFromNow = new Date();
@@ -58,7 +58,7 @@ export const usePharmacyInventory = (pharmacyId?: string) => {
       const expiring = (data || []).filter(item => 
         item.expiry_date && new Date(item.expiry_date) <= thirtyDaysFromNow
       );
-      setExpiringItems(expiring);
+      setExpiringItems(expiring as InventoryItem[]);
 
     } catch (error) {
       console.error('Error fetching inventory:', error);
@@ -72,15 +72,29 @@ export const usePharmacyInventory = (pharmacyId?: string) => {
       const { data, error } = await supabase
         .from('pharmacy_inventory')
         .insert({
-          ...item,
-          pharmacy_id: pharmacyId
+          pharmacy_id: pharmacyId!,
+          medication_name: item.medication_name!,
+          medication_code: item.medication_code,
+          ndc_code: item.ndc_code,
+          manufacturer: item.manufacturer,
+          quantity_on_hand: item.quantity_on_hand ?? 0,
+          quantity_reserved: item.quantity_reserved ?? 0,
+          reorder_level: item.reorder_level ?? 10,
+          unit_cost: item.unit_cost,
+          unit_price: item.unit_price,
+          expiry_date: item.expiry_date,
+          batch_number: item.batch_number,
+          storage_location: item.storage_location,
+          requires_refrigeration: item.requires_refrigeration ?? false,
+          is_controlled_substance: item.is_controlled_substance ?? false,
+          controlled_substance_schedule: item.controlled_substance_schedule
         })
         .select()
         .single();
 
       if (error) throw error;
       toast.success('Inventory item added');
-      setInventory(prev => [...prev, data]);
+      setInventory(prev => [...prev, data as InventoryItem]);
       return data;
     } catch (error: any) {
       toast.error(error.message || 'Failed to add item');
@@ -99,7 +113,7 @@ export const usePharmacyInventory = (pharmacyId?: string) => {
 
       if (error) throw error;
       toast.success('Inventory updated');
-      setInventory(prev => prev.map(item => item.id === id ? data : item));
+      setInventory(prev => prev.map(item => item.id === id ? data as InventoryItem : item));
       return data;
     } catch (error: any) {
       toast.error(error.message || 'Failed to update item');
@@ -124,7 +138,7 @@ export const usePharmacyInventory = (pharmacyId?: string) => {
 
       if (error) throw error;
       toast.success(`Quantity ${adjustment > 0 ? 'increased' : 'decreased'} by ${Math.abs(adjustment)}`);
-      setInventory(prev => prev.map(i => i.id === id ? data : i));
+      setInventory(prev => prev.map(i => i.id === id ? data as InventoryItem : i));
       return data;
     } catch (error: any) {
       toast.error(error.message || 'Failed to adjust quantity');
