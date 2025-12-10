@@ -1241,6 +1241,99 @@ export type Database = {
         }
         Relationships: []
       }
+      fulfillment_orders: {
+        Row: {
+          assigned_to: string | null
+          copay_amount: number | null
+          created_at: string
+          delivery_address: string | null
+          delivery_notes: string | null
+          dispensed_by: string | null
+          estimated_ready_at: string | null
+          id: string
+          insurance_amount: number | null
+          notes: string | null
+          order_number: string
+          patient_id: string
+          payment_status: string | null
+          pharmacy_id: string
+          picked_up_at: string | null
+          pickup_method: string | null
+          prescription_id: string
+          priority: string | null
+          ready_at: string | null
+          status: string | null
+          total_amount: number | null
+          updated_at: string
+          verified_by: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          copay_amount?: number | null
+          created_at?: string
+          delivery_address?: string | null
+          delivery_notes?: string | null
+          dispensed_by?: string | null
+          estimated_ready_at?: string | null
+          id?: string
+          insurance_amount?: number | null
+          notes?: string | null
+          order_number?: string
+          patient_id: string
+          payment_status?: string | null
+          pharmacy_id: string
+          picked_up_at?: string | null
+          pickup_method?: string | null
+          prescription_id: string
+          priority?: string | null
+          ready_at?: string | null
+          status?: string | null
+          total_amount?: number | null
+          updated_at?: string
+          verified_by?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          copay_amount?: number | null
+          created_at?: string
+          delivery_address?: string | null
+          delivery_notes?: string | null
+          dispensed_by?: string | null
+          estimated_ready_at?: string | null
+          id?: string
+          insurance_amount?: number | null
+          notes?: string | null
+          order_number?: string
+          patient_id?: string
+          payment_status?: string | null
+          pharmacy_id?: string
+          picked_up_at?: string | null
+          pickup_method?: string | null
+          prescription_id?: string
+          priority?: string | null
+          ready_at?: string | null
+          status?: string | null
+          total_amount?: number | null
+          updated_at?: string
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fulfillment_orders_pharmacy_id_fkey"
+            columns: ["pharmacy_id"]
+            isOneToOne: false
+            referencedRelation: "pharmacies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fulfillment_orders_prescription_id_fkey"
+            columns: ["prescription_id"]
+            isOneToOne: false
+            referencedRelation: "prescriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       google_calendar_sync: {
         Row: {
           access_token: string | null
@@ -2473,6 +2566,211 @@ export type Database = {
           },
         ]
       }
+      pharmacies: {
+        Row: {
+          accepts_insurance: boolean | null
+          address: string | null
+          admin_id: string | null
+          average_rating: number | null
+          city: string | null
+          country: string | null
+          created_at: string
+          delivery_available: boolean | null
+          email: string | null
+          id: string
+          license_number: string | null
+          logo_url: string | null
+          name: string
+          num_reviews: number | null
+          operating_hours: Json | null
+          phone: string | null
+          postal_code: string | null
+          state: string | null
+          tax_id: string | null
+          updated_at: string
+          verification_status: string | null
+          verified: boolean | null
+          website: string | null
+        }
+        Insert: {
+          accepts_insurance?: boolean | null
+          address?: string | null
+          admin_id?: string | null
+          average_rating?: number | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          delivery_available?: boolean | null
+          email?: string | null
+          id?: string
+          license_number?: string | null
+          logo_url?: string | null
+          name: string
+          num_reviews?: number | null
+          operating_hours?: Json | null
+          phone?: string | null
+          postal_code?: string | null
+          state?: string | null
+          tax_id?: string | null
+          updated_at?: string
+          verification_status?: string | null
+          verified?: boolean | null
+          website?: string | null
+        }
+        Update: {
+          accepts_insurance?: boolean | null
+          address?: string | null
+          admin_id?: string | null
+          average_rating?: number | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          delivery_available?: boolean | null
+          email?: string | null
+          id?: string
+          license_number?: string | null
+          logo_url?: string | null
+          name?: string
+          num_reviews?: number | null
+          operating_hours?: Json | null
+          phone?: string | null
+          postal_code?: string | null
+          state?: string | null
+          tax_id?: string | null
+          updated_at?: string
+          verification_status?: string | null
+          verified?: boolean | null
+          website?: string | null
+        }
+        Relationships: []
+      }
+      pharmacy_inventory: {
+        Row: {
+          batch_number: string | null
+          controlled_substance_schedule: string | null
+          created_at: string
+          expiry_date: string | null
+          id: string
+          is_controlled_substance: boolean | null
+          manufacturer: string | null
+          medication_code: string | null
+          medication_name: string
+          ndc_code: string | null
+          pharmacy_id: string
+          quantity_on_hand: number
+          quantity_reserved: number
+          reorder_level: number | null
+          requires_refrigeration: boolean | null
+          storage_location: string | null
+          unit_cost: number | null
+          unit_price: number | null
+          updated_at: string
+        }
+        Insert: {
+          batch_number?: string | null
+          controlled_substance_schedule?: string | null
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          is_controlled_substance?: boolean | null
+          manufacturer?: string | null
+          medication_code?: string | null
+          medication_name: string
+          ndc_code?: string | null
+          pharmacy_id: string
+          quantity_on_hand?: number
+          quantity_reserved?: number
+          reorder_level?: number | null
+          requires_refrigeration?: boolean | null
+          storage_location?: string | null
+          unit_cost?: number | null
+          unit_price?: number | null
+          updated_at?: string
+        }
+        Update: {
+          batch_number?: string | null
+          controlled_substance_schedule?: string | null
+          created_at?: string
+          expiry_date?: string | null
+          id?: string
+          is_controlled_substance?: boolean | null
+          manufacturer?: string | null
+          medication_code?: string | null
+          medication_name?: string
+          ndc_code?: string | null
+          pharmacy_id?: string
+          quantity_on_hand?: number
+          quantity_reserved?: number
+          reorder_level?: number | null
+          requires_refrigeration?: boolean | null
+          storage_location?: string | null
+          unit_cost?: number | null
+          unit_price?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pharmacy_inventory_pharmacy_id_fkey"
+            columns: ["pharmacy_id"]
+            isOneToOne: false
+            referencedRelation: "pharmacies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pharmacy_staff: {
+        Row: {
+          can_dispense: boolean | null
+          can_manage_inventory: boolean | null
+          can_process_prescriptions: boolean | null
+          created_at: string
+          hired_at: string | null
+          id: string
+          license_number: string | null
+          pharmacy_id: string
+          staff_role: string
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          can_dispense?: boolean | null
+          can_manage_inventory?: boolean | null
+          can_process_prescriptions?: boolean | null
+          created_at?: string
+          hired_at?: string | null
+          id?: string
+          license_number?: string | null
+          pharmacy_id: string
+          staff_role?: string
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          can_dispense?: boolean | null
+          can_manage_inventory?: boolean | null
+          can_process_prescriptions?: boolean | null
+          created_at?: string
+          hired_at?: string | null
+          id?: string
+          license_number?: string | null
+          pharmacy_id?: string
+          staff_role?: string
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pharmacy_staff_pharmacy_id_fkey"
+            columns: ["pharmacy_id"]
+            isOneToOne: false
+            referencedRelation: "pharmacies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       practice_invitations: {
         Row: {
           accepted_at: string | null
@@ -3032,6 +3330,149 @@ export type Database = {
           zip_code?: string | null
         }
         Relationships: []
+      }
+      prescription_items: {
+        Row: {
+          created_at: string
+          dosage: string
+          frequency: string
+          id: string
+          instructions: string | null
+          medication_code: string | null
+          medication_name: string
+          prescription_id: string
+          quantity: number
+          substitutions_allowed: boolean | null
+          unit: string | null
+        }
+        Insert: {
+          created_at?: string
+          dosage: string
+          frequency: string
+          id?: string
+          instructions?: string | null
+          medication_code?: string | null
+          medication_name: string
+          prescription_id: string
+          quantity: number
+          substitutions_allowed?: boolean | null
+          unit?: string | null
+        }
+        Update: {
+          created_at?: string
+          dosage?: string
+          frequency?: string
+          id?: string
+          instructions?: string | null
+          medication_code?: string | null
+          medication_name?: string
+          prescription_id?: string
+          quantity?: number
+          substitutions_allowed?: boolean | null
+          unit?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prescription_items_prescription_id_fkey"
+            columns: ["prescription_id"]
+            isOneToOne: false
+            referencedRelation: "prescriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prescriptions: {
+        Row: {
+          appointment_id: string | null
+          created_at: string
+          diagnosis_code: string | null
+          doctor_id: string | null
+          expires_at: string | null
+          id: string
+          notes: string | null
+          patient_id: string
+          pharmacy_id: string | null
+          prescribed_at: string
+          prescription_number: string
+          refills_remaining: number | null
+          refills_total: number | null
+          signature_url: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          created_at?: string
+          diagnosis_code?: string | null
+          doctor_id?: string | null
+          expires_at?: string | null
+          id?: string
+          notes?: string | null
+          patient_id: string
+          pharmacy_id?: string | null
+          prescribed_at?: string
+          prescription_number?: string
+          refills_remaining?: number | null
+          refills_total?: number | null
+          signature_url?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          created_at?: string
+          diagnosis_code?: string | null
+          doctor_id?: string | null
+          expires_at?: string | null
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          pharmacy_id?: string | null
+          prescribed_at?: string
+          prescription_number?: string
+          refills_remaining?: number | null
+          refills_total?: number | null
+          signature_url?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prescriptions_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prescriptions_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "patient_all_appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prescriptions_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prescriptions_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prescriptions_pharmacy_id_fkey"
+            columns: ["pharmacy_id"]
+            isOneToOne: false
+            referencedRelation: "pharmacies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       procedure_files: {
         Row: {
@@ -4565,10 +5006,13 @@ export type Database = {
         Row: {
           created_at: string
           document_type: string
+          entity_id: string | null
+          entity_type: string | null
           file_name: string
           file_path: string
           file_size: number | null
           id: string
+          pharmacy_id: string | null
           practice_id: string
           rejection_reason: string | null
           reviewed_at: string | null
@@ -4580,10 +5024,13 @@ export type Database = {
         Insert: {
           created_at?: string
           document_type: string
+          entity_id?: string | null
+          entity_type?: string | null
           file_name: string
           file_path: string
           file_size?: number | null
           id?: string
+          pharmacy_id?: string | null
           practice_id: string
           rejection_reason?: string | null
           reviewed_at?: string | null
@@ -4595,10 +5042,13 @@ export type Database = {
         Update: {
           created_at?: string
           document_type?: string
+          entity_id?: string | null
+          entity_type?: string | null
           file_name?: string
           file_path?: string
           file_size?: number | null
           id?: string
+          pharmacy_id?: string | null
           practice_id?: string
           rejection_reason?: string | null
           reviewed_at?: string | null
@@ -4608,6 +5058,13 @@ export type Database = {
           uploaded_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "verification_documents_pharmacy_id_fkey"
+            columns: ["pharmacy_id"]
+            isOneToOne: false
+            referencedRelation: "pharmacies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "verification_documents_practice_id_fkey"
             columns: ["practice_id"]
@@ -4862,6 +5319,16 @@ export type Database = {
         Args: { p_email: string; p_full_name: string; p_phone?: string }
         Returns: Json
       }
+      create_prescription: {
+        Args: {
+          p_doctor_id: string
+          p_items: Json
+          p_notes?: string
+          p_patient_id: string
+          p_refills?: number
+        }
+        Returns: Json
+      }
       fetch_available_slots: {
         Args: {
           date_from: string
@@ -4928,6 +5395,10 @@ export type Database = {
         Args: { notification_id: string }
         Returns: Json
       }
+      process_fulfillment_order: {
+        Args: { p_action: string; p_fulfillment_id: string; p_notes?: string }
+        Returns: Json
+      }
       process_insurance_request: {
         Args: { p_action: string; p_notes?: string; p_request_id: string }
         Returns: Json
@@ -4961,6 +5432,10 @@ export type Database = {
           p_phone: string
           p_verification_token: string
         }
+        Returns: Json
+      }
+      send_prescription_to_pharmacy: {
+        Args: { p_pharmacy_id: string; p_prescription_id: string }
         Returns: Json
       }
       sign_informed_consent: {
@@ -5008,6 +5483,7 @@ export type Database = {
         | "receptionist"
         | "nurse"
         | "billing_manager"
+        | "pharmacist"
       appointment_status:
         | "pending"
         | "confirmed"
@@ -5206,6 +5682,7 @@ export const Constants = {
         "receptionist",
         "nurse",
         "billing_manager",
+        "pharmacist",
       ],
       appointment_status: [
         "pending",
