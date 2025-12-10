@@ -1702,6 +1702,140 @@ export type Database = {
           },
         ]
       }
+      lab_centers: {
+        Row: {
+          accepts_insurance: boolean | null
+          accreditations: string[] | null
+          address: string
+          admin_id: string | null
+          average_turnaround_hours: number | null
+          city: string
+          country: string
+          created_at: string
+          email: string | null
+          id: string
+          is_verified: boolean | null
+          license_number: string | null
+          name: string
+          operating_hours: Json | null
+          phone: string
+          postal_code: string | null
+          services_offered: string[] | null
+          state: string | null
+          status: string | null
+          type: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          accepts_insurance?: boolean | null
+          accreditations?: string[] | null
+          address: string
+          admin_id?: string | null
+          average_turnaround_hours?: number | null
+          city: string
+          country?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_verified?: boolean | null
+          license_number?: string | null
+          name: string
+          operating_hours?: Json | null
+          phone: string
+          postal_code?: string | null
+          services_offered?: string[] | null
+          state?: string | null
+          status?: string | null
+          type?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          accepts_insurance?: boolean | null
+          accreditations?: string[] | null
+          address?: string
+          admin_id?: string | null
+          average_turnaround_hours?: number | null
+          city?: string
+          country?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_verified?: boolean | null
+          license_number?: string | null
+          name?: string
+          operating_hours?: Json | null
+          phone?: string
+          postal_code?: string | null
+          services_offered?: string[] | null
+          state?: string | null
+          status?: string | null
+          type?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      lab_staff: {
+        Row: {
+          can_manage_equipment: boolean | null
+          can_process_samples: boolean | null
+          can_upload_results: boolean | null
+          can_verify_results: boolean | null
+          created_at: string
+          hired_at: string | null
+          id: string
+          lab_center_id: string
+          license_number: string | null
+          specializations: string[] | null
+          staff_role: string
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          can_manage_equipment?: boolean | null
+          can_process_samples?: boolean | null
+          can_upload_results?: boolean | null
+          can_verify_results?: boolean | null
+          created_at?: string
+          hired_at?: string | null
+          id?: string
+          lab_center_id: string
+          license_number?: string | null
+          specializations?: string[] | null
+          staff_role?: string
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          can_manage_equipment?: boolean | null
+          can_process_samples?: boolean | null
+          can_upload_results?: boolean | null
+          can_verify_results?: boolean | null
+          created_at?: string
+          hired_at?: string | null
+          id?: string
+          lab_center_id?: string
+          license_number?: string | null
+          specializations?: string[] | null
+          staff_role?: string
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_staff_lab_center_id_fkey"
+            columns: ["lab_center_id"]
+            isOneToOne: false
+            referencedRelation: "lab_centers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       legal_pages: {
         Row: {
           category: string | null
@@ -4129,6 +4263,336 @@ export type Database = {
         }
         Relationships: []
       }
+      test_catalog: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_global: boolean | null
+          lab_center_id: string | null
+          name: string
+          preparation_instructions: string | null
+          price: number | null
+          requires_fasting: boolean | null
+          sample_type: string | null
+          subcategory: string | null
+          test_code: string
+          turnaround_hours: number | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_global?: boolean | null
+          lab_center_id?: string | null
+          name: string
+          preparation_instructions?: string | null
+          price?: number | null
+          requires_fasting?: boolean | null
+          sample_type?: string | null
+          subcategory?: string | null
+          test_code: string
+          turnaround_hours?: number | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_global?: boolean | null
+          lab_center_id?: string | null
+          name?: string
+          preparation_instructions?: string | null
+          price?: number | null
+          requires_fasting?: boolean | null
+          sample_type?: string | null
+          subcategory?: string | null
+          test_code?: string
+          turnaround_hours?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_catalog_lab_center_id_fkey"
+            columns: ["lab_center_id"]
+            isOneToOne: false
+            referencedRelation: "lab_centers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_order_items: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          price: number | null
+          status: string | null
+          test_id: string
+          test_order_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          price?: number | null
+          status?: string | null
+          test_id: string
+          test_order_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          price?: number | null
+          status?: string | null
+          test_id?: string
+          test_order_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_order_items_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "test_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_order_items_test_order_id_fkey"
+            columns: ["test_order_id"]
+            isOneToOne: false
+            referencedRelation: "test_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_orders: {
+        Row: {
+          appointment_id: string | null
+          clinical_notes: string | null
+          completed_at: string | null
+          created_at: string
+          diagnosis_codes: string[] | null
+          doctor_id: string | null
+          id: string
+          insurance_covered: boolean | null
+          lab_center_id: string | null
+          order_number: string
+          patient_id: string
+          payment_status: string | null
+          priority: string | null
+          sample_collected_at: string | null
+          sample_collected_by: string | null
+          scheduled_date: string | null
+          scheduled_time: string | null
+          status: string | null
+          total_amount: number | null
+          updated_at: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          clinical_notes?: string | null
+          completed_at?: string | null
+          created_at?: string
+          diagnosis_codes?: string[] | null
+          doctor_id?: string | null
+          id?: string
+          insurance_covered?: boolean | null
+          lab_center_id?: string | null
+          order_number?: string
+          patient_id: string
+          payment_status?: string | null
+          priority?: string | null
+          sample_collected_at?: string | null
+          sample_collected_by?: string | null
+          scheduled_date?: string | null
+          scheduled_time?: string | null
+          status?: string | null
+          total_amount?: number | null
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          clinical_notes?: string | null
+          completed_at?: string | null
+          created_at?: string
+          diagnosis_codes?: string[] | null
+          doctor_id?: string | null
+          id?: string
+          insurance_covered?: boolean | null
+          lab_center_id?: string | null
+          order_number?: string
+          patient_id?: string
+          payment_status?: string | null
+          priority?: string | null
+          sample_collected_at?: string | null
+          sample_collected_by?: string | null
+          scheduled_date?: string | null
+          scheduled_time?: string | null
+          status?: string | null
+          total_amount?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_orders_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_orders_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "patient_all_appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_orders_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_orders_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_orders_lab_center_id_fkey"
+            columns: ["lab_center_id"]
+            isOneToOne: false
+            referencedRelation: "lab_centers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_result_files: {
+        Row: {
+          created_at: string
+          description: string | null
+          file_category: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string
+          id: string
+          test_result_id: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          file_category?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type: string
+          id?: string
+          test_result_id: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          file_category?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string
+          id?: string
+          test_result_id?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_result_files_test_result_id_fkey"
+            columns: ["test_result_id"]
+            isOneToOne: false
+            referencedRelation: "test_results"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_results: {
+        Row: {
+          abnormal_flag: string | null
+          created_at: string
+          id: string
+          interpretation: string | null
+          is_abnormal: boolean | null
+          performed_at: string | null
+          performed_by: string | null
+          reference_range: string | null
+          result_data: Json
+          result_text: string | null
+          status: string | null
+          test_order_item_id: string
+          unit: string | null
+          updated_at: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          abnormal_flag?: string | null
+          created_at?: string
+          id?: string
+          interpretation?: string | null
+          is_abnormal?: boolean | null
+          performed_at?: string | null
+          performed_by?: string | null
+          reference_range?: string | null
+          result_data?: Json
+          result_text?: string | null
+          status?: string | null
+          test_order_item_id: string
+          unit?: string | null
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          abnormal_flag?: string | null
+          created_at?: string
+          id?: string
+          interpretation?: string | null
+          is_abnormal?: boolean | null
+          performed_at?: string | null
+          performed_by?: string | null
+          reference_range?: string | null
+          result_data?: Json
+          result_text?: string | null
+          status?: string | null
+          test_order_item_id?: string
+          unit?: string | null
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_results_test_order_item_id_fkey"
+            columns: ["test_order_item_id"]
+            isOneToOne: false
+            referencedRelation: "test_order_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tooth_files: {
         Row: {
           created_at: string
@@ -5484,6 +5948,7 @@ export type Database = {
         | "nurse"
         | "billing_manager"
         | "pharmacist"
+        | "lab_technician"
       appointment_status:
         | "pending"
         | "confirmed"
@@ -5683,6 +6148,7 @@ export const Constants = {
         "nurse",
         "billing_manager",
         "pharmacist",
+        "lab_technician",
       ],
       appointment_status: [
         "pending",
