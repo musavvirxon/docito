@@ -176,14 +176,14 @@ export function EnhancedFilters({
         {/* Specialty */}
         <FilterSection id="specialty" title={t('doctors:search.specialty')} icon={Filter}>
           <Select
-            value={filters.specialty || ''}
-            onValueChange={(value) => updateFilter('specialty', value || undefined)}
+            value={filters.specialty || '_all'}
+            onValueChange={(value) => updateFilter('specialty', value === '_all' ? undefined : value)}
           >
             <SelectTrigger>
               <SelectValue placeholder={t('doctors:specialties.all')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Specialties</SelectItem>
+              <SelectItem value="_all">All Specialties</SelectItem>
               {specialties.map(spec => (
                 <SelectItem key={spec} value={spec}>{spec}</SelectItem>
               ))}
@@ -327,14 +327,14 @@ export function EnhancedFilters({
         {/* Language */}
         <FilterSection id="language" title="Language" icon={Globe}>
           <Select
-            value={filters.language || ''}
-            onValueChange={(value) => updateFilter('language', value || undefined)}
+            value={filters.language || '_all'}
+            onValueChange={(value) => updateFilter('language', value === '_all' ? undefined : value)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Any language" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Any language</SelectItem>
+              <SelectItem value="_all">Any language</SelectItem>
               {languages.map(lang => (
                 <SelectItem key={lang} value={lang}>{lang}</SelectItem>
               ))}
