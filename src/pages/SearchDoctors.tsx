@@ -4,14 +4,18 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import ModernNavbar from '@/components/home/ModernNavbar';
 import ModernFooter from '@/components/home/ModernFooter';
-import SearchResults from '@/components/patient/SearchResults';
 import { useDoctors } from '@/hooks/useDoctors';
 import { usePractices } from '@/hooks/usePractices';
 import { useBookingAuth } from '@/hooks/useBookingAuth';
-import { Search, MapPin, Filter, X } from 'lucide-react';
+import { useSearchDiscovery, type SearchFilters } from '@/hooks/useSearchDiscovery';
+import { useGeolocation } from '@/hooks/useGeolocation';
+import { Filter, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { DoctorSearchIllustration } from '@/components/Visuals/illustrations';
+import { SearchAutocomplete } from '@/components/search/SearchAutocomplete';
+import { LocationSearch } from '@/components/search/LocationSearch';
+import { EnhancedFilters } from '@/components/search/EnhancedFilters';
+import { SearchResultsEnhanced, type SearchResult } from '@/components/search/SearchResultsEnhanced';
 import {
   Select,
   SelectContent,
@@ -19,26 +23,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 
 export default function SearchDoctors() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { t } = useTranslation('doctors');
   
-  // Initialize from URL params
   const initialSpecialty = searchParams.get('specialty') || '';
   const initialQuery = searchParams.get('q') || '';
   
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [location, setLocation] = useState('');
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | undefined>();
   const [specialty, setSpecialty] = useState(initialSpecialty);
-  const [showFilters, setShowFilters] = useState(false);
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [filters, setFilters] = useState<SearchFilters>({});
+  const [sortBy, setSortBy] = useState('relevance');
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [savedIds, setSavedIds] = useState<string[]>([]);
 
   const { searchDoctors, doctors, loading: doctorsLoading } = useDoctors();
   const { searchPractices, loading: practicesLoading } = usePractices();
   const { handleBookingClick } = useBookingAuth();
+  const { recordSearch } = useSearchDiscovery();
+  const { calculateDistance } = useGeolocation();
 
   const isLoading = doctorsLoading || practicesLoading;
 
@@ -54,12 +69,11 @@ export default function SearchDoctors() {
     { key: 'dentistry', label: t('specialties.dentistry') },
     { key: 'ophthalmology', label: t('specialties.ophthalmology') },
     { key: 'ent', label: t('specialties.ent') },
-    { key: 'obgyn', label: 'OB-GYN' },
   ];
 
-  const transformResults = useCallback((doctorsData: any[], practicesData: any[]) => {
-    const transformedDoctors = doctorsData
-      .filter((doctor) => doctor.profiles?.full_name) // Only include doctors with real names
+  const transformResults = useCallback((doctorsData: any[], practicesData: any[]): SearchResult[] => {
+    const transformedDoctors: SearchResult[] = doctorsData
+      .filter((doctor) => doctor.profiles?.full_name)
       .map((doctor) => {
         const practice = doctor.practices as any;
         const profile = doctor.profiles as any;
@@ -69,23 +83,20 @@ export default function SearchDoctors() {
           id: doctor.id,
           type: 'doctor' as const,
           name: profile?.full_name,
-          image: profile?.avatar_url,
+          imageUrl: profile?.avatar_url,
           specialty: doctor.specialty,
           rating: doctor.weighted_rating || doctor.average_rating,
           reviewCount: doctor.num_reviews || 0,
-          affiliatedPractice: practice?.name,
           location: hasLocation ? `${practice.city}, ${practice.country}` : undefined,
           consultationFee: doctor.consultation_fee,
-          availability: undefined, // Only show real availability data
-          acceptsInsurance: undefined, // Only show if we have real data
           acceptsNewPatients: doctor.accepts_new_patients,
-          bio: doctor.bio,
-          languages: doctor.languages,
+          videoConsultation: doctor.consultation_types?.includes('video'),
+          acceptsInsurance: true, // TODO: Get from actual data
         };
       });
 
-    const transformedPractices = practicesData
-      .filter((practice) => practice.name) // Only include practices with real names
+    const transformedPractices: SearchResult[] = practicesData
+      .filter((practice) => practice.name)
       .map((practice) => {
         const hasLocation = practice.city && practice.country;
         
@@ -93,19 +104,57 @@ export default function SearchDoctors() {
           id: practice.id,
           type: 'practice' as const,
           name: practice.name,
-          logoUrl: practice.logo_url,
+          imageUrl: practice.logo_url,
           location: hasLocation ? `${practice.city}, ${practice.country}` : undefined,
           rating: practice.weighted_rating || practice.average_rating,
           reviewCount: practice.num_reviews || 0,
-          availability: undefined, // Only show real availability data
-          acceptsInsurance: undefined, // Only show if we have real data
-          specialties: practice.specialties,
-          description: practice.description,
         };
       });
 
     return [...transformedDoctors, ...transformedPractices];
   }, []);
+
+  const applyFiltersAndSort = useCallback((results: SearchResult[]): SearchResult[] => {
+    let filtered = [...results];
+
+    // Apply filters
+    if (filters.minRating) {
+      filtered = filtered.filter(r => (r.rating || 0) >= (filters.minRating || 0));
+    }
+    if (filters.minPrice !== undefined && filters.maxPrice !== undefined) {
+      filtered = filtered.filter(r => {
+        if (r.consultationFee === undefined) return true;
+        return r.consultationFee >= (filters.minPrice || 0) && r.consultationFee <= (filters.maxPrice || 10000);
+      });
+    }
+    if (filters.acceptsNewPatients) {
+      filtered = filtered.filter(r => r.acceptsNewPatients);
+    }
+    if (filters.videoConsultation) {
+      filtered = filtered.filter(r => r.videoConsultation);
+    }
+    if (filters.acceptsInsurance) {
+      filtered = filtered.filter(r => r.acceptsInsurance);
+    }
+
+    // Apply sorting
+    switch (sortBy) {
+      case 'rating':
+        filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        break;
+      case 'price_low':
+        filtered.sort((a, b) => (a.consultationFee || 0) - (b.consultationFee || 0));
+        break;
+      case 'price_high':
+        filtered.sort((a, b) => (b.consultationFee || 0) - (a.consultationFee || 0));
+        break;
+      default:
+        // Keep default order (relevance)
+        break;
+    }
+
+    return filtered;
+  }, [filters, sortBy]);
 
   const performSearch = useCallback(async () => {
     const searchTerm = searchQuery || specialty;
@@ -119,24 +168,20 @@ export default function SearchDoctors() {
       const results = transformResults(doctorsResults || [], practicesResults || []);
       setSearchResults(results);
       setHasSearched(true);
+      
+      // Record search
+      recordSearch(searchTerm, 'doctor', { specialty, location, ...filters }, results.length);
     } catch (error) {
       console.error('Search error:', error);
       setSearchResults([]);
       setHasSearched(true);
     }
-  }, [searchQuery, location, specialty, searchDoctors, searchPractices, transformResults]);
+  }, [searchQuery, location, specialty, filters, searchDoctors, searchPractices, transformResults, recordSearch]);
 
-  // Auto-search on initial load if URL params exist
   useEffect(() => {
-    if (initialSpecialty || initialQuery) {
-      performSearch();
-    } else {
-      // Load all doctors initially
-      performSearch();
-    }
+    performSearch();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Re-search when specialty changes from URL
   useEffect(() => {
     const urlSpecialty = searchParams.get('specialty');
     if (urlSpecialty && urlSpecialty !== specialty) {
@@ -144,25 +189,41 @@ export default function SearchDoctors() {
     }
   }, [searchParams]);
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSearchSubmit = (value: string) => {
+    setSearchQuery(value);
     performSearch();
+  };
+
+  const handleLocationChange = (value: string, newCoords?: { lat: number; lng: number }) => {
+    setLocation(value);
+    setCoords(newCoords);
   };
 
   const clearFilters = () => {
     setSearchQuery('');
     setLocation('');
     setSpecialty('');
+    setFilters({});
     performSearch();
   };
 
-  const handleViewProfile = (result: any) => {
+  const handleViewProfile = (result: SearchResult) => {
     if (result.type === 'doctor') {
       navigate(`/doctor-profile/${result.id}`);
     } else {
       navigate(`/practice/${result.id}`);
     }
   };
+
+  const handleSaveResult = (result: SearchResult) => {
+    setSavedIds(prev => 
+      prev.includes(result.id) 
+        ? prev.filter(id => id !== result.id)
+        : [...prev, result.id]
+    );
+  };
+
+  const displayedResults = applyFiltersAndSort(searchResults);
 
   return (
     <div className="min-h-screen bg-background">
@@ -188,44 +249,34 @@ export default function SearchDoctors() {
             </div>
           </div>
 
-          {/* Search Form */}
-          <motion.form
+          {/* Enhanced Search Form */}
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            onSubmit={handleSearchSubmit}
             className="max-w-4xl mx-auto bg-card rounded-2xl shadow-2xl p-4"
           >
-            <div className="grid md:grid-cols-4 gap-4">
-              <div className="md:col-span-2 relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder={t('search.placeholder')}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-12 h-12"
-                />
-              </div>
+            <div className="grid md:grid-cols-[1fr_1fr_auto] gap-4 mb-4">
+              <SearchAutocomplete
+                value={searchQuery}
+                onChange={setSearchQuery}
+                onSearch={handleSearchSubmit}
+                placeholder={t('search.placeholder')}
+              />
 
-              <div className="relative">
-                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground z-10" />
-                <Input
-                  type="text"
-                  placeholder={t('search.location')}
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="pl-12 h-12"
-                />
-              </div>
+              <LocationSearch
+                value={location}
+                onChange={handleLocationChange}
+                placeholder={t('search.location')}
+              />
 
-              <Select value={specialty} onValueChange={setSpecialty}>
-                <SelectTrigger className="h-12">
+              <Select value={specialty} onValueChange={(val) => { setSpecialty(val === 'all' ? '' : val); }}>
+                <SelectTrigger className="h-12 min-w-[180px]">
                   <SelectValue placeholder={t('specialties.all')} />
                 </SelectTrigger>
                 <SelectContent>
                   {specialties.map(spec => (
-                    <SelectItem key={spec.key} value={spec.key || 'all'}>
+                    <SelectItem key={spec.key || 'all'} value={spec.key || 'all'}>
                       {spec.label}
                     </SelectItem>
                   ))}
@@ -233,18 +284,31 @@ export default function SearchDoctors() {
               </Select>
             </div>
 
-            <div className="mt-4 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
-              >
-                <Filter className="w-4 h-4" />
-                {showFilters ? t('page.hideFilters') : t('page.showFilters')}
-              </button>
+            <div className="flex items-center justify-between">
+              {/* Mobile Filters */}
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="sm" className="md:hidden gap-2">
+                    <Filter className="w-4 h-4" />
+                    {t('search.filters')}
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[300px] p-0">
+                  <SheetHeader className="p-4 border-b">
+                    <SheetTitle>{t('search.filters')}</SheetTitle>
+                  </SheetHeader>
+                  <div className="overflow-y-auto h-[calc(100vh-80px)]">
+                    <EnhancedFilters
+                      filters={filters}
+                      onFiltersChange={setFilters}
+                      className="border-0 rounded-none"
+                    />
+                  </div>
+                </SheetContent>
+              </Sheet>
               
               <div className="flex gap-2">
-                {(searchQuery || location || specialty) && (
+                {(searchQuery || location || specialty || Object.keys(filters).length > 0) && (
                   <Button
                     type="button"
                     variant="ghost"
@@ -256,30 +320,47 @@ export default function SearchDoctors() {
                     {t('page.clearAll')}
                   </Button>
                 )}
-                <Button type="submit" disabled={isLoading}>
+                <Button onClick={performSearch} disabled={isLoading}>
                   {isLoading ? t('page.searching') : 'Search'}
                 </Button>
               </div>
             </div>
-          </motion.form>
+          </motion.div>
         </div>
       </div>
 
-      {/* Results Section */}
+      {/* Results Section with Sidebar */}
       <div className="container mx-auto px-4 py-12">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          <SearchResults
-            results={searchResults}
-            isLoading={isLoading && !hasSearched}
-            onBookAppointment={(result) => handleBookingClick(result.id, result.name)}
-            onViewPractice={handleViewProfile}
-            onFavorite={() => {}}
-          />
-        </motion.div>
+        <div className="grid lg:grid-cols-[280px_1fr] gap-8">
+          {/* Desktop Filters Sidebar */}
+          <div className="hidden lg:block">
+            <div className="sticky top-24">
+              <EnhancedFilters
+                filters={filters}
+                onFiltersChange={setFilters}
+              />
+            </div>
+          </div>
+
+          {/* Results */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <SearchResultsEnhanced
+              results={displayedResults}
+              loading={isLoading && !hasSearched}
+              totalCount={displayedResults.length}
+              onViewProfile={handleViewProfile}
+              onBookAppointment={(result) => handleBookingClick(result.id, result.name)}
+              onSaveResult={handleSaveResult}
+              savedIds={savedIds}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+            />
+          </motion.div>
+        </div>
       </div>
 
       <ModernFooter />
