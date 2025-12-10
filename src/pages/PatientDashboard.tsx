@@ -19,6 +19,9 @@ import {
   MapPin,
   Menu,
   X,
+  Receipt,
+  ClipboardList,
+  TestTube2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,6 +31,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
 import { MedicationReminderDashboard } from "@/components/medication/MedicationReminderDashboard";
 import { PatientSettingsPanel } from "@/components/patient/PatientSettingsPanel";
+import { PatientMedicalRecords } from "@/components/patient/PatientMedicalRecords";
+import { PatientTreatmentPlans } from "@/components/patient/PatientTreatmentPlans";
+import { PatientBilling } from "@/components/patient/PatientBilling";
+import { PatientTestResultsSection } from "@/components/patient/PatientTestResultsSection";
 import ThemeToggle from "@/components/home/ThemeToggle";
 import DoctorSearchSection from "@/components/patient/DoctorSearchSection";
 import { format } from "date-fns";
@@ -63,6 +70,9 @@ const PatientDashboard = () => {
     { id: "appointments", label: t("patient.navigation.myAppointments"), icon: Calendar },
     { id: "medications", label: t("patient.navigation.medications"), icon: Pill },
     { id: "records", label: t("patient.navigation.medicalRecords"), icon: FileText },
+    { id: "test-results", label: "Test Results", icon: TestTube2 },
+    { id: "treatment-plans", label: "Treatment Plans", icon: ClipboardList },
+    { id: "billing", label: "Billing", icon: Receipt },
     { id: "find-doctors", label: t("patient.navigation.findDoctors"), icon: Search },
     { id: "settings", label: t("patient.navigation.settings"), icon: Settings },
   ];
@@ -376,17 +386,19 @@ const PatientDashboard = () => {
           )}
 
           {activeSection === "records" && (
-            <Card>
-              <CardHeader>
-                <CardTitle>{t("patient.records.title")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-muted-foreground">
-                  <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>{t("patient.records.noRecords")}</p>
-                </div>
-              </CardContent>
-            </Card>
+            <PatientMedicalRecords />
+          )}
+
+          {activeSection === "test-results" && (
+            <PatientTestResultsSection />
+          )}
+
+          {activeSection === "treatment-plans" && (
+            <PatientTreatmentPlans />
+          )}
+
+          {activeSection === "billing" && (
+            <PatientBilling />
           )}
 
           {activeSection === "find-doctors" && (
