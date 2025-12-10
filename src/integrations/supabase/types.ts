@@ -3384,6 +3384,30 @@ export type Database = {
           },
         ]
       }
+      popular_searches: {
+        Row: {
+          created_at: string
+          id: string
+          last_searched_at: string
+          search_count: number | null
+          search_term: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_searched_at?: string
+          search_count?: number | null
+          search_term: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_searched_at?: string
+          search_count?: number | null
+          search_term?: string
+        }
+        Relationships: []
+      }
       practice_invitations: {
         Row: {
           accepted_at: string | null
@@ -4538,6 +4562,33 @@ export type Database = {
           },
         ]
       }
+      saved_searches: {
+        Row: {
+          created_at: string
+          filters: Json | null
+          id: string
+          name: string
+          search_term: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          filters?: Json | null
+          id?: string
+          name: string
+          search_term?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          filters?: Json | null
+          id?: string
+          name?: string
+          search_term?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       schedule_settings: {
         Row: {
           buffer_time: number | null
@@ -4582,6 +4633,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      search_history: {
+        Row: {
+          created_at: string
+          filters: Json | null
+          id: string
+          result_count: number | null
+          search_term: string
+          search_type: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          filters?: Json | null
+          id?: string
+          result_count?: number | null
+          search_term: string
+          search_type?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          filters?: Json | null
+          id?: string
+          result_count?: number | null
+          search_term?: string
+          search_type?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       settings_audit_log: {
         Row: {
@@ -6524,6 +6605,7 @@ export type Database = {
       }
       update_appointment_counts: { Args: never; Returns: undefined }
       update_doctor_weighted_ratings: { Args: never; Returns: undefined }
+      update_popular_search: { Args: { term: string }; Returns: undefined }
       update_practice_weighted_ratings: { Args: never; Returns: undefined }
       update_user_role: {
         Args: {
