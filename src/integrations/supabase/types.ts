@@ -5911,6 +5911,98 @@ export type Database = {
           },
         ]
       }
+      video_consultations: {
+        Row: {
+          actual_end: string | null
+          actual_start: string | null
+          appointment_id: string | null
+          created_at: string
+          doctor_id: string
+          doctor_joined_at: string | null
+          duration_minutes: number | null
+          id: string
+          notes: string | null
+          patient_id: string
+          patient_joined_at: string | null
+          recording_url: string | null
+          room_id: string
+          room_url: string
+          scheduled_end: string
+          scheduled_start: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          actual_end?: string | null
+          actual_start?: string | null
+          appointment_id?: string | null
+          created_at?: string
+          doctor_id: string
+          doctor_joined_at?: string | null
+          duration_minutes?: number | null
+          id?: string
+          notes?: string | null
+          patient_id: string
+          patient_joined_at?: string | null
+          recording_url?: string | null
+          room_id: string
+          room_url: string
+          scheduled_end: string
+          scheduled_start: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          actual_end?: string | null
+          actual_start?: string | null
+          appointment_id?: string | null
+          created_at?: string
+          doctor_id?: string
+          doctor_joined_at?: string | null
+          duration_minutes?: number | null
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          patient_joined_at?: string | null
+          recording_url?: string | null
+          room_id?: string
+          room_url?: string
+          scheduled_end?: string
+          scheduled_start?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_consultations_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_consultations_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "patient_all_appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_consultations_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_consultations_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       webhook_logs: {
         Row: {
           created_at: string | null
@@ -6204,6 +6296,7 @@ export type Database = {
         Returns: Json
       }
       generate_invoice_number: { Args: never; Returns: string }
+      generate_video_room_id: { Args: never; Returns: string }
       get_doctor_monthly_trends: {
         Args: { p_doctor_id: string; p_months?: number }
         Returns: {
