@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
+import { Json } from '@/integrations/supabase/types';
 
 export interface Pharmacy {
   id: string;
@@ -18,7 +19,7 @@ export interface Pharmacy {
   admin_id?: string;
   logo_url?: string;
   website?: string;
-  operating_hours?: Record<string, any>;
+  operating_hours?: Json;
   accepts_insurance?: boolean;
   delivery_available?: boolean;
   verified?: boolean;
@@ -89,7 +90,7 @@ export const usePharmacy = (pharmacyId?: string) => {
         index === self.findIndex(t => t.id === p.id)
       );
 
-      setPharmacies(uniquePharmacies);
+      setPharmacies(uniquePharmacies as Pharmacy[]);
     } catch (error) {
       console.error('Error fetching pharmacies:', error);
     } finally {
@@ -106,7 +107,7 @@ export const usePharmacy = (pharmacyId?: string) => {
         .single();
 
       if (error) throw error;
-      setPharmacy(data);
+      setPharmacy(data as Pharmacy);
       setIsAdmin(data.admin_id === user?.id);
 
       // Check staff permissions
@@ -118,7 +119,7 @@ export const usePharmacy = (pharmacyId?: string) => {
         .single();
 
       if (staffData) {
-        setStaffPermissions(staffData);
+        setStaffPermissions(staffData as PharmacyStaff);
       }
     } catch (error) {
       console.error('Error fetching pharmacy:', error);
@@ -133,7 +134,7 @@ export const usePharmacy = (pharmacyId?: string) => {
         .eq('pharmacy_id', id);
 
       if (error) throw error;
-      setStaff(data || []);
+      setStaff((data || []) as PharmacyStaff[]);
     } catch (error) {
       console.error('Error fetching staff:', error);
     }
@@ -144,8 +145,22 @@ export const usePharmacy = (pharmacyId?: string) => {
       const { data, error } = await supabase
         .from('pharmacies')
         .insert({
-          ...pharmacyData,
+          name: pharmacyData.name!,
+          license_number: pharmacyData.license_number,
+          tax_id: pharmacyData.tax_id,
+          email: pharmacyData.email,
+          phone: pharmacyData.phone,
+          address: pharmacyData.address,
+          city: pharmacyData.city,
+          state: pharmacyData.state,
+          postal_code: pharmacyData.postal_code,
+          country: pharmacyData.country,
           admin_id: user?.id,
+          logo_url: pharmacyData.logo_url,
+          website: pharmacyData.website,
+          operating_hours: pharmacyData.operating_hours,
+          accepts_insurance: pharmacyData.accepts_insurance,
+          delivery_available: pharmacyData.delivery_available,
           verification_status: 'pending'
         })
         .select()
@@ -153,7 +168,7 @@ export const usePharmacy = (pharmacyId?: string) => {
 
       if (error) throw error;
       toast.success('Pharmacy registered successfully');
-      setPharmacies(prev => [...prev, data]);
+      setPharmacies(prev => [...prev, data as Pharmacy]);
       return data;
     } catch (error: any) {
       toast.error(error.message || 'Failed to register pharmacy');
@@ -172,7 +187,7 @@ export const usePharmacy = (pharmacyId?: string) => {
 
       if (error) throw error;
       toast.success('Pharmacy updated successfully');
-      setPharmacy(data);
+      setPharmacy(data as Pharmacy);
       return data;
     } catch (error: any) {
       toast.error(error.message || 'Failed to update pharmacy');
@@ -184,13 +199,22 @@ export const usePharmacy = (pharmacyId?: string) => {
     try {
       const { data, error } = await supabase
         .from('pharmacy_staff')
-        .insert(staffData)
+        .insert({
+          pharmacy_id: staffData.pharmacy_id!,
+          user_id: staffData.user_id!,
+          staff_role: staffData.staff_role || 'technician',
+          license_number: staffData.license_number,
+          can_dispense: staffData.can_dispense ?? false,
+          can_manage_inventory: staffData.can_manage_inventory ?? true,
+          can_process_prescriptions: staffData.can_process_prescriptions ?? false,
+          status: staffData.status || 'active'
+        })
         .select()
         .single();
 
       if (error) throw error;
       toast.success('Staff member added');
-      setStaff(prev => [...prev, data]);
+      setStaff(prev => [...prev, data as PharmacyStaff]);
       return data;
     } catch (error: any) {
       toast.error(error.message || 'Failed to add staff');

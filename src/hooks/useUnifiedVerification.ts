@@ -78,7 +78,24 @@ export const useUnifiedVerification = (entityType?: EntityType, entityId?: strin
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setDocuments(data || []);
+      
+      // Map the data to match our interface
+      const mappedData: VerificationDocument[] = (data || []).map(doc => ({
+        id: doc.id,
+        entity_type: doc.entity_type as EntityType,
+        entity_id: doc.entity_id || '',
+        document_type: doc.document_type,
+        file_name: doc.file_name,
+        file_path: doc.file_path,
+        file_size: doc.file_size || undefined,
+        status: doc.status || 'pending',
+        rejection_reason: doc.rejection_reason || undefined,
+        reviewed_by: doc.reviewed_by || undefined,
+        reviewed_at: doc.reviewed_at || undefined,
+        created_at: doc.created_at
+      }));
+      
+      setDocuments(mappedData);
     } catch (error) {
       console.error('Error fetching documents:', error);
     } finally {
@@ -115,7 +132,9 @@ export const useUnifiedVerification = (entityType?: EntityType, entityId?: strin
           file_name: file.name,
           file_path: result.path,
           file_size: file.size,
-          status: 'pending'
+          status: 'pending',
+          practice_id: entityType === 'practice' ? entityId : null,
+          pharmacy_id: entityType === 'pharmacy' ? entityId : null
         });
 
       if (error) throw error;
