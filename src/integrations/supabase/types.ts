@@ -525,6 +525,246 @@ export type Database = {
           },
         ]
       }
+      clinic_department_staff: {
+        Row: {
+          can_manage_equipment: boolean | null
+          can_upload_results: boolean | null
+          can_view_orders: boolean | null
+          clinic_id: string
+          created_at: string
+          department_id: string
+          hired_at: string | null
+          id: string
+          license_number: string | null
+          role: string
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          can_manage_equipment?: boolean | null
+          can_upload_results?: boolean | null
+          can_view_orders?: boolean | null
+          clinic_id: string
+          created_at?: string
+          department_id: string
+          hired_at?: string | null
+          id?: string
+          license_number?: string | null
+          role: string
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          can_manage_equipment?: boolean | null
+          can_upload_results?: boolean | null
+          can_view_orders?: boolean | null
+          clinic_id?: string
+          created_at?: string
+          department_id?: string
+          hired_at?: string | null
+          id?: string
+          license_number?: string | null
+          role?: string
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_department_staff_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinic_department_staff_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "clinic_departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clinic_departments: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          description: string | null
+          display_name: string
+          equipment_list: string[] | null
+          id: string
+          name: string
+          status: string | null
+          test_templates: Json | null
+          updated_at: string
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          description?: string | null
+          display_name: string
+          equipment_list?: string[] | null
+          id?: string
+          name: string
+          status?: string | null
+          test_templates?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          description?: string | null
+          display_name?: string
+          equipment_list?: string[] | null
+          id?: string
+          name?: string
+          status?: string | null
+          test_templates?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_departments_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clinic_imaging_orders: {
+        Row: {
+          appointment_id: string | null
+          body_part: string | null
+          clinic_id: string
+          clinical_notes: string | null
+          completed_at: string | null
+          created_at: string
+          department_id: string | null
+          diagnosis_codes: string[] | null
+          doctor_id: string
+          exam_name: string
+          findings: string | null
+          id: string
+          impression: string | null
+          modality: string
+          order_number: string
+          patient_id: string
+          performed_at: string | null
+          performed_by: string | null
+          priority: string | null
+          radiologist_id: string | null
+          result_images: string[] | null
+          result_report: string | null
+          result_url: string | null
+          scheduled_at: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          body_part?: string | null
+          clinic_id: string
+          clinical_notes?: string | null
+          completed_at?: string | null
+          created_at?: string
+          department_id?: string | null
+          diagnosis_codes?: string[] | null
+          doctor_id: string
+          exam_name: string
+          findings?: string | null
+          id?: string
+          impression?: string | null
+          modality: string
+          order_number?: string
+          patient_id: string
+          performed_at?: string | null
+          performed_by?: string | null
+          priority?: string | null
+          radiologist_id?: string | null
+          result_images?: string[] | null
+          result_report?: string | null
+          result_url?: string | null
+          scheduled_at?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          body_part?: string | null
+          clinic_id?: string
+          clinical_notes?: string | null
+          completed_at?: string | null
+          created_at?: string
+          department_id?: string | null
+          diagnosis_codes?: string[] | null
+          doctor_id?: string
+          exam_name?: string
+          findings?: string | null
+          id?: string
+          impression?: string | null
+          modality?: string
+          order_number?: string
+          patient_id?: string
+          performed_at?: string | null
+          performed_by?: string | null
+          priority?: string | null
+          radiologist_id?: string | null
+          result_images?: string[] | null
+          result_report?: string | null
+          result_url?: string | null
+          scheduled_at?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_imaging_orders_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinic_imaging_orders_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "patient_all_appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinic_imaging_orders_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinic_imaging_orders_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "clinic_departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinic_imaging_orders_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinic_imaging_orders_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clinic_insurance: {
         Row: {
           clinic_id: string
@@ -573,6 +813,133 @@ export type Database = {
             columns: ["provider_id"]
             isOneToOne: false
             referencedRelation: "insurance_providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clinic_lab_orders: {
+        Row: {
+          appointment_id: string | null
+          clinic_id: string
+          clinical_notes: string | null
+          completed_at: string | null
+          created_at: string
+          department_id: string | null
+          diagnosis_codes: string[] | null
+          doctor_id: string
+          id: string
+          is_abnormal: boolean | null
+          order_number: string
+          patient_id: string
+          priority: string | null
+          processed_by: string | null
+          reference_range: string | null
+          result_data: Json | null
+          result_text: string | null
+          result_url: string | null
+          sample_collected_at: string | null
+          sample_collected_by: string | null
+          status: string | null
+          test_code: string | null
+          test_name: string
+          test_type: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          clinic_id: string
+          clinical_notes?: string | null
+          completed_at?: string | null
+          created_at?: string
+          department_id?: string | null
+          diagnosis_codes?: string[] | null
+          doctor_id: string
+          id?: string
+          is_abnormal?: boolean | null
+          order_number?: string
+          patient_id: string
+          priority?: string | null
+          processed_by?: string | null
+          reference_range?: string | null
+          result_data?: Json | null
+          result_text?: string | null
+          result_url?: string | null
+          sample_collected_at?: string | null
+          sample_collected_by?: string | null
+          status?: string | null
+          test_code?: string | null
+          test_name: string
+          test_type: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          clinic_id?: string
+          clinical_notes?: string | null
+          completed_at?: string | null
+          created_at?: string
+          department_id?: string | null
+          diagnosis_codes?: string[] | null
+          doctor_id?: string
+          id?: string
+          is_abnormal?: boolean | null
+          order_number?: string
+          patient_id?: string
+          priority?: string | null
+          processed_by?: string | null
+          reference_range?: string | null
+          result_data?: Json | null
+          result_text?: string | null
+          result_url?: string | null
+          sample_collected_at?: string | null
+          sample_collected_by?: string | null
+          status?: string | null
+          test_code?: string | null
+          test_name?: string
+          test_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_lab_orders_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinic_lab_orders_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "patient_all_appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinic_lab_orders_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinic_lab_orders_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "clinic_departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinic_lab_orders_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinic_lab_orders_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
             referencedColumns: ["id"]
           },
         ]
@@ -3352,6 +3719,8 @@ export type Database = {
           description_ru: string | null
           description_uz: string | null
           email: string | null
+          has_imaging_service: boolean | null
+          has_lab_service: boolean | null
           how_heard_about_us: string | null
           id: string
           legal_business_name: string | null
@@ -3395,6 +3764,8 @@ export type Database = {
           description_ru?: string | null
           description_uz?: string | null
           email?: string | null
+          has_imaging_service?: boolean | null
+          has_lab_service?: boolean | null
           how_heard_about_us?: string | null
           id?: string
           legal_business_name?: string | null
@@ -3438,6 +3809,8 @@ export type Database = {
           description_ru?: string | null
           description_uz?: string | null
           email?: string | null
+          has_imaging_service?: boolean | null
+          has_lab_service?: boolean | null
           how_heard_about_us?: string | null
           id?: string
           legal_business_name?: string | null
@@ -5775,6 +6148,34 @@ export type Database = {
         }
         Returns: Json
       }
+      create_clinic_imaging_order: {
+        Args: {
+          p_appointment_id?: string
+          p_body_part?: string
+          p_clinic_id: string
+          p_clinical_notes?: string
+          p_diagnosis_codes?: string[]
+          p_exam_name: string
+          p_modality: string
+          p_patient_id: string
+          p_priority?: string
+        }
+        Returns: Json
+      }
+      create_clinic_lab_order: {
+        Args: {
+          p_appointment_id?: string
+          p_clinic_id: string
+          p_clinical_notes?: string
+          p_diagnosis_codes?: string[]
+          p_patient_id: string
+          p_priority?: string
+          p_test_code?: string
+          p_test_name: string
+          p_test_type: string
+        }
+        Returns: Json
+      }
       create_guest_patient_profile: {
         Args: { p_email: string; p_full_name: string; p_phone?: string }
         Returns: Json
@@ -5949,6 +6350,8 @@ export type Database = {
         | "billing_manager"
         | "pharmacist"
         | "lab_technician"
+        | "internal_lab_tech"
+        | "internal_imaging_tech"
       appointment_status:
         | "pending"
         | "confirmed"
@@ -6149,6 +6552,8 @@ export const Constants = {
         "billing_manager",
         "pharmacist",
         "lab_technician",
+        "internal_lab_tech",
+        "internal_imaging_tech",
       ],
       appointment_status: [
         "pending",
