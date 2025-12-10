@@ -1,22 +1,46 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import ModernNavbar from '@/components/home/ModernNavbar';
 import ModernFooter from '@/components/home/ModernFooter';
-import { Search, MapPin, Building2, Users, Star, Phone, Mail, Globe, ChevronRight } from 'lucide-react';
+import { Building2, MapPin, Users, Star, Phone, Mail, Globe, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { FindPracticesIllustration } from '@/components/Visuals/illustrations';
+import { SearchAutocomplete } from '@/components/search/SearchAutocomplete';
+import { LocationSearch } from '@/components/search/LocationSearch';
+import { EnhancedFilters } from '@/components/search/EnhancedFilters';
+import { useSearchDiscovery, type SearchFilters } from '@/hooks/useSearchDiscovery';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import { Filter, X } from 'lucide-react';
 
 export default function FindPractices() {
   const navigate = useNavigate();
   const { t } = useTranslation(['common', 'practices']);
   const [searchQuery, setSearchQuery] = useState('');
   const [location, setLocation] = useState('');
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | undefined>();
   const [practiceType, setPracticeType] = useState('all');
+  const [filters, setFilters] = useState<SearchFilters>({});
+  const [sortBy, setSortBy] = useState('relevance');
+  const { recordSearch } = useSearchDiscovery();
 
-  const { data: practices, isLoading } = useQuery({
+  const { data: practices, isLoading, refetch } = useQuery({
     queryKey: ['practices', searchQuery, location, practiceType],
     queryFn: async () => {
       let query = supabase
@@ -29,14 +53,14 @@ export default function FindPractices() {
       }
 
       if (location) {
-        query = query.or(`city.ilike.%${location}%,state.ilike.%${location}%`);
+        query = query.or(`city.ilike.%${location}%,country.ilike.%${location}%`);
       }
 
       if (practiceType !== 'all') {
         query = query.eq('practice_type', practiceType);
       }
 
-      const { data, error } = await query.order('name', { ascending: true });
+      const { data, error } = await query.order('average_rating', { ascending: false });
       
       if (error) throw error;
       return data || [];
@@ -52,6 +76,38 @@ export default function FindPractices() {
     { value: 'Urgent Care', label: t('practices:types.urgentCare') },
     { value: 'Medical Center', label: t('practices:types.medicalCenter') }
   ];
+
+  const handleSearch = useCallback((value: string) => {
+    setSearchQuery(value);
+    recordSearch(value, 'practice', { location });
+  }, [location, recordSearch]);
+
+  const handleLocationChange = useCallback((value: string, newCoords?: { lat: number; lng: number }) => {
+    setLocation(value);
+    setCoords(newCoords);
+  }, []);
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setLocation('');
+    setPracticeType('all');
+    setFilters({});
+  };
+
+  // Apply filters to results
+  const filteredPractices = practices?.filter(practice => {
+    if (filters.minRating && (practice.average_rating || 0) < filters.minRating) return false;
+    return true;
+  }).sort((a, b) => {
+    switch (sortBy) {
+      case 'rating':
+        return (b.average_rating || 0) - (a.average_rating || 0);
+      case 'name':
+        return a.name.localeCompare(b.name);
+      default:
+        return 0;
+    }
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -83,83 +139,147 @@ export default function FindPractices() {
             </motion.div>
           </div>
 
-          <div className="max-w-4xl mx-auto bg-card rounded-2xl shadow-2xl p-4">
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder={t('practices:page.searchPlaceholder')}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 rounded-lg border-2 border-input bg-background text-foreground"
-                />
-              </div>
+          {/* Enhanced Search Form */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="max-w-4xl mx-auto bg-card rounded-2xl shadow-2xl p-4"
+          >
+            <div className="grid md:grid-cols-[1fr_1fr_auto] gap-4 mb-4">
+              <SearchAutocomplete
+                value={searchQuery}
+                onChange={setSearchQuery}
+                onSearch={handleSearch}
+                placeholder={t('practices:page.searchPlaceholder')}
+              />
 
-              <div className="relative">
-                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder={t('practices:page.locationPlaceholder')}
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 rounded-lg border-2 border-input bg-background text-foreground"
-                />
-              </div>
+              <LocationSearch
+                value={location}
+                onChange={handleLocationChange}
+                placeholder={t('practices:page.locationPlaceholder')}
+              />
 
-              <select
-                value={practiceType}
-                onChange={(e) => setPracticeType(e.target.value)}
-                className="px-4 py-3 rounded-lg border-2 border-input bg-background text-foreground"
-              >
-                {practiceTypes.map(type => (
-                  <option key={type.value} value={type.value}>{type.label}</option>
-                ))}
-              </select>
+              <Select value={practiceType} onValueChange={setPracticeType}>
+                <SelectTrigger className="h-12 min-w-[180px]">
+                  <SelectValue placeholder={t('practices:types.all')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {practiceTypes.map(type => (
+                    <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          </div>
+
+            <div className="flex items-center justify-between">
+              {/* Mobile Filters */}
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="sm" className="md:hidden gap-2">
+                    <Filter className="w-4 h-4" />
+                    Filters
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[300px] p-0">
+                  <SheetHeader className="p-4 border-b">
+                    <SheetTitle>Filters</SheetTitle>
+                  </SheetHeader>
+                  <div className="overflow-y-auto h-[calc(100vh-80px)]">
+                    <EnhancedFilters
+                      filters={filters}
+                      onFiltersChange={setFilters}
+                      className="border-0 rounded-none"
+                    />
+                  </div>
+                </SheetContent>
+              </Sheet>
+
+              <div className="flex gap-2">
+                {(searchQuery || location || practiceType !== 'all') && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="gap-1"
+                  >
+                    <X className="w-4 h-4" />
+                    Clear all
+                  </Button>
+                )}
+                <Button onClick={() => refetch()} disabled={isLoading}>
+                  {isLoading ? 'Searching...' : 'Search'}
+                </Button>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-12">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-foreground">
-            {isLoading ? t('practices:page.searching') : t('practices:page.practicesFound', { count: practices?.length || 0 })}
-          </h2>
-        </div>
+        <div className="grid lg:grid-cols-[280px_1fr] gap-8">
+          {/* Desktop Filters Sidebar */}
+          <div className="hidden lg:block">
+            <div className="sticky top-24">
+              <EnhancedFilters
+                filters={filters}
+                onFiltersChange={setFilters}
+              />
+            </div>
+          </div>
 
-        {isLoading ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} className="bg-card rounded-xl p-6 animate-pulse">
-                <div className="h-6 bg-muted rounded mb-4" />
-                <div className="h-4 bg-muted rounded mb-2" />
-                <div className="h-4 bg-muted rounded" />
+          {/* Results */}
+          <div>
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-foreground">
+                {isLoading ? t('practices:page.searching') : t('practices:page.practicesFound', { count: filteredPractices?.length || 0 })}
+              </h2>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="relevance">Relevance</SelectItem>
+                  <SelectItem value="rating">Highest Rated</SelectItem>
+                  <SelectItem value="name">Name A-Z</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {isLoading ? (
+              <div className="grid md:grid-cols-2 gap-6">
+                {[1, 2, 3, 4, 5, 6].map(i => (
+                  <div key={i} className="bg-card rounded-xl p-6 animate-pulse">
+                    <div className="h-6 bg-muted rounded mb-4" />
+                    <div className="h-4 bg-muted rounded mb-2" />
+                    <div className="h-4 bg-muted rounded" />
+                  </div>
+                ))}
               </div>
-            ))}
+            ) : filteredPractices && filteredPractices.length > 0 ? (
+              <div className="grid md:grid-cols-2 gap-6">
+                {filteredPractices.map((practice, index) => (
+                  <motion.div
+                    key={practice.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <PracticeCard practice={practice} navigate={navigate} t={t} />
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <Building2 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                <p className="text-xl text-muted-foreground mb-4">{t('practices:page.notFound.description')}</p>
+                <Button onClick={clearFilters}>
+                  {t('practices:page.notFound.clearFilters')}
+                </Button>
+              </div>
+            )}
           </div>
-        ) : practices && practices.length > 0 ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {practices.map(practice => (
-              <PracticeCard key={practice.id} practice={practice} navigate={navigate} t={t} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <Building2 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <p className="text-xl text-muted-foreground mb-4">{t('practices:page.notFound.description')}</p>
-            <button
-              onClick={() => {
-                setSearchQuery('');
-                setLocation('');
-                setPracticeType('all');
-              }}
-              className="px-6 py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              {t('practices:page.notFound.clearFilters')}
-            </button>
-          </div>
-        )}
+        </div>
       </div>
 
       <ModernFooter />
@@ -185,7 +305,7 @@ function PracticeCard({ practice, navigate, t }: any) {
       <div className="space-y-2 mb-4">
         <div className="flex items-start gap-2 text-sm text-muted-foreground">
           <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-          <span>{practice.city && practice.state ? `${practice.city}, ${practice.state}` : t('practices:card.locationAvailable')}</span>
+          <span>{practice.city && practice.country ? `${practice.city}, ${practice.country}` : t('practices:card.locationAvailable')}</span>
         </div>
         {practice.phone && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -212,18 +332,18 @@ function PracticeCard({ practice, navigate, t }: any) {
       {practice.average_rating && (
         <div className="flex items-center gap-1 mb-4">
           <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-          <span className="text-sm font-semibold text-foreground">{practice.average_rating}</span>
+          <span className="text-sm font-semibold text-foreground">{practice.average_rating.toFixed(1)}</span>
           <span className="text-xs text-muted-foreground">({practice.num_reviews || 0} {t('practices:card.reviews')})</span>
         </div>
       )}
 
-      <button
+      <Button
         onClick={() => navigate(`/practices/${practice.id}`)}
-        className="w-full px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-semibold flex items-center justify-center gap-2"
+        className="w-full"
       >
         {t('practices:card.viewPractice')}
-        <ChevronRight className="w-4 h-4" />
-      </button>
+        <ChevronRight className="w-4 h-4 ml-2" />
+      </Button>
     </div>
   );
 }
