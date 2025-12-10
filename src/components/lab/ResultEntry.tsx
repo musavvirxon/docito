@@ -98,7 +98,7 @@ export function ResultEntry({ orders, labCenterId }: ResultEntryProps) {
     const file = e.target.files?.[0];
     if (!file || !selectedItem) return;
 
-    const result = await uploadFile(file, 'patient-files');
+    const result = await uploadFile(file, 'lab-results');
     if (result) {
       // First create a result if doesn't exist, then attach file
       // For simplicity, we'll create a basic result with the file
