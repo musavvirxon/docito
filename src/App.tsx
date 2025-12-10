@@ -63,6 +63,7 @@ const Support = lazy(() => import("./pages/Support"));
 const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const StaffDashboard = lazy(() => import("./pages/StaffDashboard"));
+const VideoCall = lazy(() => import("./pages/VideoCall"));
 
 const queryClient = new QueryClient();
 
@@ -125,6 +126,7 @@ const LanguageRoutes = () => {
       <Route path="/accept-invite/:token" element={<AcceptInvite />} />
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/staff-dashboard" element={<StaffDashboard />} />
+      <Route path="/video/:roomId" element={<VideoCall />} />
       
       {/* Language-prefixed routes */}
       <Route path="/:lang/" element={<Index />} />
