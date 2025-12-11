@@ -54,126 +54,174 @@ function useScrollOpacity() {
   return opacity;
 }
 
-// Holographic Orb Core
-function HolographicOrb({ opacity }: { opacity: number }) {
+// Earth-like Globe
+function EarthGlobe({ opacity }: { opacity: number }) {
   const meshRef = useRef<THREE.Mesh>(null);
-  const gridRef = useRef<THREE.Mesh>(null);
-  const innerGlowRef = useRef<THREE.Mesh>(null);
+  const cloudsRef = useRef<THREE.Mesh>(null);
+  const atmosphereRef = useRef<THREE.Mesh>(null);
   
-  // Create holographic grid texture
-  const gridTexture = useMemo(() => {
+  // Create Earth texture with continents
+  const earthTexture = useMemo(() => {
     const canvas = document.createElement('canvas');
-    canvas.width = 512;
+    canvas.width = 1024;
     canvas.height = 512;
     const ctx = canvas.getContext('2d')!;
     
-    // Background
-    ctx.fillStyle = 'rgba(0, 0, 0, 0)';
-    ctx.fillRect(0, 0, 512, 512);
+    // Ocean base - deep blue gradient
+    const oceanGradient = ctx.createLinearGradient(0, 0, 0, 512);
+    oceanGradient.addColorStop(0, '#0c4a6e');
+    oceanGradient.addColorStop(0.5, '#0369a1');
+    oceanGradient.addColorStop(1, '#0c4a6e');
+    ctx.fillStyle = oceanGradient;
+    ctx.fillRect(0, 0, 1024, 512);
     
-    // Grid lines
-    ctx.strokeStyle = 'rgba(59, 130, 246, 0.3)';
-    ctx.lineWidth = 1;
+    // Simplified continent shapes
+    ctx.fillStyle = '#15803d';
     
-    // Latitude lines
-    for (let i = 0; i <= 16; i++) {
+    // North America
+    ctx.beginPath();
+    ctx.ellipse(200, 140, 80, 60, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(180, 200, 50, 40, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // South America
+    ctx.beginPath();
+    ctx.ellipse(280, 320, 40, 80, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Europe
+    ctx.beginPath();
+    ctx.ellipse(520, 130, 50, 35, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Africa
+    ctx.beginPath();
+    ctx.ellipse(530, 260, 55, 80, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ca8a04';
+    ctx.beginPath();
+    ctx.ellipse(530, 220, 45, 40, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Asia
+    ctx.fillStyle = '#15803d';
+    ctx.beginPath();
+    ctx.ellipse(700, 150, 120, 70, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(750, 220, 60, 50, 0.5, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Australia
+    ctx.beginPath();
+    ctx.ellipse(820, 340, 45, 35, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Antarctica
+    ctx.fillStyle = '#e2e8f0';
+    ctx.beginPath();
+    ctx.ellipse(512, 480, 200, 30, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Add some terrain variation
+    ctx.fillStyle = '#166534';
+    for (let i = 0; i < 50; i++) {
+      const x = Math.random() * 1024;
+      const y = Math.random() * 512;
       ctx.beginPath();
-      ctx.moveTo(0, i * 32);
-      ctx.lineTo(512, i * 32);
-      ctx.stroke();
-    }
-    
-    // Longitude lines
-    for (let i = 0; i <= 16; i++) {
-      ctx.beginPath();
-      ctx.moveTo(i * 32, 0);
-      ctx.lineTo(i * 32, 512);
-      ctx.stroke();
-    }
-    
-    // Add glow points at intersections
-    ctx.fillStyle = 'rgba(96, 165, 250, 0.5)';
-    for (let x = 0; x <= 16; x++) {
-      for (let y = 0; y <= 16; y++) {
-        if (Math.random() > 0.7) {
-          ctx.beginPath();
-          ctx.arc(x * 32, y * 32, 2, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
+      ctx.arc(x, y, Math.random() * 15 + 5, 0, Math.PI * 2);
+      ctx.fill();
     }
     
     const texture = new THREE.CanvasTexture(canvas);
     texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+    return texture;
+  }, []);
+
+  // Create cloud texture
+  const cloudTexture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d')!;
+    
+    ctx.fillStyle = 'rgba(0, 0, 0, 0)';
+    ctx.fillRect(0, 0, 512, 256);
+    
+    // Cloud patterns
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    for (let i = 0; i < 40; i++) {
+      const x = Math.random() * 512;
+      const y = Math.random() * 256;
+      const rx = Math.random() * 40 + 20;
+      const ry = Math.random() * 15 + 10;
+      ctx.beginPath();
+      ctx.ellipse(x, y, rx, ry, Math.random() * Math.PI, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
     return texture;
   }, []);
 
   useFrame((state) => {
     const time = state.clock.elapsedTime;
     if (meshRef.current) {
-      meshRef.current.rotation.y = time * 0.1;
+      meshRef.current.rotation.y = time * 0.08;
     }
-    if (gridRef.current) {
-      gridRef.current.rotation.y = time * 0.08;
-      gridRef.current.rotation.x = Math.sin(time * 0.2) * 0.05;
+    if (cloudsRef.current) {
+      cloudsRef.current.rotation.y = time * 0.1;
     }
-    if (innerGlowRef.current) {
-      const scale = 0.85 + Math.sin(time * 2) * 0.02;
-      innerGlowRef.current.scale.setScalar(scale);
+    if (atmosphereRef.current) {
+      const pulse = 1 + Math.sin(time * 2) * 0.02;
+      atmosphereRef.current.scale.setScalar(pulse);
     }
   });
 
   return (
     <group>
-      {/* Inner glow core */}
-      <Sphere ref={innerGlowRef} args={[0.85, 32, 32]}>
-        <meshBasicMaterial
-          color="#3b82f6"
-          transparent
-          opacity={0.15 * opacity}
-        />
-      </Sphere>
-      
-      {/* Main holographic sphere */}
+      {/* Earth core */}
       <Sphere ref={meshRef} args={[1, 64, 64]}>
-        <meshPhysicalMaterial
-          color="#1e3a5f"
-          metalness={0.2}
-          roughness={0.1}
+        <meshStandardMaterial
+          map={earthTexture}
+          metalness={0.1}
+          roughness={0.8}
           transparent
-          opacity={0.4 * opacity}
-          transmission={0.6}
-          thickness={0.5}
-          envMapIntensity={1}
+          opacity={opacity}
         />
       </Sphere>
       
-      {/* Grid overlay */}
-      <Sphere ref={gridRef} args={[1.02, 48, 48]}>
+      {/* Cloud layer */}
+      <Sphere ref={cloudsRef} args={[1.02, 48, 48]}>
         <meshBasicMaterial
-          map={gridTexture}
+          map={cloudTexture}
           transparent
-          opacity={0.6 * opacity}
-          side={THREE.DoubleSide}
+          opacity={0.5 * opacity}
           depthWrite={false}
         />
       </Sphere>
       
-      {/* Outer glow layers */}
-      <Sphere args={[1.08, 32, 32]}>
+      {/* Atmosphere glow */}
+      <Sphere ref={atmosphereRef} args={[1.1, 32, 32]}>
         <meshBasicMaterial
           color="#60a5fa"
           transparent
-          opacity={0.1 * opacity}
+          opacity={0.15 * opacity}
           side={THREE.BackSide}
         />
       </Sphere>
+      
+      {/* Outer atmosphere */}
       <Sphere args={[1.2, 32, 32]}>
         <meshBasicMaterial
           color="#3b82f6"
           transparent
-          opacity={0.05 * opacity}
+          opacity={0.08 * opacity}
           side={THREE.BackSide}
         />
       </Sphere>
@@ -205,7 +253,8 @@ function FloatingNode({
   onHover,
   onUnhover,
   onClick,
-  isHovered
+  isHovered,
+  globeRef
 }: { 
   node: NodeData;
   opacity: number;
@@ -213,11 +262,13 @@ function FloatingNode({
   onUnhover: () => void;
   onClick: () => void;
   isHovered: boolean;
+  globeRef: React.RefObject<THREE.Mesh>;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const glowRef = useRef<THREE.Mesh>(null);
   const [localHover, setLocalHover] = useState(false);
   const [currentPosition, setCurrentPosition] = useState(new THREE.Vector3(node.orbitRadius, node.verticalOffset, 0));
+  const [isVisible, setIsVisible] = useState(true);
   
   useFrame((state) => {
     const time = state.clock.elapsedTime;
@@ -234,6 +285,19 @@ function FloatingNode({
       
       setCurrentPosition(new THREE.Vector3(x, y, z));
       
+      // Check if node is behind the globe (z < 0 means behind from default camera view)
+      // We check relative to camera position
+      const cameraPos = state.camera.position;
+      const nodeWorldPos = new THREE.Vector3(x, y, z);
+      const toCamera = cameraPos.clone().sub(nodeWorldPos).normalize();
+      const toCenter = new THREE.Vector3(0, 0, 0).sub(nodeWorldPos).normalize();
+      const dot = toCamera.dot(toCenter);
+      
+      // If dot product is positive and node is close to center line, it's behind
+      const distToCenter = Math.sqrt(x * x + z * z);
+      const isBehind = z < -0.3 && distToCenter < 2;
+      setIsVisible(!isBehind);
+      
       // Scale on hover
       const targetScale = isHovered || localHover ? 1.2 : 1;
       groupRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
@@ -246,10 +310,11 @@ function FloatingNode({
   });
 
   const handlePointerEnter = useCallback(() => {
+    if (!isVisible) return;
     setLocalHover(true);
     onHover();
     document.body.style.cursor = 'pointer';
-  }, [onHover]);
+  }, [onHover, isVisible]);
 
   const handlePointerLeave = useCallback(() => {
     setLocalHover(false);
@@ -261,8 +326,10 @@ function FloatingNode({
 
   return (
     <>
-      {/* Connection line */}
-      <ConnectionLine nodePosition={currentPosition} color={node.color} opacity={opacity * 0.2} />
+      {/* Connection line - only show when visible */}
+      {isVisible && (
+        <ConnectionLine nodePosition={currentPosition} color={node.color} opacity={opacity * 0.2} />
+      )}
       
       <Float speed={1.5} rotationIntensity={0.1} floatIntensity={0.3}>
         <group 
@@ -270,52 +337,54 @@ function FloatingNode({
           position={[node.orbitRadius, node.verticalOffset, 0]}
           onPointerEnter={handlePointerEnter}
           onPointerLeave={handlePointerLeave}
-          onClick={onClick}
+          onClick={() => isVisible && onClick()}
         >
-          {/* Glow effect */}
+          {/* Glow effect - fade when behind */}
           <Sphere ref={glowRef} args={[0.35, 16, 16]}>
             <meshBasicMaterial
               color={node.color}
               transparent
-              opacity={(isHovered || localHover ? 0.5 : 0.25) * opacity}
+              opacity={(isHovered || localHover ? 0.5 : 0.25) * opacity * (isVisible ? 1 : 0.1)}
             />
           </Sphere>
           
-          {/* Node sphere */}
+          {/* Node sphere - fade when behind */}
           <Sphere args={[0.24, 24, 24]}>
             <meshPhysicalMaterial
               color={node.color}
               metalness={0.3}
               roughness={0.2}
               transparent
-              opacity={0.9 * opacity}
+              opacity={0.9 * opacity * (isVisible ? 1 : 0.1)}
               emissive={node.color}
               emissiveIntensity={isHovered || localHover ? 0.5 : 0.2}
             />
           </Sphere>
           
-          {/* Icon */}
-          <Html
-            transform
-            distanceFactor={4.5}
-            style={{
-              pointerEvents: 'none',
-            }}
-          >
-            <div 
-              className="flex items-center justify-center w-11 h-11 rounded-full"
-              style={{ 
-                backgroundColor: `${node.color}30`,
-                border: `2px solid ${node.color}60`,
-                boxShadow: `0 0 20px ${node.color}80`
+          {/* Icon - only show when in front */}
+          {isVisible && (
+            <Html
+              transform
+              distanceFactor={4.5}
+              style={{
+                pointerEvents: 'none',
               }}
             >
-              <IconComponent size={20} style={{ color: node.color }} />
-            </div>
-          </Html>
+              <div 
+                className="flex items-center justify-center w-11 h-11 rounded-full"
+                style={{ 
+                  backgroundColor: `${node.color}30`,
+                  border: `2px solid ${node.color}60`,
+                  boxShadow: `0 0 20px ${node.color}80`
+                }}
+              >
+                <IconComponent size={20} style={{ color: node.color }} />
+              </div>
+            </Html>
+          )}
           
-          {/* Tooltip on hover */}
-          {(isHovered || localHover) && (
+          {/* Tooltip on hover - only when visible */}
+          {isVisible && (isHovered || localHover) && (
             <Html
               position={[0, 0.5, 0]}
               center
@@ -457,8 +526,8 @@ function Scene({
       <pointLight position={[-5, -5, -5]} intensity={0.3} color="#3b82f6" />
       <pointLight position={[0, 3, 0]} intensity={0.2} color="#8b5cf6" />
       
-      {/* Main orb */}
-      <HolographicOrb opacity={opacity} />
+      {/* Earth Globe */}
+      <EarthGlobe opacity={opacity} />
       
       {/* Orbit rings */}
       <OrbitRings opacity={opacity} />
@@ -476,6 +545,7 @@ function Scene({
           onUnhover={() => setHoveredNode(null)}
           onClick={() => setSelectedNode(node)}
           isHovered={hoveredNode === node.id}
+          globeRef={null as any}
         />
       ))}
       
