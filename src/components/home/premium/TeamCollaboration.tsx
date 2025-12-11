@@ -96,7 +96,7 @@ export default function TeamCollaboration() {
               />
             ))}
 
-            {/* Central Patient File */}
+            {/* Central Docito Hub */}
             <motion.div
               animate={{ 
                 boxShadow: [
@@ -108,7 +108,7 @@ export default function TeamCollaboration() {
               transition={{ duration: 3, repeat: Infinity }}
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center z-20"
             >
-              <FileText className="w-9 h-9 text-primary-foreground" />
+              <span className="text-primary-foreground font-bold text-lg tracking-tight">Docito</span>
             </motion.div>
 
             {/* Connection Lines SVG */}
@@ -199,8 +199,10 @@ export default function TeamCollaboration() {
                   </motion.div>
                   <motion.div 
                     initial={{ opacity: 0, y: 5 }}
-                    whileHover={{ opacity: 1, y: 0 }}
-                    className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 rounded-lg bg-card border border-border/50 shadow-xl whitespace-nowrap text-xs font-medium pointer-events-none z-30"
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: 0.5 + index * 0.1 }}
+                    className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 rounded-md bg-card/90 border border-border/50 shadow-lg whitespace-nowrap text-[10px] sm:text-xs font-medium pointer-events-none z-30"
                   >
                     {member.role}
                   </motion.div>
