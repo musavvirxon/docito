@@ -67,73 +67,141 @@ function EarthGlobe({ opacity }: { opacity: number }) {
     canvas.height = 512;
     const ctx = canvas.getContext('2d')!;
     
-    // Ocean base - deep blue gradient
-    const oceanGradient = ctx.createLinearGradient(0, 0, 0, 512);
-    oceanGradient.addColorStop(0, '#0c4a6e');
-    oceanGradient.addColorStop(0.5, '#0369a1');
-    oceanGradient.addColorStop(1, '#0c4a6e');
+    // Ocean base - vibrant blue
+    const oceanGradient = ctx.createRadialGradient(512, 256, 0, 512, 256, 512);
+    oceanGradient.addColorStop(0, '#1e88e5');
+    oceanGradient.addColorStop(0.5, '#1565c0');
+    oceanGradient.addColorStop(1, '#0d47a1');
     ctx.fillStyle = oceanGradient;
     ctx.fillRect(0, 0, 1024, 512);
     
-    // Simplified continent shapes
-    ctx.fillStyle = '#15803d';
+    // Add ocean depth variations
+    ctx.fillStyle = 'rgba(13, 71, 161, 0.3)';
+    for (let i = 0; i < 30; i++) {
+      ctx.beginPath();
+      ctx.ellipse(Math.random() * 1024, Math.random() * 512, Math.random() * 80 + 40, Math.random() * 40 + 20, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
+    // Continent colors
+    const landGreen = '#2e7d32';
+    const landLight = '#4caf50';
+    const desertColor = '#c9a227';
+    const mountainColor = '#5d4037';
     
     // North America
+    ctx.fillStyle = landGreen;
     ctx.beginPath();
-    ctx.ellipse(200, 140, 80, 60, 0, 0, Math.PI * 2);
+    ctx.moveTo(120, 80);
+    ctx.bezierCurveTo(180, 60, 260, 80, 280, 140);
+    ctx.bezierCurveTo(290, 180, 260, 220, 200, 240);
+    ctx.bezierCurveTo(140, 260, 100, 220, 90, 180);
+    ctx.bezierCurveTo(80, 140, 100, 100, 120, 80);
     ctx.fill();
+    
+    ctx.fillStyle = landLight;
     ctx.beginPath();
-    ctx.ellipse(180, 200, 50, 40, 0.3, 0, Math.PI * 2);
+    ctx.ellipse(200, 150, 50, 35, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Central America
+    ctx.fillStyle = landGreen;
+    ctx.beginPath();
+    ctx.ellipse(230, 260, 25, 40, 0.5, 0, Math.PI * 2);
     ctx.fill();
     
     // South America
     ctx.beginPath();
-    ctx.ellipse(280, 320, 40, 80, 0.2, 0, Math.PI * 2);
+    ctx.moveTo(260, 290);
+    ctx.bezierCurveTo(300, 300, 320, 360, 300, 420);
+    ctx.bezierCurveTo(280, 460, 240, 450, 230, 400);
+    ctx.bezierCurveTo(220, 350, 240, 310, 260, 290);
+    ctx.fill();
+    
+    ctx.fillStyle = landLight;
+    ctx.beginPath();
+    ctx.ellipse(270, 330, 25, 30, 0, 0, Math.PI * 2);
     ctx.fill();
     
     // Europe
+    ctx.fillStyle = landGreen;
     ctx.beginPath();
-    ctx.ellipse(520, 130, 50, 35, 0, 0, Math.PI * 2);
+    ctx.ellipse(520, 120, 60, 40, 0.1, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(560, 140, 40, 25, 0.3, 0, Math.PI * 2);
     ctx.fill();
     
     // Africa
     ctx.beginPath();
-    ctx.ellipse(530, 260, 55, 80, 0, 0, Math.PI * 2);
+    ctx.moveTo(480, 180);
+    ctx.bezierCurveTo(540, 170, 580, 200, 580, 280);
+    ctx.bezierCurveTo(580, 360, 540, 400, 500, 400);
+    ctx.bezierCurveTo(460, 400, 440, 340, 450, 280);
+    ctx.bezierCurveTo(455, 220, 470, 190, 480, 180);
     ctx.fill();
-    ctx.fillStyle = '#ca8a04';
+    
+    // Sahara desert
+    ctx.fillStyle = desertColor;
     ctx.beginPath();
-    ctx.ellipse(530, 220, 45, 40, 0, 0, Math.PI * 2);
+    ctx.ellipse(520, 220, 50, 30, 0, 0, Math.PI * 2);
     ctx.fill();
     
     // Asia
-    ctx.fillStyle = '#15803d';
+    ctx.fillStyle = landGreen;
     ctx.beginPath();
-    ctx.ellipse(700, 150, 120, 70, 0, 0, Math.PI * 2);
+    ctx.moveTo(600, 80);
+    ctx.bezierCurveTo(700, 60, 820, 80, 860, 140);
+    ctx.bezierCurveTo(880, 180, 860, 240, 780, 260);
+    ctx.bezierCurveTo(700, 280, 640, 260, 620, 220);
+    ctx.bezierCurveTo(590, 160, 580, 100, 600, 80);
     ctx.fill();
+    
+    // India
     ctx.beginPath();
-    ctx.ellipse(750, 220, 60, 50, 0.5, 0, Math.PI * 2);
+    ctx.ellipse(700, 280, 35, 50, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Southeast Asia
+    ctx.beginPath();
+    ctx.ellipse(780, 290, 40, 35, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Middle East desert
+    ctx.fillStyle = desertColor;
+    ctx.beginPath();
+    ctx.ellipse(620, 200, 35, 25, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Siberia mountains
+    ctx.fillStyle = mountainColor;
+    ctx.beginPath();
+    ctx.ellipse(740, 100, 60, 20, 0, 0, Math.PI * 2);
     ctx.fill();
     
     // Australia
+    ctx.fillStyle = desertColor;
     ctx.beginPath();
-    ctx.ellipse(820, 340, 45, 35, 0.3, 0, Math.PI * 2);
+    ctx.ellipse(820, 360, 55, 40, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = landGreen;
+    ctx.beginPath();
+    ctx.ellipse(800, 380, 20, 15, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(850, 350, 15, 12, 0, 0, Math.PI * 2);
     ctx.fill();
     
     // Antarctica
-    ctx.fillStyle = '#e2e8f0';
+    ctx.fillStyle = '#eceff1';
     ctx.beginPath();
-    ctx.ellipse(512, 480, 200, 30, 0, 0, Math.PI * 2);
+    ctx.ellipse(512, 490, 300, 25, 0, 0, Math.PI * 2);
     ctx.fill();
     
-    // Add some terrain variation
-    ctx.fillStyle = '#166534';
-    for (let i = 0; i < 50; i++) {
-      const x = Math.random() * 1024;
-      const y = Math.random() * 512;
-      ctx.beginPath();
-      ctx.arc(x, y, Math.random() * 15 + 5, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    // Arctic ice
+    ctx.beginPath();
+    ctx.ellipse(512, 20, 200, 20, 0, 0, Math.PI * 2);
+    ctx.fill();
     
     const texture = new THREE.CanvasTexture(canvas);
     texture.wrapS = THREE.RepeatWrapping;
@@ -151,15 +219,17 @@ function EarthGlobe({ opacity }: { opacity: number }) {
     ctx.fillStyle = 'rgba(0, 0, 0, 0)';
     ctx.fillRect(0, 0, 512, 256);
     
-    // Cloud patterns
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-    for (let i = 0; i < 40; i++) {
+    // Cloud patterns - more realistic wispy clouds
+    for (let i = 0; i < 60; i++) {
       const x = Math.random() * 512;
       const y = Math.random() * 256;
-      const rx = Math.random() * 40 + 20;
-      const ry = Math.random() * 15 + 10;
+      const gradient = ctx.createRadialGradient(x, y, 0, x, y, Math.random() * 30 + 15);
+      gradient.addColorStop(0, 'rgba(255, 255, 255, 0.6)');
+      gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.3)');
+      gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      ctx.fillStyle = gradient;
       ctx.beginPath();
-      ctx.ellipse(x, y, rx, ry, Math.random() * Math.PI, 0, Math.PI * 2);
+      ctx.ellipse(x, y, Math.random() * 40 + 20, Math.random() * 20 + 10, Math.random() * Math.PI, 0, Math.PI * 2);
       ctx.fill();
     }
     
@@ -178,7 +248,7 @@ function EarthGlobe({ opacity }: { opacity: number }) {
       cloudsRef.current.rotation.y = time * 0.1;
     }
     if (atmosphereRef.current) {
-      const pulse = 1 + Math.sin(time * 2) * 0.02;
+      const pulse = 1 + Math.sin(time * 2) * 0.015;
       atmosphereRef.current.scale.setScalar(pulse);
     }
   });
@@ -187,41 +257,51 @@ function EarthGlobe({ opacity }: { opacity: number }) {
     <group>
       {/* Earth core */}
       <Sphere ref={meshRef} args={[1, 64, 64]}>
-        <meshStandardMaterial
+        <meshPhongMaterial
           map={earthTexture}
-          metalness={0.1}
-          roughness={0.8}
+          shininess={15}
+          specular={new THREE.Color('#4fc3f7')}
           transparent
           opacity={opacity}
         />
       </Sphere>
       
       {/* Cloud layer */}
-      <Sphere ref={cloudsRef} args={[1.02, 48, 48]}>
+      <Sphere ref={cloudsRef} args={[1.015, 48, 48]}>
         <meshBasicMaterial
           map={cloudTexture}
           transparent
-          opacity={0.5 * opacity}
+          opacity={0.4 * opacity}
           depthWrite={false}
         />
       </Sphere>
       
-      {/* Atmosphere glow */}
-      <Sphere ref={atmosphereRef} args={[1.1, 32, 32]}>
+      {/* Inner atmosphere glow - cyan tint */}
+      <Sphere ref={atmosphereRef} args={[1.05, 32, 32]}>
         <meshBasicMaterial
-          color="#60a5fa"
+          color="#4fc3f7"
           transparent
-          opacity={0.15 * opacity}
+          opacity={0.12 * opacity}
           side={THREE.BackSide}
         />
       </Sphere>
       
-      {/* Outer atmosphere */}
-      <Sphere args={[1.2, 32, 32]}>
+      {/* Outer atmosphere - blue glow */}
+      <Sphere args={[1.12, 32, 32]}>
         <meshBasicMaterial
-          color="#3b82f6"
+          color="#29b6f6"
           transparent
           opacity={0.08 * opacity}
+          side={THREE.BackSide}
+        />
+      </Sphere>
+      
+      {/* Far atmosphere haze */}
+      <Sphere args={[1.25, 32, 32]}>
+        <meshBasicMaterial
+          color="#03a9f4"
+          transparent
+          opacity={0.04 * opacity}
           side={THREE.BackSide}
         />
       </Sphere>
@@ -520,11 +600,21 @@ function Scene({
 
   return (
     <>
-      {/* Lighting */}
-      <ambientLight intensity={0.4} />
-      <directionalLight position={[5, 5, 5]} intensity={0.6} />
-      <pointLight position={[-5, -5, -5]} intensity={0.3} color="#3b82f6" />
-      <pointLight position={[0, 3, 0]} intensity={0.2} color="#8b5cf6" />
+      {/* Lighting - Sun-like directional light */}
+      <ambientLight intensity={0.3} color="#e3f2fd" />
+      <directionalLight 
+        position={[5, 3, 4]} 
+        intensity={1.5} 
+        color="#fff8e1"
+        castShadow
+      />
+      <directionalLight 
+        position={[-3, -1, -2]} 
+        intensity={0.2} 
+        color="#1565c0"
+      />
+      <pointLight position={[0, 0, 3]} intensity={0.3} color="#ffffff" />
+      <hemisphereLight args={['#87ceeb', '#1565c0', 0.3]} />
       
       {/* Earth Globe */}
       <EarthGlobe opacity={opacity} />
