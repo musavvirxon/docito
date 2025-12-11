@@ -97,7 +97,7 @@ const SpecialtiesGrid = () => {
                         <img
                           src={specialty.icon as string}
                           alt={specialty.name}
-                          className="w-8 h-8 object-contain"
+                          className="w-full h-full object-contain p-1"
                           loading="lazy"
                         />
                       ) : (
