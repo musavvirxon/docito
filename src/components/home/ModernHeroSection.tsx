@@ -150,110 +150,119 @@ const ModernHeroSection = () => {
             />
           </div>
 
-          {/* Professional Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.5 }}
-            className="inline-flex items-center space-x-2 bg-primary/10 dark:bg-primary/5 backdrop-blur-sm border-2 border-primary/30 dark:border-primary/30 rounded-full px-6 py-2"
-          >
-            <span className="text-primary dark:text-primary font-semibold">{t('hero.badge')}</span>
-          </motion.div>
+          {/* Search Results Section - Appears right below search bar */}
+          {showResults && (
+            <motion.div
+              id="search-results"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="w-full max-w-6xl mx-auto"
+            >
+              <SearchResults
+                results={searchResults}
+                onBookAppointment={(result) => handleBookingClick(result.id, result.name)}
+                onViewPractice={(result) => handleBookingClick(result.id, result.name)}
+                onFavorite={() => {}}
+              />
+            </motion.div>
+          )}
 
-          {/* Main Headline */}
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.5 }}
-            className="text-5xl md:text-7xl font-bold text-foreground leading-tight tracking-tight"
-          >
-            {t('hero.title1')}
-            <br />
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              {t('hero.title2')}
-            </span>
-          </motion.h1>
+          {/* Only show hero content when no search results */}
+          {!showResults && (
+            <>
+              {/* Professional Badge */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
+                className="inline-flex items-center space-x-2 bg-primary/10 dark:bg-primary/5 backdrop-blur-sm border-2 border-primary/30 dark:border-primary/30 rounded-full px-6 py-2"
+              >
+                <span className="text-primary dark:text-primary font-semibold">{t('hero.badge')}</span>
+              </motion.div>
 
-          {/* Description */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.0, duration: 0.5 }}
-            className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto"
-          >
-            {t('hero.description')}
-          </motion.p>
+              {/* Main Headline */}
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8, duration: 0.5 }}
+                className="text-5xl md:text-7xl font-bold text-foreground leading-tight tracking-tight"
+              >
+                {t('hero.title1')}
+                <br />
+                <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  {t('hero.title2')}
+                </span>
+              </motion.h1>
 
-          {/* Feature Pills */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.2, duration: 0.5 }}
-            className="flex flex-wrap justify-center gap-4"
-          >
-            {[
-              { icon: CreditCard, key: "payments" },
-              { icon: Calendar, key: "scheduling" },
-              { icon: FileText, key: "records" },
-              { icon: BarChart3, key: "analytics" }
-            ].map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <motion.div
-                  key={feature.key}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 1.2 + index * 0.1 }}
-                  className="flex items-center space-x-2 bg-card/80 dark:bg-card/80 backdrop-blur-sm border-2 border-input dark:border-border dark:hover:border-primary rounded-full px-6 py-3 transition-all duration-300 hover:shadow-lg dark:hover:shadow-glow-blue"
-                >
-                  <Icon className="w-5 h-5 text-primary" />
-                  <span className="text-foreground font-medium">{t(`hero.features.${feature.key}`)}</span>
-                </motion.div>
-              );
-            })}
-          </motion.div>
+              {/* Description */}
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.0, duration: 0.5 }}
+                className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto"
+              >
+                {t('hero.description')}
+              </motion.p>
+
+              {/* Feature Pills */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.2, duration: 0.5 }}
+                className="flex flex-wrap justify-center gap-4"
+              >
+                {[
+                  { icon: CreditCard, key: "payments" },
+                  { icon: Calendar, key: "scheduling" },
+                  { icon: FileText, key: "records" },
+                  { icon: BarChart3, key: "analytics" }
+                ].map((feature, index) => {
+                  const Icon = feature.icon;
+                  return (
+                    <motion.div
+                      key={feature.key}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 1.2 + index * 0.1 }}
+                      className="flex items-center space-x-2 bg-card/80 dark:bg-card/80 backdrop-blur-sm border-2 border-input dark:border-border dark:hover:border-primary rounded-full px-6 py-3 transition-all duration-300 hover:shadow-lg dark:hover:shadow-glow-blue"
+                    >
+                      <Icon className="w-5 h-5 text-primary" />
+                      <span className="text-foreground font-medium">{t(`hero.features.${feature.key}`)}</span>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+            </>
+          )}
         </motion.div>
 
-        {/* Hero Illustration - Dashboard Preview */}
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.4, duration: 0.8 }}
-          className="mt-16 hidden lg:block"
-        >
-          <HeroIllustration />
-        </motion.div>
-
-        {/* Scroll Indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 2, duration: 0.5 }}
-          className="flex justify-center pt-8"
-        >
+        {/* Hero Illustration - Dashboard Preview (only show when no results) */}
+        {!showResults && (
           <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="cursor-pointer"
-          >
-            <ChevronDown className="w-8 h-8 text-muted-foreground" />
-          </motion.div>
-        </motion.div>
-
-        {/* Search Results Section */}
-        {showResults && (
-          <motion.div
-            id="search-results"
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-12"
+            transition={{ delay: 1.4, duration: 0.8 }}
+            className="mt-16 hidden lg:block"
           >
-            <SearchResults
-              results={searchResults}
-              onBookAppointment={(result) => handleBookingClick(result.id, result.name)}
-              onViewPractice={(result) => handleBookingClick(result.id, result.name)}
-              onFavorite={() => {}}
-            />
+            <HeroIllustration />
+          </motion.div>
+        )}
+
+        {/* Scroll Indicator (only show when no results) */}
+        {!showResults && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 2, duration: 0.5 }}
+            className="flex justify-center pt-8"
+          >
+            <motion.div
+              animate={{ y: [0, 10, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="cursor-pointer"
+            >
+              <ChevronDown className="w-8 h-8 text-muted-foreground" />
+            </motion.div>
           </motion.div>
         )}
       </div>
