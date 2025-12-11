@@ -1,26 +1,49 @@
-import { useRef, useMemo, useEffect, useState } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Float, Sphere, Html } from '@react-three/drei';
+import { useRef, useMemo, useEffect, useState, useCallback } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { Float, Sphere, OrbitControls, Html, Line } from '@react-three/drei';
 import * as THREE from 'three';
-import { Stethoscope, Building2, FlaskConical, Pill, FileText, Shield } from 'lucide-react';
+import { 
+  Building2, 
+  Stethoscope, 
+  FlaskConical, 
+  Pill, 
+  User, 
+  Users,
+  Heart,
+  Scan,
+  Ambulance,
+  Microscope,
+  type LucideIcon
+} from 'lucide-react';
 
-// Mouse parallax hook
-function useMouseParallax() {
-  const [mouse, setMouse] = useState({ x: 0, y: 0 });
-  
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMouse({
-        x: (e.clientX / window.innerWidth - 0.5) * 2,
-        y: (e.clientY / window.innerHeight - 0.5) * 2
-      });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-  
-  return mouse;
+// Node data interface
+interface NodeData {
+  id: string;
+  name: string;
+  role: string;
+  description: string;
+  Icon: LucideIcon;
+  color: string;
+  position: THREE.Vector3;
+  orbitRadius: number;
+  orbitSpeed: number;
+  orbitOffset: number;
+  verticalOffset: number;
 }
+
+// Medical ecosystem nodes
+const medicalNodes: Omit<NodeData, 'position'>[] = [
+  { id: 'hospital', name: 'Central Hospital', role: 'Hospital', description: 'Multi-specialty healthcare center', Icon: Building2, color: '#3b82f6', orbitRadius: 2.2, orbitSpeed: 0.15, orbitOffset: 0, verticalOffset: 0.3 },
+  { id: 'clinic', name: 'City Clinic', role: 'Clinic', description: 'Primary care facility', Icon: Heart, color: '#ec4899', orbitRadius: 2.0, orbitSpeed: 0.18, orbitOffset: Math.PI / 3, verticalOffset: -0.2 },
+  { id: 'lab', name: 'DiagnoLab', role: 'Laboratory', description: 'Advanced diagnostic testing', Icon: FlaskConical, color: '#8b5cf6', orbitRadius: 2.4, orbitSpeed: 0.12, orbitOffset: Math.PI * 2 / 3, verticalOffset: 0.5 },
+  { id: 'pharmacy', name: 'MedPharm', role: 'Pharmacy', description: '24/7 medication services', Icon: Pill, color: '#10b981', orbitRadius: 1.9, orbitSpeed: 0.2, orbitOffset: Math.PI, verticalOffset: -0.4 },
+  { id: 'doctor1', name: 'Dr. Smith', role: 'Doctor', description: 'Cardiologist specialist', Icon: Stethoscope, color: '#06b6d4', orbitRadius: 2.3, orbitSpeed: 0.16, orbitOffset: Math.PI * 4 / 3, verticalOffset: 0.1 },
+  { id: 'doctor2', name: 'Dr. Johnson', role: 'Doctor', description: 'General practitioner', Icon: User, color: '#f59e0b', orbitRadius: 2.1, orbitSpeed: 0.14, orbitOffset: Math.PI * 5 / 3, verticalOffset: -0.3 },
+  { id: 'patient1', name: 'Patient Care', role: 'Patients', description: 'Connected health monitoring', Icon: Users, color: '#ef4444', orbitRadius: 2.5, orbitSpeed: 0.1, orbitOffset: Math.PI / 6, verticalOffset: 0.4 },
+  { id: 'imaging', name: 'ScanCenter', role: 'Imaging', description: 'MRI & CT scanning', Icon: Scan, color: '#14b8a6', orbitRadius: 2.2, orbitSpeed: 0.17, orbitOffset: Math.PI * 7 / 6, verticalOffset: -0.1 },
+  { id: 'emergency', name: 'Emergency', role: 'Emergency', description: 'Rapid response unit', Icon: Ambulance, color: '#dc2626', orbitRadius: 2.0, orbitSpeed: 0.22, orbitOffset: Math.PI * 3 / 2, verticalOffset: 0.2 },
+  { id: 'research', name: 'BioResearch', role: 'Research', description: 'Medical research lab', Icon: Microscope, color: '#7c3aed', orbitRadius: 2.6, orbitSpeed: 0.08, orbitOffset: Math.PI * 11 / 6, verticalOffset: -0.5 },
+];
 
 // Scroll opacity hook
 function useScrollOpacity() {
@@ -39,202 +62,126 @@ function useScrollOpacity() {
   return opacity;
 }
 
-function FloatingIconCard({ 
-  position, 
-  Icon, 
-  color, 
-  bgColor,
-  rotationOffset,
-  orbitSpeed 
-}: { 
-  position: [number, number, number]; 
-  Icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
-  color: string;
-  bgColor: string;
-  rotationOffset: number;
-  orbitSpeed: number;
-}) {
-  const groupRef = useRef<THREE.Group>(null);
-  const borderRef = useRef<THREE.Mesh>(null);
+// Holographic Orb Core
+function HolographicOrb({ opacity }: { opacity: number }) {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const gridRef = useRef<THREE.Mesh>(null);
+  const innerGlowRef = useRef<THREE.Mesh>(null);
   
-  useFrame((state) => {
-    if (groupRef.current) {
-      // Orbit around the center
-      const time = state.clock.elapsedTime * orbitSpeed + rotationOffset;
-      const radius = Math.sqrt(position[0] ** 2 + position[2] ** 2);
-      groupRef.current.position.x = Math.cos(time) * radius;
-      groupRef.current.position.z = Math.sin(time) * radius;
-      groupRef.current.position.y = position[1] + Math.sin(time * 2) * 0.15;
-    }
-    if (borderRef.current) {
-      // Rotate the border
-      borderRef.current.rotation.z = state.clock.elapsedTime * 0.5 + rotationOffset;
-    }
-  });
-
-  return (
-    <Float speed={1.2} rotationIntensity={0.15} floatIntensity={0.5}>
-      <group position={position} ref={groupRef}>
-        {/* Rotating rectangular border */}
-        <mesh ref={borderRef} rotation={[0, 0, 0]}>
-          <ringGeometry args={[0.42, 0.48, 4]} />
-          <meshBasicMaterial color={color} transparent opacity={0.6} side={THREE.DoubleSide} />
-        </mesh>
-        
-        {/* Icon container */}
-        <Html
-          transform
-          distanceFactor={8}
-          style={{
-            width: '44px',
-            height: '44px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: '10px',
-            background: bgColor,
-            backdropFilter: 'blur(8px)',
-            boxShadow: `0 4px 20px ${color}40`,
-            border: `1px solid ${color}30`,
-          }}
-        >
-          <Icon className="w-5 h-5" style={{ color }} />
-        </Html>
-      </group>
-    </Float>
-  );
-}
-
-function EarthSphere({ mouse, opacity }: { mouse: { x: number; y: number }; opacity: number }) {
-  const groupRef = useRef<THREE.Group>(null);
-  const earthRef = useRef<THREE.Mesh>(null);
-  const atmosphereRef = useRef<THREE.Mesh>(null);
-  
-  // Create Earth-like texture with continents
-  const earthTexture = useMemo(() => {
+  // Create holographic grid texture
+  const gridTexture = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = 512;
-    canvas.height = 256;
+    canvas.height = 512;
     const ctx = canvas.getContext('2d')!;
     
-    // Ocean base - deep blue
-    const oceanGradient = ctx.createLinearGradient(0, 0, 0, 256);
-    oceanGradient.addColorStop(0, '#1e3a5f');
-    oceanGradient.addColorStop(0.5, '#0c4a6e');
-    oceanGradient.addColorStop(1, '#164e63');
-    ctx.fillStyle = oceanGradient;
-    ctx.fillRect(0, 0, 512, 256);
+    // Background
+    ctx.fillStyle = 'rgba(0, 0, 0, 0)';
+    ctx.fillRect(0, 0, 512, 512);
     
-    // Draw continents with subtle green/brown tones
-    ctx.fillStyle = '#2d5a3d';
+    // Grid lines
+    ctx.strokeStyle = 'rgba(59, 130, 246, 0.3)';
+    ctx.lineWidth = 1;
     
-    // North America
-    ctx.beginPath();
-    ctx.ellipse(100, 70, 50, 35, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // South America
-    ctx.beginPath();
-    ctx.ellipse(130, 160, 25, 45, 0.3, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Europe/Africa
-    ctx.beginPath();
-    ctx.ellipse(270, 90, 30, 40, 0, 0, Math.PI * 2);
-    ctx.ellipse(270, 150, 35, 50, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Asia
-    ctx.beginPath();
-    ctx.ellipse(370, 80, 60, 40, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Australia
-    ctx.beginPath();
-    ctx.ellipse(420, 170, 25, 20, 0.2, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Add some variation
-    ctx.fillStyle = '#3d6b4d';
-    ctx.beginPath();
-    ctx.ellipse(95, 65, 30, 20, 0, 0, Math.PI * 2);
-    ctx.ellipse(365, 75, 35, 25, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Ice caps
-    ctx.fillStyle = '#e8f4f8';
-    ctx.fillRect(0, 0, 512, 15);
-    ctx.fillRect(0, 241, 512, 15);
-    
-    // Cloud wisps
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
-    for (let i = 0; i < 20; i++) {
+    // Latitude lines
+    for (let i = 0; i <= 16; i++) {
       ctx.beginPath();
-      ctx.ellipse(
-        Math.random() * 512,
-        Math.random() * 256,
-        Math.random() * 40 + 20,
-        Math.random() * 10 + 5,
-        Math.random() * Math.PI,
-        0,
-        Math.PI * 2
-      );
-      ctx.fill();
+      ctx.moveTo(0, i * 32);
+      ctx.lineTo(512, i * 32);
+      ctx.stroke();
+    }
+    
+    // Longitude lines
+    for (let i = 0; i <= 16; i++) {
+      ctx.beginPath();
+      ctx.moveTo(i * 32, 0);
+      ctx.lineTo(i * 32, 512);
+      ctx.stroke();
+    }
+    
+    // Add glow points at intersections
+    ctx.fillStyle = 'rgba(96, 165, 250, 0.5)';
+    for (let x = 0; x <= 16; x++) {
+      for (let y = 0; y <= 16; y++) {
+        if (Math.random() > 0.7) {
+          ctx.beginPath();
+          ctx.arc(x * 32, y * 32, 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
     }
     
     const texture = new THREE.CanvasTexture(canvas);
     texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.ClampToEdgeWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
     return texture;
   }, []);
 
   useFrame((state) => {
-    if (groupRef.current) {
-      // Soft rotation
-      groupRef.current.rotation.y = state.clock.elapsedTime * 0.08;
-      
-      // Parallax effect
-      groupRef.current.rotation.x = mouse.y * 0.1;
-      groupRef.current.position.x = mouse.x * 0.2;
-      groupRef.current.position.y = -mouse.y * 0.1;
+    const time = state.clock.elapsedTime;
+    if (meshRef.current) {
+      meshRef.current.rotation.y = time * 0.1;
     }
-    if (earthRef.current) {
-      earthRef.current.rotation.y = state.clock.elapsedTime * 0.1;
+    if (gridRef.current) {
+      gridRef.current.rotation.y = time * 0.08;
+      gridRef.current.rotation.x = Math.sin(time * 0.2) * 0.05;
     }
-    if (atmosphereRef.current) {
-      atmosphereRef.current.rotation.y = -state.clock.elapsedTime * 0.05;
+    if (innerGlowRef.current) {
+      const scale = 0.85 + Math.sin(time * 2) * 0.02;
+      innerGlowRef.current.scale.setScalar(scale);
     }
   });
 
   return (
-    <group ref={groupRef}>
-      {/* Earth core */}
-      <Sphere ref={earthRef} args={[1, 64, 64]}>
-        <meshStandardMaterial
-          map={earthTexture}
-          metalness={0.1}
-          roughness={0.8}
-          transparent
-          opacity={opacity}
-        />
-      </Sphere>
-      
-      {/* Atmosphere glow */}
-      <Sphere ref={atmosphereRef} args={[1.05, 48, 48]}>
-        <meshBasicMaterial
-          color="#60a5fa"
-          transparent
-          opacity={0.15 * opacity}
-          side={THREE.BackSide}
-        />
-      </Sphere>
-      
-      {/* Outer glow */}
-      <Sphere args={[1.15, 32, 32]}>
+    <group>
+      {/* Inner glow core */}
+      <Sphere ref={innerGlowRef} args={[0.85, 32, 32]}>
         <meshBasicMaterial
           color="#3b82f6"
           transparent
-          opacity={0.08 * opacity}
+          opacity={0.15 * opacity}
+        />
+      </Sphere>
+      
+      {/* Main holographic sphere */}
+      <Sphere ref={meshRef} args={[1, 64, 64]}>
+        <meshPhysicalMaterial
+          color="#1e3a5f"
+          metalness={0.2}
+          roughness={0.1}
+          transparent
+          opacity={0.4 * opacity}
+          transmission={0.6}
+          thickness={0.5}
+          envMapIntensity={1}
+        />
+      </Sphere>
+      
+      {/* Grid overlay */}
+      <Sphere ref={gridRef} args={[1.02, 48, 48]}>
+        <meshBasicMaterial
+          map={gridTexture}
+          transparent
+          opacity={0.6 * opacity}
+          side={THREE.DoubleSide}
+          depthWrite={false}
+        />
+      </Sphere>
+      
+      {/* Outer glow layers */}
+      <Sphere args={[1.08, 32, 32]}>
+        <meshBasicMaterial
+          color="#60a5fa"
+          transparent
+          opacity={0.1 * opacity}
+          side={THREE.BackSide}
+        />
+      </Sphere>
+      <Sphere args={[1.2, 32, 32]}>
+        <meshBasicMaterial
+          color="#3b82f6"
+          transparent
+          opacity={0.05 * opacity}
           side={THREE.BackSide}
         />
       </Sphere>
@@ -242,49 +189,179 @@ function EarthSphere({ mouse, opacity }: { mouse: { x: number; y: number }; opac
   );
 }
 
-function LightBeams({ opacity }: { opacity: number }) {
-  const beamsRef = useRef<THREE.Group>(null);
-  
-  useFrame((state) => {
-    if (beamsRef.current) {
-      beamsRef.current.rotation.z = state.clock.elapsedTime * 0.1;
-      beamsRef.current.rotation.y = state.clock.elapsedTime * 0.05;
-    }
-  });
-
-  const beams = useMemo(() => {
-    return Array.from({ length: 6 }, (_, i) => ({
-      rotation: (i / 6) * Math.PI * 2,
-      length: 2 + Math.random() * 0.5,
-      opacity: 0.1 + Math.random() * 0.1
-    }));
-  }, []);
+// Connection line from node to center
+function ConnectionLine({ nodePosition, color, opacity }: { nodePosition: THREE.Vector3; color: string; opacity: number }) {
+  const points = useMemo(() => {
+    return [new THREE.Vector3(0, 0, 0), nodePosition];
+  }, [nodePosition]);
 
   return (
-    <group ref={beamsRef}>
-      {beams.map((beam, i) => (
-        <mesh key={i} rotation={[0, 0, beam.rotation]} position={[0, 0, 0]}>
-          <planeGeometry args={[0.02, beam.length]} />
-          <meshBasicMaterial
-            color="#60a5fa"
-            transparent
-            opacity={beam.opacity * opacity}
-            side={THREE.DoubleSide}
-          />
-        </mesh>
-      ))}
-    </group>
+    <Line
+      points={points}
+      color={color}
+      lineWidth={1}
+      transparent
+      opacity={opacity}
+    />
   );
 }
 
-function Particles({ opacity }: { opacity: number }) {
-  const count = 50;
+// Floating Node Component
+function FloatingNode({ 
+  node, 
+  opacity,
+  onHover,
+  onUnhover,
+  onClick,
+  isHovered
+}: { 
+  node: NodeData;
+  opacity: number;
+  onHover: () => void;
+  onUnhover: () => void;
+  onClick: () => void;
+  isHovered: boolean;
+}) {
+  const groupRef = useRef<THREE.Group>(null);
+  const glowRef = useRef<THREE.Mesh>(null);
+  const [localHover, setLocalHover] = useState(false);
+  const [currentPosition, setCurrentPosition] = useState(new THREE.Vector3(node.orbitRadius, node.verticalOffset, 0));
+  
+  useFrame((state) => {
+    const time = state.clock.elapsedTime;
+    if (groupRef.current) {
+      // Orbit animation
+      const angle = time * node.orbitSpeed + node.orbitOffset;
+      const x = Math.cos(angle) * node.orbitRadius;
+      const z = Math.sin(angle) * node.orbitRadius;
+      const y = node.verticalOffset + Math.sin(time * 0.5 + node.orbitOffset) * 0.15;
+      
+      groupRef.current.position.x = x;
+      groupRef.current.position.z = z;
+      groupRef.current.position.y = y;
+      
+      setCurrentPosition(new THREE.Vector3(x, y, z));
+      
+      // Scale on hover
+      const targetScale = isHovered || localHover ? 1.2 : 1;
+      groupRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
+    }
+    if (glowRef.current) {
+      // Pulse glow
+      const pulseScale = 1 + Math.sin(time * 3) * 0.1;
+      glowRef.current.scale.setScalar(pulseScale);
+    }
+  });
+
+  const handlePointerEnter = useCallback(() => {
+    setLocalHover(true);
+    onHover();
+    document.body.style.cursor = 'pointer';
+  }, [onHover]);
+
+  const handlePointerLeave = useCallback(() => {
+    setLocalHover(false);
+    onUnhover();
+    document.body.style.cursor = 'auto';
+  }, [onUnhover]);
+
+  const IconComponent = node.Icon;
+
+  return (
+    <>
+      {/* Connection line */}
+      <ConnectionLine nodePosition={currentPosition} color={node.color} opacity={opacity * 0.2} />
+      
+      <Float speed={1.5} rotationIntensity={0.1} floatIntensity={0.3}>
+        <group 
+          ref={groupRef} 
+          position={[node.orbitRadius, node.verticalOffset, 0]}
+          onPointerEnter={handlePointerEnter}
+          onPointerLeave={handlePointerLeave}
+          onClick={onClick}
+        >
+          {/* Glow effect */}
+          <Sphere ref={glowRef} args={[0.25, 16, 16]}>
+            <meshBasicMaterial
+              color={node.color}
+              transparent
+              opacity={(isHovered || localHover ? 0.4 : 0.2) * opacity}
+            />
+          </Sphere>
+          
+          {/* Node sphere */}
+          <Sphere args={[0.18, 24, 24]}>
+            <meshPhysicalMaterial
+              color={node.color}
+              metalness={0.3}
+              roughness={0.2}
+              transparent
+              opacity={0.9 * opacity}
+              emissive={node.color}
+              emissiveIntensity={isHovered || localHover ? 0.5 : 0.2}
+            />
+          </Sphere>
+          
+          {/* Icon */}
+          <Html
+            transform
+            distanceFactor={6}
+            style={{
+              pointerEvents: 'none',
+            }}
+          >
+            <div 
+              className="flex items-center justify-center w-8 h-8 rounded-full"
+              style={{ 
+                backgroundColor: `${node.color}20`,
+                border: `1px solid ${node.color}40`,
+                boxShadow: `0 0 15px ${node.color}60`
+              }}
+            >
+              <IconComponent size={14} style={{ color: node.color }} />
+            </div>
+          </Html>
+          
+          {/* Tooltip on hover */}
+          {(isHovered || localHover) && (
+            <Html
+              position={[0, 0.5, 0]}
+              center
+              style={{
+                pointerEvents: 'none',
+              }}
+            >
+              <div 
+                className="px-3 py-2 rounded-lg backdrop-blur-md animate-fade-in"
+                style={{
+                  background: 'rgba(15, 23, 42, 0.9)',
+                  border: `1px solid ${node.color}40`,
+                  boxShadow: `0 4px 20px ${node.color}30`,
+                  minWidth: '120px',
+                }}
+              >
+                <div className="text-xs font-semibold text-white">{node.name}</div>
+                <div className="text-[10px] opacity-70 text-slate-300">{node.role}</div>
+              </div>
+            </Html>
+          )}
+        </group>
+      </Float>
+    </>
+  );
+}
+
+// Particle system for holographic effect
+function HolographicParticles({ opacity }: { opacity: number }) {
+  const particlesRef = useRef<THREE.Points>(null);
+  const count = 100;
+  
   const positions = useMemo(() => {
     const pos = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
-      const r = 2 + Math.random() * 1;
+      const r = 0.9 + Math.random() * 0.2;
       pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
       pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
       pos[i * 3 + 2] = r * Math.cos(phi);
@@ -292,17 +369,15 @@ function Particles({ opacity }: { opacity: number }) {
     return pos;
   }, []);
 
-  const pointsRef = useRef<THREE.Points>(null);
-
   useFrame((state) => {
-    if (pointsRef.current) {
-      pointsRef.current.rotation.y = state.clock.elapsedTime * 0.02;
-      pointsRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.1) * 0.1;
+    if (particlesRef.current) {
+      particlesRef.current.rotation.y = state.clock.elapsedTime * 0.05;
+      particlesRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.1) * 0.1;
     }
   });
 
   return (
-    <points ref={pointsRef}>
+    <points ref={particlesRef}>
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"
@@ -312,58 +387,227 @@ function Particles({ opacity }: { opacity: number }) {
         />
       </bufferGeometry>
       <pointsMaterial 
-        size={0.03} 
+        size={0.02} 
         color="#60a5fa" 
         transparent 
-        opacity={0.6 * opacity} 
+        opacity={0.5 * opacity} 
         sizeAttenuation 
       />
     </points>
   );
 }
 
-function Scene({ mouse, opacity }: { mouse: { x: number; y: number }; opacity: number }) {
-  const icons = [
-    { position: [2.2, 0.3, 0.3] as [number, number, number], Icon: Stethoscope, color: '#3b82f6', bgColor: 'rgba(59, 130, 246, 0.15)', rotationOffset: 0, orbitSpeed: 0.3 },
-    { position: [-2, 0.5, 0.2] as [number, number, number], Icon: Building2, color: '#10b981', bgColor: 'rgba(16, 185, 129, 0.15)', rotationOffset: Math.PI / 3, orbitSpeed: 0.25 },
-    { position: [0.3, 2, 0.3] as [number, number, number], Icon: FlaskConical, color: '#8b5cf6', bgColor: 'rgba(139, 92, 246, 0.15)', rotationOffset: Math.PI * 2 / 3, orbitSpeed: 0.35 },
-    { position: [-0.5, -1.8, 0.3] as [number, number, number], Icon: Pill, color: '#f59e0b', bgColor: 'rgba(245, 158, 11, 0.15)', rotationOffset: Math.PI, orbitSpeed: 0.28 },
-    { position: [1.5, -1.1, 0.5] as [number, number, number], Icon: FileText, color: '#ec4899', bgColor: 'rgba(236, 72, 153, 0.15)', rotationOffset: Math.PI * 4 / 3, orbitSpeed: 0.32 },
-    { position: [-1.7, -0.4, 0.4] as [number, number, number], Icon: Shield, color: '#06b6d4', bgColor: 'rgba(6, 182, 212, 0.15)', rotationOffset: Math.PI * 5 / 3, orbitSpeed: 0.27 },
-  ];
+// Orbiting rings
+function OrbitRings({ opacity }: { opacity: number }) {
+  const ring1Ref = useRef<THREE.Mesh>(null);
+  const ring2Ref = useRef<THREE.Mesh>(null);
+  const ring3Ref = useRef<THREE.Mesh>(null);
+  
+  useFrame((state) => {
+    const time = state.clock.elapsedTime;
+    if (ring1Ref.current) {
+      ring1Ref.current.rotation.x = Math.PI / 2 + Math.sin(time * 0.3) * 0.1;
+      ring1Ref.current.rotation.z = time * 0.1;
+    }
+    if (ring2Ref.current) {
+      ring2Ref.current.rotation.x = Math.PI / 3;
+      ring2Ref.current.rotation.z = -time * 0.08;
+    }
+    if (ring3Ref.current) {
+      ring3Ref.current.rotation.x = Math.PI / 4;
+      ring3Ref.current.rotation.y = time * 0.12;
+    }
+  });
+
+  return (
+    <group>
+      <mesh ref={ring1Ref}>
+        <ringGeometry args={[1.6, 1.62, 64]} />
+        <meshBasicMaterial color="#3b82f6" transparent opacity={0.2 * opacity} side={THREE.DoubleSide} />
+      </mesh>
+      <mesh ref={ring2Ref}>
+        <ringGeometry args={[1.9, 1.92, 64]} />
+        <meshBasicMaterial color="#8b5cf6" transparent opacity={0.15 * opacity} side={THREE.DoubleSide} />
+      </mesh>
+      <mesh ref={ring3Ref}>
+        <ringGeometry args={[2.2, 2.22, 64]} />
+        <meshBasicMaterial color="#06b6d4" transparent opacity={0.1 * opacity} side={THREE.DoubleSide} />
+      </mesh>
+    </group>
+  );
+}
+
+// Main Scene
+function Scene({ 
+  opacity,
+  hoveredNode,
+  setHoveredNode,
+  setSelectedNode
+}: { 
+  opacity: number;
+  hoveredNode: string | null;
+  setHoveredNode: (id: string | null) => void;
+  setSelectedNode: (node: NodeData | null) => void;
+}) {
+  // Create nodes with initial positions
+  const nodes = useMemo<NodeData[]>(() => {
+    return medicalNodes.map(node => ({
+      ...node,
+      position: new THREE.Vector3(node.orbitRadius, node.verticalOffset, 0)
+    }));
+  }, []);
 
   return (
     <>
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[5, 5, 5]} intensity={0.7} />
-      <pointLight position={[-5, -5, -3]} intensity={0.3} color="#60a5fa" />
-      <pointLight position={[3, 3, 3]} intensity={0.2} color="#ffffff" />
+      {/* Lighting */}
+      <ambientLight intensity={0.4} />
+      <directionalLight position={[5, 5, 5]} intensity={0.6} />
+      <pointLight position={[-5, -5, -5]} intensity={0.3} color="#3b82f6" />
+      <pointLight position={[0, 3, 0]} intensity={0.2} color="#8b5cf6" />
       
-      <EarthSphere mouse={mouse} opacity={opacity} />
-      <LightBeams opacity={opacity} />
-      <Particles opacity={opacity} />
+      {/* Main orb */}
+      <HolographicOrb opacity={opacity} />
       
-      {icons.map((item, i) => (
-        <FloatingIconCard key={i} {...item} />
+      {/* Orbit rings */}
+      <OrbitRings opacity={opacity} />
+      
+      {/* Particles inside orb */}
+      <HolographicParticles opacity={opacity} />
+      
+      {/* Medical nodes */}
+      {nodes.map((node) => (
+        <FloatingNode
+          key={node.id}
+          node={node}
+          opacity={opacity}
+          onHover={() => setHoveredNode(node.id)}
+          onUnhover={() => setHoveredNode(null)}
+          onClick={() => setSelectedNode(node)}
+          isHovered={hoveredNode === node.id}
+        />
       ))}
+      
+      {/* Orbit controls for drag/rotate */}
+      <OrbitControls
+        enableZoom={true}
+        enablePan={false}
+        minDistance={4}
+        maxDistance={8}
+        autoRotate
+        autoRotateSpeed={0.5}
+        enableDamping
+        dampingFactor={0.05}
+        minPolarAngle={Math.PI / 4}
+        maxPolarAngle={Math.PI * 3 / 4}
+      />
     </>
   );
 }
 
+// Modal for selected node
+function NodeModal({ 
+  node, 
+  onClose 
+}: { 
+  node: NodeData | null; 
+  onClose: () => void;
+}) {
+  if (!node) return null;
+  
+  const IconComponent = node.Icon;
+  
+  return (
+    <div 
+      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 animate-scale-in"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div 
+        className="p-6 rounded-2xl backdrop-blur-xl min-w-[280px]"
+        style={{
+          background: 'rgba(15, 23, 42, 0.95)',
+          border: `2px solid ${node.color}40`,
+          boxShadow: `0 0 40px ${node.color}30, 0 20px 60px rgba(0,0,0,0.5)`,
+        }}
+      >
+        <div className="flex items-center gap-3 mb-4">
+          <div 
+            className="w-12 h-12 rounded-xl flex items-center justify-center"
+            style={{ 
+              background: `${node.color}20`,
+              border: `1px solid ${node.color}40`
+            }}
+          >
+            <IconComponent size={24} style={{ color: node.color }} />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-white">{node.name}</h3>
+            <p className="text-sm opacity-70 text-slate-300">{node.role}</p>
+          </div>
+        </div>
+        
+        <p className="text-sm text-slate-400 mb-4">{node.description}</p>
+        
+        <div className="flex gap-2">
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+            style={{
+              background: `${node.color}20`,
+              border: `1px solid ${node.color}40`,
+              color: node.color,
+            }}
+          >
+            Close
+          </button>
+          <button
+            className="flex-1 px-4 py-2 rounded-lg text-sm font-medium text-white transition-all"
+            style={{
+              background: node.color,
+            }}
+          >
+            Learn More
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Main component
 export default function HeroOrb3D() {
-  const mouse = useMouseParallax();
   const opacity = useScrollOpacity();
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+  const [selectedNode, setSelectedNode] = useState<NodeData | null>(null);
 
   return (
-    <div className="w-full h-[500px] lg:h-[600px]" style={{ opacity }}>
+    <div 
+      className="relative w-full h-[500px] lg:h-[600px]" 
+      style={{ opacity }}
+      onClick={() => setSelectedNode(null)}
+    >
       <Canvas
         camera={{ position: [0, 0, 5.5], fov: 45 }}
         style={{ background: 'transparent' }}
         gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
         dpr={[1, 1.5]}
       >
-        <Scene mouse={mouse} opacity={opacity} />
+        <Scene 
+          opacity={opacity}
+          hoveredNode={hoveredNode}
+          setHoveredNode={setHoveredNode}
+          setSelectedNode={setSelectedNode}
+        />
       </Canvas>
+      
+      {/* Node detail modal */}
+      <NodeModal node={selectedNode} onClose={() => setSelectedNode(null)} />
+      
+      {/* Instructions hint */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-center pointer-events-none">
+        <p className="text-xs text-slate-400 opacity-60">
+          Drag to rotate • Scroll to zoom • Click nodes for details
+        </p>
+      </div>
     </div>
   );
 }
