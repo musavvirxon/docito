@@ -28,27 +28,27 @@ export default function PremiumHero() {
   }, []);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-muted/30" />
+    <section className="relative min-h-screen flex items-center justify-center overflow-visible pt-20">
+      {/* Background gradient - more transparent */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-transparent to-transparent pointer-events-none" />
       
-      {/* Animated background orbs */}
-      <div className="absolute inset-0 overflow-hidden">
+      {/* Animated background orbs - reduced opacity */}
+      <div className="absolute inset-0 overflow-visible pointer-events-none">
         <motion.div
           animate={{
             scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
+            opacity: [0.15, 0.25, 0.15],
           }}
           transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute -top-1/4 -right-1/4 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[100px]"
+          className="absolute -top-1/4 -right-1/4 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[100px]"
         />
         <motion.div
           animate={{
             scale: [1.2, 1, 1.2],
-            opacity: [0.2, 0.4, 0.2],
+            opacity: [0.1, 0.2, 0.1],
           }}
           transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute -bottom-1/4 -left-1/4 w-[500px] h-[500px] bg-accent/20 rounded-full blur-[100px]"
+          className="absolute -bottom-1/4 -left-1/4 w-[500px] h-[500px] bg-accent/10 rounded-full blur-[100px]"
         />
       </div>
 
