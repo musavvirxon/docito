@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import ModernNavbar from '@/components/home/ModernNavbar';
 import ModernFooter from '@/components/home/ModernFooter';
 import { Building2, MapPin, Users, Star, Phone, Mail, Globe, ChevronRight } from 'lucide-react';
@@ -12,6 +11,7 @@ import { SearchAutocomplete } from '@/components/search/SearchAutocomplete';
 import { LocationSearch } from '@/components/search/LocationSearch';
 import { EnhancedFilters } from '@/components/search/EnhancedFilters';
 import { useSearchDiscovery, type SearchFilters } from '@/hooks/useSearchDiscovery';
+import { searchApi } from '@/lib/api/supabase-api';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -41,29 +41,19 @@ export default function FindPractices() {
   const { recordSearch } = useSearchDiscovery();
 
   const { data: practices, isLoading, refetch } = useQuery({
-    queryKey: ['practices', searchQuery, location, practiceType],
+    queryKey: ['practices', searchQuery, location, practiceType, filters.minRating],
     queryFn: async () => {
-      let query = supabase
-        .from('practices')
-        .select('*')
-        .eq('verified', true);
-
-      if (searchQuery) {
-        query = query.ilike('name', `%${searchQuery}%`);
-      }
-
-      if (location) {
-        query = query.or(`city.ilike.%${location}%,country.ilike.%${location}%`);
-      }
-
-      if (practiceType !== 'all') {
-        query = query.eq('practice_type', practiceType);
-      }
-
-      const { data, error } = await query.order('average_rating', { ascending: false });
+      const result = await searchApi.advancedPracticeSearch({
+        query: searchQuery || undefined,
+        location: location || undefined,
+        practiceType: practiceType !== 'all' ? practiceType : undefined,
+        minRating: filters.minRating,
+      });
       
-      if (error) throw error;
-      return data || [];
+      if ('success' in result && result.success) {
+        return result.data || [];
+      }
+      return [];
     }
   });
 
@@ -94,18 +84,15 @@ export default function FindPractices() {
     setFilters({});
   };
 
-  // Apply filters to results
-  const filteredPractices = practices?.filter(practice => {
-    if (filters.minRating && (practice.average_rating || 0) < filters.minRating) return false;
-    return true;
-  }).sort((a, b) => {
+  // Apply sorting to results (filtering is done in API)
+  const filteredPractices = [...(practices || [])].sort((a, b) => {
     switch (sortBy) {
       case 'rating':
         return (b.average_rating || 0) - (a.average_rating || 0);
       case 'name':
         return a.name.localeCompare(b.name);
       default:
-        return 0;
+        return (b.weighted_rating || 0) - (a.weighted_rating || 0);
     }
   });
 

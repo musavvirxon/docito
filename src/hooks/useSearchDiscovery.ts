@@ -212,7 +212,7 @@ export const useSearchDiscovery = () => {
       // Search for matching doctors
       const { data: doctors } = await supabase
         .from('doctor_profiles_view')
-        .select('full_name, specialty')
+        .select('full_name, specialty, practice_city')
         .or(`full_name.ilike.%${query}%,specialty.ilike.%${query}%`)
         .eq('verified', true)
         .limit(5);
@@ -225,6 +225,12 @@ export const useSearchDiscovery = () => {
           if (doc.specialty?.toLowerCase().includes(lowerQuery)) {
             if (!suggestions.find(s => s.text === doc.specialty)) {
               suggestions.push({ type: 'specialty', text: doc.specialty });
+            }
+          }
+          // Add locations from doctor's practice
+          if (doc.practice_city?.toLowerCase().includes(lowerQuery)) {
+            if (!suggestions.find(s => s.text === doc.practice_city && s.type === 'location')) {
+              suggestions.push({ type: 'location', text: doc.practice_city });
             }
           }
         });

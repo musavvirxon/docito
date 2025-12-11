@@ -724,3 +724,133 @@ export const practiceApi = {
     }
   }
 };
+
+// Advanced Search API
+export const searchApi = {
+  async advancedDoctorSearch(params: {
+    query?: string;
+    specialty?: string;
+    location?: string;
+    minRating?: number;
+    minPrice?: number;
+    maxPrice?: number;
+    acceptsNewPatients?: boolean;
+    videoConsultation?: boolean;
+    acceptsInsurance?: boolean;
+    language?: string;
+    gender?: string;
+  }) {
+    try {
+      let query = supabase
+        .from('doctor_profiles_view')
+        .select('*')
+        .eq('verified', true);
+
+      // Apply search term filter
+      if (params.query) {
+        const cleanQuery = params.query.replace(/[,()]/g, ' ').trim();
+        if (cleanQuery) {
+          const words = cleanQuery.split(/\s+/).filter(w => w.length > 0);
+          if (words.length > 0) {
+            query = query.or(`full_name.ilike.%${words[0]}%,specialty.ilike.%${words[0]}%`);
+          }
+        }
+      }
+
+      // Apply specialty filter
+      if (params.specialty) {
+        query = query.ilike('specialty', `%${params.specialty}%`);
+      }
+
+      // Apply location filter
+      if (params.location) {
+        const cleanLoc = params.location.replace(/[,()]/g, ' ').trim();
+        if (cleanLoc) {
+          query = query.or(`practice_city.ilike.%${cleanLoc}%,practice_country.ilike.%${cleanLoc}%`);
+        }
+      }
+
+      // Apply rating filter
+      if (params.minRating) {
+        query = query.gte('average_rating', params.minRating);
+      }
+
+      // Apply price filters
+      if (params.minPrice !== undefined) {
+        query = query.gte('consultation_fee', params.minPrice);
+      }
+      if (params.maxPrice !== undefined) {
+        query = query.lte('consultation_fee', params.maxPrice);
+      }
+
+      // Apply accepts new patients filter
+      if (params.acceptsNewPatients) {
+        query = query.eq('accepts_new_patients', true);
+      }
+
+      // Apply video consultation filter
+      if (params.videoConsultation) {
+        query = query.contains('consultation_types', ['video']);
+      }
+
+      // Apply language filter
+      if (params.language) {
+        query = query.contains('languages', [params.language]);
+      }
+
+      const { data, error } = await query
+        .order('weighted_rating', { ascending: false, nullsFirst: false })
+        .order('appointment_count', { ascending: false, nullsFirst: false });
+
+      if (error) throw error;
+      return { data: data || [], success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to search doctors');
+    }
+  },
+
+  async advancedPracticeSearch(params: {
+    query?: string;
+    location?: string;
+    practiceType?: string;
+    minRating?: number;
+  }) {
+    try {
+      let query = supabase
+        .from('practices')
+        .select('*')
+        .eq('verified', true);
+
+      if (params.query) {
+        const cleanQuery = params.query.replace(/[,()]/g, ' ').trim();
+        if (cleanQuery) {
+          query = query.ilike('name', `%${cleanQuery}%`);
+        }
+      }
+
+      if (params.location) {
+        const cleanLoc = params.location.replace(/[,()]/g, ' ').trim();
+        if (cleanLoc) {
+          query = query.or(`city.ilike.%${cleanLoc}%,country.ilike.%${cleanLoc}%`);
+        }
+      }
+
+      if (params.practiceType && params.practiceType !== 'all') {
+        query = query.eq('practice_type', params.practiceType);
+      }
+
+      if (params.minRating) {
+        query = query.gte('average_rating', params.minRating);
+      }
+
+      const { data, error } = await query
+        .order('weighted_rating', { ascending: false, nullsFirst: false })
+        .order('appointment_count', { ascending: false, nullsFirst: false });
+
+      if (error) throw error;
+      return { data: data || [], success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to search practices');
+    }
+  }
+};

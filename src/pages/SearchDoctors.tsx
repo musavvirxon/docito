@@ -4,11 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import ModernNavbar from '@/components/home/ModernNavbar';
 import ModernFooter from '@/components/home/ModernFooter';
-import { useDoctors } from '@/hooks/useDoctors';
-import { usePractices } from '@/hooks/usePractices';
 import { useBookingAuth } from '@/hooks/useBookingAuth';
 import { useSearchDiscovery, type SearchFilters } from '@/hooks/useSearchDiscovery';
-import { useGeolocation } from '@/hooks/useGeolocation';
+import { searchApi } from '@/lib/api/supabase-api';
 import { Filter, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DoctorSearchIllustration } from '@/components/Visuals/illustrations';
@@ -48,14 +46,10 @@ export default function SearchDoctors() {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [savedIds, setSavedIds] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const { searchDoctors, doctors, loading: doctorsLoading } = useDoctors();
-  const { searchPractices, loading: practicesLoading } = usePractices();
   const { handleBookingClick } = useBookingAuth();
   const { recordSearch } = useSearchDiscovery();
-  const { calculateDistance } = useGeolocation();
-
-  const isLoading = doctorsLoading || practicesLoading;
 
   const specialties = [
     { key: '', label: t('specialties.all') },
@@ -71,47 +65,26 @@ export default function SearchDoctors() {
     { key: 'ent', label: t('specialties.ent') },
   ];
 
-  const transformResults = useCallback((doctorsData: any[], practicesData: any[]): SearchResult[] => {
-    const transformedDoctors: SearchResult[] = doctorsData
-      .filter((doctor) => doctor.profiles?.full_name)
-      .map((doctor) => {
-        const practice = doctor.practices as any;
-        const profile = doctor.profiles as any;
-        const hasLocation = practice?.city && practice?.country;
-        
-        return {
-          id: doctor.id,
-          type: 'doctor' as const,
-          name: profile?.full_name,
-          imageUrl: profile?.avatar_url,
-          specialty: doctor.specialty,
-          rating: doctor.weighted_rating || doctor.average_rating,
-          reviewCount: doctor.num_reviews || 0,
-          location: hasLocation ? `${practice.city}, ${practice.country}` : undefined,
-          consultationFee: doctor.consultation_fee,
-          acceptsNewPatients: doctor.accepts_new_patients,
-          videoConsultation: doctor.consultation_types?.includes('video'),
-          acceptsInsurance: true, // TODO: Get from actual data
-        };
-      });
-
-    const transformedPractices: SearchResult[] = practicesData
-      .filter((practice) => practice.name)
-      .map((practice) => {
-        const hasLocation = practice.city && practice.country;
-        
-        return {
-          id: practice.id,
-          type: 'practice' as const,
-          name: practice.name,
-          imageUrl: practice.logo_url,
-          location: hasLocation ? `${practice.city}, ${practice.country}` : undefined,
-          rating: practice.weighted_rating || practice.average_rating,
-          reviewCount: practice.num_reviews || 0,
-        };
-      });
-
-    return [...transformedDoctors, ...transformedPractices];
+  const transformResults = useCallback((doctorsData: any[]): SearchResult[] => {
+    return doctorsData
+      .filter((doctor) => doctor.full_name)
+      .map((doctor) => ({
+        id: doctor.id,
+        type: 'doctor' as const,
+        name: doctor.full_name,
+        imageUrl: doctor.avatar_url,
+        specialty: doctor.specialty,
+        rating: doctor.weighted_rating || doctor.average_rating,
+        reviewCount: doctor.num_reviews || 0,
+        location: doctor.practice_city && doctor.practice_country 
+          ? `${doctor.practice_city}, ${doctor.practice_country}` 
+          : undefined,
+        consultationFee: doctor.consultation_fee,
+        acceptsNewPatients: doctor.accepts_new_patients,
+        videoConsultation: doctor.consultation_types?.includes('video'),
+        acceptsInsurance: true,
+        languages: doctor.languages,
+      }));
   }, []);
 
   const applyFiltersAndSort = useCallback((results: SearchResult[]): SearchResult[] => {
@@ -157,26 +130,42 @@ export default function SearchDoctors() {
   }, [filters, sortBy]);
 
   const performSearch = useCallback(async () => {
+    setIsLoading(true);
     const searchTerm = searchQuery || specialty;
     
     try {
-      const [doctorsResults, practicesResults] = await Promise.all([
-        searchDoctors(searchTerm, location, specialty),
-        searchPractices(searchTerm, location),
-      ]);
+      const result = await searchApi.advancedDoctorSearch({
+        query: searchTerm,
+        specialty: specialty || undefined,
+        location: location || undefined,
+        minRating: filters.minRating,
+        minPrice: filters.minPrice,
+        maxPrice: filters.maxPrice,
+        acceptsNewPatients: filters.acceptsNewPatients,
+        videoConsultation: filters.videoConsultation,
+        acceptsInsurance: filters.acceptsInsurance,
+        language: filters.language,
+        gender: filters.gender,
+      });
 
-      const results = transformResults(doctorsResults || [], practicesResults || []);
-      setSearchResults(results);
+      if ('success' in result && result.success) {
+        const results = transformResults(result.data || []);
+        setSearchResults(results);
+      } else {
+        setSearchResults([]);
+      }
       setHasSearched(true);
       
       // Record search
-      recordSearch(searchTerm, 'doctor', { specialty, location, ...filters }, results.length);
+      recordSearch(searchTerm, 'doctor', { specialty, location, ...filters }, searchResults.length);
     } catch (error) {
       console.error('Search error:', error);
       setSearchResults([]);
       setHasSearched(true);
+    } finally {
+      setIsLoading(false);
     }
-  }, [searchQuery, location, specialty, filters, searchDoctors, searchPractices, transformResults, recordSearch]);
+  }, [searchQuery, location, specialty, filters, transformResults, recordSearch, searchResults.length]);
 
   useEffect(() => {
     performSearch();
