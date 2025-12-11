@@ -19,10 +19,14 @@ import DashboardDemo from '@/components/home/premium/DashboardDemo';
 import TeamCollaboration from '@/components/home/premium/TeamCollaboration';
 import HealthPackages from '@/components/home/premium/HealthPackages';
 import TrendingServices from '@/components/home/premium/TrendingServices';
+import InsuranceProviders from '@/components/home/premium/InsuranceProviders';
+import Testimonials from '@/components/home/premium/Testimonials';
+import FAQ from '@/components/home/premium/FAQ';
 import GlobalTrust from '@/components/home/premium/GlobalTrust';
 import FinalCTA from '@/components/home/premium/FinalCTA';
 import MobileAppBanner from '@/components/home/premium/MobileAppBanner';
 import PremiumFooter from '@/components/home/premium/PremiumFooter';
+import ScrollToTop from '@/components/home/premium/ScrollToTop';
 
 export default function PremiumHome() {
   const { t } = useTranslation(['home', 'common']);
@@ -48,60 +52,72 @@ export default function PremiumHome() {
         <GlassHeader />
 
         <main>
-          {/* Section 1: Hero with 3D Orb */}
+          {/* Hero with 3D Orb */}
           <PremiumHero />
 
-          {/* Section 2: Smart Search */}
+          {/* Smart Search */}
           <SmartSearch />
 
-          {/* Section 3: Provider Cards */}
+          {/* Provider Cards */}
           <ProviderCards />
 
-          {/* Section 4: Platform Pillars */}
+          {/* Platform Pillars */}
           <PlatformPillars />
 
-          {/* Section 5: Live Metrics */}
+          {/* Live Metrics */}
           <LiveMetrics />
 
-          {/* Section 6: Specialties Carousel */}
+          {/* Specialties Carousel */}
           <SpecialtiesCarousel />
 
-          {/* Section 7: Featured Providers */}
+          {/* Featured Providers */}
           <FeaturedProviders />
 
-          {/* Section 8: Diagnostics Integration */}
+          {/* Diagnostics Integration */}
           <DiagnosticsSection />
 
-          {/* Section 9: Trending Services */}
+          {/* Trending Services */}
           <TrendingServices />
 
-          {/* Section 10: Health Packages */}
+          {/* Health Packages */}
           <HealthPackages />
 
-          {/* Section 11: Booking Steps */}
+          {/* Booking Steps */}
           <BookingSteps />
 
-          {/* Section 12: Platform Capabilities */}
+          {/* Platform Capabilities */}
           <CapabilitiesGrid />
 
-          {/* Section 13: Dashboard Demo */}
+          {/* Dashboard Demo */}
           <DashboardDemo />
 
-          {/* Section 14: Team Collaboration */}
+          {/* Team Collaboration */}
           <TeamCollaboration />
 
-          {/* Section 15: Global Trust */}
+          {/* Insurance Providers */}
+          <InsuranceProviders />
+
+          {/* Testimonials */}
+          <Testimonials />
+
+          {/* FAQ */}
+          <FAQ />
+
+          {/* Global Trust */}
           <GlobalTrust />
 
-          {/* Section 16: Final CTA */}
+          {/* Final CTA */}
           <FinalCTA />
 
-          {/* Section 17: Mobile App Banner */}
+          {/* Mobile App Banner */}
           <MobileAppBanner />
         </main>
 
         {/* Footer */}
         <PremiumFooter />
+
+        {/* Scroll to Top */}
+        <ScrollToTop />
       </div>
     </ThemeProvider>
   );
