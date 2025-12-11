@@ -10,6 +10,14 @@ import SmartSearch from '@/components/home/premium/SmartSearch';
 import ProviderCards from '@/components/home/premium/ProviderCards';
 import PlatformPillars from '@/components/home/premium/PlatformPillars';
 import LiveMetrics from '@/components/home/premium/LiveMetrics';
+import SpecialtiesCarousel from '@/components/home/premium/SpecialtiesCarousel';
+import FeaturedProviders from '@/components/home/premium/FeaturedProviders';
+import DiagnosticsSection from '@/components/home/premium/DiagnosticsSection';
+import BookingSteps from '@/components/home/premium/BookingSteps';
+import CapabilitiesGrid from '@/components/home/premium/CapabilitiesGrid';
+import DashboardDemo from '@/components/home/premium/DashboardDemo';
+import GlobalTrust from '@/components/home/premium/GlobalTrust';
+import FinalCTA from '@/components/home/premium/FinalCTA';
 import MobileAppBanner from '@/components/home/premium/MobileAppBanner';
 import PremiumFooter from '@/components/home/premium/PremiumFooter';
 
@@ -52,7 +60,31 @@ export default function PremiumHome() {
           {/* Section 5: Live Metrics */}
           <LiveMetrics />
 
-          {/* Section 13: Mobile App Banner */}
+          {/* Section 6: Specialties Carousel */}
+          <SpecialtiesCarousel />
+
+          {/* Section 7: Featured Providers */}
+          <FeaturedProviders />
+
+          {/* Section 8: Diagnostics Integration */}
+          <DiagnosticsSection />
+
+          {/* Section 9: Booking Steps */}
+          <BookingSteps />
+
+          {/* Section 10: Platform Capabilities */}
+          <CapabilitiesGrid />
+
+          {/* Section 11: Dashboard Demo */}
+          <DashboardDemo />
+
+          {/* Section 12: Global Trust */}
+          <GlobalTrust />
+
+          {/* Section 13: Final CTA */}
+          <FinalCTA />
+
+          {/* Section 14: Mobile App Banner */}
           <MobileAppBanner />
         </main>
 
