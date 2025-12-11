@@ -6237,19 +6237,30 @@ export type Database = {
       doctor_profiles_view: {
         Row: {
           accepts_new_patients: boolean | null
+          appointment_count: number | null
           avatar_url: string | null
+          average_rating: number | null
           bio: string | null
           consultation_fee: number | null
+          consultation_types: string[] | null
           created_at: string | null
           email: string | null
           full_name: string | null
           id: string | null
+          languages: string[] | null
           license_number: string | null
+          num_reviews: number | null
           phone: string | null
+          practice_address: string | null
+          practice_city: string | null
+          practice_country: string | null
           practice_id: string | null
+          practice_name: string | null
           specialty: string | null
           user_id: string | null
           verified: boolean | null
+          weighted_rating: number | null
+          years_experience: number | null
         }
         Relationships: [
           {
