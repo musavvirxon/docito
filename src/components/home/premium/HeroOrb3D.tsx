@@ -7,12 +7,8 @@ import {
   Stethoscope, 
   FlaskConical, 
   Pill, 
-  User, 
   Users,
   Heart,
-  Scan,
-  Ambulance,
-  Microscope,
   type LucideIcon
 } from 'lucide-react';
 
@@ -31,18 +27,14 @@ interface NodeData {
   verticalOffset: number;
 }
 
-// Medical ecosystem nodes
+// Medical ecosystem nodes - 6 key nodes evenly spaced
 const medicalNodes: Omit<NodeData, 'position'>[] = [
-  { id: 'hospital', name: 'Central Hospital', role: 'Hospital', description: 'Multi-specialty healthcare center', Icon: Building2, color: '#3b82f6', orbitRadius: 2.2, orbitSpeed: 0.15, orbitOffset: 0, verticalOffset: 0.3 },
-  { id: 'clinic', name: 'City Clinic', role: 'Clinic', description: 'Primary care facility', Icon: Heart, color: '#ec4899', orbitRadius: 2.0, orbitSpeed: 0.18, orbitOffset: Math.PI / 3, verticalOffset: -0.2 },
-  { id: 'lab', name: 'DiagnoLab', role: 'Laboratory', description: 'Advanced diagnostic testing', Icon: FlaskConical, color: '#8b5cf6', orbitRadius: 2.4, orbitSpeed: 0.12, orbitOffset: Math.PI * 2 / 3, verticalOffset: 0.5 },
-  { id: 'pharmacy', name: 'MedPharm', role: 'Pharmacy', description: '24/7 medication services', Icon: Pill, color: '#10b981', orbitRadius: 1.9, orbitSpeed: 0.2, orbitOffset: Math.PI, verticalOffset: -0.4 },
-  { id: 'doctor1', name: 'Dr. Smith', role: 'Doctor', description: 'Cardiologist specialist', Icon: Stethoscope, color: '#06b6d4', orbitRadius: 2.3, orbitSpeed: 0.16, orbitOffset: Math.PI * 4 / 3, verticalOffset: 0.1 },
-  { id: 'doctor2', name: 'Dr. Johnson', role: 'Doctor', description: 'General practitioner', Icon: User, color: '#f59e0b', orbitRadius: 2.1, orbitSpeed: 0.14, orbitOffset: Math.PI * 5 / 3, verticalOffset: -0.3 },
-  { id: 'patient1', name: 'Patient Care', role: 'Patients', description: 'Connected health monitoring', Icon: Users, color: '#ef4444', orbitRadius: 2.5, orbitSpeed: 0.1, orbitOffset: Math.PI / 6, verticalOffset: 0.4 },
-  { id: 'imaging', name: 'ScanCenter', role: 'Imaging', description: 'MRI & CT scanning', Icon: Scan, color: '#14b8a6', orbitRadius: 2.2, orbitSpeed: 0.17, orbitOffset: Math.PI * 7 / 6, verticalOffset: -0.1 },
-  { id: 'emergency', name: 'Emergency', role: 'Emergency', description: 'Rapid response unit', Icon: Ambulance, color: '#dc2626', orbitRadius: 2.0, orbitSpeed: 0.22, orbitOffset: Math.PI * 3 / 2, verticalOffset: 0.2 },
-  { id: 'research', name: 'BioResearch', role: 'Research', description: 'Medical research lab', Icon: Microscope, color: '#7c3aed', orbitRadius: 2.6, orbitSpeed: 0.08, orbitOffset: Math.PI * 11 / 6, verticalOffset: -0.5 },
+  { id: 'hospital', name: 'Hospital', role: 'Healthcare Center', description: 'Multi-specialty healthcare center', Icon: Building2, color: '#3b82f6', orbitRadius: 2.4, orbitSpeed: 0.08, orbitOffset: 0, verticalOffset: 0.6 },
+  { id: 'clinic', name: 'Clinic', role: 'Primary Care', description: 'Primary care facility', Icon: Heart, color: '#ec4899', orbitRadius: 2.4, orbitSpeed: 0.08, orbitOffset: Math.PI / 3, verticalOffset: -0.5 },
+  { id: 'lab', name: 'Laboratory', role: 'Diagnostics', description: 'Advanced diagnostic testing', Icon: FlaskConical, color: '#8b5cf6', orbitRadius: 2.4, orbitSpeed: 0.08, orbitOffset: Math.PI * 2 / 3, verticalOffset: 0.4 },
+  { id: 'pharmacy', name: 'Pharmacy', role: 'Medications', description: '24/7 medication services', Icon: Pill, color: '#10b981', orbitRadius: 2.4, orbitSpeed: 0.08, orbitOffset: Math.PI, verticalOffset: -0.6 },
+  { id: 'doctor', name: 'Doctors', role: 'Specialists', description: 'Medical specialists', Icon: Stethoscope, color: '#06b6d4', orbitRadius: 2.4, orbitSpeed: 0.08, orbitOffset: Math.PI * 4 / 3, verticalOffset: 0.5 },
+  { id: 'patient', name: 'Patients', role: 'Care Recipients', description: 'Connected health monitoring', Icon: Users, color: '#f59e0b', orbitRadius: 2.4, orbitSpeed: 0.08, orbitOffset: Math.PI * 5 / 3, verticalOffset: -0.4 },
 ];
 
 // Scroll opacity hook
@@ -281,16 +273,16 @@ function FloatingNode({
           onClick={onClick}
         >
           {/* Glow effect */}
-          <Sphere ref={glowRef} args={[0.25, 16, 16]}>
+          <Sphere ref={glowRef} args={[0.35, 16, 16]}>
             <meshBasicMaterial
               color={node.color}
               transparent
-              opacity={(isHovered || localHover ? 0.4 : 0.2) * opacity}
+              opacity={(isHovered || localHover ? 0.5 : 0.25) * opacity}
             />
           </Sphere>
           
           {/* Node sphere */}
-          <Sphere args={[0.18, 24, 24]}>
+          <Sphere args={[0.24, 24, 24]}>
             <meshPhysicalMaterial
               color={node.color}
               metalness={0.3}
@@ -305,20 +297,20 @@ function FloatingNode({
           {/* Icon */}
           <Html
             transform
-            distanceFactor={6}
+            distanceFactor={4.5}
             style={{
               pointerEvents: 'none',
             }}
           >
             <div 
-              className="flex items-center justify-center w-8 h-8 rounded-full"
+              className="flex items-center justify-center w-11 h-11 rounded-full"
               style={{ 
-                backgroundColor: `${node.color}20`,
-                border: `1px solid ${node.color}40`,
-                boxShadow: `0 0 15px ${node.color}60`
+                backgroundColor: `${node.color}30`,
+                border: `2px solid ${node.color}60`,
+                boxShadow: `0 0 20px ${node.color}80`
               }}
             >
-              <IconComponent size={14} style={{ color: node.color }} />
+              <IconComponent size={20} style={{ color: node.color }} />
             </div>
           </Html>
           
@@ -422,15 +414,15 @@ function OrbitRings({ opacity }: { opacity: number }) {
   return (
     <group>
       <mesh ref={ring1Ref}>
-        <ringGeometry args={[1.6, 1.62, 64]} />
+        <ringGeometry args={[1.8, 1.82, 64]} />
         <meshBasicMaterial color="#3b82f6" transparent opacity={0.2 * opacity} side={THREE.DoubleSide} />
       </mesh>
       <mesh ref={ring2Ref}>
-        <ringGeometry args={[1.9, 1.92, 64]} />
+        <ringGeometry args={[2.1, 2.12, 64]} />
         <meshBasicMaterial color="#8b5cf6" transparent opacity={0.15 * opacity} side={THREE.DoubleSide} />
       </mesh>
       <mesh ref={ring3Ref}>
-        <ringGeometry args={[2.2, 2.22, 64]} />
+        <ringGeometry args={[2.5, 2.52, 64]} />
         <meshBasicMaterial color="#06b6d4" transparent opacity={0.1 * opacity} side={THREE.DoubleSide} />
       </mesh>
     </group>
@@ -491,10 +483,10 @@ function Scene({
       <OrbitControls
         enableZoom={true}
         enablePan={false}
-        minDistance={4}
-        maxDistance={8}
+        minDistance={5}
+        maxDistance={10}
         autoRotate
-        autoRotateSpeed={0.5}
+        autoRotateSpeed={0.3}
         enableDamping
         dampingFactor={0.05}
         minPolarAngle={Math.PI / 4}
@@ -586,7 +578,7 @@ export default function HeroOrb3D() {
       onClick={() => setSelectedNode(null)}
     >
       <Canvas
-        camera={{ position: [0, 0, 5.5], fov: 45 }}
+        camera={{ position: [0, 0, 6.5], fov: 45 }}
         style={{ background: 'transparent' }}
         gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
         dpr={[1, 1.5]}
