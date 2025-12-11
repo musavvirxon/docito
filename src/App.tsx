@@ -9,7 +9,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageRouter } from "@/components/LanguageRouter";
 import { useTranslation } from "react-i18next";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
-import Index from "./pages/Index";
+import PremiumHome from "./pages/PremiumHome";
 
 // Lazy load non-critical pages to reduce initial bundle size
 const SignUp = lazy(() => import("./pages/SignUp"));
@@ -86,7 +86,7 @@ const LanguageRoutes = () => {
     <LanguageRouter>
       <Routes>
       {/* Default routes (no language prefix) */}
-      <Route path="/" element={<Index />} />
+      <Route path="/" element={<PremiumHome />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/dashboard" element={<Dashboard />} />
@@ -131,7 +131,7 @@ const LanguageRoutes = () => {
       <Route path="/messages" element={<Messages />} />
       
       {/* Language-prefixed routes */}
-      <Route path="/:lang/" element={<Index />} />
+      <Route path="/:lang/" element={<PremiumHome />} />
       <Route path="/:lang/auth" element={<Auth />} />
       <Route path="/:lang/signup" element={<SignUp />} />
       <Route path="/:lang/dashboard" element={<Dashboard />} />
