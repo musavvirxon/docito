@@ -2,14 +2,14 @@ import { motion } from 'framer-motion';
 import { Shield, Check } from 'lucide-react';
 
 const insuranceProviders = [
-  { name: 'Aetna', logo: 'A' },
-  { name: 'Blue Cross', logo: 'BC' },
-  { name: 'Cigna', logo: 'C' },
-  { name: 'United', logo: 'UH' },
-  { name: 'Kaiser', logo: 'KP' },
-  { name: 'Humana', logo: 'H' },
-  { name: 'Anthem', logo: 'An' },
-  { name: 'Medicare', logo: 'M' },
+  { name: 'Aetna', color: 'bg-purple-600' },
+  { name: 'Blue Cross', color: 'bg-blue-600' },
+  { name: 'Cigna', color: 'bg-orange-500' },
+  { name: 'United', color: 'bg-blue-700' },
+  { name: 'Kaiser', color: 'bg-red-600' },
+  { name: 'Humana', color: 'bg-green-600' },
+  { name: 'Anthem', color: 'bg-blue-500' },
+  { name: 'Medicare', color: 'bg-teal-600' },
 ];
 
 const benefits = [
@@ -52,12 +52,12 @@ export default function InsuranceProviders() {
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: index * 0.05 }}
               whileHover={{ scale: 1.05, y: -3 }}
-              className="w-24 h-24 rounded-2xl bg-card border border-border/50 flex flex-col items-center justify-center gap-2 hover:border-primary/30 hover:shadow-lg transition-all duration-300 cursor-pointer"
+              className="w-28 h-28 rounded-2xl bg-card border border-border/50 flex flex-col items-center justify-center gap-3 hover:border-primary/30 hover:shadow-lg transition-all duration-300 cursor-pointer"
             >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary font-bold text-sm">
-                {provider.logo}
+              <div className={`w-12 h-12 rounded-xl ${provider.color} flex items-center justify-center text-white font-bold text-lg shadow-md`}>
+                {provider.name.charAt(0)}
               </div>
-              <span className="text-xs text-muted-foreground">{provider.name}</span>
+              <span className="text-xs text-foreground font-medium">{provider.name}</span>
             </motion.div>
           ))}
         </div>
@@ -70,7 +70,7 @@ export default function InsuranceProviders() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="flex flex-wrap justify-center gap-6"
         >
-          {benefits.map((benefit, index) => (
+          {benefits.map((benefit) => (
             <div
               key={benefit}
               className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10"

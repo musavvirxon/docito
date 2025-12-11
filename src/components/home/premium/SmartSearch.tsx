@@ -1,22 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, MapPin, Shield, Mic, Sparkles, X, Clock, TrendingUp } from 'lucide-react';
+import { Search, MapPin, Shield, Mic, Sparkles, Clock, TrendingUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import gsap from 'gsap';
-
-const recentSearches = [
-  { type: 'doctor', text: 'Dr. Sarah Johnson - Cardiologist' },
-  { type: 'lab', text: 'Complete Blood Count Test' },
-  { type: 'pharmacy', text: 'Central Pharmacy - Open Now' },
-];
-
-const trendingSearches = [
-  'General Practitioner',
-  'COVID-19 Test',
-  'Dental Cleaning',
-  'Eye Exam',
-  'Blood Pressure Check',
-];
 
 export default function SmartSearch() {
   const { t } = useTranslation(['home']);
@@ -58,61 +44,63 @@ export default function SmartSearch() {
 
           <div className="relative p-6 lg:p-8">
             {/* Main Search Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-              {/* Search Input */}
-              <div className="lg:col-span-5 relative">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  <Search className="w-5 h-5" />
+            <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {/* Search Input */}
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    <Search className="w-5 h-5" />
+                  </div>
+                  <input
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onFocus={() => setFocused(true)}
+                    onBlur={() => setTimeout(() => setFocused(false), 200)}
+                    placeholder={t('home:search.specialty', 'Search doctors, labs, services...')}
+                    className="w-full pl-12 pr-12 py-4 bg-muted/30 rounded-2xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+                  />
+                  <button className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors">
+                    <Mic className="w-5 h-5" />
+                  </button>
                 </div>
-                <input
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  onFocus={() => setFocused(true)}
-                  onBlur={() => setTimeout(() => setFocused(false), 200)}
-                  placeholder={t('home:search.specialty', 'Search doctors, labs, services...')}
-                  className="w-full pl-12 pr-12 py-4 bg-muted/30 rounded-2xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-                />
-                <button className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors">
-                  <Mic className="w-5 h-5" />
-                </button>
+
+                {/* Location Input */}
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    <MapPin className="w-5 h-5" />
+                  </div>
+                  <input
+                    type="text"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder={t('home:search.location', 'Location')}
+                    className="w-full pl-12 pr-4 py-4 bg-muted/30 rounded-2xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+                  />
+                </div>
+
+                {/* Insurance Input */}
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    <Shield className="w-5 h-5" />
+                  </div>
+                  <input
+                    type="text"
+                    value={insurance}
+                    onChange={(e) => setInsurance(e.target.value)}
+                    placeholder={t('home:search.insurance', 'Insurance')}
+                    className="w-full pl-12 pr-4 py-4 bg-muted/30 rounded-2xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+                  />
+                </div>
               </div>
 
-              {/* Location Input */}
-              <div className="lg:col-span-3 relative">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  <MapPin className="w-5 h-5" />
-                </div>
-                <input
-                  type="text"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder={t('home:search.location', 'Location')}
-                  className="w-full pl-12 pr-4 py-4 bg-muted/30 rounded-2xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-                />
-              </div>
-
-              {/* Insurance Input */}
-              <div className="lg:col-span-2 relative">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  <Shield className="w-5 h-5" />
-                </div>
-                <input
-                  type="text"
-                  value={insurance}
-                  onChange={(e) => setInsurance(e.target.value)}
-                  placeholder={t('home:search.insurance', 'Insurance')}
-                  className="w-full pl-12 pr-4 py-4 bg-muted/30 rounded-2xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-                />
-              </div>
-
-              {/* Search Button */}
-              <div className="lg:col-span-2">
+              {/* Centered Search Button */}
+              <div className="flex justify-center">
                 <motion.button
                   onClick={handleSearch}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full py-4 bg-primary text-primary-foreground font-medium rounded-2xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all flex items-center justify-center gap-2"
+                  className="px-12 py-4 bg-primary text-primary-foreground font-medium rounded-2xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all flex items-center justify-center gap-2"
                 >
                   <Search className="w-5 h-5" />
                   <span>{t('home:search.button', 'Search')}</span>
@@ -138,18 +126,7 @@ export default function SmartSearch() {
                         <span>{t('home:search.recent', 'Recent Searches')}</span>
                       </div>
                       <div className="space-y-2">
-                        {recentSearches.map((item, i) => (
-                          <motion.button
-                            key={i}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: i * 0.1 }}
-                            className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-foreground hover:bg-muted/50 rounded-xl transition-colors"
-                          >
-                            <Search className="w-4 h-4 text-muted-foreground" />
-                            <span>{item.text}</span>
-                          </motion.button>
-                        ))}
+                        <p className="text-sm text-muted-foreground italic">No recent searches</p>
                       </div>
                     </div>
 
@@ -157,10 +134,10 @@ export default function SmartSearch() {
                     <div>
                       <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-4">
                         <TrendingUp className="w-4 h-4" />
-                        <span>{t('home:search.trending', 'Trending')}</span>
+                        <span>{t('home:search.trending', 'Popular Searches')}</span>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {trendingSearches.map((item, i) => (
+                        {['General Practitioner', 'Dentist', 'Eye Exam', 'Blood Test'].map((item, i) => (
                           <motion.button
                             key={i}
                             initial={{ opacity: 0, scale: 0.9 }}
@@ -184,7 +161,7 @@ export default function SmartSearch() {
                   >
                     <Sparkles className="w-5 h-5 text-primary" />
                     <span className="text-sm text-foreground">
-                      {t('home:search.aiSuggestion', 'Try "Find a cardiologist near me accepting Blue Cross"')}
+                      {t('home:search.aiSuggestion', 'Try "Find a cardiologist near me"')}
                     </span>
                   </motion.div>
                 </motion.div>

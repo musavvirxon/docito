@@ -1,8 +1,8 @@
-import { useRef, useEffect, useState } from 'react';
-import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
+import { useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
 import { 
   Calendar, Users, TrendingUp, Clock, 
-  Bell, FileText, Activity, CheckCircle 
+  Bell, Activity, CheckCircle 
 } from 'lucide-react';
 
 const mockWidgets = [
@@ -19,49 +19,9 @@ const recentActivity = [
   { type: 'record', text: 'Lab results uploaded', time: '18 min ago' },
 ];
 
-function AnimatedCounter({ target, duration = 2 }: { target: string; duration?: number }) {
-  const [count, setCount] = useState(0);
-  const numericValue = parseFloat(target.replace(/[^0-9.]/g, ''));
-  const prefix = target.match(/^[^0-9]*/)?.[0] || '';
-  const suffix = target.match(/[^0-9]*$/)?.[0] || '';
-
-  useEffect(() => {
-    let startTime: number;
-    const animate = (currentTime: number) => {
-      if (!startTime) startTime = currentTime;
-      const progress = Math.min((currentTime - startTime) / (duration * 1000), 1);
-      setCount(Math.floor(progress * numericValue));
-      if (progress < 1) requestAnimationFrame(animate);
-    };
-    requestAnimationFrame(animate);
-  }, [numericValue, duration]);
-
-  return <>{prefix}{count.toLocaleString()}{suffix}</>;
-}
-
 export default function DashboardDemo() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  
-  const rotateX = useSpring(useTransform(mouseY, [-300, 300], [5, -5]), { stiffness: 100, damping: 30 });
-  const rotateY = useSpring(useTransform(mouseX, [-300, 300], [-5, 5]), { stiffness: 100, damping: 30 });
-
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ['start end', 'end start']
-  });
-
-  const scale = useTransform(scrollYProgress, [0, 0.5], [0.8, 1]);
-  const opacity = useTransform(scrollYProgress, [0, 0.3], [0, 1]);
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (rect) {
-      mouseX.set(e.clientX - rect.left - rect.width / 2);
-      mouseY.set(e.clientY - rect.top - rect.height / 2);
-    }
-  };
+  const isInView = useInView(containerRef, { once: true, margin: '-100px' });
 
   return (
     <section className="py-24 bg-muted/30 overflow-hidden">
@@ -83,12 +43,9 @@ export default function DashboardDemo() {
 
         <motion.div
           ref={containerRef}
-          style={{ scale, opacity, rotateX, rotateY, perspective: 1000 }}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={() => {
-            mouseX.set(0);
-            mouseY.set(0);
-          }}
+          initial={{ opacity: 0, y: 40 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
           className="relative"
         >
           {/* Dashboard mockup */}
@@ -114,8 +71,7 @@ export default function DashboardDemo() {
                   <motion.div
                     key={widget.label}
                     initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
+                    animate={isInView ? { opacity: 1, y: 0 } : {}}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                     className="p-4 rounded-2xl bg-background border border-border/50"
                   >
@@ -125,7 +81,7 @@ export default function DashboardDemo() {
                     </div>
                     <div className="flex items-end justify-between">
                       <span className="text-2xl font-semibold text-foreground">
-                        <AnimatedCounter target={widget.value} />
+                        {widget.value}
                       </span>
                       <span className={`text-xs ${widget.change.startsWith('+') ? 'text-emerald-500' : 'text-rose-500'}`}>
                         {widget.change}
@@ -139,8 +95,7 @@ export default function DashboardDemo() {
                 {/* Chart placeholder */}
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
+                  animate={isInView ? { opacity: 1, x: 0 } : {}}
                   transition={{ duration: 0.6, delay: 0.3 }}
                   className="lg:col-span-2 p-6 rounded-2xl bg-background border border-border/50"
                 >
@@ -153,9 +108,8 @@ export default function DashboardDemo() {
                       <motion.div
                         key={i}
                         initial={{ height: 0 }}
-                        whileInView={{ height: `${height}%` }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.8, delay: 0.5 + i * 0.1 }}
+                        animate={isInView ? { height: `${height}%` } : {}}
+                        transition={{ duration: 0.6, delay: 0.4 + i * 0.05 }}
                         className="flex-1 bg-gradient-to-t from-primary to-primary/50 rounded-t-lg"
                       />
                     ))}
@@ -170,8 +124,7 @@ export default function DashboardDemo() {
                 {/* Recent activity */}
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
+                  animate={isInView ? { opacity: 1, x: 0 } : {}}
                   transition={{ duration: 0.6, delay: 0.4 }}
                   className="p-6 rounded-2xl bg-background border border-border/50"
                 >
@@ -184,9 +137,8 @@ export default function DashboardDemo() {
                       <motion.div
                         key={index}
                         initial={{ opacity: 0, x: 10 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.4, delay: 0.6 + index * 0.1 }}
+                        animate={isInView ? { opacity: 1, x: 0 } : {}}
+                        transition={{ duration: 0.4, delay: 0.5 + index * 0.1 }}
                         className="flex items-start gap-3"
                       >
                         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -207,22 +159,11 @@ export default function DashboardDemo() {
           {/* Floating elements */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.8 }}
+            animate={isInView ? { opacity: 1, scale: 1 } : {}}
+            transition={{ duration: 0.5, delay: 0.6 }}
             className="absolute -top-4 -right-4 md:-right-8 p-4 rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/30"
           >
             <CheckCircle className="w-6 h-6" />
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 1 }}
-            className="absolute -bottom-4 -left-4 md:-left-8 p-4 rounded-2xl bg-violet-500 text-white shadow-lg shadow-violet-500/30"
-          >
-            <FileText className="w-6 h-6" />
           </motion.div>
         </motion.div>
       </div>

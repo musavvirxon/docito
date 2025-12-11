@@ -2,18 +2,19 @@ import { motion } from 'framer-motion';
 import { TrendingUp, Clock, Star, ChevronRight } from 'lucide-react';
 
 const trendingTests = [
-  { name: 'Complete Blood Count', price: 25, time: '24 hrs', bookings: '2.4k' },
-  { name: 'Lipid Profile', price: 35, time: '24 hrs', bookings: '1.8k' },
-  { name: 'HbA1c Test', price: 30, time: '24 hrs', bookings: '1.5k' },
-  { name: 'Thyroid Panel', price: 45, time: '48 hrs', bookings: '1.2k' },
-  { name: 'Vitamin D Test', price: 40, time: '24 hrs', bookings: '1.1k' },
+  { name: 'Complete Blood Count', time: '24 hrs', bookings: '2.4k' },
+  { name: 'Lipid Profile', time: '24 hrs', bookings: '1.8k' },
+  { name: 'HbA1c Test', time: '24 hrs', bookings: '1.5k' },
+  { name: 'Thyroid Panel', time: '48 hrs', bookings: '1.2k' },
+  { name: 'Vitamin D Test', time: '24 hrs', bookings: '1.1k' },
 ];
 
 const trendingImaging = [
-  { name: 'Chest X-Ray', price: 50, time: 'Same day', bookings: '980' },
-  { name: 'Abdominal Ultrasound', price: 120, time: 'Same day', bookings: '750' },
-  { name: 'MRI Brain', price: 350, time: '2-3 days', bookings: '520' },
-  { name: 'CT Scan Chest', price: 280, time: '1-2 days', bookings: '480' },
+  { name: 'Chest X-Ray', time: 'Same day', bookings: '980' },
+  { name: 'Abdominal Ultrasound', time: 'Same day', bookings: '750' },
+  { name: 'MRI Brain', time: '2-3 days', bookings: '520' },
+  { name: 'CT Scan Chest', time: '1-2 days', bookings: '480' },
+  { name: 'Mammography', time: 'Same day', bookings: '450' },
 ];
 
 export default function TrendingServices() {
@@ -78,10 +79,7 @@ export default function TrendingServices() {
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-lg font-semibold text-primary">${test.price}</span>
-                      <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                   </div>
                 </motion.div>
               ))}
@@ -126,10 +124,7 @@ export default function TrendingServices() {
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-lg font-semibold text-primary">${service.price}</span>
-                      <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                   </div>
                 </motion.div>
               ))}

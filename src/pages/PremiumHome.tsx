@@ -17,7 +17,6 @@ import BookingSteps from '@/components/home/premium/BookingSteps';
 import CapabilitiesGrid from '@/components/home/premium/CapabilitiesGrid';
 import DashboardDemo from '@/components/home/premium/DashboardDemo';
 import TeamCollaboration from '@/components/home/premium/TeamCollaboration';
-import HealthPackages from '@/components/home/premium/HealthPackages';
 import TrendingServices from '@/components/home/premium/TrendingServices';
 import NearbyPharmacies from '@/components/home/premium/NearbyPharmacies';
 import InsuranceProviders from '@/components/home/premium/InsuranceProviders';
@@ -80,9 +79,6 @@ export default function PremiumHome() {
 
           {/* Trending Services */}
           <TrendingServices />
-
-          {/* Health Packages */}
-          <HealthPackages />
 
           {/* Nearby Pharmacies */}
           <NearbyPharmacies />

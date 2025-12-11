@@ -2,12 +2,12 @@ import { motion } from 'framer-motion';
 import { Globe, Shield, Award, CheckCircle } from 'lucide-react';
 
 const regions = [
-  { name: 'North America', flag: '🇺🇸' },
-  { name: 'Europe', flag: '🇪🇺' },
-  { name: 'Asia Pacific', flag: '🇸🇬' },
-  { name: 'Middle East', flag: '🇦🇪' },
-  { name: 'Latin America', flag: '🇧🇷' },
-  { name: 'Africa', flag: '🇿🇦' },
+  { name: 'North America', flag: '🇺🇸', bgColor: 'bg-blue-500/10' },
+  { name: 'Europe', flag: '🇪🇺', bgColor: 'bg-indigo-500/10' },
+  { name: 'Asia Pacific', flag: '🇸🇬', bgColor: 'bg-red-500/10' },
+  { name: 'Middle East', flag: '🇦🇪', bgColor: 'bg-green-500/10' },
+  { name: 'Latin America', flag: '🇧🇷', bgColor: 'bg-yellow-500/10' },
+  { name: 'Africa', flag: '🇿🇦', bgColor: 'bg-emerald-500/10' },
 ];
 
 const certifications = [
@@ -39,7 +39,7 @@ export default function GlobalTrust() {
           </p>
         </motion.div>
 
-        {/* Regions */}
+        {/* Regions with visible flags */}
         <div className="flex flex-wrap justify-center gap-4 mb-16">
           {regions.map((region, index) => (
             <motion.div
@@ -49,9 +49,9 @@ export default function GlobalTrust() {
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: index * 0.05 }}
               whileHover={{ scale: 1.05, y: -2 }}
-              className="flex items-center gap-2 px-5 py-3 rounded-full bg-card border border-border/50 hover:border-primary/30 hover:shadow-lg transition-all duration-300"
+              className={`flex items-center gap-3 px-5 py-3 rounded-full ${region.bgColor} border border-border/50 hover:border-primary/30 hover:shadow-lg transition-all duration-300`}
             >
-              <span className="text-2xl">{region.flag}</span>
+              <span className="text-3xl" role="img" aria-label={region.name}>{region.flag}</span>
               <span className="text-sm font-medium text-foreground">{region.name}</span>
             </motion.div>
           ))}

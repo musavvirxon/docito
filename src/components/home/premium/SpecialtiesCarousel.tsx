@@ -39,7 +39,7 @@ export default function SpecialtiesCarousel() {
 
     let animationId: number;
     let scrollPos = 0;
-    const speed = 0.5;
+    const speed = 0.2; // Slower speed for gentle movement
 
     const autoScroll = () => {
       if (scrollContainer) {
