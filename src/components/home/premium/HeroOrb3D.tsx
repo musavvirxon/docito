@@ -1,6 +1,6 @@
 import { useRef, useMemo, useEffect, useState, useCallback } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, Sphere, OrbitControls, Html, Line } from '@react-three/drei';
+import { Sphere, OrbitControls, Html, Line } from '@react-three/drei';
 import * as THREE from 'three';
 import { 
   Building2, 
@@ -345,7 +345,6 @@ function FloatingNode({
   globeRef: React.RefObject<THREE.Mesh>;
 }) {
   const groupRef = useRef<THREE.Group>(null);
-  const glowRef = useRef<THREE.Mesh>(null);
   const [localHover, setLocalHover] = useState(false);
   const [currentPosition, setCurrentPosition] = useState(new THREE.Vector3(node.orbitRadius, node.verticalOffset, 0));
   const [isVisible, setIsVisible] = useState(true);
@@ -366,7 +365,6 @@ function FloatingNode({
       setCurrentPosition(new THREE.Vector3(x, y, z));
       
       // Check if node is behind the globe (z < 0 means behind from default camera view)
-      // We check relative to camera position
       const cameraPos = state.camera.position;
       const nodeWorldPos = new THREE.Vector3(x, y, z);
       const toCamera = cameraPos.clone().sub(nodeWorldPos).normalize();
@@ -377,15 +375,6 @@ function FloatingNode({
       const distToCenter = Math.sqrt(x * x + z * z);
       const isBehind = z < -0.3 && distToCenter < 2;
       setIsVisible(!isBehind);
-      
-      // Scale on hover
-      const targetScale = isHovered || localHover ? 1.2 : 1;
-      groupRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
-    }
-    if (glowRef.current) {
-      // Pulse glow
-      const pulseScale = 1 + Math.sin(time * 3) * 0.1;
-      glowRef.current.scale.setScalar(pulseScale);
     }
   });
 
@@ -411,83 +400,63 @@ function FloatingNode({
         <ConnectionLine nodePosition={currentPosition} color={node.color} opacity={opacity * 0.2} />
       )}
       
-      <Float speed={1.5} rotationIntensity={0.1} floatIntensity={0.3}>
-        <group 
-          ref={groupRef} 
-          position={[node.orbitRadius, node.verticalOffset, 0]}
-          onPointerEnter={handlePointerEnter}
-          onPointerLeave={handlePointerLeave}
-          onClick={() => isVisible && onClick()}
+      <group 
+        ref={groupRef} 
+        position={[node.orbitRadius, node.verticalOffset, 0]}
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
+        onClick={() => isVisible && onClick()}
+      >
+        {/* Combined Node with Icon - single Html element for perfect alignment */}
+        <Html
+          center
+          style={{
+            pointerEvents: isVisible ? 'auto' : 'none',
+            opacity: isVisible ? 1 : 0.1,
+            transition: 'opacity 0.3s ease',
+          }}
         >
-          {/* Glow effect - fade when behind */}
-          <Sphere ref={glowRef} args={[0.35, 16, 16]}>
-            <meshBasicMaterial
-              color={node.color}
-              transparent
-              opacity={(isHovered || localHover ? 0.5 : 0.25) * opacity * (isVisible ? 1 : 0.1)}
-            />
-          </Sphere>
-          
-          {/* Node sphere - fade when behind */}
-          <Sphere args={[0.24, 24, 24]}>
-            <meshPhysicalMaterial
-              color={node.color}
-              metalness={0.3}
-              roughness={0.2}
-              transparent
-              opacity={0.9 * opacity * (isVisible ? 1 : 0.1)}
-              emissive={node.color}
-              emissiveIntensity={isHovered || localHover ? 0.5 : 0.2}
-            />
-          </Sphere>
-          
-          {/* Icon - only show when in front */}
-          {isVisible && (
-            <Html
-              transform
-              distanceFactor={4.5}
+          <div 
+            className="flex items-center justify-center rounded-full cursor-pointer transition-transform duration-200"
+            style={{ 
+              width: '48px',
+              height: '48px',
+              backgroundColor: `${node.color}40`,
+              border: `2px solid ${node.color}80`,
+              boxShadow: isHovered || localHover 
+                ? `0 0 30px ${node.color}, 0 0 60px ${node.color}60`
+                : `0 0 20px ${node.color}80`,
+              transform: isHovered || localHover ? 'scale(1.15)' : 'scale(1)',
+            }}
+          >
+            <IconComponent size={22} style={{ color: node.color, filter: 'brightness(1.2)' }} />
+          </div>
+        </Html>
+        
+        {/* Tooltip on hover - only when visible */}
+        {isVisible && (isHovered || localHover) && (
+          <Html
+            position={[0, 0.6, 0]}
+            center
+            style={{
+              pointerEvents: 'none',
+            }}
+          >
+            <div 
+              className="px-3 py-2 rounded-lg backdrop-blur-md animate-fade-in"
               style={{
-                pointerEvents: 'none',
+                background: 'rgba(15, 23, 42, 0.9)',
+                border: `1px solid ${node.color}40`,
+                boxShadow: `0 4px 20px ${node.color}30`,
+                minWidth: '120px',
               }}
             >
-              <div 
-                className="flex items-center justify-center w-11 h-11 rounded-full"
-                style={{ 
-                  backgroundColor: `${node.color}30`,
-                  border: `2px solid ${node.color}60`,
-                  boxShadow: `0 0 20px ${node.color}80`
-                }}
-              >
-                <IconComponent size={20} style={{ color: node.color }} />
-              </div>
-            </Html>
-          )}
-          
-          {/* Tooltip on hover - only when visible */}
-          {isVisible && (isHovered || localHover) && (
-            <Html
-              position={[0, 0.5, 0]}
-              center
-              style={{
-                pointerEvents: 'none',
-              }}
-            >
-              <div 
-                className="px-3 py-2 rounded-lg backdrop-blur-md animate-fade-in"
-                style={{
-                  background: 'rgba(15, 23, 42, 0.9)',
-                  border: `1px solid ${node.color}40`,
-                  boxShadow: `0 4px 20px ${node.color}30`,
-                  minWidth: '120px',
-                }}
-              >
-                <div className="text-xs font-semibold text-white">{node.name}</div>
-                <div className="text-[10px] opacity-70 text-slate-300">{node.role}</div>
-              </div>
-            </Html>
-          )}
-        </group>
-      </Float>
+              <div className="text-xs font-semibold text-white">{node.name}</div>
+              <div className="text-[10px] opacity-70 text-slate-300">{node.role}</div>
+            </div>
+          </Html>
+        )}
+      </group>
     </>
   );
 }
