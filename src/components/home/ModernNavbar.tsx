@@ -78,7 +78,7 @@ const ModernNavbar = () => {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden lg:flex items-center space-x-3">
-            
+            <ThemeToggle />
             <LanguageSwitcher />
             {user ? <>
                 <Button variant="ghost" onClick={() => navigate("/dashboard")} className="text-sm font-medium">
