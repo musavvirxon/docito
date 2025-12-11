@@ -19,12 +19,14 @@ import DashboardDemo from '@/components/home/premium/DashboardDemo';
 import TeamCollaboration from '@/components/home/premium/TeamCollaboration';
 import HealthPackages from '@/components/home/premium/HealthPackages';
 import TrendingServices from '@/components/home/premium/TrendingServices';
+import NearbyPharmacies from '@/components/home/premium/NearbyPharmacies';
 import InsuranceProviders from '@/components/home/premium/InsuranceProviders';
 import Testimonials from '@/components/home/premium/Testimonials';
+import BlogPreview from '@/components/home/premium/BlogPreview';
 import FAQ from '@/components/home/premium/FAQ';
 import GlobalTrust from '@/components/home/premium/GlobalTrust';
 import FinalCTA from '@/components/home/premium/FinalCTA';
-import MobileAppBanner from '@/components/home/premium/MobileAppBanner';
+import MobileAppShowcase from '@/components/home/premium/MobileAppShowcase';
 import PremiumFooter from '@/components/home/premium/PremiumFooter';
 import ScrollToTop from '@/components/home/premium/ScrollToTop';
 
@@ -82,6 +84,9 @@ export default function PremiumHome() {
           {/* Health Packages */}
           <HealthPackages />
 
+          {/* Nearby Pharmacies */}
+          <NearbyPharmacies />
+
           {/* Booking Steps */}
           <BookingSteps />
 
@@ -100,17 +105,20 @@ export default function PremiumHome() {
           {/* Testimonials */}
           <Testimonials />
 
+          {/* Blog Preview */}
+          <BlogPreview />
+
           {/* FAQ */}
           <FAQ />
 
           {/* Global Trust */}
           <GlobalTrust />
 
+          {/* Mobile App Showcase */}
+          <MobileAppShowcase />
+
           {/* Final CTA */}
           <FinalCTA />
-
-          {/* Mobile App Banner */}
-          <MobileAppBanner />
         </main>
 
         {/* Footer */}
