@@ -1,11 +1,28 @@
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 
 // Calendar Animation - Dates flipping
 export const CalendarIllustration = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
+  const [currentDate, setCurrentDate] = useState(new Date());
+
+  useEffect(() => {
+    // Update at midnight
+    const now = new Date();
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const msUntilMidnight = tomorrow.getTime() - now.getTime();
+
+    const timeout = setTimeout(() => {
+      setCurrentDate(new Date());
+    }, msUntilMidnight);
+
+    return () => clearTimeout(timeout);
+  }, [currentDate]);
+
+  const day = currentDate.getDate().toString().padStart(2, '0');
+  const month = currentDate.toLocaleDateString(undefined, { month: 'short' }).toUpperCase();
 
   return (
     <div ref={ref} className="relative w-24 h-24 mx-auto">
@@ -18,7 +35,7 @@ export const CalendarIllustration = () => {
       >
         {/* Calendar Header */}
         <div className="bg-primary h-6 flex items-center justify-center">
-          <span className="text-primary-foreground text-xs font-bold">DEC</span>
+          <span className="text-primary-foreground text-xs font-bold">{month}</span>
         </div>
         {/* Calendar Body */}
         <div className="p-2">
@@ -27,7 +44,7 @@ export const CalendarIllustration = () => {
             transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 3 }}
             className="text-3xl font-bold text-foreground text-center"
           >
-            07
+            {day}
           </motion.div>
           {/* Mini calendar grid */}
           <div className="grid grid-cols-7 gap-0.5 mt-1">
@@ -37,7 +54,7 @@ export const CalendarIllustration = () => {
                 initial={{ opacity: 0 }}
                 animate={isInView ? { opacity: 1 } : {}}
                 transition={{ delay: 0.5 + i * 0.1 }}
-                className={`w-2 h-2 rounded-full ${i === 3 ? 'bg-primary' : 'bg-muted'}`}
+                className={`w-2 h-2 rounded-full ${i === currentDate.getDay() ? 'bg-primary' : 'bg-muted'}`}
               />
             ))}
           </div>
