@@ -103,21 +103,21 @@ const ModernHeroSection = () => {
   }, [handleSearch]);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-gray-100 dark:from-[#030712] dark:via-[#0A0F1E] dark:to-[#030712]">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-muted/30 to-background">
       {/* Animated Grid Pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] dark:bg-[linear-gradient(to_right,#3b82f610_1px,transparent_1px),linear-gradient(to_bottom,#3b82f610_1px,transparent_1px)] dark:bg-[size:32px_32px]" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border)/0.3)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/0.3)_1px,transparent_1px)] bg-[size:24px_24px]" />
       
       {/* Animated Geometric Accents */}
-      <div className="absolute inset-0 overflow-hidden opacity-20 dark:opacity-10">
+      <div className="absolute inset-0 overflow-hidden">
         <motion.div 
-          animate={{ scale: [1, 1.1, 1], opacity: [0.2, 0.3, 0.2] }}
+          animate={{ scale: [1, 1.1, 1], opacity: [0.15, 0.25, 0.15] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/20 dark:bg-primary/10 rounded-full blur-3xl" 
+          className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/20 rounded-full blur-3xl" 
         />
         <motion.div 
-          animate={{ scale: [1, 1.1, 1], opacity: [0.2, 0.3, 0.2] }}
+          animate={{ scale: [1, 1.1, 1], opacity: [0.15, 0.25, 0.15] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 4 }}
-          className="absolute bottom-1/4 -right-20 w-96 h-96 bg-accent/20 dark:bg-primary/10 rounded-full blur-3xl" 
+          className="absolute bottom-1/4 -right-20 w-96 h-96 bg-primary/20 rounded-full blur-3xl" 
         />
       </div>
 
