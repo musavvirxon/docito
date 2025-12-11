@@ -2,14 +2,14 @@ import { motion } from 'framer-motion';
 import { Shield, Check } from 'lucide-react';
 
 const insuranceProviders = [
-  { name: 'Aetna', color: 'bg-purple-600' },
-  { name: 'Blue Cross', color: 'bg-blue-600' },
-  { name: 'Cigna', color: 'bg-orange-500' },
-  { name: 'United', color: 'bg-blue-700' },
-  { name: 'Kaiser', color: 'bg-red-600' },
-  { name: 'Humana', color: 'bg-green-600' },
-  { name: 'Anthem', color: 'bg-blue-500' },
-  { name: 'Medicare', color: 'bg-teal-600' },
+  { name: 'Aetna', initials: 'AE', color: 'bg-purple-600', textColor: 'text-white' },
+  { name: 'Blue Cross', initials: 'BC', color: 'bg-blue-600', textColor: 'text-white' },
+  { name: 'Cigna', initials: 'CG', color: 'bg-orange-500', textColor: 'text-white' },
+  { name: 'United', initials: 'UH', color: 'bg-blue-700', textColor: 'text-white' },
+  { name: 'Kaiser', initials: 'KP', color: 'bg-red-600', textColor: 'text-white' },
+  { name: 'Humana', initials: 'HU', color: 'bg-green-600', textColor: 'text-white' },
+  { name: 'Anthem', initials: 'AN', color: 'bg-blue-500', textColor: 'text-white' },
+  { name: 'Medicare', initials: 'MC', color: 'bg-teal-600', textColor: 'text-white' },
 ];
 
 const benefits = [
@@ -42,8 +42,8 @@ export default function InsuranceProviders() {
           </p>
         </motion.div>
 
-        {/* Insurance logos */}
-        <div className="flex flex-wrap justify-center gap-4 mb-12">
+        {/* Insurance logos - larger and more visible */}
+        <div className="flex flex-wrap justify-center gap-6 mb-12">
           {insuranceProviders.map((provider, index) => (
             <motion.div
               key={provider.name}
@@ -52,12 +52,12 @@ export default function InsuranceProviders() {
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: index * 0.05 }}
               whileHover={{ scale: 1.05, y: -3 }}
-              className="w-28 h-28 rounded-2xl bg-card border border-border/50 flex flex-col items-center justify-center gap-3 hover:border-primary/30 hover:shadow-lg transition-all duration-300 cursor-pointer"
+              className="w-32 h-32 rounded-2xl bg-card border border-border/50 flex flex-col items-center justify-center gap-3 hover:border-primary/30 hover:shadow-lg transition-all duration-300 cursor-pointer"
             >
-              <div className={`w-12 h-12 rounded-xl ${provider.color} flex items-center justify-center text-white font-bold text-lg shadow-md`}>
-                {provider.name.charAt(0)}
+              <div className={`w-16 h-16 rounded-xl ${provider.color} flex items-center justify-center ${provider.textColor} font-bold text-xl shadow-md`}>
+                {provider.initials}
               </div>
-              <span className="text-xs text-foreground font-medium">{provider.name}</span>
+              <span className="text-sm text-foreground font-medium">{provider.name}</span>
             </motion.div>
           ))}
         </div>

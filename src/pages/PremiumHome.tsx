@@ -20,7 +20,7 @@ import TeamCollaboration from '@/components/home/premium/TeamCollaboration';
 import TrendingServices from '@/components/home/premium/TrendingServices';
 import NearbyPharmacies from '@/components/home/premium/NearbyPharmacies';
 import InsuranceProviders from '@/components/home/premium/InsuranceProviders';
-import Testimonials from '@/components/home/premium/Testimonials';
+
 import BlogPreview from '@/components/home/premium/BlogPreview';
 import FAQ from '@/components/home/premium/FAQ';
 import GlobalTrust from '@/components/home/premium/GlobalTrust';
@@ -97,9 +97,6 @@ export default function PremiumHome() {
 
           {/* Insurance Providers */}
           <InsuranceProviders />
-
-          {/* Testimonials */}
-          <Testimonials />
 
           {/* Blog Preview */}
           <BlogPreview />
