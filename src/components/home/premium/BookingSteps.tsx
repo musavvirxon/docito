@@ -1,33 +1,33 @@
 import { motion } from 'framer-motion';
-import { Search, FileCheck, Calendar, Heart } from 'lucide-react';
+import { Search, UserCheck, CalendarCheck, HeartPulse } from 'lucide-react';
 
 const steps = [
   {
     number: '01',
     title: 'Search',
-    description: 'Find doctors, labs, or pharmacies by specialty, location, or service',
+    description: 'Find doctors, labs, or pharmacies by specialty, location, or insurance',
     icon: Search,
     color: 'from-blue-500 to-cyan-500'
   },
   {
     number: '02',
-    title: 'Review',
-    description: 'Compare ratings, read reviews, and check availability',
-    icon: FileCheck,
+    title: 'Select',
+    description: 'Compare providers, check ratings, reviews and available time slots',
+    icon: UserCheck,
     color: 'from-violet-500 to-purple-500'
   },
   {
     number: '03',
     title: 'Book',
     description: 'Schedule your appointment instantly with real-time confirmation',
-    icon: Calendar,
+    icon: CalendarCheck,
     color: 'from-emerald-500 to-green-500'
   },
   {
     number: '04',
-    title: 'Care',
-    description: 'Receive quality healthcare and manage follow-ups seamlessly',
-    icon: Heart,
+    title: 'Get Care',
+    description: 'Visit your provider and manage all follow-ups through the platform',
+    icon: HeartPulse,
     color: 'from-rose-500 to-pink-500'
   },
 ];
@@ -58,7 +58,7 @@ export default function BookingSteps() {
 
         <div className="relative">
           {/* Connecting line */}
-          <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent -translate-y-1/2" />
+          <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-border to-transparent -translate-y-1/2" />
           
           {/* Animated progress line */}
           <motion.div
@@ -66,7 +66,7 @@ export default function BookingSteps() {
             whileInView={{ scaleX: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 1.5, ease: 'easeOut' }}
-            className="hidden lg:block absolute top-1/2 left-[12.5%] right-[12.5%] h-px bg-gradient-to-r from-blue-500 via-violet-500 via-emerald-500 to-rose-500 -translate-y-1/2 origin-left"
+            className="hidden lg:block absolute top-1/2 left-[12.5%] right-[12.5%] h-0.5 bg-gradient-to-r from-blue-500 via-violet-500 to-rose-500 -translate-y-1/2 origin-left"
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
