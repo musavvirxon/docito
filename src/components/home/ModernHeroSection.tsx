@@ -1,95 +1,73 @@
-import { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
-import { ChevronDown, CreditCard, Calendar, FileText, BarChart3 } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronDown, CreditCard, Calendar, FileText, BarChart3, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import ProminentSearchBar from "./ProminentSearchBar";
-import SearchResults from "@/components/patient/SearchResults";
-import { useDoctors } from "@/hooks/useDoctors";
-import { usePractices } from "@/hooks/usePractices";
+import SearchResultsContainer from "@/components/search/SearchResultsContainer";
+import { useUnifiedSearch, type SearchFilters } from "@/hooks/useUnifiedSearch";
 import { useBookingAuth } from "@/hooks/useBookingAuth";
 import { Logo } from "@/components/Logo";
 import HeroIllustration from "./illustrations/HeroIllustration";
 import SearchBarAnimation from "./illustrations/SearchBarAnimation";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { Button } from "@/components/ui/button";
 
 const ModernHeroSection = () => {
-  const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [showResults, setShowResults] = useState(false);
-  const [searching, setSearching] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchLocation, setSearchLocation] = useState("");
+  const resultsRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
   const { t } = useTranslation('home');
-  const { searchDoctors } = useDoctors();
-  const { searchPractices } = usePractices();
   const { handleBookingClick } = useBookingAuth();
+  
+  const {
+    results,
+    loading,
+    error,
+    filters,
+    hasSearched,
+    totalResultCount,
+    search,
+    updateFilters,
+    resetSearch,
+  } = useUnifiedSearch();
 
   const handleSearch = useCallback(async (specialty: string, location: string, insurance: string) => {
     if (!specialty.trim() && !location.trim()) return;
 
-    setSearching(true);
+    setSearchQuery(specialty);
+    setSearchLocation(location);
+
+    await search(specialty, location);
     
-    // Scroll to results section
+    // Scroll to results section after search
     setTimeout(() => {
-      const resultsSection = document.getElementById('search-results');
-      if (resultsSection) {
-        resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (resultsRef.current) {
+        resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }, 100);
+  }, [search]);
 
-    try {
-      const [doctorsResults, practicesResults] = await Promise.all([
-        searchDoctors(specialty, location),
-        searchPractices(specialty, location),
-      ]);
-
-      const transformedDoctors = doctorsResults
-        .filter((doctor) => doctor.profiles?.full_name)
-        .map((doctor) => {
-          const practice = doctor.practices as any;
-          const profile = doctor.profiles as any;
-          const hasLocation = practice?.city && practice?.country;
-          
-          return {
-            id: doctor.id,
-            type: "doctor" as const,
-            name: profile?.full_name,
-            image: profile?.avatar_url,
-            specialty: doctor.specialty,
-            rating: doctor.weighted_rating || doctor.average_rating,
-            reviewCount: doctor.num_reviews || 0,
-            affiliatedPractice: practice?.name,
-            location: hasLocation ? `${practice.city}, ${practice.country}` : undefined,
-            consultationFee: doctor.consultation_fee,
-            acceptsNewPatients: doctor.accepts_new_patients,
-            languages: doctor.languages,
-          };
-        });
-
-      const transformedPractices = practicesResults
-        .filter((practice) => practice.name)
-        .map((practice) => {
-          const hasLocation = practice.city && practice.country;
-          
-          return {
-            id: practice.id,
-            type: "practice" as const,
-            name: practice.name,
-            logoUrl: practice.logo_url,
-            location: hasLocation ? `${practice.city}, ${practice.country}` : undefined,
-            rating: practice.weighted_rating || practice.average_rating,
-            reviewCount: practice.num_reviews || 0,
-            specialties: practice.specialties,
-          };
-        });
-
-      setSearchResults([...transformedDoctors, ...transformedPractices]);
-      setShowResults(true);
-    } catch (error) {
-      console.error("Search error:", error);
-    } finally {
-      setSearching(false);
+  const handleFilterChange = useCallback((key: keyof SearchFilters) => {
+    const newFilters = { ...filters, [key]: !filters[key] };
+    updateFilters(newFilters);
+    
+    // Re-run search with new filters
+    if (hasSearched && (searchQuery || searchLocation)) {
+      search(searchQuery, searchLocation, newFilters);
     }
-  }, [searchDoctors, searchPractices]);
+  }, [filters, updateFilters, search, hasSearched, searchQuery, searchLocation]);
+
+  const handleClearSearch = useCallback(() => {
+    resetSearch();
+    setSearchQuery("");
+    setSearchLocation("");
+  }, [resetSearch]);
+
+  const handleBookDoctor = useCallback((doctor: any) => {
+    handleBookingClick(doctor.id, doctor.name);
+  }, [handleBookingClick]);
 
   // Listen for specialty search events from SpecialtiesGrid
   useEffect(() => {
@@ -103,12 +81,12 @@ const ModernHeroSection = () => {
   }, [handleSearch]);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-muted/30 to-background">
+    <section className="relative min-h-screen flex flex-col overflow-hidden bg-gradient-to-br from-background via-muted/30 to-background">
       {/* Animated Grid Pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border)/0.3)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/0.3)_1px,transparent_1px)] bg-[size:24px_24px]" />
       
       {/* Animated Geometric Accents */}
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div 
           animate={{ scale: [1, 1.1, 1], opacity: [0.15, 0.25, 0.15] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
@@ -122,7 +100,7 @@ const ModernHeroSection = () => {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 py-20">
+      <div className="relative z-10 container mx-auto px-4 py-20 flex-1">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -146,98 +124,134 @@ const ModernHeroSection = () => {
             )}
             <ProminentSearchBar 
               onSearch={handleSearch} 
-              searching={searching}
+              searching={loading}
             />
           </div>
 
-          {/* Search Results Section - Appears right below search bar */}
-          {showResults && (
+          {/* Only show hero content when no search results */}
+          <AnimatePresence mode="wait">
+            {!hasSearched && (
+              <motion.div
+                key="hero-content"
+                initial={{ opacity: 1 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                {/* Professional Badge */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6, duration: 0.5 }}
+                  className="inline-flex items-center space-x-2 bg-primary/10 dark:bg-primary/5 backdrop-blur-sm border-2 border-primary/30 dark:border-primary/30 rounded-full px-6 py-2"
+                >
+                  <span className="text-primary dark:text-primary font-semibold">{t('hero.badge')}</span>
+                </motion.div>
+
+                {/* Main Headline */}
+                <motion.h1
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.8, duration: 0.5 }}
+                  className="text-5xl md:text-7xl font-bold text-foreground leading-tight tracking-tight mt-6"
+                >
+                  {t('hero.title1')}
+                  <br />
+                  <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                    {t('hero.title2')}
+                  </span>
+                </motion.h1>
+
+                {/* Description */}
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.0, duration: 0.5 }}
+                  className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mt-6"
+                >
+                  {t('hero.description')}
+                </motion.p>
+
+                {/* Feature Pills */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.2, duration: 0.5 }}
+                  className="flex flex-wrap justify-center gap-4 mt-8"
+                >
+                  {[
+                    { icon: CreditCard, key: "payments" },
+                    { icon: Calendar, key: "scheduling" },
+                    { icon: FileText, key: "records" },
+                    { icon: BarChart3, key: "analytics" }
+                  ].map((feature, index) => {
+                    const Icon = feature.icon;
+                    return (
+                      <motion.div
+                        key={feature.key}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 1.2 + index * 0.1 }}
+                        className="flex items-center space-x-2 bg-card/80 dark:bg-card/80 backdrop-blur-sm border-2 border-input dark:border-border dark:hover:border-primary rounded-full px-6 py-3 transition-all duration-300 hover:shadow-lg dark:hover:shadow-glow-blue"
+                      >
+                        <Icon className="w-5 h-5 text-primary" />
+                        <span className="text-foreground font-medium">{t(`hero.features.${feature.key}`)}</span>
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* Search Results Section - Appears right below search bar */}
+        <AnimatePresence>
+          {hasSearched && (
             <motion.div
+              ref={resultsRef}
               id="search-results"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
-              className="w-full max-w-6xl mx-auto"
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.4 }}
+              className="w-full max-w-7xl mx-auto mt-8"
             >
-              <SearchResults
-                results={searchResults}
-                onBookAppointment={(result) => handleBookingClick(result.id, result.name)}
-                onViewPractice={(result) => handleBookingClick(result.id, result.name)}
-                onFavorite={() => {}}
+              {/* Search Header with Clear Button */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  {searchQuery && (
+                    <span>Results for "<span className="font-medium text-foreground">{searchQuery}</span>"</span>
+                  )}
+                  {searchLocation && (
+                    <span>in <span className="font-medium text-foreground">{searchLocation}</span></span>
+                  )}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearSearch}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <X className="w-4 h-4 mr-1" />
+                  Clear
+                </Button>
+              </div>
+
+              <SearchResultsContainer
+                results={results}
+                loading={loading}
+                error={error}
+                filters={filters}
+                hasSearched={hasSearched}
+                onFilterChange={handleFilterChange}
+                onBookDoctor={handleBookDoctor}
               />
             </motion.div>
           )}
-
-          {/* Only show hero content when no search results */}
-          {!showResults && (
-            <>
-              {/* Professional Badge */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 0.5 }}
-                className="inline-flex items-center space-x-2 bg-primary/10 dark:bg-primary/5 backdrop-blur-sm border-2 border-primary/30 dark:border-primary/30 rounded-full px-6 py-2"
-              >
-                <span className="text-primary dark:text-primary font-semibold">{t('hero.badge')}</span>
-              </motion.div>
-
-              {/* Main Headline */}
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8, duration: 0.5 }}
-                className="text-5xl md:text-7xl font-bold text-foreground leading-tight tracking-tight"
-              >
-                {t('hero.title1')}
-                <br />
-                <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  {t('hero.title2')}
-                </span>
-              </motion.h1>
-
-              {/* Description */}
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.0, duration: 0.5 }}
-                className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto"
-              >
-                {t('hero.description')}
-              </motion.p>
-
-              {/* Feature Pills */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.2, duration: 0.5 }}
-                className="flex flex-wrap justify-center gap-4"
-              >
-                {[
-                  { icon: CreditCard, key: "payments" },
-                  { icon: Calendar, key: "scheduling" },
-                  { icon: FileText, key: "records" },
-                  { icon: BarChart3, key: "analytics" }
-                ].map((feature, index) => {
-                  const Icon = feature.icon;
-                  return (
-                    <motion.div
-                      key={feature.key}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 1.2 + index * 0.1 }}
-                      className="flex items-center space-x-2 bg-card/80 dark:bg-card/80 backdrop-blur-sm border-2 border-input dark:border-border dark:hover:border-primary rounded-full px-6 py-3 transition-all duration-300 hover:shadow-lg dark:hover:shadow-glow-blue"
-                    >
-                      <Icon className="w-5 h-5 text-primary" />
-                      <span className="text-foreground font-medium">{t(`hero.features.${feature.key}`)}</span>
-                    </motion.div>
-                  );
-                })}
-              </motion.div>
-            </>
-          )}
-        </motion.div>
+        </AnimatePresence>
 
         {/* Hero Illustration - Dashboard Preview (only show when no results) */}
-        {!showResults && (
+        {!hasSearched && (
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
@@ -249,7 +263,7 @@ const ModernHeroSection = () => {
         )}
 
         {/* Scroll Indicator (only show when no results) */}
-        {!showResults && (
+        {!hasSearched && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
