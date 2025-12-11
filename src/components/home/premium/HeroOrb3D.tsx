@@ -417,45 +417,53 @@ function FloatingNode({
           }}
         >
           <div 
-            className="flex items-center justify-center rounded-full cursor-pointer transition-transform duration-200"
-            style={{ 
-              width: '48px',
-              height: '48px',
-              backgroundColor: `${node.color}40`,
-              border: `2px solid ${node.color}80`,
-              boxShadow: isHovered || localHover 
-                ? `0 0 30px ${node.color}, 0 0 60px ${node.color}60`
-                : `0 0 20px ${node.color}80`,
-              transform: isHovered || localHover ? 'scale(1.15)' : 'scale(1)',
-            }}
+            className="relative flex flex-col items-center"
+            onMouseEnter={handlePointerEnter}
+            onMouseLeave={handlePointerLeave}
           >
-            <IconComponent size={22} style={{ color: node.color, filter: 'brightness(1.2)' }} />
-          </div>
-        </Html>
-        
-        {/* Tooltip on hover - only when visible */}
-        {isVisible && (isHovered || localHover) && (
-          <Html
-            position={[0, 0.6, 0]}
-            center
-            style={{
-              pointerEvents: 'none',
-            }}
-          >
+            {/* Tooltip - always rendered but visibility controlled */}
             <div 
-              className="px-3 py-2 rounded-lg backdrop-blur-md animate-fade-in"
+              className="absolute -top-14 px-3 py-2 rounded-lg backdrop-blur-md transition-all duration-200 whitespace-nowrap"
               style={{
-                background: 'rgba(15, 23, 42, 0.9)',
-                border: `1px solid ${node.color}40`,
-                boxShadow: `0 4px 20px ${node.color}30`,
-                minWidth: '120px',
+                background: 'rgba(15, 23, 42, 0.95)',
+                border: `1px solid ${node.color}60`,
+                boxShadow: `0 4px 20px ${node.color}40`,
+                opacity: localHover ? 1 : 0,
+                transform: localHover ? 'translateY(0)' : 'translateY(8px)',
+                pointerEvents: 'none',
               }}
             >
               <div className="text-xs font-semibold text-white">{node.name}</div>
               <div className="text-[10px] opacity-70 text-slate-300">{node.role}</div>
             </div>
-          </Html>
-        )}
+            
+            {/* Node with pulsing animation */}
+            <div 
+              className="flex items-center justify-center rounded-full cursor-pointer"
+              style={{ 
+                width: '52px',
+                height: '52px',
+                backgroundColor: `${node.color}40`,
+                border: `2px solid ${node.color}80`,
+                boxShadow: localHover 
+                  ? `0 0 30px ${node.color}, 0 0 60px ${node.color}60`
+                  : `0 0 20px ${node.color}80`,
+                transform: localHover ? 'scale(1.2)' : 'scale(1)',
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                animation: localHover ? 'none' : 'pulse-node 2s ease-in-out infinite',
+              }}
+            >
+              <IconComponent size={24} style={{ color: node.color, filter: 'brightness(1.2)' }} />
+            </div>
+          </div>
+          
+          <style>{`
+            @keyframes pulse-node {
+              0%, 100% { transform: scale(1); }
+              50% { transform: scale(1.1); }
+            }
+          `}</style>
+        </Html>
       </group>
     </>
   );
