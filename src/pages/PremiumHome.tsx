@@ -16,6 +16,9 @@ import DiagnosticsSection from '@/components/home/premium/DiagnosticsSection';
 import BookingSteps from '@/components/home/premium/BookingSteps';
 import CapabilitiesGrid from '@/components/home/premium/CapabilitiesGrid';
 import DashboardDemo from '@/components/home/premium/DashboardDemo';
+import TeamCollaboration from '@/components/home/premium/TeamCollaboration';
+import HealthPackages from '@/components/home/premium/HealthPackages';
+import TrendingServices from '@/components/home/premium/TrendingServices';
 import GlobalTrust from '@/components/home/premium/GlobalTrust';
 import FinalCTA from '@/components/home/premium/FinalCTA';
 import MobileAppBanner from '@/components/home/premium/MobileAppBanner';
@@ -69,22 +72,31 @@ export default function PremiumHome() {
           {/* Section 8: Diagnostics Integration */}
           <DiagnosticsSection />
 
-          {/* Section 9: Booking Steps */}
+          {/* Section 9: Trending Services */}
+          <TrendingServices />
+
+          {/* Section 10: Health Packages */}
+          <HealthPackages />
+
+          {/* Section 11: Booking Steps */}
           <BookingSteps />
 
-          {/* Section 10: Platform Capabilities */}
+          {/* Section 12: Platform Capabilities */}
           <CapabilitiesGrid />
 
-          {/* Section 11: Dashboard Demo */}
+          {/* Section 13: Dashboard Demo */}
           <DashboardDemo />
 
-          {/* Section 12: Global Trust */}
+          {/* Section 14: Team Collaboration */}
+          <TeamCollaboration />
+
+          {/* Section 15: Global Trust */}
           <GlobalTrust />
 
-          {/* Section 13: Final CTA */}
+          {/* Section 16: Final CTA */}
           <FinalCTA />
 
-          {/* Section 14: Mobile App Banner */}
+          {/* Section 17: Mobile App Banner */}
           <MobileAppBanner />
         </main>
 
