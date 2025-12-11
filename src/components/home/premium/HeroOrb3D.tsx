@@ -1,29 +1,43 @@
 import { useRef, useMemo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, Sphere, OrbitControls } from '@react-three/drei';
+import { Canvas, useFrame, useLoader } from '@react-three/fiber';
+import { Float, Sphere, OrbitControls, Html } from '@react-three/drei';
 import * as THREE from 'three';
+import { Stethoscope, Building2, FlaskConical, Pill, FileText, Shield } from 'lucide-react';
 
-function FloatingIcon({ position, icon, color }: { position: [number, number, number]; icon: string; color: string }) {
-  const meshRef = useRef<THREE.Mesh>(null);
+function FloatingIconCard({ position, Icon, color, bgColor }: { 
+  position: [number, number, number]; 
+  Icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+  color: string;
+  bgColor: string;
+}) {
+  const groupRef = useRef<THREE.Group>(null);
   
   useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y = state.clock.elapsedTime * 0.3;
+    if (groupRef.current) {
+      groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
     }
   });
 
   return (
-    <Float speed={1.5} rotationIntensity={0.3} floatIntensity={0.8}>
-      <group position={position}>
-        <mesh ref={meshRef}>
-          <boxGeometry args={[0.5, 0.5, 0.1]} />
-          <meshStandardMaterial color={color} metalness={0.6} roughness={0.3} />
-        </mesh>
-        {/* Icon represented as a colored sphere on the box */}
-        <mesh position={[0, 0, 0.08]}>
-          <sphereGeometry args={[0.15, 16, 16]} />
-          <meshStandardMaterial color="#ffffff" metalness={0.4} roughness={0.3} emissive="#ffffff" emissiveIntensity={0.2} />
-        </mesh>
+    <Float speed={1.5} rotationIntensity={0.2} floatIntensity={0.8}>
+      <group position={position} ref={groupRef}>
+        <Html
+          transform
+          distanceFactor={8}
+          style={{
+            width: '48px',
+            height: '48px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '12px',
+            background: bgColor,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+            border: '1px solid rgba(255,255,255,0.1)',
+          }}
+        >
+          <Icon className="w-6 h-6" style={{ color }} />
+        </Html>
       </group>
     </Float>
   );
@@ -31,7 +45,6 @@ function FloatingIcon({ position, icon, color }: { position: [number, number, nu
 
 function GlowingOrb() {
   const groupRef = useRef<THREE.Group>(null);
-  const materialRef = useRef<THREE.MeshStandardMaterial>(null);
   
   useFrame((state) => {
     if (groupRef.current) {
@@ -45,7 +58,6 @@ function GlowingOrb() {
       {/* Core orb - solid gradient sphere */}
       <Sphere args={[1, 48, 48]}>
         <meshStandardMaterial
-          ref={materialRef}
           color="#3b82f6"
           metalness={0.3}
           roughness={0.4}
@@ -134,12 +146,12 @@ function Particles() {
 
 function Scene() {
   const icons = [
-    { position: [2, 0.4, 0.4] as [number, number, number], icon: '🩺', color: '#3b82f6' },
-    { position: [-1.8, 0.7, 0.3] as [number, number, number], icon: '🏥', color: '#10b981' },
-    { position: [0.4, 1.8, 0.4] as [number, number, number], icon: '🧪', color: '#8b5cf6' },
-    { position: [-0.7, -1.6, 0.4] as [number, number, number], icon: '💊', color: '#f59e0b' },
-    { position: [1.4, -1.1, 0.6] as [number, number, number], icon: '📋', color: '#ec4899' },
-    { position: [-1.6, -0.4, 0.5] as [number, number, number], icon: '🛡️', color: '#06b6d4' },
+    { position: [2.2, 0.4, 0.4] as [number, number, number], Icon: Stethoscope, color: '#3b82f6', bgColor: 'rgba(59, 130, 246, 0.15)' },
+    { position: [-2, 0.7, 0.3] as [number, number, number], Icon: Building2, color: '#10b981', bgColor: 'rgba(16, 185, 129, 0.15)' },
+    { position: [0.4, 2, 0.4] as [number, number, number], Icon: FlaskConical, color: '#8b5cf6', bgColor: 'rgba(139, 92, 246, 0.15)' },
+    { position: [-0.7, -1.8, 0.4] as [number, number, number], Icon: Pill, color: '#f59e0b', bgColor: 'rgba(245, 158, 11, 0.15)' },
+    { position: [1.6, -1.2, 0.6] as [number, number, number], Icon: FileText, color: '#ec4899', bgColor: 'rgba(236, 72, 153, 0.15)' },
+    { position: [-1.8, -0.5, 0.5] as [number, number, number], Icon: Shield, color: '#06b6d4', bgColor: 'rgba(6, 182, 212, 0.15)' },
   ];
 
   return (
@@ -153,7 +165,7 @@ function Scene() {
       <Particles />
       
       {icons.map((item, i) => (
-        <FloatingIcon key={i} {...item} />
+        <FloatingIconCard key={i} {...item} />
       ))}
       
       <OrbitControls 
