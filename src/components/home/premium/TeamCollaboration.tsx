@@ -16,7 +16,7 @@ const teamMembers = [
 ];
 
 // Calculate position based on angle around a circle
-const getPosition = (angle: number, radius: number = 42) => {
+const getPosition = (angle: number, radius: number = 38) => {
   const radian = (angle - 90) * (Math.PI / 180);
   return {
     x: 50 + radius * Math.cos(radian),
@@ -78,12 +78,30 @@ export default function TeamCollaboration() {
             transition={{ duration: 0.8 }}
             className="relative aspect-square max-w-md mx-auto w-full"
           >
+            {/* Rotating outer ring */}
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
+              className="absolute inset-[10%] border-2 border-dashed border-border/30 rounded-full"
+            />
+
+            {/* Animated pulses */}
+            {[...Array(3)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ scale: 0.3, opacity: 0.5 }}
+                animate={{ scale: 1.5, opacity: 0 }}
+                transition={{ duration: 3, repeat: Infinity, delay: i * 1 }}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full border-2 border-primary/40"
+              />
+            ))}
+
             {/* Central Patient File */}
             <motion.div
               animate={{ 
                 boxShadow: [
                   '0 0 30px rgba(59, 130, 246, 0.2)',
-                  '0 0 50px rgba(59, 130, 246, 0.3)',
+                  '0 0 60px rgba(59, 130, 246, 0.4)',
                   '0 0 30px rgba(59, 130, 246, 0.2)',
                 ]
               }}
@@ -93,23 +111,53 @@ export default function TeamCollaboration() {
               <FileText className="w-9 h-9 text-primary-foreground" />
             </motion.div>
 
-            {/* Connection Lines */}
+            {/* Connection Lines SVG */}
             <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 5 }}>
+              <defs>
+                <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.1" />
+                  <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity="0.4" />
+                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.1" />
+                </linearGradient>
+              </defs>
               {teamMembers.map((member, index) => {
                 const pos = getPosition(member.angle);
                 return (
                   <motion.line
                     key={`line-${member.id}`}
-                    x1={`${pos.x}%`}
-                    y1={`${pos.y}%`}
-                    x2="50%"
-                    y2="50%"
-                    stroke="hsl(var(--primary) / 0.25)"
+                    x1="50%"
+                    y1="50%"
+                    x2={`${pos.x}%`}
+                    y2={`${pos.y}%`}
+                    stroke="url(#lineGradient)"
                     strokeWidth="2"
-                    initial={{ pathLength: 0 }}
-                    whileInView={{ pathLength: 1 }}
+                    initial={{ pathLength: 0, opacity: 0 }}
+                    whileInView={{ pathLength: 1, opacity: 1 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.8, delay: 0.3 + index * 0.1 }}
+                    transition={{ duration: 0.8, delay: 0.2 + index * 0.1 }}
+                  />
+                );
+              })}
+              
+              {/* Animated data flow dots */}
+              {teamMembers.map((member, index) => {
+                const pos = getPosition(member.angle);
+                return (
+                  <motion.circle
+                    key={`dot-${member.id}`}
+                    r="3"
+                    fill="hsl(var(--primary))"
+                    initial={{ cx: "50%", cy: "50%" }}
+                    animate={{ 
+                      cx: [`50%`, `${pos.x}%`, `50%`],
+                      cy: [`50%`, `${pos.y}%`, `50%`]
+                    }}
+                    transition={{ 
+                      duration: 3,
+                      repeat: Infinity,
+                      delay: index * 0.4,
+                      ease: "easeInOut"
+                    }}
                   />
                 );
               })}
@@ -125,48 +173,40 @@ export default function TeamCollaboration() {
                   initial={{ scale: 0, opacity: 0 }}
                   whileInView={{ scale: 1, opacity: 1 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: index * 0.08, type: 'spring' }}
+                  transition={{ duration: 0.5, delay: 0.3 + index * 0.08, type: 'spring', stiffness: 200 }}
                   style={{
                     position: 'absolute',
                     left: `${pos.x}%`,
                     top: `${pos.y}%`,
-                    transform: 'translate(-50%, -50%)',
                     zIndex: 10,
                   }}
-                  className="group"
+                  className="group -translate-x-1/2 -translate-y-1/2"
                 >
                   <motion.div
-                    whileHover={{ scale: 1.15 }}
-                    className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${member.color} p-[2px] cursor-pointer shadow-lg`}
+                    whileHover={{ scale: 1.2 }}
+                    animate={{ 
+                      y: [0, -4, 0],
+                    }}
+                    transition={{ 
+                      y: { duration: 2 + index * 0.2, repeat: Infinity, ease: "easeInOut" },
+                      scale: { duration: 0.2 }
+                    }}
+                    className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br ${member.color} p-[2px] cursor-pointer shadow-lg`}
                   >
                     <div className="w-full h-full rounded-2xl bg-background flex items-center justify-center">
-                      <Icon className="w-6 h-6 text-foreground" />
+                      <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-foreground" />
                     </div>
                   </motion.div>
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 rounded-md bg-card border border-border/50 shadow-lg whitespace-nowrap text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity z-30">
+                  <motion.div 
+                    initial={{ opacity: 0, y: 5 }}
+                    whileHover={{ opacity: 1, y: 0 }}
+                    className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-1.5 rounded-lg bg-card border border-border/50 shadow-xl whitespace-nowrap text-xs font-medium pointer-events-none z-30"
+                  >
                     {member.role}
-                  </div>
+                  </motion.div>
                 </motion.div>
               );
             })}
-
-            {/* Animated pulses */}
-            {[...Array(3)].map((_, i) => (
-              <motion.div
-                key={i}
-                initial={{ scale: 0.5, opacity: 0.4 }}
-                animate={{ scale: 1.8, opacity: 0 }}
-                transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.8 }}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full border-2 border-primary/30"
-              />
-            ))}
-
-            {/* Rotating outer ring */}
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
-              className="absolute inset-4 border-2 border-dashed border-border/30 rounded-full"
-            />
           </motion.div>
         </div>
       </div>
