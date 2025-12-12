@@ -2,9 +2,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import ModernNavbar from "@/components/home/ModernNavbar";
 import ModernHeroSection from "@/components/home/ModernHeroSection";
 import ValuePropositionSection from "@/components/home/ValuePropositionSection";
-import SpecialtiesGrid from "@/components/home/SpecialtiesGrid";
-import TopSpecialistsSection from "@/components/TopSpecialistsSection";
-import TopMedicalPracticesSection from "@/components/TopMedicalPracticesSection";
+import { TopSpecialties, TopClinics, TopPharmacies, MostBookedServices } from "@/components/home/sections";
 import HowItWorksSection from "@/components/home/HowItWorksSection";
 import FeaturesGrid from "@/components/home/FeaturesGrid";
 import DashboardPreviewSection from "@/components/home/DashboardPreviewSection";
@@ -18,7 +16,7 @@ import { useSmoothScroll } from "@/hooks/useSmoothScroll";
 
 const Index = () => {
   const { t } = useTranslation(['home', 'common']);
-  useSmoothScroll(0.2); // Smooth scrolling
+  useSmoothScroll(0.2);
   
   return (
     <ThemeProvider>
@@ -32,9 +30,10 @@ const Index = () => {
         <main>
           <ModernHeroSection />
           <ValuePropositionSection />
-          <SpecialtiesGrid />
-          <TopSpecialistsSection />
-          <TopMedicalPracticesSection />
+          <TopSpecialties />
+          <TopClinics />
+          <TopPharmacies />
+          <MostBookedServices />
           <HowItWorksSection />
           <FeaturesGrid />
           <DashboardPreviewSection />
