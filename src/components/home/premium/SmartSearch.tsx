@@ -3,6 +3,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, MapPin, Shield, Mic, Sparkles, Clock, TrendingUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import gsap from 'gsap';
+import { useUnifiedSearch } from '@/hooks/useUnifiedSearch';
+import { SearchResultsContainer } from '@/components/search';
+
+const TRENDING_SEARCHES = [
+  'General Practitioner',
+  'Dentist',
+  'Eye Exam',
+  'Blood Test',
+  'Cardiology',
+  'Dermatology'
+];
 
 export default function SmartSearch() {
   const { t } = useTranslation(['home']);
@@ -11,6 +22,17 @@ export default function SmartSearch() {
   const [location, setLocation] = useState('');
   const [insurance, setInsurance] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
+  
+  const {
+    results,
+    loading,
+    error,
+    filters,
+    hasSearched,
+    search,
+    updateFilters,
+    resetSearch
+  } = useUnifiedSearch();
 
   useEffect(() => {
     if (containerRef.current) {
@@ -23,7 +45,30 @@ export default function SmartSearch() {
   }, []);
 
   const handleSearch = () => {
-    console.log('Searching:', { query, location, insurance });
+    if (query.trim()) {
+      search(query.trim(), location.trim() || undefined, filters);
+      setFocused(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  const handleTrendingClick = (term: string) => {
+    setQuery(term);
+    search(term, location.trim() || undefined, filters);
+    setFocused(false);
+  };
+
+  const handleFilterChange = (key: keyof typeof filters) => {
+    const newFilters = { ...filters, [key]: !filters[key] };
+    updateFilters(newFilters);
+    if (query.trim() && hasSearched) {
+      search(query.trim(), location.trim() || undefined, newFilters);
+    }
   };
 
   return (
@@ -57,6 +102,7 @@ export default function SmartSearch() {
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => setFocused(true)}
                     onBlur={() => setTimeout(() => setFocused(false), 200)}
+                    onKeyPress={handleKeyPress}
                     placeholder={t('home:search.specialty', 'Search doctors, labs, services...')}
                     className="w-full pl-12 pr-12 py-4 bg-muted/30 rounded-2xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
                   />
@@ -74,6 +120,7 @@ export default function SmartSearch() {
                     type="text"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
+                    onKeyPress={handleKeyPress}
                     placeholder={t('home:search.location', 'Location')}
                     className="w-full pl-12 pr-4 py-4 bg-muted/30 rounded-2xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
                   />
@@ -88,6 +135,7 @@ export default function SmartSearch() {
                     type="text"
                     value={insurance}
                     onChange={(e) => setInsurance(e.target.value)}
+                    onKeyPress={handleKeyPress}
                     placeholder={t('home:search.insurance', 'Insurance')}
                     className="w-full pl-12 pr-4 py-4 bg-muted/30 rounded-2xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
                   />
@@ -100,17 +148,18 @@ export default function SmartSearch() {
                   onClick={handleSearch}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="px-12 py-4 bg-primary text-primary-foreground font-medium rounded-2xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all flex items-center justify-center gap-2"
+                  disabled={loading}
+                  className="px-12 py-4 bg-primary text-primary-foreground font-medium rounded-2xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
                 >
                   <Search className="w-5 h-5" />
-                  <span>{t('home:search.button', 'Search')}</span>
+                  <span>{loading ? t('home:search.searching', 'Searching...') : t('home:search.button', 'Search')}</span>
                 </motion.button>
               </div>
             </div>
 
-            {/* Expanded Search Panel */}
+            {/* Expanded Search Panel - Trending Searches */}
             <AnimatePresence>
-              {focused && (
+              {focused && !hasSearched && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
@@ -137,12 +186,13 @@ export default function SmartSearch() {
                         <span>{t('home:search.trending', 'Popular Searches')}</span>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {['General Practitioner', 'Dentist', 'Eye Exam', 'Blood Test'].map((item, i) => (
+                        {TRENDING_SEARCHES.map((item, i) => (
                           <motion.button
                             key={i}
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: i * 0.05 }}
+                            onClick={() => handleTrendingClick(item)}
                             className="px-4 py-2 text-sm text-foreground bg-muted/50 hover:bg-muted rounded-full transition-colors"
                           >
                             {item}
@@ -157,7 +207,8 @@ export default function SmartSearch() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="mt-6 flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl"
+                    onClick={() => handleTrendingClick('cardiologist')}
+                    className="mt-6 flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl cursor-pointer hover:from-primary/20 hover:to-accent/20 transition-colors"
                   >
                     <Sparkles className="w-5 h-5 text-primary" />
                     <span className="text-sm text-foreground">
@@ -169,6 +220,28 @@ export default function SmartSearch() {
             </AnimatePresence>
           </div>
         </motion.div>
+
+        {/* Search Results Section */}
+        <AnimatePresence>
+          {hasSearched && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4 }}
+              className="mt-8"
+            >
+              <SearchResultsContainer
+                results={results}
+                loading={loading}
+                error={error}
+                filters={filters}
+                hasSearched={hasSearched}
+                onFilterChange={handleFilterChange}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </section>
   );
