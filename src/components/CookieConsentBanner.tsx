@@ -156,6 +156,7 @@ export default function CookieConsentBanner() {
                 size="icon"
                 onClick={() => setShowBanner(false)}
                 className="shrink-0"
+                aria-label={t('buttons.close', 'Close cookie banner')}
               >
                 <X className="h-4 w-4" />
               </Button>

@@ -106,7 +106,10 @@ export default function SmartSearch() {
                     placeholder={t('home:search.specialty', 'Search doctors, labs, services...')}
                     className="w-full pl-12 pr-12 py-4 bg-muted/30 rounded-2xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
                   />
-                  <button className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors">
+                  <button 
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors min-w-[24px] min-h-[24px] flex items-center justify-center"
+                    aria-label={t('home:search.voiceSearch', 'Voice search')}
+                  >
                     <Mic className="w-5 h-5" />
                   </button>
                 </div>
