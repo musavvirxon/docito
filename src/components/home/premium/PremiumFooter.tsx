@@ -13,6 +13,7 @@ import {
   Globe
 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
+import ThemeToggle from '@/components/home/ThemeToggle';
 
 const footerLinks = {
   platform: [
@@ -190,20 +191,26 @@ export default function PremiumFooter() {
               © {currentYear} Docito®. {t('home:footer.rights', 'All rights reserved.')}
             </p>
 
-            {/* Language Selector */}
-            <div className="flex items-center gap-2">
-              <Globe className="w-4 h-4 text-muted-foreground" />
-              <select
-                value={i18n.language}
-                onChange={(e) => i18n.changeLanguage(e.target.value)}
-                className="bg-transparent text-sm text-muted-foreground hover:text-foreground cursor-pointer focus:outline-none"
-              >
-                {languages.map((lang) => (
-                  <option key={lang.code} value={lang.code}>
-                    {lang.flag} {lang.name}
-                  </option>
-                ))}
-              </select>
+            {/* Theme Toggle & Language Selector */}
+            <div className="flex items-center gap-4">
+              {/* Theme Toggle */}
+              <ThemeToggle />
+
+              {/* Language Selector */}
+              <div className="flex items-center gap-2">
+                <Globe className="w-4 h-4 text-muted-foreground" />
+                <select
+                  value={i18n.language}
+                  onChange={(e) => i18n.changeLanguage(e.target.value)}
+                  className="bg-background text-sm text-muted-foreground hover:text-foreground cursor-pointer focus:outline-none border border-border/50 rounded-lg px-2 py-1"
+                >
+                  {languages.map((lang) => (
+                    <option key={lang.code} value={lang.code}>
+                      {lang.flag} {lang.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         </div>
