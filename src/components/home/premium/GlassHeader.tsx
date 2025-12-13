@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Globe, ChevronDown, User, Menu, X } from 'lucide-react';
+import { Search, ChevronDown, User, Menu, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Logo } from '@/components/Logo';
+import ThemeToggle from '@/components/home/ThemeToggle';
 
 const navLinks = [
   { key: 'doctors', href: '/search?type=doctors' },
@@ -118,6 +119,9 @@ export default function GlassHeader() {
 
           {/* Right Section */}
           <div className="flex items-center gap-2">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
             {/* Language Selector with Flags */}
             <div className="relative">
               <button

@@ -32,40 +32,56 @@ const specialties = [
 export default function SpecialtiesCarousel() {
   const { t } = useTranslation(['home']);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const isPausedRef = useRef(false);
 
   useEffect(() => {
     const scrollContainer = scrollRef.current;
     if (!scrollContainer) return;
 
     let animationId: number;
-    let scrollPos = 0;
-    const speed = 0.2; // Slower speed for gentle movement
+    let scrollPos = scrollContainer.scrollLeft;
+    const speed = 0.15; // Slower, smoother speed
 
-    const autoScroll = () => {
-      if (scrollContainer) {
+    const smoothAutoScroll = () => {
+      if (scrollContainer && !isPausedRef.current) {
         scrollPos += speed;
+        // Reset when reaching half (since we duplicate items)
         if (scrollPos >= scrollContainer.scrollWidth / 2) {
           scrollPos = 0;
         }
         scrollContainer.scrollLeft = scrollPos;
       }
-      animationId = requestAnimationFrame(autoScroll);
+      animationId = requestAnimationFrame(smoothAutoScroll);
     };
 
-    const handleMouseEnter = () => cancelAnimationFrame(animationId);
+    const handleMouseEnter = () => {
+      isPausedRef.current = true;
+    };
+
     const handleMouseLeave = () => {
       scrollPos = scrollContainer.scrollLeft;
-      animationId = requestAnimationFrame(autoScroll);
+      isPausedRef.current = false;
+    };
+
+    // Handle mouse wheel for horizontal scrolling
+    const handleWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        e.preventDefault();
+        scrollContainer.scrollLeft += e.deltaY;
+        scrollPos = scrollContainer.scrollLeft;
+      }
     };
 
     scrollContainer.addEventListener('mouseenter', handleMouseEnter);
     scrollContainer.addEventListener('mouseleave', handleMouseLeave);
-    animationId = requestAnimationFrame(autoScroll);
+    scrollContainer.addEventListener('wheel', handleWheel, { passive: false });
+    animationId = requestAnimationFrame(smoothAutoScroll);
 
     return () => {
       cancelAnimationFrame(animationId);
       scrollContainer.removeEventListener('mouseenter', handleMouseEnter);
       scrollContainer.removeEventListener('mouseleave', handleMouseLeave);
+      scrollContainer.removeEventListener('wheel', handleWheel);
     };
   }, []);
 

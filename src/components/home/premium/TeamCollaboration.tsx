@@ -197,12 +197,10 @@ export default function TeamCollaboration() {
                       <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-foreground" />
                     </div>
                   </motion.div>
+                  {/* Label only shows on hover */}
                   <motion.div 
-                    initial={{ opacity: 0, y: 5 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: 0.5 + index * 0.1 }}
-                    className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 rounded-md bg-card/90 border border-border/50 shadow-lg whitespace-nowrap text-[10px] sm:text-xs font-medium pointer-events-none z-30"
+                    initial={{ opacity: 0, y: 5, scale: 0.9 }}
+                    className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 rounded-md bg-card/95 backdrop-blur-sm border border-border/50 shadow-lg whitespace-nowrap text-[10px] sm:text-xs font-medium pointer-events-none z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                   >
                     {member.role}
                   </motion.div>
