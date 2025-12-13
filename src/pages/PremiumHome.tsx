@@ -4,7 +4,7 @@ import { SEOHead } from '@/components/SEOHead';
 import { useTranslation } from 'react-i18next';
 
 // Premium components
-import GlassHeader from '@/components/home/premium/GlassHeader';
+import ModernNavbar from '@/components/home/ModernNavbar';
 import PremiumHero from '@/components/home/premium/PremiumHero';
 import SmartSearch from '@/components/home/premium/SmartSearch';
 import ProviderCards from '@/components/home/premium/ProviderCards';
@@ -49,8 +49,8 @@ export default function PremiumHome() {
       />
 
       <div className="min-h-screen bg-background text-foreground antialiased">
-        {/* Glass Header - Fixed */}
-        <GlassHeader />
+        {/* Navigation */}
+        <ModernNavbar />
 
         <main>
           {/* Hero with 3D Orb */}
