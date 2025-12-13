@@ -92,9 +92,9 @@ export default function PremiumFooter() {
 
           {/* Platform Links */}
           <div>
-            <h4 className="text-sm font-semibold text-foreground mb-4">
+            <p className="text-sm font-semibold text-foreground mb-4" role="heading" aria-level={2}>
               {t('home:footer.platform', 'Platform')}
-            </h4>
+            </p>
             <ul className="space-y-3">
               {footerLinks.platform.map((link) => (
                 <li key={link.key}>
@@ -111,9 +111,9 @@ export default function PremiumFooter() {
 
           {/* Support Links */}
           <div>
-            <h4 className="text-sm font-semibold text-foreground mb-4">
+            <p className="text-sm font-semibold text-foreground mb-4" role="heading" aria-level={2}>
               {t('home:footer.support', 'Support')}
-            </h4>
+            </p>
             <ul className="space-y-3">
               {footerLinks.support.map((link) => (
                 <li key={link.key}>
@@ -130,9 +130,9 @@ export default function PremiumFooter() {
 
           {/* Legal Links */}
           <div>
-            <h4 className="text-sm font-semibold text-foreground mb-4">
+            <p className="text-sm font-semibold text-foreground mb-4" role="heading" aria-level={2}>
               {t('home:footer.legal', 'Legal')}
-            </h4>
+            </p>
             <ul className="space-y-3">
               {footerLinks.legal.map((link) => (
                 <li key={link.key}>
@@ -149,9 +149,9 @@ export default function PremiumFooter() {
 
           {/* Contact Info */}
           <div>
-            <h4 className="text-sm font-semibold text-foreground mb-4">
+            <p className="text-sm font-semibold text-foreground mb-4" role="heading" aria-level={2}>
               {t('home:footer.contact', 'Contact')}
-            </h4>
+            </p>
             <ul className="space-y-3">
               <li>
                 <a
@@ -202,6 +202,7 @@ export default function PremiumFooter() {
                 <select
                   value={i18n.language}
                   onChange={(e) => i18n.changeLanguage(e.target.value)}
+                  aria-label={t('common:language.select', 'Select language')}
                   className="bg-background text-sm text-muted-foreground hover:text-foreground cursor-pointer focus:outline-none border border-border/50 rounded-lg px-2 py-1"
                 >
                   {languages.map((lang) => (
