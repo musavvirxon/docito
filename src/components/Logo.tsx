@@ -112,13 +112,26 @@ export const Logo = ({
     height: height || getDefaultDimensions().height
   };
   
-  const getWebPPath = () => {
-    return getLogoPath().replace('.png', '.webp');
+  // Only certain files have webp versions available
+  const getWebPPath = (): string | null => {
+    const pngPath = getLogoPath();
+    // Available webp files: horizontal sm, 2xl; icon sizes
+    const webpAvailable = [
+      '/logos/horizontal/docito-horizontal-sm.webp',
+      '/logos/horizontal/docito-horizontal-2xl.webp',
+    ];
+    const webpPath = pngPath.replace('.png', '.webp');
+    if (webpAvailable.includes(webpPath) || variant === 'icon') {
+      return webpPath;
+    }
+    return null;
   };
 
+  const webpPath = getWebPPath();
+  
   return (
     <picture>
-      <source srcSet={getWebPPath()} type="image/webp" />
+      {webpPath && <source srcSet={webpPath} type="image/webp" />}
       <img
         src={getLogoPath()}
         alt="Docito® - Healthcare Management Platform"
