@@ -28,13 +28,10 @@ const ModernNavbar = () => {
     });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+  // Prioritized navigation - most important/visited pages first
   const navLinks = [{
     name: t('navigation.findDoctors'),
     href: "/search-doctors",
-    isRoute: true
-  }, {
-    name: t('navigation.specialties'),
-    href: "/browse-specialties",
     isRoute: true
   }, {
     name: t('navigation.practices'),
@@ -49,8 +46,12 @@ const ModernNavbar = () => {
     href: "/pricing",
     isRoute: true
   }, {
-    name: t('navigation.about'),
-    href: "/about",
+    name: t('navigation.forDoctors'),
+    href: "/doctors",
+    isRoute: true
+  }, {
+    name: t('navigation.contact'),
+    href: "/contact",
     isRoute: true
   }];
   return <motion.nav initial={{
