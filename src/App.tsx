@@ -65,6 +65,12 @@ const Pricing = lazy(() => import("./pages/Pricing"));
 const StaffDashboard = lazy(() => import("./pages/StaffDashboard"));
 const VideoCall = lazy(() => import("./pages/VideoCall"));
 const Messages = lazy(() => import("./pages/Messages"));
+const PharmacyDashboard = lazy(() => import("./pages/pharmacy/PharmacyDashboard"));
+const PharmacyRegistration = lazy(() => import("./pages/pharmacy/PharmacyRegistration"));
+const LabDashboard = lazy(() => import("./pages/lab/LabDashboard"));
+const LabRegistration = lazy(() => import("./pages/lab/LabRegistration"));
+const ImagingDashboard = lazy(() => import("./pages/imaging/ImagingDashboard"));
+const ImagingRegistration = lazy(() => import("./pages/imaging/ImagingRegistration"));
 
 const queryClient = new QueryClient();
 
@@ -130,6 +136,19 @@ const LanguageRoutes = () => {
       <Route path="/video/:roomId" element={<VideoCall />} />
       <Route path="/messages" element={<Messages />} />
       
+      {/* Pharmacy Routes */}
+      <Route path="/pharmacy/dashboard" element={<PharmacyDashboard />} />
+      <Route path="/pharmacy/:pharmacyId" element={<PharmacyDashboard />} />
+      <Route path="/pharmacy/register" element={<PharmacyRegistration />} />
+      
+      {/* Lab Routes */}
+      <Route path="/lab/dashboard" element={<LabDashboard />} />
+      <Route path="/lab/register" element={<LabRegistration />} />
+      
+      {/* Imaging Routes */}
+      <Route path="/imaging/dashboard" element={<ImagingDashboard />} />
+      <Route path="/imaging/register" element={<ImagingRegistration />} />
+      
       {/* Language-prefixed routes */}
       <Route path="/:lang/" element={<PremiumHome />} />
       <Route path="/:lang/auth" element={<Auth />} />
@@ -184,6 +203,19 @@ const LanguageRoutes = () => {
       <Route path="/:lang/staff-dashboard" element={<StaffDashboard />} />
       <Route path="/:lang/video/:roomId" element={<VideoCall />} />
       <Route path="/:lang/messages" element={<Messages />} />
+      
+      {/* Pharmacy Routes */}
+      <Route path="/:lang/pharmacy/dashboard" element={<PharmacyDashboard />} />
+      <Route path="/:lang/pharmacy/:pharmacyId" element={<PharmacyDashboard />} />
+      <Route path="/:lang/pharmacy/register" element={<PharmacyRegistration />} />
+      
+      {/* Lab Routes */}
+      <Route path="/:lang/lab/dashboard" element={<LabDashboard />} />
+      <Route path="/:lang/lab/register" element={<LabRegistration />} />
+      
+      {/* Imaging Routes */}
+      <Route path="/:lang/imaging/dashboard" element={<ImagingDashboard />} />
+      <Route path="/:lang/imaging/register" element={<ImagingRegistration />} />
       
       <Route path="*" element={<NotFound />} />
     </Routes>

@@ -50,7 +50,7 @@ export const LanguageRouter = ({ children }: { children: React.ReactNode }) => {
                           'register-practice', 'processing-practice', 'treatment-planning',
                           'procedure-library', 'doctor-procedures', 'doctor-schedule-settings',
                           'booking-confirmation', 'book-appointment', 'legal-cms', 'super-admin-dashboard',
-                          'admin', 'staff-dashboard', 'messages', 'video'];
+                          'admin', 'staff-dashboard', 'messages', 'video', 'pharmacy', 'lab', 'imaging'];
     
     // Check if current path (without lang prefix) is a private page
     const pathWithoutLang = supportedLanguages.includes(firstPart) 
