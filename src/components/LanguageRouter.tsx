@@ -44,13 +44,13 @@ export const LanguageRouter = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    // Private pages list
+    // Private pages list (authenticated pages - no language prefix)
     const privatePages = ['dashboard', 'auth', 'signup', 'notifications', 'admin-dashboard', 
                           'doctor-dashboard', 'patient-dashboard', 'doctor-signup', 'verify',
                           'register-practice', 'processing-practice', 'treatment-planning',
                           'procedure-library', 'doctor-procedures', 'doctor-schedule-settings',
                           'booking-confirmation', 'book-appointment', 'legal-cms', 'super-admin-dashboard',
-                          'admin'];
+                          'admin', 'staff-dashboard', 'messages', 'video'];
     
     // Check if current path (without lang prefix) is a private page
     const pathWithoutLang = supportedLanguages.includes(firstPart) 

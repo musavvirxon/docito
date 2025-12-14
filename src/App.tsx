@@ -181,6 +181,9 @@ const LanguageRoutes = () => {
       <Route path="/:lang/support" element={<Support />} />
       <Route path="/:lang/accept-invite/:token" element={<AcceptInvite />} />
       <Route path="/:lang/pricing" element={<Pricing />} />
+      <Route path="/:lang/staff-dashboard" element={<StaffDashboard />} />
+      <Route path="/:lang/video/:roomId" element={<VideoCall />} />
+      <Route path="/:lang/messages" element={<Messages />} />
       
       <Route path="*" element={<NotFound />} />
     </Routes>
