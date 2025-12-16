@@ -69,8 +69,10 @@ const PharmacyRegistration = lazy(() => import("./pages/pharmacy/PharmacyRegistr
 const PharmacyLandingPage = lazy(() => import("./pages/pharmacy/PharmacyLandingPage"));
 const LabDashboard = lazy(() => import("./pages/lab/LabDashboard"));
 const LabRegistration = lazy(() => import("./pages/lab/LabRegistration"));
+const LabLandingPage = lazy(() => import("./pages/lab/LabLandingPage"));
 const ImagingDashboard = lazy(() => import("./pages/imaging/ImagingDashboard"));
 const ImagingRegistration = lazy(() => import("./pages/imaging/ImagingRegistration"));
+const ImagingLandingPage = lazy(() => import("./pages/imaging/ImagingLandingPage"));
 
 const queryClient = new QueryClient();
 
@@ -135,8 +137,14 @@ const LanguageRoutes = () => {
       <Route path="/video/:roomId" element={<VideoCall />} />
       <Route path="/messages" element={<Messages />} />
       
-      {/* Pharmacy Routes */}
+      {/* Landing Pages */}
+      <Route path="/for-doctors" element={<Doctors />} />
+      <Route path="/for-practices" element={<Practices />} />
       <Route path="/for-pharmacies" element={<PharmacyLandingPage />} />
+      <Route path="/for-labs" element={<LabLandingPage />} />
+      <Route path="/for-imaging" element={<ImagingLandingPage />} />
+      
+      {/* Pharmacy Routes */}
       <Route path="/pharmacy/dashboard" element={<PharmacyDashboard />} />
       <Route path="/pharmacy/:pharmacyId" element={<PharmacyDashboard />} />
       <Route path="/pharmacy/register" element={<PharmacyRegistration />} />
