@@ -67,6 +67,7 @@ const VideoCall = lazy(() => import("./pages/VideoCall"));
 const Messages = lazy(() => import("./pages/Messages"));
 const PharmacyDashboard = lazy(() => import("./pages/pharmacy/PharmacyDashboard"));
 const PharmacyRegistration = lazy(() => import("./pages/pharmacy/PharmacyRegistration"));
+const PharmacyLandingPage = lazy(() => import("./pages/pharmacy/PharmacyLandingPage"));
 const LabDashboard = lazy(() => import("./pages/lab/LabDashboard"));
 const LabRegistration = lazy(() => import("./pages/lab/LabRegistration"));
 const ImagingDashboard = lazy(() => import("./pages/imaging/ImagingDashboard"));
@@ -137,6 +138,7 @@ const LanguageRoutes = () => {
       <Route path="/messages" element={<Messages />} />
       
       {/* Pharmacy Routes */}
+      <Route path="/for-pharmacies" element={<PharmacyLandingPage />} />
       <Route path="/pharmacy/dashboard" element={<PharmacyDashboard />} />
       <Route path="/pharmacy/:pharmacyId" element={<PharmacyDashboard />} />
       <Route path="/pharmacy/register" element={<PharmacyRegistration />} />

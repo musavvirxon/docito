@@ -17,11 +17,19 @@ import {
   CheckCircle,
   XCircle,
   Settings,
-  Plus
+  Plus,
+  FileText,
+  Shield,
+  Truck,
+  BarChart3
 } from 'lucide-react';
 import PharmacyInventoryManager from '@/components/pharmacy/PharmacyInventoryManager';
 import FulfillmentQueue from '@/components/pharmacy/FulfillmentQueue';
 import PharmacyStaffManager from '@/components/pharmacy/PharmacyStaffManager';
+import PharmacyPrescriptionInbox from '@/components/pharmacy/PharmacyPrescriptionInbox';
+import PharmacyInsuranceClaims from '@/components/pharmacy/PharmacyInsuranceClaims';
+import PharmacyDeliveryOrders from '@/components/pharmacy/PharmacyDeliveryOrders';
+import PharmacyAnalytics from '@/components/pharmacy/PharmacyAnalytics';
 
 export default function PharmacyDashboard() {
   const { pharmacyId } = useParams();
@@ -211,10 +219,28 @@ export default function PharmacyDashboard() {
 
       {/* Main Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
+        <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="prescriptions" className="flex items-center gap-1">
+            <FileText className="h-4 w-4" />
+            Prescriptions
+          </TabsTrigger>
           <TabsTrigger value="queue">Fulfillment Queue</TabsTrigger>
           <TabsTrigger value="inventory">Inventory</TabsTrigger>
+          <TabsTrigger value="delivery" className="flex items-center gap-1">
+            <Truck className="h-4 w-4" />
+            Delivery
+          </TabsTrigger>
+          <TabsTrigger value="insurance" className="flex items-center gap-1">
+            <Shield className="h-4 w-4" />
+            Insurance
+          </TabsTrigger>
+          {isAdmin && (
+            <TabsTrigger value="analytics" className="flex items-center gap-1">
+              <BarChart3 className="h-4 w-4" />
+              Analytics
+            </TabsTrigger>
+          )}
           {isAdmin && <TabsTrigger value="staff">Staff</TabsTrigger>}
         </TabsList>
 
@@ -285,6 +311,10 @@ export default function PharmacyDashboard() {
           </div>
         </TabsContent>
 
+        <TabsContent value="prescriptions" className="mt-6">
+          <PharmacyPrescriptionInbox pharmacyId={pharmacyId!} />
+        </TabsContent>
+
         <TabsContent value="queue" className="mt-6">
           <FulfillmentQueue pharmacyId={pharmacyId!} />
         </TabsContent>
@@ -292,6 +322,20 @@ export default function PharmacyDashboard() {
         <TabsContent value="inventory" className="mt-6">
           <PharmacyInventoryManager pharmacyId={pharmacyId!} />
         </TabsContent>
+
+        <TabsContent value="delivery" className="mt-6">
+          <PharmacyDeliveryOrders pharmacyId={pharmacyId!} />
+        </TabsContent>
+
+        <TabsContent value="insurance" className="mt-6">
+          <PharmacyInsuranceClaims pharmacyId={pharmacyId!} />
+        </TabsContent>
+
+        {isAdmin && (
+          <TabsContent value="analytics" className="mt-6">
+            <PharmacyAnalytics pharmacyId={pharmacyId!} />
+          </TabsContent>
+        )}
 
         {isAdmin && (
           <TabsContent value="staff" className="mt-6">
