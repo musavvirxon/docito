@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, User, Stethoscope, Building2 } from "lucide-react";
+import { Loader2, User, Stethoscope, Building2, Pill, FlaskConical, Scan } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -32,17 +32,22 @@ const Auth = () => {
   // Redirect if already authenticated based on role
   useEffect(() => {
     if (user && profile) {
-      switch (profile.role) {
-        case 'doctor':
-          navigate('/doctor-dashboard');
-          break;
-        case 'admin':
-          navigate('/admin-dashboard');
-          break;
-        case 'patient':
-        default:
-          navigate('/patient-dashboard');
-          break;
+      // Check roles array first (from user_roles table), fallback to profile.role
+      const userRoles = profile.roles || [];
+      const primaryRole = profile.role as string;
+      
+      if (userRoles.includes('pharmacy_admin') || primaryRole === 'pharmacy_admin') {
+        navigate('/pharmacy/dashboard');
+      } else if (userRoles.includes('lab_admin') || primaryRole === 'lab_admin') {
+        navigate('/lab/dashboard');
+      } else if (userRoles.includes('imaging_admin') || primaryRole === 'imaging_admin') {
+        navigate('/imaging/dashboard');
+      } else if (userRoles.includes('doctor') || primaryRole === 'doctor') {
+        navigate('/doctor-dashboard');
+      } else if (userRoles.includes('admin') || primaryRole === 'admin') {
+        navigate('/admin-dashboard');
+      } else {
+        navigate('/patient-dashboard');
       }
     }
   }, [user, profile, navigate]);
@@ -55,7 +60,6 @@ const Auth = () => {
       const { error } = await signIn(signInEmail, signInPassword);
       if (!error) {
         // Auth context will handle redirect based on role
-        // No manual navigation needed here
       }
     } catch (error) {
       console.error('Sign in error:', error);
@@ -76,7 +80,6 @@ const Auth = () => {
       
       if (!error) {
         // Auth context will handle redirect based on role
-        // No manual navigation needed here
       }
     } catch (error) {
       console.error('Sign up error:', error);
@@ -89,6 +92,9 @@ const Auth = () => {
     switch (role) {
       case 'doctor': return <Stethoscope className="w-5 h-5" />;
       case 'admin': return <Building2 className="w-5 h-5" />;
+      case 'pharmacy_admin': return <Pill className="w-5 h-5" />;
+      case 'lab_admin': return <FlaskConical className="w-5 h-5" />;
+      case 'imaging_admin': return <Scan className="w-5 h-5" />;
       default: return <User className="w-5 h-5" />;
     }
   };
@@ -217,19 +223,37 @@ const Auth = () => {
                         <SelectItem value="patient">
                           <div className="flex items-center gap-2">
                             <User className="w-4 h-4" />
-                            {t('auth.signUp.roles.patient')}
+                            {t('auth.signUp.roles.patient', 'Patient')}
                           </div>
                         </SelectItem>
                         <SelectItem value="doctor">
                           <div className="flex items-center gap-2">
                             <Stethoscope className="w-4 h-4" />
-                            {t('auth.signUp.roles.doctor')}
+                            {t('auth.signUp.roles.doctor', 'Doctor')}
                           </div>
                         </SelectItem>
                         <SelectItem value="admin">
                           <div className="flex items-center gap-2">
                             <Building2 className="w-4 h-4" />
-                            {t('auth.signUp.roles.admin')}
+                            {t('auth.signUp.roles.admin', 'Clinic Admin')}
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="pharmacy_admin">
+                          <div className="flex items-center gap-2">
+                            <Pill className="w-4 h-4" />
+                            {t('auth.signUp.roles.pharmacyAdmin', 'Pharmacy Admin')}
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="lab_admin">
+                          <div className="flex items-center gap-2">
+                            <FlaskConical className="w-4 h-4" />
+                            {t('auth.signUp.roles.labAdmin', 'Lab Admin')}
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="imaging_admin">
+                          <div className="flex items-center gap-2">
+                            <Scan className="w-4 h-4" />
+                            {t('auth.signUp.roles.imagingAdmin', 'Imaging Center Admin')}
                           </div>
                         </SelectItem>
                       </SelectContent>
