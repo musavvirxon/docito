@@ -196,7 +196,7 @@ export default function PharmacyLandingPage() {
         <ModernNavbar />
 
         {/* Hero Section */}
-        <section ref={heroRef} className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+        <section ref={heroRef} className="relative min-h-screen flex items-center justify-center overflow-hidden">
           {/* Background Effects */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
           <div className="absolute inset-0 opacity-30">

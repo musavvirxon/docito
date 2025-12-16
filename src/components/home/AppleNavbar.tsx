@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import ThemeToggle from "./ThemeToggle";
 
-const ModernNavbar = () => {
+const AppleNavbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -19,6 +19,7 @@ const ModernNavbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close mobile menu on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
@@ -165,10 +166,10 @@ const ModernNavbar = () => {
         </AnimatePresence>
       </motion.nav>
 
-      {/* Spacer */}
+      {/* Spacer to prevent content from going under fixed navbar */}
       <div className="h-12" />
     </>
   );
 };
 
-export default ModernNavbar;
+export default AppleNavbar;

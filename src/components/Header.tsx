@@ -1,111 +1,243 @@
-import { Button } from "@/components/ui/button";
-import { ChevronDown, User, LogOut, Settings, Bell as BellIcon } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Menu, X, User, LogOut, Settings, Bell as BellIcon } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
-import { useTranslation } from 'react-i18next';
+import ThemeToggle from "@/components/home/ThemeToggle";
+
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const {
-    user,
-    profile,
-    signOut
-  } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
-  const { t } = useTranslation('common');
+  const location = useLocation();
+
   useEffect(() => {
-    let ticking = false;
     const handleScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          setIsScrolled(window.scrollY > 0);
-          ticking = false;
-        });
-        ticking = true;
-      }
+      setIsScrolled(window.scrollY > 10);
     };
-    window.addEventListener('scroll', handleScroll, {
-      passive: true
-    });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-  return <header className={`border-b border-border bg-background transition-all duration-300 z-50 ${isScrolled ? 'fixed top-1.5 left-1.5 right-1.5 rounded-lg shadow-lg' : 'relative'}`}>
-      <div className="container mx-auto px-4">
-        <nav className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center">
-            <img src="/logos/horizontal/docito-horizontal-md.png" alt="Docito" className="h-8" />
-          </Link>
 
-          {/* Navigation Links */}
-          
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
-          {/* Auth Section */}
-          <div className="flex items-center space-x-3">
-            {user ?
-          // Authenticated user
-          <>
-                <Button variant="secondary" className="font-medium text-sm h-9 px-4" onClick={() => navigate('/dashboard')}>
-                  {t('navigation.dashboard')}
+  const navLinks = [
+    { name: "Doctors", href: "/for-doctors" },
+    { name: "Medical Practices", href: "/for-practices" },
+    { name: "Pharmacies", href: "/for-pharmacies" },
+    { name: "Laboratories", href: "/for-labs" },
+    { name: "Imaging Centers", href: "/for-imaging" },
+    { name: "Features", href: "/features" },
+    { name: "About Us", href: "/about" },
+  ];
+
+  const isActive = (href: string) => location.pathname === href;
+
+  return (
+    <>
+      <motion.header
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+          isScrolled
+            ? "bg-background/70 backdrop-blur-2xl border-b border-border/40 shadow-sm"
+            : "bg-transparent"
+        }`}
+      >
+        <div className="max-w-[1200px] mx-auto px-6">
+          <div className="flex items-center justify-between h-12">
+            {/* Logo */}
+            <Link
+              to="/"
+              className="flex items-center hover:opacity-70 transition-opacity duration-200"
+            >
+              <img
+                src="/logos/horizontal/docito-horizontal-sm.png"
+                alt="Docito"
+                className="h-6"
+              />
+            </Link>
+
+            {/* Desktop Navigation */}
+            <div className="hidden xl:flex items-center justify-center flex-1 mx-8">
+              <div className="flex items-center gap-6">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.name}
+                    to={link.href}
+                    className={`text-xs font-medium transition-all duration-200 whitespace-nowrap ${
+                      isActive(link.href)
+                        ? "text-foreground"
+                        : "text-foreground/70 hover:text-foreground"
+                    }`}
+                  >
+                    {link.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Section */}
+            <div className="hidden xl:flex items-center gap-3">
+              <ThemeToggle />
+              {user ? (
+                <>
+                  <NotificationDropdown />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={profile?.avatar_url} alt={profile?.full_name} />
+                          <AvatarFallback className="text-xs">
+                            {profile?.full_name?.split(" ").map((n) => n[0]).join("") || "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56" align="end">
+                      <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                        <User className="mr-2 h-4 w-4" />
+                        <span>Dashboard</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/notifications")}>
+                        <BellIcon className="mr-2 h-4 w-4" />
+                        <span>Notifications</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/settings")}>
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>Settings</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={signOut}>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Logout</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
+              ) : (
+                <Button
+                  onClick={() => navigate("/auth")}
+                  size="sm"
+                  className="h-8 px-4 text-xs font-medium rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200"
+                >
+                  Register
                 </Button>
-                
-                <NotificationDropdown />
-                
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={profile?.avatar_url} alt={profile?.full_name} />
-                        <AvatarFallback>
-                          {profile?.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56" align="end">
-                    <DropdownMenuItem onClick={() => navigate('/dashboard')}>
-                      <User className="mr-2 h-4 w-4" />
-                      <span>{t('navigation.myProfile')}</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate('/notifications')}>
-                      <BellIcon className="mr-2 h-4 w-4" />
-                      <span>{t('navigation.notifications')}</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate('/patient-dashboard')}>
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>{t('navigation.settings')}</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={signOut}>
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>{t('navigation.logout')}</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </> :
-          // Non-authenticated user
-          <>
-                <Button variant="secondary" className="font-medium text-sm h-9 px-4" onClick={() => navigate('/doctors')}>
-                  {t('navigation.forDoctors')}
-                </Button>
-                <Button variant="secondary" className="font-medium text-sm h-9 px-4" onClick={() => navigate('/practices')}>
-                  {t('navigation.forPractices')}
-                </Button>
-                
-                <Button variant="outline" className="font-medium text-sm h-9 px-4" onClick={() => navigate('/auth')}>
-                  {t('navigation.login')}
-                </Button>
-                
-                <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-medium text-sm h-9 px-4" onClick={() => navigate('/auth')}>
-                  {t('navigation.register')}
-                </Button>
-              </>}
+              )}
+            </div>
+
+            {/* Mobile Menu Button */}
+            <div className="flex xl:hidden items-center gap-2">
+              <ThemeToggle />
+              {user && <NotificationDropdown />}
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2 rounded-lg hover:bg-accent/50 transition-colors"
+                aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+              >
+                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
-        </nav>
-      </div>
-    </header>;
+        </div>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="xl:hidden bg-background/95 backdrop-blur-2xl border-t border-border/40 overflow-hidden"
+            >
+              <div className="max-w-[1200px] mx-auto px-6 py-6">
+                <div className="flex flex-col gap-1">
+                  {navLinks.map((link, index) => (
+                    <motion.div
+                      key={link.name}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      <Link
+                        to={link.href}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className={`block py-3 text-base font-medium transition-colors ${
+                          isActive(link.href)
+                            ? "text-primary"
+                            : "text-foreground/80 hover:text-foreground"
+                        }`}
+                      >
+                        {link.name}
+                      </Link>
+                    </motion.div>
+                  ))}
+                </div>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="mt-6 pt-6 border-t border-border/40"
+                >
+                  {user ? (
+                    <div className="space-y-3">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          navigate("/dashboard");
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="w-full h-12 text-base font-medium rounded-xl"
+                      >
+                        Dashboard
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          signOut();
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="w-full h-12 text-base font-medium rounded-xl bg-primary text-primary-foreground"
+                      >
+                        Logout
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={() => {
+                        navigate("/auth");
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full h-12 text-base font-medium rounded-xl bg-primary text-primary-foreground"
+                    >
+                      Register
+                    </Button>
+                  )}
+                </motion.div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.header>
+
+      {/* Spacer */}
+      <div className="h-12" />
+    </>
+  );
 };
+
 export default Header;
