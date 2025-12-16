@@ -45,14 +45,17 @@ export const LanguageRouter = ({ children }: { children: React.ReactNode }) => {
     }
 
     // Private pages list (authenticated pages - no language prefix)
-    const privatePages = ['dashboard', 'auth', 'signup', 'notifications', 'admin-dashboard', 
+    const privatePages = ['dashboard', 'auth', 'notifications', 'admin-dashboard', 
                           'doctor-dashboard', 'patient-dashboard', 'doctor-signup', 'verify',
                           'register-practice', 'processing-practice', 'treatment-planning',
                           'procedure-library', 'doctor-procedures', 'doctor-schedule-settings',
                           'booking-confirmation', 'book-appointment', 'legal-cms', 'super-admin-dashboard',
                           'admin', 'staff-dashboard', 'messages', 'video', 'pharmacy', 'lab', 'imaging'];
     
-    // Check if current path (without lang prefix) is a private page
+    // Public pages that don't have translations yet - serve as English only (no prefix)
+    const englishOnlyPages = ['for-pharmacies', 'for-doctors', 'for-labs', 'for-imaging'];
+    
+    // Check if current path (without lang prefix) is a private page or english-only page
     const pathWithoutLang = supportedLanguages.includes(firstPart) 
       ? pathParts.slice(1).join('/') 
       : pathParts.join('/');
@@ -61,19 +64,24 @@ export const LanguageRouter = ({ children }: { children: React.ReactNode }) => {
       pathWithoutLang.startsWith(prefix) || 
       pathWithoutLang === prefix
     );
+    
+    const isEnglishOnlyPage = englishOnlyPages.some(prefix => 
+      pathWithoutLang.startsWith(prefix) || 
+      pathWithoutLang === prefix
+    );
 
-    if (isPrivatePage) {
-      // Private pages: MUST NOT have language prefix
+    if (isPrivatePage || isEnglishOnlyPage) {
+      // Private pages and English-only pages: MUST NOT have language prefix
       if (supportedLanguages.includes(firstPart)) {
         const newPath = '/' + pathParts.slice(1).join('/');
         navigate(newPath, { replace: true });
         redirectCountRef.current++;
       } else {
-        // Private page without prefix - this is correct, do nothing
+        // Page without prefix - this is correct, do nothing
         redirectCountRef.current = 0;
       }
     } else {
-      // Public pages: MUST have language prefix
+      // Public pages with translations: MUST have language prefix
       if (supportedLanguages.includes(firstPart)) {
         // Has valid language prefix - update preference if needed
         if (firstPart !== currentLanguage) {

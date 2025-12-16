@@ -12,7 +12,6 @@ import CookieConsentBanner from "@/components/CookieConsentBanner";
 import PremiumHome from "./pages/PremiumHome";
 
 // Lazy load non-critical pages to reduce initial bundle size
-const SignUp = lazy(() => import("./pages/SignUp"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Practices = lazy(() => import("./pages/Practices"));
@@ -95,7 +94,6 @@ const LanguageRoutes = () => {
       {/* Default routes (no language prefix) */}
       <Route path="/" element={<PremiumHome />} />
       <Route path="/auth" element={<Auth />} />
-      <Route path="/signup" element={<SignUp />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/practices" element={<Practices />} />
       <Route path="/doctors" element={<Doctors />} />
@@ -154,7 +152,6 @@ const LanguageRoutes = () => {
       {/* Language-prefixed routes */}
       <Route path="/:lang/" element={<PremiumHome />} />
       <Route path="/:lang/auth" element={<Auth />} />
-      <Route path="/:lang/signup" element={<SignUp />} />
       <Route path="/:lang/dashboard" element={<Dashboard />} />
       {/* Localized public pages with SEO */}
       <Route path="/:lang/practices" element={<PracticesLocalized />} />
