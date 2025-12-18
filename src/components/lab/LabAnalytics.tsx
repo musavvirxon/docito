@@ -1,0 +1,329 @@
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { 
+  BarChart3, 
+  TrendingUp, 
+  DollarSign,
+  TestTube,
+  Users,
+  Clock,
+  ArrowUpRight,
+  ArrowDownRight,
+  RefreshCw
+} from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { toast } from 'sonner';
+
+interface Props {
+  labCenterId: string;
+}
+
+const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+
+export default function LabAnalytics({ labCenterId }: Props) {
+  const [loading, setLoading] = useState(true);
+  const [timeRange, setTimeRange] = useState('7d');
+  const [stats, setStats] = useState({
+    totalRevenue: 0,
+    totalTests: 0,
+    avgTurnaround: 0,
+    recollectionRate: 0,
+    revenueChange: 0,
+    testsChange: 0,
+  });
+  const [revenueData, setRevenueData] = useState<any[]>([]);
+  const [topTests, setTopTests] = useState<any[]>([]);
+  const [testsByStatus, setTestsByStatus] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (labCenterId) {
+      fetchAnalytics();
+    }
+  }, [labCenterId, timeRange]);
+
+  const fetchAnalytics = async () => {
+    try {
+      setLoading(true);
+      
+      // Mock stats
+      setStats({
+        totalRevenue: 45680,
+        totalTests: 1234,
+        avgTurnaround: 24,
+        recollectionRate: 2.3,
+        revenueChange: 15.2,
+        testsChange: 8.5,
+      });
+
+      // Mock revenue data
+      const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90;
+      const mockRevenueData = Array.from({ length: days }, (_, i) => {
+        const date = new Date();
+        date.setDate(date.getDate() - (days - 1 - i));
+        return {
+          date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          revenue: Math.floor(Math.random() * 3000) + 1000,
+          tests: Math.floor(Math.random() * 80) + 30,
+        };
+      });
+      setRevenueData(mockRevenueData);
+
+      // Mock top tests
+      setTopTests([
+        { name: 'Complete Blood Count', count: 256, revenue: 5120 },
+        { name: 'Lipid Panel', count: 198, revenue: 7920 },
+        { name: 'Metabolic Panel', count: 165, revenue: 8250 },
+        { name: 'Thyroid Panel', count: 142, revenue: 7100 },
+        { name: 'Hemoglobin A1C', count: 128, revenue: 3840 },
+      ]);
+
+      // Mock tests by status
+      setTestsByStatus([
+        { name: 'Completed', value: 856 },
+        { name: 'Processing', value: 234 },
+        { name: 'Pending', value: 98 },
+        { name: 'Cancelled', value: 46 },
+      ]);
+
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+      toast.error('Failed to load analytics');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Time Range Selector */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold flex items-center gap-2">
+          <BarChart3 className="h-6 w-6" />
+          Analytics Dashboard
+        </h2>
+        <div className="flex items-center gap-4">
+          <Select value={timeRange} onValueChange={setTimeRange}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Time range" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7d">Last 7 days</SelectItem>
+              <SelectItem value="30d">Last 30 days</SelectItem>
+              <SelectItem value="90d">Last 90 days</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button variant="ghost" size="sm" onClick={fetchAnalytics}>
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Revenue</p>
+                <p className="text-3xl font-bold">${stats.totalRevenue.toLocaleString()}</p>
+                <div className="flex items-center gap-1 mt-1">
+                  <ArrowUpRight className="h-4 w-4 text-green-600" />
+                  <span className="text-sm text-green-600">+{stats.revenueChange}%</span>
+                </div>
+              </div>
+              <div className="p-3 bg-primary/10 rounded-lg">
+                <DollarSign className="h-6 w-6 text-primary" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Tests</p>
+                <p className="text-3xl font-bold">{stats.totalTests.toLocaleString()}</p>
+                <div className="flex items-center gap-1 mt-1">
+                  <ArrowUpRight className="h-4 w-4 text-green-600" />
+                  <span className="text-sm text-green-600">+{stats.testsChange}%</span>
+                </div>
+              </div>
+              <div className="p-3 bg-accent/10 rounded-lg">
+                <TestTube className="h-6 w-6 text-accent" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Avg Turnaround</p>
+                <p className="text-3xl font-bold">{stats.avgTurnaround}h</p>
+              </div>
+              <div className="p-3 bg-blue-500/10 rounded-lg">
+                <Clock className="h-6 w-6 text-blue-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Recollection Rate</p>
+                <p className="text-3xl font-bold">{stats.recollectionRate}%</p>
+                <div className="flex items-center gap-1 mt-1">
+                  <ArrowDownRight className="h-4 w-4 text-green-600" />
+                  <span className="text-sm text-green-600">-0.5%</span>
+                </div>
+              </div>
+              <div className="p-3 bg-orange-500/10 rounded-lg">
+                <TrendingUp className="h-6 w-6 text-orange-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Revenue Chart */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Revenue & Test Volume</CardTitle>
+            <CardDescription>Daily performance over the selected period</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={revenueData}>
+                  <defs>
+                    <linearGradient id="colorLabRevenue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="date" className="text-xs fill-muted-foreground" />
+                  <YAxis className="text-xs fill-muted-foreground" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))', 
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="revenue" 
+                    stroke="hsl(var(--primary))" 
+                    fillOpacity={1} 
+                    fill="url(#colorLabRevenue)" 
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Tests by Status Pie Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Tests by Status</CardTitle>
+            <CardDescription>Distribution of test statuses</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={testsByStatus}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {testsByStatus.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="flex flex-wrap justify-center gap-4 mt-4">
+                {testsByStatus.map((entry, index) => (
+                  <div key={entry.name} className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                    />
+                    <span className="text-sm text-muted-foreground">{entry.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Top Tests */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TestTube className="h-5 w-5" />
+            Top Performing Tests
+          </CardTitle>
+          <CardDescription>Most ordered tests this period</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {topTests.map((test, index) => (
+              <div key={test.name} className="flex items-center gap-4">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
+                  {index + 1}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-medium">{test.name}</span>
+                    <span className="text-sm text-muted-foreground">{test.count} orders</span>
+                  </div>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-primary rounded-full"
+                      style={{ width: `${(test.count / topTests[0].count) * 100}%` }}
+                    />
+                  </div>
+                </div>
+                <div className="text-right w-20">
+                  <span className="font-medium text-green-600">${test.revenue.toLocaleString()}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
