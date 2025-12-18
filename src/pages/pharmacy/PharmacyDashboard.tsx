@@ -30,6 +30,8 @@ import PharmacyPrescriptionInbox from '@/components/pharmacy/PharmacyPrescriptio
 import PharmacyInsuranceClaims from '@/components/pharmacy/PharmacyInsuranceClaims';
 import PharmacyDeliveryOrders from '@/components/pharmacy/PharmacyDeliveryOrders';
 import PharmacyAnalytics from '@/components/pharmacy/PharmacyAnalytics';
+import PharmacySettings from '@/components/pharmacy/PharmacySettings';
+import PharmacyPatientView from '@/components/pharmacy/PharmacyPatientView';
 
 export default function PharmacyDashboard() {
   const { pharmacyId } = useParams();
@@ -227,6 +229,10 @@ export default function PharmacyDashboard() {
           </TabsTrigger>
           <TabsTrigger value="queue">Fulfillment Queue</TabsTrigger>
           <TabsTrigger value="inventory">Inventory</TabsTrigger>
+          <TabsTrigger value="patients" className="flex items-center gap-1">
+            <Users className="h-4 w-4" />
+            Patients
+          </TabsTrigger>
           <TabsTrigger value="delivery" className="flex items-center gap-1">
             <Truck className="h-4 w-4" />
             Delivery
@@ -242,6 +248,12 @@ export default function PharmacyDashboard() {
             </TabsTrigger>
           )}
           {isAdmin && <TabsTrigger value="staff">Staff</TabsTrigger>}
+          {isAdmin && (
+            <TabsTrigger value="settings" className="flex items-center gap-1">
+              <Settings className="h-4 w-4" />
+              Settings
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="overview" className="mt-6">
@@ -323,6 +335,10 @@ export default function PharmacyDashboard() {
           <PharmacyInventoryManager pharmacyId={pharmacyId!} />
         </TabsContent>
 
+        <TabsContent value="patients" className="mt-6">
+          <PharmacyPatientView pharmacyId={pharmacyId!} />
+        </TabsContent>
+
         <TabsContent value="delivery" className="mt-6">
           <PharmacyDeliveryOrders pharmacyId={pharmacyId!} />
         </TabsContent>
@@ -340,6 +356,12 @@ export default function PharmacyDashboard() {
         {isAdmin && (
           <TabsContent value="staff" className="mt-6">
             <PharmacyStaffManager pharmacyId={pharmacyId!} />
+          </TabsContent>
+        )}
+
+        {isAdmin && (
+          <TabsContent value="settings" className="mt-6">
+            <PharmacySettings pharmacyId={pharmacyId!} />
           </TabsContent>
         )}
       </Tabs>
