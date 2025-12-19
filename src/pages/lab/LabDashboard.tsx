@@ -15,7 +15,11 @@ import {
   CheckCircle,
   AlertCircle,
   Microscope,
-  TestTube
+  TestTube,
+  Droplets,
+  Home,
+  CreditCard,
+  BarChart3
 } from 'lucide-react';
 import { useLabCenter } from '@/hooks/useLabCenter';
 import { useTestOrders } from '@/hooks/useTestOrders';
@@ -23,6 +27,10 @@ import { LabOrderQueue } from '@/components/lab/LabOrderQueue';
 import { TestCatalogManager } from '@/components/lab/TestCatalogManager';
 import { LabStaffManager } from '@/components/lab/LabStaffManager';
 import { ResultEntry } from '@/components/lab/ResultEntry';
+import LabSampleManager from '@/components/lab/LabSampleManager';
+import LabHomeCollection from '@/components/lab/LabHomeCollection';
+import LabBillingInsurance from '@/components/lab/LabBillingInsurance';
+import LabAnalytics from '@/components/lab/LabAnalytics';
 
 export default function LabDashboard() {
   const navigate = useNavigate();
@@ -152,26 +160,43 @@ export default function LabDashboard() {
         </Card>
       </div>
 
-      {/* Main Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
-          <TabsTrigger value="orders" className="gap-2">
-            <ClipboardList className="h-4 w-4" />
-            <span className="hidden sm:inline">Orders</span>
-          </TabsTrigger>
-          <TabsTrigger value="results" className="gap-2">
-            <FileText className="h-4 w-4" />
-            <span className="hidden sm:inline">Results</span>
-          </TabsTrigger>
-          <TabsTrigger value="catalog" className="gap-2">
-            <FlaskConical className="h-4 w-4" />
-            <span className="hidden sm:inline">Catalog</span>
-          </TabsTrigger>
-          <TabsTrigger value="staff" className="gap-2">
-            <Users className="h-4 w-4" />
-            <span className="hidden sm:inline">Staff</span>
-          </TabsTrigger>
-        </TabsList>
+        <ScrollArea className="w-full">
+          <TabsList className="inline-flex w-max">
+            <TabsTrigger value="orders" className="gap-2">
+              <ClipboardList className="h-4 w-4" />
+              <span className="hidden sm:inline">Orders</span>
+            </TabsTrigger>
+            <TabsTrigger value="samples" className="gap-2">
+              <Droplets className="h-4 w-4" />
+              <span className="hidden sm:inline">Samples</span>
+            </TabsTrigger>
+            <TabsTrigger value="results" className="gap-2">
+              <FileText className="h-4 w-4" />
+              <span className="hidden sm:inline">Results</span>
+            </TabsTrigger>
+            <TabsTrigger value="home-collection" className="gap-2">
+              <Home className="h-4 w-4" />
+              <span className="hidden sm:inline">Home Collection</span>
+            </TabsTrigger>
+            <TabsTrigger value="catalog" className="gap-2">
+              <FlaskConical className="h-4 w-4" />
+              <span className="hidden sm:inline">Catalog</span>
+            </TabsTrigger>
+            <TabsTrigger value="billing" className="gap-2">
+              <CreditCard className="h-4 w-4" />
+              <span className="hidden sm:inline">Billing</span>
+            </TabsTrigger>
+            <TabsTrigger value="staff" className="gap-2">
+              <Users className="h-4 w-4" />
+              <span className="hidden sm:inline">Staff</span>
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="gap-2">
+              <BarChart3 className="h-4 w-4" />
+              <span className="hidden sm:inline">Analytics</span>
+            </TabsTrigger>
+          </TabsList>
+        </ScrollArea>
 
         <TabsContent value="orders" className="mt-6">
           <LabOrderQueue 
@@ -181,6 +206,10 @@ export default function LabDashboard() {
           />
         </TabsContent>
 
+        <TabsContent value="samples" className="mt-6">
+          <LabSampleManager labCenterId={myLabCenter.id} />
+        </TabsContent>
+
         <TabsContent value="results" className="mt-6">
           <ResultEntry 
             orders={processingOrders}
@@ -188,12 +217,24 @@ export default function LabDashboard() {
           />
         </TabsContent>
 
+        <TabsContent value="home-collection" className="mt-6">
+          <LabHomeCollection labCenterId={myLabCenter.id} />
+        </TabsContent>
+
         <TabsContent value="catalog" className="mt-6">
           <TestCatalogManager labCenterId={myLabCenter.id} />
         </TabsContent>
 
+        <TabsContent value="billing" className="mt-6">
+          <LabBillingInsurance labCenterId={myLabCenter.id} />
+        </TabsContent>
+
         <TabsContent value="staff" className="mt-6">
           <LabStaffManager labCenterId={myLabCenter.id} />
+        </TabsContent>
+
+        <TabsContent value="analytics" className="mt-6">
+          <LabAnalytics labCenterId={myLabCenter.id} />
         </TabsContent>
       </Tabs>
     </div>
