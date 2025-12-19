@@ -1,11 +1,12 @@
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import ModernNavbar from "@/components/home/ModernNavbar";
 import ModernHeroSection from "@/components/home/ModernHeroSection";
+import LiveCareMoment from "@/components/home/LiveCareMoment";
+import TrustIndicators from "@/components/home/TrustIndicators";
 import ValuePropositionSection from "@/components/home/ValuePropositionSection";
 import { TopSpecialties, TopClinics, TopPharmacies, MostBookedServices } from "@/components/home/sections";
 import HowItWorksSection from "@/components/home/HowItWorksSection";
 import FeaturesGrid from "@/components/home/FeaturesGrid";
-import DashboardPreviewSection from "@/components/home/DashboardPreviewSection";
 import CollaborationSection from "@/components/home/CollaborationSection";
 import MobileFriendlySection from "@/components/home/MobileFriendlySection";
 import CTASection from "@/components/home/CTASection";
@@ -29,6 +30,8 @@ const Index = () => {
         <ModernNavbar />
         <main>
           <ModernHeroSection />
+          <LiveCareMoment />
+          <TrustIndicators />
           <ValuePropositionSection />
           <TopSpecialties />
           <TopClinics />
@@ -36,7 +39,6 @@ const Index = () => {
           <MostBookedServices />
           <HowItWorksSection />
           <FeaturesGrid />
-          <DashboardPreviewSection />
           <CollaborationSection />
           <MobileFriendlySection />
           <CTASection />
