@@ -4,6 +4,7 @@ import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import ThemeToggle from "./ThemeToggle";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const ModernNavbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -25,12 +26,13 @@ const ModernNavbar = () => {
 
   const navLinks = [
     { name: "Doctors", href: "/for-doctors" },
-    { name: "Medical Practices", href: "/for-practices" },
+    { name: "Clinics", href: "/for-practices" },
+    { name: "Labs", href: "/for-labs" },
     { name: "Pharmacies", href: "/for-pharmacies" },
-    { name: "Laboratories", href: "/for-labs" },
-    { name: "Imaging Centers", href: "/for-imaging" },
-    { name: "Features", href: "/features" },
-    { name: "About Us", href: "/about" },
+    { name: "Imaging", href: "/for-imaging" },
+    { name: "Hospitals", href: "/for-hospitals" },
+    { name: "Pricing", href: "/pricing" },
+    { name: "How It Works", href: "/how-it-works" },
   ];
 
   const isActive = (href: string) => location.pathname === href;
@@ -43,16 +45,16 @@ const ModernNavbar = () => {
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           isScrolled
-            ? "bg-background/70 backdrop-blur-2xl border-b border-border/40 shadow-sm"
+            ? "bg-background/80 backdrop-blur-2xl border-b border-border/40 shadow-sm"
             : "bg-transparent"
         }`}
       >
-        <div className="max-w-[1200px] mx-auto px-6">
-          <div className="flex items-center justify-between h-12">
+        <div className="max-w-[1400px] mx-auto px-4 lg:px-6">
+          <div className="flex items-center justify-between h-14">
             {/* Logo */}
             <Link
               to="/"
-              className="flex items-center hover:opacity-70 transition-opacity duration-200"
+              className="flex items-center hover:opacity-70 transition-opacity duration-200 flex-shrink-0"
             >
               <img
                 src="/logos/horizontal/docito-horizontal-sm.png"
@@ -61,17 +63,17 @@ const ModernNavbar = () => {
               />
             </Link>
 
-            {/* Desktop Navigation */}
-            <div className="hidden xl:flex items-center justify-center flex-1 mx-8">
-              <div className="flex items-center gap-6">
+            {/* Desktop Navigation - Center */}
+            <div className="hidden xl:flex items-center justify-center flex-1 mx-4">
+              <div className="flex items-center gap-1">
                 {navLinks.map((link) => (
                   <Link
                     key={link.name}
                     to={link.href}
-                    className={`text-xs font-medium transition-all duration-200 whitespace-nowrap ${
+                    className={`px-3 py-1.5 text-[13px] font-medium rounded-full transition-all duration-200 whitespace-nowrap ${
                       isActive(link.href)
-                        ? "text-foreground"
-                        : "text-foreground/70 hover:text-foreground"
+                        ? "text-primary bg-primary/10"
+                        : "text-foreground/70 hover:text-foreground hover:bg-accent/50"
                     }`}
                   >
                     {link.name}
@@ -81,19 +83,29 @@ const ModernNavbar = () => {
             </div>
 
             {/* Right Section */}
-            <div className="hidden xl:flex items-center gap-3">
+            <div className="hidden xl:flex items-center gap-2 flex-shrink-0">
+              <LanguageSwitcher />
               <ThemeToggle />
               <Button
                 onClick={() => navigate("/auth")}
+                variant="ghost"
                 size="sm"
-                className="h-8 px-4 text-xs font-medium rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200"
+                className="h-8 px-4 text-xs font-medium"
               >
-                Register
+                Sign In
+              </Button>
+              <Button
+                onClick={() => navigate("/auth?mode=register")}
+                size="sm"
+                className="h-8 px-4 text-xs font-medium rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                Join as Provider
               </Button>
             </div>
 
             {/* Mobile Menu Button */}
             <div className="flex xl:hidden items-center gap-2">
+              <LanguageSwitcher />
               <ThemeToggle />
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -120,22 +132,22 @@ const ModernNavbar = () => {
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
               className="xl:hidden bg-background/95 backdrop-blur-2xl border-t border-border/40 overflow-hidden"
             >
-              <div className="max-w-[1200px] mx-auto px-6 py-6">
-                <div className="flex flex-col gap-1">
+              <div className="max-w-[1400px] mx-auto px-4 py-6">
+                <div className="grid grid-cols-2 gap-2">
                   {navLinks.map((link, index) => (
                     <motion.div
                       key={link.name}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
+                      transition={{ delay: index * 0.03 }}
                     >
                       <Link
                         to={link.href}
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className={`block py-3 text-base font-medium transition-colors ${
+                        className={`block py-3 px-4 text-sm font-medium rounded-xl transition-colors ${
                           isActive(link.href)
-                            ? "text-primary"
-                            : "text-foreground/80 hover:text-foreground"
+                            ? "text-primary bg-primary/10"
+                            : "text-foreground/80 hover:text-foreground hover:bg-accent/50"
                         }`}
                       >
                         {link.name}
@@ -146,17 +158,27 @@ const ModernNavbar = () => {
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="mt-6 pt-6 border-t border-border/40"
+                  transition={{ delay: 0.2 }}
+                  className="mt-6 pt-6 border-t border-border/40 flex gap-3"
                 >
                   <Button
                     onClick={() => {
                       navigate("/auth");
                       setIsMobileMenuOpen(false);
                     }}
-                    className="w-full h-12 text-base font-medium rounded-xl bg-primary text-primary-foreground"
+                    variant="outline"
+                    className="flex-1 h-12 text-sm font-medium rounded-xl"
                   >
-                    Register
+                    Sign In
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      navigate("/auth?mode=register");
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="flex-1 h-12 text-sm font-medium rounded-xl bg-primary text-primary-foreground"
+                  >
+                    Join as Provider
                   </Button>
                 </motion.div>
               </div>
@@ -166,7 +188,7 @@ const ModernNavbar = () => {
       </motion.nav>
 
       {/* Spacer */}
-      <div className="h-12" />
+      <div className="h-14" />
     </>
   );
 };
