@@ -3,3 +3,7 @@ export { TestCatalogManager } from './TestCatalogManager';
 export { LabStaffManager } from './LabStaffManager';
 export { ResultEntry } from './ResultEntry';
 export { TestOrderCreator } from './TestOrderCreator';
+export { default as LabSampleManager } from './LabSampleManager';
+export { default as LabHomeCollection } from './LabHomeCollection';
+export { default as LabBillingInsurance } from './LabBillingInsurance';
+export { default as LabAnalytics } from './LabAnalytics';
