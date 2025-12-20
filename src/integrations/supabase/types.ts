@@ -1613,6 +1613,48 @@ export type Database = {
           },
         ]
       }
+      entity_audit_logs: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          ip_address: unknown
+          metadata: Json | null
+          new_values: Json | null
+          old_values: Json | null
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          new_values?: Json | null
+          old_values?: Json | null
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          ip_address?: unknown
+          metadata?: Json | null
+          new_values?: Json | null
+          old_values?: Json | null
+        }
+        Relationships: []
+      }
       financial_inputs: {
         Row: {
           ad_cost: number | null
@@ -1966,6 +2008,137 @@ export type Database = {
           views?: number | null
         }
         Relationships: []
+      }
+      imaging_centers: {
+        Row: {
+          accepts_insurance: boolean | null
+          accreditations: string[] | null
+          address: string | null
+          admin_id: string | null
+          average_rating: number | null
+          city: string | null
+          country: string | null
+          created_at: string
+          email: string | null
+          id: string
+          is_verified: boolean | null
+          license_number: string | null
+          modalities: string[] | null
+          name: string
+          num_reviews: number | null
+          operating_hours: Json | null
+          phone: string | null
+          status: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          accepts_insurance?: boolean | null
+          accreditations?: string[] | null
+          address?: string | null
+          admin_id?: string | null
+          average_rating?: number | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_verified?: boolean | null
+          license_number?: string | null
+          modalities?: string[] | null
+          name: string
+          num_reviews?: number | null
+          operating_hours?: Json | null
+          phone?: string | null
+          status?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          accepts_insurance?: boolean | null
+          accreditations?: string[] | null
+          address?: string | null
+          admin_id?: string | null
+          average_rating?: number | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_verified?: boolean | null
+          license_number?: string | null
+          modalities?: string[] | null
+          name?: string
+          num_reviews?: number | null
+          operating_hours?: Json | null
+          phone?: string | null
+          status?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      imaging_staff: {
+        Row: {
+          can_manage_equipment: boolean | null
+          can_process_scans: boolean | null
+          can_upload_results: boolean | null
+          can_verify_results: boolean | null
+          can_view_orders: boolean | null
+          created_at: string
+          hired_at: string | null
+          id: string
+          imaging_center_id: string
+          license_number: string | null
+          specializations: string[] | null
+          staff_role: string
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          can_manage_equipment?: boolean | null
+          can_process_scans?: boolean | null
+          can_upload_results?: boolean | null
+          can_verify_results?: boolean | null
+          can_view_orders?: boolean | null
+          created_at?: string
+          hired_at?: string | null
+          id?: string
+          imaging_center_id: string
+          license_number?: string | null
+          specializations?: string[] | null
+          staff_role?: string
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          can_manage_equipment?: boolean | null
+          can_process_scans?: boolean | null
+          can_upload_results?: boolean | null
+          can_verify_results?: boolean | null
+          can_view_orders?: boolean | null
+          created_at?: string
+          hired_at?: string | null
+          id?: string
+          imaging_center_id?: string
+          license_number?: string | null
+          specializations?: string[] | null
+          staff_role?: string
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "imaging_staff_imaging_center_id_fkey"
+            columns: ["imaging_center_id"]
+            isOneToOne: false
+            referencedRelation: "imaging_centers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       insurance_plans: {
         Row: {
@@ -6552,6 +6725,17 @@ export type Database = {
           p_user_agent?: string
         }
         Returns: Json
+      }
+      log_entity_action: {
+        Args: {
+          p_action: string
+          p_entity_id: string
+          p_entity_type: string
+          p_metadata?: Json
+          p_new_values?: Json
+          p_old_values?: Json
+        }
+        Returns: string
       }
       mark_notification_as_read: {
         Args: { notification_id: string }
