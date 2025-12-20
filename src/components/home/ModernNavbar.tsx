@@ -64,7 +64,7 @@ const ModernNavbar = () => {
             </Link>
 
             {/* Desktop Navigation - Center */}
-            <div className="hidden xl:flex items-center justify-center flex-1 mx-4">
+            <div className="hidden lg:flex items-center justify-center flex-1 mx-4">
               <div className="flex items-center gap-1">
                 {navLinks.map((link) => (
                   <Link
@@ -83,7 +83,7 @@ const ModernNavbar = () => {
             </div>
 
             {/* Right Section */}
-            <div className="hidden xl:flex items-center gap-2 flex-shrink-0">
+            <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
               <LanguageSwitcher />
               <ThemeToggle />
               <Button
@@ -104,7 +104,7 @@ const ModernNavbar = () => {
             </div>
 
             {/* Mobile Menu Button */}
-            <div className="flex xl:hidden items-center gap-2">
+            <div className="flex lg:hidden items-center gap-2">
               <LanguageSwitcher />
               <ThemeToggle />
               <button
@@ -130,7 +130,7 @@ const ModernNavbar = () => {
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="xl:hidden bg-background/95 backdrop-blur-2xl border-t border-border/40 overflow-hidden"
+              className="lg:hidden bg-background/95 backdrop-blur-2xl border-t border-border/40 overflow-hidden"
             >
               <div className="max-w-[1400px] mx-auto px-4 py-6">
                 <div className="grid grid-cols-2 gap-2">
