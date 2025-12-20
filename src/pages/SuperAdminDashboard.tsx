@@ -26,6 +26,9 @@ import DoctorVerificationTable from "@/components/super-admin/DoctorVerification
 import SuperAdminSettingsPanel from "@/components/super-admin/SuperAdminSettingsPanel";
 import TranslationManagement from "@/pages/TranslationManagement";
 import HelpArticlesManagement from "@/components/super-admin/HelpArticlesManagement";
+import EcosystemOverview from "@/components/super-admin/EcosystemOverview";
+import EntityManagement from "@/components/super-admin/EntityManagement";
+import GlobalStaffManagement from "@/components/super-admin/GlobalStaffManagement";
 import { useTranslation } from 'react-i18next';
 
 const SuperAdminLogin = () => {
