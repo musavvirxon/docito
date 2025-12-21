@@ -21,6 +21,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { getCountryRequirements, getAllCountries, DocumentRequirement } from "@/config/countryDocumentRequirements";
 import { specialtyCategories, allLanguages, consultationTypes, experienceOptions, validatePhoneNumber } from "@/config/doctorFormData";
+import { countryRegions, getRegionsForCountry } from "@/config/countryRegions";
 
 const DoctorSignUp = () => {
   const { t } = useTranslation('auth');
@@ -136,7 +137,12 @@ const DoctorSignUp = () => {
   const [expandedSpecialty, setExpandedSpecialty] = useState<string | null>(null);
   
   const availableCountries = getAllCountries();
-  const usStates = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"];
+  
+  // Get regions based on selected country
+  const availableRegions = useMemo(() => {
+    if (!formData.country) return [];
+    return getRegionsForCountry(formData.country);
+  }, [formData.country]);
 
   // Update required documents when country changes
   useEffect(() => {
@@ -915,14 +921,20 @@ const DoctorSignUp = () => {
                   </div>
                   <div>
                     <Label htmlFor="region">{t('doctorSignup.fields.region')} <span className="text-red-500">*</span></Label>
-                    <Select value={formData.region} onValueChange={value => updateField('region', value)} disabled={!formData.country}>
+                    <Select 
+                      value={formData.region} 
+                      onValueChange={value => updateField('region', value)} 
+                      disabled={!formData.country || availableRegions.length === 0}
+                    >
                       <SelectTrigger>
-                        <SelectValue placeholder={t('doctorSignup.placeholders.selectRegion')} />
+                        <SelectValue placeholder={availableRegions.length === 0 ? "Select country first" : t('doctorSignup.placeholders.selectRegion')} />
                       </SelectTrigger>
                       <SelectContent>
-                        {formData.country === "united states" && usStates.map(state => <SelectItem key={state} value={state.toLowerCase()}>
-                            {state}
-                          </SelectItem>)}
+                        {availableRegions.map(region => (
+                          <SelectItem key={region} value={region.toLowerCase()}>
+                            {region}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
