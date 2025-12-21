@@ -4,7 +4,6 @@ import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import ThemeToggle from "./ThemeToggle";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const ModernNavbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -84,7 +83,6 @@ const ModernNavbar = () => {
 
             {/* Right Section */}
             <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
-              <LanguageSwitcher />
               <ThemeToggle />
               <Button
                 onClick={() => navigate("/auth")}
@@ -105,7 +103,6 @@ const ModernNavbar = () => {
 
             {/* Mobile Menu Button */}
             <div className="flex lg:hidden items-center gap-2">
-              <LanguageSwitcher />
               <ThemeToggle />
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
