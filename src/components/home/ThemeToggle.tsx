@@ -27,8 +27,33 @@ const ThemeToggle = () => {
   const handleModeClick = (value: 'light' | 'dark' | 'auto') => {
     setThemeMode(value);
   };
-  return <TooltipProvider delayDuration={300}>
-      
-    </TooltipProvider>;
+  return (
+    <TooltipProvider delayDuration={300}>
+      <div className="flex items-center gap-1 p-1 rounded-full bg-muted/50">
+        {modes.map((m) => (
+          <Tooltip key={m.value}>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => handleModeClick(m.value)}
+                className={cn(
+                  "p-1.5 rounded-full transition-all duration-200",
+                  mode === m.value
+                    ? "bg-background shadow-sm text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                aria-label={m.label}
+              >
+                <m.icon className="w-3.5 h-3.5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="text-xs">
+              <p className="font-medium">{m.label}</p>
+              <p className="text-muted-foreground">{m.description}</p>
+            </TooltipContent>
+          </Tooltip>
+        ))}
+      </div>
+    </TooltipProvider>
+  );
 };
 export default ThemeToggle;
