@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,7 @@ import { useSimpleForm } from "@/hooks/useSimpleForm";
 import { useQuickNavigate } from "@/hooks/useQuickNavigate";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { countryRegions, getRegionsForCountry } from "@/config/countryRegions";
 
 const practiceTypes = [
   "Private Clinic",
@@ -30,8 +31,7 @@ const practiceSizes = [
   "15+ providers"
 ];
 
-const countries = ["United States", "Canada", "United Kingdom"];
-const usStates = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia"];
+// Countries and regions are now loaded from countryRegions config
 
 const allSpecialties = [
   "Cardiologist", "Dentist", "Pediatrician", "CT Scan Facility", "Pain Management",
@@ -79,6 +79,12 @@ const RegisterPractice = () => {
     agreeToMessages: false,
     agreeToTerms: false
   }, 'practice');
+
+  // Get available regions based on selected country
+  const availableRegions = useMemo(() => {
+    if (!formData.country) return [];
+    return getRegionsForCountry(formData.country);
+  }, [formData.country]);
 
   const filteredSpecialties = allSpecialties.filter(specialty =>
     specialty.toLowerCase().includes(specialtySearch.toLowerCase()) &&
@@ -225,13 +231,19 @@ const RegisterPractice = () => {
 
                 <div>
                   <Label className="text-sm font-medium">Country (Optional)</Label>
-                  <Select onValueChange={(value) => updateField('country', value)} value={formData.country}>
+                  <Select 
+                    onValueChange={(value) => {
+                      updateField('country', value);
+                      updateField('state', ''); // Reset state when country changes
+                    }} 
+                    value={formData.country}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select country" />
                     </SelectTrigger>
                     <SelectContent>
-                      {countries.map((country) => (
-                        <SelectItem key={country} value={country}>{country}</SelectItem>
+                      {countryRegions.map((country) => (
+                        <SelectItem key={country.code} value={country.name}>{country.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -239,13 +251,17 @@ const RegisterPractice = () => {
 
                 <div>
                   <Label className="text-sm font-medium">State/Region (Optional)</Label>
-                  <Select onValueChange={(value) => updateField('state', value)} value={formData.state}>
+                  <Select 
+                    onValueChange={(value) => updateField('state', value)} 
+                    value={formData.state}
+                    disabled={!formData.country || availableRegions.length === 0}
+                  >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select state/region" />
+                      <SelectValue placeholder={availableRegions.length === 0 ? "Select country first" : "Select state/region"} />
                     </SelectTrigger>
                     <SelectContent>
-                      {usStates.map((state) => (
-                        <SelectItem key={state} value={state}>{state}</SelectItem>
+                      {availableRegions.map((region) => (
+                        <SelectItem key={region} value={region}>{region}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
