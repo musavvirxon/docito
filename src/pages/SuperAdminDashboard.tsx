@@ -398,6 +398,24 @@ const SuperAdminDashboard = () => {
           </div>
         );
       
+      case "ecosystem":
+        return <EcosystemOverview />;
+      
+      case "clinics":
+        return <EntityManagement entityType="clinic" />;
+      
+      case "pharmacies":
+        return <EntityManagement entityType="pharmacy" />;
+      
+      case "laboratories":
+        return <EntityManagement entityType="laboratory" />;
+      
+      case "imaging":
+        return <EntityManagement entityType="imaging" />;
+      
+      case "staff":
+        return <GlobalStaffManagement />;
+      
       default:
         return null;
     }
