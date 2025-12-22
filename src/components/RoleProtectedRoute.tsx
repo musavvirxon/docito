@@ -3,13 +3,21 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 
-// Define all possible roles
+// All available roles in the system - must match app_role enum in database
 export type AppRole = 
   | 'patient'
   | 'doctor'
   | 'admin'
-  | 'super_admin'
   | 'staff'
+  | 'super_admin'
+  | 'receptionist'
+  | 'nurse'
+  | 'billing_manager'
+  | 'pharmacist'
+  | 'lab_technician'
+  | 'internal_lab_tech'
+  | 'internal_imaging_tech'
+  | 'clinic_admin'
   | 'clinic_staff'
   | 'pharmacy_admin'
   | 'pharmacy_staff'
@@ -20,18 +28,26 @@ export type AppRole =
 
 // Define dashboard routes for each role
 export const roleDashboardRoutes: Record<AppRole, string> = {
-  patient: '/patient-dashboard',
-  doctor: '/doctor-dashboard',
-  admin: '/admin-dashboard',
   super_admin: '/super-admin-dashboard',
-  staff: '/staff-dashboard',
-  clinic_staff: '/staff-dashboard',
+  admin: '/admin-dashboard',
+  clinic_admin: '/admin-dashboard',
   pharmacy_admin: '/pharmacy/dashboard',
-  pharmacy_staff: '/pharmacy/dashboard',
   lab_admin: '/lab/dashboard',
-  lab_staff: '/lab/dashboard',
   imaging_admin: '/imaging/dashboard',
+  doctor: '/doctor-dashboard',
+  clinic_staff: '/staff-dashboard',
+  pharmacy_staff: '/pharmacy/dashboard',
+  lab_staff: '/lab/dashboard',
   imaging_staff: '/imaging/dashboard',
+  receptionist: '/staff-dashboard',
+  nurse: '/staff-dashboard',
+  billing_manager: '/staff-dashboard',
+  pharmacist: '/pharmacy/dashboard',
+  lab_technician: '/lab/dashboard',
+  internal_lab_tech: '/lab/dashboard',
+  internal_imaging_tech: '/imaging/dashboard',
+  staff: '/staff-dashboard',
+  patient: '/patient-dashboard',
 };
 
 interface RoleProtectedRouteProps {
@@ -120,15 +136,15 @@ const RoleProtectedRoute = ({
  */
 function getDefaultDashboard(roles: string[]): string {
   if (roles.includes('super_admin')) return '/super-admin-dashboard';
-  if (roles.includes('admin')) return '/admin-dashboard';
+  if (roles.includes('admin') || roles.includes('clinic_admin')) return '/admin-dashboard';
   if (roles.includes('doctor')) return '/doctor-dashboard';
-  if (roles.includes('pharmacy_admin')) return '/pharmacy/dashboard';
+  if (roles.includes('pharmacy_admin') || roles.includes('pharmacist')) return '/pharmacy/dashboard';
   if (roles.includes('pharmacy_staff')) return '/pharmacy/dashboard';
-  if (roles.includes('lab_admin')) return '/lab/dashboard';
+  if (roles.includes('lab_admin') || roles.includes('lab_technician') || roles.includes('internal_lab_tech')) return '/lab/dashboard';
   if (roles.includes('lab_staff')) return '/lab/dashboard';
-  if (roles.includes('imaging_admin')) return '/imaging/dashboard';
+  if (roles.includes('imaging_admin') || roles.includes('internal_imaging_tech')) return '/imaging/dashboard';
   if (roles.includes('imaging_staff')) return '/imaging/dashboard';
-  if (roles.includes('clinic_staff') || roles.includes('staff')) return '/staff-dashboard';
+  if (roles.includes('clinic_staff') || roles.includes('staff') || roles.includes('receptionist') || roles.includes('nurse') || roles.includes('billing_manager')) return '/staff-dashboard';
   return '/patient-dashboard';
 }
 
@@ -163,10 +179,12 @@ export function usePrimaryRole(): AppRole {
   
   // Return highest priority role
   const priorityOrder: AppRole[] = [
-    'super_admin', 'admin', 'doctor', 
+    'super_admin', 'admin', 'clinic_admin', 'doctor', 
     'pharmacy_admin', 'lab_admin', 'imaging_admin',
     'pharmacy_staff', 'lab_staff', 'imaging_staff', 
-    'clinic_staff', 'staff', 'patient'
+    'clinic_staff', 'receptionist', 'nurse', 'billing_manager',
+    'pharmacist', 'lab_technician', 'internal_lab_tech', 'internal_imaging_tech',
+    'staff', 'patient'
   ];
   
   for (const role of priorityOrder) {
