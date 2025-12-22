@@ -6692,6 +6692,10 @@ export type Database = {
       }
       get_practice_stats: { Args: { p_practice_id: string }; Returns: Json }
       get_staff_permissions: { Args: { p_user_id: string }; Returns: Json }
+      get_user_primary_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
       get_user_profile_by_uid: { Args: never; Returns: Json }
       get_user_role: {
         Args: { _user_id: string }
@@ -6834,6 +6838,14 @@ export type Database = {
         | "lab_technician"
         | "internal_lab_tech"
         | "internal_imaging_tech"
+        | "clinic_admin"
+        | "clinic_staff"
+        | "pharmacy_admin"
+        | "pharmacy_staff"
+        | "lab_admin"
+        | "lab_staff"
+        | "imaging_admin"
+        | "imaging_staff"
       appointment_status:
         | "pending"
         | "confirmed"
@@ -7036,6 +7048,14 @@ export const Constants = {
         "lab_technician",
         "internal_lab_tech",
         "internal_imaging_tech",
+        "clinic_admin",
+        "clinic_staff",
+        "pharmacy_admin",
+        "pharmacy_staff",
+        "lab_admin",
+        "lab_staff",
+        "imaging_admin",
+        "imaging_staff",
       ],
       appointment_status: [
         "pending",

@@ -10,6 +10,7 @@ import { LanguageRouter } from "@/components/LanguageRouter";
 import { useTranslation } from "react-i18next";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import PremiumHome from "./pages/PremiumHome";
+import RoleProtectedRoute from "@/components/RoleProtectedRoute";
 
 // Lazy load non-critical pages to reduce initial bundle size
 const Auth = lazy(() => import("./pages/Auth"));
@@ -102,27 +103,27 @@ const LanguageRoutes = () => {
       <Route path="/:lang/doctors" element={<DoctorsLocalized />} />
       <Route path="/register-practice" element={<RegisterPractice />} />
       <Route path="/processing-practice" element={<ProcessingPractice />} />
-      <Route path="/admin-dashboard" element={<AdminDashboard />} />
+      <Route path="/admin-dashboard" element={<RoleProtectedRoute allowedRoles={['admin', 'clinic_admin', 'super_admin']}><AdminDashboard /></RoleProtectedRoute>} />
       <Route path="/doctor-signup" element={<DoctorSignUp />} />
-      <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
-      <Route path="/doctor-schedule-settings" element={<DoctorScheduleSettings />} />
-      <Route path="/doctor-procedures" element={<ProcedureLibrary />} />
-      <Route path="/procedure-library" element={<ProcedureLibrary />} />
-      <Route path="/patient-dashboard" element={<PatientDashboard />} />
+      <Route path="/doctor-dashboard" element={<RoleProtectedRoute allowedRoles={['doctor']}><DoctorDashboard /></RoleProtectedRoute>} />
+      <Route path="/doctor-schedule-settings" element={<RoleProtectedRoute allowedRoles={['doctor']}><DoctorScheduleSettings /></RoleProtectedRoute>} />
+      <Route path="/doctor-procedures" element={<RoleProtectedRoute allowedRoles={['doctor']}><ProcedureLibrary /></RoleProtectedRoute>} />
+      <Route path="/procedure-library" element={<RoleProtectedRoute allowedRoles={['doctor']}><ProcedureLibrary /></RoleProtectedRoute>} />
+      <Route path="/patient-dashboard" element={<RoleProtectedRoute allowedRoles={['patient', 'doctor', 'admin', 'super_admin']}><PatientDashboard /></RoleProtectedRoute>} />
       <Route path="/search/:category" element={<CategorySearch />} />
       <Route path="/doctor/:id" element={<DoctorProfile />} />
-      <Route path="/treatment-planning" element={<TreatmentPlanning />} />
+      <Route path="/treatment-planning" element={<RoleProtectedRoute allowedRoles={['doctor']}><TreatmentPlanning /></RoleProtectedRoute>} />
       <Route path="/book-appointment/:doctorId" element={<AppointmentBooking />} />
       <Route path="/booking-confirmation/:appointmentId" element={<BookingConfirmation />} />
       <Route path="/verify/:token" element={<VerifyPatient />} />
       <Route path="/notifications" element={<Notifications />} />
-      <Route path="/dashboard/verify" element={<PracticeVerification />} />
-      <Route path="/admin/profile-settings" element={<AdminProfileSettings />} />
-      <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
+      <Route path="/dashboard/verify" element={<RoleProtectedRoute allowedRoles={['admin', 'clinic_admin']}><PracticeVerification /></RoleProtectedRoute>} />
+      <Route path="/admin/profile-settings" element={<RoleProtectedRoute allowedRoles={['admin', 'clinic_admin', 'super_admin']}><AdminProfileSettings /></RoleProtectedRoute>} />
+      <Route path="/super-admin-dashboard" element={<RoleProtectedRoute allowedRoles={['super_admin']}><SuperAdminDashboard /></RoleProtectedRoute>} />
       <Route path="/legal" element={<Legal />} />
       <Route path="/legal/:slug" element={<LegalDetail />} />
       <Route path="/about" element={<About />} />
-      <Route path="/legal-cms" element={<LegalCMS />} />
+      <Route path="/legal-cms" element={<RoleProtectedRoute allowedRoles={['admin', 'super_admin']}><LegalCMS /></RoleProtectedRoute>} />
       <Route path="/search-doctors" element={<SearchDoctors />} />
       <Route path="/browse-specialties" element={<BrowseSpecialties />} />
       <Route path="/find-practices" element={<FindPractices />} />
@@ -133,7 +134,7 @@ const LanguageRoutes = () => {
       <Route path="/support" element={<Support />} />
       <Route path="/accept-invite/:token" element={<AcceptInvite />} />
       <Route path="/pricing" element={<Pricing />} />
-      <Route path="/staff-dashboard" element={<StaffDashboard />} />
+      <Route path="/staff-dashboard" element={<RoleProtectedRoute allowedRoles={['staff', 'clinic_staff', 'receptionist', 'nurse', 'billing_manager']}><StaffDashboard /></RoleProtectedRoute>} />
       <Route path="/video/:roomId" element={<VideoCall />} />
       <Route path="/messages" element={<Messages />} />
       
@@ -145,16 +146,16 @@ const LanguageRoutes = () => {
       <Route path="/for-imaging" element={<ImagingLandingPage />} />
       
       {/* Pharmacy Routes */}
-      <Route path="/pharmacy/dashboard" element={<PharmacyDashboard />} />
-      <Route path="/pharmacy/:pharmacyId" element={<PharmacyDashboard />} />
+      <Route path="/pharmacy/dashboard" element={<RoleProtectedRoute allowedRoles={['pharmacy_admin', 'pharmacy_staff', 'pharmacist']}><PharmacyDashboard /></RoleProtectedRoute>} />
+      <Route path="/pharmacy/:pharmacyId" element={<RoleProtectedRoute allowedRoles={['pharmacy_admin', 'pharmacy_staff', 'pharmacist']}><PharmacyDashboard /></RoleProtectedRoute>} />
       <Route path="/pharmacy/register" element={<PharmacyRegistration />} />
       
       {/* Lab Routes */}
-      <Route path="/lab/dashboard" element={<LabDashboard />} />
+      <Route path="/lab/dashboard" element={<RoleProtectedRoute allowedRoles={['lab_admin', 'lab_staff', 'lab_technician', 'internal_lab_tech']}><LabDashboard /></RoleProtectedRoute>} />
       <Route path="/lab/register" element={<LabRegistration />} />
       
       {/* Imaging Routes */}
-      <Route path="/imaging/dashboard" element={<ImagingDashboard />} />
+      <Route path="/imaging/dashboard" element={<RoleProtectedRoute allowedRoles={['imaging_admin', 'imaging_staff', 'internal_imaging_tech']}><ImagingDashboard /></RoleProtectedRoute>} />
       <Route path="/imaging/register" element={<ImagingRegistration />} />
       
       {/* Language-prefixed routes */}
