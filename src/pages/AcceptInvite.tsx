@@ -1,21 +1,42 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, CheckCircle, XCircle, Building2 } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Building2, Pill, FlaskConical, Scan } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAcceptStaffInvitation, getInvitationByToken, type StaffInvitation, type EntityType, entityDashboardRoutes } from '@/hooks/useStaffInvitations';
+
+const entityIcons: Record<EntityType, React.ReactNode> = {
+  practice: <Building2 className="w-16 h-16 text-primary" />,
+  pharmacy: <Pill className="w-16 h-16 text-primary" />,
+  lab: <FlaskConical className="w-16 h-16 text-primary" />,
+  imaging_center: <Scan className="w-16 h-16 text-primary" />,
+};
+
+const entityLabels: Record<EntityType, string> = {
+  practice: 'Practice',
+  pharmacy: 'Pharmacy',
+  lab: 'Laboratory',
+  imaging_center: 'Imaging Center',
+};
 
 const AcceptInvite = () => {
   const { token } = useParams<{ token: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [invitation, setInvitation] = useState<any>(null);
-  const [practice, setPractice] = useState<any>(null);
+  const [invitation, setInvitation] = useState<StaffInvitation | null>(null);
+  const [entityName, setEntityName] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
-  const [accepting, setAccepting] = useState(false);
+  const { acceptInvitation, loading: accepting } = useAcceptStaffInvitation();
+
+  // Check for legacy practice_invitations format
+  const [isLegacyInvitation, setIsLegacyInvitation] = useState(false);
+  const [legacyInvitation, setLegacyInvitation] = useState<any>(null);
+  const [legacyPractice, setLegacyPractice] = useState<any>(null);
 
   useEffect(() => {
     if (token) {
@@ -28,40 +49,86 @@ const AcceptInvite = () => {
       setLoading(true);
       setError(null);
 
-      // Fetch invitation details
-      const { data: inviteData, error: inviteError } = await supabase
+      // First try the new staff_invitations table
+      const staffInvite = await getInvitationByToken(token!);
+      
+      if (staffInvite) {
+        // Check if invitation is valid
+        if (staffInvite.status === 'accepted') {
+          setError('This invitation has already been accepted');
+          return;
+        }
+
+        if (staffInvite.status === 'declined' || staffInvite.status === 'expired') {
+          setError('This invitation is no longer valid');
+          return;
+        }
+
+        // Check expiration
+        if (new Date(staffInvite.expires_at) < new Date()) {
+          setError('This invitation has expired');
+          await supabase
+            .from('staff_invitations')
+            .update({ status: 'expired' })
+            .eq('id', staffInvite.id);
+          return;
+        }
+
+        setInvitation(staffInvite);
+
+        // Fetch entity name
+        let name = '';
+        if (staffInvite.entity_type === 'practice') {
+          const { data } = await supabase.from('practices').select('name, verified').eq('id', staffInvite.entity_id).single();
+          name = data?.name || 'Practice';
+          setLegacyPractice(data);
+        } else if (staffInvite.entity_type === 'pharmacy') {
+          const { data } = await supabase.from('pharmacies').select('name').eq('id', staffInvite.entity_id).single();
+          name = data?.name || 'Pharmacy';
+        } else if (staffInvite.entity_type === 'lab') {
+          const { data } = await supabase.from('lab_centers').select('name').eq('id', staffInvite.entity_id).single();
+          name = data?.name || 'Laboratory';
+        } else if (staffInvite.entity_type === 'imaging_center') {
+          const { data } = await supabase.from('imaging_centers').select('name').eq('id', staffInvite.entity_id).single();
+          name = data?.name || 'Imaging Center';
+        }
+        setEntityName(name);
+        return;
+      }
+
+      // Fallback to legacy practice_invitations table
+      const { data: legacyData, error: legacyError } = await supabase
         .from('practice_invitations' as any)
         .select('*')
         .eq('invite_token', token)
         .single();
 
-      if (inviteError || !inviteData) {
+      if (legacyError || !legacyData) {
         setError('Invalid or expired invitation link');
         return;
       }
 
-      const invitation = inviteData as any;
+      const legacy = legacyData as any;
+      setIsLegacyInvitation(true);
+      setLegacyInvitation(legacy);
 
-      // Check if invitation is still valid
-      if (invitation.status === 'accepted') {
+      // Check legacy invitation validity
+      if (legacy.status === 'accepted') {
         setError('This invitation has already been accepted');
         return;
       }
 
-      if (invitation.status === 'declined' || invitation.status === 'expired') {
+      if (legacy.status === 'declined' || legacy.status === 'expired') {
         setError('This invitation is no longer valid');
         return;
       }
 
-      // Check expiration
-      const expiresAt = new Date(invitation.expires_at);
-      if (expiresAt < new Date()) {
+      if (new Date(legacy.expires_at) < new Date()) {
         setError('This invitation has expired');
-        // Update invitation status
         await supabase
           .from('practice_invitations' as any)
           .update({ status: 'expired' })
-          .eq('id', invitation.id);
+          .eq('id', legacy.id);
         return;
       }
 
@@ -69,11 +136,11 @@ const AcceptInvite = () => {
       const { data: practiceData } = await supabase
         .from('practices')
         .select('*')
-        .eq('id', invitation.practice_id)
+        .eq('id', legacy.practice_id)
         .single();
 
-      setInvitation(inviteData);
-      setPractice(practiceData);
+      setLegacyPractice(practiceData);
+      setEntityName(practiceData?.name || 'Practice');
     } catch (err: any) {
       console.error('Error fetching invitation:', err);
       setError('Failed to load invitation details');
@@ -83,107 +150,108 @@ const AcceptInvite = () => {
   };
 
   const handleAcceptInvitation = async () => {
-    if (!invitation) return;
-
     // If user is not logged in, redirect to signup with invitation token
     if (!user) {
       toast.info('Please create an account or sign in to accept this invitation');
-      navigate(`/sign-up?invitation=${token}`);
+      // Store token in session storage for after signup
+      sessionStorage.setItem('pending_staff_invite_token', token!);
+      navigate(`/auth?invite=${token}`);
       return;
     }
 
-    try {
-      setAccepting(true);
+    if (isLegacyInvitation && legacyInvitation) {
+      await handleLegacyAccept();
+      return;
+    }
 
+    if (!invitation) return;
+
+    const result = await acceptInvitation(token!);
+    
+    if (result.success) {
+      navigate(result.dashboardRoute || '/staff-dashboard');
+    }
+  };
+
+  const handleLegacyAccept = async () => {
+    try {
       // Create doctor profile if role is doctor
-      if (invitation.role === 'doctor') {
-        // Check if user already has a doctor profile
+      if (legacyInvitation.role === 'doctor') {
         const { data: existingDoctor } = await supabase
           .from('doctors')
           .select('id, practice_id')
-          .eq('user_id', user.id)
+          .eq('user_id', user!.id)
           .single();
 
         if (existingDoctor) {
-          // Update existing doctor profile with new practice
-          const { error: updateError } = await supabase
+          await supabase
             .from('doctors')
-            .update({ practice_id: invitation.practice_id })
+            .update({ practice_id: legacyInvitation.practice_id })
             .eq('id', existingDoctor.id);
-
-          if (updateError) throw updateError;
         } else {
-          // Create new doctor profile
-          const { error: doctorError } = await supabase
-            .from('doctors')
-            .insert({
-              user_id: user.id,
-              practice_id: invitation.practice_id,
-              specialty: 'General',
-            });
-
-          if (doctorError) throw doctorError;
+          await supabase.from('doctors').insert({
+            user_id: user!.id,
+            practice_id: legacyInvitation.practice_id,
+            specialty: 'General',
+          });
         }
 
-        // Add doctor role
-        await supabase.from('user_roles').insert({
-          user_id: user.id,
+        await supabase.from('user_roles').upsert({
+          user_id: user!.id,
           role: 'doctor',
-        });
+        }, { onConflict: 'user_id,role' });
       }
 
       // Create staff record if role is staff
-      if (invitation.role === 'staff') {
-        const { error: staffError } = await supabase
-          .from('practice_staff' as any)
-          .insert({
-            practice_id: invitation.practice_id,
-            user_id: user.id,
-            full_name: invitation.full_name || 'Staff Member',
-            email: invitation.email,
-            phone: invitation.phone,
-            role: 'staff',
-            status: 'active',
-          });
+      if (legacyInvitation.role === 'staff') {
+        await supabase.from('clinic_staff').insert({
+          practice_id: legacyInvitation.practice_id,
+          user_id: user!.id,
+          staff_role: 'clinic_staff',
+          status: 'active',
+        });
 
-        if (staffError) throw staffError;
+        await supabase.from('user_roles').upsert({
+          user_id: user!.id,
+          role: 'clinic_staff',
+        }, { onConflict: 'user_id,role' });
       }
 
       // Update invitation status
-      const { error: updateError } = await supabase
+      await supabase
         .from('practice_invitations' as any)
-        .update({ 
+        .update({
           status: 'accepted',
-          invited_user_id: user.id,
+          invited_user_id: user!.id,
         })
-        .eq('id', invitation.id);
+        .eq('id', legacyInvitation.id);
 
-      if (updateError) throw updateError;
+      toast.success(`Successfully joined ${entityName}!`);
 
-      toast.success(`Successfully joined ${practice?.name || 'the practice'}!`);
-
-      // Redirect based on role
-      if (invitation.role === 'doctor') {
+      if (legacyInvitation.role === 'doctor') {
         navigate('/doctor-dashboard');
       } else {
-        navigate('/admin-dashboard');
+        navigate('/staff-dashboard');
       }
     } catch (err: any) {
       console.error('Error accepting invitation:', err);
       toast.error(err.message || 'Failed to accept invitation');
-    } finally {
-      setAccepting(false);
     }
   };
 
   const handleDeclineInvitation = async () => {
-    if (!invitation) return;
-
     try {
-      await supabase
-        .from('practice_invitations' as any)
-        .update({ status: 'declined' })
-        .eq('id', invitation.id);
+      if (isLegacyInvitation && legacyInvitation) {
+        await supabase
+          .from('practice_invitations' as any)
+          .update({ status: 'declined' })
+          .eq('id', legacyInvitation.id);
+      } else if (invitation) {
+        await supabase
+          .from('staff_invitations')
+          .update({ status: 'declined' })
+          .eq('id', invitation.id);
+      }
 
       toast.info('Invitation declined');
       navigate('/');
@@ -225,59 +293,47 @@ const AcceptInvite = () => {
     );
   }
 
+  const displayEntityType = invitation?.entity_type || 'practice';
+  const displayRole = invitation?.role || legacyInvitation?.role || 'Staff';
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="max-w-md w-full">
         <CardHeader>
           <div className="flex justify-center mb-4">
-            <Building2 className="w-16 h-16 text-primary" />
+            {entityIcons[displayEntityType]}
           </div>
-          <CardTitle className="text-center text-2xl">Practice Invitation</CardTitle>
+          <CardTitle className="text-center text-2xl">
+            {entityLabels[displayEntityType]} Invitation
+          </CardTitle>
           <CardDescription className="text-center">
-            You've been invited to join a practice
+            You've been invited to join as staff
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-4">
             <div className="bg-muted p-4 rounded-lg space-y-2">
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Practice:</span>
-                <span className="font-medium">{practice?.name || 'Practice'}</span>
+                <span className="text-sm text-muted-foreground">{entityLabels[displayEntityType]}:</span>
+                <span className="font-medium">{entityName}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Role:</span>
-                <span className="font-medium capitalize">{invitation?.role}</span>
+                <span className="font-medium capitalize">{displayRole.replace(/_/g, ' ')}</span>
               </div>
-              {invitation?.custom_message && (
+              {(invitation?.custom_message || legacyInvitation?.custom_message) && (
                 <div className="pt-2 border-t">
                   <p className="text-sm italic text-muted-foreground">
-                    "{invitation.custom_message}"
+                    "{invitation?.custom_message || legacyInvitation?.custom_message}"
                   </p>
                 </div>
               )}
             </div>
 
-            {practice?.description && (
-              <div>
-                <h4 className="text-sm font-medium mb-2">About the Practice</h4>
-                <p className="text-sm text-muted-foreground">{practice.description}</p>
-              </div>
-            )}
-
-            {practice && (
-              <div className="text-sm space-y-1">
-                {practice.city && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Location:</span>
-                    <span>{practice.city}, {practice.country}</span>
-                  </div>
-                )}
-                {practice.verified && (
-                  <div className="flex items-center justify-center gap-2 text-green-600 bg-green-50 dark:bg-green-950 p-2 rounded">
-                    <CheckCircle className="w-4 h-4" />
-                    <span className="text-sm font-medium">Verified Practice</span>
-                  </div>
-                )}
+            {legacyPractice?.verified && (
+              <div className="flex items-center justify-center gap-2 text-green-600 bg-green-50 dark:bg-green-950 p-2 rounded">
+                <CheckCircle className="w-4 h-4" />
+                <span className="text-sm font-medium">Verified {entityLabels[displayEntityType]}</span>
               </div>
             )}
           </div>
