@@ -3,6 +3,7 @@ import { Loader2, AlertCircle, Building2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useStaffContext } from '@/hooks/useStaffContext';
 import { useStaffDashboard } from '@/hooks/useStaffDashboard';
 import { StaffSidebar } from '@/components/staff/StaffSidebar';
 import { StaffDashboardOverview } from '@/components/staff/StaffDashboardOverview';
@@ -16,18 +17,32 @@ const StaffDashboard = () => {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('dashboard');
   
+  // Use new staff context for role detection
   const {
-    permissions,
+    staffType,
+    entityInfo,
+    permissions: staffPermissions,
+    loading: contextLoading,
+    error: contextError,
+    refetch: refetchContext,
+  } = useStaffContext();
+
+  // Use existing hook for clinic-specific data (for backward compatibility)
+  const {
+    permissions: clinicPermissions,
     practice,
     todaysAppointments,
     upcomingAppointments,
     recentPatients,
     recentPayments,
-    loading,
-    error,
+    loading: dataLoading,
+    error: dataError,
     refreshData,
     updateAppointmentStatus,
   } = useStaffDashboard();
+
+  const loading = contextLoading || (staffType === 'clinic' && dataLoading);
+  const error = contextError || (staffType === 'clinic' && dataError);
 
   if (loading) {
     return (
@@ -40,7 +55,7 @@ const StaffDashboard = () => {
     );
   }
 
-  if (error || !permissions || !permissions.practice_id) {
+  if (error || !staffPermissions || !staffPermissions.entity_id) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
@@ -48,13 +63,13 @@ const StaffDashboard = () => {
             <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-foreground mb-2">Access Denied</h2>
             <p className="text-muted-foreground mb-6">
-              {error || 'You are not assigned to any clinic. Please contact your administrator.'}
+              {error || 'You are not assigned to any organization. Please contact your administrator.'}
             </p>
             <div className="flex gap-2 justify-center">
               <Button variant="outline" onClick={() => navigate('/')}>
                 Go Home
               </Button>
-              <Button onClick={refreshData}>
+              <Button onClick={refetchContext}>
                 Try Again
               </Button>
             </div>
@@ -65,86 +80,89 @@ const StaffDashboard = () => {
   }
 
   const renderContent = () => {
-    switch (activeSection) {
-      case 'dashboard':
-        return (
-          <StaffDashboardOverview
-            practice={practice}
-            permissions={permissions}
-            todaysAppointments={todaysAppointments}
-            upcomingAppointments={upcomingAppointments}
-            recentPayments={recentPayments}
-            onNavigate={setActiveSection}
-          />
-        );
-      
-      case 'today':
-      case 'appointments':
-        return (
-          <TodayScheduleSection
-            appointments={activeSection === 'today' ? todaysAppointments : upcomingAppointments}
-            onStatusUpdate={updateAppointmentStatus}
-            onRefresh={refreshData}
-            canUpdateAppointments={permissions.can_book_appointments}
-          />
-        );
-      
-      case 'patients':
-        return (
-          <PatientListSection
-            patients={recentPatients}
-            onRefresh={refreshData}
-            canManagePatients={permissions.can_manage_patients}
-          />
-        );
-      
-      case 'billing':
-        return (
-          <BillingSection
-            payments={recentPayments}
-            onRefresh={refreshData}
-          />
-        );
-      
-      case 'settings':
-        return (
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-foreground">Settings</h2>
-            <Card>
-              <CardContent className="p-6">
-                <p className="text-muted-foreground">
-                  Settings panel coming soon. Contact your administrator for account changes.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        );
-      
-      default:
-        return (
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-foreground capitalize">
-              {activeSection.replace('-', ' ')}
-            </h2>
-            <Card>
-              <CardContent className="p-6 text-center">
-                <Building2 className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <p className="text-muted-foreground">
-                  This section is under development.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        );
+    // For clinic staff, use clinic-specific components
+    if (staffType === 'clinic') {
+      switch (activeSection) {
+        case 'dashboard':
+          return (
+            <StaffDashboardOverview
+              practice={practice}
+              permissions={clinicPermissions}
+              todaysAppointments={todaysAppointments}
+              upcomingAppointments={upcomingAppointments}
+              recentPayments={recentPayments}
+              onNavigate={setActiveSection}
+            />
+          );
+        case 'today':
+        case 'appointments':
+          return (
+            <TodayScheduleSection
+              appointments={activeSection === 'today' ? todaysAppointments : upcomingAppointments}
+              onStatusUpdate={updateAppointmentStatus}
+              onRefresh={refreshData}
+              canUpdateAppointments={clinicPermissions?.can_book_appointments || false}
+            />
+          );
+        case 'patients':
+          return (
+            <PatientListSection
+              patients={recentPatients}
+              onRefresh={refreshData}
+              canManagePatients={clinicPermissions?.can_manage_patients || false}
+            />
+          );
+        case 'billing':
+          return (
+            <BillingSection
+              payments={recentPayments}
+              onRefresh={refreshData}
+            />
+          );
+      }
     }
+
+    // Settings section (shared)
+    if (activeSection === 'settings') {
+      return (
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold text-foreground">Settings</h2>
+          <Card>
+            <CardContent className="p-6">
+              <p className="text-muted-foreground">
+                Settings panel coming soon. Contact your administrator for account changes.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+
+    // Default placeholder for other sections
+    return (
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold text-foreground capitalize">
+          {activeSection.replace('-', ' ')}
+        </h2>
+        <Card>
+          <CardContent className="p-6 text-center">
+            <Building2 className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <p className="text-muted-foreground">
+              This section is under development.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
   };
 
   return (
     <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
       <StaffSidebar
-        permissions={permissions}
-        practice={practice}
+        staffType={staffType}
+        entityInfo={entityInfo}
+        permissions={staffPermissions}
         activeSection={activeSection}
         onSectionChange={setActiveSection}
       />
