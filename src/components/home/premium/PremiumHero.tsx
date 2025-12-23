@@ -109,7 +109,7 @@ export default function PremiumHero() {
           }} transition={{
             duration: 0.8,
             delay: 0.9
-          }} className="grid grid-cols-3 gap-8 pt-8 max-w-lg text-transparent">
+          }} className="grid grid-cols-3 gap-8 pt-8 max-w-lg bg-transparent text-transparent">
               {[{
               value: '10K+',
               label: t('home:stats.doctors', 'Doctors')
