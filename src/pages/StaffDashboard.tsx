@@ -3,13 +3,16 @@ import { Loader2, AlertCircle, Building2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { useStaffContext } from '@/hooks/useStaffContext';
+import { useStaffContext, type PharmacyPermissions, type LabPermissions, type ImagingPermissions } from '@/hooks/useStaffContext';
 import { useStaffDashboard } from '@/hooks/useStaffDashboard';
 import { StaffSidebar } from '@/components/staff/StaffSidebar';
 import { StaffDashboardOverview } from '@/components/staff/StaffDashboardOverview';
 import { TodayScheduleSection } from '@/components/staff/TodayScheduleSection';
 import { PatientListSection } from '@/components/staff/PatientListSection';
 import { BillingSection } from '@/components/staff/BillingSection';
+import { PharmacyDashboardContent } from '@/components/staff/PharmacyDashboardContent';
+import { LabDashboardContent } from '@/components/staff/LabDashboardContent';
+import { ImagingDashboardContent } from '@/components/staff/ImagingDashboardContent';
 import ThemeToggle from '@/components/home/ThemeToggle';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
@@ -80,49 +83,7 @@ const StaffDashboard = () => {
   }
 
   const renderContent = () => {
-    // For clinic staff, use clinic-specific components
-    if (staffType === 'clinic') {
-      switch (activeSection) {
-        case 'dashboard':
-          return (
-            <StaffDashboardOverview
-              practice={practice}
-              permissions={clinicPermissions}
-              todaysAppointments={todaysAppointments}
-              upcomingAppointments={upcomingAppointments}
-              recentPayments={recentPayments}
-              onNavigate={setActiveSection}
-            />
-          );
-        case 'today':
-        case 'appointments':
-          return (
-            <TodayScheduleSection
-              appointments={activeSection === 'today' ? todaysAppointments : upcomingAppointments}
-              onStatusUpdate={updateAppointmentStatus}
-              onRefresh={refreshData}
-              canUpdateAppointments={clinicPermissions?.can_book_appointments || false}
-            />
-          );
-        case 'patients':
-          return (
-            <PatientListSection
-              patients={recentPatients}
-              onRefresh={refreshData}
-              canManagePatients={clinicPermissions?.can_manage_patients || false}
-            />
-          );
-        case 'billing':
-          return (
-            <BillingSection
-              payments={recentPayments}
-              onRefresh={refreshData}
-            />
-          );
-      }
-    }
-
-    // Settings section (shared)
+    // Settings section (shared across all staff types)
     if (activeSection === 'settings') {
       return (
         <div className="space-y-4">
@@ -138,7 +99,78 @@ const StaffDashboard = () => {
       );
     }
 
-    // Default placeholder for other sections
+    // Render content based on staff type
+    switch (staffType) {
+      case 'clinic':
+        switch (activeSection) {
+          case 'dashboard':
+            return (
+              <StaffDashboardOverview
+                practice={practice}
+                permissions={clinicPermissions}
+                todaysAppointments={todaysAppointments}
+                upcomingAppointments={upcomingAppointments}
+                recentPayments={recentPayments}
+                onNavigate={setActiveSection}
+              />
+            );
+          case 'today':
+          case 'appointments':
+            return (
+              <TodayScheduleSection
+                appointments={activeSection === 'today' ? todaysAppointments : upcomingAppointments}
+                onStatusUpdate={updateAppointmentStatus}
+                onRefresh={refreshData}
+                canUpdateAppointments={clinicPermissions?.can_book_appointments || false}
+              />
+            );
+          case 'patients':
+            return (
+              <PatientListSection
+                patients={recentPatients}
+                onRefresh={refreshData}
+                canManagePatients={clinicPermissions?.can_manage_patients || false}
+              />
+            );
+          case 'billing':
+            return (
+              <BillingSection
+                payments={recentPayments}
+                onRefresh={refreshData}
+              />
+            );
+        }
+        break;
+
+      case 'pharmacy':
+        return (
+          <PharmacyDashboardContent
+            entityInfo={entityInfo}
+            permissions={staffPermissions as PharmacyPermissions & { staffType: 'pharmacy' }}
+            activeSection={activeSection}
+          />
+        );
+
+      case 'lab':
+        return (
+          <LabDashboardContent
+            entityInfo={entityInfo}
+            permissions={staffPermissions as LabPermissions & { staffType: 'lab' }}
+            activeSection={activeSection}
+          />
+        );
+
+      case 'imaging':
+        return (
+          <ImagingDashboardContent
+            entityInfo={entityInfo}
+            permissions={staffPermissions as ImagingPermissions & { staffType: 'imaging' }}
+            activeSection={activeSection}
+          />
+        );
+    }
+
+    // Default placeholder for unhandled sections
     return (
       <div className="space-y-4">
         <h2 className="text-2xl font-bold text-foreground capitalize">
