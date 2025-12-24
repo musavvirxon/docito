@@ -4663,39 +4663,389 @@ export type Database = {
         }
         Relationships: []
       }
-      referrals: {
+      referral_appointments: {
         Row: {
+          appointment_date: string
+          appointment_id: string | null
+          booked_at: string
+          booked_by: string
+          checked_in_at: string | null
+          completed_at: string | null
           created_at: string
+          end_time: string
           id: string
           notes: string | null
-          patient_id: string
-          referred_doctor_id: string | null
-          referring_doctor_id: string | null
-          status: string | null
-          treatment_plan_id: string | null
+          referral_id: string
+          referral_slot_id: string | null
+          start_time: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_date: string
+          appointment_id?: string | null
+          booked_at?: string
+          booked_by: string
+          checked_in_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          end_time: string
+          id?: string
+          notes?: string | null
+          referral_id: string
+          referral_slot_id?: string | null
+          start_time: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_date?: string
+          appointment_id?: string | null
+          booked_at?: string
+          booked_by?: string
+          checked_in_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          end_time?: string
+          id?: string
+          notes?: string | null
+          referral_id?: string
+          referral_slot_id?: string | null
+          start_time?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_appointments_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_appointments_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "patient_all_appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_appointments_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: false
+            referencedRelation: "referrals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_appointments_referral_slot_id_fkey"
+            columns: ["referral_slot_id"]
+            isOneToOne: false
+            referencedRelation: "referral_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referral_audit_log: {
+        Row: {
+          action: string
+          actor_id: string
+          actor_role: string | null
+          created_at: string
+          id: string
+          ip_address: unknown
+          new_values: Json | null
+          notes: string | null
+          old_values: Json | null
+          referral_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          actor_role?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: unknown
+          new_values?: Json | null
+          notes?: string | null
+          old_values?: Json | null
+          referral_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          actor_role?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: unknown
+          new_values?: Json | null
+          notes?: string | null
+          old_values?: Json | null
+          referral_id?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_audit_log_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: false
+            referencedRelation: "referrals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referral_notifications: {
+        Row: {
+          channel: string
+          created_at: string
+          delivery_status: string | null
+          id: string
+          is_read: boolean
+          message: string
+          notification_type: string
+          read_at: string | null
+          recipient_id: string
+          referral_id: string
+          sent_at: string | null
+          title: string
+        }
+        Insert: {
+          channel?: string
+          created_at?: string
+          delivery_status?: string | null
+          id?: string
+          is_read?: boolean
+          message: string
+          notification_type: string
+          read_at?: string | null
+          recipient_id: string
+          referral_id: string
+          sent_at?: string | null
+          title: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          delivery_status?: string | null
+          id?: string
+          is_read?: boolean
+          message?: string
+          notification_type?: string
+          read_at?: string | null
+          recipient_id?: string
+          referral_id?: string
+          sent_at?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_notifications_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: false
+            referencedRelation: "referrals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referral_slots: {
+        Row: {
+          created_at: string
+          end_time: string
+          id: string
+          is_available: boolean
+          is_reserved: boolean
+          notes: string | null
+          referral_id: string
+          reserved_at: string | null
+          reserved_by: string | null
+          slot_date: string
+          start_time: string
           updated_at: string
         }
         Insert: {
           created_at?: string
+          end_time: string
           id?: string
+          is_available?: boolean
+          is_reserved?: boolean
           notes?: string | null
-          patient_id: string
-          referred_doctor_id?: string | null
-          referring_doctor_id?: string | null
-          status?: string | null
-          treatment_plan_id?: string | null
+          referral_id: string
+          reserved_at?: string | null
+          reserved_by?: string | null
+          slot_date: string
+          start_time: string
           updated_at?: string
         }
         Update: {
           created_at?: string
+          end_time?: string
           id?: string
+          is_available?: boolean
+          is_reserved?: boolean
           notes?: string | null
-          patient_id?: string
+          referral_id?: string
+          reserved_at?: string | null
+          reserved_by?: string | null
+          slot_date?: string
+          start_time?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_slots_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: false
+            referencedRelation: "referrals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referrals: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          attachments: Json | null
+          clinical_notes: string | null
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          diagnosis_codes: string[] | null
+          estimated_duration_minutes: number | null
+          id: string
+          insurance_plan_id: string | null
+          insurance_provider_id: string | null
+          notes: string | null
+          patient_id: string
+          pre_authorization_number: string | null
+          preferred_date: string | null
+          preferred_time_slot: string | null
+          priority: Database["public"]["Enums"]["referral_priority"] | null
+          reason: string | null
+          receiver_entity_id: string | null
+          receiver_type:
+            | Database["public"]["Enums"]["referral_entity_type"]
+            | null
+          receiver_user_id: string | null
+          referral_number: string | null
+          referral_type_enum:
+            | Database["public"]["Enums"]["referral_type"]
+            | null
+          referred_doctor_id: string | null
+          referrer_entity_id: string | null
+          referrer_type:
+            | Database["public"]["Enums"]["referral_entity_type"]
+            | null
+          referrer_user_id: string | null
+          referring_doctor_id: string | null
+          rejected_at: string | null
+          rejected_by: string | null
+          rejection_reason: string | null
+          result_attachments: Json | null
+          result_notes: string | null
+          sent_at: string | null
+          status: string | null
+          treatment_plan_id: string | null
+          updated_at: string
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          attachments?: Json | null
+          clinical_notes?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          diagnosis_codes?: string[] | null
+          estimated_duration_minutes?: number | null
+          id?: string
+          insurance_plan_id?: string | null
+          insurance_provider_id?: string | null
+          notes?: string | null
+          patient_id: string
+          pre_authorization_number?: string | null
+          preferred_date?: string | null
+          preferred_time_slot?: string | null
+          priority?: Database["public"]["Enums"]["referral_priority"] | null
+          reason?: string | null
+          receiver_entity_id?: string | null
+          receiver_type?:
+            | Database["public"]["Enums"]["referral_entity_type"]
+            | null
+          receiver_user_id?: string | null
+          referral_number?: string | null
+          referral_type_enum?:
+            | Database["public"]["Enums"]["referral_type"]
+            | null
           referred_doctor_id?: string | null
+          referrer_entity_id?: string | null
+          referrer_type?:
+            | Database["public"]["Enums"]["referral_entity_type"]
+            | null
+          referrer_user_id?: string | null
           referring_doctor_id?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
+          result_attachments?: Json | null
+          result_notes?: string | null
+          sent_at?: string | null
           status?: string | null
           treatment_plan_id?: string | null
           updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          attachments?: Json | null
+          clinical_notes?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          diagnosis_codes?: string[] | null
+          estimated_duration_minutes?: number | null
+          id?: string
+          insurance_plan_id?: string | null
+          insurance_provider_id?: string | null
+          notes?: string | null
+          patient_id?: string
+          pre_authorization_number?: string | null
+          preferred_date?: string | null
+          preferred_time_slot?: string | null
+          priority?: Database["public"]["Enums"]["referral_priority"] | null
+          reason?: string | null
+          receiver_entity_id?: string | null
+          receiver_type?:
+            | Database["public"]["Enums"]["referral_entity_type"]
+            | null
+          receiver_user_id?: string | null
+          referral_number?: string | null
+          referral_type_enum?:
+            | Database["public"]["Enums"]["referral_type"]
+            | null
+          referred_doctor_id?: string | null
+          referrer_entity_id?: string | null
+          referrer_type?:
+            | Database["public"]["Enums"]["referral_entity_type"]
+            | null
+          referrer_user_id?: string | null
+          referring_doctor_id?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
+          result_attachments?: Json | null
+          result_notes?: string | null
+          sent_at?: string | null
+          status?: string | null
+          treatment_plan_id?: string | null
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
         }
         Relationships: [
           {
@@ -6727,6 +7077,16 @@ export type Database = {
         }
         Returns: Json
       }
+      create_referral_notification: {
+        Args: {
+          p_message: string
+          p_recipient_id: string
+          p_referral_id: string
+          p_title: string
+          p_type: string
+        }
+        Returns: string
+      }
       fetch_available_slots: {
         Args: {
           date_from: string
@@ -6802,6 +7162,16 @@ export type Database = {
           p_metadata?: Json
           p_new_values?: Json
           p_old_values?: Json
+        }
+        Returns: string
+      }
+      log_referral_action: {
+        Args: {
+          p_action: string
+          p_new_values?: Json
+          p_notes?: string
+          p_old_values?: Json
+          p_referral_id: string
         }
         Returns: string
       }
@@ -6950,6 +7320,20 @@ export type Database = {
         | "condition"
         | "examination"
         | "treatment"
+      referral_entity_type:
+        | "doctor"
+        | "clinic"
+        | "lab"
+        | "imaging_center"
+        | "pharmacy"
+      referral_priority: "routine" | "urgent" | "stat"
+      referral_type:
+        | "consultation"
+        | "lab_test"
+        | "imaging_study"
+        | "prescription_fulfillment"
+        | "follow_up_care"
+        | "specialist_referral"
       tooth_status:
         | "healthy"
         | "caries"
@@ -7166,6 +7550,22 @@ export const Constants = {
         "condition",
         "examination",
         "treatment",
+      ],
+      referral_entity_type: [
+        "doctor",
+        "clinic",
+        "lab",
+        "imaging_center",
+        "pharmacy",
+      ],
+      referral_priority: ["routine", "urgent", "stat"],
+      referral_type: [
+        "consultation",
+        "lab_test",
+        "imaging_study",
+        "prescription_fulfillment",
+        "follow_up_care",
+        "specialist_referral",
       ],
       tooth_status: [
         "healthy",
