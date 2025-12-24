@@ -95,18 +95,17 @@ export const searchReceivers = async (
       }
 
       case 'clinic': {
-        let query = supabase
-          .from('practices')
+        const { data, error } = await supabase
+          .from('practices' as any)
           .select('id, name, address, city, country, phone, specialty_types, logo_url')
-          .eq('is_active', true);
+          .eq('is_active', true)
+          .limit(50);
 
-        if (searchTerm) {
-          query = query.ilike('name', `%${searchTerm}%`);
-        }
-
-        const { data, error } = await query.limit(50);
         if (error) throw error;
-        return data || [];
+        if (searchTerm && data) {
+          return (data as any[]).filter((d: any) => d.name?.toLowerCase().includes(searchTerm.toLowerCase()));
+        }
+        return (data as any[]) || [];
       }
 
       case 'lab': {
@@ -138,18 +137,17 @@ export const searchReceivers = async (
       }
 
       case 'pharmacy': {
-        let query = supabase
-          .from('pharmacies')
+        const { data, error } = await supabase
+          .from('pharmacies' as any)
           .select('id, name, address, city, country, phone, is_verified, is_24_hours')
-          .eq('status', 'active');
+          .eq('status', 'active')
+          .limit(50);
 
-        if (searchTerm) {
-          query = query.ilike('name', `%${searchTerm}%`);
-        }
-
-        const { data, error } = await query.limit(50);
         if (error) throw error;
-        return data || [];
+        if (searchTerm && data) {
+          return (data as any[]).filter((d: any) => d.name?.toLowerCase().includes(searchTerm.toLowerCase()));
+        }
+        return (data as any[]) || [];
       }
 
       default:
