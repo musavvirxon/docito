@@ -30,11 +30,10 @@ interface Referral {
   id: string;
   referral_number: string;
   patient_id: string;
-  referrer_entity_type: string;
+  referrer_type: string;
   referrer_entity_id: string;
-  receiver_entity_type: string;
+  receiver_type: string;
   receiver_entity_id: string;
-  referral_type: string;
   priority: string;
   status: string;
   reason: string;
@@ -88,18 +87,17 @@ export default function ReferralManagement() {
         filtered = filtered.filter(r => r.status === statusFilter);
       }
       if (typeFilter !== 'all') {
-        filtered = filtered.filter(r => r.referral_type === typeFilter);
+        filtered = filtered.filter(r => r.referrer_type === typeFilter);
       }
       
       return filtered.map(r => ({
         id: r.id,
         referral_number: r.referral_number || '',
         patient_id: r.patient_id || '',
-        referrer_entity_type: r.referrer_entity_type || '',
+        referrer_type: r.referrer_type || '',
         referrer_entity_id: r.referrer_entity_id || '',
-        receiver_entity_type: r.receiver_entity_type || '',
+        receiver_type: r.receiver_type || '',
         receiver_entity_id: r.receiver_entity_id || '',
-        referral_type: r.referral_type || '',
         priority: r.priority || 'routine',
         status: r.status || 'draft',
         reason: r.reason || '',
@@ -173,7 +171,7 @@ export default function ReferralManagement() {
     return (
       r.referral_number?.toLowerCase().includes(term) ||
       r.reason?.toLowerCase().includes(term) ||
-      r.referral_type?.toLowerCase().includes(term)
+      r.referrer_type?.toLowerCase().includes(term)
     );
   });
 
@@ -363,7 +361,7 @@ export default function ReferralManagement() {
                           {referral.referral_number || referral.id.slice(0, 8)}
                         </TableCell>
                         <TableCell className="capitalize">
-                          {referral.referral_type?.replace('_', ' ') || 'N/A'}
+                          {referral.referrer_type?.replace('_', ' ') || 'N/A'}
                         </TableCell>
                         <TableCell>
                           <Badge className={priorityStyle}>
@@ -377,10 +375,10 @@ export default function ReferralManagement() {
                           </Badge>
                         </TableCell>
                         <TableCell className="capitalize text-sm">
-                          {referral.referrer_entity_type?.replace('_', ' ')}
+                          {referral.referrer_type?.replace('_', ' ')}
                         </TableCell>
                         <TableCell className="capitalize text-sm">
-                          {referral.receiver_entity_type?.replace('_', ' ')}
+                          {referral.receiver_type?.replace('_', ' ')}
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           {format(new Date(referral.created_at), 'MMM dd, yyyy')}
@@ -487,7 +485,7 @@ export default function ReferralManagement() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Type</p>
-                  <p className="capitalize">{selectedReferral.referral_type?.replace('_', ' ')}</p>
+                  <p className="capitalize">{selectedReferral.referrer_type?.replace('_', ' ')}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Priority</p>
@@ -497,11 +495,11 @@ export default function ReferralManagement() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">From</p>
-                  <p className="capitalize">{selectedReferral.referrer_entity_type?.replace('_', ' ')}</p>
+                  <p className="capitalize">{selectedReferral.referrer_type?.replace('_', ' ')}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">To</p>
-                  <p className="capitalize">{selectedReferral.receiver_entity_type?.replace('_', ' ')}</p>
+                  <p className="capitalize">{selectedReferral.receiver_type?.replace('_', ' ')}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Valid From</p>
