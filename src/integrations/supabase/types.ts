@@ -6988,6 +6988,7 @@ export type Database = {
         Args: { p_doctor_id: string }
         Returns: number
       }
+      can_send_message: { Args: { conv_id: string }; Returns: boolean }
       cancel_or_update_appointment: {
         Args: {
           appointment_id: string
