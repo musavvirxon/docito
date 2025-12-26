@@ -102,28 +102,7 @@ export default function PremiumHero() {
             </motion.div>
 
             {/* Stats */}
-            <motion.div initial={{
-            opacity: 0
-          }} animate={{
-            opacity: 1
-          }} transition={{
-            duration: 0.8,
-            delay: 0.9
-          }} className="grid grid-cols-3 gap-8 pt-8 max-w-lg bg-transparent text-transparent">
-              {[{
-              value: '10K+',
-              label: t('home:stats.doctors', 'Doctors')
-            }, {
-              value: '500K+',
-              label: t('home:stats.patients', 'Patients')
-            }, {
-              value: '98%',
-              label: t('home:stats.satisfaction', 'Satisfaction')
-            }].map((stat, i) => <div key={i} className="text-center">
-                  <div className="text-2xl sm:text-3xl font-semibold text-foreground">{stat.value}</div>
-                  <div className="text-sm text-muted-foreground">{stat.label}</div>
-                </div>)}
-            </motion.div>
+            
           </div>
         </div>
 
