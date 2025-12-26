@@ -1,4 +1,4 @@
-import { Home, Stethoscope, Building2, Users, Calendar, CreditCard, BarChart3, Settings, FileText, ChevronLeft, ChevronRight, Globe, HelpCircle, Pill, FlaskConical, Scan, LayoutGrid } from "lucide-react";
+import { Home, Stethoscope, Building2, Users, Calendar, CreditCard, BarChart3, Settings, FileText, ChevronLeft, ChevronRight, Globe, HelpCircle, Pill, FlaskConical, Scan, LayoutGrid, ArrowRightLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import ThemeToggle from "@/components/home/ThemeToggle";
@@ -18,6 +18,7 @@ const navItems = [
   { id: "pharmacies", label: "Pharmacies", icon: Pill },
   { id: "laboratories", label: "Laboratories", icon: FlaskConical },
   { id: "imaging", label: "Imaging Centers", icon: Scan },
+  { id: "referrals", label: "Referrals", icon: ArrowRightLeft },
   { id: "staff", label: "Staff Management", icon: Users },
   { id: "patients", label: "Patients", icon: Users },
   { id: "appointments", label: "Appointments", icon: Calendar },

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bell, Settings, User, Calendar, BarChart3, Search, Briefcase, MapPin, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2 } from "lucide-react";
+import { Bell, Settings, User, Calendar, BarChart3, Search, Briefcase, MapPin, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2, ArrowRightLeft } from "lucide-react";
 import { DoctorDataProvider, useDoctorData } from "@/contexts/DoctorDataContext";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
@@ -29,6 +29,7 @@ import { authApi } from "@/lib/api/supabase-api";
 import QuickActionModals from "@/components/doctor/QuickActionModals";
 import ThemeToggle from "@/components/home/ThemeToggle";
 import { DoctorVerificationStatusCard } from "@/components/doctor/DoctorVerificationStatusCard";
+import { DoctorReferralsSection } from "@/components/doctor/DoctorReferralsSection";
 type DoctorStatus = "independent" | "clinic-member";
 const DoctorDashboardContent = () => {
   const navigate = useNavigate();
@@ -183,6 +184,10 @@ const DoctorDashboardContent = () => {
     label: t("doctor.navigation.calendar"),
     icon: Calendar
   }, {
+    id: "referrals",
+    label: "Referrals",
+    icon: ArrowRightLeft
+  }, {
     id: "performance",
     label: t("doctor.navigation.performance"),
     icon: BarChart3
@@ -235,6 +240,10 @@ const DoctorDashboardContent = () => {
     label: t("doctor.navigation.messages"),
     icon: MessageSquare
   }, {
+    id: "referrals",
+    label: "Referrals",
+    icon: ArrowRightLeft
+  }, {
     id: "performance",
     label: t("doctor.navigation.performance"),
     icon: BarChart3
@@ -275,6 +284,8 @@ const DoctorDashboardContent = () => {
         return <TreatmentPlanningSection />;
       case "settings":
         return <DoctorSettingsSection />;
+      case "referrals":
+        return <DoctorReferralsSection />;
       default:
         return <div className="space-y-6">
             {/* Clinic Profile Card (for clinic members) */}
