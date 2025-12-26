@@ -29,6 +29,7 @@ import HelpArticlesManagement from "@/components/super-admin/HelpArticlesManagem
 import EcosystemOverview from "@/components/super-admin/EcosystemOverview";
 import EntityManagement from "@/components/super-admin/EntityManagement";
 import GlobalStaffManagement from "@/components/super-admin/GlobalStaffManagement";
+import ReferralManagement from "@/components/super-admin/ReferralManagement";
 import { useTranslation } from 'react-i18next';
 
 const SuperAdminLogin = () => {
@@ -415,6 +416,9 @@ const SuperAdminDashboard = () => {
       
       case "staff":
         return <GlobalStaffManagement />;
+      
+      case "referrals":
+        return <ReferralManagement />;
       
       default:
         return null;

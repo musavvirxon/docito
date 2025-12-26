@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ArrowRightLeft } from 'lucide-react';
 import { 
   FlaskConical, 
   ClipboardList, 
@@ -31,6 +32,7 @@ import LabSampleManager from '@/components/lab/LabSampleManager';
 import LabHomeCollection from '@/components/lab/LabHomeCollection';
 import LabBillingInsurance from '@/components/lab/LabBillingInsurance';
 import LabAnalytics from '@/components/lab/LabAnalytics';
+import { LabReferralsSection } from '@/components/lab/LabReferralsSection';
 
 export default function LabDashboard() {
   const navigate = useNavigate();
@@ -195,6 +197,10 @@ export default function LabDashboard() {
               <BarChart3 className="h-4 w-4" />
               <span className="hidden sm:inline">Analytics</span>
             </TabsTrigger>
+            <TabsTrigger value="referrals" className="gap-2">
+              <ArrowRightLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Referrals</span>
+            </TabsTrigger>
           </TabsList>
         </ScrollArea>
 
@@ -235,6 +241,10 @@ export default function LabDashboard() {
 
         <TabsContent value="analytics" className="mt-6">
           <LabAnalytics labCenterId={myLabCenter.id} />
+        </TabsContent>
+
+        <TabsContent value="referrals" className="mt-6">
+          <LabReferralsSection labCenterId={myLabCenter.id} />
         </TabsContent>
       </Tabs>
     </div>

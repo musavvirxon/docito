@@ -16,7 +16,8 @@ import {
   Calendar,
   Wrench,
   BarChart3,
-  FileText
+  FileText,
+  ArrowRightLeft
 } from 'lucide-react';
 import { useLabCenter } from '@/hooks/useLabCenter';
 import { useAuth } from '@/contexts/AuthContext';
@@ -24,6 +25,7 @@ import ImagingEquipmentManager from '@/components/imaging/ImagingEquipmentManage
 import ImagingScanWorkflow from '@/components/imaging/ImagingScanWorkflow';
 import ImagingReportManager from '@/components/imaging/ImagingReportManager';
 import ImagingAnalytics from '@/components/imaging/ImagingAnalytics';
+import { ImagingReferralsSection } from '@/components/imaging/ImagingReferralsSection';
 
 export default function ImagingDashboard() {
   const navigate = useNavigate();
@@ -165,6 +167,10 @@ export default function ImagingDashboard() {
             <Users className="h-4 w-4" />
             Staff
           </TabsTrigger>
+          <TabsTrigger value="referrals" className="gap-2">
+            <ArrowRightLeft className="h-4 w-4" />
+            Referrals
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-6">
@@ -251,6 +257,10 @@ export default function ImagingDashboard() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="referrals" className="mt-6">
+          <ImagingReferralsSection centerId={centerId} />
         </TabsContent>
       </Tabs>
     </div>

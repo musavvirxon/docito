@@ -21,7 +21,8 @@ import {
   FileText,
   Shield,
   Truck,
-  BarChart3
+  BarChart3,
+  ArrowRightLeft
 } from 'lucide-react';
 import PharmacyInventoryManager from '@/components/pharmacy/PharmacyInventoryManager';
 import FulfillmentQueue from '@/components/pharmacy/FulfillmentQueue';
@@ -32,6 +33,7 @@ import PharmacyDeliveryOrders from '@/components/pharmacy/PharmacyDeliveryOrders
 import PharmacyAnalytics from '@/components/pharmacy/PharmacyAnalytics';
 import PharmacySettings from '@/components/pharmacy/PharmacySettings';
 import PharmacyPatientView from '@/components/pharmacy/PharmacyPatientView';
+import { PharmacyReferralsSection } from '@/components/pharmacy/PharmacyReferralsSection';
 
 export default function PharmacyDashboard() {
   const { pharmacyId } = useParams();
@@ -254,6 +256,10 @@ export default function PharmacyDashboard() {
               Settings
             </TabsTrigger>
           )}
+          <TabsTrigger value="referrals" className="flex items-center gap-1">
+            <ArrowRightLeft className="h-4 w-4" />
+            Referrals
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-6">
@@ -364,6 +370,10 @@ export default function PharmacyDashboard() {
             <PharmacySettings pharmacyId={pharmacyId!} />
           </TabsContent>
         )}
+
+        <TabsContent value="referrals" className="mt-6">
+          <PharmacyReferralsSection pharmacyId={pharmacyId!} />
+        </TabsContent>
       </Tabs>
     </div>
   );

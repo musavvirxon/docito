@@ -22,6 +22,7 @@ import {
   Receipt,
   ClipboardList,
   TestTube2,
+  ArrowRightLeft,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,7 @@ import { PatientBilling } from "@/components/patient/PatientBilling";
 import { PatientTestResultsSection } from "@/components/patient/PatientTestResultsSection";
 import ThemeToggle from "@/components/home/ThemeToggle";
 import DoctorSearchSection from "@/components/patient/DoctorSearchSection";
+import { PatientReferralsSection } from "@/components/patient/PatientReferralsSection";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -68,6 +70,7 @@ const PatientDashboard = () => {
   const navItems = [
     { id: "dashboard", label: t("patient.navigation.dashboard"), icon: Home },
     { id: "appointments", label: t("patient.navigation.myAppointments"), icon: Calendar },
+    { id: "referrals", label: "My Referrals", icon: ArrowRightLeft },
     { id: "medications", label: t("patient.navigation.medications"), icon: Pill },
     { id: "records", label: t("patient.navigation.medicalRecords"), icon: FileText },
     { id: "test-results", label: "Test Results", icon: TestTube2 },
@@ -403,6 +406,10 @@ const PatientDashboard = () => {
 
           {activeSection === "find-doctors" && (
             <DoctorSearchSection />
+          )}
+
+          {activeSection === "referrals" && (
+            <PatientReferralsSection />
           )}
 
           {activeSection === "settings" && (
