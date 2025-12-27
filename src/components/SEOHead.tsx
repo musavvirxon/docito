@@ -8,6 +8,8 @@ interface SEOHeadProps {
   keywords?: string;
   image?: string;
   noindex?: boolean;
+  type?: 'website' | 'article' | 'product';
+  structuredData?: object;
 }
 
 const languages = ['en', 'ru', 'uz', 'ar'];
@@ -17,7 +19,9 @@ export const SEOHead = ({
   description, 
   keywords,
   image = '/logos/social/docito-og-image.png',
-  noindex = false 
+  noindex = false,
+  type = 'website',
+  structuredData,
 }: SEOHeadProps) => {
   const { i18n } = useTranslation();
   const location = useLocation();
@@ -58,8 +62,9 @@ export const SEOHead = ({
       { property: 'og:description', content: description },
       { property: 'og:image', content: `${baseUrl}${image}` },
       { property: 'og:url', content: `${baseUrl}${location.pathname}` },
-      { property: 'og:type', content: 'website' },
+      { property: 'og:type', content: type },
       { property: 'og:locale', content: currentLang === 'en' ? 'en_US' : `${currentLang}_${currentLang.toUpperCase()}` },
+      { property: 'og:site_name', content: 'Docito' },
     ];
 
     ogTags.forEach(({ property, content }) => {
@@ -80,6 +85,7 @@ export const SEOHead = ({
       { name: 'twitter:title', content: title },
       { name: 'twitter:description', content: description },
       { name: 'twitter:image', content: `${baseUrl}${image}` },
+      { name: 'twitter:site', content: '@docito' },
     ];
 
     twitterTags.forEach(({ name, content }) => {
@@ -104,39 +110,133 @@ export const SEOHead = ({
     canonical.setAttribute('href', `${baseUrl}${location.pathname}`);
 
     // Set robots meta tag
-    if (noindex) {
-      let robotsMeta = document.querySelector('meta[name="robots"]');
-      if (!robotsMeta) {
-        robotsMeta = document.createElement('meta');
-        robotsMeta.setAttribute('name', 'robots');
-        document.head.appendChild(robotsMeta);
-      }
-      robotsMeta.setAttribute('content', 'noindex, nofollow');
+    let robotsMeta = document.querySelector('meta[name="robots"]');
+    if (!robotsMeta) {
+      robotsMeta = document.createElement('meta');
+      robotsMeta.setAttribute('name', 'robots');
+      document.head.appendChild(robotsMeta);
     }
+    robotsMeta.setAttribute('content', noindex ? 'noindex, nofollow' : 'index, follow');
 
-    // Add hreflang tags for all supported languages
-    // Remove existing hreflang tags first
+    // Add hreflang tags
     document.querySelectorAll('link[rel="alternate"][hreflang]').forEach(link => link.remove());
 
     languages.forEach(lang => {
       const link = document.createElement('link');
       link.setAttribute('rel', 'alternate');
       link.setAttribute('hreflang', lang);
-      link.setAttribute('href', `${baseUrl}/${lang}${location.pathname}`);
+      link.setAttribute('href', `${baseUrl}/${lang}${location.pathname.replace(/^\/(en|ru|uz|ar)/, '')}`);
       document.head.appendChild(link);
     });
 
-    // Add x-default hreflang
     const xDefault = document.createElement('link');
     xDefault.setAttribute('rel', 'alternate');
     xDefault.setAttribute('hreflang', 'x-default');
-    xDefault.setAttribute('href', `${baseUrl}/en${location.pathname}`);
+    xDefault.setAttribute('href', `${baseUrl}/en${location.pathname.replace(/^\/(en|ru|uz|ar)/, '')}`);
     document.head.appendChild(xDefault);
 
     // Set lang attribute on html element
     document.documentElement.lang = currentLang;
+    document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
 
-  }, [title, description, keywords, image, currentLang, location.pathname, noindex]);
+    // Add structured data (JSON-LD)
+    let existingScript = document.querySelector('script[type="application/ld+json"][data-seo="true"]');
+    if (existingScript) {
+      existingScript.remove();
+    }
+
+    if (structuredData) {
+      const script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.setAttribute('data-seo', 'true');
+      script.textContent = JSON.stringify(structuredData);
+      document.head.appendChild(script);
+    }
+
+  }, [title, description, keywords, image, currentLang, location.pathname, noindex, type, structuredData]);
 
   return null;
 };
+
+// Pre-built structured data generators
+export const generateOrganizationSchema = () => ({
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Docito',
+  url: 'https://docito.app',
+  logo: 'https://docito.app/logos/docito-logo.png',
+  sameAs: [
+    'https://twitter.com/docito',
+    'https://facebook.com/docito',
+    'https://linkedin.com/company/docito',
+  ],
+  contactPoint: {
+    '@type': 'ContactPoint',
+    telephone: '+1-800-DOCITO',
+    contactType: 'customer service',
+    availableLanguage: ['English', 'Russian', 'Uzbek', 'Arabic'],
+  },
+});
+
+export const generateMedicalWebsiteSchema = () => ({
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Docito',
+  url: 'https://docito.app',
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: {
+      '@type': 'EntryPoint',
+      urlTemplate: 'https://docito.app/search?q={search_term_string}',
+    },
+    'query-input': 'required name=search_term_string',
+  },
+});
+
+export const generateDoctorSchema = (doctor: {
+  name: string;
+  specialty: string;
+  image?: string;
+  rating?: number;
+  reviewCount?: number;
+  address?: string;
+}) => ({
+  '@context': 'https://schema.org',
+  '@type': 'Physician',
+  name: doctor.name,
+  medicalSpecialty: doctor.specialty,
+  image: doctor.image,
+  aggregateRating: doctor.rating ? {
+    '@type': 'AggregateRating',
+    ratingValue: doctor.rating,
+    reviewCount: doctor.reviewCount || 0,
+  } : undefined,
+  address: doctor.address ? {
+    '@type': 'PostalAddress',
+    streetAddress: doctor.address,
+  } : undefined,
+});
+
+export const generateFAQSchema = (faqs: { question: string; answer: string }[]) => ({
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map(faq => ({
+    '@type': 'Question',
+    name: faq.question,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: faq.answer,
+    },
+  })),
+});
+
+export const generateBreadcrumbSchema = (items: { name: string; url: string }[]) => ({
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: items.map((item, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: item.name,
+    item: item.url,
+  })),
+});
