@@ -44,18 +44,20 @@ const Auth = () => {
       const userRoles = profile.roles || [];
       const primaryRole = profile.role as string;
       
+      // Priority order: super_admin > doctor > admin > pharmacy > lab > imaging > staff > patient
+      // Doctors should go to doctor dashboard, not patient dashboard even if they have patient role
       if (userRoles.includes('super_admin')) {
         navigate('/super-admin-dashboard');
+      } else if (userRoles.includes('doctor') || primaryRole === 'doctor') {
+        navigate('/doctor-dashboard');
+      } else if (userRoles.includes('admin') || userRoles.includes('clinic_admin') || primaryRole === 'admin') {
+        navigate('/admin-dashboard');
       } else if (userRoles.includes('pharmacy_admin') || primaryRole === 'pharmacy_admin') {
         navigate('/pharmacy/dashboard');
       } else if (userRoles.includes('lab_admin') || primaryRole === 'lab_admin') {
         navigate('/lab/dashboard');
       } else if (userRoles.includes('imaging_admin') || primaryRole === 'imaging_admin') {
         navigate('/imaging/dashboard');
-      } else if (userRoles.includes('doctor') || primaryRole === 'doctor') {
-        navigate('/doctor-dashboard');
-      } else if (userRoles.includes('admin') || userRoles.includes('clinic_admin') || primaryRole === 'admin') {
-        navigate('/admin-dashboard');
       } else if (userRoles.includes('pharmacy_staff') || userRoles.includes('pharmacist')) {
         navigate('/pharmacy/dashboard');
       } else if (userRoles.includes('lab_staff') || userRoles.includes('lab_technician')) {
@@ -65,6 +67,7 @@ const Auth = () => {
       } else if (userRoles.includes('clinic_staff') || userRoles.includes('staff') || userRoles.includes('receptionist') || userRoles.includes('nurse')) {
         navigate('/staff-dashboard');
       } else {
+        // Default to patient dashboard (everyone has patient role)
         navigate('/patient-dashboard');
       }
     }

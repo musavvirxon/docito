@@ -2,8 +2,10 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, MapPin, Shield, Mic, Sparkles, Clock, TrendingUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
-import { useUnifiedSearch } from '@/hooks/useUnifiedSearch';
+import { useUnifiedSearch, type DoctorResult } from '@/hooks/useUnifiedSearch';
+import { useAuth } from '@/contexts/AuthContext';
 import { SearchResultsContainer } from '@/components/search';
 
 const TRENDING_SEARCHES = [
@@ -17,6 +19,8 @@ const TRENDING_SEARCHES = [
 
 export default function SmartSearch() {
   const { t } = useTranslation(['home']);
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [focused, setFocused] = useState(false);
   const [query, setQuery] = useState('');
   const [location, setLocation] = useState('');
@@ -241,6 +245,13 @@ export default function SmartSearch() {
                 filters={filters}
                 hasSearched={hasSearched}
                 onFilterChange={handleFilterChange}
+                onBookDoctor={(doctor: DoctorResult) => {
+                  if (!user) {
+                    navigate(`/auth?redirect=${encodeURIComponent(`/book-appointment/${doctor.id}`)}`);
+                  } else {
+                    navigate(`/book-appointment/${doctor.id}`);
+                  }
+                }}
               />
             </motion.div>
           )}

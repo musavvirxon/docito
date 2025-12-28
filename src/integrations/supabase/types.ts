@@ -7088,6 +7088,10 @@ export type Database = {
         }
         Returns: string
       }
+      doctor_can_view_patient_profile: {
+        Args: { target_user_id: string }
+        Returns: boolean
+      }
       fetch_available_slots: {
         Args: {
           date_from: string
@@ -7232,6 +7236,10 @@ export type Database = {
           patient_signature?: string
         }
         Returns: Json
+      }
+      staff_can_view_patient_profile: {
+        Args: { target_user_id: string }
+        Returns: boolean
       }
       submit_insurance_for_approval: {
         Args: { p_clinic_id: string; p_provider_id: string }
