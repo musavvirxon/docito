@@ -1,11 +1,12 @@
 import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Star, MapPin, BadgeCheck, Calendar, Languages, DollarSign } from 'lucide-react';
+import { Star, MapPin, BadgeCheck, Calendar, Languages, DollarSign, User } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { useAuth } from '@/contexts/AuthContext';
 import type { DoctorResult } from '@/hooks/useUnifiedSearch';
 
 interface DoctorSearchCardProps {
@@ -15,17 +16,39 @@ interface DoctorSearchCardProps {
 
 const DoctorSearchCard = memo(({ doctor, onBook }: DoctorSearchCardProps) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
 
-  const handleViewProfile = () => {
-    navigate(`/doctor/${doctor.id}`);
+  const handleViewProfile = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const path = `/doctor-profile/${doctor.id}`;
+    if (!isAuthenticated) {
+      navigate(`/auth?redirect=${encodeURIComponent(path)}`);
+    } else {
+      navigate(path);
+    }
   };
 
   const handleBook = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!isAuthenticated) {
+      const path = `/book-appointment/${doctor.id}`;
+      navigate(`/auth?redirect=${encodeURIComponent(path)}`);
+      return;
+    }
     if (onBook) {
       onBook(doctor);
     } else {
-      navigate(`/doctor/${doctor.id}?book=true`);
+      navigate(`/book-appointment/${doctor.id}`);
+    }
+  };
+
+  const handleCardClick = () => {
+    const path = `/doctor-profile/${doctor.id}`;
+    if (!isAuthenticated) {
+      navigate(`/auth?redirect=${encodeURIComponent(path)}`);
+    } else {
+      navigate(path);
     }
   };
 
@@ -47,7 +70,7 @@ const DoctorSearchCard = memo(({ doctor, onBook }: DoctorSearchCardProps) => {
     >
       <Card 
         className="overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-300 border-border/50 hover:border-primary/30"
-        onClick={handleViewProfile}
+        onClick={handleCardClick}
       >
         <CardContent className="p-4">
           <div className="flex gap-4">

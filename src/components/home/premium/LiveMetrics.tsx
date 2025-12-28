@@ -137,8 +137,36 @@ function MetricCard({
     </motion.div>;
 }
 export default function LiveMetrics() {
-  const {
-    t
-  } = useTranslation(['home']);
-  return;
+  const { t } = useTranslation(['home']);
+  
+  return (
+    <section className="py-20 bg-muted/30">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-foreground mb-4">
+            {t('home:metrics.title', 'Platform Statistics')}
+          </h2>
+          <p className="text-muted-foreground">
+            {t('home:metrics.subtitle', 'Real-time metrics from our healthcare network')}
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {metrics.map((metric, index) => (
+            <MetricCard key={metric.id} metric={metric} index={index} />
+          ))}
+        </div>
+        
+        <div className="mt-12 flex justify-center">
+          <div className="flex items-center gap-4 px-6 py-4 bg-background rounded-2xl border border-border/50">
+            <TrendingUp className="w-5 h-5 text-primary" />
+            <span className="text-sm text-muted-foreground">
+              {t('home:metrics.growth', 'Weekly growth trend')}
+            </span>
+            <MiniChart />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 }
