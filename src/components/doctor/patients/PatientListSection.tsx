@@ -8,10 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Users, Calendar, FileText, Plus, ArrowUpDown, Phone, ChevronRight, UserPlus } from "lucide-react";
+import { Search, Users, Calendar, FileText, Plus, ArrowUpDown, Phone, ChevronRight, UserPlus, FileSpreadsheet } from "lucide-react";
 import { useDoctorPatients } from "@/hooks/useDoctorPatients";
 import { useDoctorPatientsV2, DoctorPatient } from "@/hooks/useDoctorPatientsV2";
 import { useTranslation } from "react-i18next";
+import ExcelPatientImport from "./ExcelPatientImport";
+import { useDoctorData } from "@/contexts/DoctorDataContext";
 
 interface PatientListSectionProps {
   onSelectPatient: (patientId: string) => void;
@@ -24,12 +26,14 @@ type SortOption = "name-asc" | "name-desc" | "newest" | "oldest";
 const PatientListSection = ({ onSelectPatient, onSelectDirectPatient, onAddPatient }: PatientListSectionProps) => {
   const { t } = useTranslation("patients");
   const { patients: appointmentPatients, loading: loadingAppointment } = useDoctorPatients();
-  const { patients: directPatients, loading: loadingDirect } = useDoctorPatientsV2();
+  const { patients: directPatients, loading: loadingDirect, refreshPatients } = useDoctorPatientsV2();
+  const { doctorProfile } = useDoctorData();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [genderFilter, setGenderFilter] = useState<string>("all");
   const [sortOption, setSortOption] = useState<SortOption>("name-asc");
   const [activeTab, setActiveTab] = useState<string>("all");
+  const [showExcelImport, setShowExcelImport] = useState(false);
 
   const loading = loadingAppointment || loadingDirect;
 
@@ -191,10 +195,16 @@ const PatientListSection = ({ onSelectPatient, onSelectDirectPatient, onAddPatie
                 Manage your patients and their medical records
               </p>
             </div>
-            <Button onClick={onAddPatient}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add New Patient
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setShowExcelImport(true)}>
+                <FileSpreadsheet className="w-4 h-4 mr-2" />
+                Import Excel
+              </Button>
+              <Button onClick={onAddPatient}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Patient
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -437,6 +447,19 @@ const PatientListSection = ({ onSelectPatient, onSelectDirectPatient, onAddPatie
           ))
         )}
       </div>
+
+      {/* Excel Import Modal */}
+      {doctorProfile?.id && (
+        <ExcelPatientImport
+          isOpen={showExcelImport}
+          onClose={() => setShowExcelImport(false)}
+          onSuccess={() => {
+            setShowExcelImport(false);
+            refreshPatients();
+          }}
+          doctorId={doctorProfile.id}
+        />
+      )}
     </div>
   );
 };
