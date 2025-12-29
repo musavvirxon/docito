@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -29,7 +29,7 @@ const formSchema = z.object({
   date_of_birth: z.string().min(1, "Date of birth is required"),
 });
 
-interface DoctorPatientRow {
+export interface DoctorPatientRow {
   id: string;
   full_name: string;
   phone: string;
@@ -44,7 +44,11 @@ interface CreatePatientModalProps {
   onSuccess: (patient: DoctorPatientRow) => void;
 }
 
-const CreatePatientModal = ({ open, onOpenChange, onSuccess }: CreatePatientModalProps) => {
+const CreatePatientModal = ({
+  open,
+  onOpenChange,
+  onSuccess,
+}: CreatePatientModalProps) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [doctorId, setDoctorId] = useState<string | null>(null);
@@ -62,17 +66,20 @@ const CreatePatientModal = ({ open, onOpenChange, onSuccess }: CreatePatientModa
   useEffect(() => {
     const loadDoctorId = async () => {
       if (!user?.id || !open) return;
+
       const { data, error } = await supabase
         .from("doctors")
         .select("id")
         .eq("user_id", user.id)
         .single();
 
-      if (error) {
+      if (error || !data?.id) {
         console.error(error);
         toast.error("Doctor profile not found");
+        setDoctorId(null);
         return;
       }
+
       setDoctorId(data.id);
     };
 
@@ -114,9 +121,9 @@ const CreatePatientModal = ({ open, onOpenChange, onSuccess }: CreatePatientModa
     }
   };
 
-  const handleClose = () => {
-    form.reset();
-    onOpenChange(false);
+  const handleClose = (nextOpen: boolean) => {
+    if (!nextOpen) form.reset();
+    onOpenChange(nextOpen);
   };
 
   return (
@@ -185,7 +192,7 @@ const CreatePatientModal = ({ open, onOpenChange, onSuccess }: CreatePatientModa
             />
 
             <div className="flex justify-end space-x-2 pt-4">
-              <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>
+              <Button type="button" variant="outline" onClick={() => handleClose(false)} disabled={loading}>
                 Cancel
               </Button>
               <Button type="submit" disabled={loading}>
