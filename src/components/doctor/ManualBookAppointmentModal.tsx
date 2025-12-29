@@ -115,7 +115,7 @@ const ManualBookAppointmentModal = ({
           appointment_date: format(selectedDate, 'yyyy-MM-dd'),
           start_time: startTime,
           end_time: endTime,
-          notes: `Patient: ${selectedPatient.full_name} (ID: ${selectedPatientId})\n${notes}`,
+         notes: notes || null,
           status: 'confirmed'
         })
         .select()
