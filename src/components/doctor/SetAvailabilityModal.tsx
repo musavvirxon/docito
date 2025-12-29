@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,21 +8,66 @@ import { Calendar } from "@/components/ui/calendar";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { Clock } from "lucide-react";
+import { Clock, AlertTriangle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface SetAvailabilityModalProps {
   isOpen: boolean;
   onClose: () => void;
   doctorId: string;
+  practiceId?: string;
   onSuccess?: () => void;
 }
 
-const SetAvailabilityModal = ({ isOpen, onClose, doctorId, onSuccess }: SetAvailabilityModalProps) => {
+const SetAvailabilityModal = ({ isOpen, onClose, doctorId, practiceId, onSuccess }: SetAvailabilityModalProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
+  const [clinicHours, setClinicHours] = useState<any>(null);
+  const [showWarning, setShowWarning] = useState(false);
+  const [warningMessage, setWarningMessage] = useState("");
+
+  useEffect(() => {
+    if (isOpen && practiceId) {
+      fetchClinicHours();
+    }
+  }, [isOpen, practiceId]);
+
+  useEffect(() => {
+    // Check if selected times are outside clinic hours
+    if (startTime && endTime && clinicHours && selectedDate) {
+      const dayOfWeek = format(selectedDate, 'EEEE').toLowerCase();
+      const clinicDayHours = clinicHours[dayOfWeek];
+      
+      if (!clinicDayHours || !clinicDayHours.open) {
+        setShowWarning(true);
+        setWarningMessage(`The clinic is closed on ${format(selectedDate, 'EEEE')}s. Your availability will extend beyond clinic hours.`);
+      } else if (startTime < clinicDayHours.start || endTime > clinicDayHours.end) {
+        setShowWarning(true);
+        setWarningMessage(`Your selected hours (${startTime} - ${endTime}) are outside the clinic's operating hours (${clinicDayHours.start} - ${clinicDayHours.end}). This will extend your schedule beyond clinic hours.`);
+      } else {
+        setShowWarning(false);
+        setWarningMessage("");
+      }
+    }
+  }, [startTime, endTime, clinicHours, selectedDate]);
+
+  const fetchClinicHours = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('practices')
+        .select('operating_hours')
+        .eq('id', practiceId)
+        .single();
+      
+      if (error) throw error;
+      setClinicHours(data?.operating_hours || null);
+    } catch (error) {
+      console.error('Error fetching clinic hours:', error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,6 +85,7 @@ const SetAvailabilityModal = ({ isOpen, onClose, doctorId, onSuccess }: SetAvail
     setLoading(true);
 
     try {
+      // Insert availability override
       const { error } = await supabase
         .from('availability_overrides')
         .insert({
@@ -53,6 +99,11 @@ const SetAvailabilityModal = ({ isOpen, onClose, doctorId, onSuccess }: SetAvail
 
       if (error) throw error;
 
+      // If extending beyond clinic hours, log for reference
+      if (showWarning) {
+        console.log('Extended availability set beyond clinic hours');
+      }
+
       toast.success("Availability set successfully");
       onSuccess?.();
       onClose();
@@ -62,6 +113,7 @@ const SetAvailabilityModal = ({ isOpen, onClose, doctorId, onSuccess }: SetAvail
       setStartTime("");
       setEndTime("");
       setNotes("");
+      setShowWarning(false);
     } catch (error: any) {
       console.error('Error setting availability:', error);
       toast.error(error.message || "Failed to set availability");
@@ -123,6 +175,16 @@ const SetAvailabilityModal = ({ isOpen, onClose, doctorId, onSuccess }: SetAvail
                 </div>
               </div>
 
+              {showWarning && (
+                <Alert variant="destructive" className="bg-amber-50 border-amber-200 text-amber-900">
+                  <AlertTriangle className="h-4 w-4 text-amber-600" />
+                  <AlertDescription className="text-amber-800">
+                    {warningMessage}
+                    <p className="mt-2 font-medium">Continue to extend your schedule?</p>
+                  </AlertDescription>
+                </Alert>
+              )}
+
               <div>
                 <Label htmlFor="notes">Notes (Optional)</Label>
                 <Textarea
@@ -147,7 +209,7 @@ const SetAvailabilityModal = ({ isOpen, onClose, doctorId, onSuccess }: SetAvail
               Cancel
             </Button>
             <Button type="submit" className="flex-1" disabled={loading}>
-              {loading ? "Setting..." : "Set Availability"}
+              {loading ? "Setting..." : showWarning ? "Confirm & Extend Schedule" : "Set Availability"}
             </Button>
           </div>
         </form>

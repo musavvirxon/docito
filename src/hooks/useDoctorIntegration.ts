@@ -37,7 +37,7 @@ export interface DoctorService {
   dentist_id: string;
   name: string;
   description?: string;
-  category: 'general' | 'preventive' | 'restorative' | 'cosmetic' | 'orthodontic' | 'oral_surgery' | 'endodontic' | 'periodontic';
+  category: string;
   default_cost?: number;
   duration_minutes: number;
   is_active: boolean;
@@ -350,12 +350,18 @@ export const useDoctorIntegration = () => {
     if (!doctorProfile) return { error: 'No doctor profile found' };
 
     try {
+      const insertData = {
+        name: serviceData.name,
+        description: serviceData.description,
+        category: serviceData.category as any,
+        default_cost: serviceData.default_cost,
+        duration_minutes: serviceData.duration_minutes,
+        is_active: serviceData.is_active,
+        dentist_id: doctorProfile.id
+      };
       const { error } = await supabase
         .from('procedures')
-        .insert({
-          ...serviceData,
-          dentist_id: doctorProfile.id
-        });
+        .insert(insertData);
 
       if (error) throw error;
 
@@ -371,9 +377,13 @@ export const useDoctorIntegration = () => {
 
   const updateService = async (id: string, updates: Partial<DoctorService>) => {
     try {
+      const updateData = {
+        ...updates,
+        category: updates.category as any
+      };
       const { error } = await supabase
         .from('procedures')
-        .update(updates)
+        .update(updateData)
         .eq('id', id);
 
       if (error) throw error;

@@ -7318,6 +7318,52 @@ export type Database = {
         | "oral_surgery"
         | "endodontic"
         | "periodontic"
+        | "preventive_care"
+        | "prosthodontic"
+        | "general_consultation"
+        | "diagnostic_testing"
+        | "diagnostic"
+        | "vaccination"
+        | "chronic_disease"
+        | "acute_care"
+        | "follow_up"
+        | "minor_surgery"
+        | "physical_therapy"
+        | "mental_health"
+        | "womens_health"
+        | "pediatric_care"
+        | "geriatric_care"
+        | "cardiology"
+        | "dermatology"
+        | "orthopedics"
+        | "neurology"
+        | "gastroenterology"
+        | "pulmonology"
+        | "endocrinology"
+        | "nephrology"
+        | "urology"
+        | "ophthalmology"
+        | "ent"
+        | "allergy_immunology"
+        | "dental_examination"
+        | "dental_cleaning"
+        | "dental_checkup"
+        | "crowns_bridges"
+        | "root_canal"
+        | "extractions"
+        | "dental_implants"
+        | "dentures"
+        | "orthodontics"
+        | "periodontics"
+        | "cosmetic_dental"
+        | "cosmetic_dentistry"
+        | "teeth_whitening"
+        | "veneers"
+        | "pediatric_dentistry"
+        | "pediatric_dental"
+        | "tmj_treatment"
+        | "emergency_dental"
+        | "implantology"
       procedure_type:
         | "single_visit"
         | "multi_visit"
@@ -7546,6 +7592,52 @@ export const Constants = {
         "oral_surgery",
         "endodontic",
         "periodontic",
+        "preventive_care",
+        "prosthodontic",
+        "general_consultation",
+        "diagnostic_testing",
+        "diagnostic",
+        "vaccination",
+        "chronic_disease",
+        "acute_care",
+        "follow_up",
+        "minor_surgery",
+        "physical_therapy",
+        "mental_health",
+        "womens_health",
+        "pediatric_care",
+        "geriatric_care",
+        "cardiology",
+        "dermatology",
+        "orthopedics",
+        "neurology",
+        "gastroenterology",
+        "pulmonology",
+        "endocrinology",
+        "nephrology",
+        "urology",
+        "ophthalmology",
+        "ent",
+        "allergy_immunology",
+        "dental_examination",
+        "dental_cleaning",
+        "dental_checkup",
+        "crowns_bridges",
+        "root_canal",
+        "extractions",
+        "dental_implants",
+        "dentures",
+        "orthodontics",
+        "periodontics",
+        "cosmetic_dental",
+        "cosmetic_dentistry",
+        "teeth_whitening",
+        "veneers",
+        "pediatric_dentistry",
+        "pediatric_dental",
+        "tmj_treatment",
+        "emergency_dental",
+        "implantology",
       ],
       procedure_type: [
         "single_visit",

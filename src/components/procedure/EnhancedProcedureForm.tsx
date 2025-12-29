@@ -19,7 +19,7 @@ import { MaterialsToolsSection } from "./MaterialsToolsSection";
 
 const procedureSchema = z.object({
   name: z.string().min(1, "Procedure name is required"),
-  category: z.enum(["general", "preventive", "restorative", "cosmetic", "orthodontic", "oral_surgery", "endodontic", "periodontic"]),
+  category: z.string().min(1, "Category is required"),
   estimated_duration_minutes: z.number().min(1, "Duration must be at least 1 minute"),
   price: z.number().optional(),
   default_time_interval: z.number().optional(),
@@ -145,7 +145,15 @@ export const EnhancedProcedureForm = ({
         const { data, error } = await supabase
           .from('procedures')
           .update({
-            ...formData,
+            name: formData.name,
+            category: formData.category as any,
+            estimated_duration_minutes: formData.estimated_duration_minutes,
+            price: formData.price,
+            default_time_interval: formData.default_time_interval,
+            description: formData.description,
+            what_to_expect: formData.what_to_expect,
+            informed_consent_template: formData.informed_consent_template,
+            default_notes_template: formData.default_notes_template,
             updated_at: new Date().toISOString(),
           })
           .eq('id', procedureId)
@@ -160,7 +168,7 @@ export const EnhancedProcedureForm = ({
           .from('procedures')
           .insert({
             name: formData.name,
-            category: formData.category,
+            category: formData.category as any,
             estimated_duration_minutes: formData.estimated_duration_minutes,
             price: formData.price,
             default_time_interval: formData.default_time_interval,
