@@ -14,6 +14,7 @@ import EditProcedureModal from "@/components/procedure/EditProcedureModal";
 import ManageCategoriesModal from "@/components/doctor/ManageCategoriesModal";
 import ManageTypesModal from "@/components/doctor/ManageTypesModal";
 import { useTranslation } from "react-i18next";
+import { getProcedureCategoryLabel } from "@/lib/procedureCategories";
 interface Procedure {
   id: string;
   dentist_id: string;
@@ -460,7 +461,7 @@ const DoctorProcedureLibrarySection = () => {
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary">
-                        {categoryOptions.find(c => c.value === procedure.category)?.label || procedure.category}
+                        {categoryOptions.find(c => c.value === procedure.category)?.label || getProcedureCategoryLabel(procedure.category)}
                       </Badge>
                     </TableCell>
                     <TableCell>
