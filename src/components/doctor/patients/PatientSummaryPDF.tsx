@@ -535,7 +535,6 @@ doc.text(`Generated: ${formatDateTime(generatedAt)}`, pageWidth - 14, 26, { alig
     const pageCount = doc.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
-      f
       // --- Added footer metadata (keep existing footer intact) ---
 const clinicName = practiceInfo?.name || "—";
 const doctorName = formatDoctorName(practiceInfo?.doctor_name);
