@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { createHmac, timingSafeEqual } from "https://deno.land/std@0.168.0/crypto/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -92,7 +91,7 @@ async function verifyStripeSignature(
 
     return { valid: true };
   } catch (error) {
-    return { valid: false, error: `Stripe verification error: ${error.message}` };
+    return { valid: false, error: `Stripe verification error: ${(error as Error).message}` };
   }
 }
 
@@ -184,7 +183,7 @@ async function verifyPayPalSignature(
 
     return { valid: true };
   } catch (error) {
-    return { valid: false, error: `PayPal verification error: ${error.message}` };
+    return { valid: false, error: `PayPal verification error: ${(error as Error).message}` };
   }
 }
 
@@ -220,7 +219,7 @@ async function verifySquareSignature(
 
     return { valid: true };
   } catch (error) {
-    return { valid: false, error: `Square verification error: ${error.message}` };
+    return { valid: false, error: `Square verification error: ${(error as Error).message}` };
   }
 }
 
@@ -509,7 +508,7 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error("Webhook error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,
     });
