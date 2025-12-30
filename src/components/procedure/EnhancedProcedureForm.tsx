@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { MaterialsToolsSection } from "./MaterialsToolsSection";
+import { DEFAULT_PROCEDURE_CATEGORIES, mergeCategories } from "@/lib/procedureCategories";
 
 const procedureSchema = z.object({
   name: z.string().min(1, "Procedure name is required"),
@@ -46,6 +47,8 @@ export const EnhancedProcedureForm = ({
   const [materials, setMaterials] = useState<Array<{ name: string; quantity: number; required: boolean; notes?: string }>>([]);
   const [uploadedFiles, setUploadedFiles] = useState<Array<{ name: string; url: string; type: string }>>([]);
   const { user } = useAuth();
+  const [categoryOptions, setCategoryOptions] = useState(DEFAULT_PROCEDURE_CATEGORIES);
+  const [customCategory, setCustomCategory] = useState("");
 
   const form = useForm<ProcedureFormData>({
     resolver: zodResolver(procedureSchema),
@@ -68,6 +71,37 @@ export const EnhancedProcedureForm = ({
       loadProcedure();
     }
   }, [procedureId]);
+  useEffect(() => {
+  const loadCategories = async () => {
+    const { data: auth } = await supabase.auth.getUser();
+    const user = auth?.user;
+    if (!user?.id) return;
+
+    const { data: doctor, error: doctorError } = await supabase
+      .from("doctors")
+      .select("id")
+      .eq("user_id", user.id)
+      .single();
+
+    if (doctorError || !doctor?.id) return;
+
+    const { data: rows, error: catErr } = await supabase
+      .from("procedures")
+      .select("category")
+      .eq("dentist_id", doctor.id);
+
+    if (catErr) return;
+
+    const distinct = Array.from(
+      new Set((rows ?? []).map((r: any) => r.category).filter(Boolean))
+    ) as string[];
+
+    setCategoryOptions(mergeCategories(DEFAULT_PROCEDURE_CATEGORIES, distinct));
+  };
+
+  loadCategories();
+}, []);
+
 
   const loadProcedure = async () => {
     if (!procedureId) return;
@@ -128,7 +162,15 @@ export const EnhancedProcedureForm = ({
 
     try {
       setLoading(true);
+    const finalCategory =
+  formData.category === "__custom__"
+    ? customCategory.trim()
+    : formData.category;
 
+if (!finalCategory) {
+  toast.error("Please choose or enter a category");
+  return;
+}
       // Get doctor ID
       const { data: doctor, error: doctorError } = await supabase
         .from('doctors')
@@ -146,7 +188,7 @@ export const EnhancedProcedureForm = ({
           .from('procedures')
           .update({
             name: formData.name,
-            category: formData.category as any,
+            category: finalCategory as any,
             estimated_duration_minutes: formData.estimated_duration_minutes,
             price: formData.price,
             default_time_interval: formData.default_time_interval,
@@ -168,7 +210,7 @@ export const EnhancedProcedureForm = ({
           .from('procedures')
           .insert({
             name: formData.name,
-            category: formData.category as any,
+            category: finalCategory as any,
             estimated_duration_minutes: formData.estimated_duration_minutes,
             price: formData.price,
             default_time_interval: formData.default_time_interval,
@@ -276,17 +318,25 @@ export const EnhancedProcedureForm = ({
                     <SelectTrigger>
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="general">General</SelectItem>
-                      <SelectItem value="preventive">Preventive</SelectItem>
-                      <SelectItem value="restorative">Restorative</SelectItem>
-                      <SelectItem value="cosmetic">Cosmetic</SelectItem>
-                      <SelectItem value="orthodontic">Orthodontic</SelectItem>
-                      <SelectItem value="oral_surgery">Oral Surgery</SelectItem>
-                      <SelectItem value="endodontic">Endodontic</SelectItem>
-                      <SelectItem value="periodontic">Periodontic</SelectItem>
+                      <SelectContent>
+                      {categoryOptions.map((cat) => (
+                      <SelectItem key={cat.value} value={cat.value}>
+                      {cat.label}
+                      </SelectItem>
+                      ))}
+                      <SelectItem value="__custom__">Custom…</SelectItem>
                     </SelectContent>
                   </Select>
+                  {form.watch("category") === "__custom__" && (
+                   <div className="space-y-2">
+                   <Label>Custom Category</Label>
+                   <Input
+                   value={customCategory}
+                   onChange={(e) => setCustomCategory(e.target.value)}
+                   placeholder="e.g., Specialized Therapy"
+                   />
+                   </div>
+                     )}
                 </div>
               </div>
 
