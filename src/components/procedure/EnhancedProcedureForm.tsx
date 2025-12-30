@@ -1,22 +1,33 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Minus, Upload, FileText, DollarSign, Clock, AlertCircle } from "lucide-react";
+
+import { DollarSign, Clock, AlertCircle, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+
 import { MaterialsToolsSection } from "./MaterialsToolsSection";
-import { DEFAULT_PROCEDURE_CATEGORIES, mergeCategories } from "@/lib/procedureCategories";
+import {
+  DEFAULT_PROCEDURE_CATEGORIES,
+  mergeCategories,
+} from "@/lib/procedureCategories";
 
 const procedureSchema = z.object({
   name: z.string().min(1, "Procedure name is required"),
@@ -38,15 +49,24 @@ interface EnhancedProcedureFormProps {
   onCancel?: () => void;
 }
 
-export const EnhancedProcedureForm = ({ 
-  procedureId, 
-  onSave, 
-  onCancel 
+export const EnhancedProcedureForm = ({
+  procedureId,
+  onSave,
+  onCancel,
 }: EnhancedProcedureFormProps) => {
-  const [loading, setLoading] = useState(false);
-  const [materials, setMaterials] = useState<Array<{ name: string; quantity: number; required: boolean; notes?: string }>>([]);
-  const [uploadedFiles, setUploadedFiles] = useState<Array<{ name: string; url: string; type: string }>>([]);
   const { user } = useAuth();
+
+  const [loading, setLoading] = useState(false);
+
+  const [materials, setMaterials] = useState<
+    Array<{ name: string; quantity: number; required: boolean; notes?: string }>
+  >([]);
+
+  const [uploadedFiles, setUploadedFiles] = useState<
+    Array<{ name: string; url: string; type: string }>
+  >([]);
+
+  const [dentistId, setDentistId] = useState<string | null>(null);
   const [categoryOptions, setCategoryOptions] = useState(DEFAULT_PROCEDURE_CATEGORIES);
   const [customCategory, setCustomCategory] = useState("");
 
@@ -54,7 +74,7 @@ export const EnhancedProcedureForm = ({
     resolver: zodResolver(procedureSchema),
     defaultValues: {
       name: "",
-      category: "general" as const,
+      category: "",
       estimated_duration_minutes: 30,
       price: 0,
       default_time_interval: 7,
@@ -65,140 +85,178 @@ export const EnhancedProcedureForm = ({
     },
   });
 
+  // Load dentistId and categories (defaults + custom existing categories)
+  useEffect(() => {
+    const loadDentistAndCategories = async () => {
+      if (!user?.id) {
+        setDentistId(null);
+        setCategoryOptions(DEFAULT_PROCEDURE_CATEGORIES);
+        return;
+      }
+
+      const { data: doctor, error: doctorError } = await supabase
+        .from("doctors")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (doctorError || !doctor?.id) {
+        console.error(doctorError);
+        setDentistId(null);
+        setCategoryOptions(DEFAULT_PROCEDURE_CATEGORIES);
+        return;
+      }
+
+      setDentistId(doctor.id);
+
+      const { data: rows, error: catErr } = await supabase
+        .from("procedures")
+        .select("category")
+        .eq("dentist_id", doctor.id);
+
+      if (catErr) {
+        console.error(catErr);
+        setCategoryOptions(DEFAULT_PROCEDURE_CATEGORIES);
+        return;
+      }
+
+      const distinct = Array.from(
+        new Set((rows ?? []).map((r: any) => r.category).filter(Boolean))
+      ) as string[];
+
+      setCategoryOptions(mergeCategories(DEFAULT_PROCEDURE_CATEGORIES, distinct));
+    };
+
+    loadDentistAndCategories();
+  }, [user?.id]);
+
   // Load existing procedure data if editing
   useEffect(() => {
-    if (procedureId) {
-      loadProcedure();
-    }
+    const loadProcedure = async () => {
+      if (!procedureId) return;
+
+      try {
+        setLoading(true);
+
+        const { data: procedure, error } = await supabase
+          .from("procedures")
+          .select("*")
+          .eq("id", procedureId)
+          .single();
+
+        if (error) throw error;
+
+        // If the category is custom and not in options, add it
+        if (procedure?.category) {
+          const exists = categoryOptions.some((c) => c.value === procedure.category);
+          if (!exists) {
+            setCategoryOptions((prev) =>
+              mergeCategories(prev, [procedure.category as string])
+            );
+          }
+        }
+
+        form.reset({
+          name: procedure?.name ?? "",
+          category: procedure?.category ?? "",
+          estimated_duration_minutes: procedure?.estimated_duration_minutes ?? 30,
+          price: procedure?.price ?? 0,
+          default_time_interval: procedure?.default_time_interval ?? 7,
+          description: procedure?.description ?? "",
+          what_to_expect: procedure?.what_to_expect ?? "",
+          informed_consent_template: procedure?.informed_consent_template ?? "",
+          default_notes_template: procedure?.default_notes_template ?? "",
+        });
+
+        // Load materials
+        const { data: materialsData, error: materialsError } = await supabase
+          .from("procedure_materials")
+          .select("*")
+          .eq("procedure_id", procedureId);
+
+        if (materialsError) throw materialsError;
+
+        setMaterials(
+          materialsData?.map((m: any) => ({
+            name: m.material_name,
+            quantity: m.quantity,
+            required: m.is_required,
+            notes: m.notes || "",
+          })) || []
+        );
+
+        // Load files
+        const { data: filesData, error: filesError } = await supabase
+          .from("procedure_files")
+          .select("*")
+          .eq("procedure_id", procedureId);
+
+        if (filesError) throw filesError;
+
+        setUploadedFiles(
+          filesData?.map((f: any) => ({
+            name: f.file_name,
+            url: f.file_path,
+            type: f.file_type,
+          })) || []
+        );
+      } catch (err: any) {
+        console.error("Error loading procedure:", err);
+        toast.error("Failed to load procedure data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProcedure();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [procedureId]);
-  useEffect(() => {
-  const loadCategories = async () => {
-    const { data: auth } = await supabase.auth.getUser();
-    const user = auth?.user;
-    if (!user?.id) return;
 
-    const { data: doctor, error: doctorError } = await supabase
-      .from("doctors")
-      .select("id")
-      .eq("user_id", user.id)
-      .single();
+  const categoryValue = form.watch("category");
 
-    if (doctorError || !doctor?.id) return;
-
-    const { data: rows, error: catErr } = await supabase
-      .from("procedures")
-      .select("category")
-      .eq("dentist_id", doctor.id);
-
-    if (catErr) return;
-
-    const distinct = Array.from(
-      new Set((rows ?? []).map((r: any) => r.category).filter(Boolean))
-    ) as string[];
-
-    setCategoryOptions(mergeCategories(DEFAULT_PROCEDURE_CATEGORIES, distinct));
-  };
-
-  loadCategories();
-}, []);
-
-
-  const loadProcedure = async () => {
-    if (!procedureId) return;
-
-    try {
-      setLoading(true);
-      
-      // Load procedure data
-      const { data: procedure, error } = await supabase
-        .from('procedures')
-        .select('*')
-        .eq('id', procedureId)
-        .single();
-
-      if (error) throw error;
-
-      form.reset(procedure);
-
-      // Load materials
-      const { data: materialsData, error: materialsError } = await supabase
-        .from('procedure_materials')
-        .select('*')
-        .eq('procedure_id', procedureId);
-
-      if (materialsError) throw materialsError;
-
-      setMaterials(materialsData?.map(m => ({
-        name: m.material_name,
-        quantity: m.quantity,
-        required: m.is_required,
-        notes: m.notes || '',
-      })) || []);
-
-      // Load files
-      const { data: filesData, error: filesError } = await supabase
-        .from('procedure_files')
-        .select('*')
-        .eq('procedure_id', procedureId);
-
-      if (filesError) throw filesError;
-
-      setUploadedFiles(filesData?.map(f => ({
-        name: f.file_name,
-        url: f.file_path,
-        type: f.file_type,
-      })) || []);
-
-    } catch (error: any) {
-      console.error('Error loading procedure:', error);
-      toast.error('Failed to load procedure data');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const isCustomSelected = useMemo(() => categoryValue === "__custom__", [categoryValue]);
 
   const onSubmit = async (formData: ProcedureFormData) => {
-    if (!user) return;
+    if (!user?.id) {
+      toast.error("You must be logged in");
+      return;
+    }
+
+    if (!dentistId) {
+      toast.error("Doctor profile not loaded");
+      return;
+    }
+
+    const finalCategory =
+      formData.category === "__custom__" ? customCategory.trim() : formData.category;
+
+    if (!finalCategory) {
+      toast.error("Please choose or enter a category");
+      return;
+    }
 
     try {
       setLoading(true);
-    const finalCategory =
-  formData.category === "__custom__"
-    ? customCategory.trim()
-    : formData.category;
 
-if (!finalCategory) {
-  toast.error("Please choose or enter a category");
-  return;
-}
-      // Get doctor ID
-      const { data: doctor, error: doctorError } = await supabase
-        .from('doctors')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (doctorError) throw doctorError;
-
-      let procedureData;
+      let procedureData: any;
 
       if (procedureId) {
         // Update existing procedure
         const { data, error } = await supabase
-          .from('procedures')
+          .from("procedures")
           .update({
             name: formData.name,
             category: finalCategory as any,
             estimated_duration_minutes: formData.estimated_duration_minutes,
-            price: formData.price,
-            default_time_interval: formData.default_time_interval,
-            description: formData.description,
-            what_to_expect: formData.what_to_expect,
-            informed_consent_template: formData.informed_consent_template,
-            default_notes_template: formData.default_notes_template,
+            price: formData.price ?? null,
+            default_time_interval: formData.default_time_interval ?? null,
+            description: formData.description ?? null,
+            what_to_expect: formData.what_to_expect ?? null,
+            informed_consent_template: formData.informed_consent_template ?? null,
+            default_notes_template: formData.default_notes_template ?? null,
             updated_at: new Date().toISOString(),
           })
-          .eq('id', procedureId)
+          .eq("id", procedureId)
           .select()
           .single();
 
@@ -207,19 +265,19 @@ if (!finalCategory) {
       } else {
         // Create new procedure
         const { data, error } = await supabase
-          .from('procedures')
+          .from("procedures")
           .insert({
+            dentist_id: dentistId,
+            is_active: true,
             name: formData.name,
             category: finalCategory as any,
             estimated_duration_minutes: formData.estimated_duration_minutes,
-            price: formData.price,
-            default_time_interval: formData.default_time_interval,
-            description: formData.description,
-            what_to_expect: formData.what_to_expect,
-            informed_consent_template: formData.informed_consent_template,
-            default_notes_template: formData.default_notes_template,
-            dentist_id: doctor.id,
-            is_active: true,
+            price: formData.price ?? null,
+            default_time_interval: formData.default_time_interval ?? null,
+            description: formData.description ?? null,
+            what_to_expect: formData.what_to_expect ?? null,
+            informed_consent_template: formData.informed_consent_template ?? null,
+            default_notes_template: formData.default_notes_template ?? null,
           })
           .select()
           .single();
@@ -229,43 +287,39 @@ if (!finalCategory) {
       }
 
       // Save materials
-      if (procedureData.id) {
-        // Delete existing materials
-        await supabase
-          .from('procedure_materials')
-          .delete()
-          .eq('procedure_id', procedureData.id);
+      if (procedureData?.id) {
+        await supabase.from("procedure_materials").delete().eq("procedure_id", procedureData.id);
 
-        // Insert new materials
         if (materials.length > 0) {
-          const materialsToInsert = materials.map(material => ({
+          const materialsToInsert = materials.map((material) => ({
             procedure_id: procedureData.id,
             material_name: material.name,
             quantity: material.quantity,
             is_required: material.required,
-            notes: material.notes,
+            notes: material.notes || null,
           }));
 
           const { error: materialsError } = await supabase
-            .from('procedure_materials')
+            .from("procedure_materials")
             .insert(materialsToInsert);
 
           if (materialsError) throw materialsError;
         }
       }
 
-      toast.success(procedureId ? 'Procedure updated successfully' : 'Procedure created successfully');
+      toast.success(procedureId ? "Procedure updated successfully" : "Procedure created successfully");
+      setCustomCategory("");
       onSave?.(procedureData);
-    } catch (error: any) {
-      console.error('Error saving procedure:', error);
-      toast.error('Failed to save procedure');
+    } catch (err: any) {
+      console.error("Error saving procedure:", err);
+      toast.error(err?.message || "Failed to save procedure");
     } finally {
       setLoading(false);
     }
   };
 
   const addMaterial = () => {
-    setMaterials([...materials, { name: '', quantity: 1, required: true, notes: '' }]);
+    setMaterials([...materials, { name: "", quantity: 1, required: true, notes: "" }]);
   };
 
   const removeMaterial = (index: number) => {
@@ -297,11 +351,7 @@ if (!finalCategory) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="name">Procedure Name *</Label>
-                  <Input
-                    id="name"
-                    {...form.register("name")}
-                    placeholder="Enter procedure name"
-                  />
+                  <Input id="name" {...form.register("name")} placeholder="Enter procedure name" />
                   {form.formState.errors.name && (
                     <p className="text-sm text-destructive mt-1">
                       {form.formState.errors.name.message}
@@ -318,25 +368,27 @@ if (!finalCategory) {
                     <SelectTrigger>
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
-                      <SelectContent>
+
+                    <SelectContent>
                       {categoryOptions.map((cat) => (
-                      <SelectItem key={cat.value} value={cat.value}>
-                      {cat.label}
-                      </SelectItem>
+                        <SelectItem key={cat.value} value={cat.value}>
+                          {cat.label}
+                        </SelectItem>
                       ))}
                       <SelectItem value="__custom__">Custom…</SelectItem>
                     </SelectContent>
                   </Select>
-                  {form.watch("category") === "__custom__" && (
-                   <div className="space-y-2">
-                   <Label>Custom Category</Label>
-                   <Input
-                   value={customCategory}
-                   onChange={(e) => setCustomCategory(e.target.value)}
-                   placeholder="e.g., Specialized Therapy"
-                   />
-                   </div>
-                     )}
+
+                  {isCustomSelected && (
+                    <div className="space-y-2 mt-2">
+                      <Label>Custom Category</Label>
+                      <Input
+                        value={customCategory}
+                        onChange={(e) => setCustomCategory(e.target.value)}
+                        placeholder="e.g., Specialized Therapy"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -415,7 +467,7 @@ if (!finalCategory) {
                 <Textarea
                   id="notes_template"
                   {...form.register("default_notes_template")}
-                  placeholder="Template for procedure-specific notes that will appear when this procedure is added..."
+                  placeholder="Template for procedure-specific notes..."
                   rows={3}
                 />
               </div>
@@ -450,7 +502,7 @@ if (!finalCategory) {
                     <div>
                       <h4 className="font-medium text-blue-900">Informed Consent Information</h4>
                       <p className="text-sm text-blue-700 mt-1">
-                        If you add an informed consent template, patients will be required to 
+                        If you add an informed consent template, patients will be required to
                         digitally sign consent before this procedure can be performed.
                       </p>
                     </div>
@@ -462,12 +514,13 @@ if (!finalCategory) {
                   <Textarea
                     id="consent_template"
                     {...form.register("informed_consent_template")}
-                    placeholder="Enter the informed consent text that patients must agree to..."
+                    placeholder="Enter the informed consent text..."
                     rows={10}
                     className="font-mono text-sm"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    Leave empty if no consent is required. You can use variables like {`{procedureName}`}, {`{estimatedCost}`}, etc.
+                    Leave empty if no consent is required. You can use variables like{" "}
+                    {`{procedureName}`}, {`{estimatedCost}`}, etc.
                   </p>
                 </div>
               </div>
@@ -485,7 +538,7 @@ if (!finalCategory) {
           </Button>
         )}
         <Button type="submit" disabled={loading}>
-          {loading ? 'Saving...' : procedureId ? 'Update Procedure' : 'Create Procedure'}
+          {loading ? "Saving..." : procedureId ? "Update Procedure" : "Create Procedure"}
         </Button>
       </div>
     </form>
