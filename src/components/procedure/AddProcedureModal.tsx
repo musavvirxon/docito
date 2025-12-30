@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef } from "react";
+import { DEFAULT_PROCEDURE_CATEGORIES, mergeCategories } from "@/lib/procedureCategories";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useAuth } from "@/contexts/AuthContext";
+
 import {
   Dialog,
   DialogContent,
@@ -17,6 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -24,37 +26,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import ToothSelector from "./ToothSelector";
-import { CalendarPlus, FileText, Upload, X, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-// Comprehensive medical and dental treatment categories
-const treatmentCategories = [
-  // General Medicine
-  { value: "general_consultation", label: "General Consultation" },
-  { value: "preventive_care", label: "Preventive Care" },
-  { value: "diagnostic", label: "Diagnostic / Examination" },
-  { value: "vaccination", label: "Vaccination / Immunization" },
-  { value: "chronic_disease", label: "Chronic Disease Management" },
-  { value: "acute_care", label: "Acute Care / Urgent Visit" },
-  { value: "follow_up", label: "Follow-up Visit" },
-  { value: "minor_surgery", label: "Minor Surgery / Procedure" },
-  { value: "physical_therapy", label: "Physical Therapy" },
-  { value: "mental_health", label: "Mental Health / Counseling" },
-  // Dentistry
-  { value: "dental_checkup", label: "Dental Checkup / Cleaning" },
-  { value: "restorative", label: "Restorative (Fillings, Crowns)" },
-  { value: "endodontic", label: "Endodontic (Root Canal)" },
-  { value: "periodontic", label: "Periodontic (Gum Treatment)" },
-  { value: "prosthodontic", label: "Prosthodontic (Dentures, Bridges)" },
-  { value: "orthodontic", label: "Orthodontic (Braces, Aligners)" },
-  { value: "oral_surgery", label: "Oral Surgery (Extractions)" },
-  { value: "cosmetic_dental", label: "Cosmetic Dentistry" },
-  { value: "pediatric_dental", label: "Pediatric Dentistry" },
-  { value: "implantology", label: "Implantology" },
-];
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+import ToothSelector from "./ToothSelector";
+import { CalendarPlus, FileText, Upload, X, AlertCircle } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(1, "Procedure name is required"),
@@ -62,9 +40,11 @@ const formSchema = z.object({
   default_cost: z.number().min(0, "Cost must be a positive number").optional(),
   notes: z.string().optional(),
   tooth_range: z.array(z.number()).optional(),
+
   has_followup: z.boolean().default(false),
   followup_count: z.number().min(1).max(10).optional(),
   followup_interval_days: z.number().min(1).max(365).optional(),
+
   requires_consent: z.boolean().default(false),
   consent_text: z.string().optional(),
 });
@@ -79,19 +59,24 @@ interface AddProcedureModalProps {
   onOpenTypeModal?: () => void;
 }
 
-const AddProcedureModal = ({ 
-  open, 
-  onOpenChange, 
+const AddProcedureModal = ({
+  open,
+  onOpenChange,
   onSuccess,
 }: AddProcedureModalProps) => {
-  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+
   const [selectedTeeth, setSelectedTeeth] = useState<number[]>([]);
   const [hasFollowup, setHasFollowup] = useState(false);
   const [requiresConsent, setRequiresConsent] = useState(false);
+
   const [consentFile, setConsentFile] = useState<File | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [dentistId, setDentistId] = useState<string | null>(null);
+  const [categoryOptions, setCategoryOptions] = useState(DEFAULT_PROCEDURE_CATEGORIES);
+  const [customCategory, setCustomCategory] = useState("");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -109,114 +94,157 @@ const AddProcedureModal = ({
     },
   });
 
+  // Load dentistId (doctors.id) and merge custom categories for this dentist
+  useEffect(() => {
+    const loadDentistAndCategories = async () => {
+      if (!open) return;
+
+      const { data } = await supabase.auth.getUser();
+      const authUser = data?.user;
+      if (!authUser?.id) {
+        setDentistId(null);
+        setCategoryOptions(DEFAULT_PROCEDURE_CATEGORIES);
+        return;
+      }
+
+      const { data: doctor, error: doctorError } = await supabase
+        .from("doctors")
+        .select("id")
+        .eq("user_id", authUser.id)
+        .single();
+
+      if (doctorError || !doctor?.id) {
+        console.error(doctorError);
+        toast.error("Doctor profile not found");
+        setDentistId(null);
+        setCategoryOptions(DEFAULT_PROCEDURE_CATEGORIES);
+        return;
+      }
+
+      setDentistId(doctor.id);
+
+      // Pull existing categories for this dentist (includes custom values)
+      const { data: rows, error: catErr } = await supabase
+        .from("procedures")
+        .select("category")
+        .eq("dentist_id", doctor.id);
+
+      if (catErr) {
+        console.error(catErr);
+        setCategoryOptions(DEFAULT_PROCEDURE_CATEGORIES);
+        return;
+      }
+
+      const distinct = Array.from(
+        new Set((rows ?? []).map((r: any) => r.category).filter(Boolean))
+      ) as string[];
+
+      setCategoryOptions(mergeCategories(DEFAULT_PROCEDURE_CATEGORIES, distinct));
+    };
+
+    loadDentistAndCategories();
+  }, [open]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      // Validate file type (PDF, DOC, DOCX, TXT)
-      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
-      if (!allowedTypes.includes(file.type)) {
-        toast.error('Please upload a PDF, DOC, DOCX, or TXT file');
-        return;
-      }
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('File size must be less than 5MB');
-        return;
-      }
-      setConsentFile(file);
+    if (!file) return;
+
+    const allowedTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "text/plain",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Please upload a PDF, DOC, DOCX, or TXT file");
+      return;
     }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File size must be less than 5MB");
+      return;
+    }
+
+    setConsentFile(file);
   };
 
   const removeConsentFile = () => {
     setConsentFile(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
-  const [dentistId, setDentistId] = useState<string | null>(null);
-
-    useEffect(() => {
-  const loadDentistId = async () => {
-    if (!open) return;
-    if (!user?.id) {
-      setDentistId(null);
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from("doctors")
-      .select("id")
-      .eq("user_id", user.id)
-      .single();
-
-    if (error || !data?.id) {
-      console.error(error);
-      toast.error("Doctor profile not found. Please complete doctor profile.");
-      setDentistId(null);
-      return;
-    }
-
-    setDentistId(data.id);
-  };
-
-  loadDentistId();
-}, [open, user?.id]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
     try {
       if (!dentistId) {
-         toast.error("Doctor profile not loaded");
-    setLoading(false);
-     return;
+        toast.error("Doctor profile not loaded");
+        return;
       }
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      const isDev = window.location.hostname.includes('localhost') || window.location.hostname.includes('127.0.0.1');
-      if (!isDev && !user) {
+
+      const { data } = await supabase.auth.getUser();
+      const authUser = data?.user;
+
+      const isDev =
+        window.location.hostname.includes("localhost") ||
+        window.location.hostname.includes("127.0.0.1");
+
+      if (!isDev && !authUser) {
         toast.error("You must be logged in to create procedures");
+        return;
+      }
+
+      const finalCategory =
+        values.category === "__custom__" ? customCategory.trim() : values.category;
+
+      if (!finalCategory) {
+        toast.error("Please choose or enter a category");
         return;
       }
 
       let consentTemplate = values.consent_text || null;
 
-      // If a consent file was uploaded, upload it to storage
+      // Upload consent file if required
       if (consentFile && requiresConsent) {
         setUploadingFile(true);
-        const fileExt = consentFile.name.split('.').pop();
-        const filePath = `${user?.id || 'dev-user'}/${Date.now()}.${fileExt}`;
-        
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('medical-documents')
+
+        const fileExt = consentFile.name.split(".").pop() || "pdf";
+        const filePath = `${authUser?.id || "dev-user"}/${Date.now()}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("medical-documents")
           .upload(filePath, consentFile);
 
         if (uploadError) {
-          console.error('File upload error:', uploadError);
-          toast.error('Failed to upload consent file');
+          console.error("File upload error:", uploadError);
+          toast.error("Failed to upload consent file");
         } else {
-          // Get public URL and add it to consent template
-          const { data: { publicUrl } } = supabase.storage
-            .from('medical-documents')
+          const { data: pub } = supabase.storage
+            .from("medical-documents")
             .getPublicUrl(filePath);
-          
-          consentTemplate = consentTemplate 
+
+          const publicUrl = pub?.publicUrl;
+
+          consentTemplate = consentTemplate
             ? `${consentTemplate}\n\n[Consent Document: ${consentFile.name}]\nFile URL: ${publicUrl}`
             : `[Consent Document: ${consentFile.name}]\nFile URL: ${publicUrl}`;
         }
+
         setUploadingFile(false);
       }
 
-     const procedureData = {
-       dentist_id: dentistId, // ✅ doctors.id (matches RLS + schema intent)
-       name: values.name,
-       category: values.category as any,
-       type: "single_visit" as any, // Default type
-       default_cost: values.default_cost || null,
-       notes: values.notes || null,
-       tooth_range: selectedTeeth.length > 0 ? selectedTeeth : null,
-       informed_consent_template: requiresConsent ? consentTemplate : null,
-       };
-
+      const procedureData = {
+        dentist_id: dentistId, // ✅ doctors.id (RLS-safe)
+        name: values.name,
+        category: finalCategory as any,
+        type: "single_visit" as any,
+        default_cost: values.default_cost || null,
+        notes: values.notes || null,
+        tooth_range: selectedTeeth.length > 0 ? selectedTeeth : null,
+        informed_consent_template: requiresConsent ? consentTemplate : null,
+      };
 
       const { error } = await supabase
         .from("procedures")
@@ -224,24 +252,29 @@ const AddProcedureModal = ({
 
       if (error) throw error;
 
-      // If follow-up is enabled, store that info (could be in notes or separate table)
+      // followup info is currently not stored in db (your existing behavior)
       if (hasFollowup && values.followup_count && values.followup_interval_days) {
-        const followupInfo = `Follow-up: ${values.followup_count} appointment(s) every ${values.followup_interval_days} day(s)`;
-        // This info is stored in notes for now - could be extended to separate table
-        console.log('Follow-up scheduled:', followupInfo);
+        console.log(
+          `Follow-up: ${values.followup_count} appointment(s) every ${values.followup_interval_days} day(s)`
+        );
       }
 
       toast.success("Procedure created successfully");
+
       form.reset();
       setSelectedTeeth([]);
       setHasFollowup(false);
       setRequiresConsent(false);
       setConsentFile(null);
+      setCustomCategory("");
+
       onSuccess();
+      onOpenChange(false);
     } catch (error: any) {
-      toast.error("Failed to create procedure: " + error.message);
+      toast.error("Failed to create procedure: " + (error?.message || "Unknown error"));
     } finally {
       setLoading(false);
+      setUploadingFile(false);
     }
   };
 
@@ -251,8 +284,21 @@ const AddProcedureModal = ({
     setHasFollowup(false);
     setRequiresConsent(false);
     setConsentFile(null);
+    setCustomCategory("");
     onOpenChange(false);
   };
+
+  const categoryValue = form.watch("category") || "";
+
+  const showToothSelector =
+    categoryValue.includes("dental") ||
+    categoryValue.includes("restorative") ||
+    categoryValue.includes("endodontic") ||
+    categoryValue.includes("periodontic") ||
+    categoryValue.includes("oral_surgery") ||
+    categoryValue.includes("prosthodontic") ||
+    categoryValue.includes("orthodontic") ||
+    categoryValue.includes("implant");
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -277,38 +323,47 @@ const AddProcedureModal = ({
               )}
             />
 
+            {/* Category */}
             <FormField
               control={form.control}
               name="category"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Category*</FormLabel>
+
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select treatment category" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent className="max-h-[300px]">
-                      <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">General Medicine</div>
-                      {treatmentCategories.slice(0, 10).map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
+                    <SelectContent>
+                      {categoryOptions.map((cat) => (
+                        <SelectItem key={cat.value} value={cat.value}>
+                          {cat.label}
                         </SelectItem>
                       ))}
-                      <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1 pt-2">Dentistry</div>
-                      {treatmentCategories.slice(10).map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="__custom__">Custom…</SelectItem>
                     </SelectContent>
                   </Select>
+
+                  {form.watch("category") === "__custom__" && (
+                    <div className="space-y-2 mt-2">
+                      <Label>Custom Category</Label>
+                      <Input
+                        value={customCategory}
+                        onChange={(e) => setCustomCategory(e.target.value)}
+                        placeholder="e.g., Specialized Therapy"
+                      />
+                    </div>
+                  )}
+
                   <FormMessage />
                 </FormItem>
               )}
             />
 
+            {/* Default cost */}
             <FormField
               control={form.control}
               name="default_cost"
@@ -321,8 +376,10 @@ const AddProcedureModal = ({
                       step="0.01"
                       min="0"
                       placeholder="0.00"
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                      value={field.value ?? ""}
+                      onChange={(e) =>
+                        field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)
+                      }
                     />
                   </FormControl>
                   <FormMessage />
@@ -330,7 +387,7 @@ const AddProcedureModal = ({
               )}
             />
 
-            {/* Follow-up Appointment Section */}
+            {/* Follow-up */}
             <Card className="border-blue-200 bg-blue-50/30 dark:bg-blue-950/20">
               <CardContent className="pt-4 space-y-4">
                 <div className="flex items-center justify-between">
@@ -345,7 +402,7 @@ const AddProcedureModal = ({
                     checked={hasFollowup}
                     onCheckedChange={(checked) => {
                       setHasFollowup(checked);
-                      form.setValue('has_followup', checked);
+                      form.setValue("has_followup", checked);
                     }}
                   />
                 </div>
@@ -363,8 +420,7 @@ const AddProcedureModal = ({
                               type="number"
                               min="1"
                               max="10"
-                              placeholder="1"
-                              {...field}
+                              value={field.value ?? 1}
                               onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : 1)}
                             />
                           </FormControl>
@@ -384,8 +440,7 @@ const AddProcedureModal = ({
                               type="number"
                               min="1"
                               max="365"
-                              placeholder="7"
-                              {...field}
+                              value={field.value ?? 7}
                               onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : 7)}
                             />
                           </FormControl>
@@ -396,16 +451,16 @@ const AddProcedureModal = ({
                   </div>
                 )}
 
-                {hasFollowup && form.watch('followup_count') && form.watch('followup_interval_days') && (
+                {hasFollowup && form.watch("followup_count") && form.watch("followup_interval_days") && (
                   <p className="text-sm text-muted-foreground">
-                    {form.watch('followup_count')} follow-up appointment(s) will be suggested, 
-                    each {form.watch('followup_interval_days')} day(s) after the previous one.
+                    {form.watch("followup_count")} follow-up appointment(s) will be suggested,
+                    each {form.watch("followup_interval_days")} day(s) after the previous one.
                   </p>
                 )}
               </CardContent>
             </Card>
 
-            {/* Patient Consent Section */}
+            {/* Consent */}
             <Card className="border-orange-200 bg-orange-50/30 dark:bg-orange-950/20">
               <CardContent className="pt-4 space-y-4">
                 <div className="flex items-center justify-between">
@@ -420,7 +475,7 @@ const AddProcedureModal = ({
                     checked={requiresConsent}
                     onCheckedChange={(checked) => {
                       setRequiresConsent(checked);
-                      form.setValue('requires_consent', checked);
+                      form.setValue("requires_consent", checked);
                     }}
                   />
                 </div>
@@ -430,7 +485,7 @@ const AddProcedureModal = ({
                     <div className="flex items-start gap-2 p-3 bg-orange-100/50 dark:bg-orange-900/20 rounded-lg">
                       <AlertCircle className="w-4 h-4 text-orange-600 mt-0.5 shrink-0" />
                       <p className="text-sm text-muted-foreground">
-                        Patient must read and accept this consent before the procedure can be performed. 
+                        Patient must read and accept this consent before the procedure can be performed.
                         If declined, you will receive an alert notification.
                       </p>
                     </div>
@@ -443,7 +498,7 @@ const AddProcedureModal = ({
                           <FormLabel>Consent Text</FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder="Enter the informed consent text that the patient must agree to before the procedure..."
+                              placeholder="Enter the informed consent text..."
                               className="min-h-[150px]"
                               {...field}
                             />
@@ -501,6 +556,7 @@ const AddProcedureModal = ({
               </CardContent>
             </Card>
 
+            {/* Notes */}
             <FormField
               control={form.control}
               name="notes"
@@ -519,12 +575,8 @@ const AddProcedureModal = ({
               )}
             />
 
-            {/* Tooth selector for dental procedures */}
-            {form.watch("category")?.includes("dental") || 
-             form.watch("category")?.includes("restorative") ||
-             form.watch("category")?.includes("endodontic") ||
-             form.watch("category")?.includes("periodontic") ||
-             form.watch("category")?.includes("oral_surgery") ? (
+            {/* Tooth selector */}
+            {showToothSelector ? (
               <div>
                 <FormLabel>Tooth Selection (Optional)</FormLabel>
                 <div className="mt-2">
