@@ -226,8 +226,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       let redirectUrl = `${window.location.origin}/patient-dashboard`;
       if (role === 'doctor') {
         redirectUrl = `${window.location.origin}/doctor-dashboard`;
-      } else if (role === 'admin') {
+      } else if (role === 'admin' || role === 'clinic_admin') {
         redirectUrl = `${window.location.origin}/admin-dashboard`;
+      } else if (role === 'pharmacy_admin') {
+        redirectUrl = `${window.location.origin}/pharmacy/dashboard`;
+      } else if (role === 'lab_admin') {
+        redirectUrl = `${window.location.origin}/lab/dashboard`;
+      } else if (role === 'imaging_admin') {
+        redirectUrl = `${window.location.origin}/imaging/dashboard`;
       }
       
       const { data, error } = await supabase.auth.signUp({
@@ -242,25 +248,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       });
       
-      if (error) throw error;
+      if (error) {
+        // Log full error for debugging
+        console.error('Signup error:', {
+          code: error.code,
+          message: error.message,
+          status: error.status,
+          name: error.name
+        });
+        throw error;
+      }
       
       // For doctors, create a basic doctor profile entry
       if (role === 'doctor' && data.user) {
-        await supabase
+        const { error: doctorError } = await supabase
           .from('doctors')
           .insert({
             user_id: data.user.id,
-            specialty: 'General Practice', // Default specialty
+            specialty: 'General Practice',
             verified: false,
             accepts_new_patients: true
           });
+        
+        if (doctorError) {
+          console.error('Doctor profile creation error:', doctorError);
+        }
       }
       
       toast.success('Account created successfully!');
       return {};
     } catch (error: any) {
-      // Generic error message to prevent information disclosure
-      toast.error('Unable to create account. Please check your details and try again.');
+      // Show actual error message for debugging (in development)
+      const errorMessage = error.message || 'Unable to create account';
+      console.error('Full signup error:', error);
+      
+      // Provide more specific error messages
+      if (error.message?.includes('duplicate key') || error.message?.includes('already registered')) {
+        toast.error('An account with this email already exists.');
+      } else if (error.message?.includes('invalid') && error.message?.includes('enum')) {
+        toast.error('Invalid account type selected. Please try again.');
+      } else if (error.message?.includes('violates foreign key')) {
+        toast.error('Account setup error. Please contact support.');
+      } else {
+        toast.error(errorMessage);
+      }
+      
       return { error };
     }
   };
