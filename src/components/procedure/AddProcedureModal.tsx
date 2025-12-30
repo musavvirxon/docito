@@ -133,6 +133,34 @@ const AddProcedureModal = ({
       fileInputRef.current.value = '';
     }
   };
+  const [dentistId, setDentistId] = useState<string | null>(null);
+
+    useEffect(() => {
+  const loadDentistId = async () => {
+    if (!open) return;
+    if (!user?.id) {
+      setDentistId(null);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("doctors")
+      .select("id")
+      .eq("user_id", user.id)
+      .single();
+
+    if (error || !data?.id) {
+      console.error(error);
+      toast.error("Doctor profile not found. Please complete doctor profile.");
+      setDentistId(null);
+      return;
+    }
+
+    setDentistId(data.id);
+  };
+
+  loadDentistId();
+}, [open, user?.id]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
