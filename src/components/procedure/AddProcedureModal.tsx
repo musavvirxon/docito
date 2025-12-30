@@ -165,6 +165,11 @@ const AddProcedureModal = ({
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
     try {
+      if (!dentistId) {
+         toast.error("Doctor profile not loaded");
+    setLoading(false);
+     return;
+      }
       const { data: { user } } = await supabase.auth.getUser();
       
       const isDev = window.location.hostname.includes('localhost') || window.location.hostname.includes('127.0.0.1');
@@ -201,16 +206,17 @@ const AddProcedureModal = ({
         setUploadingFile(false);
       }
 
-      const procedureData = {
-        dentist_id: user?.id || 'dev-user-123',
-        name: values.name,
-        category: values.category as any,
-        type: 'single_visit' as any, // Default type
-        default_cost: values.default_cost || null,
-        notes: values.notes || null,
-        tooth_range: selectedTeeth.length > 0 ? selectedTeeth : null,
-        informed_consent_template: requiresConsent ? consentTemplate : null,
-      };
+     const procedureData = {
+       dentist_id: dentistId, // ✅ doctors.id (matches RLS + schema intent)
+       name: values.name,
+       category: values.category as any,
+       type: "single_visit" as any, // Default type
+       default_cost: values.default_cost || null,
+       notes: values.notes || null,
+       tooth_range: selectedTeeth.length > 0 ? selectedTeeth : null,
+       informed_consent_template: requiresConsent ? consentTemplate : null,
+       };
+
 
       const { error } = await supabase
         .from("procedures")
