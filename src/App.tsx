@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import PremiumHome from "./pages/PremiumHome";
 import RoleProtectedRoute from "@/components/RoleProtectedRoute";
+import PostAuthRedirect from "@/components/PostAuthRedirect";
 
 // Lazy load non-critical pages to reduce initial bundle size
 const Auth = lazy(() => import("./pages/Auth"));
@@ -246,6 +247,7 @@ const App = () => {
             <Sonner />
             <CookieConsentBanner />
             <BrowserRouter>
+                <PostAuthRedirect />
               <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
                 <LanguageRoutes />
               </Suspense>
