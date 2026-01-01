@@ -77,12 +77,24 @@ export default function ProfileMenu() {
           Switch role
         </div>
 
-        {available.map((r) => (
-          <DropdownMenuItem key={r} onClick={() => doSwitch(r as AppRole)}>
-            <span className="flex-1">{roleLabel(r)}</span>
-            {r === activeRole ? <span className="text-xs text-primary">Active</span> : null}
-          </DropdownMenuItem>
-        ))}
+        {available.length > 1 && (
+  <>
+    <DropdownMenuSeparator />
+
+    <div className="px-3 py-2 text-xs text-muted-foreground flex items-center gap-2">
+      <ArrowRightLeft className="h-4 w-4" />
+      Switch role
+    </div>
+
+    {available.map((r) => (
+      <DropdownMenuItem key={r} onClick={() => doSwitch(r as AppRole)}>
+        <span className="flex-1">{roleLabel(r)}</span>
+        {r === activeRole ? <span className="text-xs text-primary">Active</span> : null}
+      </DropdownMenuItem>
+    ))}
+  </>
+)}
+
 
         <DropdownMenuSeparator />
 
