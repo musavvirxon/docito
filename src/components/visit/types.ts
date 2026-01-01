@@ -24,7 +24,8 @@ export interface Treatment {
   notes?: string;
   cost?: number;
   status: "planned" | "in_progress" | "completed";
-  toothNumbers?: number[];
+  toothNumbers?: number[]; // For dental
+  bodyRegions?: string[];  // For ortho/body map
   createdAt: string;
 }
 
