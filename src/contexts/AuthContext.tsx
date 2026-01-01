@@ -79,7 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!allRoles.includes(role)) return;
     setActiveRole(role);
     localStorage.setItem(ACTIVE_ROLE_KEY, role);
-    toast.success(`Switched to ${role.replaceAll("_", " ")}`);
+    toast.success(`Switched to ${role.split("_").join(" ")}`);
   };
 
   const signOut = async () => {
@@ -119,19 +119,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const fetchRoleVerification = async (userId: string) => {
-    // If table doesn't exist yet, this will fail silently (until you add migration)
-    const { data, error } = await supabase
-      .from("role_verifications")
-      .select("role,status")
-      .eq("user_id", userId);
+    // For now, derive verification status from doctor_verification table for doctors
+    // This can be extended when role_verifications table is added
+    try {
+      const { data } = await supabase
+        .from("doctor_verification")
+        .select("status")
+        .eq("doctor_id", userId)
+        .maybeSingle();
 
-    if (error) return;
-
-    const map: Partial<Record<AppRole, RoleVerificationStatus>> = {};
-    for (const row of data ?? []) {
-      map[row.role as AppRole] = row.status as RoleVerificationStatus;
+      if (data?.status) {
+        const map: Partial<Record<AppRole, RoleVerificationStatus>> = {
+          doctor: data.status as RoleVerificationStatus,
+        };
+        setRoleStatus(map);
+      }
+    } catch {
+      // Table may not exist or user may not be a doctor - ignore
     }
-    setRoleStatus(map);
   };
 
   const fetchProfile = async (userId: string) => {
