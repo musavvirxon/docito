@@ -1,7 +1,9 @@
-
 /**
  * Role-Based Access Control (RBAC)
  * Single source of truth for roles, routes, and priority.
+ * 
+ * IMPORTANT: Users sign up with ONE primary role.
+ * Additional roles can only be added post-signup via proper onboarding.
  */
 
 export type AppRole =
@@ -24,8 +26,7 @@ export type AppRole =
   | "nurse"
   | "patient";
 
-export const PATIENT_DASHBOARD_ROUTE = "/patient-dashboard";
-
+// Dashboard routes for each role
 export const DASHBOARD_ROUTES: Record<AppRole, string> = {
   super_admin: "/super-admin-dashboard",
   admin: "/admin-dashboard",
@@ -53,6 +54,8 @@ export const DASHBOARD_ROUTES: Record<AppRole, string> = {
   patient: "/patient-dashboard",
 };
 
+// Priority determines which role takes precedence for routing
+// Higher number = higher priority
 export const ROLE_PRIORITY: Record<AppRole, number> = {
   super_admin: 100,
   admin: 90,
@@ -79,10 +82,15 @@ export const ROLE_PRIORITY: Record<AppRole, number> = {
   patient: 10,
 };
 
+/**
+ * Get the primary (highest priority) role from a list of roles.
+ * Returns the role with highest priority, or "patient" as fallback.
+ */
 export function getPrimaryRole(roles: string[]): AppRole {
   if (!roles?.length) return "patient";
+  
   let best: AppRole = "patient";
-  let bestScore = ROLE_PRIORITY[best];
+  let bestScore = ROLE_PRIORITY[best] ?? 0;
 
   for (const r of roles) {
     const role = r as AppRole;
@@ -95,11 +103,75 @@ export function getPrimaryRole(roles: string[]): AppRole {
   return best;
 }
 
+/**
+ * Get dashboard route for the primary role in the given roles list.
+ */
 export function getDashboardRoute(roles: string[]): string {
   const primary = getPrimaryRole(roles);
-  return DASHBOARD_ROUTES[primary] ?? PATIENT_DASHBOARD_ROUTE;
+  return DASHBOARD_ROUTES[primary] ?? "/patient-dashboard";
 }
 
+/**
+ * Check if user can access patient portal.
+ * Only users with patient role can access patient features.
+ */
 export function canAccessPatientPortal(userRoles: string[]): boolean {
   return userRoles.includes("patient");
+}
+
+/**
+ * Check if user has a specific role.
+ */
+export function hasRole(userRoles: string[], role: AppRole): boolean {
+  return userRoles.includes(role);
+}
+
+/**
+ * Role groupings for access control
+ */
+export const FACILITY_ADMIN_ROLES: AppRole[] = [
+  "pharmacy_admin",
+  "lab_admin",
+  "imaging_admin",
+  "clinic_admin",
+];
+
+export const ADMIN_ROLES: AppRole[] = [
+  "super_admin",
+  "admin",
+  "clinic_admin",
+];
+
+export const STAFF_ROLES: AppRole[] = [
+  "staff",
+  "clinic_staff",
+  "receptionist",
+  "nurse",
+  "pharmacy_staff",
+  "pharmacist",
+  "lab_staff",
+  "lab_technician",
+  "imaging_staff",
+  "internal_imaging_tech",
+];
+
+/**
+ * Check if a role is a facility admin role
+ */
+export function isFacilityAdmin(role: AppRole): boolean {
+  return FACILITY_ADMIN_ROLES.includes(role);
+}
+
+/**
+ * Check if a role is an admin role
+ */
+export function isAdmin(role: AppRole): boolean {
+  return ADMIN_ROLES.includes(role);
+}
+
+/**
+ * Check if a role is a staff role
+ */
+export function isStaff(role: AppRole): boolean {
+  return STAFF_ROLES.includes(role);
 }

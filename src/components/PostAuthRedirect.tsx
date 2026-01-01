@@ -14,17 +14,18 @@ export default function PostAuthRedirect() {
     if (loading) return;
     if (!user || !profile) return;
 
-    // Don’t force redirect if user is already inside the app somewhere
+    // Don't force redirect if user is already inside the app somewhere
     if (!isAuthOrRoot(loc.pathname)) return;
 
-    // default redirect is based on roles priority (not activeRole)
-    const target = getDashboardRoute(allRoles);
+    // If user has no roles yet (edge case), redirect to patient dashboard
+    if (!allRoles || allRoles.length === 0) {
+      nav("/patient-dashboard", { replace: true });
+      return;
+    }
 
-    // if user manually set activeRole, let it win if it has a dashboard
-    // (still safe; dashboards remain protected by RoleProtectedRoute)
-    const activeTarget = getDashboardRoute([activeRole]);
-
-    nav(activeTarget || target, { replace: true });
+    // Redirect to active role's dashboard (primary role by default)
+    const target = getDashboardRoute([activeRole]);
+    nav(target, { replace: true });
   }, [user, profile, loading, allRoles, activeRole, loc.pathname, nav]);
 
   return null;

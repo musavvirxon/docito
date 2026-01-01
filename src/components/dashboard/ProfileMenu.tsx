@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Settings, ArrowRightLeft, User } from "lucide-react";
+import { LogOut, Settings, ArrowRightLeft } from "lucide-react";
 
 const roleLabel = (r: string) =>
   r.split("_").join(" ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -34,11 +34,21 @@ export default function ProfileMenu({ compact = false }: ProfileMenuProps) {
       .toUpperCase();
   }, [profile?.full_name]);
 
-  const roles = (allRoles?.length ? allRoles : ["patient"]) as AppRole[];
+  // Show ONLY roles the user actually has - no phantom roles
+  const userRoles = useMemo(() => {
+    if (!allRoles || allRoles.length === 0) return [];
+    return allRoles.filter(Boolean) as AppRole[];
+  }, [allRoles]);
+
+  // Only show role switcher if user has more than one verified role
+  const showRoleSwitcher = userRoles.length > 1;
 
   const doSwitch = (r: AppRole) => {
     switchRole(r);
-    nav(DASHBOARD_ROUTES[r] || "/patient-dashboard");
+    const route = DASHBOARD_ROUTES[r];
+    if (route) {
+      nav(route);
+    }
   };
 
   return (
@@ -96,12 +106,8 @@ export default function ProfileMenu({ compact = false }: ProfileMenuProps) {
           Settings
         </DropdownMenuItem>
 
-        <DropdownMenuItem onClick={() => nav("/patient-dashboard")}>
-          <User className="mr-2 h-4 w-4" />
-          Patient Portal
-        </DropdownMenuItem>
-
-        {roles.length > 1 && (
+        {/* Role switcher - ONLY show if user has multiple roles */}
+        {showRoleSwitcher && (
           <>
             <DropdownMenuSeparator />
             <div className="px-3 py-2 text-xs text-muted-foreground flex items-center gap-2">
@@ -109,7 +115,7 @@ export default function ProfileMenu({ compact = false }: ProfileMenuProps) {
               Switch role
             </div>
 
-            {roles.map((r) => (
+            {userRoles.map((r) => (
               <DropdownMenuItem key={r} onClick={() => doSwitch(r)}>
                 <span className="flex-1">{roleLabel(r)}</span>
                 {r === activeRole && (
