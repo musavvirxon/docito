@@ -7,38 +7,34 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScanLine, ArrowLeft, Building2 } from 'lucide-react';
-import { useLabCenter, LabCenterInput } from '@/hooks/useLabCenter';
+import { useImagingCenter, ImagingCenterInput } from '@/hooks/useImagingCenter';
 
 export default function ImagingRegistration() {
   const navigate = useNavigate();
-  const { createLabCenter, loading } = useLabCenter();
-  const [formData, setFormData] = useState<LabCenterInput>({
+  const { createImagingCenter, loading } = useImagingCenter();
+  const [formData, setFormData] = useState<ImagingCenterInput>({
     name: '',
-    type: 'imaging',
     license_number: '',
     address: '',
     city: '',
-    state: '',
     country: 'UZ',
-    postal_code: '',
     phone: '',
     email: '',
     website: '',
-    services_offered: [],
+    modalities: [],
     accreditations: [],
     accepts_insurance: true,
-    average_turnaround_hours: 2,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await createLabCenter(formData);
+    const result = await createImagingCenter(formData);
     if (result) {
       navigate('/imaging/dashboard');
     }
   };
 
-  const handleChange = (field: keyof LabCenterInput, value: any) => {
+  const handleChange = (field: keyof ImagingCenterInput, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -98,17 +94,6 @@ export default function ImagingRegistration() {
                   />
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="turnaround">Average Wait Time (hours)</Label>
-                <Input
-                  id="turnaround"
-                  type="number"
-                  value={formData.average_turnaround_hours || 2}
-                  onChange={(e) => handleChange('average_turnaround_hours', parseInt(e.target.value))}
-                  min={1}
-                />
-              </div>
             </div>
 
             {/* Contact Info */}
@@ -119,62 +104,46 @@ export default function ImagingRegistration() {
                 <Label htmlFor="address">Address *</Label>
                 <Textarea
                   id="address"
-                  value={formData.address}
+                  value={formData.address || ''}
                   onChange={(e) => handleChange('address', e.target.value)}
                   placeholder="Enter full address"
                   required
                 />
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="city">City *</Label>
                   <Input
                     id="city"
-                    value={formData.city}
+                    value={formData.city || ''}
                     onChange={(e) => handleChange('city', e.target.value)}
                     required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="state">State/Region</Label>
-                  <Input
-                    id="state"
-                    value={formData.state || ''}
-                    onChange={(e) => handleChange('state', e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="country">Country *</Label>
                   <Input
                     id="country"
-                    value={formData.country}
+                    value={formData.country || ''}
                     onChange={(e) => handleChange('country', e.target.value)}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="postal">Postal Code</Label>
-                  <Input
-                    id="postal"
-                    value={formData.postal_code || ''}
-                    onChange={(e) => handleChange('postal_code', e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
                   <Label htmlFor="phone">Phone *</Label>
                   <Input
                     id="phone"
                     type="tel"
-                    value={formData.phone}
+                    value={formData.phone || ''}
                     onChange={(e) => handleChange('phone', e.target.value)}
                     placeholder="+998 XX XXX XX XX"
                     required
                   />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
@@ -205,13 +174,13 @@ export default function ImagingRegistration() {
                   <div key={modality} className="flex items-center space-x-2">
                     <Checkbox
                       id={modality}
-                      checked={formData.services_offered?.includes(modality)}
+                      checked={formData.modalities?.includes(modality)}
                       onCheckedChange={(checked) => {
-                        const services = formData.services_offered || [];
+                        const modalities = formData.modalities || [];
                         if (checked) {
-                          handleChange('services_offered', [...services, modality]);
+                          handleChange('modalities', [...modalities, modality]);
                         } else {
-                          handleChange('services_offered', services.filter(s => s !== modality));
+                          handleChange('modalities', modalities.filter(m => m !== modality));
                         }
                       }}
                     />
