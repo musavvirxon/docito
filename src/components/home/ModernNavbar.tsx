@@ -112,7 +112,7 @@ const ModernNavbar = () => {
 
             {/* Mobile Menu Button */}
             <div className="flex lg:hidden items-center gap-2">
-              {user ? <ProfileMenu /> : null}
+              {user ? <ProfileMenu compact /> : null}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="p-2 rounded-lg hover:bg-accent/50 transition-colors"
