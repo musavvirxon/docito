@@ -105,6 +105,17 @@ All colors MUST be HSL.
   }
 }
 
+/* iOS safe-area support */
+.safe-px {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+.safe-pt {
+  padding-top: env(safe-area-inset-top);
+}
+.safe-pb {
+  padding-bottom: env(safe-area-inset-bottom);
+}
 @keyframes gradient {
   0%, 100% {
     background-position: 0% 50%;
