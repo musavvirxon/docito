@@ -14,6 +14,7 @@ export interface Diagnosis {
   notes?: string;
   createdAt: string;
   toothNumbers?: number[]; // For dental
+  bodyRegions?: string[];
 }
 
 export interface Treatment {
