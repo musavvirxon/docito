@@ -165,11 +165,6 @@ export const generateOrganizationSchema = () => ({
   name: 'Docito',
   url: 'https://docito.app',
   logo: 'https://docito.app/logos/docito-logo.png',
-  sameAs: [
-    'https://twitter.com/docito',
-    'https://facebook.com/docito',
-    'https://linkedin.com/company/docito',
-  ],
   description:
     'Unified healthcare management and booking platform connecting patients, doctors, clinics, labs, pharmacies, and imaging centers.',
   sameAs: [

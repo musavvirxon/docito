@@ -14,7 +14,7 @@ import {
 import { LogOut, Settings, ArrowRightLeft, User } from "lucide-react";
 
 const roleLabel = (r: string) =>
-  r.replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  r.split("_").join(" ").replace(/\b\w/g, (c) => c.toUpperCase());
 
 interface ProfileMenuProps {
   compact?: boolean;
