@@ -268,6 +268,7 @@ export const useAdminDashboard = () => {
     try {
       const today = new Date().toISOString().split('T')[0];
 
+      // First fetch appointments with doctor info
       const { data, error } = await supabase
         .from('appointments')
         .select(`
@@ -277,10 +278,9 @@ export const useAdminDashboard = () => {
           end_time,
           status,
           notes,
-          patient_profiles:patient_id (
-            full_name
-          ),
-          doctor_profiles:doctors!inner (
+          patient_id,
+          doctors!inner (
+            user_id,
             profiles:user_id (
               full_name
             )
@@ -294,6 +294,24 @@ export const useAdminDashboard = () => {
 
       if (error) throw error;
 
+      // Fetch patient profiles separately if we have appointments
+      const patientIds = (data || []).map(apt => apt.patient_id).filter(Boolean);
+      let patientProfiles: Record<string, string> = {};
+      
+      if (patientIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, full_name')
+          .in('user_id', patientIds);
+        
+        if (profiles) {
+          patientProfiles = profiles.reduce((acc, p) => {
+            acc[p.user_id] = p.full_name || 'Unknown Patient';
+            return acc;
+          }, {} as Record<string, string>);
+        }
+      }
+
       const formatted = (data || []).map((apt: any) => ({
         id: apt.id,
         appointment_date: apt.appointment_date,
@@ -301,8 +319,8 @@ export const useAdminDashboard = () => {
         end_time: apt.end_time,
         status: apt.status,
         notes: apt.notes,
-        patient_name: apt.patient_profiles?.full_name || 'Unknown Patient',
-        doctor_name: apt.doctor_profiles?.profiles?.full_name || 'Unknown Doctor',
+        patient_name: patientProfiles[apt.patient_id] || 'Unknown Patient',
+        doctor_name: apt.doctors?.profiles?.full_name || 'Unknown Doctor',
       }));
 
       setAppointments(formatted);
