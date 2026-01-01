@@ -104,7 +104,8 @@ const LanguageRoutes = () => {
       <Route path="/:lang/doctors" element={<DoctorsLocalized />} />
       <Route path="/register-practice" element={<RegisterPractice />} />
       <Route path="/processing-practice" element={<ProcessingPractice />} />
-      <Route path="/admin-dashboard" element={<RoleProtectedRoute allowedRoles={['admin', 'clinic_admin', 'super_admin']}><AdminDashboard /></RoleProtectedRoute>} />
+      <Route path="/clinic/dashboard" element={<RoleProtectedRoute allowedRoles={['admin', 'clinic_admin', 'super_admin']}><AdminDashboard /></RoleProtectedRoute>} />
+      <Route path="/admin-dashboard" element={<Navigate to="/clinic/dashboard" replace />} />
       <Route path="/doctor-signup" element={<DoctorSignUp />} />
       <Route path="/doctor-dashboard" element={<RoleProtectedRoute allowedRoles={['doctor']}><DoctorDashboard /></RoleProtectedRoute>} />
       <Route path="/doctor-schedule-settings" element={<RoleProtectedRoute allowedRoles={['doctor']}><DoctorScheduleSettings /></RoleProtectedRoute>} />

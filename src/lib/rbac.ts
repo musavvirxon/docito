@@ -29,8 +29,8 @@ export type AppRole =
 // Dashboard routes for each role
 export const DASHBOARD_ROUTES: Record<AppRole, string> = {
   super_admin: "/super-admin-dashboard",
-  admin: "/admin-dashboard",
-  clinic_admin: "/admin-dashboard",
+  admin: "/clinic/dashboard",
+  clinic_admin: "/clinic/dashboard",
   doctor: "/doctor-dashboard",
 
   pharmacy_admin: "/pharmacy/dashboard",
