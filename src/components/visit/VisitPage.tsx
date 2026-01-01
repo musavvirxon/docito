@@ -6,6 +6,7 @@ import { VisitHeader } from "./VisitHeader";
 import { VisitSidebar } from "./VisitSidebar";
 import { EnhancedDentalChart, ToothProcedure } from "@/components/dental";
 import { DiagnosisTab } from "./tabs/DiagnosisTab";
+import OrthopedicSkeletonChart, { type BodyRegion } from "@/components/anatomy/OrthopedicSkeletonChart";
 import { TreatmentTab } from "./tabs/TreatmentTab";
 import { PrescriptionTab } from "./tabs/PrescriptionTab";
 import { FilesTab } from "./tabs/FilesTab";
@@ -27,6 +28,16 @@ interface VisitPageProps {
 
 const isDentist = (specialty: string) =>
   specialty.toLowerCase().includes("dentist") || specialty.toLowerCase().includes("dental");
+
+const isOrthopedic = (specialty: string) => {
+  const s = specialty.toLowerCase();
+  return (
+    s.includes("orthopedic") ||
+    s.includes("orthopaedic") ||
+    s.includes("ortho") ||
+    s.includes("sports medicine")
+  );
+};
 
 export const VisitPage = ({
   mode,
