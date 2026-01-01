@@ -170,6 +170,13 @@ export const generateOrganizationSchema = () => ({
     'https://facebook.com/docito',
     'https://linkedin.com/company/docito',
   ],
+  description:
+    'Unified healthcare management and booking platform connecting patients, doctors, clinics, labs, pharmacies, and imaging centers.',
+  sameAs: [
+    'https://twitter.com/docito',
+    'https://facebook.com/docito',
+    'https://linkedin.com/company/docito',
+  ],
   contactPoint: {
     '@type': 'ContactPoint',
     telephone: '+1-800-DOCITO',
@@ -183,6 +190,8 @@ export const generateMedicalWebsiteSchema = () => ({
   '@type': 'WebSite',
   name: 'Docito',
   url: 'https://docito.app',
+  description:
+    'One platform connecting patients, doctors, clinics, labs, pharmacies, imaging centers, and insurance—secure scheduling, referrals, records, and analytics.',
   potentialAction: {
     '@type': 'SearchAction',
     target: {
