@@ -34,12 +34,12 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
 
-  // roles
+  // roles - actual roles from user_roles table
   allRoles: AppRole[];
   activeRole: AppRole;
   switchRole: (role: AppRole) => void;
 
-  // per-role verification (loaded from DB table if you add migration below)
+  // per-role verification status
   roleStatus: Partial<Record<AppRole, RoleVerificationStatus>>;
 
   signIn: (email: string, password: string) => Promise<{ error?: any }>;
@@ -68,15 +68,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [activeRole, setActiveRole] = useState<AppRole>("patient");
   const [roleStatus, setRoleStatus] = useState<Partial<Record<AppRole, RoleVerificationStatus>>>({});
 
+  // allRoles: ONLY roles from user_roles table - NO phantom roles
   const allRoles: AppRole[] = useMemo(() => {
-    const r = profile?.roles ?? [];
-    const legacy = profile?.role ? [profile.role] : [];
-    const merged = Array.from(new Set([...r, ...legacy])).filter(Boolean) as AppRole[];
-    return merged.length ? merged : ["patient"];
-  }, [profile]);
+    const rolesFromDb = profile?.roles ?? [];
+    // Filter to only valid app roles that exist
+    const validRoles = rolesFromDb.filter(Boolean) as AppRole[];
+    return validRoles;
+  }, [profile?.roles]);
 
   const switchRole = (role: AppRole) => {
-    if (!allRoles.includes(role)) return;
+    // Can only switch to roles the user actually has
+    if (!allRoles.includes(role)) {
+      toast.error("You don't have access to this role");
+      return;
+    }
     setActiveRole(role);
     localStorage.setItem(ACTIVE_ROLE_KEY, role);
     toast.success(`Switched to ${role.split("_").join(" ")}`);
@@ -114,28 +119,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const fetchRoles = async (userId: string): Promise<AppRole[]> => {
-    const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+    const { data, error } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId);
+    
+    if (error) {
+      console.error("Error fetching roles:", error);
+      return [];
+    }
+    
     return (data?.map((r: any) => r.role).filter(Boolean) ?? []) as AppRole[];
   };
 
-  const fetchRoleVerification = async (userId: string) => {
-    // For now, derive verification status from doctor_verification table for doctors
-    // This can be extended when role_verifications table is added
-    try {
-      const { data } = await supabase
-        .from("doctor_verification")
-        .select("status")
-        .eq("doctor_id", userId)
-        .maybeSingle();
+  const fetchRoleVerification = async (userId: string, roles: AppRole[]) => {
+    // Check verification status for doctors
+    if (roles.includes("doctor")) {
+      try {
+        // First get the doctor record to get the doctor_id
+        const { data: doctorData } = await supabase
+          .from("doctors")
+          .select("id")
+          .eq("user_id", userId)
+          .maybeSingle();
 
-      if (data?.status) {
-        const map: Partial<Record<AppRole, RoleVerificationStatus>> = {
-          doctor: data.status as RoleVerificationStatus,
-        };
-        setRoleStatus(map);
+        if (doctorData?.id) {
+          const { data } = await supabase
+            .from("doctor_verification")
+            .select("status")
+            .eq("doctor_id", doctorData.id)
+            .maybeSingle();
+
+          if (data?.status) {
+            setRoleStatus((prev) => ({
+              ...prev,
+              doctor: data.status as RoleVerificationStatus,
+            }));
+          }
+        }
+      } catch {
+        // Ignore - user may not be a doctor or table may not exist
       }
-    } catch {
-      // Table may not exist or user may not be a doctor - ignore
     }
   };
 
@@ -149,29 +173,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (profileError) throw profileError;
 
+      // Fetch actual roles from user_roles table
       const roles = await fetchRoles(userId);
       const mergedProfile = { ...profileData, roles };
       setProfile(mergedProfile);
 
-      // init active role from localStorage OR primary role
-      const saved = (localStorage.getItem(ACTIVE_ROLE_KEY) as AppRole | null) ?? null;
+      // Determine active role: use saved preference if still valid, else primary role
+      const saved = localStorage.getItem(ACTIVE_ROLE_KEY) as AppRole | null;
       const computedPrimary = getPrimaryRole(roles);
+      
+      // Only use saved role if user still has that role
       const initial = saved && roles.includes(saved) ? saved : computedPrimary;
       setActiveRole(initial);
       localStorage.setItem(ACTIVE_ROLE_KEY, initial);
 
-      // load per-role verification
-      fetchRoleVerification(userId);
+      // Load verification status for user's roles
+      fetchRoleVerification(userId, roles);
     } catch (e: any) {
       console.error("Error fetching profile:", e);
-      // fallback so app doesn't freeze
+      // Minimal fallback - don't add phantom roles
       setProfile({
         id: "temp",
         user_id: userId,
         full_name: "User",
         email: user?.email ?? "user@example.com",
         role: "patient",
-        roles: ["patient"],
+        roles: [],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       });
@@ -287,4 +314,3 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     </AuthContext.Provider>
   );
 };
-
