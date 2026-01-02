@@ -29,23 +29,23 @@ export type AppRole =
 // Define dashboard routes for each role
 export const roleDashboardRoutes: Record<AppRole, string> = {
   super_admin: '/super-admin-dashboard',
-  admin: '/clinic/dashboard',
-  clinic_admin: '/clinic/dashboard',
+  admin: '/practice-dashboard',
+  clinic_admin: '/practice-dashboard',
   pharmacy_admin: '/pharmacy/dashboard',
   lab_admin: '/lab/dashboard',
-  imaging_admin: '/imaging/dashboard',
+  imaging_admin: '/imaging-center/dashboard',
   doctor: '/doctor-dashboard',
   clinic_staff: '/staff-dashboard',
   pharmacy_staff: '/pharmacy/dashboard',
   lab_staff: '/lab/dashboard',
-  imaging_staff: '/imaging/dashboard',
+  imaging_staff: '/imaging-center/dashboard',
   receptionist: '/staff-dashboard',
   nurse: '/staff-dashboard',
   billing_manager: '/staff-dashboard',
   pharmacist: '/pharmacy/dashboard',
   lab_technician: '/lab/dashboard',
   internal_lab_tech: '/lab/dashboard',
-  internal_imaging_tech: '/imaging/dashboard',
+  internal_imaging_tech: '/imaging-center/dashboard',
   staff: '/staff-dashboard',
   patient: '/patient-dashboard',
 };
@@ -136,14 +136,14 @@ const RoleProtectedRoute = ({
  */
 function getDefaultDashboard(roles: string[]): string {
   if (roles.includes('super_admin')) return '/super-admin-dashboard';
-  if (roles.includes('admin') || roles.includes('clinic_admin')) return '/clinic/dashboard';
+  if (roles.includes('admin') || roles.includes('clinic_admin')) return '/practice-dashboard';
   if (roles.includes('doctor')) return '/doctor-dashboard';
   if (roles.includes('pharmacy_admin') || roles.includes('pharmacist')) return '/pharmacy/dashboard';
   if (roles.includes('pharmacy_staff')) return '/pharmacy/dashboard';
   if (roles.includes('lab_admin') || roles.includes('lab_technician') || roles.includes('internal_lab_tech')) return '/lab/dashboard';
   if (roles.includes('lab_staff')) return '/lab/dashboard';
-  if (roles.includes('imaging_admin') || roles.includes('internal_imaging_tech')) return '/imaging/dashboard';
-  if (roles.includes('imaging_staff')) return '/imaging/dashboard';
+  if (roles.includes('imaging_admin') || roles.includes('internal_imaging_tech')) return '/imaging-center/dashboard';
+  if (roles.includes('imaging_staff')) return '/imaging-center/dashboard';
   if (roles.includes('clinic_staff') || roles.includes('staff') || roles.includes('receptionist') || roles.includes('nurse') || roles.includes('billing_manager')) return '/staff-dashboard';
   return '/patient-dashboard';
 }

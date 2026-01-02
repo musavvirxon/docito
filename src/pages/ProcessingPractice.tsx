@@ -24,7 +24,7 @@ const ProcessingPractice = () => {
       }
       setIsComplete(true);
       setTimeout(() => {
-        navigate("/admin-dashboard");
+        navigate("/practice-dashboard");
       }, 2000);
     };
 
@@ -99,7 +99,7 @@ const ProcessingPractice = () => {
           {isComplete && (
             <div className="mt-6">
               <Button 
-                onClick={() => navigate("/admin-dashboard")} 
+                onClick={() => navigate("/practice-dashboard")} 
                 className="w-full"
               >
                 Go to Dashboard

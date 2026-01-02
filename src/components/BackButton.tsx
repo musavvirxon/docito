@@ -19,7 +19,7 @@ const BackButton = ({
     // Get the correct dashboard path based on user role
     const getDashboardPath = () => {
       if (profile?.role === 'doctor') return '/doctor-dashboard';
-      if (profile?.role === 'admin') return '/admin-dashboard';
+      if (profile?.role === 'admin') return '/practice-dashboard';
       return '/patient-dashboard';
     };
 

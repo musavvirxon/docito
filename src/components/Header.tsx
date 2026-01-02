@@ -35,11 +35,11 @@ const Header = () => {
   }, [location.pathname]);
 
   const navLinks = [
-    { name: "Doctors", href: "/for-doctors" },
-    { name: "Medical Practices", href: "/for-practices" },
-    { name: "Pharmacies", href: "/for-pharmacies" },
-    { name: "Laboratories", href: "/for-labs" },
-    { name: "Imaging Centers", href: "/for-imaging" },
+    { name: "Doctors", href: "/doctor" },
+    { name: "Medical Practices", href: "/practice" },
+    { name: "Pharmacies", href: "/pharmacy" },
+    { name: "Laboratories", href: "/lab" },
+    { name: "Imaging Centers", href: "/imaging-center" },
     { name: "Features", href: "/features" },
     { name: "About Us", href: "/about" },
   ];

@@ -154,7 +154,7 @@ export default function PharmacyLandingPage() {
         <title>Pharmacy Management Software | Digital Pharmacy Platform | Docito</title>
         <meta name="description" content="The digital backbone for modern pharmacies. Manage prescriptions, inventory, payments, deliveries, and doctor integrations from one secure platform." />
         <meta name="keywords" content="pharmacy management software, digital pharmacy platform, online prescription management, e-prescription system, pharmacy POS software, pharmacy inventory software, medication refill system, pharmacy analytics, pharmacy delivery management" />
-        <link rel="canonical" href="https://docito.app/for-pharmacies" />
+        <link rel="canonical" href="https://docito.app/pharmacy" />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",

@@ -28,12 +28,12 @@ const ModernNavbar = () => {
   }, [location.pathname]);
 
   const navLinks = [
-    { name: "Doctors", href: "/for-doctors" },
-    { name: "Clinics", href: "/for-practices" },
-    { name: "Labs", href: "/for-labs" },
-    { name: "Pharmacies", href: "/for-pharmacies" },
-    { name: "Imaging", href: "/for-imaging" },
-    { name: "Hospitals", href: "/for-hospitals" },
+    { name: "Doctors", href: "/doctor" },
+    { name: "Clinics", href: "/practice" },
+    { name: "Labs", href: "/lab" },
+    { name: "Pharmacies", href: "/pharmacy" },
+    { name: "Imaging", href: "/imaging-center" },
+    { name: "Hospitals", href: "/hospital" },
     { name: "Pricing", href: "/pricing" },
     { name: "How It Works", href: "/how-it-works" },
   ];
