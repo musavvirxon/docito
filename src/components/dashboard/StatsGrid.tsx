@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
-export interface StatCardProps {
+export interface StatItem {
   label: string;
   value: string | number;
   icon: ReactNode;
@@ -12,8 +12,20 @@ export interface StatCardProps {
     direction: 'up' | 'down';
   };
   description?: string;
+  color?: 'primary' | 'success' | 'warning' | 'info' | 'danger';
   className?: string;
 }
+
+// Alias for backward compatibility
+export type StatCardProps = StatItem;
+
+const colorVariants = {
+  primary: 'bg-primary/10 text-primary',
+  success: 'bg-green-500/10 text-green-500',
+  warning: 'bg-yellow-500/10 text-yellow-500',
+  info: 'bg-blue-500/10 text-blue-500',
+  danger: 'bg-red-500/10 text-red-500',
+};
 
 export function StatCard({
   label,
@@ -21,8 +33,9 @@ export function StatCard({
   icon,
   trend,
   description,
+  color = 'primary',
   className,
-}: StatCardProps) {
+}: StatItem) {
   return (
     <Card className={cn("overflow-hidden", className)}>
       <CardContent className="p-6">
@@ -49,7 +62,7 @@ export function StatCard({
               <p className="text-xs text-muted-foreground">{description}</p>
             )}
           </div>
-          <div className="p-3 rounded-xl bg-primary/10 text-primary">
+          <div className={cn("p-3 rounded-xl", colorVariants[color])}>
             {icon}
           </div>
         </div>
@@ -59,7 +72,7 @@ export function StatCard({
 }
 
 interface StatsGridProps {
-  stats: StatCardProps[];
+  stats: StatItem[];
   columns?: 2 | 3 | 4;
   className?: string;
 }

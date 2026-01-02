@@ -29,8 +29,8 @@ export type AppRole =
 // Define dashboard routes for each role
 export const roleDashboardRoutes: Record<AppRole, string> = {
   super_admin: '/super-admin-dashboard',
-  admin: '/admin-dashboard',
-  clinic_admin: '/admin-dashboard',
+  admin: '/clinic/dashboard',
+  clinic_admin: '/clinic/dashboard',
   pharmacy_admin: '/pharmacy/dashboard',
   lab_admin: '/lab/dashboard',
   imaging_admin: '/imaging/dashboard',
@@ -136,7 +136,7 @@ const RoleProtectedRoute = ({
  */
 function getDefaultDashboard(roles: string[]): string {
   if (roles.includes('super_admin')) return '/super-admin-dashboard';
-  if (roles.includes('admin') || roles.includes('clinic_admin')) return '/admin-dashboard';
+  if (roles.includes('admin') || roles.includes('clinic_admin')) return '/clinic/dashboard';
   if (roles.includes('doctor')) return '/doctor-dashboard';
   if (roles.includes('pharmacy_admin') || roles.includes('pharmacist')) return '/pharmacy/dashboard';
   if (roles.includes('pharmacy_staff')) return '/pharmacy/dashboard';

@@ -51,7 +51,7 @@ const Auth = () => {
       } else if (userRoles.includes('doctor') || primaryRole === 'doctor') {
         navigate('/doctor-dashboard');
       } else if (userRoles.includes('admin') || userRoles.includes('clinic_admin') || primaryRole === 'admin') {
-        navigate('/admin-dashboard');
+        navigate('/clinic/dashboard');
       } else if (userRoles.includes('pharmacy_admin') || primaryRole === 'pharmacy_admin') {
         navigate('/pharmacy/dashboard');
       } else if (userRoles.includes('lab_admin') || primaryRole === 'lab_admin') {

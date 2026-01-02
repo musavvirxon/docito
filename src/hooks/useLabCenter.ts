@@ -133,6 +133,21 @@ export function useLabCenter() {
         .single();
 
       if (error) throw error;
+
+      // Assign lab_admin role to user
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .upsert({ 
+          user_id: user.id, 
+          role: 'lab_admin' 
+        }, { 
+          onConflict: 'user_id,role' 
+        });
+
+      if (roleError) {
+        console.error('Error assigning lab_admin role:', roleError);
+      }
+
       setMyLabCenter(data as LabCenter);
       toast({ title: 'Success', description: 'Lab center registered successfully' });
       return data;

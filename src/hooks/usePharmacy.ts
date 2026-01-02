@@ -167,6 +167,21 @@ export const usePharmacy = (pharmacyId?: string) => {
         .single();
 
       if (error) throw error;
+
+      // Assign pharmacy_admin role to user
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .upsert({ 
+          user_id: user?.id, 
+          role: 'pharmacy_admin' 
+        }, { 
+          onConflict: 'user_id,role' 
+        });
+
+      if (roleError) {
+        console.error('Error assigning pharmacy_admin role:', roleError);
+      }
+
       toast.success('Pharmacy registered successfully');
       setPharmacies(prev => [...prev, data as Pharmacy]);
       return data;
