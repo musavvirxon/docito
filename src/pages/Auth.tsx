@@ -51,19 +51,19 @@ const Auth = () => {
       } else if (userRoles.includes('doctor') || primaryRole === 'doctor') {
         navigate('/doctor-dashboard');
       } else if (userRoles.includes('admin') || userRoles.includes('clinic_admin') || primaryRole === 'admin') {
-        navigate('/clinic/dashboard');
+        navigate('/practice-dashboard');
       } else if (userRoles.includes('pharmacy_admin') || primaryRole === 'pharmacy_admin') {
         navigate('/pharmacy/dashboard');
       } else if (userRoles.includes('lab_admin') || primaryRole === 'lab_admin') {
         navigate('/lab/dashboard');
       } else if (userRoles.includes('imaging_admin') || primaryRole === 'imaging_admin') {
-        navigate('/imaging/dashboard');
+        navigate('/imaging-center/dashboard');
       } else if (userRoles.includes('pharmacy_staff') || userRoles.includes('pharmacist')) {
         navigate('/pharmacy/dashboard');
       } else if (userRoles.includes('lab_staff') || userRoles.includes('lab_technician')) {
         navigate('/lab/dashboard');
       } else if (userRoles.includes('imaging_staff') || userRoles.includes('internal_imaging_tech')) {
-        navigate('/imaging/dashboard');
+        navigate('/imaging-center/dashboard');
       } else if (userRoles.includes('clinic_staff') || userRoles.includes('staff') || userRoles.includes('receptionist') || userRoles.includes('nurse')) {
         navigate('/staff-dashboard');
       } else {

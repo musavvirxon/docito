@@ -157,7 +157,7 @@ export default function ImagingLandingPage() {
         <title>Imaging Center Management Software | Radiology Platform | Docito</title>
         <meta name="description" content="The digital operating system for imaging centers. Scheduling, referrals, reports, PACS integration, and secure data exchange — unified in one intelligent platform." />
         <meta name="keywords" content="imaging center management software, radiology management system, diagnostic imaging platform, digital imaging workflow, PACS integration platform, radiology scheduling software, DICOM secure storage, medical imaging analytics" />
-        <link rel="canonical" href="https://docito.app/for-imaging" />
+        <link rel="canonical" href="https://docito.app/imaging-center" />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",

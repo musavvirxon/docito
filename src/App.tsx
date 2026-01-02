@@ -99,13 +99,14 @@ const LanguageRoutes = () => {
       <Route path="/" element={<PremiumHome />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/practices" element={<Practices />} />
+      <Route path="/practice" element={<Practices />} />
       <Route path="/doctors" element={<Doctors />} />
       <Route path="/:lang/doctors" element={<DoctorsLocalized />} />
       <Route path="/register-practice" element={<RegisterPractice />} />
       <Route path="/processing-practice" element={<ProcessingPractice />} />
-      <Route path="/clinic/dashboard" element={<RoleProtectedRoute allowedRoles={['admin', 'clinic_admin', 'super_admin']}><AdminDashboard /></RoleProtectedRoute>} />
-      <Route path="/admin-dashboard" element={<Navigate to="/clinic/dashboard" replace />} />
+      <Route path="/practice-dashboard" element={<RoleProtectedRoute allowedRoles={['admin', 'clinic_admin', 'super_admin']}><AdminDashboard /></RoleProtectedRoute>} />
+      <Route path="/admin-dashboard" element={<Navigate to="/practice-dashboard" replace />} />
+      <Route path="/clinic/dashboard" element={<Navigate to="/practice-dashboard" replace />} />
       <Route path="/doctor-signup" element={<DoctorSignUp />} />
       <Route path="/doctor-dashboard" element={<RoleProtectedRoute allowedRoles={['doctor']}><DoctorDashboard /></RoleProtectedRoute>} />
       <Route path="/doctor-schedule-settings" element={<RoleProtectedRoute allowedRoles={['doctor']}><DoctorScheduleSettings /></RoleProtectedRoute>} />
@@ -141,11 +142,15 @@ const LanguageRoutes = () => {
       <Route path="/messages" element={<Messages />} />
       
       {/* Landing Pages */}
-      <Route path="/for-doctors" element={<Doctors />} />
-      <Route path="/for-practices" element={<Practices />} />
-      <Route path="/for-pharmacies" element={<PharmacyLandingPage />} />
-      <Route path="/for-labs" element={<LabLandingPage />} />
-      <Route path="/for-imaging" element={<ImagingLandingPage />} />
+      <Route path="/doctor" element={<Doctors />} />
+      <Route path="/for-doctors" element={<Navigate to="/doctor" replace />} />
+      <Route path="/for-practices" element={<Navigate to="/practice" replace />} />
+      <Route path="/pharmacy" element={<PharmacyLandingPage />} />
+      <Route path="/for-pharmacies" element={<Navigate to="/pharmacy" replace />} />
+      <Route path="/lab" element={<LabLandingPage />} />
+      <Route path="/for-labs" element={<Navigate to="/lab" replace />} />
+      <Route path="/imaging-center" element={<ImagingLandingPage />} />
+      <Route path="/for-imaging" element={<Navigate to="/imaging-center" replace />} />
       
       {/* Pharmacy Routes */}
       <Route path="/pharmacy/dashboard" element={<RoleProtectedRoute allowedRoles={['pharmacy_admin', 'pharmacy_staff', 'pharmacist']}><PharmacyDashboard /></RoleProtectedRoute>} />
@@ -157,15 +162,18 @@ const LanguageRoutes = () => {
       <Route path="/lab/register" element={<LabRegistration />} />
       
       {/* Imaging Routes */}
-      <Route path="/imaging/dashboard" element={<RoleProtectedRoute allowedRoles={['imaging_admin', 'imaging_staff', 'internal_imaging_tech']}><ImagingDashboard /></RoleProtectedRoute>} />
-      <Route path="/imaging/register" element={<ImagingRegistration />} />
+      <Route path="/imaging-center/dashboard" element={<RoleProtectedRoute allowedRoles={['imaging_admin', 'imaging_staff', 'internal_imaging_tech']}><ImagingDashboard /></RoleProtectedRoute>} />
+      <Route path="/imaging/dashboard" element={<Navigate to="/imaging-center/dashboard" replace />} />
+      <Route path="/imaging-center/register" element={<ImagingRegistration />} />
+      <Route path="/imaging/register" element={<Navigate to="/imaging-center/register" replace />} />
       
       {/* Language-prefixed routes */}
       <Route path="/:lang/" element={<PremiumHome />} />
       <Route path="/:lang/auth" element={<Auth />} />
       <Route path="/:lang/dashboard" element={<Dashboard />} />
       {/* Localized public pages with SEO */}
-      <Route path="/:lang/practices" element={<PracticesLocalized />} />
+      <Route path="/:lang/practice" element={<PracticesLocalized />} />
+      <Route path="/:lang/practices" element={<Navigate to="/:lang/practice" replace />} />
       <Route path="/:lang/doctors" element={<DoctorsLocalized />} />
       <Route path="/:lang/about" element={<AboutLocalized />} />
       <Route path="/:lang/contact" element={<ContactLocalized />} />
@@ -179,7 +187,8 @@ const LanguageRoutes = () => {
       
       <Route path="/:lang/register-practice" element={<RegisterPractice />} />
       <Route path="/:lang/processing-practice" element={<ProcessingPractice />} />
-      <Route path="/:lang/admin-dashboard" element={<AdminDashboard />} />
+      <Route path="/:lang/practice-dashboard" element={<AdminDashboard />} />
+      <Route path="/:lang/admin-dashboard" element={<Navigate to="/:lang/practice-dashboard" replace />} />
       <Route path="/:lang/doctor-signup" element={<DoctorSignUp />} />
       <Route path="/:lang/doctor-dashboard" element={<DoctorDashboard />} />
       <Route path="/:lang/doctor-schedule-settings" element={<DoctorScheduleSettings />} />
@@ -224,8 +233,10 @@ const LanguageRoutes = () => {
       <Route path="/:lang/lab/register" element={<LabRegistration />} />
       
       {/* Imaging Routes */}
-      <Route path="/:lang/imaging/dashboard" element={<ImagingDashboard />} />
-      <Route path="/:lang/imaging/register" element={<ImagingRegistration />} />
+      <Route path="/:lang/imaging-center/dashboard" element={<ImagingDashboard />} />
+      <Route path="/:lang/imaging/dashboard" element={<Navigate to="/:lang/imaging-center/dashboard" replace />} />
+      <Route path="/:lang/imaging-center/register" element={<ImagingRegistration />} />
+      <Route path="/:lang/imaging/register" element={<Navigate to="/:lang/imaging-center/register" replace />} />
       
       <Route path="*" element={<NotFound />} />
     </Routes>

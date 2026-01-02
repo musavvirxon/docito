@@ -27,7 +27,7 @@ export const useQuickNavigate = () => {
   };
 
   const navigateToAdminDashboard = () => {
-    return quickNavigate('/admin-dashboard', 'Navigated to admin dashboard (dev mode)');
+    return quickNavigate('/practice-dashboard', 'Navigated to practice dashboard (dev mode)');
   };
 
   const navigateToSearchResults = (query?: string) => {
