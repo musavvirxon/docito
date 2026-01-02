@@ -1,15 +1,11 @@
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 
 interface EmptyStateProps {
   icon: ReactNode;
   title: string;
   description?: string;
-  action?: {
-    label: string;
-    onClick: () => void;
-  };
+  action?: ReactNode;
   className?: string;
 }
 
@@ -33,9 +29,7 @@ export function EmptyState({
         <p className="text-sm text-muted-foreground max-w-sm mb-4">{description}</p>
       )}
       {action && (
-        <Button onClick={action.onClick}>
-          {action.label}
-        </Button>
+        <div className="mt-2">{action}</div>
       )}
     </div>
   );
