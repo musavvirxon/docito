@@ -48,7 +48,11 @@ export function useDashboardStats() {
       ] = await Promise.all([
         supabase.from('practices').select('id, verified', { count: 'exact' }),
         supabase.from('doctors').select('id, verified', { count: 'exact' }),
-        supabase.from('profiles').select('id', { count: 'exact' }).eq('role', 'patient'),
+        supabase
+  .from('user_roles')
+  .select('user_id', { count: 'exact', head: true })
+  .eq('role', 'patient'),
+
         supabase.from('appointments').select('id, status', { count: 'exact' }),
         supabase.from('payments').select('amount, status'),
         supabase.from('practice_verification' as any).select('id', { count: 'exact' }).eq('verification_status', 'under_review'),
