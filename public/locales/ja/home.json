@@ -1,1 +1,232 @@
-
+{
+  "hero": {
+    "badge": "プロフェッショナル医療プラットフォーム",
+    "title1": "統合ヘルスケア",
+    "title2": "管理ソリューション",
+    "description": "決済、予約、記録、分析を安全に統合。医療プロフェッショナルのためのワンプラットフォーム",
+    "features": {
+      "payments": "決済処理",
+      "scheduling": "予約管理",
+      "records": "記録管理",
+      "analytics": "分析"
+    }
+  },
+  "search": {
+    "specialty": "診療科または医師名",
+    "location": "都市・場所",
+    "insurance": "保険会社",
+    "searchButton": "医療提供者を検索",
+    "searching": "検索中..."
+  },
+  "stats": {
+    "doctors": "医師",
+    "patients": "患者",
+    "countries": "国",
+    "avgRating": "平均評価"
+  },
+  "valueProposition": {
+    "badge": "エンタープライズグレード",
+    "title": "プロ向けツール",
+    "subtitle": "現代医療のために",
+    "paymentProcessing": {
+      "title": "決済処理",
+      "description": "多通貨対応の安全な決済"
+    },
+    "schedulingManagement": {
+      "title": "予約・スケジュール管理",
+      "description": "リアルタイム予約と自動ワークフロー"
+    },
+    "recordsManagement": {
+      "title": "記録管理",
+      "description": "包括的なデジタル医療記録システム"
+    },
+    "procedureLibrary": {
+      "title": "処置ライブラリ",
+      "description": "医療処置の包括的トラッキング"
+    },
+    "referralNetwork": {
+      "title": "紹介ネットワーク",
+      "description": "紹介状・連携の管理システム"
+    },
+    "legalCompliance": {
+      "title": "コンプライアンス",
+      "description": "HIPAA対応を見据えた設計とドキュメント"
+    },
+    "analytics": {
+      "badge": "包括的アナリティクス",
+      "title": "データドリブンな洞察",
+      "description": "リアルタイムダッシュボード、包括的レポート、パフォーマンス指標、患者インサイト、売上追跡、予約分析。",
+      "features": {
+        "dashboard": "ライブ指標のリアルタイムダッシュボード",
+        "revenue": "売上追跡と予測",
+        "insights": "患者インサイトと属性",
+        "trends": "予約トレンドとパターン",
+        "performance": "パフォーマンスと効率指標",
+        "reports": "カスタム可能なエクスポートレポート"
+      },
+      "stats": {
+        "revenueToday": "本日の売上",
+        "appointments": "予約数",
+        "activePatients": "アクティブ患者"
+      }
+    }
+  },
+  "specialties": {
+    "title": "医療 تخصص",
+    "subtitle": "認定スペシャリストとつながる",
+    "cardiology": "循環器内科",
+    "dentist": "歯科",
+    "obGyn": "産婦人科",
+    "dermatology": "皮膚科",
+    "psychiatry": "精神科",
+    "ophthalmology": "眼科",
+    "neurology": "神経内科",
+    "orthopedics": "整形外科",
+    "pediatrics": "小児科"
+  },
+  "topSpecialists": {
+    "title": "注目のスペシャリスト",
+    "bookAppointment": "予約する",
+    "noReviews": "レビューはまだありません",
+    "featuredSpot": {
+      "title": "注目スペシャリスト枠",
+      "description": "トップ医療プロフェッショナルのネットワークに参加し、多くの患者にリーチ",
+      "button": "医師として参加"
+    },
+    "beFirst": {
+      "title": "最初の注目スペシャリストになろう",
+      "description": "Docitoの初期メンバーとして参加。初日からプレミアムな可視性と患者接点。",
+      "button": "施設を登録"
+    }
+  },
+  "topPractices": {
+    "title": "主要医療機関",
+    "subtitle": "信頼される医療機関",
+    "viewPractice": "施設を見る",
+    "noReviews": "レビューはまだありません",
+    "emptySpot": {
+      "premium": {
+        "title": "プレミアム施設枠",
+        "description": "あなたの施設を多くの患者に紹介。注目枠でプレミアムな可視性。",
+        "button": "施設を登録"
+      },
+      "regular": {
+        "title": "ここにあなたの施設",
+        "description": "医療提供者ネットワークに参加",
+        "button": "詳細"
+      }
+    },
+    "beFounder": {
+      "title": "創設パートナー施設になる",
+      "description": "Docitoの初期注目施設として参加。可視性を高め、患者獲得と成長を支援。",
+      "registerButton": "施設を登録",
+      "contactButton": "営業に連絡"
+    }
+  },
+  "howItWorks": {
+    "title": "プラットフォーム機能",
+    "subtitle": "4ステップで予約",
+    "steps": {
+      "search": { "title": "検索", "description": "診療科と場所で探す" },
+      "review": { "title": "比較", "description": "資格と検証済みレビューを確認" },
+      "book": { "title": "予約", "description": "オンラインで即時予約" },
+      "care": { "title": "受診", "description": "専門的な医療サービスを受ける" }
+    }
+  },
+  "features": {
+    "title": "プラットフォーム機能",
+    "subtitle": "現代医療のためのプロ向けツール",
+    "verifiedProviders": {
+      "title": "認証済み提供者",
+      "description": "提供者は厳格に確認・ライセンス検証されます"
+    },
+    "availability": {
+      "title": "24時間対応",
+      "description": "いつでも、どこでも、どのデバイスでも予約"
+    },
+    "verifiedReviews": {
+      "title": "検証済みレビュー",
+      "description": "信頼できるレビューで賢い選択を"
+    },
+    "instantBooking": {
+      "title": "即時予約",
+      "description": "数日ではなく数秒で確定"
+    },
+    "globalNetwork": {
+      "title": "グローバルネットワーク",
+      "description": "複数国に展開"
+    },
+    "hipaaCompliant": {
+      "title": "HIPAA対応を想定",
+      "description": "暗号化とコンプライアンス重視の設計"
+    }
+  },
+  "cta": {
+    "title": "プロフェッショナル医療管理",
+    "description": "エンタープライズ級ツールで施設運営と患者管理を最適化",
+    "scheduleDemoButton": "デモを依頼",
+    "learnMoreButton": "詳細を見る",
+    "features": {
+      "hipaa": "HIPAA-ready",
+      "security": "エンタープライズセキュリティ",
+      "support": "24/7サポート"
+    }
+  },
+  "footer": {
+    "description": "プロフェッショナル医療プラットフォーム。安全な予約、デジタル記録、包括的分析で医療運営を支援します。",
+    "platform": {
+      "title": "プラットフォーム",
+      "searchDoctors": "医師を検索",
+      "browseSpecialties": "診療科",
+      "findPractices": "施設を探す",
+      "features": "機能"
+    },
+    "support": {
+      "title": "サポート",
+      "helpCenter": "ヘルプセンター",
+      "contact": "お問い合わせ",
+      "faqs": "よくある質問",
+      "support": "サポート"
+    },
+    "legal": {
+      "title": "法的情報",
+      "about": "会社概要",
+      "privacy": "プライバシーポリシー",
+      "terms": "利用規約",
+      "cookies": "Cookieポリシー",
+      "legalCenter": "リーガルセンター"
+    },
+    "contact": {
+      "email": "contact@docito.com",
+      "phone": "+1 (555) 123-4567",
+      "location": "San Francisco, CA"
+    },
+    "disclaimer": "本コンテンツは情報提供のみで、医療助言・診断・治療ではありません。医療判断は医療提供者にご相談ください。プラットフォームは患者と提供者をつなぎますが、医療サービスを直接提供しません。HIPAA-ready。",
+    "copyright": "All Rights Reserved",
+    "trademark": "Docitoは登録商標であり、ブランド所有者:",
+    "company": "Artsy Developers Inc.",
+    "links": {
+      "terms": "規約",
+      "privacy": "プライバシー",
+      "cookies": "Cookie",
+      "about": "概要"
+    }
+  },
+  "visuals": {
+    "hero": { "altText": "患者管理インターフェースを表示するダッシュボードプレビュー" },
+    "appointments": { "altText": "アニメーション付き日付のカレンダーイラスト" },
+    "prescriptions": { "altText": "デジタル処方箋フォームを入力している様子" },
+    "files": { "altText": "ファイルが安全なフォルダに整理される様子" },
+    "notes": { "altText": "臨床ノートを書いている様子" },
+    "dashboard": { "altText": "チャートと指標を備えたインタラクティブダッシュボード" },
+    "collaboration": { "altText": "チームが患者ファイルで協働している様子" },
+    "mobile": { "altText": "モバイルアプリUIのデモ" },
+    "success": { "altText": "成功を祝うアニメーション" },
+    "security": { "altText": "データを保護するセキュリティシールド" }
+  },
+  "seo": {
+    "title": "Docito® — 統合ヘルスケア管理・予約プラットフォーム",
+    "description": "Docito® は患者、医師、クリニック、検査機関、薬局、画像診断センター、病院、保険を一つの安全なシステムで接続します—予約、紹介、記録、処方、メッセージ、分析をエンタープライズ品質で提供。",
+    "keywords": "ヘルスケア管理プラットフォーム, 医師予約システム, クリニック管理ソフト, 検査機関管理システム, 薬局プラットフォーム, 画像診断センターソフト, 患者予約, 医療紹介, 医療記録システム, HIPAA, 多言語ヘルスケアSaaS"
+  }
+}
