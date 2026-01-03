@@ -1,0 +1,85 @@
+{
+  "seo": {
+    "title": "Docito® Pharmacies — 전자처방, 재고, 리필, 배송 및 보험 워크플로",
+    "description": "약국을 위한 Docito®는 전자처방 접수, 재고 및 조제/출고, 리필 자동화, 환자 알림, 배송 조율, 감사 대응 컴플라이언스를 통합하여 약국을 의사·클리닉·환자·검사기관·보험과 안전하게 연결합니다.",
+    "keywords": "약국 관리 시스템, 전자처방 플랫폼, 조제 소프트웨어, 약국 재고 관리, 리필 자동화, 의약품 배송 조율, 보험 검증, 청구 워크플로, HIPAA 준수 약국 소프트웨어, 다국어 헬스케어 SaaS"
+  },
+  "nav": { "backToHome": "Docito로 돌아가기", "signIn": "로그인", "getStarted": "시작하기" },
+  "hero": {
+    "badge": "약국 운영, 하나로",
+    "title1": "현대적인 약국",
+    "title2": "관리 및 조제/이행",
+    "description": "전자처방 접수, 재고 및 조제/출고, 리필 워크플로, 배송 조율, 분석 및 컴플라이언스까지—Docito® 의료 생태계에서 안전한 협업을 위해 설계되었습니다.",
+    "primaryCta": "약국으로 가입하기",
+    "secondaryCta": "영업 문의",
+    "trustNote": "컴플라이언스 우선: HIPAA/GDPR 준비, RBAC 및 감사 추적."
+  },
+  "stats": {
+    "title": "고처리량 약국을 위해",
+    "subtitle": "속도, 안전, 추적성—수작업 부담 없이",
+    "cards": {
+      "rx": { "label": "처리된 처방", "value": "25K+" },
+      "refills": { "label": "리필 속도 개선", "value": "최대 50%" },
+      "stock": { "label": "품절 감소", "value": "최대 35%" },
+      "coverage": { "label": "기관 간 연동", "value": "의사 • 클리닉 • 환자" }
+    }
+  },
+  "problems": {
+    "badge": "분산된 흐름을 통합",
+    "title": "병목에서 신뢰로",
+    "subtitle": "Docito®는 약국 운영을 단일하고 안전하며 감사 가능한 워크플로로 정리합니다.",
+    "items": {
+      "manualRx": { "problem": "수기 접수와 반복 확인", "solution": "검증 및 상태 추적이 포함된 구조화 전자처방 접수" },
+      "refillChaos": { "problem": "전화·메시지로 흩어진 리필 요청", "solution": "승인·리마인더·알림을 포함한 리필 워크플로" },
+      "inventoryBlind": { "problem": "재고 사각지대와 잦은 품절", "solution": "임계값, 알림, 예측 기반 재고 관리" },
+      "deliveryGaps": { "problem": "배송 조율 단절과 인수인계 누락", "solution": "배송 일정, 추적 및 환자 업데이트" },
+      "insuranceFriction": { "problem": "보험 검증 및 청구 마찰", "solution": "보장 확인 및 청구 준비 워크플로" },
+      "complianceRisk": { "problem": "컴플라이언스 위험 및 접근 제어 불명확", "solution": "RBAC + 감사 추적(HIPAA/GDPR 준비)" }
+    }
+  },
+  "features": {
+    "badge": "엔터프라이즈급 약국 도구",
+    "title": "현대 약국에 필요한 모든 것",
+    "subtitle": "전자처방, 조제/이행, 재고, 협업, 리포팅—보안 중심 설계.",
+    "items": {
+      "eprescriptions": { "title": "전자처방 접수 및 상태", "description": "의사·클리닉에서 전자처방을 받아 모호성을 줄이고 처방을 end-to-end로 추적합니다." },
+      "dispensing": { "title": "조제/이행 워크플로", "description": "명확한 상태, 인수인계, 책임으로 조제 단계를 표준화하여 안전성을 높입니다." },
+      "inventory": { "title": "재고 및 스톡 관리", "description": "임계값·알림·지점 가시성으로 품절과 폐기를 줄입니다." },
+      "refills": { "title": "리필 자동화", "description": "리마인더, 승인, 환자 알림을 자동화해 전화와 지연을 줄입니다." },
+      "delivery": { "title": "배송 및 수령 조율", "description": "수령 창구와 배송 슬롯을 조율하고 환자·직원에게 추적 업데이트를 제공합니다." },
+      "analytics": { "title": "약국 분석", "description": "볼륨, TAT, 리필, 재고 건강, 효율을 대시보드 지표로 모니터링합니다." }
+    }
+  },
+  "howItWorks": {
+    "badge": "간단. 구조화. 안전.",
+    "title": "작동 방식",
+    "subtitle": "약국을 Docito® 생태계 전반과 연결하는 명확한 워크플로.",
+    "steps": {
+      "step1": { "title": "처방 수신", "description": "의사·클리닉이 구조화된 전자처방을 안전하게 전송합니다." },
+      "step2": { "title": "검증 및 준비", "description": "재고와 보장을 확인하고, 명확한 내부 인수인계로 이행을 준비합니다." },
+      "step3": { "title": "조제 및 추적", "description": "감사 로그, 타임스탬프, 상태 업데이트로 조제 과정을 완료하고 추적성을 확보합니다." },
+      "step4": { "title": "배송 또는 수령", "description": "배송/수령을 조율하고 준비 완료 시 환자에게 안전하게 알립니다." }
+    }
+  },
+  "integrations": {
+    "badge": "기관 간 협업",
+    "title": "전체 의료 생태계를 위해",
+    "subtitle": "약국은 단독으로 운영되지 않습니다—Docito®는 처방, 예약, 기록, 검사, 보험을 연결합니다.",
+    "items": {
+      "doctors": { "title": "의사", "description": "구조화된 임상 문맥으로 전자처방 및 확인 요청을 주고받습니다." },
+      "clinics": { "title": "클리닉", "description": "다기관 워크플로, 후속 조치, 환자 커뮤니케이션을 조율합니다." },
+      "patients": { "title": "환자", "description": "배송/수령 업데이트와 처방 관련 파일에 대한 안전한 접근을 제공합니다." },
+      "insurance": { "title": "보험", "description": "처방 단위 보장 확인 및 청구 준비 워크플로를 지원합니다." }
+    }
+  },
+  "cta": {
+    "title": "약국을 Docito® 네트워크에 연결하세요",
+    "description": "조제를 디지털화하고 지연을 줄이며 재고 가시성을 향상하세요—컴플라이언스 우선, 감사 대응.",
+    "primary": "약국 등록",
+    "secondary": "영업과 상담",
+    "note": "검증이 필요합니다. 대시보드는 보이지만, 승인 전까지 일부 기능은 제한될 수 있습니다."
+  },
+  "visuals": {
+    "heroAlt": "Docito 약국 대시보드 미리보기: 전자처방, 재고, 리필 및 배송 추적"
+  }
+}
