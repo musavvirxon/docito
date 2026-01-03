@@ -1,0 +1,125 @@
+{
+  "seo": {
+    "title": "Docito® Imaging — Terminplanung, PACS-fähige Workflows, Befunde & Überweisungen",
+    "description": "Docito® für Bildgebungszentren vereint überweisungsbasierte Auftragsannahme, MRI/CT/Röntgen/Ultraschall-Terminierung, Bild-Workflows, radiologische Befundung, sichere Ergebniszustellung und audit-fähige Compliance—und verbindet Zentren mit Ärzten, Praxen, Patienten und Versicherern.",
+    "keywords": "Software für Bildgebungszentrum, Radiologie Workflow Plattform, MRT CT Terminplanung, PACS Workflow, radiologisches Befundsystem, Diagnostik Management, Überweisungen, HIPAA konforme Software, mehrsprachige Healthcare SaaS"
+  },
+  "nav": {
+    "backToHome": "Zurück zu Docito",
+    "signIn": "Anmelden",
+    "getStarted": "Loslegen"
+  },
+  "hero": {
+    "badge": "Bildgebung — einheitlich gesteuert",
+    "title1": "Moderne",
+    "title2": "Bildgebungs-Workflows",
+    "description": "Steuern Sie Bildgebung Ende-zu-Ende: überweisungsbasierte Intake-Prozesse, Slot-Terminplanung, Bildhandling, Befundzustellung, Analytics und Compliance—für sichere Zusammenarbeit im Docito® Gesundheitsökosystem.",
+    "primaryCta": "Als Bildgebungszentrum beitreten",
+    "secondaryCta": "Sales kontaktieren",
+    "trustNote": "Compliance-first (HIPAA/GDPR-ready) mit rollenbasierter Zugriffskontrolle und Audit-Trails."
+  },
+  "stats": {
+    "title": "Für Zentren mit hohem Durchsatz",
+    "subtitle": "Transparenz, Auditierbarkeit und Leistung—ohne manuelle Overheads",
+    "cards": {
+      "exams": { "label": "Untersuchungen verwaltet", "value": "50K+" },
+      "turnaround": { "label": "Schnellere Befunde", "value": "bis zu 45%" },
+      "utilization": { "label": "Bessere Auslastung", "value": "bis zu 30%" },
+      "coverage": { "label": "Ökosystem-Abdeckung", "value": "Ärzte • Praxen • Kliniken" }
+    }
+  },
+  "problems": {
+    "badge": "Fragmentierte Abläufe ersetzen",
+    "title": "Von Chaos zu Kontrolle",
+    "subtitle": "Docito® ersetzt getrennte Bildgebungsprozesse durch ein sicheres, strukturiertes System.",
+    "items": {
+      "manualOrders": {
+        "problem": "Telefonate, PDFs und manuelle Anforderungen",
+        "solution": "Digitale, strukturierte Überweisungen mit Untersuchungsdetails"
+      },
+      "slotConflicts": {
+        "problem": "Termin-Konflikte, No-Shows und Leerkapazität",
+        "solution": "Slot-Planung mit Kapazitätsregeln je Modalität"
+      },
+      "lostImages": {
+        "problem": "Verteilte Bilder und unklare Zuständigkeit",
+        "solution": "Zentralisierte Workflows mit Status und Nachverfolgbarkeit"
+      },
+      "reportDelays": {
+        "problem": "Verzögerte Befunde und manuelle Zustellung",
+        "solution": "Sichere Zustellung an Ärzte und Patienten"
+      },
+      "noVisibility": {
+        "problem": "Keine operative Transparenz oder Prognosen",
+        "solution": "Analytics für Volumen, TAT, Auslastung und Engpässe"
+      },
+      "complianceRisk": {
+        "problem": "Compliance-Risiken und unklare Zugriffskontrollen",
+        "solution": "RBAC + Auditierbarkeit (HIPAA/GDPR-ready)"
+      }
+    }
+  },
+  "features": {
+    "badge": "Enterprise-Tooling für Bildgebung",
+    "title": "Alles für moderne Bildgebungszentren",
+    "subtitle": "Überweisungen, Terminplanung, Bilder, Befunde, Zusammenarbeit und Analytics—secure by design.",
+    "items": {
+      "examIntake": {
+        "title": "Überweisungsbasierte Auftragsannahme",
+        "description": "Erhalten Sie strukturierte Überweisungen mit Modalität, Indikation, Priorität und Notizen."
+      },
+      "modalityScheduling": {
+        "title": "Modalitäts-Terminplanung",
+        "description": "Planen Sie MRT, CT, Röntgen und Ultraschall nach realer Kapazität—Personal, Räume, Geräte und Ziel-TAT."
+      },
+      "imageManagement": {
+        "title": "Bildhandling & PACS-fähiger Workflow",
+        "description": "Organisieren Sie Bild-Workflows mit Status, Ownership und Audit-Trails—PACS-ready ausgerichtet."
+      },
+      "reporting": {
+        "title": "Radiologische Befundung",
+        "description": "Erstellen, prüfen und veröffentlichen Sie Befunde sicher—mit kontrolliertem Zugriff und vollständiger Nachverfolgbarkeit."
+      },
+      "notifications": {
+        "title": "Echtzeit-Benachrichtigungen",
+        "description": "Automatische Updates: terminiert, durchgeführt, Befund fertig, zugestellt."
+      },
+      "analytics": {
+        "title": "Imaging-Analytics",
+        "description": "Überwachen Sie Volumen, TAT, Modalitätsauslastung und Leistungskennzahlen."
+      }
+    }
+  },
+  "howItWorks": {
+    "badge": "Einfach. Strukturiert. Sicher.",
+    "title": "So funktioniert’s",
+    "subtitle": "Ein klarer Ablauf, der Bildgebungszentren mit dem Docito® Ökosystem verbindet.",
+    "steps": {
+      "step1": { "title": "Überweisungen erhalten", "description": "Ärzte und Praxen senden strukturierte Überweisungen direkt an Ihr Zentrum." },
+      "step2": { "title": "Planen & vorbereiten", "description": "Slots nach Modalität und Kapazität zuweisen—Personal, Geräte und erwartete TAT." },
+      "step3": { "title": "Durchführen & nachverfolgen", "description": "Jede Untersuchung von Intake bis Abschluss mit Status und Audit-Logs verfolgen." },
+      "step4": { "title": "Befunde zustellen", "description": "Ergebnisse sicher an Ärzte und Patienten veröffentlichen—mit kontrolliertem Zugriff." }
+    }
+  },
+  "integrations": {
+    "badge": "Zusammenarbeit über Einrichtungen hinweg",
+    "title": "Für das gesamte Gesundheitsökosystem",
+    "subtitle": "Bildgebung ist Teil der Versorgung—Docito® verbindet Überweisungen, Termine, Akten und Befunde.",
+    "items": {
+      "doctors": { "title": "Ärzte", "description": "Überweisungen empfangen und Befunde mit klinischem Kontext zurückgeben." },
+      "clinics": { "title": "Praxen/Kliniken", "description": "Terminierung, Follow-ups und Multi-Provider-Workflows koordinieren." },
+      "hospitals": { "title": "Krankenhäuser", "description": "In- und outpatient Bildgebung sicher abstimmen." },
+      "insurance": { "title": "Versicherung", "description": "Genehmigungen unterstützen und Untersuchungen mit Coverage verknüpfen." }
+    }
+  },
+  "cta": {
+    "title": "Bringen Sie Ihr Bildgebungszentrum ins Docito® Netzwerk",
+    "description": "Digitalisieren Sie Abläufe, reduzieren Sie Verzögerungen und liefern Sie Befunde sicher—compliance-first und audit-ready.",
+    "primary": "Bildgebungszentrum registrieren",
+    "secondary": "Mit Sales sprechen",
+    "note": "Verifizierung erforderlich. Dashboard sichtbar, Aktionen können bis zur Freigabe gesperrt sein."
+  },
+  "visuals": {
+    "heroAlt": "Docito Dashboard für Bildgebungszentren mit Modalitäts-Terminplanung und Befundzustellung"
+  }
+}
