@@ -1,0 +1,137 @@
+{
+  "seo": {
+    "title": "Docito® Labs — Laboratoriya boshqaruvi, buyurtmalar, natijalar va yo‘llanmalar",
+    "description": "Laboratoriyalar uchun Docito® yo‘llanma asosidagi buyurtmalarni qabul qilish, slot-jadval, namuna kuzatuvi, natijalarni yetkazish va auditga tayyor ish jarayonlarini birlashtiradi — laboratoriyalarni shifokorlar, klinikalar, bemorlar va sug‘urta bilan xavfsiz bog‘laydi.",
+    "keywords": "laboratoriya boshqaruv tizimi, laboratoriya ish jarayoni dasturi, yo‘llanma asosidagi tahlillar, laboratoriya jadvali, tahlil natijalarini yetkazish, tibbiy diagnostika platformasi, yo‘llanmalar, HIPAA mos dastur, ko‘p tilli tibbiy SaaS"
+  },
+  "nav": {
+    "backToHome": "Docito’ga qaytish",
+    "signIn": "Kirish",
+    "getStarted": "Boshlash"
+  },
+  "hero": {
+    "badge": "Laboratoriya operatsiyalari — yagona tizimda",
+    "title1": "Zamonaviy",
+    "title2": "laboratoriya boshqaruvi va yo‘llanmalar",
+    "description": "Laboratoriyani end-to-end boshqaring: yo‘llanma asosidagi buyurtmalar, slot-jadval, namuna kuzatuvi, natijalarni yetkazish, analitika va muvofiqlik — Docito® ekotizimida xavfsiz hamkorlik uchun.",
+    "primaryCta": "Laboratoriya sifatida qo‘shilish",
+    "secondaryCta": "Savdo bo‘limiga murojaat",
+    "trustNote": "Muvofiqlik-first arxitektura: HIPAA/GDPR tayyor va RBAC."
+  },
+  "stats": {
+    "title": "Yuqori oqimli laboratoriyalar uchun",
+    "subtitle": "Ko‘rinuvchanlik, audit va unumdorlik — qo‘lda ishlarni kamaytirgan holda",
+    "cards": {
+      "orders": { "label": "Boshqarilgan buyurtmalar", "value": "10K+" },
+      "turnaround": { "label": "Tezroq TAT", "value": "40% gacha" },
+      "accuracy": { "label": "Xatolar kamayishi", "value": "60% gacha" },
+      "coverage": { "label": "Ekotizim bo‘ylab qamrov", "value": "Shifokorlar • Klinikalar • Bemorlar" }
+    }
+  },
+  "problems": {
+    "badge": "Qo‘lda jarayonlarga chek qo‘ying",
+    "title": "Tartibsizlikdan — nazoratga",
+    "subtitle": "Docito® laboratoriya ishini bo‘lak-bo‘lak tizimlardan chiqarib, yagona xavfsiz jarayonga aylantiradi.",
+    "items": {
+      "paperOrders": {
+        "problem": "Qog‘oz buyurtmalar, qo‘ng‘iroqlar va inbox yuklamasi",
+        "solution": "Strukturali qabul bilan yo‘llanma asosidagi raqamli buyurtmalar"
+      },
+      "noScheduling": {
+        "problem": "Slot rejalash yo‘qligi, uzun navbatlar, quvvat yo‘qotilishi",
+        "solution": "Tahlillar, xodimlar va uskunalar uchun slot-jadval"
+      },
+      "lostSamples": {
+        "problem": "Namuna aralashib ketishi va chain-of-custody muammolari",
+        "solution": "Audit izi va statuslar bilan namuna kuzatuvi"
+      },
+      "lateResults": {
+        "problem": "Kechikkan natijalar va qo‘lda hisobot yetkazish",
+        "solution": "Shifokor va bemorlarga xavfsiz natija yetkazish"
+      },
+      "noAnalytics": {
+        "problem": "Unumdorlik ko‘rinmasligi va prognoz yo‘qligi",
+        "solution": "Operatsion analitika: hajm, TAT va utilizatsiya"
+      },
+      "complianceRisk": {
+        "problem": "Muvofiqlik xatari va noaniq kirish nazorati",
+        "solution": "RBAC + audit (HIPAA/GDPR tayyor)"
+      }
+    }
+  },
+  "features": {
+    "badge": "Enterprise darajadagi laboratoriya vositalari",
+    "title": "Zamonaviy laboratoriya uchun hammasi",
+    "subtitle": "Yo‘llanmalar, jadval, natijalar, hamkorlik va hisobot — xavfsiz dizayn bilan.",
+    "items": {
+      "orderIntake": {
+        "title": "Yo‘llanma asosidagi buyurtmalar qabul qilish",
+        "description": "Shifokor va klinikalardan strukturali buyurtmalar oling, noaniqlikni kamaytiring va oqimni oshiring."
+      },
+      "slotScheduling": {
+        "title": "Slot-jadval",
+        "description": "Haqiqiy quvvat qoidalari bilan rejalang: xodimlar, xonalar, uskuna va turnaround maqsadlari."
+      },
+      "sampleTracking": {
+        "title": "Namuna kuzatuvi va statuslar",
+        "description": "Har bir namunani bosqichma-bosqich audit izi, vaqt belgilari va mas’uliyat bilan kuzating."
+      },
+      "resultsDelivery": {
+        "title": "Xavfsiz natija yetkazish",
+        "description": "Natijalarni shifokor, klinika va bemorlarga to‘g‘ri yetkazing — maxfiylik va muvofiqlikni saqlagan holda."
+      },
+      "notifications": {
+        "title": "Real-time bildirishnomalar",
+        "description": "Avtomatik ogohlantirishlar: namuna qabul qilindi, jarayonda, ko‘rib chiqishga tayyor, yetkazildi."
+      },
+      "analytics": {
+        "title": "Laboratoriya analitikasi",
+        "description": "Hajm, TAT, xato darajasi va resurs utilizatsiyasini dashboard metrikalari bilan kuzating."
+      }
+    }
+  },
+  "howItWorks": {
+    "badge": "Oddiy. Strukturali. Xavfsiz.",
+    "title": "Qanday ishlaydi",
+    "subtitle": "Laboratoriyani Docito® ekotizimi bilan bog‘laydigan aniq ish jarayoni.",
+    "steps": {
+      "step1": {
+        "title": "Buyurtmalarni qabul qiling",
+        "description": "Shifokorlar va klinikalar laboratoriyaga strukturali yo‘llanma va buyurtmalar yuboradi."
+      },
+      "step2": {
+        "title": "Jadval va tayyorgarlik",
+        "description": "Slotlarni real quvvatga ko‘ra belgilang: xodimlar, uskuna va kutilyotgan turnaround."
+      },
+      "step3": {
+        "title": "Bajaring va kuzating",
+        "description": "Namunalarni qabul qilishdan yakungacha status, audit log va mas’uliyat bilan kuzating."
+      },
+      "step4": {
+        "title": "Natijalarni yetkazing",
+        "description": "Natijalarni shifokor va bemorlarga boshqariladigan kirish bilan xavfsiz e’lon qiling."
+      }
+    }
+  },
+  "integrations": {
+    "badge": "Ekotizim bo‘ylab hamkorlik",
+    "title": "To‘liq sog‘liqni saqlash ekotizimi uchun",
+    "subtitle": "Laboratoriya yolg‘iz ishlamaydi — Docito® yo‘llanma, uchrashuv, yozuv va hisobotni bog‘laydi.",
+    "items": {
+      "doctors": { "title": "Shifokorlar", "description": "Buyurtmalarni oling va natijalarni klinik kontekst bilan qaytaring." },
+      "clinics": { "title": "Klinikalar", "description": "Yo‘llanma, jadval va ko‘p provayderli jarayonlarni muvofiqlashtiring." },
+      "patients": { "title": "Bemorlar", "description": "Bemorlarga natija va tegishli fayllarga xavfsiz kirish bering." },
+      "insurance": { "title": "Sug‘urta", "description": "Qamrovni tekshirish va buyurtma–polis bog‘liqligini qo‘llab-quvvatlang." }
+    }
+  },
+  "cta": {
+    "title": "Laboratoriyangizni Docito® tarmog‘iga qo‘shing",
+    "description": "Jarayonlarni raqamlashtiring, kechikishlarni kamaytiring va natijalarni xavfsiz yetkazing — auditga tayyor va muvofiqlik-first yondashuv bilan.",
+    "primary": "Laboratoriyani ro‘yxatdan o‘tkazish",
+    "secondary": "Savdo bilan gaplashish",
+    "note": "Verifikatsiya talab qilinadi. Dashboard ko‘rinadi, ammo tasdiqqacha amallar cheklanishi mumkin."
+  },
+  "visuals": {
+    "heroAlt": "Docito laboratoriya paneli: buyurtmalar, jadval va natijalarni yetkazish"
+  }
+}
