@@ -1,0 +1,85 @@
+{
+  "seo": {
+    "title": "Docito® Pharmacies — 電子処方箋、在庫、リフィル、配送と保険ワークフロー",
+    "description": "Docito® は薬局向けに、電子処方箋の受付、在庫と調剤、リフィル自動化、患者通知、配送調整、監査対応のコンプライアンスを統合し、薬局を医師・クリニック・患者・検査機関・保険と安全に連携します。",
+    "keywords": "薬局管理システム, 電子処方箋プラットフォーム, 調剤ソフト, 在庫管理, リフィル自動化, 薬配送, 保険確認, 請求ワークフロー, HIPAA対応, 多言語医療SaaS"
+  },
+  "nav": { "backToHome": "Docitoへ戻る", "signIn": "ログイン", "getStarted": "開始する" },
+  "hero": {
+    "badge": "薬局運用を一元化",
+    "title1": "現代の薬局",
+    "title2": "管理と調剤・履行",
+    "description": "電子処方箋受付、在庫と調剤、リフィル、配送調整、分析、コンプライアンスまで—Docito® 医療エコシステムで安全に協業できる設計です。",
+    "primaryCta": "薬局として参加",
+    "secondaryCta": "営業に問い合わせ",
+    "trustNote": "コンプライアンス重視：HIPAA/GDPR対応、RBAC と監査ログ。"
+  },
+  "stats": {
+    "title": "高処理量の薬局向け",
+    "subtitle": "速度・安全・追跡性—手作業負担なしで",
+    "cards": {
+      "rx": { "label": "処理した処方箋", "value": "25K+" },
+      "refills": { "label": "リフィル短縮", "value": "最大50%" },
+      "stock": { "label": "欠品削減", "value": "最大35%" },
+      "coverage": { "label": "横断連携", "value": "医師 • クリニック • 患者" }
+    }
+  },
+  "problems": {
+    "badge": "断片化を置き換える",
+    "title": "ボトルネックから信頼へ",
+    "subtitle": "Docito® は薬局運用を、単一で安全・監査可能なワークフローへ統合します。",
+    "items": {
+      "manualRx": { "problem": "手入力受付と繰り返しの確認", "solution": "検証とステータス管理付きの構造化電子処方箋受付" },
+      "refillChaos": { "problem": "電話やメッセージに散在するリフィル依頼", "solution": "承認・リマインド・通知を備えたリフィルワークフロー" },
+      "inventoryBlind": { "problem": "在庫の死角と欠品", "solution": "閾値・アラート・予測を備えた在庫管理" },
+      "deliveryGaps": { "problem": "配送調整の抜けと引継ぎ漏れ", "solution": "配送予約、追跡、患者への更新通知" },
+      "insuranceFriction": { "problem": "保険確認と請求の摩擦", "solution": "カバレッジ確認と請求準備ワークフロー" },
+      "complianceRisk": { "problem": "コンプライアンスリスクと不明確なアクセス制御", "solution": "RBAC + 監査ログ（HIPAA/GDPR対応）" }
+    }
+  },
+  "features": {
+    "badge": "エンタープライズ級薬局機能",
+    "title": "現代の薬局に必要なすべて",
+    "subtitle": "電子処方箋、調剤、在庫、協業、レポート—安全設計。",
+    "items": {
+      "eprescriptions": { "title": "電子処方箋受付とステータス", "description": "医師・クリニックから処方箋を受領し、曖昧さを減らしてエンドツーエンドで追跡。" },
+      "dispensing": { "title": "調剤・履行ワークフロー", "description": "明確なステータス、引継ぎ、責任で調剤手順を標準化し安全性を向上。" },
+      "inventory": { "title": "在庫・ストック管理", "description": "閾値、アラート、拠点横断の可視化で欠品と廃棄を削減。" },
+      "refills": { "title": "リフィル自動化", "description": "リマインド、承認、患者通知を自動化し電話と遅延を削減。" },
+      "delivery": { "title": "配送・受取調整", "description": "受取枠と配送スロットを調整し、患者とスタッフに追跡更新を提供。" },
+      "analytics": { "title": "薬局分析", "description": "処理量、TAT、リフィル、在庫健全性、効率をダッシュボード指標で可視化。" }
+    }
+  },
+  "howItWorks": {
+    "badge": "シンプル。構造化。安全。",
+    "title": "仕組み",
+    "subtitle": "薬局を Docito® エコシステム全体とつなぐ明確なフロー。",
+    "steps": {
+      "step1": { "title": "処方箋を受領", "description": "医師・クリニックが構造化された電子処方箋を薬局へ安全送信。" },
+      "step2": { "title": "確認して準備", "description": "在庫とカバレッジを確認し、明確な内部引継ぎで履行準備。" },
+      "step3": { "title": "調剤して追跡", "description": "監査ログ、タイムスタンプ、ステータス更新で調剤を完了し追跡性を確保。" },
+      "step4": { "title": "配送または受取", "description": "配送・受取を調整し、準備完了時に患者へ安全に通知。" }
+    }
+  },
+  "integrations": {
+    "badge": "エンティティ横断協業",
+    "title": "医療エコシステム全体のために",
+    "subtitle": "薬局は単独ではありません。Docito® が処方箋、予約、記録、検査、保険を接続します。",
+    "items": {
+      "doctors": { "title": "医師", "description": "電子処方箋と確認依頼を、構造化された臨床文脈で受領。" },
+      "clinics": { "title": "クリニック", "description": "複数提供者のフロー、フォローアップ、患者連絡を調整。" },
+      "patients": { "title": "患者", "description": "配送/受取の安全な更新と処方関連ファイルへのアクセス。" },
+      "insurance": { "title": "保険", "description": "処方箋に紐づくカバレッジ確認と請求準備フローを支援。" }
+    }
+  },
+  "cta": {
+    "title": "あなたの薬局を Docito® ネットワークへ",
+    "description": "調剤をデジタル化し、遅延を減らし、在庫可視性を向上—コンプライアンス重視で監査対応。",
+    "primary": "薬局を登録",
+    "secondary": "営業に相談",
+    "note": "認証が必要です。ダッシュボードは表示されますが、承認まで操作が制限される場合があります。"
+  },
+  "visuals": {
+    "heroAlt": "Docito 薬局ダッシュボード：電子処方箋、在庫、リフィル、配送追跡のプレビュー"
+  }
+}
