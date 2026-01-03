@@ -1,0 +1,85 @@
+{
+  "seo": {
+    "title": "Docito® Pharmacies — 电子处方、库存、续配、配送与保险流程管理",
+    "description": "Docito® 面向药房，统一电子处方接收、库存与调配发药、续配自动化、患者通知、配送协调与可审计合规流程——安全连接药房与医生、诊所、患者、实验室及保险机构。",
+    "keywords": "药房管理系统, 电子处方平台, 发药调配软件, 药房库存管理, 续配自动化, 药品配送协调, 保险验证, 理赔流程, HIPAA 合规药房软件, 多语言医疗 SaaS"
+  },
+  "nav": { "backToHome": "返回 Docito", "signIn": "登录", "getStarted": "开始使用" },
+  "hero": {
+    "badge": "药房运营，一体化",
+    "title1": "现代化药房",
+    "title2": "管理与履约发药",
+    "description": "端到端运营药房：电子处方接收、库存与发药、续配流程、配送协调、运营分析与合规管理——为 Docito® 医疗生态的安全协作而生。",
+    "primaryCta": "以药房身份加入",
+    "secondaryCta": "联系销售",
+    "trustNote": "合规优先：支持 HIPAA/GDPR，RBAC 与审计追踪。"
+  },
+  "stats": {
+    "title": "为高吞吐量药房打造",
+    "subtitle": "速度、安全与可追溯——降低人工成本",
+    "cards": {
+      "rx": { "label": "已处理处方", "value": "25K+" },
+      "refills": { "label": "续配更快", "value": "最高 50%" },
+      "stock": { "label": "更少缺货", "value": "最高 35%" },
+      "coverage": { "label": "跨机构协作覆盖", "value": "医生 • 诊所 • 患者" }
+    }
+  },
+  "problems": {
+    "badge": "替代碎片化流程",
+    "title": "从瓶颈到可靠",
+    "subtitle": "Docito® 将药房运营整合为单一、安全、可审计的工作流。",
+    "items": {
+      "manualRx": { "problem": "手工接收处方与反复确认", "solution": "结构化电子处方接收，含校验与状态跟踪" },
+      "refillChaos": { "problem": "续配请求分散在电话与消息中", "solution": "续配工作流：审批、提醒与通知" },
+      "inventoryBlind": { "problem": "库存盲区与缺货", "solution": "阈值、告警与预测的库存管理" },
+      "deliveryGaps": { "problem": "配送协调断点与交接遗漏", "solution": "配送排程、追踪与患者更新" },
+      "insuranceFriction": { "problem": "保险验证与理赔摩擦", "solution": "覆盖验证与理赔就绪流程" },
+      "complianceRisk": { "problem": "合规风险与访问控制不清晰", "solution": "RBAC + 审计追踪（HIPAA/GDPR 就绪）" }
+    }
+  },
+  "features": {
+    "badge": "企业级药房工具",
+    "title": "现代药房所需的一切",
+    "subtitle": "电子处方、履约发药、库存、协作与报表——安全为先。",
+    "items": {
+      "eprescriptions": { "title": "电子处方接收与状态", "description": "从医生与诊所接收处方，降低歧义，并端到端追踪每一张处方。" },
+      "dispensing": { "title": "调配发药与履约流程", "description": "用清晰状态、交接与责任标准化发药步骤，提升安全性。" },
+      "inventory": { "title": "库存与备货管理", "description": "通过阈值、告警与多点可视化减少缺货与损耗。" },
+      "refills": { "title": "续配自动化", "description": "自动提醒、审批与患者通知，减少电话与延迟。" },
+      "delivery": { "title": "配送与自提协调", "description": "协调自提窗口与配送时段，并提供患者与员工的追踪更新。" },
+      "analytics": { "title": "药房运营分析", "description": "监控量、周转时间、续配、库存健康与效率，指标可直接用于仪表盘。" }
+    }
+  },
+  "howItWorks": {
+    "badge": "简单。结构化。安全。",
+    "title": "工作流程",
+    "subtitle": "清晰流程，连接 Docito® 全医疗生态。",
+    "steps": {
+      "step1": { "title": "接收处方", "description": "医生与诊所将结构化电子处方安全发送至药房。" },
+      "step2": { "title": "验证并准备", "description": "核对可用库存与保障覆盖，然后以清晰交接准备履约。" },
+      "step3": { "title": "发药并追踪", "description": "完成发药步骤，记录审计日志、时间戳与状态，确保可追溯。" },
+      "step4": { "title": "配送或自提", "description": "协调配送或自提，并在就绪时安全通知患者。" }
+    }
+  },
+  "integrations": {
+    "badge": "跨机构协作",
+    "title": "为完整医疗生态而生",
+    "subtitle": "药房并非孤岛——Docito® 连接处方、预约、记录、实验室与保险。",
+    "items": {
+      "doctors": { "title": "医生", "description": "接收电子处方与澄清请求，保留结构化临床信息。" },
+      "clinics": { "title": "诊所", "description": "协调多机构流程、随访与患者沟通。" },
+      "patients": { "title": "患者", "description": "提供安全的配送/自提更新与处方相关文件访问。" },
+      "insurance": { "title": "保险", "description": "支持处方级别的覆盖验证与理赔就绪流程。" }
+    }
+  },
+  "cta": {
+    "title": "将您的药房接入 Docito® 网络",
+    "description": "数字化发药履约、减少延迟并提升库存可视化——合规优先、审计就绪。",
+    "primary": "注册药房",
+    "secondary": "与销售沟通",
+    "note": "需要验证。仪表盘可见，但操作可在审批前进行限制。"
+  },
+  "visuals": {
+    "heroAlt": "Docito 药房仪表盘预览：电子处方、库存、续配与配送追踪"
+  }
+}
