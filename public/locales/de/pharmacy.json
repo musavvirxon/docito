@@ -1,0 +1,137 @@
+{
+  "seo": {
+    "title": "Docito® Pharmacies — E-Rezepte, Lagerbestand, Nachfüllungen, Lieferung & Versicherungs-Workflows",
+    "description": "Docito® für Apotheken vereint E-Rezept-Erfassung, Bestands- und Abgabeprozesse, Refill-Automatisierung, Patientenbenachrichtigungen, Lieferkoordination und auditfähige Compliance — und verbindet Apotheken sicher mit Ärzten, Praxen, Patienten, Laboren und Versicherungen.",
+    "keywords": "Apothekenverwaltungssystem, E-Rezept Plattform, Abgabe-Software, Apotheken-Lagerverwaltung, Refill Automatisierung, Medikamentenlieferung, Versicherungsprüfung, Claim-Workflow, HIPAA-konforme Apothekensoftware, mehrsprachige Healthcare SaaS"
+  },
+  "nav": {
+    "backToHome": "Zurück zu Docito",
+    "signIn": "Anmelden",
+    "getStarted": "Loslegen"
+  },
+  "hero": {
+    "badge": "Apothekenbetrieb — vereinheitlicht",
+    "title1": "Moderne Apotheke",
+    "title2": "Management & Abgabe",
+    "description": "Steuern Sie Apothekenprozesse end-to-end: E-Rezept-Erfassung, Bestand und Abgabe, Refill-Workflows, Lieferkoordination, Analytics und Compliance — für sichere Zusammenarbeit im Docito® Gesundheitsökosystem.",
+    "primaryCta": "Als Apotheke beitreten",
+    "secondaryCta": "Vertrieb kontaktieren",
+    "trustNote": "Compliance-first: HIPAA/GDPR-ready, rollenbasierte Zugriffskontrolle und Audit-Trails."
+  },
+  "stats": {
+    "title": "Für Apotheken mit hohem Volumen",
+    "subtitle": "Tempo, Sicherheit und Nachvollziehbarkeit — ohne manuellen Aufwand",
+    "cards": {
+      "rx": { "label": "Bearbeitete Rezepte", "value": "25K+" },
+      "refills": { "label": "Schnellere Nachfüllungen", "value": "Bis zu 50%" },
+      "stock": { "label": "Weniger Stockouts", "value": "Bis zu 35%" },
+      "coverage": { "label": "Abdeckung über Einheiten", "value": "Ärzte • Praxen • Patienten" }
+    }
+  },
+  "problems": {
+    "badge": "Fragmentierte Workflows ersetzen",
+    "title": "Von Engpässen zu Verlässlichkeit",
+    "subtitle": "Docito® bündelt Apothekenprozesse in einem sicheren, auditierbaren Workflow.",
+    "items": {
+      "manualRx": {
+        "problem": "Manuelle Rezeptannahme und wiederholte Rückfragen",
+        "solution": "Strukturierte E-Rezept-Erfassung mit Validierung und Status"
+      },
+      "refillChaos": {
+        "problem": "Nachfüllanfragen über Anrufe und Nachrichten verteilt",
+        "solution": "Refill-Workflows mit Freigaben, Erinnerungen und Benachrichtigungen"
+      },
+      "inventoryBlind": {
+        "problem": "Blind Spots im Bestand und häufige Engpässe",
+        "solution": "Bestandsmanagement mit Schwellenwerten, Alerts und Forecasting"
+      },
+      "deliveryGaps": {
+        "problem": "Lücken in der Lieferkoordination und verpasste Übergaben",
+        "solution": "Lieferplanung, Tracking und Patientenupdates"
+      },
+      "insuranceFriction": {
+        "problem": "Reibung bei Versicherungsprüfung und Claims",
+        "solution": "Coverage-Checks und claimfähige Workflows"
+      },
+      "complianceRisk": {
+        "problem": "Compliance-Risiken und unklare Zugriffskontrolle",
+        "solution": "RBAC + Audit-Trails (HIPAA/GDPR-ready)"
+      }
+    }
+  },
+  "features": {
+    "badge": "Enterprise-Grade Apotheken-Tools",
+    "title": "Alles, was eine moderne Apotheke braucht",
+    "subtitle": "E-Rezepte, Abgabe, Bestand, Zusammenarbeit und Reporting — sicher by design.",
+    "items": {
+      "eprescriptions": {
+        "title": "E-Rezept-Erfassung & Status",
+        "description": "Empfangen Sie digitale Rezepte von Ärzten und Praxen, reduzieren Sie Unklarheiten und verfolgen Sie jeden Auftrag end-to-end."
+      },
+      "dispensing": {
+        "title": "Abgabe- & Fulfillment-Workflows",
+        "description": "Standardisieren Sie Abgabeschritte mit klaren Status, Übergaben und Verantwortlichkeit für sicherere Abläufe."
+      },
+      "inventory": {
+        "title": "Bestand & Lagerverwaltung",
+        "description": "Steuern Sie Bestand mit Schwellenwerten, Alerts und Standort-Transparenz, um Engpässe und Verderb zu reduzieren."
+      },
+      "refills": {
+        "title": "Refill-Automatisierung",
+        "description": "Automatisieren Sie Erinnerungen, Freigaben und Patientenbenachrichtigungen, um Anrufe und Verzögerungen zu reduzieren."
+      },
+      "delivery": {
+        "title": "Liefer- & Abholkoordination",
+        "description": "Koordinieren Sie Abholfenster und Liefer-Slots mit Tracking-Updates für Patienten und Team."
+      },
+      "analytics": {
+        "title": "Apotheken-Analytics",
+        "description": "Überwachen Sie Volumen, Durchlaufzeit, Refills, Bestandsgesundheit und Effizienz mit dashboardfähigen Kennzahlen."
+      }
+    }
+  },
+  "howItWorks": {
+    "badge": "Einfach. Strukturiert. Sicher.",
+    "title": "So funktioniert’s",
+    "subtitle": "Ein klarer Ablauf, der Apotheken mit dem gesamten Docito® Ökosystem verbindet.",
+    "steps": {
+      "step1": {
+        "title": "Rezepte empfangen",
+        "description": "Ärzte und Praxen senden E-Rezepte sicher an Ihre Apotheke — mit strukturierten Details."
+      },
+      "step2": {
+        "title": "Prüfen & vorbereiten",
+        "description": "Prüfen Sie Verfügbarkeit und Coverage und bereiten Sie die Abgabe mit klaren internen Übergaben vor."
+      },
+      "step3": {
+        "title": "Abgeben & verfolgen",
+        "description": "Schließen Sie Abgabeschritte mit Audit-Logs, Zeitstempeln und Status-Updates für Nachvollziehbarkeit ab."
+      },
+      "step4": {
+        "title": "Liefern oder abholen",
+        "description": "Koordinieren Sie Lieferung oder Abholung und informieren Sie Patienten sicher, sobald Bestellungen bereit sind."
+      }
+    }
+  },
+  "integrations": {
+    "badge": "Zusammenarbeit über Einheiten hinweg",
+    "title": "Für das gesamte Gesundheitsökosystem gebaut",
+    "subtitle": "Apotheken arbeiten nicht isoliert — Docito® verbindet Rezepte, Termine, Akten, Labore und Versicherungen.",
+    "items": {
+      "doctors": { "title": "Ärzte", "description": "E-Rezepte und Rückfragen mit strukturiertem klinischem Kontext." },
+      "clinics": { "title": "Praxen/Kliniken", "description": "Multi-Provider-Workflows, Follow-ups und Patientenkommunikation koordinieren." },
+      "patients": { "title": "Patienten", "description": "Sichere Abhol-/Lieferupdates und Zugriff auf rezeptbezogene Dateien." },
+      "insurance": { "title": "Versicherung", "description": "Coverage-Verifikation und claimfähige Workflows pro Rezept." }
+    }
+  },
+  "cta": {
+    "title": "Bringen Sie Ihre Apotheke in das Docito® Netzwerk",
+    "description": "Digitalisieren Sie die Abgabe, reduzieren Sie Verzögerungen und verbessern Sie Bestands-Transparenz — compliance-first und audit-ready.",
+    "primary": "Apotheke registrieren",
+    "secondary": "Mit Vertrieb sprechen",
+    "note": "Verifizierung erforderlich. Das Dashboard bleibt sichtbar, Aktionen können bis zur Freigabe gesperrt sein."
+  },
+  "visuals": {
+    "heroAlt": "Vorschau des Docito Apotheken-Dashboards mit E-Rezepten, Bestand, Refills und Liefer-Tracking"
+  }
+}
