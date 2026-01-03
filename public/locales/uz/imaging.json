@@ -1,0 +1,125 @@
+{
+  "seo": {
+    "title": "Docito® Imaging — Rejalashtirish, PACS-tayyor ish jarayonlari va natijalar",
+    "description": "Docito® tasvirlash markazlari uchun yo‘llanma asosida qabul, MRT/KT/rentgen/UZI rejalashtirish, tasvirlar bilan ishlash, radiologik xulosa, xavfsiz natija yetkazish va auditga tayyor muvofiqlikni birlashtiradi — shifokorlar, klinikalar, bemorlar va sug‘urta bilan bog‘laydi.",
+    "keywords": "tasvirlash markazi boshqaruvi, radiologiya platformasi, MRT KT navbat tizimi, PACS ish jarayoni, radiologik hisobot, diagnostika yo‘llanmalari, HIPAA mos dastur, ko‘p tilli tibbiy SaaS"
+  },
+  "nav": {
+    "backToHome": "Docito’ga qaytish",
+    "signIn": "Kirish",
+    "getStarted": "Boshlash"
+  },
+  "hero": {
+    "badge": "Tasvirlash operatsiyalari — yagona tizim",
+    "title1": "Zamonaviy",
+    "title2": "Tasvirlash boshqaruvi",
+    "description": "Yo‘llanmadan natijagacha: qabul, slot bo‘yicha rejalashtirish, tasvirlar, hisobot yetkazish, analitika va muvofiqlik — Docito® ekotizimi bo‘ylab xavfsiz hamkorlik uchun.",
+    "primaryCta": "Tasvirlash markazi sifatida qo‘shiling",
+    "secondaryCta": "Sotuv bo‘limi bilan bog‘laning",
+    "trustNote": "HIPAA/GDPR-ready, RBAC va audit izlari bilan compliance-first arxitektura."
+  },
+  "stats": {
+    "title": "Yuqori oqimdagi markazlar uchun",
+    "subtitle": "Shaffoflik, audit va samaradorlik — qo‘lda ishlarisiz",
+    "cards": {
+      "exams": { "label": "Boshqarilgan tekshiruvlar", "value": "50K+" },
+      "turnaround": { "label": "Tezroq hisobot", "value": "45% gacha" },
+      "utilization": { "label": "Yaxshiroq bandlik", "value": "30% gacha" },
+      "coverage": { "label": "Ekotizim qamrovi", "value": "Shifokor • Klinika • Shifoxona" }
+    }
+  },
+  "problems": {
+    "badge": "Bo‘lak-bo‘lak jarayonlarni almashtiring",
+    "title": "Tartibsizlikdan nazoratga",
+    "subtitle": "Docito® uzilgan tasvirlash jarayonlarini yagona, xavfsiz va strukturali oqimga aylantiradi.",
+    "items": {
+      "manualOrders": {
+        "problem": "Qo‘ng‘iroqlar, PDF va qo‘lda buyurtmalar",
+        "solution": "Strukturali yo‘llanma asosidagi raqamli qabul"
+      },
+      "slotConflicts": {
+        "problem": "Slot to‘qnashuvi va quvvat yo‘qotilishi",
+        "solution": "Modallik bo‘yicha quvvatga asoslangan rejalashtirish"
+      },
+      "lostImages": {
+        "problem": "Tarqoq tasvirlar va noaniq mas’uliyat",
+        "solution": "Markazlashgan boshqaruv, statuslar va izchillik"
+      },
+      "reportDelays": {
+        "problem": "Kechikkan hisobotlar va qo‘lda yetkazish",
+        "solution": "Shifokor va bemorlarga xavfsiz yetkazish"
+      },
+      "noVisibility": {
+        "problem": "Ko‘rsatkichlar va prognoz yo‘q",
+        "solution": "Hajm, TAT, bandlik va muammolar analitikasi"
+      },
+      "complianceRisk": {
+        "problem": "Muvofiqlik va kirish nazorati riski",
+        "solution": "RBAC + audit (HIPAA/GDPR-ready)"
+      }
+    }
+  },
+  "features": {
+    "badge": "Korxona darajasidagi imkoniyatlar",
+    "title": "Zamonaviy tasvirlash markazi uchun hammasi",
+    "subtitle": "Yo‘llanmalar, rejalashtirish, tasvirlar, hisobotlar, hamkorlik va analitika — xavfsizlik asosida.",
+    "items": {
+      "examIntake": {
+        "title": "Yo‘llanma asosida qabul",
+        "description": "Modallik, ko‘rsatma, ustuvorlik va izohlar bilan strukturali yo‘llanmalarni qabul qiling."
+      },
+      "modalityScheduling": {
+        "title": "Modallik bo‘yicha rejalashtirish",
+        "description": "MRT, KT, rentgen va UZI ni haqiqiy quvvatga ko‘ra rejalashtiring."
+      },
+      "imageManagement": {
+        "title": "Tasvirlar va PACS-tayyor oqim",
+        "description": "Status, mas’ul va audit izlari bilan tasvir oqimini boshqaring — PACS uslubidagi ishlashga tayyor."
+      },
+      "reporting": {
+        "title": "Radiologik xulosalar",
+        "description": "Hisobotlarni yaratish, ko‘rib chiqish va xavfsiz nashr etish — kirish nazorati bilan."
+      },
+      "notifications": {
+        "title": "Real-time bildirishnomalar",
+        "description": "Tayinlandi, bajarildi, hisobot tayyor, yetkazildi — avtomatik."
+      },
+      "analytics": {
+        "title": "Tasvirlash analitikasi",
+        "description": "Hajm, TAT, modallik bandligi va samaradorlikni kuzating."
+      }
+    }
+  },
+  "howItWorks": {
+    "badge": "Oddiy. Strukturali. Xavfsiz.",
+    "title": "Qanday ishlaydi",
+    "subtitle": "Tasvirlash markazlarini Docito® ekotizimi bilan bog‘laydigan aniq oqim.",
+    "steps": {
+      "step1": { "title": "Yo‘llanmalarni oling", "description": "Shifokor va klinikalar yo‘llanmani bevosita yuboradi." },
+      "step2": { "title": "Rejalashtiring", "description": "Modallik quvvati, xodim va uskunaga ko‘ra slot bering." },
+      "step3": { "title": "Bajaring va kuzating", "description": "Jarayonni audit loglari va statuslar bilan boshqaring." },
+      "step4": { "title": "Natijani yetkazing", "description": "Hisobotni shifokor va bemorga xavfsiz taqdim eting." }
+    }
+  },
+  "integrations": {
+    "badge": "Tashkilotlararo hamkorlik",
+    "title": "Butun ekotizim uchun",
+    "subtitle": "Tasvirlash yakka emas — Docito® yo‘llanma, uchrashuv, hujjat va natijani bog‘laydi.",
+    "items": {
+      "doctors": { "title": "Shifokorlar", "description": "Yo‘llanma oling va klinik kontekst bilan natija qaytaring." },
+      "clinics": { "title": "Klinikalar", "description": "Rejalashtirish va ko‘p provayderli jarayonlarni muvofiqlashtiring." },
+      "hospitals": { "title": "Shifoxonalar", "description": "Statsionar va ambulator diagnostika integratsiyasi." },
+      "insurance": { "title": "Sug‘urta", "description": "Avtorizatsiya va qoplama bilan bog‘lash." }
+    }
+  },
+  "cta": {
+    "title": "Tasvirlash markazingizni Docito® tarmog‘iga qo‘shing",
+    "description": "Jarayonlarni raqamlashtiring, kechikishlarni kamaytiring va natijani xavfsiz yetkazing — auditga tayyor muvofiqlik bilan.",
+    "primary": "Tasvirlash markazini ro‘yxatdan o‘tkazing",
+    "secondary": "Sotuv bilan suhbat",
+    "note": "Verifikatsiya talab qilinadi. Panel ko‘rinadi, ammo amallar tasdiqqacha cheklanishi mumkin."
+  },
+  "visuals": {
+    "heroAlt": "Docito tasvirlash markazi paneli: modallik rejalashtirish va hisobot yetkazish"
+  }
+}
