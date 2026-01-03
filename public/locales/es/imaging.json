@@ -1,0 +1,125 @@
+{
+  "seo": {
+    "title": "Docito® Imaging — Agenda, flujos listos para PACS, informes y derivaciones",
+    "description": "Docito® para Centros de Imagen unifica la recepción de órdenes por derivación, la programación de RM/TC/Rayos X/Ecografía, la gestión de imágenes, informes radiológicos, entrega segura de resultados y cumplimiento audit-ready—conectando centros con médicos, clínicas, pacientes y aseguradoras.",
+    "keywords": "software para centro de imagen, plataforma de radiología, agenda RM TC, flujo PACS, informes radiológicos, gestión de diagnóstico por imagen, derivaciones, software compatible con HIPAA, healthcare SaaS multilingüe"
+  },
+  "nav": {
+    "backToHome": "Volver a Docito",
+    "signIn": "Iniciar sesión",
+    "getStarted": "Empezar"
+  },
+  "hero": {
+    "badge": "Operaciones de imagen, unificadas",
+    "title1": "Gestión moderna",
+    "title2": "de Imagen y Derivaciones",
+    "description": "Gestiona de punta a punta: recepción por derivación, agenda por slots, flujo de imágenes, entrega de informes, analítica y cumplimiento—para colaboración segura en el ecosistema Docito®.",
+    "primaryCta": "Unirse como Centro de Imagen",
+    "secondaryCta": "Contactar ventas",
+    "trustNote": "Arquitectura compliance-first (HIPAA/GDPR-ready) con control de acceso por roles y auditoría."
+  },
+  "stats": {
+    "title": "Diseñado para centros de alto volumen",
+    "subtitle": "Visibilidad, auditabilidad y rendimiento—sin carga manual",
+    "cards": {
+      "exams": { "label": "Estudios gestionados", "value": "50K+" },
+      "turnaround": { "label": "Informes más rápidos", "value": "Hasta 45%" },
+      "utilization": { "label": "Mejor utilización", "value": "Hasta 30%" },
+      "coverage": { "label": "Cobertura multi-entidad", "value": "Médicos • Clínicas • Hospitales" }
+    }
+  },
+  "problems": {
+    "badge": "Reemplaza flujos fragmentados",
+    "title": "Del caos al control",
+    "subtitle": "Docito® reemplaza procesos desconectados por un flujo seguro y estructurado.",
+    "items": {
+      "manualOrders": {
+        "problem": "Llamadas, PDFs y solicitudes manuales",
+        "solution": "Ingreso digital por derivación con detalles estructurados"
+      },
+      "slotConflicts": {
+        "problem": "Conflictos de agenda y capacidad desperdiciada",
+        "solution": "Programación por slots con reglas por modalidad"
+      },
+      "lostImages": {
+        "problem": "Imágenes dispersas y responsabilidad poco clara",
+        "solution": "Flujo centralizado con estados y trazabilidad"
+      },
+      "reportDelays": {
+        "problem": "Retrasos en informes y entrega manual",
+        "solution": "Entrega segura a médicos y pacientes"
+      },
+      "noVisibility": {
+        "problem": "Sin visibilidad operativa ni pronóstico",
+        "solution": "Analítica de volumen, TAT, utilización y cuellos de botella"
+      },
+      "complianceRisk": {
+        "problem": "Riesgo de cumplimiento y control de acceso",
+        "solution": "RBAC + auditoría (HIPAA/GDPR-ready)"
+      }
+    }
+  },
+  "features": {
+    "badge": "Herramientas enterprise para imagen",
+    "title": "Todo lo que necesita un centro moderno",
+    "subtitle": "Derivaciones, agenda, imágenes, informes, colaboración y analítica—seguro por diseño.",
+    "items": {
+      "examIntake": {
+        "title": "Ingreso por derivación",
+        "description": "Recibe derivaciones estructuradas: modalidad, indicación, prioridad y notas."
+      },
+      "modalityScheduling": {
+        "title": "Agenda por modalidad",
+        "description": "Planifica RM, TC, Rayos X y Eco con capacidad real: personal, salas, equipos y TAT."
+      },
+      "imageManagement": {
+        "title": "Gestión de imágenes y flujo listo para PACS",
+        "description": "Organiza el flujo con estados, responsables y auditoría—preparado para operaciones tipo PACS."
+      },
+      "reporting": {
+        "title": "Informes radiológicos",
+        "description": "Genera, revisa y publica informes de forma segura con acceso controlado y trazabilidad."
+      },
+      "notifications": {
+        "title": "Notificaciones en tiempo real",
+        "description": "Alertas automáticas: programado, realizado, informe listo, entregado."
+      },
+      "analytics": {
+        "title": "Analítica de imagen",
+        "description": "Monitorea volumen, TAT, utilización por modalidad y rendimiento."
+      }
+    }
+  },
+  "howItWorks": {
+    "badge": "Simple. Estructurado. Seguro.",
+    "title": "Cómo funciona",
+    "subtitle": "Un flujo claro que conecta centros de imagen con el ecosistema Docito®.",
+    "steps": {
+      "step1": { "title": "Recibir derivaciones", "description": "Médicos y clínicas envían derivaciones estructuradas directamente." },
+      "step2": { "title": "Programar y preparar", "description": "Asignar slots según capacidad por modalidad y recursos." },
+      "step3": { "title": "Realizar y rastrear", "description": "Rastrear cada estudio con estados, auditoría y responsabilidad clara." },
+      "step4": { "title": "Entregar informes", "description": "Publicar resultados de forma segura a médicos y pacientes con acceso controlado." }
+    }
+  },
+  "integrations": {
+    "badge": "Colaboración entre entidades",
+    "title": "Creado para todo el ecosistema",
+    "subtitle": "La imagen no opera sola—Docito® conecta derivaciones, citas, registros e informes.",
+    "items": {
+      "doctors": { "title": "Médicos", "description": "Recibe derivaciones y devuelve informes con contexto clínico." },
+      "clinics": { "title": "Clínicas", "description": "Coordina agenda, seguimiento y flujos multi-proveedor." },
+      "hospitals": { "title": "Hospitales", "description": "Soporta imagen ambulatoria e intrahospitalaria con coordinación segura." },
+      "insurance": { "title": "Seguro", "description": "Autoriza y vincula estudios con cobertura." }
+    }
+  },
+  "cta": {
+    "title": "Integra tu centro de imagen en la red Docito®",
+    "description": "Digitaliza operaciones, reduce demoras y entrega informes de forma segura—con cumplimiento audit-ready.",
+    "primary": "Registrar Centro de Imagen",
+    "secondary": "Hablar con ventas",
+    "note": "Se requiere verificación. El panel es visible, pero las acciones pueden bloquearse hasta la aprobación."
+  },
+  "visuals": {
+    "heroAlt": "Panel de Docito para centros de imagen con agenda por modalidad y entrega de informes"
+  }
+}
