@@ -20,22 +20,7 @@ import {
   Eye,
   Search
 } from 'lucide-react';
-
-interface Scan {
-  id: string;
-  order_number: string;
-  patient_name: string;
-  patient_id: string;
-  referring_doctor: string;
-  modality: string;
-  exam_name: string;
-  body_part: string;
-  urgency: 'routine' | 'urgent' | 'stat';
-  status: 'scheduled' | 'checked_in' | 'in_progress' | 'image_uploaded' | 'pending_review' | 'finalized' | 'delivered';
-  scheduled_at: string;
-  contrast: boolean;
-  notes: string;
-}
+import { useImagingOrders, type ImagingOrder } from '@/hooks/useImagingOrders';
 
 interface Props {
   centerId: string;
@@ -44,84 +29,18 @@ interface Props {
 const STATUS_FLOW = ['scheduled', 'checked_in', 'in_progress', 'image_uploaded', 'pending_review', 'finalized', 'delivered'];
 
 export default function ImagingScanWorkflow({ centerId }: Props) {
-  const [scans, setScans] = useState<Scan[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { orders, loading, fetchCenterOrders, updateOrderStatus } = useImagingOrders();
   const [filter, setFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedScan, setSelectedScan] = useState<Scan | null>(null);
+  const [selectedScan, setSelectedScan] = useState<ImagingOrder | null>(null);
 
   useEffect(() => {
-    fetchScans();
-  }, [centerId]);
+    if (centerId) {
+      fetchCenterOrders(centerId);
+    }
+  }, [centerId, fetchCenterOrders]);
 
-  const fetchScans = async () => {
-    // Mock data
-    setScans([
-      {
-        id: '1',
-        order_number: 'IMG-2024-001',
-        patient_name: 'John Smith',
-        patient_id: 'P001',
-        referring_doctor: 'Dr. Sarah Wilson',
-        modality: 'MRI',
-        exam_name: 'Brain MRI with Contrast',
-        body_part: 'Brain',
-        urgency: 'routine',
-        status: 'scheduled',
-        scheduled_at: '2024-12-17T09:00:00',
-        contrast: true,
-        notes: 'Patient has mild claustrophobia - may need sedation',
-      },
-      {
-        id: '2',
-        order_number: 'IMG-2024-002',
-        patient_name: 'Emily Johnson',
-        patient_id: 'P002',
-        referring_doctor: 'Dr. Michael Chen',
-        modality: 'CT',
-        exam_name: 'Chest CT',
-        body_part: 'Chest',
-        urgency: 'urgent',
-        status: 'checked_in',
-        scheduled_at: '2024-12-17T09:30:00',
-        contrast: false,
-        notes: '',
-      },
-      {
-        id: '3',
-        order_number: 'IMG-2024-003',
-        patient_name: 'Robert Davis',
-        patient_id: 'P003',
-        referring_doctor: 'Dr. Lisa Park',
-        modality: 'X-ray',
-        exam_name: 'Chest X-ray PA/Lateral',
-        body_part: 'Chest',
-        urgency: 'routine',
-        status: 'in_progress',
-        scheduled_at: '2024-12-17T10:00:00',
-        contrast: false,
-        notes: '',
-      },
-      {
-        id: '4',
-        order_number: 'IMG-2024-004',
-        patient_name: 'Maria Garcia',
-        patient_id: 'P004',
-        referring_doctor: 'Dr. James Brown',
-        modality: 'Ultrasound',
-        exam_name: 'Abdominal Ultrasound',
-        body_part: 'Abdomen',
-        urgency: 'routine',
-        status: 'pending_review',
-        scheduled_at: '2024-12-17T08:30:00',
-        contrast: false,
-        notes: 'NPO for 8 hours',
-      },
-    ]);
-    setLoading(false);
-  };
-
-  const getStatusBadge = (status: Scan['status']) => {
+  const getStatusBadge = (status: ImagingOrder['status']) => {
     const styles: Record<string, string> = {
       scheduled: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
       checked_in: 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20',
@@ -143,25 +62,25 @@ export default function ImagingScanWorkflow({ centerId }: Props) {
     return <Badge className={styles[status]}>{labels[status]}</Badge>;
   };
 
-  const getUrgencyBadge = (urgency: Scan['urgency']) => {
-    if (urgency === 'stat') return <Badge variant="destructive">STAT</Badge>;
-    if (urgency === 'urgent') return <Badge className="bg-orange-500/10 text-orange-500">Urgent</Badge>;
+  const getUrgencyBadge = (priority: ImagingOrder['priority']) => {
+    if (priority === 'stat') return <Badge variant="destructive">STAT</Badge>;
+    if (priority === 'urgent') return <Badge className="bg-orange-500/10 text-orange-500">Urgent</Badge>;
     return null;
   };
 
-  const updateScanStatus = (scanId: string, newStatus: Scan['status']) => {
-    setScans(prev => prev.map(s => s.id === scanId ? { ...s, status: newStatus } : s));
+  const handleUpdateStatus = (orderId: string, newStatus: ImagingOrder['status']) => {
+    updateOrderStatus(orderId, newStatus);
   };
 
-  const filteredScans = scans.filter(scan => {
+  const filteredScans = orders.filter(scan => {
     const matchesFilter = filter === 'all' || scan.status === filter;
-    const matchesSearch = scan.patient_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = (scan.patient_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                          scan.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          scan.exam_name.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
-  const getNextAction = (status: Scan['status']): { label: string; nextStatus: Scan['status']; icon: any } | null => {
+  const getNextAction = (status: ImagingOrder['status']): { label: string; nextStatus: ImagingOrder['status']; icon: any } | null => {
     const actions: Record<string, any> = {
       scheduled: { label: 'Check In', nextStatus: 'checked_in', icon: User },
       checked_in: { label: 'Start Scan', nextStatus: 'in_progress', icon: Play },
@@ -242,29 +161,31 @@ export default function ImagingScanWorkflow({ centerId }: Props) {
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-mono text-sm text-muted-foreground">{scan.order_number}</span>
                             {getStatusBadge(scan.status)}
-                            {getUrgencyBadge(scan.urgency)}
+                            {getUrgencyBadge(scan.priority)}
                             {scan.contrast && <Badge variant="outline">Contrast</Badge>}
                           </div>
                           <div className="flex items-center gap-4 text-sm">
                             <span className="flex items-center gap-1">
                               <User className="h-4 w-4 text-muted-foreground" />
-                              {scan.patient_name}
+                              {scan.patient_name || 'Patient'}
                             </span>
                             <span className="flex items-center gap-1">
                               <Stethoscope className="h-4 w-4 text-muted-foreground" />
-                              {scan.referring_doctor}
+                              {scan.doctor_name || 'Referring Doctor'}
                             </span>
                           </div>
                           <div>
                             <p className="font-medium">{scan.exam_name}</p>
-                            <p className="text-sm text-muted-foreground">{scan.modality} • {scan.body_part}</p>
+                            <p className="text-sm text-muted-foreground">{scan.modality} • {scan.body_part || 'N/A'}</p>
                           </div>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Calendar className="h-4 w-4" />
-                            {new Date(scan.scheduled_at).toLocaleDateString()}
-                            <Clock className="h-4 w-4 ml-2" />
-                            {new Date(scan.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </div>
+                          {scan.scheduled_at && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Calendar className="h-4 w-4" />
+                              {new Date(scan.scheduled_at).toLocaleDateString()}
+                              <Clock className="h-4 w-4 ml-2" />
+                              {new Date(scan.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                          )}
                           {scan.notes && (
                             <p className="text-sm text-muted-foreground bg-muted/50 p-2 rounded">
                               <AlertTriangle className="h-3 w-3 inline mr-1" />
@@ -279,7 +200,7 @@ export default function ImagingScanWorkflow({ centerId }: Props) {
                           {nextAction && (
                             <Button
                               size="sm"
-                              onClick={() => updateScanStatus(scan.id, nextAction.nextStatus)}
+                              onClick={() => handleUpdateStatus(scan.id, nextAction.nextStatus)}
                             >
                               <nextAction.icon className="h-4 w-4 mr-1" />
                               {nextAction.label}
@@ -330,11 +251,11 @@ export default function ImagingScanWorkflow({ centerId }: Props) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Patient</p>
-                  <p className="font-medium">{selectedScan.patient_name}</p>
+                  <p className="font-medium">{selectedScan.patient_name || 'Patient'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Referring Doctor</p>
-                  <p className="font-medium">{selectedScan.referring_doctor}</p>
+                  <p className="font-medium">{selectedScan.doctor_name || 'Referring Doctor'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Exam</p>
@@ -346,7 +267,7 @@ export default function ImagingScanWorkflow({ centerId }: Props) {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Body Part</p>
-                  <p className="font-medium">{selectedScan.body_part}</p>
+                  <p className="font-medium">{selectedScan.body_part || 'N/A'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Contrast</p>
@@ -354,11 +275,11 @@ export default function ImagingScanWorkflow({ centerId }: Props) {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Scheduled</p>
-                  <p className="font-medium">{new Date(selectedScan.scheduled_at).toLocaleString()}</p>
+                  <p className="font-medium">{selectedScan.scheduled_at ? new Date(selectedScan.scheduled_at).toLocaleString() : 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Urgency</p>
-                  <p className="font-medium capitalize">{selectedScan.urgency}</p>
+                  <p className="text-sm text-muted-foreground">Priority</p>
+                  <p className="font-medium capitalize">{selectedScan.priority}</p>
                 </div>
               </div>
 
