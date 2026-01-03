@@ -1,0 +1,137 @@
+{
+  "seo": {
+    "title": "Docito® Labs — Laboratuvar Yönetimi, Siparişler, Sonuçlar ve Yönlendirme Akışları",
+    "description": "Laboratuvarlar için Docito®; yönlendirme tabanlı sipariş alımı, slot planlama, numune takibi, sonuç teslimi ve denetime hazır iş akışlarını birleştirir—laboratuvarları doktorlar, klinikler, hastalar ve sigorta ile güvenle bağlar.",
+    "keywords": "laboratuvar yönetim sistemi, laboratuvar iş akışı yazılımı, yönlendirme tabanlı laboratuvar siparişleri, laboratuvar randevu planlama, sonuç teslimi, tıbbi tanı platformu, sağlık yönlendirmeleri, HIPAA uyumlu yazılım, çok dilli sağlık SaaS"
+  },
+  "nav": {
+    "backToHome": "Docito’ya Dön",
+    "signIn": "Giriş Yap",
+    "getStarted": "Başla"
+  },
+  "hero": {
+    "badge": "Laboratuvar Operasyonları, Tek Platformda",
+    "title1": "Modern Laboratuvar",
+    "title2": "Yönetimi ve Yönlendirmeler",
+    "description": "Laboratuvar operasyonlarını uçtan uca yönetin: yönlendirme tabanlı sipariş alımı, slot planlama, numune takibi, sonuç teslimi, analitik ve uyumluluk—Docito® sağlık ekosistemi içinde güvenli iş birliği için.",
+    "primaryCta": "Laboratuvar Olarak Katıl",
+    "secondaryCta": "Satışla Görüş",
+    "trustNote": "Uyumluluk öncelikli, HIPAA/GDPR’ye hazır mimari ve rol tabanlı erişim kontrolü."
+  },
+  "stats": {
+    "title": "Yüksek hacimli laboratuvarlar için üretildi",
+    "subtitle": "Görünürlük, denetlenebilirlik ve performans—manuel yük olmadan",
+    "cards": {
+      "orders": { "label": "Yönetilen Sipariş", "value": "10K+" },
+      "turnaround": { "label": "Daha Hızlı TAT", "value": "40%’a kadar" },
+      "accuracy": { "label": "Azalan Hata", "value": "60%’a kadar" },
+      "coverage": { "label": "Kurumlar Arası Kapsam", "value": "Doktorlar • Klinikler • Hastalar" }
+    }
+  },
+  "problems": {
+    "badge": "Manuel iş akışlarını değiştirin",
+    "title": "Kaostan kontrole",
+    "subtitle": "Docito® parçalı laboratuvar süreçlerini ortadan kaldırır ve tek, güvenli bir iş akışı sunar.",
+    "items": {
+      "paperOrders": {
+        "problem": "Kağıt siparişler, telefon görüşmeleri ve inbox yoğunluğu",
+        "solution": "Yapılandırılmış alımla yönlendirme tabanlı dijital siparişler"
+      },
+      "noScheduling": {
+        "problem": "Slot planlama yok, uzun kuyruklar ve kapasite kaybı",
+        "solution": "Test, personel ve ekipman için slot bazlı planlama"
+      },
+      "lostSamples": {
+        "problem": "Numune karışması ve zayıf zincir takibi",
+        "solution": "Denetim izi ve durum güncellemeleriyle numune takibi"
+      },
+      "lateResults": {
+        "problem": "Geciken sonuçlar ve manuel rapor teslimi",
+        "solution": "Doktor ve hastalara güvenli sonuç teslimi"
+      },
+      "noAnalytics": {
+        "problem": "Performans görünürlüğü ve tahmin yok",
+        "solution": "Hacim, TAT ve kullanım için operasyon analitiği"
+      },
+      "complianceRisk": {
+        "problem": "Uyumluluk riski ve belirsiz erişim kontrolü",
+        "solution": "RBAC + denetlenebilirlik (HIPAA/GDPR’ye hazır)"
+      }
+    }
+  },
+  "features": {
+    "badge": "Kurumsal seviye laboratuvar araçları",
+    "title": "Modern bir laboratuvarın ihtiyacı olan her şey",
+    "subtitle": "Yönlendirmeler, planlama, sonuçlar, iş birliği ve raporlama—güvenli tasarım.",
+    "items": {
+      "orderIntake": {
+        "title": "Yönlendirme Tabanlı Sipariş Alımı",
+        "description": "Doktor ve kliniklerden yapılandırılmış siparişler alın, belirsizliği azaltın ve ilk günden verimi artırın."
+      },
+      "slotScheduling": {
+        "title": "Slot Bazlı Planlama",
+        "description": "Gerçek kapasite kurallarıyla planlayın: personel, oda, ekipman ve turnaround hedefleri."
+      },
+      "sampleTracking": {
+        "title": "Numune Takibi ve Durum",
+        "description": "Her numuneyi her aşamada denetim izi, zaman damgası ve net sorumlulukla takip edin."
+      },
+      "resultsDelivery": {
+        "title": "Güvenli Sonuç Teslimi",
+        "description": "Sonuçları doğru kişilere—doktor, klinik ve hastaya—gizlilik ve uyumluluğu koruyarak iletin."
+      },
+      "notifications": {
+        "title": "Gerçek Zamanlı Bildirimler",
+        "description": "Otomatik uyarılar: numune alındı, işleniyor, incelemeye hazır, teslim edildi—manuel takip yok."
+      },
+      "analytics": {
+        "title": "Laboratuvar Analitiği",
+        "description": "Hacim, turnaround, hata oranı ve kaynak kullanımını panoya hazır metriklerle izleyin."
+      }
+    }
+  },
+  "howItWorks": {
+    "badge": "Basit. Yapılandırılmış. Güvenli.",
+    "title": "Nasıl çalışır",
+    "subtitle": "Laboratuvarları Docito® ekosistemine bağlayan net bir iş akışı.",
+    "steps": {
+      "step1": {
+        "title": "Siparişleri Alın",
+        "description": "Doktorlar ve klinikler yapılandırılmış yönlendirmeleri ve siparişleri doğrudan laboratuvarınıza gönderir."
+      },
+      "step2": {
+        "title": "Planlayın ve Hazırlanın",
+        "description": "Gerçek kapasiteye göre slot atayın—personel, ekipman ve beklenen turnaround."
+      },
+      "step3": {
+        "title": "İşleyin ve Takip Edin",
+        "description": "Numuneleri girişten tamamlanmaya kadar durum, denetim kayıtları ve net sorumlulukla izleyin."
+      },
+      "step4": {
+        "title": "Sonuçları Teslim Edin",
+        "description": "Sonuçları doktor ve hastalara kontrollü erişim ve tam izlenebilirlikle güvenle yayınlayın."
+      }
+    }
+  },
+  "integrations": {
+    "badge": "Kurumlar arası iş birliği",
+    "title": "Tüm sağlık ekosistemi için üretildi",
+    "subtitle": "Laboratuvarlar tek başına çalışmaz—Docito® yönlendirmeleri, randevuları, kayıtları ve raporlamayı bağlar.",
+    "items": {
+      "doctors": { "title": "Doktorlar", "description": "Sipariş alın ve sonuçları yapılandırılmış klinik bağlamla geri iletin." },
+      "clinics": { "title": "Klinikler", "description": "Yönlendirme, planlama ve çoklu sağlayıcı iş akışlarını koordine edin." },
+      "patients": { "title": "Hastalar", "description": "Hastalara sonuçlara ve ilgili dosyalara güvenli erişim sağlayın." },
+      "insurance": { "title": "Sigorta", "description": "Kapsam doğrulama ve sipariş–sigorta bağlantısını destekleyin." }
+    }
+  },
+  "cta": {
+    "title": "Laboratuvarınızı Docito® ağına taşıyın",
+    "description": "Operasyonları dijitalleştirin, gecikmeleri azaltın ve sonuçları güvenle teslim edin—uyumluluk odaklı ve denetime hazır.",
+    "primary": "Laboratuvarınızı Kaydedin",
+    "secondary": "Satışla Konuşun",
+    "note": "Doğrulama gereklidir. Panel görünür kalır, ancak işlemler onaya kadar kısıtlanabilir."
+  },
+  "visuals": {
+    "heroAlt": "Docito laboratuvar paneli önizlemesi: siparişler, planlama ve sonuç teslimi"
+  }
+}
