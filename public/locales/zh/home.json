@@ -1,1 +1,232 @@
-
+{
+  "hero": {
+    "badge": "专业医疗平台",
+    "title1": "一体化医疗",
+    "title2": "管理解决方案",
+    "description": "面向医疗机构与专业人员的一站式安全平台：支付、排班、记录与分析",
+    "features": {
+      "payments": "支付处理",
+      "scheduling": "排班预约",
+      "records": "医疗记录",
+      "analytics": "数据分析"
+    }
+  },
+  "search": {
+    "specialty": "科室/专科或医生姓名",
+    "location": "城市或位置",
+    "insurance": "保险机构",
+    "searchButton": "搜索医疗服务提供方",
+    "searching": "正在搜索..."
+  },
+  "stats": {
+    "doctors": "医生",
+    "patients": "患者",
+    "countries": "国家",
+    "avgRating": "平均评分"
+  },
+  "valueProposition": {
+    "badge": "企业级平台",
+    "title": "专业工具",
+    "subtitle": "服务现代医疗",
+    "paymentProcessing": {
+      "title": "支付处理",
+      "description": "安全支付与多币种支持"
+    },
+    "schedulingManagement": {
+      "title": "预约排班管理",
+      "description": "实时预约系统与自动化流程"
+    },
+    "recordsManagement": {
+      "title": "记录管理",
+      "description": "完整的数字化健康记录系统"
+    },
+    "procedureLibrary": {
+      "title": "治疗/处置库",
+      "description": "全面的医疗处置追踪"
+    },
+    "referralNetwork": {
+      "title": "转诊网络",
+      "description": "专业转诊管理系统"
+    },
+    "legalCompliance": {
+      "title": "合规",
+      "description": "合规优先架构，HIPAA/GDPR-ready"
+    },
+    "analytics": {
+      "badge": "全面分析套件",
+      "title": "数据驱动洞察",
+      "description": "实时仪表盘、综合报告、绩效指标、患者洞察、收入追踪与预约分析。",
+      "features": {
+        "dashboard": "实时仪表盘与实时指标",
+        "revenue": "收入追踪与预测",
+        "insights": "患者洞察与人群画像",
+        "trends": "预约趋势与模式",
+        "performance": "绩效与效率指标",
+        "reports": "可导出的自定义报告"
+      },
+      "stats": {
+        "revenueToday": "今日收入",
+        "appointments": "预约",
+        "activePatients": "活跃患者"
+      }
+    }
+  },
+  "specialties": {
+    "title": "医疗专科",
+    "subtitle": "连接认证专家",
+    "cardiology": "心内科",
+    "dentist": "牙科",
+    "obGyn": "妇产科",
+    "dermatology": "皮肤科",
+    "psychiatry": "精神科",
+    "ophthalmology": "眼科",
+    "neurology": "神经内科",
+    "orthopedics": "骨科",
+    "pediatrics": "儿科"
+  },
+  "topSpecialists": {
+    "title": "精选专家",
+    "bookAppointment": "预约就诊",
+    "noReviews": "暂无评价",
+    "featuredSpot": {
+      "title": "精选专家席位",
+      "description": "加入顶尖医疗专业网络，触达海量患者",
+      "button": "以医生身份加入"
+    },
+    "beFirst": {
+      "title": "成为首批精选专家",
+      "description": "加入 Docito，成为首批精选专家。第一天起获得高级曝光并连接患者。",
+      "button": "注册机构"
+    }
+  },
+  "topPractices": {
+    "title": "领先医疗机构",
+    "subtitle": "值得信赖的医疗机构",
+    "viewPractice": "查看机构",
+    "noReviews": "暂无评价",
+    "emptySpot": {
+      "premium": {
+        "title": "高级机构席位",
+        "description": "向大量潜在患者展示您的机构，获得高级曝光与优先展示。",
+        "button": "注册机构"
+      },
+      "regular": {
+        "title": "您的机构在这里",
+        "description": "加入领先医疗服务网络",
+        "button": "了解更多"
+      }
+    },
+    "beFounder": {
+      "title": "成为创始机构",
+      "description": "作为首批精选机构加入 Docito。获得高级曝光、吸引更多患者并随平台共同成长。",
+      "registerButton": "注册机构",
+      "contactButton": "联系销售"
+    }
+  },
+  "howItWorks": {
+    "title": "平台能力",
+    "subtitle": "4 步完成预约",
+    "steps": {
+      "search": { "title": "搜索", "description": "按专科与位置查找医疗服务" },
+      "review": { "title": "对比", "description": "对比资质与已验证评价" },
+      "book": { "title": "预约", "description": "在线即时预约" },
+      "care": { "title": "就诊", "description": "获得专业医疗服务" }
+    }
+  },
+  "features": {
+    "title": "平台能力",
+    "subtitle": "现代医疗的专业工具",
+    "verifiedProviders": {
+      "title": "已验证服务方",
+      "description": "所有医疗服务方均经过严格验证与资质审核"
+    },
+    "availability": {
+      "title": "7×24 可用",
+      "description": "随时随地、任意设备预约"
+    },
+    "verifiedReviews": {
+      "title": "已验证评价",
+      "description": "真实评价帮助做出更明智选择"
+    },
+    "instantBooking": {
+      "title": "即时预约",
+      "description": "秒级确认，而非等待数天"
+    },
+    "globalNetwork": {
+      "title": "全球网络",
+      "description": "覆盖多个国家的医疗服务"
+    },
+    "hipaaCompliant": {
+      "title": "HIPAA-ready",
+      "description": "数据加密与合规优先架构"
+    }
+  },
+  "cta": {
+    "title": "专业医疗管理",
+    "description": "以企业级工具升级您的机构运营与患者管理",
+    "scheduleDemoButton": "预约演示",
+    "learnMoreButton": "了解更多",
+    "features": {
+      "hipaa": "HIPAA-ready",
+      "security": "企业级安全",
+      "support": "7×24 支持"
+    }
+  },
+  "footer": {
+    "description": "专业医疗平台。通过安全预约、数字化记录与全面分析，实现企业级医疗管理。",
+    "platform": {
+      "title": "平台",
+      "searchDoctors": "搜索医生",
+      "browseSpecialties": "浏览专科",
+      "findPractices": "查找机构",
+      "features": "功能"
+    },
+    "support": {
+      "title": "支持",
+      "helpCenter": "帮助中心",
+      "contact": "联系我们",
+      "faqs": "常见问题",
+      "support": "支持"
+    },
+    "legal": {
+      "title": "法律",
+      "about": "关于我们",
+      "privacy": "隐私政策",
+      "terms": "服务条款",
+      "cookies": "Cookie 政策",
+      "legalCenter": "法律中心"
+    },
+    "contact": {
+      "email": "contact@docito.com",
+      "phone": "+1 (555) 123-4567",
+      "location": "San Francisco, CA"
+    },
+    "disclaimer": "内容仅供参考，不构成医疗建议、诊断或治疗。请咨询医疗专业人士。平台用于连接患者与服务方，不直接提供医疗服务。HIPAA-ready。",
+    "copyright": "All Rights Reserved",
+    "trademark": "Docito 为注册商标，品牌所属：",
+    "company": "Artsy Developers Inc.",
+    "links": {
+      "terms": "条款",
+      "privacy": "隐私",
+      "cookies": "Cookies",
+      "about": "关于"
+    }
+  },
+  "visuals": {
+    "hero": { "altText": "展示患者管理界面的仪表盘预览" },
+    "appointments": { "altText": "带动画日期的日历插画" },
+    "prescriptions": { "altText": "正在填写数字处方表单" },
+    "files": { "altText": "文件整理到安全文件夹" },
+    "notes": { "altText": "正在书写临床记录" },
+    "dashboard": { "altText": "包含图表与指标的交互式仪表盘" },
+    "collaboration": { "altText": "团队协作处理患者文件" },
+    "mobile": { "altText": "移动端界面演示" },
+    "success": { "altText": "成功庆祝动画" },
+    "security": { "altText": "保护数据的安全盾牌" }
+  },
+  "seo": {
+    "title": "Docito® — 统一的医疗管理与预约平台",
+    "description": "Docito® 将患者、医生、诊所、检验机构、药房、影像中心、医院与保险连接到同一安全系统—预约排班、转诊、病历、处方、消息与企业级分析一体化。",
+    "keywords": "医疗管理平台, 医生预约系统, 诊所管理软件, 实验室管理系统, 药房平台, 影像中心软件, 患者预约, 医疗转诊, 电子病历系统, HIPAA, 多语言医疗SaaS"
+  }
+}
