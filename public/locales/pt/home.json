@@ -1,1 +1,232 @@
-
+{
+  "hero": {
+    "badge": "Plataforma médica profissional",
+    "title1": "Gestão completa",
+    "title2": "de saúde",
+    "description": "Pagamentos, agendamento, prontuários e análises em uma plataforma segura para profissionais de saúde",
+    "features": {
+      "payments": "Processamento de pagamentos",
+      "scheduling": "Agendamento",
+      "records": "Prontuários",
+      "analytics": "Análises"
+    }
+  },
+  "search": {
+    "specialty": "Especialidade ou nome do médico",
+    "location": "Cidade ou local",
+    "insurance": "Operadora de seguro",
+    "searchButton": "Buscar profissionais de saúde",
+    "searching": "Buscando..."
+  },
+  "stats": {
+    "doctors": "Médicos",
+    "patients": "Pacientes",
+    "countries": "Países",
+    "avgRating": "Média"
+  },
+  "valueProposition": {
+    "badge": "Plataforma nível enterprise",
+    "title": "Ferramentas profissionais",
+    "subtitle": "para a saúde moderna",
+    "paymentProcessing": {
+      "title": "Processamento de pagamentos",
+      "description": "Pagamentos seguros com suporte a múltiplas moedas"
+    },
+    "schedulingManagement": {
+      "title": "Gestão de agenda",
+      "description": "Reservas em tempo real com fluxos automatizados"
+    },
+    "recordsManagement": {
+      "title": "Gestão de prontuários",
+      "description": "Sistema completo de registros médicos digitais"
+    },
+    "procedureLibrary": {
+      "title": "Biblioteca de procedimentos",
+      "description": "Rastreamento abrangente de procedimentos médicos"
+    },
+    "referralNetwork": {
+      "title": "Rede de encaminhamentos",
+      "description": "Sistema profissional de encaminhamentos"
+    },
+    "legalCompliance": {
+      "title": "Conformidade legal",
+      "description": "Arquitetura preparada para HIPAA e documentação"
+    },
+    "analytics": {
+      "badge": "Suíte completa de análises",
+      "title": "Insights orientados por dados",
+      "description": "Dashboards em tempo real, relatórios, métricas de performance, insights de pacientes, acompanhamento de receita e análises de agendamentos.",
+      "features": {
+        "dashboard": "Dashboard em tempo real com métricas ao vivo",
+        "revenue": "Acompanhamento e previsão de receita",
+        "insights": "Insights e demografia de pacientes",
+        "trends": "Tendências e padrões de agendamentos",
+        "performance": "Métricas de performance e eficiência",
+        "reports": "Relatórios personalizados exportáveis"
+      },
+      "stats": {
+        "revenueToday": "Receita hoje",
+        "appointments": "Agendamentos",
+        "activePatients": "Pacientes ativos"
+      }
+    }
+  },
+  "specialties": {
+    "title": "Especialidades médicas",
+    "subtitle": "Conecte-se com especialistas certificados",
+    "cardiology": "Cardiologia",
+    "dentist": "Odontologia",
+    "obGyn": "Ginecologia e obstetrícia",
+    "dermatology": "Dermatologia",
+    "psychiatry": "Psiquiatria",
+    "ophthalmology": "Oftalmologia",
+    "neurology": "Neurologia",
+    "orthopedics": "Ortopedia",
+    "pediatrics": "Pediatria"
+  },
+  "topSpecialists": {
+    "title": "Especialistas em destaque",
+    "bookAppointment": "Agendar consulta",
+    "noReviews": "Ainda sem avaliações",
+    "featuredSpot": {
+      "title": "Vaga de especialista em destaque",
+      "description": "Entre na nossa rede de profissionais e alcance milhares de pacientes",
+      "button": "Entrar como médico"
+    },
+    "beFirst": {
+      "title": "Seja o primeiro especialista em destaque",
+      "description": "Entre no Docito como especialista fundador. Visibilidade premium e pacientes desde o primeiro dia.",
+      "button": "Registrar sua clínica"
+    }
+  },
+  "topPractices": {
+    "title": "Principais clínicas e instituições",
+    "subtitle": "Instituições de saúde confiáveis",
+    "viewPractice": "Ver instituição",
+    "noReviews": "Ainda sem avaliações",
+    "emptySpot": {
+      "premium": {
+        "title": "Vaga premium para instituição",
+        "description": "Destaque sua instituição para milhares de pacientes com visibilidade premium.",
+        "button": "Registrar instituição"
+      },
+      "regular": {
+        "title": "Sua instituição aqui",
+        "description": "Junte-se à nossa rede de provedores",
+        "button": "Saiba mais"
+      }
+    },
+    "beFounder": {
+      "title": "Seja uma instituição fundadora",
+      "description": "Entre no Docito como uma das primeiras instituições em destaque. Atraia mais pacientes e cresça com a plataforma.",
+      "registerButton": "Registrar instituição",
+      "contactButton": "Falar com vendas"
+    }
+  },
+  "howItWorks": {
+    "title": "Capacidades da plataforma",
+    "subtitle": "Agende em 4 passos",
+    "steps": {
+      "search": { "title": "Buscar", "description": "Encontre provedores por especialidade e localização" },
+      "review": { "title": "Comparar", "description": "Compare credenciais e avaliações verificadas" },
+      "book": { "title": "Agendar", "description": "Agende instantaneamente online" },
+      "care": { "title": "Atender", "description": "Receba atendimento profissional" }
+    }
+  },
+  "features": {
+    "title": "Capacidades da plataforma",
+    "subtitle": "Ferramentas profissionais para a saúde moderna",
+    "verifiedProviders": {
+      "title": "Provedores verificados",
+      "description": "Todos os provedores são verificados e licenciados"
+    },
+    "availability": {
+      "title": "Disponível 24/7",
+      "description": "Agende a qualquer hora, em qualquer dispositivo"
+    },
+    "verifiedReviews": {
+      "title": "Avaliações verificadas",
+      "description": "Avaliações autênticas para decisões melhores"
+    },
+    "instantBooking": {
+      "title": "Agendamento instantâneo",
+      "description": "Confirmação em segundos, não em dias"
+    },
+    "globalNetwork": {
+      "title": "Rede global",
+      "description": "Provedores em vários países"
+    },
+    "hipaaCompliant": {
+      "title": "Preparado para HIPAA",
+      "description": "Dados criptografados e arquitetura focada em conformidade"
+    }
+  },
+  "cta": {
+    "title": "Gestão profissional de saúde",
+    "description": "Transforme sua operação com ferramentas enterprise e gestão completa de pacientes",
+    "scheduleDemoButton": "Agendar demo",
+    "learnMoreButton": "Saiba mais",
+    "features": {
+      "hipaa": "HIPAA-ready",
+      "security": "Segurança enterprise",
+      "support": "Suporte 24/7"
+    }
+  },
+  "footer": {
+    "description": "Plataforma médica profissional. Gestão enterprise com agendamento seguro, prontuários digitais e análises completas.",
+    "platform": {
+      "title": "Plataforma",
+      "searchDoctors": "Buscar médicos",
+      "browseSpecialties": "Especialidades",
+      "findPractices": "Encontrar instituições",
+      "features": "Recursos"
+    },
+    "support": {
+      "title": "Suporte",
+      "helpCenter": "Central de ajuda",
+      "contact": "Contato",
+      "faqs": "FAQs",
+      "support": "Suporte"
+    },
+    "legal": {
+      "title": "Legal",
+      "about": "Sobre nós",
+      "privacy": "Política de privacidade",
+      "terms": "Termos de serviço",
+      "cookies": "Política de cookies",
+      "legalCenter": "Centro legal"
+    },
+    "contact": {
+      "email": "contact@docito.com",
+      "phone": "+1 (555) 123-4567",
+      "location": "San Francisco, CA"
+    },
+    "disclaimer": "Conteúdo apenas informativo e não substitui aconselhamento médico, diagnóstico ou tratamento. Consulte profissionais de saúde. A plataforma conecta pacientes e provedores, mas não presta serviços médicos diretamente. HIPAA-ready.",
+    "copyright": "All Rights Reserved",
+    "trademark": "Docito é uma marca registrada e marca de",
+    "company": "Artsy Developers Inc.",
+    "links": {
+      "terms": "Termos",
+      "privacy": "Privacidade",
+      "cookies": "Cookies",
+      "about": "Sobre"
+    }
+  },
+  "visuals": {
+    "hero": { "altText": "Prévia do dashboard com interface de gestão de pacientes" },
+    "appointments": { "altText": "Ilustração de calendário com datas animadas" },
+    "prescriptions": { "altText": "Formulário de prescrição digital sendo preenchido" },
+    "files": { "altText": "Arquivos sendo organizados em pastas seguras" },
+    "notes": { "altText": "Anotações clínicas sendo escritas" },
+    "dashboard": { "altText": "Dashboard interativo com gráficos e métricas" },
+    "collaboration": { "altText": "Equipe colaborando em arquivos de pacientes" },
+    "mobile": { "altText": "Demonstração da interface móvel" },
+    "success": { "altText": "Animação de celebração de sucesso" },
+    "security": { "altText": "Escudo de segurança protegendo dados" }
+  },
+  "seo": {
+    "title": "Docito® — Plataforma unificada de gestão de saúde e agendamentos",
+    "description": "Docito® conecta pacientes, médicos, clínicas, laboratórios, farmácias, centros de imagem, hospitais e seguradoras em um sistema seguro—agenda, encaminhamentos, prontuários, prescrições, mensagens e análises em nível enterprise.",
+    "keywords": "plataforma de gestão de saúde, sistema de agendamento médico, software de gestão de clínica, sistema de gestão de laboratório, plataforma de farmácia, software de centro de imagem, agendamento de consultas, encaminhamentos médicos, prontuário eletrônico, HIPAA, SaaS de saúde multilíngue"
+  }
+}
