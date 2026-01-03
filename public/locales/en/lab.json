@@ -1,0 +1,146 @@
+{
+  "seo": {
+    "title": "Docito® Labs — Lab Management, Orders, Results & Referral Workflows",
+    "description": "Docito® for Laboratories unifies referral-based order intake, slot scheduling, sample tracking, results delivery, and audit-ready workflows—securely connecting labs with doctors, clinics, patients, and insurance.",
+    "keywords": "lab management system, laboratory workflow software, referral-based lab orders, lab appointment scheduling, lab results delivery, medical diagnostics platform, healthcare referrals, HIPAA compliant lab software, multilingual healthcare SaaS"
+  },
+
+  "nav": {
+    "backToHome": "Back to Docito",
+    "signIn": "Sign In",
+    "getStarted": "Get Started"
+  },
+
+  "hero": {
+    "badge": "Laboratory Operations, Unified",
+    "title1": "Modern Lab",
+    "title2": "Management & Referrals",
+    "description": "Run lab operations end-to-end: referral-based order intake, slot scheduling, sample tracking, results delivery, analytics, and compliance—built for secure collaboration across the Docito® healthcare ecosystem.",
+    "primaryCta": "Join as a Laboratory",
+    "secondaryCta": "Contact Sales",
+    "trustNote": "Compliance-first, HIPAA/GDPR-ready architecture with role-based access control."
+  },
+
+  "stats": {
+    "title": "Built for high-throughput labs",
+    "subtitle": "Visibility, auditability, and performance—without manual overhead",
+    "cards": {
+      "orders": { "label": "Orders Managed", "value": "10K+" },
+      "turnaround": { "label": "Faster Turnaround", "value": "Up to 40%" },
+      "accuracy": { "label": "Reduced Errors", "value": "Up to 60%" },
+      "coverage": { "label": "Cross-Entity Coverage", "value": "Doctors • Clinics • Patients" }
+    }
+  },
+
+  "problems": {
+    "badge": "Replace manual workflows",
+    "title": "From chaos to control",
+    "subtitle": "Docito® eliminates fragmented lab operations and replaces them with a single, secure workflow.",
+    "items": {
+      "paperOrders": {
+        "problem": "Paper orders, phone calls, and inbox overload",
+        "solution": "Referral-based digital orders with structured intake"
+      },
+      "noScheduling": {
+        "problem": "No slot planning, long queues, and missed capacity",
+        "solution": "Slot-based scheduling for tests, staff, and equipment"
+      },
+      "lostSamples": {
+        "problem": "Sample mix-ups and poor chain-of-custody",
+        "solution": "Sample tracking with audit trails and status updates"
+      },
+      "lateResults": {
+        "problem": "Delayed results and manual report delivery",
+        "solution": "Secure results delivery to doctors and patients"
+      },
+      "noAnalytics": {
+        "problem": "No performance visibility or forecasting",
+        "solution": "Operational analytics for volume, TAT, and utilization"
+      },
+      "complianceRisk": {
+        "problem": "Compliance risk and unclear access control",
+        "solution": "RBAC + auditability (HIPAA/GDPR-ready)"
+      }
+    }
+  },
+
+  "features": {
+    "badge": "Enterprise-grade lab tooling",
+    "title": "Everything a modern lab needs",
+    "subtitle": "Referrals, scheduling, results, collaboration, and reporting—secure by design.",
+    "items": {
+      "orderIntake": {
+        "title": "Referral-based Order Intake",
+        "description": "Receive structured orders from doctors and clinics, reduce ambiguity, and improve throughput from day one."
+      },
+      "slotScheduling": {
+        "title": "Slot-based Scheduling",
+        "description": "Plan tests with real capacity rules—staff, rooms, equipment, and turnaround targets."
+      },
+      "sampleTracking": {
+        "title": "Sample Tracking & Status",
+        "description": "Track each sample through every stage with audit trails, timestamps, and clear ownership."
+      },
+      "resultsDelivery": {
+        "title": "Secure Results Delivery",
+        "description": "Deliver results to the right people—doctors, clinics, and patients—while keeping privacy and compliance intact."
+      },
+      "notifications": {
+        "title": "Real-time Notifications",
+        "description": "Automated alerts for sample received, processing, ready for review, delivered—no manual follow-ups."
+      },
+      "analytics": {
+        "title": "Lab Analytics",
+        "description": "Monitor volume, turnaround time, error rates, and resource utilization with dashboard-ready metrics."
+      }
+    }
+  },
+
+  "howItWorks": {
+    "badge": "Simple. Structured. Secure.",
+    "title": "How it works",
+    "subtitle": "A clear workflow that connects labs with the entire Docito® ecosystem.",
+    "steps": {
+      "step1": {
+        "title": "Receive Orders",
+        "description": "Doctors and clinics send structured lab referrals and orders directly to your lab."
+      },
+      "step2": {
+        "title": "Schedule & Prepare",
+        "description": "Assign slots based on real capacity—staff, equipment, and expected turnaround."
+      },
+      "step3": {
+        "title": "Process & Track",
+        "description": "Track samples from intake to completion with status, audit logs, and clear accountability."
+      },
+      "step4": {
+        "title": "Deliver Results",
+        "description": "Publish results securely to doctors and patients with controlled access and full traceability."
+      }
+    }
+  },
+
+  "integrations": {
+    "badge": "Cross-entity collaboration",
+    "title": "Built for the full healthcare ecosystem",
+    "subtitle": "Labs don’t operate alone—Docito® connects referrals, appointments, records, and reporting.",
+    "items": {
+      "doctors": { "title": "Doctors", "description": "Receive orders and return results with structured clinical context." },
+      "clinics": { "title": "Clinics", "description": "Coordinate referrals, scheduling, and multi-provider workflows." },
+      "patients": { "title": "Patients", "description": "Give patients secure access to results and visit-related files." },
+      "insurance": { "title": "Insurance", "description": "Support verification workflows and linkage between orders and coverage." }
+    }
+  },
+
+  "cta": {
+    "title": "Bring your lab into the Docito® network",
+    "description": "Digitize operations, reduce delays, and deliver results securely—while staying compliance-first and audit-ready.",
+    "primary": "Register Your Laboratory",
+    "secondary": "Talk to Sales",
+    "note": "Verification required. Your dashboard remains visible, but actions can be gated until approval."
+  },
+
+  "visuals": {
+    "heroAlt": "Docito laboratory dashboard preview with orders, scheduling, and results delivery"
+  }
+}
