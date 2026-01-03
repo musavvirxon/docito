@@ -1,0 +1,146 @@
+{
+  "seo": {
+    "title": "Docito® Pharmacies — E-Prescriptions, Inventory, Refills, Delivery & Insurance Workflows",
+    "description": "Docito® for Pharmacies unifies e-prescription intake, inventory and dispensing, refill automation, patient notifications, delivery coordination, and audit-ready compliance—securely connecting pharmacies with doctors, clinics, patients, labs, and insurance.",
+    "keywords": "pharmacy management system, e-prescription platform, prescription dispensing software, pharmacy inventory management, refill automation, medication delivery coordination, insurance verification, claims workflow, HIPAA compliant pharmacy software, multilingual healthcare SaaS"
+  },
+
+  "nav": {
+    "backToHome": "Back to Docito",
+    "signIn": "Sign In",
+    "getStarted": "Get Started"
+  },
+
+  "hero": {
+    "badge": "Pharmacy Operations, Unified",
+    "title1": "Modern Pharmacy",
+    "title2": "Management & Fulfillment",
+    "description": "Run pharmacy operations end-to-end: e-prescription intake, inventory and dispensing, refill workflows, delivery coordination, analytics, and compliance—built for secure collaboration across the Docito® healthcare ecosystem.",
+    "primaryCta": "Join as a Pharmacy",
+    "secondaryCta": "Contact Sales",
+    "trustNote": "Compliance-first, HIPAA/GDPR-ready architecture with role-based access control and audit trails."
+  },
+
+  "stats": {
+    "title": "Built for high-volume pharmacies",
+    "subtitle": "Speed, safety, and traceability—without manual overhead",
+    "cards": {
+      "rx": { "label": "Prescriptions Processed", "value": "25K+" },
+      "refills": { "label": "Faster Refills", "value": "Up to 50%" },
+      "stock": { "label": "Fewer Stockouts", "value": "Up to 35%" },
+      "coverage": { "label": "Cross-Entity Coverage", "value": "Doctors • Clinics • Patients" }
+    }
+  },
+
+  "problems": {
+    "badge": "Replace fragmented workflows",
+    "title": "From bottlenecks to reliability",
+    "subtitle": "Docito® streamlines pharmacy operations into a single, secure, auditable workflow.",
+    "items": {
+      "manualRx": {
+        "problem": "Manual prescription intake and repeated clarifications",
+        "solution": "Structured e-prescription intake with validation and status"
+      },
+      "refillChaos": {
+        "problem": "Refill requests scattered across calls and messages",
+        "solution": "Refill workflows with approvals, reminders, and notifications"
+      },
+      "inventoryBlind": {
+        "problem": "Inventory blind spots and stockouts",
+        "solution": "Inventory management with thresholds, alerts, and forecasting"
+      },
+      "deliveryGaps": {
+        "problem": "Delivery coordination gaps and missed handoffs",
+        "solution": "Delivery scheduling, tracking, and patient updates"
+      },
+      "insuranceFriction": {
+        "problem": "Insurance verification and claims friction",
+        "solution": "Coverage checks and claim-ready workflows"
+      },
+      "complianceRisk": {
+        "problem": "Compliance risk and unclear access control",
+        "solution": "RBAC + audit trails (HIPAA/GDPR-ready)"
+      }
+    }
+  },
+
+  "features": {
+    "badge": "Enterprise-grade pharmacy tooling",
+    "title": "Everything a modern pharmacy needs",
+    "subtitle": "E-prescriptions, fulfillment, inventory, collaboration, and reporting—secure by design.",
+    "items": {
+      "eprescriptions": {
+        "title": "E-Prescription Intake & Status",
+        "description": "Receive digital prescriptions from doctors and clinics, reduce ambiguity, and track each order end-to-end."
+      },
+      "dispensing": {
+        "title": "Dispensing & Fulfillment Workflows",
+        "description": "Standardize dispensing steps with clear statuses, handoffs, and accountability for safer operations."
+      },
+      "inventory": {
+        "title": "Inventory & Stock Management",
+        "description": "Manage stock with thresholds, alerts, and visibility across locations to reduce shortages and waste."
+      },
+      "refills": {
+        "title": "Refill Automation",
+        "description": "Automate refill reminders, approvals, and patient notifications to reduce calls and delays."
+      },
+      "delivery": {
+        "title": "Delivery & Pickup Coordination",
+        "description": "Coordinate pickup windows and delivery slots with tracking updates for patients and staff."
+      },
+      "analytics": {
+        "title": "Pharmacy Analytics",
+        "description": "Monitor volume, turnaround time, refills, stock health, and operational efficiency with dashboard-ready metrics."
+      }
+    }
+  },
+
+  "howItWorks": {
+    "badge": "Simple. Structured. Secure.",
+    "title": "How it works",
+    "subtitle": "A clear workflow connecting pharmacies with the entire Docito® ecosystem.",
+    "steps": {
+      "step1": {
+        "title": "Receive Prescriptions",
+        "description": "Doctors and clinics send e-prescriptions securely to your pharmacy with structured details."
+      },
+      "step2": {
+        "title": "Verify & Prepare",
+        "description": "Check availability and coverage, then prepare fulfillment with clear internal handoffs."
+      },
+      "step3": {
+        "title": "Dispense & Track",
+        "description": "Complete dispensing steps with audit logs, timestamps, and status updates for traceability."
+      },
+      "step4": {
+        "title": "Deliver or Pickup",
+        "description": "Coordinate delivery or pickup and notify patients securely when orders are ready."
+      }
+    }
+  },
+
+  "integrations": {
+    "badge": "Cross-entity collaboration",
+    "title": "Built for the full healthcare ecosystem",
+    "subtitle": "Pharmacies don’t operate alone—Docito® connects prescriptions, appointments, records, labs, and insurance.",
+    "items": {
+      "doctors": { "title": "Doctors", "description": "Receive e-prescriptions and clarifications with structured clinical context." },
+      "clinics": { "title": "Clinics", "description": "Coordinate multi-provider workflows, follow-ups, and patient communications." },
+      "patients": { "title": "Patients", "description": "Provide secure pickup/delivery updates and access to prescription-related files." },
+      "insurance": { "title": "Insurance", "description": "Support coverage verification and claim-ready workflows tied to each prescription." }
+    }
+  },
+
+  "cta": {
+    "title": "Bring your pharmacy into the Docito® network",
+    "description": "Digitize dispensing, reduce delays, and improve inventory visibility—while staying compliance-first and audit-ready.",
+    "primary": "Register Your Pharmacy",
+    "secondary": "Talk to Sales",
+    "note": "Verification required. Your dashboard remains visible, but actions can be gated until approval."
+  },
+
+  "visuals": {
+    "heroAlt": "Docito pharmacy dashboard preview with e-prescriptions, inventory, refills, and delivery tracking"
+  }
+}
