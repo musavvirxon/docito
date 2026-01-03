@@ -1,1 +1,232 @@
-
+{
+  "hero": {
+    "badge": "전문 의료 플랫폼",
+    "title1": "통합 헬스케어",
+    "title2": "관리 솔루션",
+    "description": "의료 전문가를 위한 결제, 일정, 기록, 분석을 하나의 안전한 플랫폼에서",
+    "features": {
+      "payments": "결제 처리",
+      "scheduling": "일정 관리",
+      "records": "의료 기록",
+      "analytics": "분석"
+    }
+  },
+  "search": {
+    "specialty": "진료과 또는 의사 이름",
+    "location": "도시 또는 위치",
+    "insurance": "보험사",
+    "searchButton": "의료 제공자 검색",
+    "searching": "검색 중..."
+  },
+  "stats": {
+    "doctors": "의사",
+    "patients": "환자",
+    "countries": "국가",
+    "avgRating": "평균 평점"
+  },
+  "valueProposition": {
+    "badge": "엔터프라이즈급 플랫폼",
+    "title": "전문가용 도구",
+    "subtitle": "현대 의료를 위해",
+    "paymentProcessing": {
+      "title": "결제 처리",
+      "description": "다중 통화 지원의 안전한 결제"
+    },
+    "schedulingManagement": {
+      "title": "일정 관리",
+      "description": "실시간 예약과 자동화 워크플로"
+    },
+    "recordsManagement": {
+      "title": "기록 관리",
+      "description": "완전한 디지털 의료 기록 시스템"
+    },
+    "procedureLibrary": {
+      "title": "시술 라이브러리",
+      "description": "포괄적인 의료 시술 추적"
+    },
+    "referralNetwork": {
+      "title": "의뢰 네트워크",
+      "description": "전문 의뢰 관리 시스템"
+    },
+    "legalCompliance": {
+      "title": "규정 준수",
+      "description": "HIPAA 대비 아키텍처 및 문서화"
+    },
+    "analytics": {
+      "badge": "종합 분석 스위트",
+      "title": "데이터 기반 인사이트",
+      "description": "실시간 대시보드, 종합 리포트, 성과 지표, 환자 인사이트, 매출 추적, 예약 분석.",
+      "features": {
+        "dashboard": "실시간 지표가 있는 대시보드",
+        "revenue": "매출 추적 및 예측",
+        "insights": "환자 인사이트 및 인구통계",
+        "trends": "예약 트렌드 및 패턴",
+        "performance": "성과 및 효율 지표",
+        "reports": "맞춤형 내보내기 리포트"
+      },
+      "stats": {
+        "revenueToday": "오늘의 매출",
+        "appointments": "예약",
+        "activePatients": "활성 환자"
+      }
+    }
+  },
+  "specialties": {
+    "title": "의료 تخصص",
+    "subtitle": "인증된 متخصص와 연결하세요",
+    "cardiology": "심장내과",
+    "dentist": "치과",
+    "obGyn": "산부인과",
+    "dermatology": "피부과",
+    "psychiatry": "정신건강의학과",
+    "ophthalmology": "안과",
+    "neurology": "신경과",
+    "orthopedics": "정형외과",
+    "pediatrics": "소아과"
+  },
+  "topSpecialists": {
+    "title": "추천 متخصص",
+    "bookAppointment": "예약하기",
+    "noReviews": "아직 리뷰가 없습니다",
+    "featuredSpot": {
+      "title": "추천 متخصص 자리",
+      "description": "최상위 의료 전문가 네트워크에 참여하고 수천 명의 환자에게 도달하세요",
+      "button": "의사로 참여"
+    },
+    "beFirst": {
+      "title": "첫 추천 متخصص가 되어보세요",
+      "description": "Docito의 초기 추천 متخصص로 참여하세요. 첫날부터 프리미엄 노출과 환자 연결.",
+      "button": "기관 등록"
+    }
+  },
+  "topPractices": {
+    "title": "주요 의료 기관",
+    "subtitle": "신뢰할 수 있는 의료 প্রতিষ্ঠান",
+    "viewPractice": "기관 보기",
+    "noReviews": "아직 리뷰가 없습니다",
+    "emptySpot": {
+      "premium": {
+        "title": "프리미엄 기관 자리",
+        "description": "수천 명의 잠재 환자에게 기관을 소개하세요. 프리미엄 배치와 가시성.",
+        "button": "기관 등록"
+      },
+      "regular": {
+        "title": "여기에 귀하의 기관",
+        "description": "의료 제공자 네트워크에 참여하세요",
+        "button": "자세히"
+      }
+    },
+    "beFounder": {
+      "title": "초기 파트너 기관이 되세요",
+      "description": "Docito의 첫 추천 기관으로 참여하세요. 더 많은 환자 유입과 성장.",
+      "registerButton": "기관 등록",
+      "contactButton": "영업 문의"
+    }
+  },
+  "howItWorks": {
+    "title": "플랫폼 기능",
+    "subtitle": "4단계로 상담 예약",
+    "steps": {
+      "search": { "title": "검색", "description": "진료과와 위치로 찾기" },
+      "review": { "title": "비교", "description": "자격과 검증된 리뷰 확인" },
+      "book": { "title": "예약", "description": "온라인으로 즉시 예약" },
+      "care": { "title": "진료", "description": "전문 의료 서비스 받기" }
+    }
+  },
+  "features": {
+    "title": "플랫폼 기능",
+    "subtitle": "현대 의료를 위한 전문 도구",
+    "verifiedProviders": {
+      "title": "검증된 제공자",
+      "description": "모든 제공자는 철저히 검증 및 라이선스 확인"
+    },
+    "availability": {
+      "title": "24/7 이용 가능",
+      "description": "언제 어디서나 어떤 기기에서든 예약"
+    },
+    "verifiedReviews": {
+      "title": "검증된 리뷰",
+      "description": "신뢰할 수 있는 리뷰로 합리적 결정"
+    },
+    "instantBooking": {
+      "title": "즉시 예약",
+      "description": "며칠이 아닌 몇 초 만에 확정"
+    },
+    "globalNetwork": {
+      "title": "글로벌 네트워크",
+      "description": "여러 국가의 의료 제공자"
+    },
+    "hipaaCompliant": {
+      "title": "HIPAA 대비",
+      "description": "데이터 암호화 및 컴플라이언스 중심 설계"
+    }
+  },
+  "cta": {
+    "title": "전문 헬스케어 관리",
+    "description": "엔터프라이즈급 도구로 기관 운영과 환자 관리를 혁신하세요",
+    "scheduleDemoButton": "데모 요청",
+    "learnMoreButton": "자세히 보기",
+    "features": {
+      "hipaa": "HIPAA-ready",
+      "security": "엔터프라이즈 보안",
+      "support": "24/7 지원"
+    }
+  },
+  "footer": {
+    "description": "전문 의료 플랫폼. 안전한 예약, 디지털 기록, 종합 분석으로 의료 운영을 엔터프라이즈 수준으로 관리합니다.",
+    "platform": {
+      "title": "플랫폼",
+      "searchDoctors": "의사 검색",
+      "browseSpecialties": "진료과 보기",
+      "findPractices": "기관 찾기",
+      "features": "기능"
+    },
+    "support": {
+      "title": "지원",
+      "helpCenter": "도움말 센터",
+      "contact": "문의하기",
+      "faqs": "FAQ",
+      "support": "지원"
+    },
+    "legal": {
+      "title": "법적 고지",
+      "about": "소개",
+      "privacy": "개인정보 처리방침",
+      "terms": "이용약관",
+      "cookies": "쿠키 정책",
+      "legalCenter": "법적 센터"
+    },
+    "contact": {
+      "email": "contact@docito.com",
+      "phone": "+1 (555) 123-4567",
+      "location": "San Francisco, CA"
+    },
+    "disclaimer": "본 콘텐츠는 정보 제공 목적이며 의학적 조언, 진단 또는 치료가 아닙니다. 의료 결정은 전문가와 상의하세요. Docito는 환자와 제공자를 연결하며 직접 의료 서비스를 제공하지 않습니다. HIPAA-ready.",
+    "copyright": "All Rights Reserved",
+    "trademark": "Docito는 등록 상표이며 브랜드 소유자:",
+    "company": "Artsy Developers Inc.",
+    "links": {
+      "terms": "약관",
+      "privacy": "개인정보",
+      "cookies": "쿠키",
+      "about": "소개"
+    }
+  },
+  "visuals": {
+    "hero": { "altText": "환자 관리 인터페이스를 보여주는 대시보드 미리보기" },
+    "appointments": { "altText": "애니메이션 날짜가 있는 캘린더 일러스트" },
+    "prescriptions": { "altText": "디지털 처방전 양식을 작성하는 모습" },
+    "files": { "altText": "파일이 안전한 폴더로 정리되는 모습" },
+    "notes": { "altText": "임상 노트를 작성하는 모습" },
+    "dashboard": { "altText": "차트와 지표가 있는 인터랙티브 대시보드" },
+    "collaboration": { "altText": "팀이 환자 파일을 함께 작업하는 모습" },
+    "mobile": { "altText": "모바일 앱 UI 데모" },
+    "success": { "altText": "성공 축하 애니메이션" },
+    "security": { "altText": "데이터를 보호하는 보안 방패" }
+  },
+  "seo": {
+    "title": "Docito® — 통합 헬스케어 관리 및 예약 플랫폼",
+    "description": "Docito®는 환자, 의사, 클리닉, 검사실, 약국, 영상센터, 병원, 보험을 하나의 안전한 시스템으로 연결합니다—일정, 의뢰, 기록, 처방, 메시징, 분석을 엔터프라이즈 수준으로 제공합니다.",
+    "keywords": "헬스케어 관리 플랫폼, 의사 예약 시스템, 클리닉 관리 소프트웨어, 검사실 관리 시스템, 약국 플랫폼, 영상센터 소프트웨어, 환자 예약, 의료 의뢰, 의료 기록 시스템, HIPAA, 다국어 헬스케어 SaaS"
+  }
+}
