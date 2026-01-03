@@ -1,0 +1,137 @@
+{
+  "seo": {
+    "title": "Docito® Labs — 实验室管理、检验医嘱、结果交付与转诊流程",
+    "description": "Docito® 面向医学检验机构，统一转诊/医嘱订单接收、按时段预约、样本追踪、结果安全交付与可审计流程——安全连接实验室与医生、诊所、患者及保险机构。",
+    "keywords": "实验室管理系统, 检验流程软件, 转诊检验医嘱, 实验室预约排班, 检验结果交付, 医疗诊断平台, 医疗转诊, HIPAA 合规实验室软件, 多语言医疗 SaaS"
+  },
+  "nav": {
+    "backToHome": "返回 Docito",
+    "signIn": "登录",
+    "getStarted": "开始使用"
+  },
+  "hero": {
+    "badge": "实验室运营，一体化",
+    "title1": "现代化实验室",
+    "title2": "管理与转诊协作",
+    "description": "端到端运行实验室：转诊/医嘱订单接收、按时段预约、样本追踪、结果交付、运营分析与合规管理——面向 Docito® 医疗生态的安全协作而生。",
+    "primaryCta": "以实验室身份加入",
+    "secondaryCta": "联系销售",
+    "trustNote": "合规优先：支持 HIPAA/GDPR，基于角色的访问控制（RBAC）。"
+  },
+  "stats": {
+    "title": "为高通量实验室打造",
+    "subtitle": "可视化、可审计、强性能——降低人工成本",
+    "cards": {
+      "orders": { "label": "已管理订单", "value": "10K+" },
+      "turnaround": { "label": "更快周转时间", "value": "最高 40%" },
+      "accuracy": { "label": "减少错误", "value": "最高 60%" },
+      "coverage": { "label": "跨机构协作覆盖", "value": "医生 • 诊所 • 患者" }
+    }
+  },
+  "problems": {
+    "badge": "替代手工流程",
+    "title": "从混乱到可控",
+    "subtitle": "Docito® 用统一、安全的工作流替代碎片化的实验室运营。",
+    "items": {
+      "paperOrders": {
+        "problem": "纸质医嘱、电话沟通与收件箱过载",
+        "solution": "转诊/医嘱驱动的数字化订单与结构化接收"
+      },
+      "noScheduling": {
+        "problem": "缺少时段规划，排队久、产能被浪费",
+        "solution": "按时段预约，覆盖检验项目、人员与设备"
+      },
+      "lostSamples": {
+        "problem": "样本混淆与链路追踪不足",
+        "solution": "全程样本追踪，审计记录与状态更新"
+      },
+      "lateResults": {
+        "problem": "结果延迟与手工报告交付",
+        "solution": "面向医生与患者的安全结果交付"
+      },
+      "noAnalytics": {
+        "problem": "缺少绩效可视化与预测能力",
+        "solution": "运营分析：量、TAT 与资源利用率"
+      },
+      "complianceRisk": {
+        "problem": "合规风险与访问控制不清晰",
+        "solution": "RBAC + 可审计（HIPAA/GDPR 就绪）"
+      }
+    }
+  },
+  "features": {
+    "badge": "企业级实验室工具",
+    "title": "现代实验室所需的一切",
+    "subtitle": "转诊、排班、结果、协作与报表——安全为先。",
+    "items": {
+      "orderIntake": {
+        "title": "转诊/医嘱订单接收",
+        "description": "从医生与诊所接收结构化订单，减少歧义并提升吞吐量。"
+      },
+      "slotScheduling": {
+        "title": "按时段预约排班",
+        "description": "基于真实产能规则排班——人员、房间、设备与周转目标。"
+      },
+      "sampleTracking": {
+        "title": "样本追踪与状态管理",
+        "description": "全流程追踪每一份样本，带审计记录、时间戳与明确责任。"
+      },
+      "resultsDelivery": {
+        "title": "安全结果交付",
+        "description": "将结果交付给正确对象——医生、诊所与患者——同时保障隐私与合规。"
+      },
+      "notifications": {
+        "title": "实时通知",
+        "description": "自动提醒：已接收、处理中、待审核、已交付——无需人工追问。"
+      },
+      "analytics": {
+        "title": "实验室运营分析",
+        "description": "监控量、周转时间、错误率与资源利用率，指标可直接用于仪表盘。"
+      }
+    }
+  },
+  "howItWorks": {
+    "badge": "简单。结构化。安全。",
+    "title": "工作流程",
+    "subtitle": "清晰流程，连接 Docito® 全医疗生态。",
+    "steps": {
+      "step1": {
+        "title": "接收订单",
+        "description": "医生与诊所将结构化转诊与检验医嘱直接发送到实验室。"
+      },
+      "step2": {
+        "title": "排班与准备",
+        "description": "按真实产能分配时段——人员、设备与预计周转时间。"
+      },
+      "step3": {
+        "title": "处理与追踪",
+        "description": "从接收至完成全程追踪样本，包含状态、审计日志与责任归属。"
+      },
+      "step4": {
+        "title": "交付结果",
+        "description": "以受控访问与可追溯机制，将结果安全发布给医生与患者。"
+      }
+    }
+  },
+  "integrations": {
+    "badge": "跨机构协作",
+    "title": "为完整医疗生态而生",
+    "subtitle": "实验室并非孤岛——Docito® 连接转诊、预约、记录与报表。",
+    "items": {
+      "doctors": { "title": "医生", "description": "接收医嘱并回传结果，同时保留结构化临床信息。" },
+      "clinics": { "title": "诊所", "description": "协调转诊、排班与多机构流程。" },
+      "patients": { "title": "患者", "description": "为患者提供结果与就诊相关文件的安全访问。" },
+      "insurance": { "title": "保险", "description": "支持保障验证与订单/保障关联流程。" }
+    }
+  },
+  "cta": {
+    "title": "将您的实验室接入 Docito® 网络",
+    "description": "数字化运营、减少延迟、安全交付结果——合规优先、审计就绪。",
+    "primary": "注册实验室",
+    "secondary": "与销售沟通",
+    "note": "需要验证。仪表盘可见，但操作可在审批前进行限制。"
+  },
+  "visuals": {
+    "heroAlt": "Docito 实验室仪表盘预览：订单、排班与结果交付"
+  }
+}
