@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Logo } from '@/components/Logo';
-import Footer from '@/components/Footer';
+import ModernNavbar from '@/components/home/ModernNavbar';
+import ModernFooter from '@/components/home/ModernFooter';
 import { 
   Search, Book, Video, FileText, CreditCard, 
   Users, Calendar, HelpCircle, ChevronRight 
@@ -101,19 +101,7 @@ export default function HelpCenter() {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="bg-card border-b border-border">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Logo variant="horizontal" size="sm" onClick={() => navigate('/')} className="cursor-pointer" />
-            <button
-              onClick={() => navigate('/auth')}
-              className="px-6 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              {t('common:nav.signIn')}
-            </button>
-          </div>
-        </div>
-      </nav>
+      <ModernNavbar />
 
       <div className="bg-gradient-to-br from-primary/90 to-primary py-16">
         <div className="container mx-auto px-4">
@@ -206,7 +194,7 @@ export default function HelpCenter() {
         </div>
       </div>
 
-      <Footer />
+      <ModernFooter />
     </div>
   );
 }

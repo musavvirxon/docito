@@ -172,7 +172,7 @@ const SuperAdminDashboard = () => {
       try {
         const { data, error } = await supabase
           .from("user_roles")
-          .select("role,status")
+          .select("role")
           .eq("user_id", user.id)
           .eq("role", "super_admin")
           .maybeSingle();
@@ -181,8 +181,8 @@ const SuperAdminDashboard = () => {
           console.error("Error checking super admin role:", error);
           setIsSuperAdmin(false);
         } else {
-          const ok = !!data && (data.status ?? "verified") === "verified";
-          setIsSuperAdmin(ok);
+          // User is super admin if the role exists
+          setIsSuperAdmin(!!data);
         }
       } catch (e) {
         console.error("Error checking super admin role:", e);
