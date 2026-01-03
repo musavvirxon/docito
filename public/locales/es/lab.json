@@ -1,0 +1,137 @@
+{
+  "seo": {
+    "title": "Docito® Labs — Gestión de laboratorios, órdenes, resultados y derivaciones",
+    "description": "Docito® para laboratorios unifica la recepción de órdenes por derivación, la programación por cupos, el seguimiento de muestras, la entrega de resultados y flujos auditables—conectando de forma segura laboratorios con médicos, clínicas, pacientes y aseguradoras.",
+    "keywords": "sistema de gestión de laboratorios, software de flujo de trabajo de laboratorio, órdenes por derivación, programación de citas de laboratorio, entrega de resultados, plataforma de diagnóstico médico, derivaciones sanitarias, software compatible con HIPAA, SaaS sanitario multilingüe"
+  },
+  "nav": {
+    "backToHome": "Volver a Docito",
+    "signIn": "Iniciar sesión",
+    "getStarted": "Empezar"
+  },
+  "hero": {
+    "badge": "Operaciones de laboratorio, unificadas",
+    "title1": "Gestión Moderna",
+    "title2": "de Laboratorio y Derivaciones",
+    "description": "Gestione el laboratorio de extremo a extremo: recepción de órdenes por derivación, programación por cupos, seguimiento de muestras, entrega de resultados, analítica y cumplimiento—para una colaboración segura en el ecosistema de salud Docito®.",
+    "primaryCta": "Unirse como laboratorio",
+    "secondaryCta": "Contactar ventas",
+    "trustNote": "Arquitectura centrada en cumplimiento: preparada para HIPAA/GDPR con control de acceso por roles."
+  },
+  "stats": {
+    "title": "Diseñado para laboratorios de alto volumen",
+    "subtitle": "Visibilidad, auditabilidad y rendimiento—sin sobrecarga manual",
+    "cards": {
+      "orders": { "label": "Órdenes gestionadas", "value": "10K+" },
+      "turnaround": { "label": "Turnaround más rápido", "value": "Hasta 40%" },
+      "accuracy": { "label": "Menos errores", "value": "Hasta 60%" },
+      "coverage": { "label": "Cobertura entre entidades", "value": "Médicos • Clínicas • Pacientes" }
+    }
+  },
+  "problems": {
+    "badge": "Reemplace procesos manuales",
+    "title": "Del caos al control",
+    "subtitle": "Docito® elimina operaciones fragmentadas y las reemplaza por un flujo único y seguro.",
+    "items": {
+      "paperOrders": {
+        "problem": "Órdenes en papel, llamadas y bandejas saturadas",
+        "solution": "Órdenes digitales por derivación con recepción estructurada"
+      },
+      "noScheduling": {
+        "problem": "Sin planificación de cupos, colas largas y capacidad perdida",
+        "solution": "Programación por cupos para pruebas, personal y equipos"
+      },
+      "lostSamples": {
+        "problem": "Confusión de muestras y cadena de custodia deficiente",
+        "solution": "Seguimiento de muestras con auditoría y estados"
+      },
+      "lateResults": {
+        "problem": "Resultados tardíos y entrega manual de informes",
+        "solution": "Entrega segura de resultados a médicos y pacientes"
+      },
+      "noAnalytics": {
+        "problem": "Sin visibilidad de rendimiento ni previsión",
+        "solution": "Analítica operativa para volumen, TAT y utilización"
+      },
+      "complianceRisk": {
+        "problem": "Riesgo de cumplimiento y acceso poco claro",
+        "solution": "RBAC + auditabilidad (preparado para HIPAA/GDPR)"
+      }
+    }
+  },
+  "features": {
+    "badge": "Herramientas de laboratorio de nivel enterprise",
+    "title": "Todo lo que un laboratorio moderno necesita",
+    "subtitle": "Derivaciones, programación, resultados, colaboración y reporting—seguro por diseño.",
+    "items": {
+      "orderIntake": {
+        "title": "Recepción de órdenes por derivación",
+        "description": "Reciba órdenes estructuradas desde médicos y clínicas, reduzca ambigüedad y aumente el rendimiento desde el primer día."
+      },
+      "slotScheduling": {
+        "title": "Programación por cupos",
+        "description": "Planifique pruebas con reglas reales de capacidad—personal, salas, equipos y objetivos de turnaround."
+      },
+      "sampleTracking": {
+        "title": "Seguimiento y estado de muestras",
+        "description": "Siga cada muestra en cada etapa con auditoría, marcas de tiempo y responsabilidad clara."
+      },
+      "resultsDelivery": {
+        "title": "Entrega segura de resultados",
+        "description": "Entregue resultados a las personas correctas—médicos, clínicas y pacientes—manteniendo privacidad y cumplimiento."
+      },
+      "notifications": {
+        "title": "Notificaciones en tiempo real",
+        "description": "Alertas automáticas: muestra recibida, en proceso, lista para revisión, entregada—sin seguimiento manual."
+      },
+      "analytics": {
+        "title": "Analítica de laboratorio",
+        "description": "Monitoree volumen, turnaround, errores y uso de recursos con métricas listas para tablero."
+      }
+    }
+  },
+  "howItWorks": {
+    "badge": "Simple. Estructurado. Seguro.",
+    "title": "Cómo funciona",
+    "subtitle": "Un flujo claro que conecta laboratorios con todo el ecosistema Docito®.",
+    "steps": {
+      "step1": {
+        "title": "Recibir órdenes",
+        "description": "Médicos y clínicas envían derivaciones y órdenes estructuradas directamente a su laboratorio."
+      },
+      "step2": {
+        "title": "Programar y preparar",
+        "description": "Asigne cupos según capacidad real—personal, equipos y turnaround esperado."
+      },
+      "step3": {
+        "title": "Procesar y rastrear",
+        "description": "Rastree muestras desde la recepción hasta la finalización con estados, logs de auditoría y responsabilidad."
+      },
+      "step4": {
+        "title": "Entregar resultados",
+        "description": "Publique resultados de forma segura a médicos y pacientes con acceso controlado y trazabilidad completa."
+      }
+    }
+  },
+  "integrations": {
+    "badge": "Colaboración entre entidades",
+    "title": "Creado para todo el ecosistema de salud",
+    "subtitle": "Los laboratorios no operan solos—Docito® conecta derivaciones, citas, registros y reporting.",
+    "items": {
+      "doctors": { "title": "Médicos", "description": "Reciba órdenes y devuelva resultados con contexto clínico estructurado." },
+      "clinics": { "title": "Clínicas", "description": "Coordine derivaciones, programación y flujos multi-proveedor." },
+      "patients": { "title": "Pacientes", "description": "Brinde acceso seguro a resultados y archivos relacionados con la visita." },
+      "insurance": { "title": "Aseguradoras", "description": "Soporte para verificación de cobertura y vínculo entre órdenes y pólizas." }
+    }
+  },
+  "cta": {
+    "title": "Integre su laboratorio a la red Docito®",
+    "description": "Digitalice operaciones, reduzca demoras y entregue resultados de forma segura—con cumplimiento primero y auditoría lista.",
+    "primary": "Registrar laboratorio",
+    "secondary": "Hablar con ventas",
+    "note": "Se requiere verificación. El panel es visible, pero las acciones pueden restringirse hasta la aprobación."
+  },
+  "visuals": {
+    "heroAlt": "Vista previa del panel de laboratorio Docito con órdenes, programación y entrega de resultados"
+  }
+}
