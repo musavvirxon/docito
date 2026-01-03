@@ -1,1 +1,264 @@
-
+{
+  "hero": {
+    "badge": "Professional tibbiy platforma",
+    "title1": "To‘liq sog‘liqni saqlash",
+    "title2": "boshqaruv yechimi",
+    "description": "Tibbiy mutaxassislar uchun to‘lovlar, jadval, yozuvlar va analitika — bitta xavfsiz platformada",
+    "features": {
+      "payments": "To‘lovlarni qabul qilish",
+      "scheduling": "Jadval",
+      "records": "Tibbiy yozuvlar",
+      "analytics": "Analitika"
+    }
+  },
+  "search": {
+    "specialty": "Mutaxassislik yoki shifokor ismi",
+    "location": "Shahar yoki manzil",
+    "insurance": "Sug‘urta provayderi",
+    "searchButton": "Tibbiy mutaxassislarni qidirish",
+    "searching": "Qidirilmoqda..."
+  },
+  "stats": {
+    "doctors": "Shifokorlar",
+    "patients": "Bemorlar",
+    "countries": "Mamlakatlar",
+    "avgRating": "O‘rtacha reyting"
+  },
+  "valueProposition": {
+    "badge": "Enterprise-darajadagi platforma",
+    "title": "Professional vositalar",
+    "subtitle": "zamonaviy tibbiyot uchun",
+    "paymentProcessing": {
+      "title": "To‘lovlarni qabul qilish",
+      "description": "Ko‘p valyutali xavfsiz to‘lovlar"
+    },
+    "schedulingManagement": {
+      "title": "Jadvalni boshqarish",
+      "description": "Real-time bron va avtomatlashtirilgan workflow"
+    },
+    "recordsManagement": {
+      "title": "Yozuvlarni boshqarish",
+      "description": "To‘liq raqamli tibbiy yozuvlar tizimi"
+    },
+    "procedureLibrary": {
+      "title": "Protseduralar kutubxonasi",
+      "description": "Tibbiy protseduralarni to‘liq kuzatish"
+    },
+    "referralNetwork": {
+      "title": "Yo‘llanmalar tarmog‘i",
+      "description": "Professional yo‘llanma boshqaruvi"
+    },
+    "legalCompliance": {
+      "title": "Yuridik moslik",
+      "description": "HIPAA-ga tayyor arxitektura va hujjatlashtirish"
+    },
+    "analytics": {
+      "badge": "Keng qamrovli analitika",
+      "title": "Ma’lumotga asoslangan qarorlar",
+      "description": "Real-time dashboardlar, to‘liq hisobotlar, samaradorlik metrikalari, bemor tahlillari, daromad kuzatuvi va qabul analitikasi.",
+      "features": {
+        "dashboard": "Real-time dashboard va jonli metrikalar",
+        "revenue": "Daromad kuzatuvi va prognoz",
+        "insights": "Bemor insights va demografiya",
+        "trends": "Qabul trend va patternlari",
+        "performance": "Samaradorlik va effektlilik metrikalari",
+        "reports": "Eksport qilinadigan maxsus hisobotlar"
+      },
+      "stats": {
+        "revenueToday": "Bugungi daromad",
+        "appointments": "Qabullar",
+        "activePatients": "Faol bemorlar"
+      }
+    }
+  },
+  "specialties": {
+    "title": "Tibbiy mutaxassisliklar",
+    "subtitle": "Sertifikatlangan mutaxassislar bilan bog‘laning",
+    "cardiology": "Kardiologiya",
+    "dentist": "Stomatologiya",
+    "obGyn": "Akusher-ginekologiya",
+    "dermatology": "Dermatologiya",
+    "psychiatry": "Psixiatriya",
+    "ophthalmology": "Oftalmologiya",
+    "neurology": "Nevrologiya",
+    "orthopedics": "Ortopediya",
+    "pediatrics": "Pediatriya"
+  },
+  "topSpecialists": {
+    "title": "Tavsiya etilgan mutaxassislar",
+    "bookAppointment": "Qabulga yozilish",
+    "noReviews": "Hali sharhlar yo‘q",
+    "featuredSpot": {
+      "title": "Tavsiya etilgan mutaxassis joyi",
+      "description": "Eng yaxshi shifokorlar tarmog‘iga qo‘shiling va minglab bemorlarga chiqing",
+      "button": "Shifokor sifatida qo‘shilish"
+    },
+    "beFirst": {
+      "title": "Birinchi tavsiya etilgan mutaxassis bo‘ling",
+      "description": "Docito’ga asoschi tavsiya etilgan mutaxassis sifatida qo‘shiling. Premium ko‘rinish va birinchi kundan bemorlar.",
+      "button": "Amaliyotingizni ro‘yxatdan o‘tkazing"
+    }
+  },
+  "topPractices": {
+    "title": "Yetakchi tibbiy muassasalar",
+    "subtitle": "Ishonchli sog‘liqni saqlash tashkilotlari",
+    "viewPractice": "Profilni ko‘rish",
+    "noReviews": "Hali sharhlar yo‘q",
+    "emptySpot": {
+      "premium": {
+        "title": "Premium muassasa joyi",
+        "description": "Muassasangizni minglab bemorlarga namoyish qiling. Premium joylashuv va ko‘rinish.",
+        "button": "Muassasani ro‘yxatdan o‘tkazing"
+      },
+      "regular": {
+        "title": "Muassasangiz shu yerda",
+        "description": "Yetakchi provayderlar tarmog‘iga qo‘shiling",
+        "button": "Batafsil"
+      }
+    },
+    "beFounder": {
+      "title": "Asoschi muassasa bo‘ling",
+      "description": "Docito’ga birinchi tavsiya etilgan muassasalardan biri sifatida qo‘shiling. Premium ko‘rinish, ko‘proq bemorlar va o‘sish.",
+      "registerButton": "Muassasani ro‘yxatdan o‘tkazing",
+      "contactButton": "Sotuv bo‘limi bilan bog‘lanish"
+    }
+  },
+  "howItWorks": {
+    "title": "Platforma imkoniyatlari",
+    "subtitle": "4 qadamda konsultatsiya bron qiling",
+    "steps": {
+      "search": {
+        "title": "Qidirish",
+        "description": "Mutaxassislik va manzil bo‘yicha toping"
+      },
+      "review": {
+        "title": "Taqqoslash",
+        "description": "Malaka va tasdiqlangan sharhlarni solishtiring"
+      },
+      "book": {
+        "title": "Bron qilish",
+        "description": "Online tarzda darhol qabulni belgilang"
+      },
+      "care": {
+        "title": "Xizmat",
+        "description": "Professional tibbiy xizmat oling"
+      }
+    }
+  },
+  "features": {
+    "title": "Platforma imkoniyatlari",
+    "subtitle": "Zamonaviy tibbiyot uchun professional vositalar",
+    "verifiedProviders": {
+      "title": "Tasdiqlangan provayderlar",
+      "description": "Barcha provayderlar sinchkov tekshiruv va litsenziyadan o‘tadi"
+    },
+    "availability": {
+      "title": "24/7 mavjud",
+      "description": "Istalgan vaqtda, istalgan joyda, istalgan qurilmada bron qiling"
+    },
+    "verifiedReviews": {
+      "title": "Tasdiqlangan sharhlar",
+      "description": "Haqiqiy sharhlar to‘g‘ri tanlov qilishga yordam beradi"
+    },
+    "instantBooking": {
+      "title": "Tezkor bron",
+      "description": "Kunlar emas, soniyalar ichida tasdiqlash"
+    },
+    "globalNetwork": {
+      "title": "Global tarmoq",
+      "description": "Bir nechta mamlakatlarda provayderlar"
+    },
+    "hipaaCompliant": {
+      "title": "HIPAA-ga tayyor",
+      "description": "Ma’lumotlar shifrlangan va arxitektura HIPAA/GDPRga moslashgan"
+    }
+  },
+  "cta": {
+    "title": "Professional tibbiy boshqaruv",
+    "description": "Amaliyotingizni enterprise vositalar va to‘liq bemor boshqaruvi bilan kuchaytiring",
+    "scheduleDemoButton": "Demo so‘rash",
+    "learnMoreButton": "Ko‘proq bilish",
+    "features": {
+      "hipaa": "HIPAA-ready",
+      "security": "Enterprise xavfsizlik",
+      "support": "24/7 qo‘llab-quvvatlash"
+    }
+  },
+  "footer": {
+    "description": "Professional tibbiy platforma. Xavfsiz bron, raqamli yozuvlar va keng analitika bilan sog‘liqni saqlashni enterprise darajada boshqarish.",
+    "platform": {
+      "title": "Platforma",
+      "searchDoctors": "Shifokor qidirish",
+      "browseSpecialties": "Mutaxassisliklar",
+      "findPractices": "Muassasa qidirish",
+      "features": "Imkoniyatlar"
+    },
+    "support": {
+      "title": "Qo‘llab-quvvatlash",
+      "helpCenter": "Yordam markazi",
+      "contact": "Aloqa",
+      "faqs": "Savol-javob",
+      "support": "Support"
+    },
+    "legal": {
+      "title": "Huquqiy",
+      "about": "Biz haqimizda",
+      "privacy": "Maxfiylik siyosati",
+      "terms": "Xizmat shartlari",
+      "cookies": "Cookie siyosati",
+      "legalCenter": "Huquqiy markaz"
+    },
+    "contact": {
+      "email": "contact@docito.com",
+      "phone": "+1 (555) 123-4567",
+      "location": "San Francisco, CA"
+    },
+    "disclaimer": "Kontent faqat ma’lumot uchun berilgan va tibbiy maslahat, tashxis yoki davolash o‘rnini bosmaydi. Har doim shifokor bilan maslahatlashib qaror qiling. Platforma bemor va provayderlarni bog‘laydi, lekin tibbiy xizmatni bevosita ko‘rsatmaydi. HIPAA-ready.",
+    "copyright": "Barcha huquqlar himoyalangan",
+    "trademark": "Docito — ro‘yxatdan o‘tgan savdo belgisi va brend",
+    "company": "Artsy Developers Inc.",
+    "links": {
+      "terms": "Shartlar",
+      "privacy": "Maxfiylik",
+      "cookies": "Cookies",
+      "about": "Biz haqimizda"
+    }
+  },
+  "visuals": {
+    "hero": {
+      "altText": "Bemorlarni boshqarish interfeysi ko‘rsatilgan dashboard prevyusi"
+    },
+    "appointments": {
+      "altText": "Animatsiyali sanalar bilan kalendar illyustratsiyasi"
+    },
+    "prescriptions": {
+      "altText": "Raqamli retsept formasini to‘ldirish"
+    },
+    "files": {
+      "altText": "Fayllarni xavfsiz papkalarga tartiblash"
+    },
+    "notes": {
+      "altText": "Klinik qaydlar yozilishi"
+    },
+    "dashboard": {
+      "altText": "Grafiklar va metrikali interaktiv dashboard"
+    },
+    "collaboration": {
+      "altText": "Jamoa bemor fayllari ustida hamkorlik qilmoqda"
+    },
+    "mobile": {
+      "altText": "Mobil interfeys namoyishi"
+    },
+    "success": {
+      "altText": "Muvaffaqiyat animatsiyasi"
+    },
+    "security": {
+      "altText": "Ma’lumotlarni himoyalovchi xavfsizlik qalqoni"
+    }
+  },
+  "seo": {
+    "title": "Docito® — Yagona sog‘liqni saqlash boshqaruvi va bron platformasi",
+    "description": "Docito® — bemorlar, shifokorlar, klinikalar, laboratoriyalar, dorixonalar, tasvirlash markazlari, shifoxonalar va sug‘urtani bog‘laydigan yagona platforma: xavfsiz jadval, yo‘llanma, yozuvlar, retseptlar, xabarlar va analitika.",
+    "keywords": "sog‘liqni saqlash boshqaruvi platformasi, shifokor bron tizimi, klinika boshqaruv dasturi, laboratoriya tizimi, dorixona platformasi, tasvirlash markazi dasturi, bemor qabuliga yozilish, tibbiy yo‘llanmalar, tibbiy yozuvlar, HIPAA, ko‘p tilli tibbiy SaaS"
+  }
+}
