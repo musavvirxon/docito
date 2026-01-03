@@ -1,0 +1,137 @@
+{
+  "seo": {
+    "title": "Docito® Pharmacies — E-Reçete, Stok, Refill, Teslimat ve Sigorta İş Akışları",
+    "description": "Eczaneler için Docito®; e-reçete alımı, stok ve ilaç teslim süreçleri, refill otomasyonu, hasta bildirimleri, teslimat koordinasyonu ve denetime hazır uyumluluğu birleştirir—eczaneleri doktorlar, klinikler, hastalar, laboratuvarlar ve sigorta ile güvenle bağlar.",
+    "keywords": "eczane yönetim sistemi, e-reçete platformu, reçete karşılama yazılımı, eczane stok yönetimi, refill otomasyonu, ilaç teslimat koordinasyonu, sigorta doğrulama, claim iş akışı, HIPAA uyumlu eczane yazılımı, çok dilli sağlık SaaS"
+  },
+  "nav": {
+    "backToHome": "Docito’ya Dön",
+    "signIn": "Giriş Yap",
+    "getStarted": "Başla"
+  },
+  "hero": {
+    "badge": "Eczane Operasyonları, Tek Platformda",
+    "title1": "Modern Eczane",
+    "title2": "Yönetimi ve Karşılama",
+    "description": "Eczane operasyonlarını uçtan uca yönetin: e-reçete alımı, stok ve karşılama, refill iş akışları, teslimat koordinasyonu, analitik ve uyumluluk—Docito® ekosisteminde güvenli iş birliği için.",
+    "primaryCta": "Eczane Olarak Katıl",
+    "secondaryCta": "Satışla Görüş",
+    "trustNote": "Uyumluluk öncelikli: HIPAA/GDPR’ye hazır, RBAC ve denetim izleri."
+  },
+  "stats": {
+    "title": "Yüksek hacimli eczaneler için",
+    "subtitle": "Hız, güvenlik ve izlenebilirlik—manuel yük olmadan",
+    "cards": {
+      "rx": { "label": "İşlenen Reçete", "value": "25K+" },
+      "refills": { "label": "Daha Hızlı Refill", "value": "50%’ye kadar" },
+      "stock": { "label": "Daha Az Stok Tükenmesi", "value": "35%’e kadar" },
+      "coverage": { "label": "Kurumlar Arası Kapsam", "value": "Doktorlar • Klinikler • Hastalar" }
+    }
+  },
+  "problems": {
+    "badge": "Parçalı akışları değiştirin",
+    "title": "Darboğazdan güvenilirliğe",
+    "subtitle": "Docito® eczane operasyonlarını tek, güvenli ve denetlenebilir bir iş akışına dönüştürür.",
+    "items": {
+      "manualRx": {
+        "problem": "Manuel reçete alımı ve tekrar tekrar doğrulama",
+        "solution": "Doğrulama ve durum takibiyle yapılandırılmış e-reçete alımı"
+      },
+      "refillChaos": {
+        "problem": "Refile taleplerinin aramalar ve mesajlara dağılması",
+        "solution": "Onaylar, hatırlatmalar ve bildirimlerle refill iş akışları"
+      },
+      "inventoryBlind": {
+        "problem": "Stok kör noktaları ve tükenmeler",
+        "solution": "Eşikler, uyarılar ve tahminleme ile stok yönetimi"
+      },
+      "deliveryGaps": {
+        "problem": "Teslimat koordinasyon boşlukları ve kaçan teslimler",
+        "solution": "Teslimat planlama, takip ve hasta güncellemeleri"
+      },
+      "insuranceFriction": {
+        "problem": "Sigorta doğrulama ve claim sürtünmesi",
+        "solution": "Kapsam kontrolü ve claim’e hazır süreçler"
+      },
+      "complianceRisk": {
+        "problem": "Uyumluluk riski ve belirsiz erişim kontrolü",
+        "solution": "RBAC + denetim izleri (HIPAA/GDPR’ye hazır)"
+      }
+    }
+  },
+  "features": {
+    "badge": "Kurumsal seviye eczane araçları",
+    "title": "Modern bir eczanenin ihtiyacı olan her şey",
+    "subtitle": "E-reçete, karşılama, stok, iş birliği ve raporlama—güvenli tasarım.",
+    "items": {
+      "eprescriptions": {
+        "title": "E-Reçete Alımı ve Durum",
+        "description": "Doktor ve kliniklerden dijital reçeteler alın, belirsizliği azaltın ve her siparişi uçtan uca takip edin."
+      },
+      "dispensing": {
+        "title": "Karşılama ve Dağıtım İş Akışları",
+        "description": "Daha güvenli operasyon için net durumlar, teslimler ve sorumlulukla karşılama adımlarını standartlaştırın."
+      },
+      "inventory": {
+        "title": "Stok ve Envanter Yönetimi",
+        "description": "Eksik ve israfı azaltmak için eşikler, uyarılar ve lokasyonlar arası görünürlükle stok yönetin."
+      },
+      "refills": {
+        "title": "Refill Otomasyonu",
+        "description": "Aramaları ve gecikmeleri azaltmak için hatırlatma, onay ve hasta bildirimlerini otomatikleştirin."
+      },
+      "delivery": {
+        "title": "Teslimat ve Teslim Alma Koordinasyonu",
+        "description": "Teslim alma pencereleri ve teslimat slotlarını planlayın, hasta ve ekip için takip güncellemeleri sağlayın."
+      },
+      "analytics": {
+        "title": "Eczane Analitiği",
+        "description": "Hacim, turnaround, refill, stok sağlığı ve verimliliği panoya hazır metriklerle izleyin."
+      }
+    }
+  },
+  "howItWorks": {
+    "badge": "Basit. Yapılandırılmış. Güvenli.",
+    "title": "Nasıl çalışır",
+    "subtitle": "Eczaneleri Docito® ekosistemiyle bağlayan net bir iş akışı.",
+    "steps": {
+      "step1": {
+        "title": "Reçeteleri Alın",
+        "description": "Doktorlar ve klinikler yapılandırılmış detaylarla e-reçeteleri eczanenize güvenle gönderir."
+      },
+      "step2": {
+        "title": "Doğrula ve Hazırla",
+        "description": "Stok ve kapsamı doğrulayın, ardından net iç teslimlerle karşılama hazırlığı yapın."
+      },
+      "step3": {
+        "title": "Karşıla ve Takip Et",
+        "description": "Denetim kayıtları, zaman damgaları ve durum güncellemeleriyle karşılama adımlarını tamamlayın."
+      },
+      "step4": {
+        "title": "Teslimat veya Teslim Alma",
+        "description": "Teslimat veya teslim almayı koordine edin ve sipariş hazır olduğunda hastaları güvenle bilgilendirin."
+      }
+    }
+  },
+  "integrations": {
+    "badge": "Kurumlar arası iş birliği",
+    "title": "Tüm sağlık ekosistemi için üretildi",
+    "subtitle": "Eczaneler tek başına çalışmaz—Docito® reçeteleri, randevuları, kayıtları, laboratuvarları ve sigortayı bağlar.",
+    "items": {
+      "doctors": { "title": "Doktorlar", "description": "E-reçeteleri ve açıklamaları yapılandırılmış klinik bağlamla alın." },
+      "clinics": { "title": "Klinikler", "description": "Çoklu sağlayıcı iş akışlarını, takipleri ve hasta iletişimini koordine edin." },
+      "patients": { "title": "Hastalar", "description": "Güvenli teslim alma/teslimat güncellemeleri ve reçete dosyalarına erişim sağlayın." },
+      "insurance": { "title": "Sigorta", "description": "Her reçeteye bağlı kapsam doğrulama ve claim’e hazır süreçleri destekleyin." }
+    }
+  },
+  "cta": {
+    "title": "Eczanenizi Docito® ağına taşıyın",
+    "description": "Karşılamayı dijitalleştirin, gecikmeleri azaltın ve stok görünürlüğünü artırın—uyumluluk öncelikli ve denetime hazır.",
+    "primary": "Eczanenizi Kaydedin",
+    "secondary": "Satışla Konuşun",
+    "note": "Doğrulama gereklidir. Panel görünür kalır, ancak işlemler onaya kadar kısıtlanabilir."
+  },
+  "visuals": {
+    "heroAlt": "Docito eczane paneli önizlemesi: e-reçeteler, stok, refill ve teslimat takibi"
+  }
+}
