@@ -1,0 +1,137 @@
+{
+  "seo": {
+    "title": "Docito® Pharmacies — E-retseptlar, zaxira, qayta berish, yetkazib berish va sug‘urta ish jarayonlari",
+    "description": "Dorixonalar uchun Docito® e-retsept qabul qilish, zaxira va berish, refill avtomatlashtirish, bemor bildirishnomalari, yetkazib berish koordinatsiyasi va auditga tayyor muvofiqlik jarayonlarini birlashtiradi — dorixonalarni shifokorlar, klinikalar, bemorlar, laboratoriyalar va sug‘urta bilan xavfsiz bog‘laydi.",
+    "keywords": "dorixona boshqaruv tizimi, e-retsept platformasi, dori berish dasturi, dorixona zaxirasi boshqaruvi, refill avtomatlashtirish, dori yetkazib berish, sug‘urta tekshiruvi, claim ish jarayoni, HIPAA mos dorixona dasturi, ko‘p tilli tibbiy SaaS"
+  },
+  "nav": {
+    "backToHome": "Docito’ga qaytish",
+    "signIn": "Kirish",
+    "getStarted": "Boshlash"
+  },
+  "hero": {
+    "badge": "Dorixona operatsiyalari — yagona tizimda",
+    "title1": "Zamonaviy dorixona",
+    "title2": "boshqaruvi va berish",
+    "description": "Dorixonani end-to-end boshqaring: e-retsept qabul qilish, zaxira va dori berish, refill jarayonlari, yetkazib berish, analitika va muvofiqlik — Docito® ekotizimida xavfsiz hamkorlik uchun.",
+    "primaryCta": "Dorixona sifatida qo‘shilish",
+    "secondaryCta": "Savdo bilan bog‘lanish",
+    "trustNote": "Muvofiqlik-first: HIPAA/GDPR tayyor, RBAC va audit izlari."
+  },
+  "stats": {
+    "title": "Yuqori oqimli dorixonalar uchun",
+    "subtitle": "Tezlik, xavfsizlik va kuzatuvchanlik — qo‘lda ishlarni kamaytirgan holda",
+    "cards": {
+      "rx": { "label": "Qayta ishlangan retseptlar", "value": "25K+" },
+      "refills": { "label": "Tezroq refill", "value": "50% gacha" },
+      "stock": { "label": "Kamroq stockout", "value": "35% gacha" },
+      "coverage": { "label": "Ekotizim bo‘ylab qamrov", "value": "Shifokorlar • Klinikalar • Bemorlar" }
+    }
+  },
+  "problems": {
+    "badge": "Bo‘lak jarayonlarni almashtiring",
+    "title": "Tiqilinchdan — ishonchlilikka",
+    "subtitle": "Docito® dorixona ishini yagona xavfsiz va auditlanadigan jarayonga keltiradi.",
+    "items": {
+      "manualRx": {
+        "problem": "Retseptlarni qo‘lda qabul qilish va ko‘p marotaba aniqlashtirish",
+        "solution": "Validatsiya va statuslar bilan strukturali e-retsept qabul qilish"
+      },
+      "refillChaos": {
+        "problem": "Refill so‘rovlari qo‘ng‘iroq va xabarlarga tarqalib ketgan",
+        "solution": "Tasdiqlash, eslatma va bildirishnomalar bilan refill workflow"
+      },
+      "inventoryBlind": {
+        "problem": "Zaxirada ko‘rinmas nuqtalar va stockout",
+        "solution": "Threshold, alert va prognoz bilan zaxira boshqaruvi"
+      },
+      "deliveryGaps": {
+        "problem": "Yetkazib berishda uzilishlar va handoff muammolari",
+        "solution": "Yetkazib berish jadvali, tracking va bemor yangilanishlari"
+      },
+      "insuranceFriction": {
+        "problem": "Sug‘urta tekshiruvi va claim jarayonida ishqalanish",
+        "solution": "Coverage tekshiruvi va claim-ga tayyor workflow"
+      },
+      "complianceRisk": {
+        "problem": "Muvofiqlik xatari va noaniq kirish nazorati",
+        "solution": "RBAC + audit izlari (HIPAA/GDPR tayyor)"
+      }
+    }
+  },
+  "features": {
+    "badge": "Enterprise darajadagi dorixona vositalari",
+    "title": "Zamonaviy dorixona uchun hammasi",
+    "subtitle": "E-retseptlar, berish, zaxira, hamkorlik va hisobot — xavfsiz dizayn bilan.",
+    "items": {
+      "eprescriptions": {
+        "title": "E-retsept qabul qilish va statuslar",
+        "description": "Shifokor va klinikalardan raqamli retseptlar oling, noaniqlikni kamaytiring va har bir buyurtmani end-to-end kuzating."
+      },
+      "dispensing": {
+        "title": "Dori berish va fulfillment jarayonlari",
+        "description": "Xavfsiz operatsiya uchun aniq status, handoff va mas’uliyat bilan berish bosqichlarini standartlashtiring."
+      },
+      "inventory": {
+        "title": "Zaxira va ombor boshqaruvi",
+        "description": "Shortage va isrofni kamaytirish uchun threshold, alert va joylashuvlar bo‘yicha ko‘rinuvchanlik."
+      },
+      "refills": {
+        "title": "Refill avtomatlashtirish",
+        "description": "Qo‘ng‘iroqlar va kechikishlarni kamaytirish uchun eslatma, tasdiq va bemor bildirishnomalarini avtomatlashtiring."
+      },
+      "delivery": {
+        "title": "Yetkazib berish va olib ketish koordinatsiyasi",
+        "description": "Olib ketish oynalari va yetkazib berish slotlarini muvofiqlashtiring, tracking yangilanishlarini yuboring."
+      },
+      "analytics": {
+        "title": "Dorixona analitikasi",
+        "description": "Hajm, turnaround, refill, zaxira sog‘ligi va samaradorlikni dashboard metrikalari bilan kuzating."
+      }
+    }
+  },
+  "howItWorks": {
+    "badge": "Oddiy. Strukturali. Xavfsiz.",
+    "title": "Qanday ishlaydi",
+    "subtitle": "Dorixonalarni Docito® ekotizimi bilan bog‘laydigan aniq ish jarayoni.",
+    "steps": {
+      "step1": {
+        "title": "Retseptlarni qabul qiling",
+        "description": "Shifokorlar va klinikalar strukturali ma’lumotlar bilan e-retseptlarni dorixonangizga xavfsiz yuboradi."
+      },
+      "step2": {
+        "title": "Tekshiring va tayyorlang",
+        "description": "Mavjudlik va coverage-ni tekshiring, so‘ng aniq ichki handoff bilan fulfillmentni tayyorlang."
+      },
+      "step3": {
+        "title": "Bering va kuzating",
+        "description": "Audit log, vaqt belgilari va statuslar bilan berish bosqichlarini yakunlang — to‘liq kuzatuvchanlik uchun."
+      },
+      "step4": {
+        "title": "Yetkazib bering yoki olib ketish",
+        "description": "Yetkazib berish yoki olib ketishni muvofiqlashtiring va buyurtma tayyor bo‘lganda bemorni xavfsiz xabardor qiling."
+      }
+    }
+  },
+  "integrations": {
+    "badge": "Ekotizim bo‘ylab hamkorlik",
+    "title": "To‘liq sog‘liqni saqlash ekotizimi uchun",
+    "subtitle": "Dorixona yolg‘iz ishlamaydi — Docito® retsept, uchrashuv, yozuv, laboratoriya va sug‘urtani bog‘laydi.",
+    "items": {
+      "doctors": { "title": "Shifokorlar", "description": "E-retseptlar va aniqlashtirishlarni strukturali klinik kontekst bilan oling." },
+      "clinics": { "title": "Klinikalar", "description": "Ko‘p provayderli workflow va bemor bilan aloqa jarayonlarini muvofiqlashtiring." },
+      "patients": { "title": "Bemorlar", "description": "Olib ketish/yetkazish holati bo‘yicha xavfsiz yangilanishlar va fayllarga kirish bering." },
+      "insurance": { "title": "Sug‘urta", "description": "Har bir retsept bilan bog‘langan coverage tekshiruvi va claim workflow-ni qo‘llab-quvvatlang." }
+    }
+  },
+  "cta": {
+    "title": "Dorixonangizni Docito® tarmog‘iga qo‘shing",
+    "description": "Dori berishni raqamlashtiring, kechikishlarni kamaytiring va zaxira ko‘rinuvchanligini oshiring — auditga tayyor va muvofiqlik-first yondashuv bilan.",
+    "primary": "Dorixonani ro‘yxatdan o‘tkazish",
+    "secondary": "Savdo bilan gaplashish",
+    "note": "Verifikatsiya talab qilinadi. Dashboard ko‘rinadi, ammo tasdiqqacha amallar cheklanishi mumkin."
+  },
+  "visuals": {
+    "heroAlt": "Docito dorixona paneli: e-retseptlar, zaxira, refill va yetkazib berish tracking"
+  }
+}
