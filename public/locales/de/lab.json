@@ -1,0 +1,137 @@
+{
+  "seo": {
+    "title": "Docito® Labs — Labor-Management, Aufträge, Ergebnisse & Überweisungs-Workflows",
+    "description": "Docito® für Laboratorien vereint überweisungsbasierte Auftragserfassung, Slot-Planung, Probenverfolgung, Ergebniszustellung und auditfähige Workflows — und verbindet Labore sicher mit Ärzten, Praxen, Patienten und Versicherungen.",
+    "keywords": "Laborverwaltungssystem, Labor-Workflow-Software, überweisungsbasierte Laboraufträge, Labor-Terminplanung, Ergebniszustellung, Diagnostikplattform, Gesundheitsüberweisungen, HIPAA-konforme Software, mehrsprachige Healthcare SaaS"
+  },
+  "nav": {
+    "backToHome": "Zurück zu Docito",
+    "signIn": "Anmelden",
+    "getStarted": "Loslegen"
+  },
+  "hero": {
+    "badge": "Laborbetrieb — vereinheitlicht",
+    "title1": "Modernes Labor",
+    "title2": "Management & Überweisungen",
+    "description": "Steuern Sie Laborprozesse end-to-end: überweisungsbasierte Auftragserfassung, Slot-Planung, Proben-Tracking, Ergebniszustellung, Analytics und Compliance — für sichere Zusammenarbeit im Docito® Gesundheitsökosystem.",
+    "primaryCta": "Als Labor beitreten",
+    "secondaryCta": "Vertrieb kontaktieren",
+    "trustNote": "Compliance-first, HIPAA/GDPR-ready Architektur mit rollenbasierter Zugriffskontrolle."
+  },
+  "stats": {
+    "title": "Für Hochdurchsatz-Labore entwickelt",
+    "subtitle": "Transparenz, Auditierbarkeit und Performance — ohne manuellen Aufwand",
+    "cards": {
+      "orders": { "label": "Verwaltete Aufträge", "value": "10K+" },
+      "turnaround": { "label": "Schnellere Durchlaufzeit", "value": "Bis zu 40%" },
+      "accuracy": { "label": "Weniger Fehler", "value": "Bis zu 60%" },
+      "coverage": { "label": "Abdeckung über Einheiten", "value": "Ärzte • Praxen • Patienten" }
+    }
+  },
+  "problems": {
+    "badge": "Manuelle Abläufe ersetzen",
+    "title": "Von Chaos zu Kontrolle",
+    "subtitle": "Docito® beendet fragmentierte Laborabläufe und ersetzt sie durch einen einzigen, sicheren Workflow.",
+    "items": {
+      "paperOrders": {
+        "problem": "Papieraufträge, Telefonate und überlastete Postfächer",
+        "solution": "Digitale, überweisungsbasierte Aufträge mit strukturierter Erfassung"
+      },
+      "noScheduling": {
+        "problem": "Keine Slot-Planung, lange Warteschlangen und verlorene Kapazität",
+        "solution": "Slot-basierte Planung für Tests, Personal und Geräte"
+      },
+      "lostSamples": {
+        "problem": "Probenverwechslungen und schwache Chain-of-Custody",
+        "solution": "Probenverfolgung mit Audit-Trails und Status-Updates"
+      },
+      "lateResults": {
+        "problem": "Verzögerte Ergebnisse und manuelle Berichtszustellung",
+        "solution": "Sichere Ergebniszustellung an Ärzte und Patienten"
+      },
+      "noAnalytics": {
+        "problem": "Keine Performance-Transparenz oder Prognosen",
+        "solution": "Operative Analytics für Volumen, TAT und Auslastung"
+      },
+      "complianceRisk": {
+        "problem": "Compliance-Risiken und unklare Zugriffskontrolle",
+        "solution": "RBAC + Auditierbarkeit (HIPAA/GDPR-ready)"
+      }
+    }
+  },
+  "features": {
+    "badge": "Enterprise-Grade Labor-Tools",
+    "title": "Alles, was ein modernes Labor braucht",
+    "subtitle": "Überweisungen, Planung, Ergebnisse, Zusammenarbeit und Reporting — sicher by design.",
+    "items": {
+      "orderIntake": {
+        "title": "Überweisungsbasierte Auftragserfassung",
+        "description": "Erhalten Sie strukturierte Aufträge von Ärzten und Praxen, reduzieren Sie Unklarheiten und steigern Sie den Durchsatz ab Tag eins."
+      },
+      "slotScheduling": {
+        "title": "Slot-basierte Planung",
+        "description": "Planen Sie Tests mit echten Kapazitätsregeln — Personal, Räume, Geräte und Turnaround-Ziele."
+      },
+      "sampleTracking": {
+        "title": "Proben-Tracking & Status",
+        "description": "Verfolgen Sie jede Probe durch alle Schritte mit Audit-Trails, Zeitstempeln und klarer Verantwortlichkeit."
+      },
+      "resultsDelivery": {
+        "title": "Sichere Ergebniszustellung",
+        "description": "Liefern Sie Ergebnisse an die richtigen Personen — Ärzte, Praxen und Patienten — bei gewahrter Privatsphäre und Compliance."
+      },
+      "notifications": {
+        "title": "Echtzeit-Benachrichtigungen",
+        "description": "Automatische Alerts: Probe eingegangen, in Bearbeitung, bereit zur Prüfung, zugestellt — ohne manuelle Nachfragen."
+      },
+      "analytics": {
+        "title": "Labor-Analytics",
+        "description": "Überwachen Sie Volumen, Turnaround, Fehlerquoten und Ressourcenauslastung mit dashboardfähigen Kennzahlen."
+      }
+    }
+  },
+  "howItWorks": {
+    "badge": "Einfach. Strukturiert. Sicher.",
+    "title": "So funktioniert’s",
+    "subtitle": "Ein klarer Workflow, der Labore mit dem gesamten Docito® Ökosystem verbindet.",
+    "steps": {
+      "step1": {
+        "title": "Aufträge empfangen",
+        "description": "Ärzte und Praxen senden strukturierte Laborüberweisungen und Aufträge direkt an Ihr Labor."
+      },
+      "step2": {
+        "title": "Planen & vorbereiten",
+        "description": "Weisen Sie Slots anhand realer Kapazitäten zu — Personal, Geräte und erwartete Turnaround-Zeiten."
+      },
+      "step3": {
+        "title": "Verarbeiten & verfolgen",
+        "description": "Tracken Sie Proben von der Annahme bis zum Abschluss mit Status, Audit-Logs und klarer Verantwortlichkeit."
+      },
+      "step4": {
+        "title": "Ergebnisse zustellen",
+        "description": "Veröffentlichen Sie Ergebnisse sicher für Ärzte und Patienten mit kontrolliertem Zugriff und vollständiger Nachvollziehbarkeit."
+      }
+    }
+  },
+  "integrations": {
+    "badge": "Zusammenarbeit über Einheiten hinweg",
+    "title": "Für das gesamte Gesundheitsökosystem gebaut",
+    "subtitle": "Labore arbeiten nicht isoliert — Docito® verbindet Überweisungen, Termine, Akten und Reporting.",
+    "items": {
+      "doctors": { "title": "Ärzte", "description": "Aufträge empfangen und Ergebnisse mit strukturiertem klinischen Kontext zurückgeben." },
+      "clinics": { "title": "Praxen/Kliniken", "description": "Überweisungen, Planung und Multi-Provider-Workflows koordinieren." },
+      "patients": { "title": "Patienten", "description": "Patienten sicheren Zugriff auf Ergebnisse und visitbezogene Dateien geben." },
+      "insurance": { "title": "Versicherung", "description": "Prüf-Workflows unterstützen und Aufträge mit Deckung verknüpfen." }
+    }
+  },
+  "cta": {
+    "title": "Bringen Sie Ihr Labor in das Docito® Netzwerk",
+    "description": "Digitalisieren Sie Abläufe, reduzieren Sie Verzögerungen und liefern Sie Ergebnisse sicher — compliance-first und audit-ready.",
+    "primary": "Labor registrieren",
+    "secondary": "Mit Vertrieb sprechen",
+    "note": "Verifizierung erforderlich. Das Dashboard bleibt sichtbar, Aktionen können bis zur Freigabe gesperrt sein."
+  },
+  "visuals": {
+    "heroAlt": "Vorschau des Docito Labor-Dashboards mit Aufträgen, Planung und Ergebniszustellung"
+  }
+}
