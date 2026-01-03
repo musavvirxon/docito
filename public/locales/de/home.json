@@ -1,1 +1,232 @@
-
+{
+  "hero": {
+    "badge": "Professionelle Medizinplattform",
+    "title1": "Komplette",
+    "title2": "Healthcare-Management-Lösung",
+    "description": "Zahlungen, Terminplanung, Akten und Analytics — sicher vereint für medizinische Profis",
+    "features": {
+      "payments": "Zahlungsabwicklung",
+      "scheduling": "Terminplanung",
+      "records": "Patientenakten",
+      "analytics": "Analysen"
+    }
+  },
+  "search": {
+    "specialty": "Fachgebiet oder Arztname",
+    "location": "Stadt oder Standort",
+    "insurance": "Versicherungsanbieter",
+    "searchButton": "Gesundheitsanbieter suchen",
+    "searching": "Suche läuft..."
+  },
+  "stats": {
+    "doctors": "Ärzte",
+    "patients": "Patienten",
+    "countries": "Länder",
+    "avgRating": "Ø Bewertung"
+  },
+  "valueProposition": {
+    "badge": "Enterprise-Plattform",
+    "title": "Professionelle Tools",
+    "subtitle": "für moderne Gesundheitsversorgung",
+    "paymentProcessing": {
+      "title": "Zahlungsabwicklung",
+      "description": "Sichere Zahlungen mit Multi-Währungs-Support"
+    },
+    "schedulingManagement": {
+      "title": "Terminmanagement",
+      "description": "Echtzeit-Buchung mit automatisierten Workflows"
+    },
+    "recordsManagement": {
+      "title": "Aktenverwaltung",
+      "description": "Vollständiges System für digitale Gesundheitsakten"
+    },
+    "procedureLibrary": {
+      "title": "Prozeduren-Bibliothek",
+      "description": "Umfassendes Tracking medizinischer Prozeduren"
+    },
+    "referralNetwork": {
+      "title": "Überweisungsnetzwerk",
+      "description": "Professionelles Überweisungs-Management"
+    },
+    "legalCompliance": {
+      "title": "Compliance",
+      "description": "HIPAA-ready Architektur und Dokumentation"
+    },
+    "analytics": {
+      "badge": "Umfangreiche Analytics Suite",
+      "title": "Datenbasierte Einblicke",
+      "description": "Echtzeit-Dashboards, Berichte, Performance-Metriken, Patienten-Insights, Umsatz-Tracking und Terminanalysen.",
+      "features": {
+        "dashboard": "Echtzeit-Dashboard mit Live-Metriken",
+        "revenue": "Umsatz-Tracking und Prognosen",
+        "insights": "Patienten-Insights und Demografie",
+        "trends": "Termin-Trends und Muster",
+        "performance": "Leistungs- und Effizienzmetriken",
+        "reports": "Individuelle exportierbare Reports"
+      },
+      "stats": {
+        "revenueToday": "Umsatz heute",
+        "appointments": "Termine",
+        "activePatients": "Aktive Patienten"
+      }
+    }
+  },
+  "specialties": {
+    "title": "Medizinische Fachgebiete",
+    "subtitle": "Verbinden Sie sich mit zertifizierten Spezialisten",
+    "cardiology": "Kardiologie",
+    "dentist": "Zahnmedizin",
+    "obGyn": "Gynäkologie",
+    "dermatology": "Dermatologie",
+    "psychiatry": "Psychiatrie",
+    "ophthalmology": "Augenheilkunde",
+    "neurology": "Neurologie",
+    "orthopedics": "Orthopädie",
+    "pediatrics": "Pädiatrie"
+  },
+  "topSpecialists": {
+    "title": "Empfohlene Spezialisten",
+    "bookAppointment": "Termin buchen",
+    "noReviews": "Noch keine Bewertungen",
+    "featuredSpot": {
+      "title": "Platz für Featured Specialist",
+      "description": "Werden Sie Teil unseres Netzwerks und erreichen Sie tausende Patienten",
+      "button": "Als Arzt beitreten"
+    },
+    "beFirst": {
+      "title": "Werden Sie der erste Featured Specialist",
+      "description": "Werden Sie einer der ersten Featured Specialists bei Docito. Premium-Sichtbarkeit ab Tag eins.",
+      "button": "Praxis registrieren"
+    }
+  },
+  "topPractices": {
+    "title": "Führende medizinische Einrichtungen",
+    "subtitle": "Vertrauenswürdige Institutionen",
+    "viewPractice": "Praxis ansehen",
+    "noReviews": "Noch keine Bewertungen",
+    "emptySpot": {
+      "premium": {
+        "title": "Premium-Platz für Praxis",
+        "description": "Präsentieren Sie Ihre Einrichtung tausenden Patienten mit Premium-Sichtbarkeit.",
+        "button": "Praxis registrieren"
+      },
+      "regular": {
+        "title": "Ihre Praxis hier",
+        "description": "Treten Sie unserem Netzwerk führender Anbieter bei",
+        "button": "Mehr erfahren"
+      }
+    },
+    "beFounder": {
+      "title": "Werden Sie eine Founding Practice",
+      "description": "Werden Sie eine der ersten Featured Practices. Premium-Reichweite, mehr Patienten, skalierbares Management.",
+      "registerButton": "Praxis registrieren",
+      "contactButton": "Sales kontaktieren"
+    }
+  },
+  "howItWorks": {
+    "title": "Plattform-Funktionen",
+    "subtitle": "In 4 Schritten zur Beratung",
+    "steps": {
+      "search": { "title": "Suchen", "description": "Anbieter nach Fachgebiet und Standort finden" },
+      "review": { "title": "Vergleichen", "description": "Qualifikationen und verifizierte Bewertungen prüfen" },
+      "book": { "title": "Buchen", "description": "Termin sofort online planen" },
+      "care": { "title": "Behandlung", "description": "Professionelle Leistungen erhalten" }
+    }
+  },
+  "features": {
+    "title": "Plattform-Funktionen",
+    "subtitle": "Professionelle Tools für moderne Healthcare",
+    "verifiedProviders": {
+      "title": "Verifizierte Anbieter",
+      "description": "Alle Anbieter werden gründlich geprüft und lizenziert"
+    },
+    "availability": {
+      "title": "24/7 verfügbar",
+      "description": "Jederzeit, überall, auf jedem Gerät buchen"
+    },
+    "verifiedReviews": {
+      "title": "Verifizierte Bewertungen",
+      "description": "Echte Reviews für bessere Entscheidungen"
+    },
+    "instantBooking": {
+      "title": "Sofortbuchung",
+      "description": "Bestätigte Termine in Sekunden"
+    },
+    "globalNetwork": {
+      "title": "Globales Netzwerk",
+      "description": "Anbieter in mehreren Ländern"
+    },
+    "hipaaCompliant": {
+      "title": "HIPAA-ready",
+      "description": "Verschlüsselte Daten und compliance-orientierte Architektur"
+    }
+  },
+  "cta": {
+    "title": "Professionelles Healthcare-Management",
+    "description": "Transformieren Sie Ihre Praxis mit Enterprise-Tools und umfassendem Patientenmanagement",
+    "scheduleDemoButton": "Demo vereinbaren",
+    "learnMoreButton": "Mehr erfahren",
+    "features": {
+      "hipaa": "HIPAA-ready",
+      "security": "Enterprise-Sicherheit",
+      "support": "24/7 Support"
+    }
+  },
+  "footer": {
+    "description": "Professionelle Medizinplattform. Enterprise-Healthcare-Management mit sicherer Buchung, digitalen Akten und umfassender Analytics.",
+    "platform": {
+      "title": "Plattform",
+      "searchDoctors": "Ärzte suchen",
+      "browseSpecialties": "Fachgebiete",
+      "findPractices": "Einrichtungen finden",
+      "features": "Funktionen"
+    },
+    "support": {
+      "title": "Support",
+      "helpCenter": "Hilfe-Center",
+      "contact": "Kontakt",
+      "faqs": "FAQs",
+      "support": "Support"
+    },
+    "legal": {
+      "title": "Rechtliches",
+      "about": "Über uns",
+      "privacy": "Datenschutz",
+      "terms": "Nutzungsbedingungen",
+      "cookies": "Cookie-Richtlinie",
+      "legalCenter": "Rechtszentrum"
+    },
+    "contact": {
+      "email": "contact@docito.com",
+      "phone": "+1 (555) 123-4567",
+      "location": "San Francisco, CA"
+    },
+    "disclaimer": "Inhalte dienen nur der Information und sind keine medizinische Beratung, Diagnose oder Behandlung. Konsultieren Sie medizinisches Fachpersonal. Die Plattform vermittelt zwischen Patienten und Anbietern und erbringt keine medizinischen Leistungen. HIPAA-ready.",
+    "copyright": "Alle Rechte vorbehalten",
+    "trademark": "Docito ist eine eingetragene Marke und ein Brand von",
+    "company": "Artsy Developers Inc.",
+    "links": {
+      "terms": "AGB",
+      "privacy": "Datenschutz",
+      "cookies": "Cookies",
+      "about": "Über"
+    }
+  },
+  "visuals": {
+    "hero": { "altText": "Dashboard-Vorschau mit Patientenmanagement" },
+    "appointments": { "altText": "Kalenderillustration mit animierten Daten" },
+    "prescriptions": { "altText": "Digitales Rezeptformular wird ausgefüllt" },
+    "files": { "altText": "Dateien werden in sichere Ordner organisiert" },
+    "notes": { "altText": "Klinische Notizen werden geschrieben" },
+    "dashboard": { "altText": "Interaktives Dashboard mit Charts und Metriken" },
+    "collaboration": { "altText": "Team arbeitet gemeinsam an Patientendateien" },
+    "mobile": { "altText": "Demonstration der mobilen App-Oberfläche" },
+    "success": { "altText": "Animation einer Erfolgsmeldung" },
+    "security": { "altText": "Sicherheits-Schild schützt Daten" }
+  },
+  "seo": {
+    "title": "Docito® — Einheitliche Plattform für Healthcare-Management & Terminbuchung",
+    "description": "Docito® verbindet Patienten, Ärzte, Kliniken, Labore, Apotheken, Bildgebungszentren, Krankenhäuser und Versicherungen in einem sicheren System—Terminplanung, Überweisungen, Akten, Rezepte, Messaging und Analytics auf Enterprise-Niveau.",
+    "keywords": "healthcare management platform, doctor booking system, clinic management software, lab management system, pharmacy platform, imaging center software, patient appointment booking, healthcare referrals, medical records system, HIPAA compliant healthcare software, multilingual healthcare SaaS"
+  }
+}
