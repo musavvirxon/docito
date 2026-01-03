@@ -1,0 +1,137 @@
+{
+  "seo": {
+    "title": "Docito® Labs — Gestão de Laboratórios, Pedidos, Resultados e Fluxos de Encaminhamento",
+    "description": "Docito® para laboratórios unifica a entrada de pedidos por encaminhamento, agendamento por slots, rastreamento de amostras, entrega de resultados e fluxos prontos para auditoria — conectando laboratórios com médicos, clínicas, pacientes e seguradoras com segurança.",
+    "keywords": "sistema de gestão de laboratório, software de fluxo de laboratório, pedidos por encaminhamento, agendamento de laboratório, entrega de resultados, plataforma de diagnóstico médico, encaminhamentos em saúde, software compatível com HIPAA, SaaS de saúde multilíngue"
+  },
+  "nav": {
+    "backToHome": "Voltar ao Docito",
+    "signIn": "Entrar",
+    "getStarted": "Começar"
+  },
+  "hero": {
+    "badge": "Operações laboratoriais, unificadas",
+    "title1": "Gestão Moderna",
+    "title2": "de Laboratório e Encaminhamentos",
+    "description": "Gerencie as operações de ponta a ponta: entrada de pedidos por encaminhamento, agendamento por slots, rastreamento de amostras, entrega de resultados, analytics e conformidade — para colaboração segura no ecossistema Docito®.",
+    "primaryCta": "Entrar como Laboratório",
+    "secondaryCta": "Falar com Vendas",
+    "trustNote": "Arquitetura compliance-first, pronta para HIPAA/GDPR com controle de acesso por função."
+  },
+  "stats": {
+    "title": "Feito para laboratórios de alto volume",
+    "subtitle": "Visibilidade, auditabilidade e performance — sem sobrecarga manual",
+    "cards": {
+      "orders": { "label": "Pedidos gerenciados", "value": "10K+" },
+      "turnaround": { "label": "TAT mais rápido", "value": "Até 40%" },
+      "accuracy": { "label": "Menos erros", "value": "Até 60%" },
+      "coverage": { "label": "Cobertura entre entidades", "value": "Médicos • Clínicas • Pacientes" }
+    }
+  },
+  "problems": {
+    "badge": "Substitua fluxos manuais",
+    "title": "Do caos ao controle",
+    "subtitle": "Docito® elimina operações fragmentadas e substitui por um único fluxo seguro.",
+    "items": {
+      "paperOrders": {
+        "problem": "Pedidos em papel, ligações e excesso de mensagens",
+        "solution": "Pedidos digitais por encaminhamento com entrada estruturada"
+      },
+      "noScheduling": {
+        "problem": "Sem planejamento por slots, filas longas e capacidade perdida",
+        "solution": "Agendamento por slots para exames, equipe e equipamentos"
+      },
+      "lostSamples": {
+        "problem": "Troca de amostras e cadeia de custódia fraca",
+        "solution": "Rastreamento de amostras com trilhas de auditoria e status"
+      },
+      "lateResults": {
+        "problem": "Resultados atrasados e entrega manual de laudos",
+        "solution": "Entrega segura de resultados para médicos e pacientes"
+      },
+      "noAnalytics": {
+        "problem": "Sem visibilidade de performance ou previsões",
+        "solution": "Analytics operacional para volume, TAT e utilização"
+      },
+      "complianceRisk": {
+        "problem": "Risco de conformidade e controle de acesso indefinido",
+        "solution": "RBAC + auditabilidade (pronto para HIPAA/GDPR)"
+      }
+    }
+  },
+  "features": {
+    "badge": "Ferramentas laboratoriais enterprise",
+    "title": "Tudo o que um laboratório moderno precisa",
+    "subtitle": "Encaminhamentos, agendamento, resultados, colaboração e relatórios — seguro por design.",
+    "items": {
+      "orderIntake": {
+        "title": "Entrada de pedidos por encaminhamento",
+        "description": "Receba pedidos estruturados de médicos e clínicas, reduza ambiguidades e aumente o throughput desde o primeiro dia."
+      },
+      "slotScheduling": {
+        "title": "Agendamento por slots",
+        "description": "Planeje exames com regras reais de capacidade — equipe, salas, equipamentos e metas de turnaround."
+      },
+      "sampleTracking": {
+        "title": "Rastreamento e status de amostras",
+        "description": "Acompanhe cada amostra em todas as etapas com trilhas de auditoria, timestamps e responsabilidade clara."
+      },
+      "resultsDelivery": {
+        "title": "Entrega segura de resultados",
+        "description": "Entregue resultados para as pessoas certas — médicos, clínicas e pacientes — mantendo privacidade e conformidade."
+      },
+      "notifications": {
+        "title": "Notificações em tempo real",
+        "description": "Alertas automáticos: amostra recebida, em processamento, pronta para revisão, entregue — sem follow-up manual."
+      },
+      "analytics": {
+        "title": "Analytics do laboratório",
+        "description": "Monitore volume, turnaround, taxa de erro e uso de recursos com métricas prontas para dashboard."
+      }
+    }
+  },
+  "howItWorks": {
+    "badge": "Simples. Estruturado. Seguro.",
+    "title": "Como funciona",
+    "subtitle": "Um fluxo claro que conecta laboratórios a todo o ecossistema Docito®.",
+    "steps": {
+      "step1": {
+        "title": "Receber pedidos",
+        "description": "Médicos e clínicas enviam encaminhamentos e pedidos estruturados diretamente ao seu laboratório."
+      },
+      "step2": {
+        "title": "Agendar e preparar",
+        "description": "Atribua slots conforme a capacidade real — equipe, equipamentos e turnaround esperado."
+      },
+      "step3": {
+        "title": "Processar e rastrear",
+        "description": "Rastreie amostras da entrada à conclusão com status, logs de auditoria e responsabilidade clara."
+      },
+      "step4": {
+        "title": "Entregar resultados",
+        "description": "Publique resultados com segurança para médicos e pacientes com acesso controlado e rastreabilidade total."
+      }
+    }
+  },
+  "integrations": {
+    "badge": "Colaboração entre entidades",
+    "title": "Feito para todo o ecossistema de saúde",
+    "subtitle": "Laboratórios não operam sozinhos — Docito® conecta encaminhamentos, consultas, registros e relatórios.",
+    "items": {
+      "doctors": { "title": "Médicos", "description": "Receba pedidos e devolva resultados com contexto clínico estruturado." },
+      "clinics": { "title": "Clínicas", "description": "Coordene encaminhamentos, agendamento e fluxos multi-prestador." },
+      "patients": { "title": "Pacientes", "description": "Ofereça acesso seguro a resultados e arquivos relacionados à visita." },
+      "insurance": { "title": "Seguradoras", "description": "Apoie verificação de cobertura e vínculo entre pedidos e apólices." }
+    }
+  },
+  "cta": {
+    "title": "Traga seu laboratório para a rede Docito®",
+    "description": "Digitalize operações, reduza atrasos e entregue resultados com segurança — compliance-first e pronto para auditoria.",
+    "primary": "Registrar seu laboratório",
+    "secondary": "Falar com vendas",
+    "note": "Verificação obrigatória. O dashboard fica visível, mas ações podem ser bloqueadas até aprovação."
+  },
+  "visuals": {
+    "heroAlt": "Prévia do dashboard de laboratório Docito com pedidos, agendamento e entrega de resultados"
+  }
+}
