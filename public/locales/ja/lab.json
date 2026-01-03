@@ -1,0 +1,137 @@
+{
+  "seo": {
+    "title": "Docito® Labs — 検査ラボ管理、オーダー、結果配信と紹介ワークフロー",
+    "description": "Docito® は、紹介ベースの検査オーダー受付、枠（スロット）予約、検体追跡、結果配信、監査対応ワークフローを統合し、ラボを医師・クリニック・患者・保険と安全に連携します。",
+    "keywords": "ラボ管理システム, 検査ワークフローソフト, 紹介ベース検査オーダー, 検査予約, 検査結果配信, 医療診断プラットフォーム, 医療紹介, HIPAA対応, 多言語医療SaaS"
+  },
+  "nav": {
+    "backToHome": "Docitoへ戻る",
+    "signIn": "ログイン",
+    "getStarted": "開始する"
+  },
+  "hero": {
+    "badge": "ラボ運用を一元化",
+    "title1": "最新のラボ",
+    "title2": "管理と紹介連携",
+    "description": "紹介ベースのオーダー受付、スロット予約、検体追跡、結果配信、分析、コンプライアンスまで、ラボ運用をエンドツーエンドで実現。Docito® 医療エコシステム全体で安全に協業できます。",
+    "primaryCta": "ラボとして参加",
+    "secondaryCta": "営業に問い合わせ",
+    "trustNote": "コンプライアンス重視：HIPAA/GDPR対応、ロールベースアクセス制御（RBAC）。"
+  },
+  "stats": {
+    "title": "高スループット検査室のために",
+    "subtitle": "可視化・監査性・性能を、手作業負担なしで",
+    "cards": {
+      "orders": { "label": "管理オーダー数", "value": "10K+" },
+      "turnaround": { "label": "ターンアラウンド短縮", "value": "最大40%" },
+      "accuracy": { "label": "エラー低減", "value": "最大60%" },
+      "coverage": { "label": "エンティティ横断連携", "value": "医師 • クリニック • 患者" }
+    }
+  },
+  "problems": {
+    "badge": "手作業を置き換える",
+    "title": "混乱から統制へ",
+    "subtitle": "Docito® は断片化したラボ運用を、単一で安全なワークフローに置き換えます。",
+    "items": {
+      "paperOrders": {
+        "problem": "紙の依頼、電話連絡、受信箱の過負荷",
+        "solution": "構造化された紹介ベースのデジタルオーダー"
+      },
+      "noScheduling": {
+        "problem": "枠管理がなく、待ち行列が長く、稼働が無駄に",
+        "solution": "検査・スタッフ・機器のスロット予約"
+      },
+      "lostSamples": {
+        "problem": "検体取り違えとトレーサビリティ不足",
+        "solution": "監査ログとステータス更新付きの検体追跡"
+      },
+      "lateResults": {
+        "problem": "結果遅延と手動のレポート配信",
+        "solution": "医師・患者への安全な結果配信"
+      },
+      "noAnalytics": {
+        "problem": "性能可視化や予測ができない",
+        "solution": "量・TAT・稼働率の運用分析"
+      },
+      "complianceRisk": {
+        "problem": "コンプライアンスリスクと不明確なアクセス制御",
+        "solution": "RBAC + 監査性（HIPAA/GDPR対応）"
+      }
+    }
+  },
+  "features": {
+    "badge": "エンタープライズ級ラボ機能",
+    "title": "現代のラボに必要なすべて",
+    "subtitle": "紹介、予約、結果、協業、レポート—安全設計。",
+    "items": {
+      "orderIntake": {
+        "title": "紹介ベースのオーダー受付",
+        "description": "医師・クリニックから構造化オーダーを受け取り、曖昧さを減らし、初日からスループットを改善。"
+      },
+      "slotScheduling": {
+        "title": "スロット予約（枠管理）",
+        "description": "スタッフ・部屋・機器・TAT目標など、実運用に基づく容量ルールで計画。"
+      },
+      "sampleTracking": {
+        "title": "検体追跡とステータス",
+        "description": "検体を全工程で追跡し、監査ログ・タイムスタンプ・責任範囲を明確化。"
+      },
+      "resultsDelivery": {
+        "title": "安全な結果配信",
+        "description": "医師・クリニック・患者へ、プライバシーとコンプライアンスを守って結果を配信。"
+      },
+      "notifications": {
+        "title": "リアルタイム通知",
+        "description": "受領・処理中・レビュー待ち・配信完了などを自動通知。手動フォロー不要。"
+      },
+      "analytics": {
+        "title": "ラボ分析",
+        "description": "量、TAT、エラー率、資源利用率をダッシュボード指標で可視化。"
+      }
+    }
+  },
+  "howItWorks": {
+    "badge": "シンプル。構造化。安全。",
+    "title": "仕組み",
+    "subtitle": "ラボを Docito® エコシステム全体とつなぐ明確なフロー。",
+    "steps": {
+      "step1": {
+        "title": "オーダー受領",
+        "description": "医師とクリニックが、構造化された紹介・検査オーダーをラボへ送信。"
+      },
+      "step2": {
+        "title": "予約・準備",
+        "description": "スタッフ、機器、想定TATなど実容量に基づいてスロットを割当。"
+      },
+      "step3": {
+        "title": "処理・追跡",
+        "description": "受領から完了まで、ステータスと監査ログで検体を追跡し責任を明確化。"
+      },
+      "step4": {
+        "title": "結果配信",
+        "description": "アクセス制御と完全なトレーサビリティで、医師・患者へ安全に結果を公開。"
+      }
+    }
+  },
+  "integrations": {
+    "badge": "エンティティ横断協業",
+    "title": "医療エコシステム全体のために",
+    "subtitle": "ラボは単独ではありません。Docito® が紹介、予約、記録、レポートを接続します。",
+    "items": {
+      "doctors": { "title": "医師", "description": "構造化された臨床文脈とともにオーダーを受け、結果を返送。" },
+      "clinics": { "title": "クリニック", "description": "紹介・予約・複数提供者のワークフローを連携。" },
+      "patients": { "title": "患者", "description": "結果と関連ファイルへの安全なアクセスを提供。" },
+      "insurance": { "title": "保険", "description": "適用確認とオーダー・補償の連携を支援。" }
+    }
+  },
+  "cta": {
+    "title": "あなたのラボを Docito® ネットワークへ",
+    "description": "運用をデジタル化し、遅延を減らし、結果を安全に配信。コンプライアンス重視で監査対応。",
+    "primary": "ラボを登録",
+    "secondary": "営業に相談",
+    "note": "認証が必要です。ダッシュボードは表示されますが、承認まで操作が制限される場合があります。"
+  },
+  "visuals": {
+    "heroAlt": "Docito 検査ラボダッシュボード：オーダー、予約、結果配信のプレビュー"
+  }
+}
