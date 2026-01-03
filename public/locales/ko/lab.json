@@ -1,0 +1,137 @@
+{
+  "seo": {
+    "title": "Docito® Labs — 검사실 관리, 오더, 결과 전달 및 의뢰 워크플로",
+    "description": "검사실을 위한 Docito®는 의뢰 기반 오더 접수, 슬롯 예약, 샘플 추적, 결과 전달, 감사 대응 워크플로를 통합하여 검사실을 의사·클리닉·환자·보험과 안전하게 연결합니다.",
+    "keywords": "검사실 관리 시스템, лаборат워크플로 소프트웨어, 의뢰 기반 검사 오더, 검사 예약, 검사 결과 전달, 의료 진단 플랫폼, 의료 의뢰, HIPAA 준수 소프트웨어, 다국어 헬스케어 SaaS"
+  },
+  "nav": {
+    "backToHome": "Docito로 돌아가기",
+    "signIn": "로그인",
+    "getStarted": "시작하기"
+  },
+  "hero": {
+    "badge": "검사실 운영, 하나로",
+    "title1": "현대적인 검사실",
+    "title2": "관리 및 의뢰 연동",
+    "description": "의뢰 기반 오더 접수, 슬롯 예약, 샘플 추적, 결과 전달, 분석 및 컴플라이언스까지—Docito® 의료 생태계 전반에서 안전한 협업을 위해 설계되었습니다.",
+    "primaryCta": "검사실로 가입하기",
+    "secondaryCta": "영업 문의",
+    "trustNote": "컴플라이언스 우선: HIPAA/GDPR 준비 및 역할 기반 접근 제어(RBAC)."
+  },
+  "stats": {
+    "title": "고처리량 검사실을 위해",
+    "subtitle": "가시성, 감사 가능성, 성능—수작업 부담 없이",
+    "cards": {
+      "orders": { "label": "관리된 오더", "value": "10K+" },
+      "turnaround": { "label": "TAT 단축", "value": "최대 40%" },
+      "accuracy": { "label": "오류 감소", "value": "최대 60%" },
+      "coverage": { "label": "기관 간 연동", "value": "의사 • 클리닉 • 환자" }
+    }
+  },
+  "problems": {
+    "badge": "수작업을 대체하세요",
+    "title": "혼란에서 통제로",
+    "subtitle": "Docito®는 분산된 검사실 운영을 하나의 안전한 워크플로로 전환합니다.",
+    "items": {
+      "paperOrders": {
+        "problem": "종이 오더, 전화, 과도한 메시지 처리",
+        "solution": "구조화된 의뢰 기반 디지털 오더 접수"
+      },
+      "noScheduling": {
+        "problem": "슬롯 계획 부재, 긴 대기열, 용량 손실",
+        "solution": "검사·인력·장비를 위한 슬롯 기반 예약"
+      },
+      "lostSamples": {
+        "problem": "샘플 혼동과 취급 이력 부족",
+        "solution": "감사 로그와 상태 업데이트를 포함한 샘플 추적"
+      },
+      "lateResults": {
+        "problem": "결과 지연 및 수동 리포트 전달",
+        "solution": "의사·환자에게 안전한 결과 전달"
+      },
+      "noAnalytics": {
+        "problem": "성과 가시성 및 예측 부족",
+        "solution": "볼륨, TAT, 활용률 중심 운영 분석"
+      },
+      "complianceRisk": {
+        "problem": "컴플라이언스 위험 및 불명확한 접근 제어",
+        "solution": "RBAC + 감사 가능( HIPAA/GDPR 준비 )"
+      }
+    }
+  },
+  "features": {
+    "badge": "엔터프라이즈급 검사실 도구",
+    "title": "현대 검사실에 필요한 모든 것",
+    "subtitle": "의뢰, 예약, 결과, 협업, 리포팅—보안 중심 설계.",
+    "items": {
+      "orderIntake": {
+        "title": "의뢰 기반 오더 접수",
+        "description": "의사·클리닉으로부터 구조화된 오더를 받아 모호성을 줄이고 처리량을 즉시 개선합니다."
+      },
+      "slotScheduling": {
+        "title": "슬롯 기반 예약",
+        "description": "인력, 공간, 장비, TAT 목표 등 실제 용량 규칙으로 검사 일정을 계획합니다."
+      },
+      "sampleTracking": {
+        "title": "샘플 추적 및 상태",
+        "description": "각 샘플을 전 단계에서 감사 로그, 타임스탬프, 명확한 책임과 함께 추적합니다."
+      },
+      "resultsDelivery": {
+        "title": "안전한 결과 전달",
+        "description": "의사·클리닉·환자에게 필요한 결과만 안전하게 전달하고, 프라이버시와 컴플라이언스를 유지합니다."
+      },
+      "notifications": {
+        "title": "실시간 알림",
+        "description": "샘플 수령, 처리 중, 검토 대기, 전달 완료를 자동 알림—수동 확인 불필요."
+      },
+      "analytics": {
+        "title": "검사실 분석",
+        "description": "볼륨, TAT, 오류율, 자원 활용률을 대시보드 지표로 모니터링합니다."
+      }
+    }
+  },
+  "howItWorks": {
+    "badge": "간단. 구조화. 안전.",
+    "title": "작동 방식",
+    "subtitle": "검사실을 Docito® 생태계 전반과 연결하는 명확한 워크플로.",
+    "steps": {
+      "step1": {
+        "title": "오더 수신",
+        "description": "의사·클리닉이 구조화된 의뢰/오더를 검사실로 직접 전송합니다."
+      },
+      "step2": {
+        "title": "예약 및 준비",
+        "description": "인력, 장비, 예상 TAT에 따라 실제 용량 기준으로 슬롯을 배정합니다."
+      },
+      "step3": {
+        "title": "처리 및 추적",
+        "description": "접수부터 완료까지 상태·감사 로그·책임을 기반으로 샘플을 추적합니다."
+      },
+      "step4": {
+        "title": "결과 전달",
+        "description": "통제된 접근과 완전한 추적성으로 의사·환자에게 결과를 안전하게 게시합니다."
+      }
+    }
+  },
+  "integrations": {
+    "badge": "기관 간 협업",
+    "title": "전체 의료 생태계를 위해",
+    "subtitle": "검사실은 단독으로 운영되지 않습니다—Docito®는 의뢰, 예약, 기록, 리포팅을 연결합니다.",
+    "items": {
+      "doctors": { "title": "의사", "description": "구조화된 임상 문맥으로 오더를 받고 결과를 반환합니다." },
+      "clinics": { "title": "클리닉", "description": "의뢰, 예약, 다기관 워크플로를 조율합니다." },
+      "patients": { "title": "환자", "description": "결과 및 방문 관련 파일에 대한 안전한 접근을 제공합니다." },
+      "insurance": { "title": "보험", "description": "보장 확인 및 오더-보장 연계를 지원합니다." }
+    }
+  },
+  "cta": {
+    "title": "검사실을 Docito® 네트워크에 연결하세요",
+    "description": "운영을 디지털화하고 지연을 줄이며 결과를 안전하게 전달하세요—컴플라이언스 우선, 감사 대응.",
+    "primary": "검사실 등록",
+    "secondary": "영업과 상담",
+    "note": "검증이 필요합니다. 대시보드는 보이지만, 승인 전까지 일부 기능은 제한될 수 있습니다."
+  },
+  "visuals": {
+    "heroAlt": "Docito 검사실 대시보드 미리보기: 오더, 예약 및 결과 전달"
+  }
+}
