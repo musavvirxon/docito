@@ -1,1 +1,125 @@
-
+{
+  "seo": {
+    "title": "Docito® Imaging — 예약/슬롯 관리, PACS 준비 워크플로, 판독 보고서 및 의뢰 연계",
+    "description": "Docito®는 영상의학/검사 센터를 위해 의뢰 기반 접수, MRI/CT/X-ray/초음파 스케줄링, 이미지 워크플로, 판독 보고서, 안전한 결과 전달, 감사 대응 컴플라이언스를 통합하여 의료진·클리닉·환자·보험을 안전하게 연결합니다.",
+    "keywords": "영상센터 관리 소프트웨어, 영상의학 워크플로 플랫폼, MRI CT 예약 시스템, PACS 워크플로, 판독 보고서 시스템, 영상진단 관리, 의뢰 기반 검사 주문, HIPAA 준수 소프트웨어, 다국어 헬스케어 SaaS"
+  },
+  "nav": {
+    "backToHome": "Docito로 돌아가기",
+    "signIn": "로그인",
+    "getStarted": "시작하기"
+  },
+  "hero": {
+    "badge": "영상 운영, 하나로",
+    "title1": "현대적인",
+    "title2": "영상 관리 & 의뢰",
+    "description": "의뢰 접수부터 결과 전달까지 엔드투엔드 운영: 의뢰 기반 접수, 슬롯 스케줄링, 이미지 흐름, 보고서 전달, 분석 및 컴플라이언스—Docito® 의료 생태계에서 안전하게 협업하세요.",
+    "primaryCta": "영상센터로 가입",
+    "secondaryCta": "영업 문의",
+    "trustNote": "HIPAA/GDPR-ready, 역할 기반 접근 제어(RBAC) 및 감사 추적을 갖춘 컴플라이언스 우선 설계."
+  },
+  "stats": {
+    "title": "고처리량 센터를 위한 설계",
+    "subtitle": "가시성, 감사 가능성, 성능—수작업 부담 없이",
+    "cards": {
+      "exams": { "label": "관리된 검사", "value": "50K+" },
+      "turnaround": { "label": "보고서 속도 향상", "value": "최대 45%" },
+      "utilization": { "label": "가동률 개선", "value": "최대 30%" },
+      "coverage": { "label": "기관 간 연계", "value": "의사 • 클리닉 • 병원" }
+    }
+  },
+  "problems": {
+    "badge": "분절된 흐름을 교체",
+    "title": "혼란에서 통제로",
+    "subtitle": "Docito®는 분산된 영상 운영을 하나의 안전하고 구조화된 워크플로로 전환합니다.",
+    "items": {
+      "manualOrders": {
+        "problem": "전화, PDF, 수기 요청",
+        "solution": "검사 정보가 포함된 구조화 의뢰 기반 디지털 접수"
+      },
+      "slotConflicts": {
+        "problem": "예약 충돌, 노쇼, 유휴 용량",
+        "solution": "모달리티별 용량 규칙을 반영한 슬롯 스케줄링"
+      },
+      "lostImages": {
+        "problem": "이미지 분산 및 책임 불명확",
+        "solution": "상태/담당/추적이 가능한 중앙 워크플로"
+      },
+      "reportDelays": {
+        "problem": "판독 지연 및 수동 전달",
+        "solution": "의사·환자에게 안전한 결과 전달"
+      },
+      "noVisibility": {
+        "problem": "운영 가시성/예측 부족",
+        "solution": "볼륨, TAT, 가동률, 병목 분석"
+      },
+      "complianceRisk": {
+        "problem": "접근 제어 및 컴플라이언스 리스크",
+        "solution": "RBAC + 감사( HIPAA/GDPR-ready )"
+      }
+    }
+  },
+  "features": {
+    "badge": "엔터프라이즈급 영상 기능",
+    "title": "현대 영상센터에 필요한 모든 것",
+    "subtitle": "의뢰, 스케줄링, 이미지, 보고서, 협업, 분석—보안이 기본.",
+    "items": {
+      "examIntake": {
+        "title": "의뢰 기반 검사 접수",
+        "description": "모달리티, 적응증, 우선순위, 메모가 포함된 구조화 의뢰를 수신합니다."
+      },
+      "modalityScheduling": {
+        "title": "모달리티 스케줄링",
+        "description": "MRI/CT/X-ray/초음파를 실제 용량(인력, 룸, 장비, 목표 TAT)에 맞춰 계획합니다."
+      },
+      "imageManagement": {
+        "title": "이미지 워크플로 및 PACS 준비",
+        "description": "상태·담당·감사 추적으로 이미지 흐름을 관리—PACS 준비형 운영 지원."
+      },
+      "reporting": {
+        "title": "판독 보고서",
+        "description": "안전하게 작성·검토·게시하며 접근 제어와 완전한 추적성을 제공합니다."
+      },
+      "notifications": {
+        "title": "실시간 알림",
+        "description": "예약됨, 완료, 보고서 준비됨, 전달됨—자동 알림."
+      },
+      "analytics": {
+        "title": "영상 분석",
+        "description": "볼륨, TAT, 모달리티 가동률 및 KPI를 모니터링합니다."
+      }
+    }
+  },
+  "howItWorks": {
+    "badge": "간단하게. 구조적으로. 안전하게.",
+    "title": "작동 방식",
+    "subtitle": "영상센터를 Docito® 생태계 전체와 연결하는 명확한 흐름.",
+    "steps": {
+      "step1": { "title": "의뢰 수신", "description": "의사와 클리닉이 구조화 의뢰를 직접 전송합니다." },
+      "step2": { "title": "예약/준비", "description": "모달리티 용량과 자원에 따라 슬롯을 배정합니다." },
+      "step3": { "title": "수행/추적", "description": "접수부터 완료까지 상태와 감사 로그로 추적합니다." },
+      "step4": { "title": "결과 전달", "description": "접근 제어로 의사·환자에게 안전하게 결과를 게시합니다." }
+    }
+  },
+  "integrations": {
+    "badge": "기관 간 협업",
+    "title": "전체 의료 생태계를 위해",
+    "subtitle": "영상은 단독으로 운영되지 않습니다—Docito®가 의뢰, 예약, 기록, 보고서를 연결합니다.",
+    "items": {
+      "doctors": { "title": "의사", "description": "의뢰를 받고 임상 맥락과 함께 보고서를 제공합니다." },
+      "clinics": { "title": "클리닉", "description": "예약, 팔로업, 다기관 워크플로를 조율합니다." },
+      "hospitals": { "title": "병원", "description": "입원·외래 영상 협업을 안전하게 지원합니다." },
+      "insurance": { "title": "보험", "description": "승인/보장과 검사의 연결을 지원합니다." }
+    }
+  },
+  "cta": {
+    "title": "영상센터를 Docito® 네트워크에 연결하세요",
+    "description": "운영을 디지털화하고 지연을 줄이며 결과를 안전하게 전달—감사 대응 컴플라이언스로.",
+    "primary": "영상센터 등록",
+    "secondary": "영업 상담",
+    "note": "검증이 필요합니다. 대시보드는 보이지만 승인 전까지 작업이 제한될 수 있습니다."
+  },
+  "visuals": {
+    "heroAlt": "Docito 영상센터 대시보드: 모달리티 스케줄링과 보고서 전달 미리보기"
+  }
+}
