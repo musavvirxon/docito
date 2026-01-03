@@ -1,0 +1,125 @@
+{
+  "seo": {
+    "title": "Docito® Imaging — Agendamento, fluxos prontos para PACS, laudos e encaminhamentos",
+    "description": "Docito® para Centros de Imagem unifica entrada de pedidos por encaminhamento, agendamento de RM/TC/Raio-X/Ultrassom, gestão de imagens, laudos radiológicos, entrega segura de resultados e compliance audit-ready—conectando centros com médicos, clínicas, pacientes e seguradoras.",
+    "keywords": "software para centro de imagem, plataforma de radiologia, agendamento RM TC, fluxo PACS, laudos radiológicos, gestão de diagnóstico por imagem, encaminhamentos, software compatível com HIPAA, healthcare SaaS multilíngue"
+  },
+  "nav": {
+    "backToHome": "Voltar ao Docito",
+    "signIn": "Entrar",
+    "getStarted": "Começar"
+  },
+  "hero": {
+    "badge": "Operações de imagem, unificadas",
+    "title1": "Gestão moderna",
+    "title2": "de Imagem & Encaminhamentos",
+    "description": "Gerencie ponta a ponta: intake por encaminhamento, agendamento por slots, fluxo de imagens, entrega de laudos, analytics e compliance—para colaboração segura no ecossistema Docito®.",
+    "primaryCta": "Entrar como Centro de Imagem",
+    "secondaryCta": "Falar com Vendas",
+    "trustNote": "Arquitetura compliance-first (HIPAA/GDPR-ready) com RBAC e trilhas de auditoria."
+  },
+  "stats": {
+    "title": "Feito para centros de alto volume",
+    "subtitle": "Visibilidade, auditabilidade e performance—sem sobrecarga manual",
+    "cards": {
+      "exams": { "label": "Exames gerenciados", "value": "50K+" },
+      "turnaround": { "label": "Laudos mais rápidos", "value": "Até 45%" },
+      "utilization": { "label": "Melhor utilização", "value": "Até 30%" },
+      "coverage": { "label": "Cobertura multi-entidade", "value": "Médicos • Clínicas • Hospitais" }
+    }
+  },
+  "problems": {
+    "badge": "Substitua fluxos fragmentados",
+    "title": "Do caos ao controle",
+    "subtitle": "Docito® elimina processos desconectados e os substitui por um fluxo único, seguro e estruturado.",
+    "items": {
+      "manualOrders": {
+        "problem": "Telefonemas, PDFs e solicitações manuais",
+        "solution": "Entrada digital por encaminhamento com detalhes estruturados"
+      },
+      "slotConflicts": {
+        "problem": "Conflitos de agenda e capacidade ociosa",
+        "solution": "Agendamento por slots com regras por modalidade"
+      },
+      "lostImages": {
+        "problem": "Imagens dispersas e responsabilidade incerta",
+        "solution": "Fluxo centralizado com status e rastreabilidade"
+      },
+      "reportDelays": {
+        "problem": "Atraso em laudos e entrega manual",
+        "solution": "Entrega segura para médicos e pacientes"
+      },
+      "noVisibility": {
+        "problem": "Sem visibilidade operacional e previsões",
+        "solution": "Analytics de volume, TAT, utilização e gargalos"
+      },
+      "complianceRisk": {
+        "problem": "Risco de compliance e acesso mal controlado",
+        "solution": "RBAC + auditoria (HIPAA/GDPR-ready)"
+      }
+    }
+  },
+  "features": {
+    "badge": "Ferramentas enterprise para imagem",
+    "title": "Tudo que um centro moderno precisa",
+    "subtitle": "Encaminhamentos, agendamento, imagens, laudos, colaboração e analytics—seguro por design.",
+    "items": {
+      "examIntake": {
+        "title": "Entrada por encaminhamento",
+        "description": "Receba encaminhamentos estruturados com modalidade, indicação, prioridade e observações."
+      },
+      "modalityScheduling": {
+        "title": "Agendamento por modalidade",
+        "description": "Planeje RM, TC, Raio-X e Ultrassom pela capacidade real: equipe, salas, equipamentos e metas de TAT."
+      },
+      "imageManagement": {
+        "title": "Gestão de imagens e fluxo pronto para PACS",
+        "description": "Organize o fluxo com status, responsáveis e trilhas de auditoria—compatível com operações tipo PACS."
+      },
+      "reporting": {
+        "title": "Laudos radiológicos",
+        "description": "Crie, revise e publique laudos com segurança, acesso controlado e rastreabilidade completa."
+      },
+      "notifications": {
+        "title": "Notificações em tempo real",
+        "description": "Alertas automáticos: agendado, realizado, laudo pronto, entregue."
+      },
+      "analytics": {
+        "title": "Analytics de imagem",
+        "description": "Monitore volume, TAT, utilização por modalidade e desempenho."
+      }
+    }
+  },
+  "howItWorks": {
+    "badge": "Simples. Estruturado. Seguro.",
+    "title": "Como funciona",
+    "subtitle": "Um fluxo claro que conecta centros de imagem ao ecossistema Docito®.",
+    "steps": {
+      "step1": { "title": "Receber encaminhamentos", "description": "Médicos e clínicas enviam encaminhamentos estruturados diretamente." },
+      "step2": { "title": "Agendar e preparar", "description": "Atribua slots conforme capacidade por modalidade e recursos." },
+      "step3": { "title": "Realizar e rastrear", "description": "Rastreie cada exame com status, auditoria e responsabilidade clara." },
+      "step4": { "title": "Entregar laudos", "description": "Publique resultados com segurança para médicos e pacientes com acesso controlado." }
+    }
+  },
+  "integrations": {
+    "badge": "Colaboração entre entidades",
+    "title": "Feito para todo o ecossistema",
+    "subtitle": "Imagem não opera sozinha—Docito® conecta encaminhamentos, consultas, registros e laudos.",
+    "items": {
+      "doctors": { "title": "Médicos", "description": "Receba encaminhamentos e devolva laudos com contexto clínico." },
+      "clinics": { "title": "Clínicas", "description": "Coordene agenda, follow-ups e fluxos multi-provedor." },
+      "hospitals": { "title": "Hospitais", "description": "Suporte a imagem ambulatorial e hospitalar com coordenação segura." },
+      "insurance": { "title": "Seguro", "description": "Autorize e vincule exames à cobertura." }
+    }
+  },
+  "cta": {
+    "title": "Traga seu centro de imagem para a rede Docito®",
+    "description": "Digitalize operações, reduza atrasos e entregue laudos com segurança—com compliance audit-ready.",
+    "primary": "Cadastrar Centro de Imagem",
+    "secondary": "Falar com Vendas",
+    "note": "Verificação necessária. O painel é visível, mas ações podem ser bloqueadas até aprovação."
+  },
+  "visuals": {
+    "heroAlt": "Dashboard Docito para centros de imagem com agendamento por modalidade e entrega de laudos"
+  }
+}
