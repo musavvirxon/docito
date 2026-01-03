@@ -1,1 +1,232 @@
-
+{
+  "hero": {
+    "badge": "Profesyonel Medikal Platform",
+    "title1": "Kapsamlı Sağlık",
+    "title2": "Yönetim Çözümü",
+    "description": "Sağlık profesyonelleri için ödemeler, randevu, kayıtlar ve analitik tek güvenli platformda",
+    "features": {
+      "payments": "Ödeme İşleme",
+      "scheduling": "Planlama",
+      "records": "Kayıtlar",
+      "analytics": "Analitik"
+    }
+  },
+  "search": {
+    "specialty": "Uzmanlık veya Doktor Adı",
+    "location": "Şehir veya Konum",
+    "insurance": "Sigorta Sağlayıcısı",
+    "searchButton": "Sağlık Hizmeti Sağlayıcılarını Ara",
+    "searching": "Aranıyor..."
+  },
+  "stats": {
+    "doctors": "Doktorlar",
+    "patients": "Hastalar",
+    "countries": "Ülkeler",
+    "avgRating": "Ort. Puan"
+  },
+  "valueProposition": {
+    "badge": "Kurumsal Seviye Platform",
+    "title": "Profesyonel Araçlar",
+    "subtitle": "Modern Sağlık İçin",
+    "paymentProcessing": {
+      "title": "Ödeme İşleme",
+      "description": "Çoklu para birimi desteğiyle güvenli ödeme"
+    },
+    "schedulingManagement": {
+      "title": "Planlama Yönetimi",
+      "description": "Gerçek zamanlı randevu ve otomatik iş akışları"
+    },
+    "recordsManagement": {
+      "title": "Kayıt Yönetimi",
+      "description": "Eksiksiz dijital sağlık kayıt sistemi"
+    },
+    "procedureLibrary": {
+      "title": "Prosedür Kütüphanesi",
+      "description": "Kapsamlı tıbbi prosedür takibi"
+    },
+    "referralNetwork": {
+      "title": "Sevk Ağı",
+      "description": "Profesyonel sevk yönetim sistemi"
+    },
+    "legalCompliance": {
+      "title": "Yasal Uyum",
+      "description": "HIPAA uyumuna hazır mimari ve dokümantasyon"
+    },
+    "analytics": {
+      "badge": "Kapsamlı Analitik Paketi",
+      "title": "Veri Odaklı İçgörüler",
+      "description": "Gerçek zamanlı panolar, kapsamlı raporlar, performans metrikleri, hasta içgörüleri, gelir takibi ve randevu analitiği.",
+      "features": {
+        "dashboard": "Canlı metriklerle gerçek zamanlı pano",
+        "revenue": "Gelir takibi ve tahminler",
+        "insights": "Hasta içgörüleri ve demografi",
+        "trends": "Randevu trendleri ve desenleri",
+        "performance": "Performans ve verimlilik metrikleri",
+        "reports": "Özelleştirilebilir dışa aktarılabilir raporlar"
+      },
+      "stats": {
+        "revenueToday": "Bugünün Geliri",
+        "appointments": "Randevular",
+        "activePatients": "Aktif Hastalar"
+      }
+    }
+  },
+  "specialties": {
+    "title": "Tıbbi Uzmanlıklar",
+    "subtitle": "Sertifikalı uzmanlarla bağlantı kurun",
+    "cardiology": "Kardiyoloji",
+    "dentist": "Diş Hekimliği",
+    "obGyn": "Kadın Doğum",
+    "dermatology": "Dermatoloji",
+    "psychiatry": "Psikiyatri",
+    "ophthalmology": "Göz Hastalıkları",
+    "neurology": "Nöroloji",
+    "orthopedics": "Ortopedi",
+    "pediatrics": "Pediatri"
+  },
+  "topSpecialists": {
+    "title": "Öne Çıkan Uzmanlar",
+    "bookAppointment": "Randevu Al",
+    "noReviews": "Henüz yorum yok",
+    "featuredSpot": {
+      "title": "Öne Çıkan Uzman Alanı",
+      "description": "En iyi profesyoneller ağımıza katılın ve binlerce hastaya ulaşın",
+      "button": "Doktor Olarak Katıl"
+    },
+    "beFirst": {
+      "title": "İlk Öne Çıkan Uzman Olun",
+      "description": "Docito’ya kurucu uzman olarak katılın. İlk günden premium görünürlük ve hasta erişimi.",
+      "button": "Kliniğinizi Kaydedin"
+    }
+  },
+  "topPractices": {
+    "title": "Önde Gelen Sağlık Kurumları",
+    "subtitle": "Güvenilir sağlık kuruluşları",
+    "viewPractice": "Kurumu Gör",
+    "noReviews": "Henüz yorum yok",
+    "emptySpot": {
+      "premium": {
+        "title": "Premium Kurum Alanı",
+        "description": "Kliniğinizi binlerce potansiyel hastaya sergileyin. Öne çıkan yerleşim ve premium görünürlük.",
+        "button": "Kurumu Kaydet"
+      },
+      "regular": {
+        "title": "Kuruluşunuz Burada",
+        "description": "Önde gelen sağlık sağlayıcıları ağımıza katılın",
+        "button": "Daha Fazla"
+      }
+    },
+    "beFounder": {
+      "title": "Kurucu Kurum Olun",
+      "description": "Docito’ya ilk öne çıkan kurumlardan biri olarak katılın. Premium erişimle daha fazla hasta kazanın ve büyüyün.",
+      "registerButton": "Kuruluşunuzu Kaydedin",
+      "contactButton": "Satışla İletişim"
+    }
+  },
+  "howItWorks": {
+    "title": "Platform Yetenekleri",
+    "subtitle": "4 adımda randevu alın",
+    "steps": {
+      "search": { "title": "Ara", "description": "Uzmanlık ve konuma göre bulun" },
+      "review": { "title": "İncele", "description": "Yetkinlikleri ve doğrulanmış yorumları karşılaştırın" },
+      "book": { "title": "Randevu", "description": "Online anında planlayın" },
+      "care": { "title": "Hizmet", "description": "Profesyonel sağlık hizmeti alın" }
+    }
+  },
+  "features": {
+    "title": "Platform Yetenekleri",
+    "subtitle": "Modern sağlık için profesyonel araçlar",
+    "verifiedProviders": {
+      "title": "Doğrulanmış Sağlayıcılar",
+      "description": "Tüm sağlayıcılar titizlikle doğrulanır ve lisanslanır"
+    },
+    "availability": {
+      "title": "7/24 Erişim",
+      "description": "Her zaman, her yerde, her cihazdan randevu"
+    },
+    "verifiedReviews": {
+      "title": "Doğrulanmış Yorumlar",
+      "description": "Gerçek yorumlarla doğru kararlar"
+    },
+    "instantBooking": {
+      "title": "Anında Randevu",
+      "description": "Günler değil, saniyeler içinde onay"
+    },
+    "globalNetwork": {
+      "title": "Küresel Ağ",
+      "description": "Birden çok ülkede sağlayıcılar"
+    },
+    "hipaaCompliant": {
+      "title": "HIPAA Uyumuna Hazır",
+      "description": "Şifreli veri ve uyum odaklı mimari"
+    }
+  },
+  "cta": {
+    "title": "Profesyonel Sağlık Yönetimi",
+    "description": "Kurumsal araçlarla kapsamlı hasta yönetimine geçin",
+    "scheduleDemoButton": "Demo Planla",
+    "learnMoreButton": "Daha Fazla",
+    "features": {
+      "hipaa": "HIPAA-ready",
+      "security": "Kurumsal Güvenlik",
+      "support": "7/24 Destek"
+    }
+  },
+  "footer": {
+    "description": "Profesyonel Medikal Platform. Güvenli randevu, dijital kayıtlar ve kapsamlı analitikle kurumsal sağlık yönetimi.",
+    "platform": {
+      "title": "Platform",
+      "searchDoctors": "Doktor Ara",
+      "browseSpecialties": "Uzmanlıklar",
+      "findPractices": "Kurum Bul",
+      "features": "Özellikler"
+    },
+    "support": {
+      "title": "Destek",
+      "helpCenter": "Yardım Merkezi",
+      "contact": "İletişim",
+      "faqs": "SSS",
+      "support": "Destek"
+    },
+    "legal": {
+      "title": "Yasal",
+      "about": "Hakkımızda",
+      "privacy": "Gizlilik Politikası",
+      "terms": "Hizmet Şartları",
+      "cookies": "Çerez Politikası",
+      "legalCenter": "Yasal Merkez"
+    },
+    "contact": {
+      "email": "contact@docito.com",
+      "phone": "+1 (555) 123-4567",
+      "location": "San Francisco, CA"
+    },
+    "disclaimer": "İçerik bilgilendirme amaçlıdır; tıbbi tavsiye, teşhis veya tedavi değildir. Tıbbi kararlar için sağlık profesyonellerine danışın. Platform hastalarla sağlayıcıları buluşturur, doğrudan tıbbi hizmet sunmaz. HIPAA-ready.",
+    "copyright": "Tüm Hakları Saklıdır",
+    "trademark": "Docito tescilli bir markadır ve",
+    "company": "Artsy Developers Inc.",
+    "links": {
+      "terms": "Şartlar",
+      "privacy": "Gizlilik",
+      "cookies": "Çerezler",
+      "about": "Hakkında"
+    }
+  },
+  "visuals": {
+    "hero": { "altText": "Hasta yönetimi arayüzünü gösteren pano önizlemesi" },
+    "appointments": { "altText": "Animasyonlu tarihli takvim illüstrasyonu" },
+    "prescriptions": { "altText": "Dijital reçete formu dolduruluyor" },
+    "files": { "altText": "Dosyalar güvenli klasörlerde düzenleniyor" },
+    "notes": { "altText": "Klinik notlar yazılıyor" },
+    "dashboard": { "altText": "Grafikler ve metriklerle etkileşimli pano" },
+    "collaboration": { "altText": "Ekip hasta dosyalarında birlikte çalışıyor" },
+    "mobile": { "altText": "Mobil uygulama arayüzü gösterimi" },
+    "success": { "altText": "Başarı kutlaması animasyonu" },
+    "security": { "altText": "Verileri koruyan güvenlik kalkanı" }
+  },
+  "seo": {
+    "title": "Docito® — Birleşik Sağlık Yönetimi ve Randevu Platformu",
+    "description": "Docito®; hastaları, doktorları, klinikleri, laboratuvarları, eczaneleri, görüntüleme merkezlerini, hastaneleri ve sigortayı tek bir güvenli sistemde birleştirir—planlama, sevkler, kayıtlar, reçeteler, mesajlaşma ve analitik.",
+    "keywords": "sağlık yönetim platformu, doktor randevu sistemi, klinik yönetim yazılımı, laboratuvar yönetim sistemi, eczane platformu, görüntüleme merkezi yazılımı, hasta randevu, sağlık sevkleri, tıbbi kayıt sistemi, HIPAA, çok dilli sağlık SaaS"
+  }
+}
