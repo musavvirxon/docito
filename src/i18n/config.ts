@@ -47,7 +47,7 @@ i18n
       escapeValue: false,
     },
 
-    ns: ['common', 'home', 'doctors', 'patients', 'auth', 'dashboard', 'support', 'about', 'contact', 'faqs', 'features', 'help', 'legal', 'practices', 'specialties'],
+    ns: ['common', 'home', 'doctors', 'patients', 'auth', 'dashboard', 'support', 'about', 'contact', 'faqs', 'features', 'help', 'legal', 'practices', 'specialties', 'lab'],
     defaultNS: 'common',
     
     // Load namespaces on demand
