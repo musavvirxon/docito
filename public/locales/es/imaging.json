@@ -1,1 +1,163 @@
-
+{
+  "seo": {
+    "title": "Docito® Centros de Imagen — Derivaciones, agenda, PACS/DICOM e informes",
+    "description": "Docito® para Centros de Imagen unifica derivaciones digitales, agenda inteligente, flujos PACS/DICOM, entrega de informes, facturación y analítica—conectando de forma segura imagen con médicos, clínicas, pacientes, laboratorios, farmacias y aseguradoras.",
+    "keywords": "software de gestión de centros de imagen, plataforma de radiología, integración PACS, almacenamiento DICOM seguro, agenda de imagenología, informes radiológicos, derivaciones de diagnóstico por imagen, interoperabilidad sanitaria, software radiología compatible con HIPAA, SaaS sanitario multilingüe"
+  },
+  "schema": {
+    "name": "Docito para Centros de Imagen",
+    "description": "Sistema operativo digital para centros de diagnóstico por imagen: derivaciones, agenda, PACS/DICOM, informes, facturación y analítica.",
+    "serviceType": "Software de Imagen Médica"
+  },
+  "hero": {
+    "badge": "Para Centros de Imagen",
+    "title1": "El sistema",
+    "title2": "operativo digital",
+    "title3": "para centros de imagen",
+    "description": "Agenda, derivaciones, informes, integración PACS e intercambio seguro de datos—en una plataforma inteligente.",
+    "primaryCta": "Registrar centro de imagen",
+    "secondaryCta": "Solicitar demo",
+    "trustNote": "Arquitectura orientada a cumplimiento con RBAC y trazabilidad completa."
+  },
+  "problems": {
+    "title1": "La imagen es avanzada.",
+    "title2": "Los sistemas no.",
+    "description": "Derivaciones manuales, sistemas desconectados, informes tardíos y comunicación fragmentada ralentizan la operación. Pacientes y médicos exigen rapidez, precisión y acceso en tiempo real.",
+    "cards": {
+      "paperFrom": "Derivaciones en papel",
+      "paperTo": "Derivaciones digitales",
+      "pacsFrom": "PACS aislado",
+      "pacsTo": "Ecosistema conectado",
+      "reportsFrom": "Informes tardíos",
+      "reportsTo": "Entrega inmediata"
+    }
+  },
+  "features": {
+    "title1": "Diseñado para",
+    "title2": "diagnóstico por imagen",
+    "subtitle": "Funciones creadas para operaciones modernas de radiología e imagenología.",
+    "items": {
+      "digitalReferrals": {
+        "title": "Derivaciones digitales",
+        "description": "Recibe solicitudes de estudios al instante de médicos y clínicas verificados."
+      },
+      "smartScheduling": {
+        "title": "Agenda inteligente",
+        "description": "Optimiza la utilización de equipos y reduce ausencias con gestión inteligente."
+      },
+      "pacsDicom": {
+        "title": "Compatibilidad PACS y DICOM",
+        "description": "Integración segura con sistemas existentes y protocolos estándar del sector."
+      },
+      "reportManagement": {
+        "title": "Gestión de informes",
+        "description": "Sube, firma digitalmente y distribuye informes con trazabilidad completa."
+      },
+      "patientAccess": {
+        "title": "Acceso del paciente",
+        "description": "Portales seguros para que los pacientes consulten resultados e informes en línea."
+      },
+      "billingInsurance": {
+        "title": "Facturación y seguros",
+        "description": "Pagos, facturas y flujos con aseguradoras—todo integrado."
+      },
+      "analyticsInsights": {
+        "title": "Analítica e insights",
+        "description": "Monitorea utilización, TAT e ingresos en tiempo real."
+      }
+    }
+  },
+  "howItWorks": {
+    "title1": "Cómo encaja Docito en",
+    "title2": "tu flujo",
+    "subtitle": "Del registro a los ingresos—recorrido completo para centros de imagen.",
+    "steps": {
+      "step1": {
+        "title": "Registrar y verificar",
+        "description": "Sube licencias y registra modalidades—RM, TC, Rayos X, US y más."
+      },
+      "step2": {
+        "title": "Conectar sistemas",
+        "description": "Integración lista para PACS/RIS y compatible con DICOM."
+      },
+      "step3": {
+        "title": "Recibir derivaciones",
+        "description": "Solicitudes desde médicos, hospitales y clínicas en tiempo real."
+      },
+      "step4": {
+        "title": "Realizar estudios",
+        "description": "Agenda optimizada y coordinación del equipo para operar eficientemente."
+      },
+      "step5": {
+        "title": "Publicar informes con seguridad",
+        "description": "Médicos y pacientes reciben notificación al instante cuando hay resultados."
+      },
+      "step6": {
+        "title": "Cobrar más rápido",
+        "description": "Facturación y seguros automatizados aceleran el ciclo de ingresos."
+      }
+    }
+  },
+  "integrations": {
+    "items": {
+      "doctors": { "title": "Médicos", "description": "" },
+      "clinics": { "title": "Clínicas", "description": "" },
+      "labs": { "title": "Laboratorios", "description": "" },
+      "pharmacies": { "title": "Farmacias", "description": "" },
+      "insurance": { "title": "Seguros", "description": "" },
+      "patients": { "title": "Pacientes", "description": "" }
+    }
+  },
+  "ecosystem": {
+    "title1": "Los centros de imagen son clave para",
+    "title2": "la salud moderna",
+    "description": "La imagen ya no es un servicio aislado. Docito conecta derivaciones, registros y seguimiento en un ecosistema único.",
+    "networkName": "Docito Network",
+    "networkLine": "Una plataforma que conecta todo el ecosistema sanitario"
+  },
+  "security": {
+    "title1": "Seguridad de nivel",
+    "title2": "sanitario",
+    "title3": " — integrada"
+  },
+  "compliance": {
+    "items": {
+      "hipaa": "Alineado con HIPAA",
+      "dicom": "DICOM seguro",
+      "encrypted": "Almacenamiento cifrado",
+      "rbac": "Acceso por roles",
+      "audit": "Trazabilidad completa"
+    }
+  },
+  "pricing": {
+    "title": "Precios transparentes que",
+    "emphasis": "escalan",
+    "subtitle": "Un centro o una red: el precio se adapta a tu volumen y necesidades.",
+    "chips": {
+      "noLockIn": "Sin bloqueo por estudio",
+      "flexiblePlans": "Planes flexibles",
+      "enterpriseReady": "Listo para enterprise"
+    },
+    "buttons": {
+      "viewPricing": "Ver precios",
+      "talkToSales": "Hablar con ventas"
+    }
+  },
+  "finalCta": {
+    "title1": "Actualiza tu centro de imagen para la",
+    "title2": "era digital",
+    "subtitle": "Aumenta eficiencia, reduce TAT y ofrece una experiencia diagnóstica de primer nivel.",
+    "buttons": {
+      "register": "Registrar centro de imagen",
+      "demo": "Agendar demo"
+    }
+  },
+  "footer": {
+    "copyright": "© {{year}} Docito. Todos los derechos reservados.",
+    "links": {
+      "privacy": "Privacidad",
+      "terms": "Términos",
+      "contact": "Contacto"
+    }
+  }
+}
