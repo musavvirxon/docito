@@ -1,1 +1,163 @@
-
+{
+  "seo": {
+    "title": "Docito® Tasvirlash Markazlari — yo‘llanmalar, jadval, PACS/DICOM va hisobotlar",
+    "description": "Docito® tasvirlash markazlari uchun raqamli yo‘llanmalar, aqlli rejalashtirish, PACS/DICOM jarayonlari, hisobot yetkazish, billing va analitikani yagona tizimga birlashtiradi — tasvirlashni shifokorlar, klinikalar, bemorlar, laboratoriyalar, dorixonalar va sug‘urta bilan xavfsiz bog‘laydi.",
+    "keywords": "tasvirlash markazi boshqaruv dasturi, radiologiya platformasi, PACS integratsiya, DICOM xavfsiz saqlash, tekshiruv jadvali, radiologiya hisobotlari, diagnostika yo‘llanmalari, tibbiy interoperabilitet, HIPAA mos radiologiya dasturi, ko‘p tilli tibbiy SaaS"
+  },
+  "schema": {
+    "name": "Docito tasvirlash markazlari uchun",
+    "description": "Diagnostik tasvirlash markazlari uchun raqamli operatsion tizim: yo‘llanmalar, jadval, PACS/DICOM, hisobotlar, billing va analitika.",
+    "serviceType": "Tibbiy tasvirlash dasturi"
+  },
+  "hero": {
+    "badge": "Tasvirlash markazlari uchun",
+    "title1": "Raqamli",
+    "title2": "operatsion tizim",
+    "title3": "tasvirlash markazlari uchun",
+    "description": "Jadval, yo‘llanmalar, hisobotlar, PACS integratsiyasi va xavfsiz ma’lumot almashinuvi — barchasi bitta aqlli platformada.",
+    "primaryCta": "Tasvirlash markazini ro‘yxatdan o‘tkazish",
+    "secondaryCta": "Demo so‘rash",
+    "trustNote": "Moslikka yo‘naltirilgan arxitektura: RBAC va audit izlari."
+  },
+  "problems": {
+    "title1": "Tasvirlash rivojlangan.",
+    "title2": "Tizimlar esa yo‘q.",
+    "description": "Qo‘lda yo‘llanmalar, uzilgan tizimlar, kechikkan hisobotlar va bo‘lingan kommunikatsiya markazlarni sekinlashtiradi. Bemorlar va shifokorlar tezlik, aniqlik va real vaqt kirishini kutadi.",
+    "cards": {
+      "paperFrom": "Qog‘oz yo‘llanmalar",
+      "paperTo": "Raqamli yo‘llanmalar",
+      "pacsFrom": "Ajratilgan PACS",
+      "pacsTo": "Ulangan ekotizim",
+      "reportsFrom": "Kechikkan hisobotlar",
+      "reportsTo": "Darhol yetkazish"
+    }
+  },
+  "features": {
+    "title1": "Aynan",
+    "title2": "diagnostik tasvirlash uchun",
+    "subtitle": "Radiologiya va tasvirlash operatsiyalari ehtiyojlari uchun yaratilgan funksiyalar.",
+    "items": {
+      "digitalReferrals": {
+        "title": "Raqamli yo‘llanmalar",
+        "description": "Tarmoqdagi tasdiqlangan shifokor va klinikalardan tekshiruv so‘rovlarini darhol qabul qiling."
+      },
+      "smartScheduling": {
+        "title": "Aqlli rejalashtirish",
+        "description": "Uskuna bandligini optimallashtiring va no-showni kamaytiring."
+      },
+      "pacsDicom": {
+        "title": "PACS & DICOM mosligi",
+        "description": "Mavjud tizimlar va sanoat standart protokollariga xavfsiz integratsiya."
+      },
+      "reportManagement": {
+        "title": "Hisobotlarni boshqarish",
+        "description": "Hisobotlarni yuklang, raqamli imzolang va audit izlari bilan tarqating."
+      },
+      "patientAccess": {
+        "title": "Bemor kirishi",
+        "description": "Bemorlar natija va hisobotlarni himoyalangan portal orqali ko‘rsin."
+      },
+      "billingInsurance": {
+        "title": "Billing & sug‘urta",
+        "description": "To‘lovlar, hisob-faktura va sug‘urta jarayonlari — barchasi bir tizimda."
+      },
+      "analyticsInsights": {
+        "title": "Analitika & insightlar",
+        "description": "Bandlik, TAT va daromad ko‘rsatkichlarini real vaqtda kuzating."
+      }
+    }
+  },
+  "howItWorks": {
+    "title1": "Docito",
+    "title2": "jarayoningizga qanday moslashadi",
+    "subtitle": "Ro‘yxatdan o‘tishdan daromadgacha — tasvirlash markazi uchun to‘liq yo‘l.",
+    "steps": {
+      "step1": {
+        "title": "Ro‘yxatdan o‘tish va verifikatsiya",
+        "description": "Litsenziyalarni yuklang va modalitetingizni ro‘yxatdan o‘tkazing — MRT, KT, Rentgen, UZI va boshqalar."
+      },
+      "step2": {
+        "title": "Tizimlarni ulash",
+        "description": "PACS/RIS tayyor, DICOM mos integratsiya."
+      },
+      "step3": {
+        "title": "Yo‘llanmalarni qabul qilish",
+        "description": "Shifokor, shifoxona va klinikalardan so‘rovlar darhol keladi."
+      },
+      "step4": {
+        "title": "Tekshiruvni bajarish",
+        "description": "Optimallashtirilgan jadval va xodimlar koordinatsiyasi samaradorlikni oshiradi."
+      },
+      "step5": {
+        "title": "Hisobotlarni xavfsiz yuklash",
+        "description": "Natijalar tayyor bo‘lishi bilanoq shifokor va bemorlar xabardor qilinadi."
+      },
+      "step6": {
+        "title": "Tezroq to‘lov olish",
+        "description": "Avtomatlashtirilgan billing va sug‘urta oqimlari daromad aylanishini tezlashtiradi."
+      }
+    }
+  },
+  "integrations": {
+    "items": {
+      "doctors": { "title": "Shifokorlar", "description": "" },
+      "clinics": { "title": "Klinikalar", "description": "" },
+      "labs": { "title": "Laboratoriyalar", "description": "" },
+      "pharmacies": { "title": "Dorixonalar", "description": "" },
+      "insurance": { "title": "Sug‘urta", "description": "" },
+      "patients": { "title": "Bemorlar", "description": "" }
+    }
+  },
+  "ecosystem": {
+    "title1": "Tasvirlash markazlari",
+    "title2": "zamonaviy tibbiyot markazida",
+    "description": "Tasvirlash endi alohida xizmat emas. Docito yo‘llanmalar, yozuvlar va kuzatuvni yagona ekotizimda bog‘laydi.",
+    "networkName": "Docito Network",
+    "networkLine": "Butun tibbiy ekotizimni bog‘lovchi yagona platforma"
+  },
+  "security": {
+    "title1": "Tibbiyot darajasidagi",
+    "title2": "xavfsizlik",
+    "title3": " — ichidan"
+  },
+  "compliance": {
+    "items": {
+      "hipaa": "HIPAA yo‘nalishida",
+      "dicom": "DICOM xavfsiz",
+      "encrypted": "Shifrlangan saqlash",
+      "rbac": "Rolga asoslangan kirish",
+      "audit": "To‘liq audit izlari"
+    }
+  },
+  "pricing": {
+    "title": "Shaffof narx",
+    "emphasis": "masshtablanuvchi",
+    "subtitle": "Bitta markaz yoki ko‘p filialli tarmoq — narx hajmingiz va ehtiyojingizga moslashadi.",
+    "chips": {
+      "noLockIn": "Har skanga bog‘lanishsiz",
+      "flexiblePlans": "Moslashuvchan rejalar",
+      "enterpriseReady": "Enterprise tayyor"
+    },
+    "buttons": {
+      "viewPricing": "Narxlarni ko‘rish",
+      "talkToSales": "Sotuvlar bilan bog‘lanish"
+    }
+  },
+  "finalCta": {
+    "title1": "Tasvirlash markazingizni",
+    "title2": "raqamli davrga moslang",
+    "subtitle": "Samaradorlikni oshiring, TATni qisqartiring va yuqori darajadagi diagnostik tajriba yarating.",
+    "buttons": {
+      "register": "Tasvirlash markazini ro‘yxatdan o‘tkazish",
+      "demo": "Demo belgilash"
+    }
+  },
+  "footer": {
+    "copyright": "© {{year}} Docito. Barcha huquqlar himoyalangan.",
+    "links": {
+      "privacy": "Maxfiylik",
+      "terms": "Shartlar",
+      "contact": "Aloqa"
+    }
+  }
+}
