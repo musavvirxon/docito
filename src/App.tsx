@@ -83,13 +83,10 @@ const LanguageRoutes = () => {
   const { i18n } = useTranslation();
 
   useEffect(() => {
-    // Set RTL for Arabic-based languages
-    const htmlEl = document.documentElement;
-    if (i18n.language === 'ar' || i18n.language === 'ur' || i18n.language === 'fa') {
-      htmlEl.setAttribute('dir', 'rtl');
-    } else {
-      htmlEl.setAttribute('dir', 'ltr');
-    }
+    // Set RTL for Arabic-based languages using the centralized function
+    import('./i18n/config').then(({ applyDirection }) => {
+      applyDirection(i18n.language);
+    });
   }, [i18n.language]);
 
   return (
