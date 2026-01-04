@@ -1,1 +1,164 @@
+{
+  "seo": {
+    "title": "Docito® Imaging Centers — Referrals, Scheduling, PACS/DICOM & Reporting",
+    "description": "Docito® for Imaging Centers unifies digital referrals, smart scheduling, PACS/DICOM workflows, report delivery, billing, and analytics—securely connecting imaging with doctors, clinics, patients, labs, pharmacies, and insurance.",
+    "keywords": "imaging center management software, radiology workflow platform, PACS integration, DICOM secure storage, imaging scheduling, radiology reporting, diagnostic imaging referrals, healthcare interoperability, HIPAA compliant radiology software, multilingual healthcare SaaS"
+  },
+  "schema": {
+    "name": "Docito for Imaging Centers",
+    "description": "A complete digital operating system for diagnostic imaging centers: referrals, scheduling, PACS/DICOM workflows, reporting, billing, and analytics.",
+    "serviceType": "Medical Imaging Software"
+  },
+  "hero": {
+    "badge": "For Imaging Centers",
+    "title1": "The Digital",
+    "title2": "Operating System",
+    "title3": "for Imaging Centers",
+    "description": "Scheduling, referrals, reporting, PACS integration, and secure data exchange—unified in one intelligent platform.",
+    "primaryCta": "Register Your Imaging Center",
+    "secondaryCta": "Request a Demo",
+    "trustNote": "Compliance-first architecture with role-based access and audit trails."
+  },
+  "problems": {
+    "title1": "Imaging Is Advanced.",
+    "title2": "Systems Are Not.",
+    "description": "Manual referrals, disconnected systems, delayed reporting, and fragmented communication slow imaging centers down. Patients and doctors expect speed, accuracy, and real-time access.",
+    "cards": {
+      "paperFrom": "Paper referrals",
+      "paperTo": "Digital referrals",
+      "pacsFrom": "Isolated PACS",
+      "pacsTo": "Connected ecosystem",
+      "reportsFrom": "Delayed reports",
+      "reportsTo": "Instant delivery"
+    }
+  },
+  "features": {
+    "title1": "Built Specifically for",
+    "title2": "Diagnostic Imaging",
+    "subtitle": "Every feature designed for modern radiology and imaging operations.",
+    "items": {
+      "digitalReferrals": {
+        "title": "Digital Referrals",
+        "description": "Receive imaging requests instantly from verified doctors and clinics across the healthcare network."
+      },
+      "smartScheduling": {
+        "title": "Smart Scheduling",
+        "description": "Optimize machine utilization and reduce no-shows with intelligent appointment management."
+      },
+      "pacsDicom": {
+        "title": "PACS & DICOM Compatibility",
+        "description": "Integrate securely with existing imaging systems and industry-standard protocols."
+      },
+      "reportManagement": {
+        "title": "Report Management",
+        "description": "Upload, digitally sign, and distribute reports with complete audit trails."
+      },
+      "patientAccess": {
+        "title": "Patient Access",
+        "description": "Give patients secure access to imaging results and reports through protected portals."
+      },
+      "billingInsurance": {
+        "title": "Billing & Insurance",
+        "description": "Handle payments, invoices, and insurance workflows seamlessly."
+      },
+      "analyticsInsights": {
+        "title": "Analytics & Insights",
+        "description": "Track utilization, turnaround time, and revenue metrics in real time."
+      }
+    }
+  },
+  "howItWorks": {
+    "title1": "How Docito Fits Into",
+    "title2": "Your Workflow",
+    "subtitle": "From registration to revenue—an end-to-end imaging journey.",
+    "steps": {
+      "step1": {
+        "title": "Register & Verify Center",
+        "description": "Upload licenses and register your modalities—MRI, CT, X-ray, Ultrasound, and more."
+      },
+      "step2": {
+        "title": "Connect Your Systems",
+        "description": "PACS/RIS-ready, DICOM-compatible integration with your existing infrastructure."
+      },
+      "step3": {
+        "title": "Receive Referrals",
+        "description": "Get imaging requests from doctors, hospitals, and clinics instantly."
+      },
+      "step4": {
+        "title": "Perform Imaging",
+        "description": "Use optimized scheduling and staff coordination for efficient operations."
+      },
+      "step5": {
+        "title": "Upload Reports Securely",
+        "description": "Doctors and patients are notified immediately when results are ready."
+      },
+      "step6": {
+        "title": "Get Paid Faster",
+        "description": "Automated billing and insurance workflows streamline revenue collection."
+      }
+    }
+  },
+  "integrations": {
+    "items": {
+      "doctors": { "title": "Doctors", "description": "" },
+      "clinics": { "title": "Clinics", "description": "" },
+      "labs": { "title": "Labs", "description": "" },
+      "pharmacies": { "title": "Pharmacies", "description": "" },
+      "insurance": { "title": "Insurance", "description": "" },
+      "patients": { "title": "Patients", "description": "" }
+    }
+  },
+  "ecosystem": {
+    "title1": "Imaging Centers Are Central to",
+    "title2": "Modern Healthcare",
+    "description": "Imaging is no longer a standalone service. Docito turns imaging centers into connected hubs across referrals, records, and follow-ups.",
+    "networkName": "Docito Network",
+    "networkLine": "One platform connecting the entire healthcare ecosystem"
+  },
+  "security": {
+    "title1": "Healthcare-Grade",
+    "title2": "Security",
+    "title3": ", Built-In"
+  },
+  "compliance": {
+    "items": {
+      "hipaa": "HIPAA-aligned",
+      "dicom": "DICOM-secure",
+      "encrypted": "Encrypted storage",
+      "rbac": "Role-based access",
+      "audit": "Full audit trails"
+    }
+  },
+  "pricing": {
+    "title": "Transparent Pricing That",
+    "emphasis": "Scales",
+    "subtitle": "Whether you operate a single imaging center or a multi-location network, pricing adapts to your volume and needs.",
+    "chips": {
+      "noLockIn": "No per-scan lock-in",
+      "flexiblePlans": "Flexible plans",
+      "enterpriseReady": "Enterprise-ready"
+    },
+    "buttons": {
+      "viewPricing": "View Pricing",
+      "talkToSales": "Talk to Sales"
+    }
+  },
+  "finalCta": {
+    "title1": "Upgrade Your Imaging Center for the",
+    "title2": "Digital Era",
+    "subtitle": "Increase efficiency, reduce turnaround time, and deliver a world-class diagnostic experience.",
+    "buttons": {
+      "register": "Register Your Imaging Center",
+      "demo": "Schedule a Demo"
+    }
+  },
+  "footer": {
+    "copyright": "© {{year}} Docito. All rights reserved.",
+    "links": {
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "contact": "Contact"
+    }
+  }
+}
 
