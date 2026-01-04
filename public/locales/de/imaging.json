@@ -1,1 +1,163 @@
-
+{
+  "seo": {
+    "title": "Docito® Bildgebung — Überweisungen, Terminplanung, PACS/DICOM & Befunde",
+    "description": "Docito® für Bildgebungszentren vereint digitale Überweisungen, intelligente Terminplanung, PACS/DICOM-Workflows, Befundzustellung, Abrechnung und Analytics—und verbindet Bildgebung sicher mit Ärzten, Kliniken, Patienten, Laboren, Apotheken und Versicherern.",
+    "keywords": "Bildgebungszentrum Software, Radiologie Plattform, PACS Integration, DICOM sichere Speicherung, Terminplanung Bildgebung, Radiologie Befundung, diagnostische Überweisungen, Interoperabilität Gesundheitswesen, HIPAA-konforme Radiologie Software, mehrsprachige Healthcare SaaS"
+  },
+  "schema": {
+    "name": "Docito für Bildgebungszentren",
+    "description": "Digitales Betriebssystem für diagnostische Bildgebung: Überweisungen, Terminplanung, PACS/DICOM, Befunde, Abrechnung und Analytics.",
+    "serviceType": "Software für medizinische Bildgebung"
+  },
+  "hero": {
+    "badge": "Für Bildgebungszentren",
+    "title1": "Das digitale",
+    "title2": "Betriebssystem",
+    "title3": "für Bildgebungszentren",
+    "description": "Terminplanung, Überweisungen, Befunde, PACS-Integration und sicherer Datenaustausch—vereint in einer intelligenten Plattform.",
+    "primaryCta": "Bildgebungszentrum registrieren",
+    "secondaryCta": "Demo anfragen",
+    "trustNote": "Compliance-first: rollenbasierter Zugriff und vollständige Audit-Trails."
+  },
+  "problems": {
+    "title1": "Bildgebung ist modern.",
+    "title2": "Systeme oft nicht.",
+    "description": "Manuelle Überweisungen, getrennte Systeme, verzögerte Befunde und fragmentierte Kommunikation bremsen Zentren aus. Patienten und Ärzte erwarten Tempo, Genauigkeit und Echtzeit-Zugriff.",
+    "cards": {
+      "paperFrom": "Papierüberweisungen",
+      "paperTo": "Digitale Überweisungen",
+      "pacsFrom": "Isoliertes PACS",
+      "pacsTo": "Vernetztes Ökosystem",
+      "reportsFrom": "Verzögerte Befunde",
+      "reportsTo": "Sofortige Zustellung"
+    }
+  },
+  "features": {
+    "title1": "Speziell gebaut für",
+    "title2": "diagnostische Bildgebung",
+    "subtitle": "Funktionen für die Anforderungen moderner Radiologie- und Bildgebungsprozesse.",
+    "items": {
+      "digitalReferrals": {
+        "title": "Digitale Überweisungen",
+        "description": "Erhalten Sie Bildgebungsanfragen sofort von verifizierten Ärzten und Kliniken im Netzwerk."
+      },
+      "smartScheduling": {
+        "title": "Intelligente Terminplanung",
+        "description": "Optimieren Sie die Gerätenutzung und reduzieren Sie No-Shows mit smarter Terminverwaltung."
+      },
+      "pacsDicom": {
+        "title": "PACS- & DICOM-Kompatibilität",
+        "description": "Sichere Integration in bestehende Systeme und standardisierte Protokolle."
+      },
+      "reportManagement": {
+        "title": "Befund-Management",
+        "description": "Befunde hochladen, digital signieren und mit vollständigen Audit-Trails verteilen."
+      },
+      "patientAccess": {
+        "title": "Patientenzugang",
+        "description": "Sichere Portale, damit Patienten Ergebnisse und Befunde online einsehen können."
+      },
+      "billingInsurance": {
+        "title": "Abrechnung & Versicherung",
+        "description": "Zahlungen, Rechnungen und Versicherungsworkflows nahtlos abwickeln."
+      },
+      "analyticsInsights": {
+        "title": "Analytics & Insights",
+        "description": "Auslastung, TAT und Umsatzkennzahlen in Echtzeit verfolgen."
+      }
+    }
+  },
+  "howItWorks": {
+    "title1": "So passt Docito in",
+    "title2": "Ihren Workflow",
+    "subtitle": "Von Registrierung bis Umsatz—ein durchgängiger Ablauf für Bildgebungszentren.",
+    "steps": {
+      "step1": {
+        "title": "Registrieren & verifizieren",
+        "description": "Lizenzen hochladen und Modalitäten registrieren—MRT, CT, Röntgen, Ultraschall und mehr."
+      },
+      "step2": {
+        "title": "Systeme verbinden",
+        "description": "PACS/RIS-ready, DICOM-kompatible Integration in Ihre bestehende Infrastruktur."
+      },
+      "step3": {
+        "title": "Überweisungen erhalten",
+        "description": "Anfragen kommen sofort von Ärzten, Krankenhäusern und Kliniken."
+      },
+      "step4": {
+        "title": "Bildgebung durchführen",
+        "description": "Optimierte Terminplanung und Teamkoordination für effiziente Abläufe."
+      },
+      "step5": {
+        "title": "Befunde sicher bereitstellen",
+        "description": "Ärzte und Patienten werden sofort informiert, wenn Ergebnisse vorliegen."
+      },
+      "step6": {
+        "title": "Schneller bezahlt werden",
+        "description": "Automatisierte Abrechnung und Versicherungsprozesse beschleunigen den Umsatzzyklus."
+      }
+    }
+  },
+  "integrations": {
+    "items": {
+      "doctors": { "title": "Ärzte", "description": "" },
+      "clinics": { "title": "Kliniken", "description": "" },
+      "labs": { "title": "Labore", "description": "" },
+      "pharmacies": { "title": "Apotheken", "description": "" },
+      "insurance": { "title": "Versicherung", "description": "" },
+      "patients": { "title": "Patienten", "description": "" }
+    }
+  },
+  "ecosystem": {
+    "title1": "Bildgebungszentren sind zentral für",
+    "title2": "moderne Versorgung",
+    "description": "Bildgebung ist längst kein isolierter Service mehr. Docito vernetzt Überweisungen, Akten und Nachverfolgung in einem Ökosystem.",
+    "networkName": "Docito Network",
+    "networkLine": "Eine Plattform, die das gesamte Gesundheitsökosystem verbindet"
+  },
+  "security": {
+    "title1": "Security auf",
+    "title2": "Healthcare-Niveau",
+    "title3": " — integriert"
+  },
+  "compliance": {
+    "items": {
+      "hipaa": "HIPAA-orientiert",
+      "dicom": "DICOM-sicher",
+      "encrypted": "Verschlüsselte Speicherung",
+      "rbac": "Rollenbasierter Zugriff",
+      "audit": "Vollständige Audit-Trails"
+    }
+  },
+  "pricing": {
+    "title": "Transparente Preise, die",
+    "emphasis": "skalieren",
+    "subtitle": "Ein Standort oder ein Netzwerk—Preise passen sich Volumen und Bedarf an.",
+    "chips": {
+      "noLockIn": "Kein Lock-in pro Scan",
+      "flexiblePlans": "Flexible Pläne",
+      "enterpriseReady": "Enterprise-ready"
+    },
+    "buttons": {
+      "viewPricing": "Preise ansehen",
+      "talkToSales": "Mit Sales sprechen"
+    }
+  },
+  "finalCta": {
+    "title1": "Bringen Sie Ihr Bildgebungszentrum in die",
+    "title2": "digitale Ära",
+    "subtitle": "Steigern Sie Effizienz, senken Sie TAT und liefern Sie eine erstklassige Diagnostik-Erfahrung.",
+    "buttons": {
+      "register": "Bildgebungszentrum registrieren",
+      "demo": "Demo planen"
+    }
+  },
+  "footer": {
+    "copyright": "© {{year}} Docito. Alle Rechte vorbehalten.",
+    "links": {
+      "privacy": "Datenschutz",
+      "terms": "AGB",
+      "contact": "Kontakt"
+    }
+  }
+}
