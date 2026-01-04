@@ -12,7 +12,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LogOut, Settings, ArrowRightLeft } from "lucide-react";
+import SettingsDialog from "./SettingsDialog";
 
+<SettingsDialog open={openSettings} onOpenChange={setOpenSettings} />
 const roleLabel = (r: string) =>
   r.split("_").join(" ").replace(/\b\w/g, (c) => c.toUpperCase());
 
