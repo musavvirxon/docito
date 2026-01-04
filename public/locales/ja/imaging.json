@@ -1,1 +1,164 @@
+{
+  "seo": {
+    "title": "Docito® 画像診断センター — 紹介・予約、PACS/DICOM、レポート配信",
+    "description": "Docito® は画像診断センター向けに、デジタル紹介、スマート予約、PACS/DICOM ワークフロー、レポート配信、請求と分析を統合—医師・クリニック・患者・検査機関・薬局・保険を安全に接続します。",
+    "keywords": "画像診断センター管理ソフト, 放射線科ワークフロー, PACS連携, DICOM安全保管, 画像検査予約, 放射線レポート管理, 診断画像紹介, 医療相互運用性, HIPAA準拠放射線ソフト, 多言語医療SaaS"
+  },
+  "schema": {
+    "name": "Docito 画像診断センター向け",
+    "description": "紹介、予約、PACS/DICOM、レポート、請求、分析まで統合した画像診断センターのデジタル運用基盤。",
+    "serviceType": "医療画像ソフトウェア"
+  },
+  "hero": {
+    "badge": "画像診断センター向け",
+    "title1": "画像診断センターの",
+    "title2": "デジタル運用基盤",
+    "title3": "を一つに",
+    "description": "予約・紹介・レポート・PACS連携・安全なデータ交換—すべてを一つのスマートなプラットフォームへ。",
+    "primaryCta": "画像診断センターを登録",
+    "secondaryCta": "デモを依頼",
+    "trustNote": "コンプライアンス重視：ロールベース権限と監査証跡を標準搭載。"
+  },
+  "problems": {
+    "title1": "画像診断は進化している。",
+    "title2": "システムは追いついていない。",
+    "description": "手作業の紹介、分断されたシステム、遅いレポート、断片的な連携が運用を遅らせます。患者と医師はスピード・精度・リアルタイムアクセスを求めています。",
+    "cards": {
+      "paperFrom": "紙の紹介",
+      "paperTo": "デジタル紹介",
+      "pacsFrom": "孤立したPACS",
+      "pacsTo": "つながるエコシステム",
+      "reportsFrom": "遅いレポート",
+      "reportsTo": "即時配信"
+    }
+  },
+  "features": {
+    "title1": "診断画像のために",
+    "title2": "最適化",
+    "subtitle": "放射線科・画像診断運用の要件に合わせた機能設計。",
+    "items": {
+      "digitalReferrals": {
+        "title": "デジタル紹介",
+        "description": "認証済みの医師・クリニックからの検査依頼を即時に受け取れます。"
+      },
+      "smartScheduling": {
+        "title": "スマート予約管理",
+        "description": "装置稼働率を最適化し、無断キャンセルを減らします。"
+      },
+      "pacsDicom": {
+        "title": "PACS & DICOM互換",
+        "description": "既存の画像システムと業界標準プロトコルへ安全に統合します。"
+      },
+      "reportManagement": {
+        "title": "レポート管理",
+        "description": "アップロード、電子署名、配信までを監査証跡付きで行えます。"
+      },
+      "patientAccess": {
+        "title": "患者アクセス",
+        "description": "患者が結果とレポートを安全に閲覧できるポータルを提供します。"
+      },
+      "billingInsurance": {
+        "title": "請求・保険",
+        "description": "決済、請求書、保険フローを一体化し、手作業を削減します。"
+      },
+      "analyticsInsights": {
+        "title": "分析・インサイト",
+        "description": "稼働率、TAT、収益指標をリアルタイムで可視化します。"
+      }
+    }
+  },
+  "howItWorks": {
+    "title1": "Docitoが",
+    "title2": "業務フローに入る方法",
+    "subtitle": "登録から収益化まで—画像診断センターのエンドツーエンド。",
+    "steps": {
+      "step1": {
+        "title": "登録・認証",
+        "description": "許認可を提出し、MRI/CT/X線/超音波など装置を登録します。"
+      },
+      "step2": {
+        "title": "システム接続",
+        "description": "PACS/RIS対応、DICOM互換で既存インフラに統合します。"
+      },
+      "step3": {
+        "title": "紹介を受領",
+        "description": "医師・病院・クリニックからの依頼がリアルタイムで届きます。"
+      },
+      "step4": {
+        "title": "検査実施",
+        "description": "最適化された予約とチーム連携で効率的に運用します。"
+      },
+      "step5": {
+        "title": "レポートを安全に共有",
+        "description": "結果が準備でき次第、医師と患者に即時通知されます。"
+      },
+      "step6": {
+        "title": "回収を迅速化",
+        "description": "自動請求と保険フローで収益サイクルを短縮します。"
+      }
+    }
+  },
+  "integrations": {
+    "items": {
+      "doctors": { "title": "医師", "description": "" },
+      "clinics": { "title": "クリニック", "description": "" },
+      "labs": { "title": "検査機関", "description": "" },
+      "pharmacies": { "title": "薬局", "description": "" },
+      "insurance": { "title": "保険", "description": "" },
+      "patients": { "title": "患者", "description": "" }
+    }
+  },
+  "ecosystem": {
+    "title1": "画像診断センターは",
+    "title2": "現代医療の中核",
+    "description": "画像診断は単独サービスではありません。Docitoが紹介、記録、フォローアップを一つのエコシステムでつなぎます。",
+    "networkName": "Docito Network",
+    "networkLine": "医療エコシステム全体をつなぐ単一プラットフォーム"
+  },
+  "security": {
+    "title1": "医療水準の",
+    "title2": "セキュリティ",
+    "title3": " — 標準搭載"
+  },
+  "compliance": {
+    "items": {
+      "hipaa": "HIPAA方針に準拠",
+      "dicom": "DICOMセキュア",
+      "encrypted": "暗号化ストレージ",
+      "rbac": "ロールベースアクセス",
+      "audit": "完全な監査証跡"
+    }
+  },
+  "pricing": {
+    "title": "透明な価格で",
+    "emphasis": "スケール",
+    "subtitle": "単一拠点でも多拠点ネットワークでも、価格は規模と要件に合わせて最適化されます。",
+    "chips": {
+      "noLockIn": "検査ごとの縛りなし",
+      "flexiblePlans": "柔軟なプラン",
+      "enterpriseReady": "エンタープライズ対応"
+    },
+    "buttons": {
+      "viewPricing": "価格を見る",
+      "talkToSales": "営業に相談"
+    }
+  },
+  "finalCta": {
+    "title1": "画像診断センターを",
+    "title2": "デジタル時代へ",
+    "subtitle": "効率を高め、TATを短縮し、世界水準の診断体験を提供しましょう。",
+    "buttons": {
+      "register": "画像診断センターを登録",
+      "demo": "デモを予約"
+    }
+  },
+  "footer": {
+    "copyright": "© {{year}} Docito. All rights reserved.",
+    "links": {
+      "privacy": "プライバシー",
+      "terms": "利用規約",
+      "contact": "お問い合わせ"
+    }
+  }
+}
 
