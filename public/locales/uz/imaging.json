@@ -1,16 +1,16 @@
 {
   "seo": {
     "title": "Docito® Tasvirlash Markazlari — yo‘llanmalar, jadval, PACS/DICOM va hisobotlar",
-    "description": "Docito® tasvirlash markazlari uchun raqamli yo‘llanmalar, aqlli rejalashtirish, PACS/DICOM jarayonlari, hisobot yetkazish, billing va analitikani yagona tizimga birlashtiradi — tasvirlashni shifokorlar, klinikalar, bemorlar, laboratoriyalar, dorixonalar va sug‘urta bilan xavfsiz bog‘laydi.",
+    "description": "Docito® rentgen markazlari uchun raqamli yo‘llanmalar, aqlli rejalashtirish, PACS/DICOM jarayonlari, hisobot yetkazish, billing va analitikani yagona tizimga birlashtiradi — tasvirlashni shifokorlar, klinikalar, bemorlar, laboratoriyalar, dorixonalar va sug‘urta bilan xavfsiz bog‘laydi.",
     "keywords": "tasvirlash markazi boshqaruv dasturi, radiologiya platformasi, PACS integratsiya, DICOM xavfsiz saqlash, tekshiruv jadvali, radiologiya hisobotlari, diagnostika yo‘llanmalari, tibbiy interoperabilitet, HIPAA mos radiologiya dasturi, ko‘p tilli tibbiy SaaS"
   },
   "schema": {
-    "name": "Docito tasvirlash markazlari uchun",
+    "name": "Docito rentgen tasvirlash markazlari uchun",
     "description": "Diagnostik tasvirlash markazlari uchun raqamli operatsion tizim: yo‘llanmalar, jadval, PACS/DICOM, hisobotlar, billing va analitika.",
     "serviceType": "Tibbiy tasvirlash dasturi"
   },
   "hero": {
-    "badge": "Tasvirlash markazlari uchun",
+    "badge": "Rentgen tasvirlash markazlari uchun",
     "title1": "Raqamli",
     "title2": "operatsion tizim",
     "title3": "tasvirlash markazlari uchun",
