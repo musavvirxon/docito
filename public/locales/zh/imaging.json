@@ -1,1 +1,163 @@
-
+{
+  "seo": {
+    "title": "Docito® 影像中心 — 转诊、排班、PACS/DICOM 与报告交付",
+    "description": "Docito® 影像中心解决方案将数字转诊、智能排班、PACS/DICOM 工作流、报告交付、计费与数据分析整合为一体——安全连接影像中心与医生、诊所、患者、实验室、药房及保险机构。",
+    "keywords": "影像中心管理软件, 放射科工作流平台, PACS集成, DICOM安全存储, 影像预约排班, 放射报告管理, 诊断影像转诊, 医疗互操作, HIPAA合规放射软件, 多语言医疗SaaS"
+  },
+  "schema": {
+    "name": "Docito 影像中心解决方案",
+    "description": "面向诊断影像中心的一体化数字运营系统：转诊、排班、PACS/DICOM、报告、计费与分析。",
+    "serviceType": "医疗影像软件"
+  },
+  "hero": {
+    "badge": "面向影像中心",
+    "title1": "影像中心的",
+    "title2": "数字运营系统",
+    "title3": "一站式平台",
+    "description": "排班、转诊、报告、PACS 集成与安全数据交换——统一在一套智能平台中。",
+    "primaryCta": "注册影像中心",
+    "secondaryCta": "申请演示",
+    "trustNote": "以合规为先：基于角色的权限控制与完整审计轨迹。"
+  },
+  "problems": {
+    "title1": "影像技术很先进。",
+    "title2": "系统却不够先进。",
+    "description": "手工转诊、系统割裂、报告延迟与沟通碎片化会拖慢运营。患者与医生需要速度、准确性与实时访问。",
+    "cards": {
+      "paperFrom": "纸质转诊",
+      "paperTo": "数字转诊",
+      "pacsFrom": "孤立的 PACS",
+      "pacsTo": "互联生态",
+      "reportsFrom": "报告延迟",
+      "reportsTo": "即时交付"
+    }
+  },
+  "features": {
+    "title1": "专为",
+    "title2": "诊断影像打造",
+    "subtitle": "为现代放射与影像运营而设计的核心能力。",
+    "items": {
+      "digitalReferrals": {
+        "title": "数字转诊",
+        "description": "来自已验证医生与诊所的影像检查申请可即时到达。"
+      },
+      "smartScheduling": {
+        "title": "智能排班",
+        "description": "优化设备利用率，降低爽约率，实现精细化预约管理。"
+      },
+      "pacsDicom": {
+        "title": "PACS & DICOM 兼容",
+        "description": "与既有影像系统及行业标准协议安全集成。"
+      },
+      "reportManagement": {
+        "title": "报告管理",
+        "description": "上传、数字签名并分发报告，具备完整审计记录。"
+      },
+      "patientAccess": {
+        "title": "患者访问",
+        "description": "为患者提供安全门户，在线查看结果与报告。"
+      },
+      "billingInsurance": {
+        "title": "计费与保险",
+        "description": "支付、发票与保险流程无缝衔接，减少人工环节。"
+      },
+      "analyticsInsights": {
+        "title": "分析与洞察",
+        "description": "实时追踪利用率、周转时间（TAT）与收入指标。"
+      }
+    }
+  },
+  "howItWorks": {
+    "title1": "Docito 如何融入",
+    "title2": "你的工作流",
+    "subtitle": "从注册到收入——影像中心端到端流程。",
+    "steps": {
+      "step1": {
+        "title": "注册并认证",
+        "description": "上传资质并登记设备——MRI、CT、X 光、超声等。"
+      },
+      "step2": {
+        "title": "连接系统",
+        "description": "PACS/RIS 就绪、兼容 DICOM，可接入现有基础设施。"
+      },
+      "step3": {
+        "title": "接收转诊",
+        "description": "来自医生、医院与诊所的申请实时到达。"
+      },
+      "step4": {
+        "title": "完成检查",
+        "description": "通过优化排班与团队协作提升运营效率。"
+      },
+      "step5": {
+        "title": "安全上传报告",
+        "description": "结果就绪后，医生与患者将立即收到通知。"
+      },
+      "step6": {
+        "title": "更快回款",
+        "description": "自动化计费与保险流程加速收入回收。"
+      }
+    }
+  },
+  "integrations": {
+    "items": {
+      "doctors": { "title": "医生", "description": "" },
+      "clinics": { "title": "诊所", "description": "" },
+      "labs": { "title": "实验室", "description": "" },
+      "pharmacies": { "title": "药房", "description": "" },
+      "insurance": { "title": "保险", "description": "" },
+      "patients": { "title": "患者", "description": "" }
+    }
+  },
+  "ecosystem": {
+    "title1": "影像中心是",
+    "title2": "现代医疗的关键枢纽",
+    "description": "影像不再是孤立服务。Docito 将转诊、记录与随访连接在统一生态中。",
+    "networkName": "Docito Network",
+    "networkLine": "一个平台连接整个医疗生态"
+  },
+  "security": {
+    "title1": "医疗级",
+    "title2": "安全",
+    "title3": " — 原生内置"
+  },
+  "compliance": {
+    "items": {
+      "hipaa": "HIPAA 对齐",
+      "dicom": "DICOM 安全",
+      "encrypted": "加密存储",
+      "rbac": "基于角色访问控制",
+      "audit": "完整审计轨迹"
+    }
+  },
+  "pricing": {
+    "title": "透明定价",
+    "emphasis": "可随规模增长",
+    "subtitle": "无论单体中心还是多院区网络，定价随业务量与需求灵活调整。",
+    "chips": {
+      "noLockIn": "不按单次检查锁定",
+      "flexiblePlans": "灵活方案",
+      "enterpriseReady": "企业级就绪"
+    },
+    "buttons": {
+      "viewPricing": "查看定价",
+      "talkToSales": "联系销售"
+    }
+  },
+  "finalCta": {
+    "title1": "让你的影像中心迈入",
+    "title2": "数字时代",
+    "subtitle": "提升效率、缩短 TAT、打造世界级诊断体验。",
+    "buttons": {
+      "register": "注册影像中心",
+      "demo": "预约演示"
+    }
+  },
+  "footer": {
+    "copyright": "© {{year}} Docito. 保留所有权利。",
+    "links": {
+      "privacy": "隐私",
+      "terms": "条款",
+      "contact": "联系"
+    }
+  }
+}
