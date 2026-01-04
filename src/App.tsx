@@ -12,6 +12,7 @@ import CookieConsentBanner from "@/components/CookieConsentBanner";
 import PremiumHome from "./pages/PremiumHome";
 import RoleProtectedRoute from "@/components/RoleProtectedRoute";
 import PostAuthRedirect from "@/components/PostAuthRedirect";
+import SettingsPage from "@/pages/Settings";
 
 // Lazy load non-critical pages to reduce initial bundle size
 const Auth = lazy(() => import("./pages/Auth"));
@@ -94,6 +95,14 @@ const LanguageRoutes = () => {
       <Routes>
       {/* Default routes (no language prefix) */}
       <Route path="/" element={<PremiumHome />} />
+<Route
+  path="/settings"
+  element={
+    <ProtectedRoute>
+      <SettingsPage />
+    </ProtectedRoute>
+  }
+/>
       <Route path="/auth" element={<Auth />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/practice" element={<Practices />} />
