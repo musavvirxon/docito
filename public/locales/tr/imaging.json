@@ -1,1 +1,163 @@
-
+{
+  "seo": {
+    "title": "Docito® Görüntüleme Merkezleri — Sevkler, Randevu, PACS/DICOM ve Raporlama",
+    "description": "Docito® Görüntüleme Merkezleri için dijital sevkleri, akıllı randevu yönetimini, PACS/DICOM iş akışlarını, rapor teslimini, faturalamayı ve analitiği birleştirir—görüntülemeyi doktorlar, klinikler, hastalar, laboratuvarlar, eczaneler ve sigorta ile güvenle bağlar.",
+    "keywords": "görüntüleme merkezi yönetim yazılımı, radyoloji platformu, PACS entegrasyonu, DICOM güvenli depolama, görüntüleme randevu sistemi, radyoloji raporlama, tanısal görüntüleme sevkleri, sağlıkta entegrasyon, HIPAA uyumlu radyoloji yazılımı, çok dilli sağlık SaaS"
+  },
+  "schema": {
+    "name": "Görüntüleme Merkezleri için Docito",
+    "description": "Tanısal görüntüleme merkezleri için dijital işletim sistemi: sevkler, randevu, PACS/DICOM, raporlama, faturalama ve analitik.",
+    "serviceType": "Tıbbi Görüntüleme Yazılımı"
+  },
+  "hero": {
+    "badge": "Görüntüleme Merkezleri İçin",
+    "title1": "Dijital",
+    "title2": "İşletim Sistemi",
+    "title3": "Görüntüleme Merkezleri İçin",
+    "description": "Randevu, sevk, raporlama, PACS entegrasyonu ve güvenli veri paylaşımı—tek bir akıllı platformda.",
+    "primaryCta": "Görüntüleme Merkezini Kaydet",
+    "secondaryCta": "Demo İste",
+    "trustNote": "Uyum odaklı mimari: rol bazlı erişim ve denetim kayıtları."
+  },
+  "problems": {
+    "title1": "Görüntüleme İleri.",
+    "title2": "Sistemler Değil.",
+    "description": "Manuel sevkler, kopuk sistemler, geciken raporlar ve parçalı iletişim süreçleri yavaşlatır. Hastalar ve doktorlar hız, doğruluk ve anlık erişim ister.",
+    "cards": {
+      "paperFrom": "Kâğıt sevkler",
+      "paperTo": "Dijital sevkler",
+      "pacsFrom": "İzole PACS",
+      "pacsTo": "Bağlı ekosistem",
+      "reportsFrom": "Geciken raporlar",
+      "reportsTo": "Anında teslim"
+    }
+  },
+  "features": {
+    "title1": "Özellikle",
+    "title2": "Tanısal Görüntüleme İçin",
+    "subtitle": "Radyoloji ve görüntüleme operasyonları için tasarlanmış özellikler.",
+    "items": {
+      "digitalReferrals": {
+        "title": "Dijital Sevkler",
+        "description": "Ağdaki doğrulanmış doktor ve kliniklerden görüntüleme taleplerini anında alın."
+      },
+      "smartScheduling": {
+        "title": "Akıllı Randevu Yönetimi",
+        "description": "Cihaz kullanımını optimize edin ve no-show oranını akıllı planlama ile düşürün."
+      },
+      "pacsDicom": {
+        "title": "PACS & DICOM Uyumluluğu",
+        "description": "Mevcut sistemlerle ve sektör standart protokollerle güvenli entegrasyon."
+      },
+      "reportManagement": {
+        "title": "Rapor Yönetimi",
+        "description": "Raporları yükleyin, dijital imzalayın ve tam denetim izi ile paylaşın."
+      },
+      "patientAccess": {
+        "title": "Hasta Erişimi",
+        "description": "Hastalar için sonuç ve raporları görüntüleyebilecekleri güvenli portallar."
+      },
+      "billingInsurance": {
+        "title": "Faturalama & Sigorta",
+        "description": "Ödemeler, faturalar ve sigorta iş akışlarını sorunsuz yönetin."
+      },
+      "analyticsInsights": {
+        "title": "Analitik & İçgörüler",
+        "description": "Kullanım, TAT ve gelir metriklerini gerçek zamanlı takip edin."
+      }
+    }
+  },
+  "howItWorks": {
+    "title1": "Docito",
+    "title2": "İş Akışınıza Nasıl Uyar",
+    "subtitle": "Kayıttan gelire—uçtan uca görüntüleme yolculuğu.",
+    "steps": {
+      "step1": {
+        "title": "Kaydol & Doğrula",
+        "description": "Lisansları yükleyin ve modaliteleri kaydedin—MR, BT, Röntgen, USG ve daha fazlası."
+      },
+      "step2": {
+        "title": "Sistemleri Bağlayın",
+        "description": "PACS/RIS hazır, DICOM uyumlu entegrasyon."
+      },
+      "step3": {
+        "title": "Sevkleri Alın",
+        "description": "Doktor, hastane ve kliniklerden talepleri anında alın."
+      },
+      "step4": {
+        "title": "Çekimleri Gerçekleştirin",
+        "description": "Optimize randevu planı ve ekip koordinasyonu ile verimli operasyon."
+      },
+      "step5": {
+        "title": "Raporları Güvenle Yükleyin",
+        "description": "Sonuçlar hazır olduğunda doktor ve hastalar anında bilgilendirilir."
+      },
+      "step6": {
+        "title": "Daha Hızlı Ödeme Alın",
+        "description": "Otomatik faturalama ve sigorta süreçleri gelir döngüsünü hızlandırır."
+      }
+    }
+  },
+  "integrations": {
+    "items": {
+      "doctors": { "title": "Doktorlar", "description": "" },
+      "clinics": { "title": "Klinikler", "description": "" },
+      "labs": { "title": "Laboratuvarlar", "description": "" },
+      "pharmacies": { "title": "Eczaneler", "description": "" },
+      "insurance": { "title": "Sigorta", "description": "" },
+      "patients": { "title": "Hastalar", "description": "" }
+    }
+  },
+  "ecosystem": {
+    "title1": "Görüntüleme Merkezleri",
+    "title2": "Modern Sağlığın Merkezinde",
+    "description": "Görüntüleme artık tek başına bir hizmet değil. Docito sevkleri, kayıtları ve takibi tek ekosistemde birleştirir.",
+    "networkName": "Docito Network",
+    "networkLine": "Tüm sağlık ekosistemini bağlayan tek platform"
+  },
+  "security": {
+    "title1": "Sağlık Düzeyinde",
+    "title2": "Güvenlik",
+    "title3": " — Yerleşik"
+  },
+  "compliance": {
+    "items": {
+      "hipaa": "HIPAA ile uyumlu yaklaşım",
+      "dicom": "DICOM güvenli",
+      "encrypted": "Şifreli depolama",
+      "rbac": "Rol bazlı erişim",
+      "audit": "Tam denetim izleri"
+    }
+  },
+  "pricing": {
+    "title": "Şeffaf Fiyatlandırma",
+    "emphasis": "Ölçeklenebilir",
+    "subtitle": "Tek merkez veya çok lokasyonlu ağ—fiyatlandırma hacim ve ihtiyaca göre uyarlanır.",
+    "chips": {
+      "noLockIn": "Tarama başına kilit yok",
+      "flexiblePlans": "Esnek planlar",
+      "enterpriseReady": "Kurumsal hazır"
+    },
+    "buttons": {
+      "viewPricing": "Fiyatları Gör",
+      "talkToSales": "Satışla Görüş"
+    }
+  },
+  "finalCta": {
+    "title1": "Görüntüleme Merkezinizi",
+    "title2": "Dijital Çağa Taşıyın",
+    "subtitle": "Verimliliği artırın, TAT’yi azaltın ve dünya standartlarında bir deneyim sunun.",
+    "buttons": {
+      "register": "Görüntüleme Merkezini Kaydet",
+      "demo": "Demo Planla"
+    }
+  },
+  "footer": {
+    "copyright": "© {{year}} Docito. Tüm hakları saklıdır.",
+    "links": {
+      "privacy": "Gizlilik",
+      "terms": "Şartlar",
+      "contact": "İletişim"
+    }
+  }
+}
