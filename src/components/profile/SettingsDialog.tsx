@@ -15,13 +15,13 @@ import { Separator } from "@/components/ui/separator";
 
 type Props = { open: boolean; onOpenChange: (v: boolean) => void };
 
-// Minimal shape: assumes profiles has full_name, phone, avatar_url, settings(jsonb)
+// Minimal shape: uses notification_settings column from profiles table
 type ProfileRow = {
   id: string;
   full_name: string | null;
   phone: string | null;
   avatar_url: string | null;
-  settings: any | null;
+  notification_settings: any | null;
 };
 
 export default function SettingsDialog({ open, onOpenChange }: Props) {
@@ -59,7 +59,7 @@ export default function SettingsDialog({ open, onOpenChange }: Props) {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, full_name, phone, avatar_url, settings")
+        .select("id, full_name, phone, avatar_url, notification_settings")
         .eq("id", user.id)
         .maybeSingle();
 
@@ -72,9 +72,9 @@ export default function SettingsDialog({ open, onOpenChange }: Props) {
       setPhone(row?.phone || "");
       setAvatarUrl(row?.avatar_url || "");
 
-      const s = row?.settings || {};
-      setEmailNotif(s.notifications?.email ?? true);
-      setProductUpdates(s.notifications?.productUpdates ?? false);
+      const s = row?.notification_settings || {};
+      setEmailNotif(s.email ?? true);
+      setProductUpdates(s.productUpdates ?? false);
     } catch (e: any) {
       toast({ variant: "destructive", title: "Failed to load settings", description: e.message });
     } finally {
@@ -90,14 +90,11 @@ export default function SettingsDialog({ open, onOpenChange }: Props) {
     if (!profile) return;
     setSaving(true);
     try {
-      const settings = profile.settings || {};
+      const currentSettings = profile.notification_settings || {};
       const nextSettings = {
-        ...settings,
-        notifications: {
-          ...(settings.notifications || {}),
-          email: emailNotif,
-          productUpdates: productUpdates,
-        },
+        ...currentSettings,
+        email: emailNotif,
+        productUpdates: productUpdates,
         locale: i18n.language,
       };
 
@@ -107,7 +104,7 @@ export default function SettingsDialog({ open, onOpenChange }: Props) {
           full_name: fullName,
           phone,
           avatar_url: avatarUrl,
-          settings: nextSettings,
+          notification_settings: nextSettings,
         })
         .eq("id", profile.id);
 
@@ -115,7 +112,7 @@ export default function SettingsDialog({ open, onOpenChange }: Props) {
 
       toast({ title: "Saved", description: "Your settings have been updated." });
       // refresh local profile state
-      setProfile((p) => (p ? { ...p, full_name: fullName, phone, avatar_url: avatarUrl, settings: nextSettings } : p));
+      setProfile((p) => (p ? { ...p, full_name: fullName, phone, avatar_url: avatarUrl, notification_settings: nextSettings } : p));
     } catch (e: any) {
       toast({ variant: "destructive", title: "Save failed", description: e.message });
     } finally {
@@ -164,9 +161,9 @@ export default function SettingsDialog({ open, onOpenChange }: Props) {
   const setLanguage = async (lng: string) => {
     await i18n.changeLanguage(lng);
     // persist choice in localStorage already via LanguageDetector
-    // also persist in profile settings if possible
+    // also persist in profile notification_settings if possible
     if (profile) {
-      setProfile((p) => (p ? { ...p, settings: { ...(p.settings || {}), locale: lng } } : p));
+      setProfile((p) => (p ? { ...p, notification_settings: { ...(p.notification_settings || {}), locale: lng } } : p));
     }
   };
 
