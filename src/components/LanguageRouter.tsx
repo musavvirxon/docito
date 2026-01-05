@@ -52,7 +52,7 @@ export const LanguageRouter = ({ children }: { children: React.ReactNode }) => {
       'procedure-library', 'doctor-procedures', 'doctor-schedule-settings',
       'booking-confirmation', 'book-appointment', 'legal-cms', 'super-admin-dashboard',
       'admin', 'staff-dashboard', 'messages', 'video', 'pharmacy', 'lab', 'imaging',
-      'imaging-center', 'practice-dashboard', 'settings', 'profile', 'accept-invite'
+      'imaging-center', 'practice-dashboard', 'practices', 'settings', 'profile', 'accept-invite'
     ];
     
     // Public pages that don't have translations yet - serve as English only (no prefix)
