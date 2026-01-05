@@ -13,6 +13,7 @@ import PremiumHome from "./pages/PremiumHome";
 import RoleProtectedRoute from "@/components/RoleProtectedRoute";
 import PostAuthRedirect from "@/components/PostAuthRedirect";
 import { AppRole } from "@/lib/rbac";
+import SuperAdminFeedbackRoutes from "@/routes/SuperAdminFeedbackRoutes";
 
 // Lazy load non-critical pages to reduce initial bundle size
 const Auth = lazy(() => import("./pages/Auth"));
@@ -152,6 +153,7 @@ const LanguageRoutes = () => {
       />
 
       <Route path="/super-admin-dashboard" element={<RoleProtectedRoute allowedRoles={['super_admin']}><SuperAdminDashboard /></RoleProtectedRoute>} />
+      <SuperAdminFeedbackRoutes />
       <Route path="/legal" element={<Legal />} />
       <Route path="/legal/:slug" element={<LegalDetail />} />
       <Route path="/about" element={<About />} />
