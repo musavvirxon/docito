@@ -101,9 +101,9 @@ export default function ProfileMenu({ compact = false }: ProfileMenuProps) {
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem onClick={() => nav("/settings")}>
+        <DropdownMenuItem onClick={() => nav("/profile")}>
           <Settings className="mr-2 h-4 w-4" />
-          Settings
+          Profile Settings
         </DropdownMenuItem>
 
         {/* Role switcher - ONLY show if user has multiple roles */}

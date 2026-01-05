@@ -33,9 +33,8 @@ const ModernNavbar = () => {
     { name: "Labs", href: "/lab" },
     { name: "Pharmacies", href: "/pharmacy" },
     { name: "Imaging", href: "/imaging-center" },
-    { name: "Hospitals", href: "/hospital" },
+    { name: "Hospitals", href: "/practice" },
     { name: "Pricing", href: "/pricing" },
-    { name: "How It Works", href: "/how-it-works" },
   ];
 
   const isActive = (href: string) => location.pathname === href;

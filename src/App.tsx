@@ -12,7 +12,7 @@ import CookieConsentBanner from "@/components/CookieConsentBanner";
 import PremiumHome from "./pages/PremiumHome";
 import RoleProtectedRoute from "@/components/RoleProtectedRoute";
 import PostAuthRedirect from "@/components/PostAuthRedirect";
-import SettingsPage from "@/pages/Settings";
+import ProfilePage from "@/pages/ProfilePage";
 
 // Lazy load non-critical pages to reduce initial bundle size
 const Auth = lazy(() => import("./pages/Auth"));
@@ -95,14 +95,16 @@ const LanguageRoutes = () => {
       <Routes>
       {/* Default routes (no language prefix) */}
       <Route path="/" element={<PremiumHome />} />
+{/* Profile page (replaces settings) */}
 <Route
-  path="/settings"
+  path="/profile"
   element={
     <RoleProtectedRoute allowedRoles={['patient', 'doctor', 'admin', 'clinic_admin', 'super_admin', 'staff', 'pharmacy_admin', 'lab_admin', 'imaging_admin']}>
-      <SettingsPage />
+      <ProfilePage />
     </RoleProtectedRoute>
   }
 />
+<Route path="/settings" element={<Navigate to="/profile" replace />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/practice" element={<Practices />} />
@@ -110,9 +112,12 @@ const LanguageRoutes = () => {
       <Route path="/:lang/doctors" element={<DoctorsLocalized />} />
       <Route path="/register-practice" element={<RegisterPractice />} />
       <Route path="/processing-practice" element={<ProcessingPractice />} />
-      <Route path="/practice-dashboard" element={<RoleProtectedRoute allowedRoles={['admin', 'clinic_admin', 'super_admin']}><AdminDashboard /></RoleProtectedRoute>} />
-      <Route path="/admin-dashboard" element={<Navigate to="/practice-dashboard" replace />} />
-      <Route path="/clinic/dashboard" element={<Navigate to="/practice-dashboard" replace />} />
+      
+      {/* Practices dashboard - new route */}
+      <Route path="/practices/dashboard" element={<RoleProtectedRoute allowedRoles={['admin', 'clinic_admin', 'super_admin']}><AdminDashboard /></RoleProtectedRoute>} />
+      <Route path="/practice-dashboard" element={<Navigate to="/practices/dashboard" replace />} />
+      <Route path="/admin-dashboard" element={<Navigate to="/practices/dashboard" replace />} />
+      <Route path="/clinic/dashboard" element={<Navigate to="/practices/dashboard" replace />} />
       <Route path="/doctor-signup" element={<DoctorSignUp />} />
       <Route path="/doctor-dashboard" element={<RoleProtectedRoute allowedRoles={['doctor']}><DoctorDashboard /></RoleProtectedRoute>} />
       <Route path="/doctor-schedule-settings" element={<RoleProtectedRoute allowedRoles={['doctor']}><DoctorScheduleSettings /></RoleProtectedRoute>} />
@@ -127,6 +132,7 @@ const LanguageRoutes = () => {
       <Route path="/verify/:token" element={<VerifyPatient />} />
       <Route path="/notifications" element={<Notifications />} />
       <Route path="/dashboard/verify" element={<RoleProtectedRoute allowedRoles={['admin', 'clinic_admin']}><PracticeVerification /></RoleProtectedRoute>} />
+      <Route path="/practices/verify" element={<RoleProtectedRoute allowedRoles={['admin', 'clinic_admin']}><PracticeVerification /></RoleProtectedRoute>} />
       <Route path="/admin/profile-settings" element={<RoleProtectedRoute allowedRoles={['admin', 'clinic_admin', 'super_admin']}><AdminProfileSettings /></RoleProtectedRoute>} />
       <Route path="/super-admin-dashboard" element={<RoleProtectedRoute allowedRoles={['super_admin']}><SuperAdminDashboard /></RoleProtectedRoute>} />
       <Route path="/legal" element={<Legal />} />
@@ -177,6 +183,8 @@ const LanguageRoutes = () => {
       <Route path="/:lang/" element={<PremiumHome />} />
       <Route path="/:lang/auth" element={<Auth />} />
       <Route path="/:lang/dashboard" element={<Dashboard />} />
+      <Route path="/:lang/profile" element={<ProfilePage />} />
+      <Route path="/:lang/settings" element={<Navigate to="/:lang/profile" replace />} />
       {/* Localized public pages with SEO */}
       <Route path="/:lang/practice" element={<PracticesLocalized />} />
       <Route path="/:lang/practices" element={<Navigate to="/:lang/practice" replace />} />
@@ -193,8 +201,9 @@ const LanguageRoutes = () => {
       
       <Route path="/:lang/register-practice" element={<RegisterPractice />} />
       <Route path="/:lang/processing-practice" element={<ProcessingPractice />} />
-      <Route path="/:lang/practice-dashboard" element={<AdminDashboard />} />
-      <Route path="/:lang/admin-dashboard" element={<Navigate to="/:lang/practice-dashboard" replace />} />
+      <Route path="/:lang/practices/dashboard" element={<AdminDashboard />} />
+      <Route path="/:lang/practice-dashboard" element={<Navigate to="/:lang/practices/dashboard" replace />} />
+      <Route path="/:lang/admin-dashboard" element={<Navigate to="/:lang/practices/dashboard" replace />} />
       <Route path="/:lang/doctor-signup" element={<DoctorSignUp />} />
       <Route path="/:lang/doctor-dashboard" element={<DoctorDashboard />} />
       <Route path="/:lang/doctor-schedule-settings" element={<DoctorScheduleSettings />} />
