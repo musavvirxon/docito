@@ -98,9 +98,9 @@ const LanguageRoutes = () => {
 <Route
   path="/settings"
   element={
-    <ProtectedRoute>
+    <RoleProtectedRoute allowedRoles={['patient', 'doctor', 'admin', 'clinic_admin', 'super_admin', 'staff', 'pharmacy_admin', 'lab_admin', 'imaging_admin']}>
       <SettingsPage />
-    </ProtectedRoute>
+    </RoleProtectedRoute>
   }
 />
       <Route path="/auth" element={<Auth />} />

@@ -12,18 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LogOut, Settings, ArrowRightLeft } from "lucide-react";
-import SettingsDialog from "./SettingsDialog";
-import { useNavigate } from "react-router-dom";
 
-const navigate = useNavigate();
-<button
-  onClick={() => navigate("/settings")}
-  className="menu-item"
->
-  Settings
-</button>
-
-<SettingsDialog open={openSettings} onOpenChange={setOpenSettings} />
 const roleLabel = (r: string) =>
   r.split("_").join(" ").replace(/\b\w/g, (c) => c.toUpperCase());
 
