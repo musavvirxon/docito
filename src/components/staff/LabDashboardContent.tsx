@@ -3,11 +3,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Activity, FlaskConical, ClipboardList, RefreshCw } from "lucide-react";
 import { useLabStaffDashboard } from "@/hooks/useLabStaffDashboard";
-import { useTestOrders } from "@/hooks/useTestOrders";
 
-export default function LabDashboardContent() {
-  const { labId, loading, stats, activity, recentOrders } = useLabStaffDashboard();
-  const { fetchLabOrders } = useTestOrders(labId || "");
+interface LabDashboardContentProps {
+  entityInfo?: any;
+  permissions?: any;
+  activeSection?: string;
+}
+
+export default function LabDashboardContent(_props: LabDashboardContentProps) {
+  const { labId, loading, stats, activity, recentOrders, refresh } = useLabStaffDashboard();
 
   const statusBadge = (status?: string) => {
     const s = (status || "").toLowerCase();
@@ -26,7 +30,7 @@ export default function LabDashboardContent() {
         </div>
         <Button
           variant="outline"
-          onClick={() => fetchLabOrders()}
+          onClick={refresh}
           disabled={!labId || loading}
           className="gap-2"
         >
@@ -113,4 +117,3 @@ export default function LabDashboardContent() {
     </div>
   );
 }
-

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useCallback, useEffect, useState } from "react";
 import { useStaffContext } from "@/hooks/useStaffContext";
 import { useTestOrders } from "@/hooks/useTestOrders";
 
@@ -6,12 +6,19 @@ type Stat = { title: string; value: string; change?: string; trend?: "up" | "dow
 
 export function useLabStaffDashboard() {
   const { entityInfo, loading: staffLoading } = useStaffContext();
-  const labId = entityInfo?.id;
+  const labId = entityInfo?.id || "";
 
-  const { orders, loading: ordersLoading } = useTestOrders(labId || "");
+  const { testOrders, loading: ordersLoading, fetchLabOrders } = useTestOrders();
+
+  // Fetch orders when labId changes
+  useEffect(() => {
+    if (labId) {
+      fetchLabOrders(labId);
+    }
+  }, [labId, fetchLabOrders]);
 
   const stats = useMemo<Stat[]>(() => {
-    const list = orders || [];
+    const list = testOrders || [];
     const norm = (s?: string) => (s || "").toLowerCase();
 
     const pending = list.filter(o => ["pending", "new"].includes(norm((o as any).status))).length;
@@ -24,10 +31,10 @@ export function useLabStaffDashboard() {
       { title: "In Progress", value: String(inProgress), trend: "neutral" },
       { title: "Completed", value: String(completed), trend: "neutral" },
     ];
-  }, [orders]);
+  }, [testOrders]);
 
   const activity = useMemo(() => {
-    const list = [...(orders || [])];
+    const list = [...(testOrders || [])];
     list.sort((a: any, b: any) => {
       const da = new Date(a.created_at || 0).getTime();
       const db = new Date(b.created_at || 0).getTime();
@@ -40,17 +47,23 @@ export function useLabStaffDashboard() {
       patient: o.patient?.full_name || "Patient",
       time: o.created_at ? new Date(o.created_at).toLocaleString() : "",
     }));
-  }, [orders]);
+  }, [testOrders]);
 
   const recentOrders = useMemo(() => {
-    const list = [...(orders || [])];
+    const list = [...(testOrders || [])];
     list.sort((a: any, b: any) => {
       const da = new Date(a.created_at || 0).getTime();
       const db = new Date(b.created_at || 0).getTime();
       return db - da;
     });
     return list.slice(0, 8);
-  }, [orders]);
+  }, [testOrders]);
+
+  const refresh = useCallback(() => {
+    if (labId) {
+      fetchLabOrders(labId);
+    }
+  }, [labId, fetchLabOrders]);
 
   return {
     labId,
@@ -58,5 +71,6 @@ export function useLabStaffDashboard() {
     stats,
     activity,
     recentOrders,
+    refresh,
   };
 }

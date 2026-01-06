@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { useStaffContext } from "@/hooks/useStaffContext";
 import { usePrescriptions } from "@/hooks/usePrescriptions";
 import { usePharmacyInventory } from "@/hooks/usePharmacyInventory";
@@ -7,9 +7,11 @@ type Stat = { title: string; value: string; change?: string; trend?: "up" | "dow
 
 export function usePharmacyStaffDashboard() {
   const { entityInfo, loading: staffLoading } = useStaffContext();
-  const pharmacyId = entityInfo?.id;
+  const pharmacyId = entityInfo?.id || "";
 
-  const { fulfillmentOrders, loading: ordersLoading } = usePrescriptions(pharmacyId || undefined);
+  const { fulfillmentOrders, loading: ordersLoading, fetchFulfillmentOrders } = usePrescriptions(
+    pharmacyId ? { pharmacyId } : undefined
+  );
   const { lowStockItems, expiringItems, loading: invLoading } = usePharmacyInventory(pharmacyId || undefined);
 
   const stats = useMemo<Stat[]>(() => {
@@ -18,7 +20,6 @@ export function usePharmacyStaffDashboard() {
 
     const pending = list.filter(o => ["pending", "new"].includes(norm((o as any).status))).length;
     const ready = list.filter(o => ["ready", "ready_for_pickup"].includes(norm((o as any).status))).length;
-    const completed = list.filter(o => ["completed", "delivered", "picked_up"].includes(norm((o as any).status))).length;
 
     return [
       { title: "Total Prescriptions", value: String(list.length), trend: "neutral" },
@@ -54,6 +55,12 @@ export function usePharmacyStaffDashboard() {
     return list.slice(0, 8);
   }, [fulfillmentOrders]);
 
+  const refresh = useCallback(() => {
+    if (pharmacyId) {
+      fetchFulfillmentOrders();
+    }
+  }, [pharmacyId, fetchFulfillmentOrders]);
+
   return {
     pharmacyId,
     loading: staffLoading || ordersLoading || invLoading,
@@ -64,5 +71,6 @@ export function usePharmacyStaffDashboard() {
       lowStockCount: lowStockItems?.length || 0,
       expiringCount: expiringItems?.length || 0,
     },
+    refresh,
   };
 }
