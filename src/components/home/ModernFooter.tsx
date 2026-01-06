@@ -9,14 +9,13 @@ const ModernFooter = () => {
   const { getLocalizedPath } = useLocalizedPath();
 
   const platformLinks = [
-    { name: "Doctors", href: "for-doctors" },
-    { name: "Clinics", href: "for-practices" },
-    { name: "Labs", href: "for-labs" },
-    { name: "Pharmacies", href: "for-pharmacies" },
-    { name: "Imaging", href: "for-imaging" },
-    { name: "Hospitals", href: "for-hospitals" },
+    { name: "Doctors", href: "search" },
+    { name: "Clinics", href: "practice" },
+    { name: "Labs", href: "labs" },
+    { name: "Pharmacies", href: "pharmacies" },
+    { name: "Imaging", href: "imaging" },
+    { name: "Hospitals", href: "practice" },
     { name: "Pricing", href: "pricing" },
-    { name: "How It Works", href: "how-it-works" },
   ];
 
   const companyLinks = [

@@ -2,6 +2,7 @@ import { ReactNode, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { DashboardSidebar } from './DashboardSidebar';
 import { DashboardTopBar } from './DashboardTopBar';
+import { DashboardFooter } from './DashboardFooter';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppRole } from '@/lib/rbac';
 
@@ -68,6 +69,9 @@ export function DashboardShell({
               {children}
             </div>
           </main>
+
+          {/* Footer */}
+          <DashboardFooter />
         </div>
       </div>
     </SidebarProvider>

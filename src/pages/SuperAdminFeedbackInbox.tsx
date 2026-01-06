@@ -33,7 +33,7 @@ export default function SuperAdminFeedbackInbox() {
   const load = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("feedback_requests")
         .select("*")
         .order("upvotes_count", { ascending: false })
@@ -56,7 +56,7 @@ export default function SuperAdminFeedbackInbox() {
 
   const setStatus = async (id: string, status: Status) => {
     try {
-      const { error } = await supabase.from("feedback_requests").update({ status }).eq("id", id);
+      const { error } = await (supabase as any).from("feedback_requests").update({ status }).eq("id", id);
       if (error) throw error;
 
       toast({ title: "Updated", description: `Marked as ${status}.` });

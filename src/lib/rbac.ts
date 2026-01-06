@@ -30,8 +30,8 @@ export const PATIENT_DASHBOARD_ROUTE = "/patient-dashboard";
 
 export const DASHBOARD_ROUTES: Record<AppRole, string> = {
   super_admin: "/super-admin-dashboard",
-  admin: "/admin-dashboard",
-  clinic_admin: "/admin-dashboard",
+  admin: "/practices/dashboard",
+  clinic_admin: "/practices/dashboard",
   doctor: "/doctor-dashboard",
 
   pharmacy_admin: "/pharmacy/dashboard",
@@ -81,6 +81,28 @@ export const ROLE_PRIORITY: Record<AppRole, number> = {
   patient: 10,
 };
 
+/** Human-readable labels for roles */
+export const roleLabels: Record<AppRole, string> = {
+  super_admin: "Super Admin",
+  admin: "Admin",
+  clinic_admin: "Clinic Admin",
+  doctor: "Doctor",
+  pharmacy_admin: "Pharmacy Admin",
+  lab_admin: "Lab Admin",
+  imaging_admin: "Imaging Admin",
+  pharmacy_staff: "Pharmacy Staff",
+  pharmacist: "Pharmacist",
+  lab_staff: "Lab Staff",
+  lab_technician: "Lab Technician",
+  imaging_staff: "Imaging Staff",
+  internal_imaging_tech: "Imaging Technician",
+  clinic_staff: "Clinic Staff",
+  staff: "Staff",
+  receptionist: "Receptionist",
+  nurse: "Nurse",
+  patient: "Patient",
+};
+
 export function getPrimaryRole(roles: string[]): AppRole {
   if (!roles?.length) return "patient";
   let best: AppRole = "patient";
@@ -107,24 +129,31 @@ export function canAccessPatientPortal(userRoles: string[]): boolean {
 }
 
 /**
- * ✅ NEW: fetch roles from Supabase user_roles table
- * Used by ProfileMenu (and any RBAC logic outside AuthContext).
+ * Fetch roles from Supabase user_roles table (async)
  */
-export async function getUserRoles(userId: string): Promise<AppRole[]> {
+export async function fetchUserRoles(userId: string): Promise<AppRole[]> {
   const { data, error } = await supabase
     .from("user_roles")
     .select("role")
     .eq("user_id", userId);
 
   if (error) {
-    console.error("getUserRoles error:", error);
+    console.error("fetchUserRoles error:", error);
     return [];
   }
 
   return (data || []).map((r) => r.role as AppRole);
 }
 
-/** helper utilities (optional but handy) */
+/**
+ * Synchronous helper to get roles from profile.roles array
+ */
+export function getUserRolesFromProfile(profile: { roles?: string[] } | null): AppRole[] {
+  if (!profile?.roles) return ["patient"];
+  return profile.roles as AppRole[];
+}
+
+/** helper utilities */
 export function hasRole(userRoles: string[], role: AppRole): boolean {
   return (userRoles || []).includes(role);
 }

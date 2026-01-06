@@ -3,11 +3,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Activity, Monitor, ClipboardList, RefreshCw } from "lucide-react";
 import { useImagingStaffDashboard } from "@/hooks/useImagingStaffDashboard";
-import { useImagingOrders } from "@/hooks/useImagingOrders";
 
-export default function ImagingDashboardContent() {
-  const { imagingCenterId, loading, stats, activity, recentOrders } = useImagingStaffDashboard();
-  const { fetchImagingOrders } = useImagingOrders(imagingCenterId || "");
+interface ImagingDashboardContentProps {
+  entityInfo?: any;
+  permissions?: any;
+  activeSection?: string;
+}
+
+export default function ImagingDashboardContent(_props: ImagingDashboardContentProps) {
+  const { imagingCenterId, loading, stats, activity, recentOrders, refresh } = useImagingStaffDashboard();
 
   const statusBadge = (status?: string) => {
     const s = (status || "").toLowerCase();
@@ -26,7 +30,7 @@ export default function ImagingDashboardContent() {
         </div>
         <Button
           variant="outline"
-          onClick={() => fetchImagingOrders()}
+          onClick={refresh}
           disabled={!imagingCenterId || loading}
           className="gap-2"
         >

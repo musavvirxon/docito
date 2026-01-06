@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useCallback, useEffect } from "react";
 import { useStaffContext } from "@/hooks/useStaffContext";
 import { useImagingOrders } from "@/hooks/useImagingOrders";
 
@@ -6,9 +6,16 @@ type Stat = { title: string; value: string; change?: string; trend?: "up" | "dow
 
 export function useImagingStaffDashboard() {
   const { entityInfo, loading: staffLoading } = useStaffContext();
-  const imagingCenterId = entityInfo?.id;
+  const imagingCenterId = entityInfo?.id || "";
 
-  const { orders, loading: ordersLoading } = useImagingOrders(imagingCenterId || "");
+  const { orders, loading: ordersLoading, fetchCenterOrders } = useImagingOrders();
+
+  // Fetch orders when imagingCenterId changes
+  useEffect(() => {
+    if (imagingCenterId) {
+      fetchCenterOrders(imagingCenterId);
+    }
+  }, [imagingCenterId, fetchCenterOrders]);
 
   const stats = useMemo<Stat[]>(() => {
     const list = orders || [];
@@ -52,11 +59,18 @@ export function useImagingStaffDashboard() {
     return list.slice(0, 8);
   }, [orders]);
 
+  const refresh = useCallback(() => {
+    if (imagingCenterId) {
+      fetchCenterOrders(imagingCenterId);
+    }
+  }, [imagingCenterId, fetchCenterOrders]);
+
   return {
     imagingCenterId,
     loading: staffLoading || ordersLoading,
     stats,
     activity,
     recentOrders,
+    refresh,
   };
 }

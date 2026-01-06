@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUserRoles, roleLabels, AppRole } from "@/lib/rbac";
+import { getUserRolesFromProfile, roleLabels, AppRole } from "@/lib/rbac";
 import { supabase } from "@/integrations/supabase/client";
 
 type FeedbackKind = "bug" | "feature";
@@ -33,7 +33,8 @@ type FeedbackRow = {
   upvotes_count: number;
 };
 
-const ALL_ROLES: AppRole[] = [
+// All displayable roles for selection
+const ALL_ROLES: string[] = [
   "patient",
   "doctor",
   "admin",
@@ -41,18 +42,14 @@ const ALL_ROLES: AppRole[] = [
   "lab_admin",
   "pharmacy_admin",
   "imaging_admin",
-  "hospital_admin",
-  "insurance_admin",
   "staff",
   "clinic_staff",
   "receptionist",
   "nurse",
-  "billing_manager",
   "pharmacy_staff",
   "pharmacist",
   "lab_staff",
   "lab_technician",
-  "internal_lab_tech",
   "imaging_staff",
   "internal_imaging_tech",
   "super_admin",
@@ -70,15 +67,15 @@ export default function FeedbackCenter() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const userRoles = useMemo(() => getUserRoles(profile), [profile]);
+  const userRoles = useMemo(() => getUserRolesFromProfile(profile), [profile]);
 
-  const defaultRole = useMemo<AppRole>(() => {
-    const firstOwned = ALL_ROLES.find((r) => userRoles.includes(r));
+  const defaultRole = useMemo<string>(() => {
+    const firstOwned = ALL_ROLES.find((r) => userRoles.includes(r as AppRole));
     return firstOwned ?? "patient";
   }, [userRoles]);
 
   const [kind, setKind] = useState<FeedbackKind>("bug");
-  const [selectedRole, setSelectedRole] = useState<AppRole>(defaultRole);
+  const [selectedRole, setSelectedRole] = useState<string>(defaultRole);
 
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
@@ -97,7 +94,7 @@ export default function FeedbackCenter() {
 
   useEffect(() => setSelectedRole(defaultRole), [defaultRole]);
 
-  const canSubmitAsRole = (role: AppRole) => userRoles.includes(role);
+  const canSubmitAsRole = (role: string) => userRoles.includes(role as AppRole);
 
   const header = useMemo(() => {
     if (kind === "bug") {
@@ -119,7 +116,7 @@ export default function FeedbackCenter() {
   const loadList = async () => {
     setLoadingList(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("feedback_requests")
         .select("*")
         .order("upvotes_count", { ascending: false })
@@ -142,7 +139,7 @@ export default function FeedbackCenter() {
   const loadMyVotes = async () => {
     if (!user) return;
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("feedback_votes")
         .select("request_id")
         .eq("user_id", user.id);
@@ -201,7 +198,7 @@ export default function FeedbackCenter() {
         status: "new",
       };
 
-      const { error } = await supabase.from("feedback_requests").insert(payload as any);
+      const { error } = await (supabase as any).from("feedback_requests").insert(payload);
       if (error) throw error;
 
       toast({ title: "Submitted", description: "Thanks — your request is now visible for upvotes." });
@@ -227,11 +224,11 @@ export default function FeedbackCenter() {
 
     try {
       if (!has) {
-        const { error } = await supabase.from("feedback_votes").insert({ request_id: requestId, user_id: user.id } as any);
+        const { error } = await (supabase as any).from("feedback_votes").insert({ request_id: requestId, user_id: user.id });
         if (error) throw error;
         setMyVotes((prev) => new Set(prev).add(requestId));
       } else {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from("feedback_votes")
           .delete()
           .eq("request_id", requestId)
@@ -291,7 +288,7 @@ export default function FeedbackCenter() {
           <Card className="lg:col-span-4">
             <CardHeader>
               <CardTitle className="text-lg">Submit as Role</CardTitle>
-              <p className="text-sm text-muted-foreground">Roles you don’t have are visible but disabled.</p>
+              <p className="text-sm text-muted-foreground">Roles you don't have are visible but disabled.</p>
             </CardHeader>
             <CardContent className="space-y-2">
               {ALL_ROLES.map((role) => {
@@ -311,7 +308,7 @@ export default function FeedbackCenter() {
                     ].join(" ")}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-medium text-foreground">{roleLabels[role] ?? role}</span>
+                      <span className="font-medium text-foreground">{roleLabels[role as AppRole] ?? role}</span>
                       <span className="text-xs text-muted-foreground">{enabled ? "Available" : "Not available"}</span>
                     </div>
                     <div className="text-xs text-muted-foreground mt-1">{role}</div>
@@ -363,7 +360,7 @@ export default function FeedbackCenter() {
               <div className="space-y-2">
                 <Label>Selected role</Label>
                 <div className="rounded-xl border border-border/60 bg-muted/20 px-4 py-3 text-sm">
-                  <span className="font-medium text-foreground">{roleLabels[selectedRole] ?? selectedRole}</span>
+                  <span className="font-medium text-foreground">{roleLabels[selectedRole as AppRole] ?? selectedRole}</span>
                   <span className="text-muted-foreground"> — </span>
                   <span className="text-muted-foreground">{selectedRole}</span>
                 </div>
@@ -485,21 +482,17 @@ export default function FeedbackCenter() {
                           <div className="text-sm text-muted-foreground line-clamp-2">{r.description}</div>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 shrink-0">
                           <Button
                             variant={voted ? "default" : "outline"}
+                            size="sm"
                             onClick={() => toggleVote(r.id)}
-                            className="rounded-xl"
+                            className="gap-1.5"
                           >
-                            <ThumbsUp className="w-4 h-4 mr-2" />
+                            <ThumbsUp className="w-4 h-4" />
                             {r.upvotes_count}
                           </Button>
                         </div>
-                      </div>
-
-                      <div className="text-xs text-muted-foreground flex flex-wrap gap-x-4 gap-y-1">
-                        {r.page_path ? <span>Page: <span className="font-mono">{r.page_path}</span></span> : null}
-                        {r.language ? <span>Lang: <span className="font-mono">{r.language}</span></span> : null}
                       </div>
                     </CardContent>
                   </Card>

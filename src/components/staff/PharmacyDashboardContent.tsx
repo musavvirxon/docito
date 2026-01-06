@@ -3,11 +3,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Activity, Pill, ClipboardList, RefreshCw } from "lucide-react";
 import { usePharmacyStaffDashboard } from "@/hooks/usePharmacyStaffDashboard";
-import { usePrescriptions } from "@/hooks/usePrescriptions";
 
-export default function PharmacyDashboardContent() {
-  const { pharmacyId, loading, stats, activity, recentOrders, inventoryMeta } = usePharmacyStaffDashboard();
-  const { fetchFulfillmentOrders } = usePrescriptions(pharmacyId || undefined);
+interface PharmacyDashboardContentProps {
+  entityInfo?: any;
+  permissions?: any;
+  activeSection?: string;
+}
+
+export default function PharmacyDashboardContent(_props: PharmacyDashboardContentProps) {
+  const { pharmacyId, loading, stats, activity, recentOrders, inventoryMeta, refresh } = usePharmacyStaffDashboard();
 
   const statusBadge = (status?: string) => {
     const s = (status || "").toLowerCase();
@@ -26,7 +30,7 @@ export default function PharmacyDashboardContent() {
         </div>
         <Button
           variant="outline"
-          onClick={() => fetchFulfillmentOrders()}
+          onClick={refresh}
           disabled={!pharmacyId || loading}
           className="gap-2"
         >
@@ -118,4 +122,3 @@ export default function PharmacyDashboardContent() {
     </div>
   );
 }
-

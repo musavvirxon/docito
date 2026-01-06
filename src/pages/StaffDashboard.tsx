@@ -10,9 +10,9 @@ import { StaffDashboardOverview } from '@/components/staff/StaffDashboardOvervie
 import { TodayScheduleSection } from '@/components/staff/TodayScheduleSection';
 import { PatientListSection } from '@/components/staff/PatientListSection';
 import { BillingSection } from '@/components/staff/BillingSection';
-import { PharmacyDashboardContent } from '@/components/staff/PharmacyDashboardContent';
-import { LabDashboardContent } from '@/components/staff/LabDashboardContent';
-import { ImagingDashboardContent } from '@/components/staff/ImagingDashboardContent';
+import PharmacyDashboardContent from '@/components/staff/PharmacyDashboardContent';
+import LabDashboardContent from '@/components/staff/LabDashboardContent';
+import ImagingDashboardContent from '@/components/staff/ImagingDashboardContent';
 import ThemeToggle from '@/components/home/ThemeToggle';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
@@ -143,31 +143,13 @@ const StaffDashboard = () => {
         break;
 
       case 'pharmacy':
-        return (
-          <PharmacyDashboardContent
-            entityInfo={entityInfo}
-            permissions={staffPermissions as PharmacyPermissions & { staffType: 'pharmacy' }}
-            activeSection={activeSection}
-          />
-        );
+        return <PharmacyDashboardContent />;
 
       case 'lab':
-        return (
-          <LabDashboardContent
-            entityInfo={entityInfo}
-            permissions={staffPermissions as LabPermissions & { staffType: 'lab' }}
-            activeSection={activeSection}
-          />
-        );
+        return <LabDashboardContent />;
 
       case 'imaging':
-        return (
-          <ImagingDashboardContent
-            entityInfo={entityInfo}
-            permissions={staffPermissions as ImagingPermissions & { staffType: 'imaging' }}
-            activeSection={activeSection}
-          />
-        );
+        return <ImagingDashboardContent />;
     }
 
     // Default placeholder for unhandled sections
