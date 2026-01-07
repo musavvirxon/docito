@@ -27,6 +27,46 @@ export type AppRole =
   | "patient";
 
 export const PATIENT_DASHBOARD_ROUTE = "/patient-dashboard";
+export const roleLabels: Record<AppRole, string> = {
+  super_admin: "Super Admin",
+  admin: "Admin",
+  clinic_admin: "Clinic Admin",
+  doctor: "Doctor",
+  pharmacy_admin: "Pharmacy Admin",
+  lab_admin: "Lab Admin",
+  imaging_admin: "Imaging Admin",
+  pharmacy_staff: "Pharmacy Staff",
+  pharmacist: "Pharmacist",
+  lab_staff: "Lab Staff",
+  lab_technician: "Lab Technician",
+  imaging_staff: "Imaging Staff",
+  internal_imaging_tech: "Imaging Tech",
+  clinic_staff: "Clinic Staff",
+  staff: "Staff",
+  receptionist: "Receptionist",
+  nurse: "Nurse",
+  patient: "Patient",
+};
+
+export function getUserRolesFromProfile(
+  profile: { role?: string; roles?: string[] } | null | undefined
+): AppRole[] {
+  if (!profile) return ["patient"];
+
+  const rawRoles: string[] =
+    Array.isArray(profile.roles) && profile.roles.length > 0
+      ? profile.roles
+      : profile.role
+        ? [profile.role]
+        : [];
+
+  const cleaned = rawRoles.map((r) => String(r).trim()).filter(Boolean);
+
+  const known = new Set<AppRole>(Object.keys(DASHBOARD_ROUTES) as AppRole[]);
+  const result = cleaned.filter((r) => known.has(r as AppRole)) as AppRole[];
+
+  return result.length > 0 ? result : ["patient"];
+}
 
 export const DASHBOARD_ROUTES: Record<AppRole, string> = {
   super_admin: "/super-admin-dashboard",
