@@ -1,7 +1,6 @@
 {
   "siteName": "Docito",
   "tagline": "Find and book top doctors near you",
-
   "navigation": {
     "home": "Home",
     "doctors": "Doctors",
@@ -23,7 +22,6 @@
     "notifications": "Notifications",
     "settings": "Settings"
   },
-
   "buttons": {
     "search": "Search",
     "bookNow": "Book Now",
@@ -39,7 +37,6 @@
     "close": "Close",
     "confirm": "Confirm"
   },
-
   "form": {
     "email": "Email",
     "password": "Password",
@@ -52,30 +49,33 @@
     "specialty": "Specialty",
     "message": "Message"
   },
-
   "status": {
     "pending": "Pending",
     "confirmed": "Confirmed",
     "completed": "Completed",
     "cancelled": "Cancelled"
   },
-
   "footer": {
     "platform": "Platform",
+    "home": "Home",
+    "findDoctors": "Find Doctors",
+    "practices": "Practices",
+    "forProviders": "For Providers",
+    "joinProvider": "Join as Provider",
+    "registerPractice": "Register Practice",
     "company": "Company",
-    "legal": "Legal",
+    "aboutUs": "About Us",
+    "legalCenter": "Legal Center",
     "contact": "Contact",
-
+    "legal": "Legal",
     "termsOfService": "Terms of Service",
     "privacyPolicy": "Privacy Policy",
     "cookiePolicy": "Cookie Policy",
-
     "disclaimer": "The content provided on Docito is for general informational purposes only. It is not intended as, and Docito does not provide, medical advice, diagnosis or treatment. Always contact your healthcare provider directly with any questions you may have regarding your health or specific medical advice.",
     "allRightsReserved": "All Rights Reserved",
     "trademark": "Docito is a registered trademark and brand of Artsy Developers Inc.",
     "patent": "All services, features, and intellectual property are protected under applicable patent laws."
   },
-
   "cookies": {
     "title": "We Value Your Privacy",
     "description": "We use cookies to enhance your browsing experience, provide personalized content, and analyze our traffic. By clicking \"Accept All\", you consent to our use of cookies.",
@@ -98,7 +98,6 @@
       "error": "Failed to save preferences"
     }
   },
-
   "language": {
     "select": "Select language"
   }
