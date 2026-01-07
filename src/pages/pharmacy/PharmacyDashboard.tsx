@@ -260,7 +260,18 @@ export default function PharmacyDashboard() {
     <DashboardShell
       role="pharmacy_admin"
       entityName={pharmacy.name}
-      entityStatus={pharmacy.verified ? 'verified' : 'pending'}
+      const getPharmacyEntityStatus = () => {
+  const vs = (pharmacy.verification_status || '').toLowerCase();
+
+  if (pharmacy.verified) return 'verified';
+  if (vs === 'verified') return 'verified';
+  if (vs === 'suspended') return 'suspended';
+  if (vs === 'active') return 'active';
+
+  // pending / under_review / rejected → show pending (you can add rejected UI later)
+  return 'pending';
+};
+
       sidebarItems={sidebarItems}
       activeItem={activeSection}
       onItemChange={setActiveSection}
