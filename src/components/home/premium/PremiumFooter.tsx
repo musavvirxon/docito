@@ -1,6 +1,16 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Twitter, Facebook, Instagram, Linkedin, Youtube, Mail, Phone, MapPin, Globe } from "lucide-react";
+import {
+  Twitter,
+  Facebook,
+  Instagram,
+  Linkedin,
+  Youtube,
+  Mail,
+  Phone,
+  MapPin,
+  Globe
+} from "lucide-react";
 import { Logo } from "@/components/Logo";
 import ThemeToggle from "@/components/home/ThemeToggle";
 
@@ -86,7 +96,7 @@ export default function PremiumFooter() {
           {/* Platform Links */}
           <div>
             <p className="text-sm font-semibold text-foreground mb-4" role="heading" aria-level={2}>
-              {t("home:footer.platform", "Platform")}
+              {t("home:footer.platform.title", "Platform")}
             </p>
             <ul className="space-y-3">
               {footerLinks.platform.map((link) => (
@@ -102,7 +112,7 @@ export default function PremiumFooter() {
           {/* Support Links */}
           <div>
             <p className="text-sm font-semibold text-foreground mb-4" role="heading" aria-level={2}>
-              {t("home:footer.support", "Support")}
+              {t("home:footer.support.title", "Support")}
             </p>
             <ul className="space-y-3">
               {footerLinks.support.map((link) => (
@@ -118,7 +128,7 @@ export default function PremiumFooter() {
           {/* Legal Links */}
           <div>
             <p className="text-sm font-semibold text-foreground mb-4" role="heading" aria-level={2}>
-              {t("home:footer.legal", "Legal")}
+              {t("home:footer.legal.title", "Legal")}
             </p>
             <ul className="space-y-3">
               {footerLinks.legal.map((link) => (
@@ -134,7 +144,7 @@ export default function PremiumFooter() {
           {/* Contact Info */}
           <div>
             <p className="text-sm font-semibold text-foreground mb-4" role="heading" aria-level={2}>
-              {t("home:footer.contact", "Contact")}
+              {t("home:footer.contactTitle", "Contact")}
             </p>
             <ul className="space-y-3">
               <li>
