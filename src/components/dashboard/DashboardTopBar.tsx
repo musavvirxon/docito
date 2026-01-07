@@ -21,6 +21,13 @@ const statusColors = {
   suspended: 'bg-red-500/10 text-red-600 border-red-500/30',
 };
 
+const statusLabels: Record<NonNullable<DashboardTopBarProps["entityStatus"]>, string> = {
+  active: 'Active',
+  pending: 'Pending',
+  verified: 'Verified',
+  suspended: 'Suspended',
+};
+
 const roleLabels: Record<string, string> = {
   doctor: 'Doctor',
   patient: 'Patient',
@@ -31,9 +38,25 @@ const roleLabels: Record<string, string> = {
   imaging_admin: 'Imaging Admin',
   super_admin: 'Super Admin',
   pharmacy_staff: 'Pharmacy Staff',
+  pharmacist: 'Pharmacist',
   lab_staff: 'Lab Staff',
+  lab_technician: 'Lab Technician',
   imaging_staff: 'Imaging Staff',
+  internal_imaging_tech: 'Imaging Tech',
 };
+
+function getVerificationRouteByRole(role: AppRole) {
+  // ✅ Route to the "respective/suitable" verification page
+  if (role === 'lab_admin' || role === 'lab_staff' || role === 'lab_technician') return '/lab/verification';
+  if (role === 'pharmacy_admin' || role === 'pharmacy_staff' || role === 'pharmacist') return '/pharmacy/verification';
+  if (role === 'imaging_admin' || role === 'imaging_staff' || role === 'internal_imaging_tech') return '/imaging/verification';
+
+  // clinic admin / admin practice verification
+  if (role === 'admin' || role === 'clinic_admin') return '/dashboard/verify';
+
+  // fallback
+  return '/dashboard/verify';
+}
 
 export function DashboardTopBar({
   entityName,
@@ -41,6 +64,10 @@ export function DashboardTopBar({
   role,
 }: DashboardTopBarProps) {
   const navigate = useNavigate();
+
+  const handleVerificationClick = () => {
+    navigate(getVerificationRouteByRole(role));
+  };
 
   return (
     <header className="sticky top-0 z-40 h-16 border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -50,9 +77,25 @@ export function DashboardTopBar({
           {entityName && (
             <h1 className="text-lg font-semibold truncate">{entityName}</h1>
           )}
-          <Badge variant="outline" className={cn("shrink-0", statusColors[entityStatus])}>
-            {entityStatus}
-          </Badge>
+
+          {/* ✅ CLICKABLE STATUS BADGE (any state) */}
+          <button
+            type="button"
+            onClick={handleVerificationClick}
+            className="focus:outline-none"
+            aria-label="Open verification page"
+          >
+            <Badge
+              variant="outline"
+              className={cn(
+                "shrink-0 cursor-pointer hover:opacity-90 transition",
+                statusColors[entityStatus]
+              )}
+            >
+              {statusLabels[entityStatus]}
+            </Badge>
+          </button>
+
           <Badge variant="secondary" className="shrink-0 hidden sm:flex">
             {roleLabels[role] || role}
           </Badge>
@@ -62,7 +105,7 @@ export function DashboardTopBar({
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <LanguageSwitcher />
-          
+
           <Button
             variant="ghost"
             size="icon"
