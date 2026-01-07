@@ -1,8 +1,7 @@
 import { Outlet, useLocation } from "react-router-dom";
 import ModernNavbar from "@/components/home/ModernNavbar";
-import Footer from "@/components/Footer";
+import ModernFooter from "@/components/home/ModernFooter";
 
-// Pages that should NOT show public footer/navbar
 const DASHBOARD_PREFIXES = [
   "/dashboard",
   "/super-admin-dashboard",
@@ -21,7 +20,6 @@ export default function PublicLayout() {
     location.pathname.startsWith(p)
   );
 
-  // Safety: if someone accidentally renders this layout for dashboards, hide footer/navbar.
   if (isDashboardRoute) return <Outlet />;
 
   return (
@@ -30,7 +28,7 @@ export default function PublicLayout() {
       <main className="flex-1">
         <Outlet />
       </main>
-      <Footer />
+      <ModernFooter />
     </div>
   );
 }
