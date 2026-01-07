@@ -14,6 +14,10 @@ import HowItWorks from "@/pages/HowItWorks";
 import Contact from "@/pages/Contact";
 import About from "@/pages/About";
 import Auth from "@/pages/Auth";
+import PracticeVerification from "@/pages/PracticeVerification";
+import LabVerification from "@/pages/lab/LabVerification";
+import PharmacyVerification from "@/pages/pharmacy/PharmacyVerification";
+import ImagingVerification from "@/pages/imaging/ImagingVerification";
 
 // dashboards
 import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
@@ -54,6 +58,11 @@ export default function AppRoutes() {
       <Route path="/lab/dashboard" element={<LabDashboard />} />
       <Route path="/pharmacy/dashboard" element={<PharmacyDashboard />} />
       <Route path="/imaging/dashboard" element={<ImagingDashboard />} />
+
+      <Route path="/dashboard/verify" element={<PracticeVerification />} />
+<Route path="/lab/verification" element={<LabVerification />} />
+<Route path="/pharmacy/verification" element={<PharmacyVerification />} />
+<Route path="/imaging/verification" element={<ImagingVerification />} />
 
       {/* ✅ Aliases to match Auth.tsx redirects */}
       <Route path="/practice-dashboard" element={<AdminDashboard />} />
