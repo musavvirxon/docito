@@ -1,6 +1,6 @@
 import { Outlet, useLocation } from "react-router-dom";
 import ModernNavbar from "@/components/home/ModernNavbar";
-import ModernFooter from "@/components/home/ModernFooter";
+import ModernFooter from "@/components/home/PremiumFooter";
 
 const DASHBOARD_PREFIXES = [
   "/dashboard",
@@ -29,7 +29,7 @@ export default function PublicLayout() {
       <main className="flex-1">
         <Outlet />
       </main>
-      <ModernFooter />
+      <PremiumFooter />
     </div>
   );
 }
