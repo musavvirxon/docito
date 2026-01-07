@@ -16,6 +16,7 @@ const DASHBOARD_PREFIXES = [
 
 export default function PublicLayout() {
   const location = useLocation();
+
   const isDashboardRoute = DASHBOARD_PREFIXES.some((p) =>
     location.pathname.startsWith(p)
   );
