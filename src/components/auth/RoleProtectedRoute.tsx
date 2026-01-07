@@ -9,6 +9,11 @@ type Props = {
   children: ReactNode;
   redirectTo?: string;               // optional override
 };
+// src/components/auth/RoleProtectedRoute.tsx
+// Wrapper to keep old imports working.
+// Your real component currently lives at: src/components/RoleProtectedRoute.tsx
+
+export { default } from "@/components/RoleProtectedRoute";
 
 export default function RoleProtectedRoute({
   allowedRoles,
