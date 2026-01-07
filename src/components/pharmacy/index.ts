@@ -7,3 +7,4 @@ export { default as PharmacyDeliveryOrders } from './PharmacyDeliveryOrders';
 export { default as PharmacyAnalytics } from './PharmacyAnalytics';
 export { default as PharmacySettings } from './PharmacySettings';
 export { default as PharmacyPatientView } from './PharmacyPatientView';
+export { PharmacyReferralsSection } from './PharmacyReferralsSection';
