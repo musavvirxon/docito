@@ -50,32 +50,30 @@ export default function PremiumHome() {
         )}
       />
 
-      {/* NOTE: Navbar/Footer are provided by PublicLayout */}
-      <div className="bg-background text-foreground antialiased">
-        <main>
-          <PremiumHero />
-          <SmartSearch />
-          <ProviderCards />
-          <PlatformPillars />
-          <LiveMetrics />
-          <SpecialtiesCarousel />
-          <FeaturedProviders />
-          <DiagnosticsSection />
-          <TrendingServices />
-          <NearbyPharmacies />
-          <BookingSteps />
-          <CapabilitiesGrid />
-          <DashboardDemo />
-          <TeamCollaboration />
-          <InsuranceProviders />
-          <FAQ />
-          <GlobalTrust />
-          <MobileAppShowcase />
-          <FinalCTA />
-        </main>
+      {/* Navbar + Footer come from PublicLayout */}
+      <main className="bg-background text-foreground antialiased">
+        <PremiumHero />
+        <SmartSearch />
+        <ProviderCards />
+        <PlatformPillars />
+        <LiveMetrics />
+        <SpecialtiesCarousel />
+        <FeaturedProviders />
+        <DiagnosticsSection />
+        <TrendingServices />
+        <NearbyPharmacies />
+        <BookingSteps />
+        <CapabilitiesGrid />
+        <DashboardDemo />
+        <TeamCollaboration />
+        <InsuranceProviders />
+        <FAQ />
+        <GlobalTrust />
+        <MobileAppShowcase />
+        <FinalCTA />
 
         <ScrollToTop />
-      </div>
+      </main>
     </ThemeProvider>
   );
 }
