@@ -36,7 +36,7 @@ export const DASHBOARD_ROUTES: Record<AppRole, string> = {
 
   pharmacy_admin: "/pharmacy/dashboard",
   lab_admin: "/lab/dashboard",
-  imaging_admin: "/imaging/dashboard",
+  imaging_admin: "/imaging-center/dashboard",
 
   pharmacy_staff: "/pharmacy/dashboard",
   pharmacist: "/pharmacy/dashboard",
@@ -44,8 +44,8 @@ export const DASHBOARD_ROUTES: Record<AppRole, string> = {
   lab_staff: "/lab/dashboard",
   lab_technician: "/lab/dashboard",
 
-  imaging_staff: "/imaging/dashboard",
-  internal_imaging_tech: "/imaging/dashboard",
+  imaging_staff: "/imaging-center/dashboard",
+  internal_imaging_tech: "/imaging-center/dashboard",
 
   clinic_staff: "/staff-dashboard",
   staff: "/staff-dashboard",
