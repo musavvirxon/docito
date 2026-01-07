@@ -26,6 +26,14 @@ import {
 import { languages } from "@/i18n/config";
 import { getUserRolesFromProfile, roleLabels, AppRole } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
+import { 
+  DoctorWorkspaceSettings,
+  ClinicAdminWorkspaceSettings,
+  LabAdminWorkspaceSettings,
+  PharmacyAdminWorkspaceSettings,
+  ImagingAdminWorkspaceSettings,
+  PatientWorkspaceSettings
+} from "@/components/settings";
 
 type SettingsSection = 
   | "account" 
@@ -33,6 +41,7 @@ type SettingsSection =
   | "privacy" 
   | "notifications" 
   | "preferences"
+  | "workspace"
   | "billing"
   | "support";
 
@@ -49,6 +58,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: "privacy", label: "Privacy", icon: Shield, description: "Visibility, consent, data" },
   { id: "notifications", label: "Notifications", icon: Bell, description: "Email, SMS, push" },
   { id: "preferences", label: "Preferences", icon: Palette, description: "Theme, accessibility" },
+  { id: "workspace", label: "Workspace", icon: Settings, description: "Role-specific settings" },
   { id: "billing", label: "Billing", icon: CreditCard, description: "Payments, invoices" },
   { id: "support", label: "Support", icon: HelpCircle, description: "Help, feedback" },
 ];
@@ -789,6 +799,22 @@ export default function ProfilePage() {
             </div>
           </div>
         );
+
+      case "workspace":
+        // Render role-specific workspace settings
+        if (userRoles.includes("doctor")) {
+          return <DoctorWorkspaceSettings />;
+        } else if (userRoles.includes("clinic_admin") || userRoles.includes("admin")) {
+          return <ClinicAdminWorkspaceSettings />;
+        } else if (userRoles.includes("lab_admin")) {
+          return <LabAdminWorkspaceSettings />;
+        } else if (userRoles.includes("pharmacy_admin")) {
+          return <PharmacyAdminWorkspaceSettings />;
+        } else if (userRoles.includes("imaging_admin")) {
+          return <ImagingAdminWorkspaceSettings />;
+        } else {
+          return <PatientWorkspaceSettings />;
+        }
 
       case "billing":
         return (
