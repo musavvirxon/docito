@@ -3,7 +3,7 @@ import PublicLayout from "@/layouts/PublicLayout";
 
 // pages
 import Index from "@/pages/Index";
-import PremiumHome from "@/pages/PremiumHome"; // ✅ new homepage (premium layout)
+import PremiumHome from "@/pages/PremiumHome";
 import Doctors from "@/pages/Doctors";
 import Practices from "@/pages/Practices";
 import LabLandingPage from "@/pages/lab/LabLandingPage";
@@ -17,6 +17,9 @@ import Auth from "@/pages/Auth";
 
 // dashboards
 import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
+import AdminDashboard from "@/pages/AdminDashboard";
+import DoctorDashboard from "@/pages/DoctorDashboard";
+import PatientDashboard from "@/pages/PatientDashboard";
 import StaffDashboard from "@/pages/StaffDashboard";
 import LabDashboard from "@/pages/lab/LabDashboard";
 import PharmacyDashboard from "@/pages/pharmacy/PharmacyDashboard";
@@ -25,14 +28,10 @@ import ImagingDashboard from "@/pages/imaging/ImagingDashboard";
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* ✅ PUBLIC WEBSITE: navbar + footer come from PublicLayout */}
+      {/* ✅ PUBLIC WEBSITE */}
       <Route element={<PublicLayout />}>
-        {/* ✅ Use NEW homepage design */}
         <Route path="/" element={<PremiumHome />} />
-
-        {/* If you want the old homepage instead, use this line:
-            <Route path="/" element={<Index />} />
-        */}
+        {/* <Route path="/" element={<Index />} /> */}
 
         <Route path="/doctor" element={<Doctors />} />
         <Route path="/practice" element={<Practices />} />
@@ -46,12 +45,19 @@ export default function AppRoutes() {
         <Route path="/auth" element={<Auth />} />
       </Route>
 
-      {/* ❌ DASHBOARDS: no public navbar/footer */}
+      {/* ✅ DASHBOARDS */}
       <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
+      <Route path="/admin-dashboard" element={<AdminDashboard />} />
+      <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
+      <Route path="/patient-dashboard" element={<PatientDashboard />} />
       <Route path="/staff-dashboard" element={<StaffDashboard />} />
       <Route path="/lab/dashboard" element={<LabDashboard />} />
       <Route path="/pharmacy/dashboard" element={<PharmacyDashboard />} />
       <Route path="/imaging/dashboard" element={<ImagingDashboard />} />
+
+      {/* ✅ Aliases to match Auth.tsx redirects */}
+      <Route path="/practice-dashboard" element={<AdminDashboard />} />
+      <Route path="/imaging-center/dashboard" element={<ImagingDashboard />} />
     </Routes>
   );
 }
