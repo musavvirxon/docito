@@ -37,7 +37,6 @@ const FeaturesGrid = lazy(() => import("@/components/home/FeaturesGrid"));
 const CollaborationSection = lazy(() => import("@/components/home/CollaborationSection"));
 const MobileFriendlySection = lazy(() => import("@/components/home/MobileFriendlySection"));
 const CTASection = lazy(() => import("@/components/home/CTASection"));
-const ModernFooter = lazy(() => import("@/components/home/PremiumFooter"));
 
 // Lightweight section skeleton
 const SectionSkeleton = memo(() => (
@@ -164,7 +163,6 @@ const Index = () => {
         </main>
 
         <Suspense fallback={<div className="h-64 bg-muted animate-pulse" />}>
-          <ModernFooter />
         </Suspense>
       </div>
     </ThemeProvider>
