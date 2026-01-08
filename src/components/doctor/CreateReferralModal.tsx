@@ -1,11 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -18,24 +12,17 @@ import { useReferralActions } from '@/hooks/useReferrals';
 interface CreateReferralModalProps {
   isOpen: boolean;
   onClose: () => void;
-  /** doctors.id (entity id) */
-  doctorId: string;
+  doctorId: string; // doctors.id
   onSuccess?: () => void;
 }
 
 type RegisteredPatient = {
-  id: string; // profiles.user_id
+  id: string; // profiles.user_id (auth user id)
   full_name: string;
   email: string | null;
   phone: string | null;
 };
 
-/**
- * Legacy modal kept for backwards-compatibility with older pages.
- * Updated to use the new universal referral system:
- *  - selects a REGISTERED patient (profiles.role = 'patient')
- *  - uses CreateReferralDialog + useReferralActions for correct referrals schema
- */
 const CreateReferralModal = ({ isOpen, onClose, doctorId, onSuccess }: CreateReferralModalProps) => {
   const { createReferral, sendReferral } = useReferralActions();
 
@@ -48,11 +35,8 @@ const CreateReferralModal = ({ isOpen, onClose, doctorId, onSuccess }: CreateRef
   const [selected, setSelected] = useState<RegisteredPatient | null>(null);
 
   useEffect(() => {
-    // Keep this component controlled by a single prop but use two internal dialogs
-    // (patient picker -> referral form). Closing outer modal closes everything.
-    if (isOpen) {
-      setPickerOpen(true);
-    } else {
+    if (isOpen) setPickerOpen(true);
+    else {
       setPickerOpen(false);
       setCreateOpen(false);
       setSelected(null);
@@ -95,7 +79,6 @@ const CreateReferralModal = ({ isOpen, onClose, doctorId, onSuccess }: CreateRef
     }
   };
 
-  // Outer close handler
   const closeAll = () => {
     setPickerOpen(false);
     setCreateOpen(false);
@@ -104,7 +87,6 @@ const CreateReferralModal = ({ isOpen, onClose, doctorId, onSuccess }: CreateRef
 
   return (
     <>
-      {/* Patient picker */}
       <Dialog
         open={pickerOpen}
         onOpenChange={(open) => {
@@ -118,9 +100,7 @@ const CreateReferralModal = ({ isOpen, onClose, doctorId, onSuccess }: CreateRef
               <ArrowRightLeft className="h-5 w-5" />
               New Referral
             </DialogTitle>
-            <DialogDescription>
-              Select a registered patient, then create and send a referral.
-            </DialogDescription>
+            <DialogDescription>Select a registered patient, then create and send a referral.</DialogDescription>
           </DialogHeader>
 
           <div className="flex gap-2">
@@ -183,18 +163,14 @@ const CreateReferralModal = ({ isOpen, onClose, doctorId, onSuccess }: CreateRef
         </DialogContent>
       </Dialog>
 
-      {/* Referral creation */}
       {selected && (
         <CreateReferralDialog
           open={createOpen}
           onOpenChange={(open) => {
-            // closing the create dialog returns to picker or closes all
             if (!open) {
               setCreateOpen(false);
               setPickerOpen(true);
-            } else {
-              setCreateOpen(true);
-            }
+            } else setCreateOpen(true);
           }}
           patientId={selected.id}
           patientName={selected.full_name}
