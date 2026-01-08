@@ -20,6 +20,7 @@ import { format } from 'date-fns';
 import { HealthcareConversation, HealthcareParticipant } from '@/hooks/useHealthcareMessaging';
 import RoleBadge from './RoleBadge';
 import { useAuth } from '@/contexts/AuthContext';
+import { getReferralTypeLabel } from '@/lib/api/referral-api';
 
 interface ConversationContextPanelProps {
   conversation: HealthcareConversation;
@@ -104,21 +105,25 @@ const ConversationContextPanel: React.FC<ConversationContextPanelProps> = ({
             <CardContent className="space-y-3">
               <div className="text-sm">
                 <span className="text-muted-foreground">Type: </span>
-                <span className="capitalize">{context_data.referral_type}</span>
+                <span>
+                  {getReferralTypeLabel(
+                    context_data.referral_type_enum || context_data.referral_type || 'consultation'
+                  )}
+                </span>
               </div>
               <div className="text-sm">
                 <span className="text-muted-foreground">Urgency: </span>
-                <Badge 
-                  variant="outline" 
+                <Badge
+                  variant="outline"
                   className={
-                    context_data.urgency === 'urgent' 
-                      ? 'border-red-500 text-red-500' 
-                      : context_data.urgency === 'high'
+                    (context_data.priority || context_data.urgency) === 'stat'
+                      ? 'border-red-500 text-red-500'
+                      : (context_data.priority || context_data.urgency) === 'urgent'
                       ? 'border-amber-500 text-amber-500'
                       : ''
                   }
                 >
-                  {context_data.urgency}
+                  {(context_data.priority || context_data.urgency || 'routine')}
                 </Badge>
               </div>
               {context_data.reason && (
@@ -155,10 +160,7 @@ const ConversationContextPanel: React.FC<ConversationContextPanelProps> = ({
           </CardHeader>
           <CardContent className="space-y-3">
             {otherParticipants.map((participant) => (
-              <div
-                key={participant.id}
-                className="flex items-center gap-3"
-              >
+              <div key={participant.id} className="flex items-center gap-3">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={participant.profile?.avatar_url || undefined} />
                   <AvatarFallback>
