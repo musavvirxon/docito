@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { CalendarPlus, User } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 
 import PatientSelector, { type Patient } from "@/components/patient/PatientSelector";
 import CreatePatientModal, { type DoctorPatientRow } from "@/components/patient/CreatePatientModal";
@@ -32,6 +34,7 @@ const ManualBookAppointmentModal = ({
   prefilledTime,
 }: ManualBookAppointmentModalProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(prefilledDate || new Date());
+  const [selectedTime, setSelectedTime] = useState<string>(prefilledTime || "");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -39,11 +42,14 @@ const ManualBookAppointmentModal = ({
   const [createPatientOpen, setCreatePatientOpen] = useState(false);
 
   useEffect(() => {
-    if (isOpen && prefilledDate) setSelectedDate(prefilledDate);
-  }, [isOpen, prefilledDate]);
+    if (!isOpen) return;
+    if (prefilledDate) setSelectedDate(prefilledDate);
+    if (prefilledTime) setSelectedTime(prefilledTime);
+  }, [isOpen, prefilledDate, prefilledTime]);
 
   const resetForm = () => {
     setSelectedDate(new Date());
+    setSelectedTime("");
     setNotes("");
     setSelectedPatient(null);
   };
@@ -51,8 +57,8 @@ const ManualBookAppointmentModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!selectedDate || !prefilledTime) {
-      toast.error("Please select a valid time slot");
+    if (!selectedDate || !selectedTime) {
+      toast.error("Please select a date and time");
       return;
     }
 
@@ -65,10 +71,11 @@ const ManualBookAppointmentModal = ({
 
     try {
       // Calculate end time (default 30 min slot)
-      const startTime = prefilledTime;
+      const startTime = selectedTime;
       const [hours, minutes] = startTime.split(":").map(Number);
-      const endDate = new Date();
-      endDate.setHours(hours, minutes + 30, 0, 0);
+      const endDate = new Date(selectedDate);
+      endDate.setHours(hours, minutes, 0, 0);
+      endDate.setMinutes(endDate.getMinutes() + 30);
 
       const endTime = `${String(endDate.getHours()).padStart(2, "0")}:${String(
         endDate.getMinutes()
@@ -133,7 +140,14 @@ const ManualBookAppointmentModal = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        // shadcn Dialog calls onOpenChange with both true/false.
+        // We only want to invoke onClose when the dialog is being closed.
+        if (!open) onClose();
+      }}
+    >
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -184,13 +198,39 @@ const ManualBookAppointmentModal = ({
 
           <Separator />
 
-          {/* Selected Slot Info */}
-          <div className="bg-muted/50 p-4 rounded-lg space-y-2">
-            <h3 className="font-medium text-sm">Selected Time Slot</h3>
-            <p className="text-sm text-muted-foreground">
-              {selectedDate && format(selectedDate, "EEEE, MMMM d, yyyy")} at{" "}
-              {prefilledTime || "Not selected"}
-            </p>
+          {/* Date & Time */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-muted/50 p-4 rounded-lg">
+            <div className="space-y-2">
+              <Label className="text-sm">Appointment Date</Label>
+              <div className="rounded-md border bg-background p-2">
+                <CalendarComponent
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(d) => d && setSelectedDate(d)}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="time" className="text-sm">Start Time</Label>
+              <Input
+                id="time"
+                type="time"
+                step={900}
+                value={selectedTime}
+                onChange={(e) => setSelectedTime(e.target.value)}
+                required
+              />
+              <p className="text-xs text-muted-foreground">
+                Duration: 30 minutes (end time is calculated automatically)
+              </p>
+
+              {selectedDate && selectedTime ? (
+                <p className="text-sm text-muted-foreground mt-2">
+                  {format(selectedDate, "EEEE, MMMM d, yyyy")} at {selectedTime}
+                </p>
+              ) : null}
+            </div>
           </div>
 
           {/* Notes Section */}
