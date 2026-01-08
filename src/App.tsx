@@ -13,6 +13,8 @@ import HowItWorks from "@/pages/HowItWorks";
 import Contact from "@/pages/Contact";
 import About from "@/pages/About";
 import Auth from "@/pages/Auth";
+import AppointmentBooking from "@/pages/AppointmentBooking";
+import BookingConfirmation from "@/pages/BookingConfirmation";
 
 import ProfilePage from "@/pages/ProfilePage";
 import FeedbackCenter from "@/pages/FeedbackCenter";
@@ -55,6 +57,10 @@ export default function App() {
       {/* ✅ APP PAGES (no PublicLayout) */}
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/dashboard/feedback" element={<FeedbackCenter />} />
+
+      {/* ✅ PATIENT BOOKING FLOW */}
+      <Route path="/book-appointment/:doctorId" element={<AppointmentBooking />} />
+      <Route path="/booking-confirmation/:appointmentId" element={<BookingConfirmation />} />
 
       {/* ✅ DASHBOARDS */}
       <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
