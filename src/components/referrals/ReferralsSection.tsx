@@ -2,14 +2,19 @@ import { useState } from 'react';
 import { Plus, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ReferralList, CreateReferralDialog, ReferralSlotPicker, PublishSlotsDialog } from '@/components/referrals';
+import {
+  ReferralList,
+  CreateReferralDialog,
+  ReferralSlotPicker,
+  PublishSlotsDialog,
+} from '@/components/referrals';
 import {
   useReferrals,
   useReferralActions,
   useReferralSlots,
   useReferralAppointments,
   type Referral,
-  type ReferralEntityType
+  type ReferralEntityType,
 } from '@/hooks/useReferrals';
 import {
   Dialog,
@@ -19,6 +24,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import { canCreateReferrals } from '@/lib/referrals/permissions';
 
 interface ReferralsSectionProps {
   role: 'referrer' | 'receiver' | 'patient';
@@ -39,16 +46,24 @@ export const ReferralsSection = ({
   patientName,
   showCreateButton = false,
   title = 'Referrals',
-  description
+  description,
 }: ReferralsSectionProps) => {
+  const { allRoles } = useAuth();
+
   const { referrals, loading, refetch } = useReferrals({
     role,
     entityType,
     entityId,
-    patientId
+    patientId,
   });
 
-  const { acceptReferral, rejectReferral, completeReferral, createReferral, sendReferral } = useReferralActions();
+  const {
+    acceptReferral,
+    rejectReferral,
+    completeReferral,
+    createReferral,
+    sendReferral,
+  } = useReferralActions();
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [slotPickerOpen, setSlotPickerOpen] = useState(false);
@@ -61,19 +76,28 @@ export const ReferralsSection = ({
   const { slots, loading: slotsLoading, createSlots } = useReferralSlots(selectedReferral?.id);
   const { bookAppointment } = useReferralAppointments(selectedReferral?.id);
 
+  const uiCanCreate =
+    showCreateButton &&
+    !!patientId &&
+    !!patientName &&
+    !!entityType &&
+    !!entityId &&
+    canCreateReferrals(allRoles);
+
   const handleAccept = async (id: string) => {
     const result = await acceptReferral(id);
     if (result.success) refetch();
   };
 
   const handleReject = (id: string) => {
-    const referral = referrals.find(r => r.id === id);
+    const referral = referrals.find((r) => r.id === id);
     setSelectedReferral(referral || null);
     setRejectDialogOpen(true);
   };
 
   const confirmReject = async () => {
     if (!selectedReferral) return;
+
     const result = await rejectReferral(selectedReferral.id, rejectReason);
     if (result.success) {
       refetch();
@@ -109,6 +133,11 @@ export const ReferralsSection = ({
       return;
     }
 
+    if (!canCreateReferrals(allRoles)) {
+      toast.error('Your account cannot create referrals');
+      return;
+    }
+
     const result = await createReferral(data, entityType, entityId);
     if (result.success && result.data) {
       await sendReferral(result.data.id);
@@ -140,7 +169,7 @@ export const ReferralsSection = ({
             {description && <CardDescription>{description}</CardDescription>}
           </div>
 
-          {showCreateButton && patientId && patientName && (
+          {uiCanCreate && (
             <Button onClick={() => setCreateDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
               New Referral
@@ -163,7 +192,7 @@ export const ReferralsSection = ({
         />
       </CardContent>
 
-      {showCreateButton && patientId && patientName && (
+      {uiCanCreate && patientId && patientName && (
         <CreateReferralDialog
           open={createDialogOpen}
           onOpenChange={setCreateDialogOpen}
@@ -193,7 +222,6 @@ export const ReferralsSection = ({
         />
       )}
 
-      {/* Reject Dialog */}
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -211,7 +239,11 @@ export const ReferralsSection = ({
               <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button variant="destructive" onClick={confirmReject} disabled={!rejectReason.trim()}>
+              <Button
+                variant="destructive"
+                onClick={confirmReject}
+                disabled={!rejectReason.trim()}
+              >
                 Decline Referral
               </Button>
             </div>
@@ -219,7 +251,6 @@ export const ReferralsSection = ({
         </DialogContent>
       </Dialog>
 
-      {/* Details Dialog */}
       <Dialog open={detailsDialogOpen} onOpenChange={setDetailsDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -246,7 +277,9 @@ export const ReferralsSection = ({
                 </div>
                 <div>
                   <span className="text-muted-foreground">Duration</span>
-                  <p className="font-medium">{selectedReferral.estimated_duration_minutes || 30} min</p>
+                  <p className="font-medium">
+                    {selectedReferral.estimated_duration_minutes || 30} min
+                  </p>
                 </div>
               </div>
 
