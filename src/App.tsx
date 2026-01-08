@@ -2,7 +2,6 @@ import { Routes, Route } from "react-router-dom";
 import PublicLayout from "@/layouts/PublicLayout";
 
 // pages
-import Index from "@/pages/Index";
 import PremiumHome from "@/pages/PremiumHome";
 import Doctors from "@/pages/Doctors";
 import Practices from "@/pages/Practices";
@@ -38,20 +37,19 @@ export default function App() {
   return (
     <Routes>
       {/* ✅ PUBLIC WEBSITE */}
-      <Route element={<PublicLayout />}>
-        <Route path="/" element={<PremiumHome />} />
-        {/* <Route path="/" element={<Index />} /> */}
+      <Route path="/" element={<PublicLayout />}>
+        <Route index element={<PremiumHome />} />
 
-        <Route path="/doctor" element={<Doctors />} />
-        <Route path="/practice" element={<Practices />} />
-        <Route path="/lab" element={<LabLandingPage />} />
-        <Route path="/pharmacy" element={<PharmacyLandingPage />} />
-        <Route path="/imaging-center" element={<ImagingLandingPage />} />
-        <Route path="/pricing" element={<Pricing />} />
-        <Route path="/how-it-works" element={<HowItWorks />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/auth" element={<Auth />} />
+        <Route path="doctor" element={<Doctors />} />
+        <Route path="practice" element={<Practices />} />
+        <Route path="lab" element={<LabLandingPage />} />
+        <Route path="pharmacy" element={<PharmacyLandingPage />} />
+        <Route path="imaging-center" element={<ImagingLandingPage />} />
+        <Route path="pricing" element={<Pricing />} />
+        <Route path="how-it-works" element={<HowItWorks />} />
+        <Route path="contact" element={<Contact />} />
+        <Route path="about" element={<About />} />
+        <Route path="auth" element={<Auth />} />
       </Route>
 
       {/* ✅ APP PAGES (no PublicLayout) */}
@@ -74,7 +72,7 @@ export default function App() {
       <Route path="/pharmacy/verification" element={<PharmacyVerification />} />
       <Route path="/imaging/verification" element={<ImagingVerification />} />
 
-      {/* ✅ Aliases to match Auth.tsx redirects */}
+      {/* ✅ Aliases to match Auth redirects */}
       <Route path="/practice-dashboard" element={<AdminDashboard />} />
       <Route path="/imaging-center/dashboard" element={<ImagingDashboard />} />
     </Routes>
