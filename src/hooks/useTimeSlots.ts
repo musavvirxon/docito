@@ -20,11 +20,11 @@ interface UseTimeSlotsProps {
   bufferTime?: number;
 }
 
-export const useTimeSlots = ({ 
-  doctorId, 
-  selectedDate, 
+export const useTimeSlots = ({
+  doctorId,
+  selectedDate,
   procedureDuration,
-  bufferTime = 0 
+  bufferTime = 0
 }: UseTimeSlotsProps) => {
   const { scheduleSettings, loading: scheduleLoading } = useScheduleSettings();
   const [appointments, setAppointments] = useState<any[]>([]);
@@ -76,7 +76,7 @@ export const useTimeSlots = ({
     const slots: TimeSlot[] = [];
     const startMinutes = timeToMinutes(daySchedule.start_time);
     const endMinutes = timeToMinutes(daySchedule.end_time);
-    
+
     let currentTime = startMinutes;
 
     while (currentTime < endMinutes) {
@@ -91,7 +91,6 @@ export const useTimeSlots = ({
 
       const slotStart = minutesToTime(slotStartMinutes);
       const slotEnd = minutesToTime(procedureEndMinutes);
-      const bufferEnd = minutesToTime(bufferEndMinutes);
 
       // Check if slot overlaps with any break
       const overlappingBreak = daySchedule.breaks?.find((breakTime: any) => {
@@ -103,7 +102,7 @@ export const useTimeSlots = ({
       if (overlappingBreak) {
         // Skip to end of break
         const breakEnd = timeToMinutes(overlappingBreak.end_time);
-        
+
         // Add break indicator slot
         const breakStart = timeToMinutes(overlappingBreak.start_time);
         if (currentTime <= breakStart) {
@@ -114,7 +113,7 @@ export const useTimeSlots = ({
             reason: overlappingBreak.name || 'Break Time'
           });
         }
-        
+
         currentTime = breakEnd;
         continue;
       }
@@ -130,14 +129,14 @@ export const useTimeSlots = ({
         // Use ACTUAL blocked time from database - never recalculate
         const blockStart = timeToMinutes(overlappingBlock.start_time);
         const blockEnd = timeToMinutes(overlappingBlock.end_time);
-        
+
         slots.push({
           time: minutesToTime(blockStart),
           endTime: minutesToTime(blockEnd),
           status: 'blocked',
           reason: overlappingBlock.reason || 'Blocked'
         });
-        
+
         currentTime = blockEnd;
         continue;
       }
@@ -153,16 +152,19 @@ export const useTimeSlots = ({
         // Use ACTUAL appointment time from database - never recalculate
         const aptStart = timeToMinutes(overlappingAppointment.start_time);
         const aptEnd = timeToMinutes(overlappingAppointment.end_time);
-        
+
         slots.push({
           time: minutesToTime(aptStart),
           endTime: minutesToTime(aptEnd),
           status: 'booked',
-          patient: overlappingAppointment.profiles?.full_name || 'Patient',
+          patient:
+            overlappingAppointment.profiles?.full_name ||
+            extractPatientFromNotes(overlappingAppointment.notes) ||
+            'Patient',
           service: overlappingAppointment.procedures?.name || 'Appointment',
           appointmentId: overlappingAppointment.id
         });
-        
+
         currentTime = aptEnd;
         continue;
       }
@@ -183,10 +185,10 @@ export const useTimeSlots = ({
 
   const refetch = async () => {
     if (!doctorId) return;
-    
+
     console.log('🔄 Refetching time slots data...');
     const dateString = format(selectedDate, 'yyyy-MM-dd');
-    
+
     const { data: appts } = await supabase
       .from('appointments')
       .select('*, profiles!appointments_patient_id_fkey(full_name), procedures(name)')
@@ -201,7 +203,7 @@ export const useTimeSlots = ({
       .eq('blocked_date', dateString);
 
     console.log(`✅ Fetched ${appts?.length || 0} appointments, ${blocked?.length || 0} blocked times`);
-    
+
     setAppointments(appts || []);
     setBlockedTimes(blocked || []);
   };
@@ -211,6 +213,16 @@ export const useTimeSlots = ({
     loading: scheduleLoading || loading,
     refetch
   };
+};
+
+// When a doctor books an appointment for a non-registered (doctor-added) patient,
+// we store a structured header in notes. This helper pulls the name back out so the
+// calendar doesn't show a generic "Patient" label.
+const extractPatientFromNotes = (notes?: string | null): string | null => {
+  if (!notes) return null;
+  const match = notes.match(/\[PATIENT\]\s*Name:\s*([^\n|]+?)(?:\s*\||\n|$)/i);
+  if (match?.[1]) return match[1].trim();
+  return null;
 };
 
 // Helper functions
