@@ -1655,6 +1655,48 @@ export type Database = {
         }
         Relationships: []
       }
+      file_assets: {
+        Row: {
+          attachment_type: string | null
+          context_id: string
+          context_type: string
+          created_at: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          id: string
+          mime_type: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attachment_type?: string | null
+          context_id: string
+          context_type: string
+          created_at?: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attachment_type?: string | null
+          context_id?: string
+          context_type?: string
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       financial_inputs: {
         Row: {
           ad_cost: number | null
