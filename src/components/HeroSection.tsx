@@ -75,34 +75,8 @@ const HeroSection = () => {
       setShowResults(true);
     } catch (error) {
       console.error('Search error:', error);
-      // Fallback to mock results if search fails
-      const mockResults = [
-        {
-          id: "1",
-          type: "doctor" as const,
-          name: "Dr. Sarah Johnson",
-          specialty: "Cardiologist",
-          location: "Downtown Medical Center",
-          rating: 4.9,
-          availability: "Available Today",
-          acceptsInsurance: true,
-          acceptsNewPatients: true,
-          distance: "0.5 mi"
-        },
-        {
-          id: "2", 
-          type: "doctor" as const,
-          name: "Dr. Michael Chen",
-          specialty: "Dentist",
-          location: "Smile Dental Clinic",
-          rating: 4.8,
-          availability: "Available Tomorrow",
-          acceptsInsurance: true,
-          acceptsNewPatients: true,
-          distance: "1.2 mi"
-        }
-      ];
-      setSearchResults(mockResults);
+      // Show empty results instead of mock data
+      setSearchResults([]);
       setShowResults(true);
     } finally {
       setSearching(false);
@@ -182,22 +156,8 @@ const HeroSection = () => {
       setShowResults(true);
     } catch (error) {
       console.error('Search error:', error);
-      // Fallback to mock results if search fails
-      const mockResults = [
-        {
-          id: "1",
-          type: "doctor" as const,
-          name: `Dr. ${specialtyName} Specialist`,
-          specialty: specialtyName,
-          location: "Medical Center",
-          rating: 4.9,
-          availability: "Available Today",
-          acceptsInsurance: true,
-          acceptsNewPatients: true,
-          distance: "0.5 mi"
-        }
-      ];
-      setSearchResults(mockResults);
+      // Show empty results instead of mock data
+      setSearchResults([]);
       setShowResults(true);
     } finally {
       setSearching(false);
