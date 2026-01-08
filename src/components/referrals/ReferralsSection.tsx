@@ -1,9 +1,16 @@
 import { useState } from 'react';
-import { Plus, FileText, ExternalLink } from 'lucide-react';
+import { Plus, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ReferralList, CreateReferralDialog, ReferralSlotPicker, PublishSlotsDialog } from '@/components/referrals';
-import { useReferrals, useReferralActions, useReferralSlots, useReferralAppointments, type Referral, type ReferralEntityType } from '@/hooks/useReferrals';
+import {
+  useReferrals,
+  useReferralActions,
+  useReferralSlots,
+  useReferralAppointments,
+  type Referral,
+  type ReferralEntityType
+} from '@/hooks/useReferrals';
 import {
   Dialog,
   DialogContent,
@@ -34,9 +41,15 @@ export const ReferralsSection = ({
   title = 'Referrals',
   description
 }: ReferralsSectionProps) => {
-  const { referrals, loading, refetch } = useReferrals(role === 'patient' ? 'patient' : role === 'referrer' ? 'referrer' : 'receiver');
-  const { acceptReferral, rejectReferral, completeReferral } = useReferralActions();
-  
+  const { referrals, loading, refetch } = useReferrals({
+    role,
+    entityType,
+    entityId,
+    patientId
+  });
+
+  const { acceptReferral, rejectReferral, completeReferral, createReferral, sendReferral } = useReferralActions();
+
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [slotPickerOpen, setSlotPickerOpen] = useState(false);
   const [publishSlotsOpen, setPublishSlotsOpen] = useState(false);
@@ -47,13 +60,10 @@ export const ReferralsSection = ({
 
   const { slots, loading: slotsLoading, createSlots } = useReferralSlots(selectedReferral?.id);
   const { bookAppointment } = useReferralAppointments(selectedReferral?.id);
-  const { createReferral, sendReferral } = useReferralActions();
 
   const handleAccept = async (id: string) => {
     const result = await acceptReferral(id);
-    if (result.success) {
-      refetch();
-    }
+    if (result.success) refetch();
   };
 
   const handleReject = (id: string) => {
@@ -64,7 +74,6 @@ export const ReferralsSection = ({
 
   const confirmReject = async () => {
     if (!selectedReferral) return;
-    
     const result = await rejectReferral(selectedReferral.id, rejectReason);
     if (result.success) {
       refetch();
@@ -91,9 +100,7 @@ export const ReferralsSection = ({
 
   const handleComplete = async (id: string) => {
     const result = await completeReferral(id);
-    if (result.success) {
-      refetch();
-    }
+    if (result.success) refetch();
   };
 
   const handleCreateReferral = async (data: any) => {
@@ -104,7 +111,6 @@ export const ReferralsSection = ({
 
     const result = await createReferral(data, entityType, entityId);
     if (result.success && result.data) {
-      // Automatically send the referral
       await sendReferral(result.data.id);
       refetch();
     }
@@ -112,14 +118,12 @@ export const ReferralsSection = ({
 
   const handleBookSlotConfirm = async (slotId: string, appointmentData: any) => {
     if (!selectedReferral) return;
-    
     await bookAppointment(selectedReferral.id, slotId, appointmentData);
     refetch();
   };
 
   const handlePublishSlotsConfirm = async (slotsData: any[]) => {
     if (!selectedReferral) return;
-    
     await createSlots(selectedReferral.id, slotsData);
     refetch();
   };
@@ -133,11 +137,9 @@ export const ReferralsSection = ({
               <FileText className="h-5 w-5" />
               {title}
             </CardTitle>
-            {description && (
-              <CardDescription>{description}</CardDescription>
-            )}
+            {description && <CardDescription>{description}</CardDescription>}
           </div>
-          
+
           {showCreateButton && patientId && patientName && (
             <Button onClick={() => setCreateDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
@@ -146,7 +148,7 @@ export const ReferralsSection = ({
           )}
         </div>
       </CardHeader>
-      
+
       <CardContent>
         <ReferralList
           referrals={referrals}
@@ -161,7 +163,6 @@ export const ReferralsSection = ({
         />
       </CardContent>
 
-      {/* Create Referral Dialog */}
       {showCreateButton && patientId && patientName && (
         <CreateReferralDialog
           open={createDialogOpen}
@@ -172,7 +173,6 @@ export const ReferralsSection = ({
         />
       )}
 
-      {/* Slot Picker Dialog */}
       {selectedReferral && (
         <ReferralSlotPicker
           open={slotPickerOpen}
@@ -184,7 +184,6 @@ export const ReferralsSection = ({
         />
       )}
 
-      {/* Publish Slots Dialog */}
       {selectedReferral && (
         <PublishSlotsDialog
           open={publishSlotsOpen}
@@ -199,9 +198,7 @@ export const ReferralsSection = ({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Decline Referral</DialogTitle>
-            <DialogDescription>
-              Please provide a reason for declining this referral
-            </DialogDescription>
+            <DialogDescription>Please provide a reason for declining this referral</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <textarea
@@ -227,10 +224,9 @@ export const ReferralsSection = ({
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Referral Details</DialogTitle>
-            <DialogDescription>
-              {selectedReferral?.referral_number}
-            </DialogDescription>
+            <DialogDescription>{selectedReferral?.referral_number}</DialogDescription>
           </DialogHeader>
+
           {selectedReferral && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
@@ -244,34 +240,25 @@ export const ReferralsSection = ({
                 </div>
                 <div>
                   <span className="text-muted-foreground">Type</span>
-                  <p className="font-medium capitalize">{selectedReferral.referral_type_enum?.replace('_', ' ')}</p>
+                  <p className="font-medium capitalize">
+                    {selectedReferral.referral_type_enum?.replace('_', ' ')}
+                  </p>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Duration</span>
                   <p className="font-medium">{selectedReferral.estimated_duration_minutes || 30} min</p>
                 </div>
               </div>
-              
+
               <div>
                 <span className="text-muted-foreground text-sm">Reason</span>
                 <p className="mt-1">{selectedReferral.reason}</p>
               </div>
-              
+
               {selectedReferral.clinical_notes && (
                 <div>
                   <span className="text-muted-foreground text-sm">Clinical Notes</span>
-                  <p className="mt-1 p-3 bg-muted/50 rounded-md text-sm">
-                    {selectedReferral.clinical_notes}
-                  </p>
-                </div>
-              )}
-
-              {selectedReferral.result_notes && (
-                <div>
-                  <span className="text-muted-foreground text-sm">Results</span>
-                  <p className="mt-1 p-3 bg-green-50 dark:bg-green-950/30 rounded-md text-sm">
-                    {selectedReferral.result_notes}
-                  </p>
+                  <p className="mt-1">{selectedReferral.clinical_notes}</p>
                 </div>
               )}
             </div>
