@@ -4,7 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-import AppRoutes from "./App";
+import App from "./App";
 import "./index.css";
 import "./i18n/config";
 
@@ -25,7 +25,7 @@ createRoot(document.getElementById("root")!).render(
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <AuthProvider>
-            <AppRoutes />
+            <App />
           </AuthProvider>
         </BrowserRouter>
       </QueryClientProvider>
