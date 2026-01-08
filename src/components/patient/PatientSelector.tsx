@@ -92,17 +92,17 @@ const PatientSelector = ({
 
       if (dpErr) throw dpErr;
 
-      setDoctorPatients(
-        (dp ?? []).map((p) => ({
-          id: p.id,
-          name: p.full_name,
-          email: p.email ?? undefined,
-          phone: p.phone ?? undefined,
-          date_of_birth: p.date_of_birth ?? undefined,
-          created_at: p.created_at ?? undefined,
-          source: "doctor_added" as const,
-        }))
-      );
+      const doctorAdded: Patient[] = (dp ?? []).map((p) => ({
+        id: p.id,
+        name: p.full_name,
+        email: p.email ?? undefined,
+        phone: p.phone ?? undefined,
+        date_of_birth: p.date_of_birth ?? undefined,
+        created_at: p.created_at ?? undefined,
+        source: "doctor_added",
+      }));
+
+      setDoctorPatients(doctorAdded);
 
       // 2) Registered patients the doctor has seen (appointments -> profiles)
       const { data: ap, error: apErr } = await supabase
@@ -126,17 +126,17 @@ const PatientSelector = ({
 
       if (prErr) throw prErr;
 
-      setRegisteredPatients(
-        (pr ?? []).map((p) => ({
-          id: p.user_id,
-          name: p.full_name || "Unknown",
-          email: p.email || undefined,
-          phone: p.phone || undefined,
-          date_of_birth: p.date_of_birth || undefined,
-          created_at: p.created_at,
-          source: "registered" as const,
-        }))
-      );
+      const reg: Patient[] = (pr ?? []).map((p) => ({
+        id: p.user_id,
+        name: p.full_name || "Unknown",
+        email: p.email || undefined,
+        phone: p.phone || undefined,
+        date_of_birth: p.date_of_birth || undefined,
+        created_at: p.created_at,
+        source: "registered",
+      }));
+
+      setRegisteredPatients(reg);
     } catch (e: any) {
       console.error(e);
       toast.error("Failed to load patients");
@@ -169,22 +169,29 @@ const PatientSelector = ({
     setSearchTerm("");
   };
 
+  // ✅ Show selected patient as INPUT VALUE (not placeholder)
+  const inputValue = showDropdown ? searchTerm : selectedPatient?.name ?? "";
+
   return (
     <div className={`relative ${className}`}>
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
         <Input
-          placeholder={selectedPatient ? selectedPatient.name : placeholder}
-          value={searchTerm}
+          placeholder={placeholder}
+          value={inputValue}
           onChange={(e) => {
             setSearchTerm(e.target.value);
             setShowDropdown(true);
           }}
-          onFocus={() => setShowDropdown(true)}
+          onFocus={() => {
+            setShowDropdown(true);
+            // When focusing with a selected patient, start fresh search
+            if (selectedPatient) setSearchTerm("");
+          }}
           className={`pl-10 pr-12 ${required && !value ? "border-destructive" : ""}`}
         />
 
-        <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex gap-1">
+        <div className="absolute right-1 top-1/2 -translate-y-1/2 flex gap-1">
           <Button
             type="button"
             variant="ghost"
