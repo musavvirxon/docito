@@ -28,7 +28,7 @@ import {
   Scan,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { AuthIllustration } from "@/components/Visuals/illustrations";
 
@@ -49,6 +49,11 @@ const Auth = () => {
 
   const { signIn, signUp, user, profile } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const returnToParam = searchParams.get("returnTo");
+  // Basic safety: only allow in-app relative paths
+  const safeReturnTo = returnToParam && returnToParam.startsWith("/") ? returnToParam : null;
 
   // ✅ Single place to decide dashboard route (canonical routes only)
   const getDashboardPath = () => {
@@ -113,9 +118,11 @@ const Auth = () => {
         return;
       }
 
-      navigate(getDashboardPath());
+      // If booking flow (or any other flow) provided a returnTo, prefer that.
+      // Otherwise fall back to role-based dashboards.
+      navigate(safeReturnTo || getDashboardPath());
     }
-  }, [user, profile, navigate]);
+  }, [user, profile, navigate, safeReturnTo]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
