@@ -14,10 +14,7 @@ import HowItWorks from "@/pages/HowItWorks";
 import Contact from "@/pages/Contact";
 import About from "@/pages/About";
 import Auth from "@/pages/Auth";
-import ProfilePage from "@/pages/ProfilePage";
-import FeedbackCenter from "@/pages/FeedbackCenter";
 
-// ✅ missing pages that were causing white screen
 import ProfilePage from "@/pages/ProfilePage";
 import FeedbackCenter from "@/pages/FeedbackCenter";
 
@@ -58,9 +55,6 @@ export default function AppRoutes() {
       </Route>
 
       {/* ✅ APP PAGES (no PublicLayout) */}
-      <Route path="/profile" element={<ProfilePage />} />
-      <Route path="/dashboard/feedback" element={<FeedbackCenter />} />
-
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/dashboard/feedback" element={<FeedbackCenter />} />
 
