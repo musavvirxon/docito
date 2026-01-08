@@ -71,7 +71,8 @@ type AdminSection =
   | "locations"
   | "patients"
   | "billing"
-  | "analytics";
+  | "analytics"
+  | "referrals";
 
 function LockedOverlay({
   onRequestVerify,
