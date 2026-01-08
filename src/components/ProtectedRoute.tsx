@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useVerificationStatus } from '@/hooks/useVerificationStatus';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 
@@ -18,34 +17,50 @@ const ProtectedRoute = ({ children, requireVerification = false }: ProtectedRout
     const checkAccess = async () => {
       if (authLoading) return;
 
-      // Check if user is authenticated
+      // Not authenticated
       if (!user) {
         navigate('/auth');
         return;
       }
 
-      // SECURITY: Check role (backend secured with user_roles table & RLS)
-      if (profile?.role !== 'admin') {
-        navigate('/dashboard');
+      // If this route is meant for admin-only content
+      if (profile?.role !== 'admin' && profile?.role !== 'clinic_admin') {
+        // IMPORTANT: don't navigate to '/dashboard' if you don't have that route
+        // Send them to Auth role redirect instead:
+        navigate('/auth');
         return;
       }
 
-      // If verification is required, check practice verification status
+      // Verification gate
       if (requireVerification) {
-        const { data: practice } = await supabase
+        const { data: practice, error } = await supabase
           .from('practices')
           .select('verification_status')
           .eq('admin_id', user.id)
-          .single();
+          .maybeSingle();
 
-        if (practice?.verification_status !== 'verified') {
+        // If RLS blocks or another error occurs, don't crash -> send to verify/setup
+        if (error) {
+          console.error('ProtectedRoute practice check error:', error);
+          navigate('/dashboard/verify');
+          return;
+        }
+
+        // If admin has no practice yet -> go to verify/setup page (no crash)
+        if (!practice) {
+          navigate('/dashboard/verify');
+          return;
+        }
+
+        // If not verified -> go verify page
+        if (practice.verification_status !== 'verified') {
           navigate('/dashboard/verify');
           return;
         }
       }
     };
 
-    checkAccess();
+    void checkAccess();
   }, [user, profile, authLoading, requireVerification, navigate]);
 
   if (authLoading) {
