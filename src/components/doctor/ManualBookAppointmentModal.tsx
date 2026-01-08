@@ -81,26 +81,28 @@ const ManualBookAppointmentModal = ({
         endDate.getMinutes()
       ).padStart(2, "0")}`;
 
-      // Link appointment to either registered patient (patient_id) or doctor-added patient (doctor_patient_id)
-      const patientPayload =
-        selectedPatient.source === "doctor_added"
-          ? { patient_id: null, doctor_patient_id: selectedPatient.id }
-          : { patient_id: selectedPatient.id, doctor_patient_id: null };
+const patientIdOrNull = selectedPatient.source === "registered" ? selectedPatient.id : null;
 
-      const { data: appointment, error: appointmentError } = await supabase
-        .from("appointments")
-        .insert({
-          doctor_id: doctorId,
-          practice_id: practiceId || null,
-          appointment_date: format(selectedDate, "yyyy-MM-dd"),
-          start_time: startTime,
-          end_time: endTime,
-          notes: notes || null,
-          status: "confirmed",
-          ...patientPayload,
-        })
-        .select()
-        .single();
+const structuredPatientHeader = selectedPatient.source === "doctor_added"
+  ? `[PATIENT] Name: ${selectedPatient.name} | Phone: ${selectedPatient.phone ?? ""} | Email: ${selectedPatient.email ?? ""}`
+  : null;
+
+const combinedNotes = [structuredPatientHeader, notes || null].filter(Boolean).join("\n");
+
+const { data: appointment, error: appointmentError } = await supabase
+  .from("appointments")
+  .insert({
+    doctor_id: doctorId,
+    practice_id: practiceId || null,
+    appointment_date: format(selectedDate, "yyyy-MM-dd"),
+    start_time: startTime,
+    end_time: endTime,
+    notes: combinedNotes || null,
+    status: "confirmed",
+    patient_id: patientIdOrNull,
+  })
+  .select()
+  .single();
 
       if (appointmentError) throw appointmentError;
 
