@@ -5,31 +5,55 @@ import { toast } from 'sonner';
 
 // Types
 export type ReferralEntityType = 'doctor' | 'clinic' | 'lab' | 'imaging_center' | 'pharmacy';
-export type ReferralType = 'consultation' | 'lab_test' | 'imaging_study' | 'prescription_fulfillment' | 'follow_up_care' | 'specialist_referral';
+export type ReferralType =
+  | 'consultation'
+  | 'lab_test'
+  | 'imaging_study'
+  | 'prescription_fulfillment'
+  | 'follow_up_care'
+  | 'specialist_referral';
 export type ReferralPriority = 'routine' | 'urgent' | 'stat';
-export type ReferralStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'slots_available' | 'booked' | 'in_progress' | 'completed' | 'cancelled' | 'expired';
+export type ReferralStatus =
+  | 'draft'
+  | 'sent'
+  | 'accepted'
+  | 'rejected'
+  | 'slots_available'
+  | 'booked'
+  | 'in_progress'
+  | 'completed'
+  | 'cancelled'
+  | 'expired';
 
 export interface Referral {
   id: string;
   referral_number: string;
   patient_id: string;
+
   referrer_type: ReferralEntityType;
   referrer_entity_id: string;
   referrer_user_id: string;
+
   receiver_type: ReferralEntityType;
   receiver_entity_id: string;
   receiver_user_id?: string;
+
   referral_type_enum: ReferralType;
   priority: ReferralPriority;
   status: string;
+
   reason: string;
   clinical_notes?: string;
+
   diagnosis_codes?: string[];
   valid_from: string;
   valid_until: string;
+
   preferred_date?: string;
   preferred_time_slot?: string;
+
   estimated_duration_minutes: number;
+
   attachments?: any[];
   sent_at?: string;
   accepted_at?: string;
@@ -43,11 +67,13 @@ export interface Referral {
   result_attachments?: any[];
   created_at: string;
   updated_at: string;
+
   // Joined data
   patient?: any;
   referrer?: any;
   receiver?: any;
-  // Legacy fields
+
+  // Legacy fields (still present in DB for backward compatibility)
   referring_doctor_id?: string;
   referred_doctor_id?: string;
 }
@@ -99,11 +125,32 @@ export interface CreateReferralInput {
   attachments?: any[];
 }
 
-export const useReferrals = (role?: 'referrer' | 'receiver' | 'patient' | 'all') => {
-  const { user, profile } = useAuth();
+type UseReferralsArgs =
+  | undefined
+  | 'referrer'
+  | 'receiver'
+  | 'patient'
+  | 'all'
+  | {
+      role?: 'referrer' | 'receiver' | 'patient' | 'all';
+      entityType?: ReferralEntityType;
+      entityId?: string;
+      patientId?: string;
+    };
+
+export const useReferrals = (args?: UseReferralsArgs) => {
+  const { user } = useAuth();
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const normalized =
+    typeof args === 'string' || args === undefined ? { role: args } : args;
+
+  const role = normalized?.role;
+  const entityType = normalized?.entityType;
+  const entityId = normalized?.entityId;
+  const patientId = normalized?.patientId;
 
   const fetchReferrals = useCallback(async () => {
     if (!user) {
@@ -116,10 +163,10 @@ export const useReferrals = (role?: 'referrer' | 'receiver' | 'patient' | 'all')
       setLoading(true);
       setError(null);
 
-      // Fetch referrals - RLS will handle permissions
-      const { data, error: fetchError } = await supabase
+      let query = supabase
         .from('referrals')
-        .select(`
+        .select(
+          `
           *,
           patient:patient_id(
             full_name,
@@ -127,46 +174,46 @@ export const useReferrals = (role?: 'referrer' | 'receiver' | 'patient' | 'all')
             email,
             phone
           )
-        `)
+        `
+        )
         .order('created_at', { ascending: false });
 
-      if (fetchError) throw fetchError;
-
-      // Filter based on role if specified
-      let filteredData = data || [];
-      if (role === 'referrer') {
-        filteredData = filteredData.filter(r => 
-          r.referrer_user_id === user.id || 
-          r.referring_doctor_id !== null
-        );
+      // Prefer server-side filtering (works with proper RLS and improves correctness/perf)
+      if (role === 'patient') {
+        query = query.eq('patient_id', patientId || user.id);
+      } else if (role === 'referrer') {
+        if (entityType && entityId) {
+          query = query.eq('referrer_type', entityType).eq('referrer_entity_id', entityId);
+        } else {
+          // fallback by user_id (works for doctors + any referrer user)
+          query = query.eq('referrer_user_id', user.id);
+        }
       } else if (role === 'receiver') {
-        filteredData = filteredData.filter(r => 
-          r.receiver_user_id === user.id ||
-          r.referred_doctor_id !== null
-        );
-      } else if (role === 'patient') {
-        filteredData = filteredData.filter(r => r.patient_id === user.id);
+        if (entityType && entityId) {
+          query = query.eq('receiver_type', entityType).eq('receiver_entity_id', entityId);
+        } else {
+          query = query.eq('receiver_user_id', user.id);
+        }
       }
 
-      setReferrals(filteredData as Referral[]);
+      const { data, error: fetchError } = await query;
+      if (fetchError) throw fetchError;
+
+      setReferrals((data || []) as Referral[]);
     } catch (err: any) {
       console.error('Error fetching referrals:', err);
       setError(err.message);
+      setReferrals([]);
     } finally {
       setLoading(false);
     }
-  }, [user, role]);
+  }, [user, role, entityType, entityId, patientId]);
 
   useEffect(() => {
     fetchReferrals();
   }, [fetchReferrals]);
 
-  return {
-    referrals,
-    loading,
-    error,
-    refetch: fetchReferrals
-  };
+  return { referrals, loading, error, refetch: fetchReferrals };
 };
 
 // Hook for managing referrals (CRUD operations)
@@ -174,7 +221,11 @@ export const useReferralActions = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  const createReferral = async (input: CreateReferralInput, referrerType: ReferralEntityType, referrerEntityId: string) => {
+  const createReferral = async (
+    input: CreateReferralInput,
+    referrerType: ReferralEntityType,
+    referrerEntityId: string
+  ) => {
     if (!user) {
       toast.error('You must be logged in to create a referral');
       return { error: 'Not authenticated' };
@@ -183,8 +234,20 @@ export const useReferralActions = () => {
     try {
       setLoading(true);
 
-      // Calculate valid_until as 30 days from now if not provided
-      const validUntil = input.valid_until || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const validUntil =
+        input.valid_until ||
+        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+      // If receiver is a doctor, we can resolve receiver_user_id up-front
+      let receiverUserId: string | null = null;
+      if (input.receiver_type === 'doctor') {
+        const { data: doc } = await supabase
+          .from('doctors')
+          .select('user_id')
+          .eq('id', input.receiver_entity_id)
+          .maybeSingle();
+        receiverUserId = (doc as any)?.user_id ?? null;
+      }
 
       const { data, error } = await supabase
         .from('referrals')
@@ -193,8 +256,11 @@ export const useReferralActions = () => {
           referrer_type: referrerType,
           referrer_entity_id: referrerEntityId,
           referrer_user_id: user.id,
+
           receiver_type: input.receiver_type,
           receiver_entity_id: input.receiver_entity_id,
+          receiver_user_id: receiverUserId,
+
           referral_type_enum: input.referral_type,
           priority: input.priority || 'routine',
           status: 'draft',
@@ -206,7 +272,7 @@ export const useReferralActions = () => {
           preferred_date: input.preferred_date,
           preferred_time_slot: input.preferred_time_slot,
           estimated_duration_minutes: input.estimated_duration_minutes || 30,
-          attachments: input.attachments || []
+          attachments: input.attachments || [],
         })
         .select()
         .single();
@@ -232,17 +298,16 @@ export const useReferralActions = () => {
         .from('referrals')
         .update({
           status: 'sent',
-          sent_at: new Date().toISOString()
+          sent_at: new Date().toISOString(),
         })
         .eq('id', referralId);
 
       if (error) throw error;
 
-      // Log the action
       await supabase.rpc('log_referral_action', {
         p_referral_id: referralId,
         p_action: 'sent',
-        p_notes: 'Referral sent to receiver'
+        p_notes: 'Referral sent to receiver',
       });
 
       toast.success('Referral sent successfully');
@@ -262,21 +327,31 @@ export const useReferralActions = () => {
     try {
       setLoading(true);
 
-      const { error } = await supabase
+      // Ensure receiver_user_id is set when receiver accepts (very important for non-doctor entities)
+      const { data: current, error: readErr } = await supabase
         .from('referrals')
-        .update({
-          status: 'accepted',
-          accepted_at: new Date().toISOString(),
-          accepted_by: user.id
-        })
-        .eq('id', referralId);
+        .select('id, receiver_user_id')
+        .eq('id', referralId)
+        .single();
+      if (readErr) throw readErr;
 
+      const patch: any = {
+        status: 'accepted',
+        accepted_at: new Date().toISOString(),
+        accepted_by: user.id,
+      };
+
+      if (!current.receiver_user_id) {
+        patch.receiver_user_id = user.id;
+      }
+
+      const { error } = await supabase.from('referrals').update(patch).eq('id', referralId);
       if (error) throw error;
 
       await supabase.rpc('log_referral_action', {
         p_referral_id: referralId,
         p_action: 'accepted',
-        p_notes: 'Referral accepted by receiver'
+        p_notes: 'Referral accepted by receiver',
       });
 
       toast.success('Referral accepted');
@@ -296,22 +371,31 @@ export const useReferralActions = () => {
     try {
       setLoading(true);
 
-      const { error } = await supabase
+      const { data: current, error: readErr } = await supabase
         .from('referrals')
-        .update({
-          status: 'rejected',
-          rejected_at: new Date().toISOString(),
-          rejected_by: user.id,
-          rejection_reason: reason
-        })
-        .eq('id', referralId);
+        .select('id, receiver_user_id')
+        .eq('id', referralId)
+        .single();
+      if (readErr) throw readErr;
 
+      const patch: any = {
+        status: 'rejected',
+        rejected_at: new Date().toISOString(),
+        rejected_by: user.id,
+        rejection_reason: reason,
+      };
+
+      if (!current.receiver_user_id) {
+        patch.receiver_user_id = user.id;
+      }
+
+      const { error } = await supabase.from('referrals').update(patch).eq('id', referralId);
       if (error) throw error;
 
       await supabase.rpc('log_referral_action', {
         p_referral_id: referralId,
         p_action: 'rejected',
-        p_notes: `Referral rejected: ${reason}`
+        p_notes: `Referral rejected: ${reason}`,
       });
 
       toast.success('Referral rejected');
@@ -331,23 +415,32 @@ export const useReferralActions = () => {
     try {
       setLoading(true);
 
-      const { error } = await supabase
+      const { data: current, error: readErr } = await supabase
         .from('referrals')
-        .update({
-          status: 'completed',
-          completed_at: new Date().toISOString(),
-          completed_by: user.id,
-          result_notes: resultNotes,
-          result_attachments: resultAttachments || []
-        })
-        .eq('id', referralId);
+        .select('id, receiver_user_id')
+        .eq('id', referralId)
+        .single();
+      if (readErr) throw readErr;
 
+      const patch: any = {
+        status: 'completed',
+        completed_at: new Date().toISOString(),
+        completed_by: user.id,
+        result_notes: resultNotes,
+        result_attachments: resultAttachments || [],
+      };
+
+      if (!current.receiver_user_id) {
+        patch.receiver_user_id = user.id;
+      }
+
+      const { error } = await supabase.from('referrals').update(patch).eq('id', referralId);
       if (error) throw error;
 
       await supabase.rpc('log_referral_action', {
         p_referral_id: referralId,
         p_action: 'completed',
-        p_notes: 'Referral completed'
+        p_notes: 'Referral completed',
       });
 
       toast.success('Referral completed');
@@ -367,9 +460,7 @@ export const useReferralActions = () => {
 
       const { error } = await supabase
         .from('referrals')
-        .update({
-          status: 'cancelled'
-        })
+        .update({ status: 'cancelled' })
         .eq('id', referralId);
 
       if (error) throw error;
@@ -377,7 +468,7 @@ export const useReferralActions = () => {
       await supabase.rpc('log_referral_action', {
         p_referral_id: referralId,
         p_action: 'cancelled',
-        p_notes: reason || 'Referral cancelled'
+        p_notes: reason || 'Referral cancelled',
       });
 
       toast.success('Referral cancelled');
@@ -398,7 +489,7 @@ export const useReferralActions = () => {
     acceptReferral,
     rejectReferral,
     completeReferral,
-    cancelReferral
+    cancelReferral,
   };
 };
 
@@ -436,264 +527,115 @@ export const useReferralSlots = (referralId?: string) => {
     fetchSlots();
   }, [fetchSlots]);
 
-  const createSlots = async (referralId: string, slotsData: Omit<ReferralSlot, 'id' | 'referral_id' | 'created_at' | 'is_available' | 'is_reserved'>[]) => {
+  const createSlots = async (
+    referralId: string,
+    slotsData: Omit<ReferralSlot, 'id' | 'referral_id' | 'created_at' | 'is_available' | 'is_reserved'>[]
+  ) => {
     try {
       setLoading(true);
-      const insertData = slotsData.map(slot => ({
-        referral_id: referralId,
-        ...slot,
-        is_available: true,
-        is_reserved: false
-      }));
 
-      const { data, error } = await supabase
-        .from('referral_slots')
-        .insert(insertData)
-        .select();
+      const { error } = await supabase.from('referral_slots').insert(
+        slotsData.map((slot) => ({
+          referral_id: referralId,
+          slot_date: slot.slot_date,
+          start_time: slot.start_time,
+          end_time: slot.end_time,
+          notes: slot.notes,
+        }))
+      );
 
       if (error) throw error;
 
-      // Update referral status to slots_available
-      await supabase
-        .from('referrals')
-        .update({ status: 'slots_available' })
-        .eq('id', referralId);
+      toast.success('Slots published');
 
-      toast.success('Slots published successfully');
-      await fetchSlots();
-      return { data, success: true };
-    } catch (err: any) {
-      console.error('Error creating slots:', err);
-      toast.error(err.message || 'Failed to create slots');
-      return { error: err.message };
-    } finally {
-      setLoading(false);
-    }
-  };
+      await supabase.rpc('log_referral_action', {
+        p_referral_id: referralId,
+        p_action: 'slots_published',
+        p_notes: 'Receiver published available time slots',
+      });
 
-  const reserveSlot = async (slotId: string, userId: string) => {
-    try {
-      setLoading(true);
-      const { error } = await supabase
-        .from('referral_slots')
-        .update({
-          is_reserved: true,
-          reserved_at: new Date().toISOString(),
-          reserved_by: userId
-        })
-        .eq('id', slotId);
-
-      if (error) throw error;
-      await fetchSlots();
       return { success: true };
     } catch (err: any) {
-      console.error('Error reserving slot:', err);
+      console.error('Error creating slots:', err);
+      toast.error(err.message || 'Failed to publish slots');
       return { error: err.message };
     } finally {
       setLoading(false);
     }
   };
 
-  return {
-    slots,
-    loading,
-    refetch: fetchSlots,
-    createSlots,
-    reserveSlot
-  };
+  return { slots, loading, refetch: fetchSlots, createSlots };
 };
 
-// Hook for referral appointments
+// Hook for booking appointments via referral slots
 export const useReferralAppointments = (referralId?: string) => {
   const { user } = useAuth();
-  const [appointments, setAppointments] = useState<ReferralAppointment[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchAppointments = useCallback(async () => {
-    if (!referralId) {
-      setAppointments([]);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('referral_appointments')
-        .select('*')
-        .eq('referral_id', referralId)
-        .order('appointment_date')
-        .order('start_time');
-
-      if (error) throw error;
-      setAppointments(data || []);
-    } catch (err: any) {
-      console.error('Error fetching referral appointments:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [referralId]);
-
-  useEffect(() => {
-    fetchAppointments();
-  }, [fetchAppointments]);
-
-  const bookAppointment = async (
-    referralId: string,
-    slotId: string | null,
-    appointmentData: {
-      appointment_date: string;
-      start_time: string;
-      end_time: string;
-      notes?: string;
-    }
-  ) => {
+  const bookAppointment = async (referralId: string, slotId: string, appointmentData: any) => {
     if (!user) {
-      toast.error('You must be logged in to book an appointment');
+      toast.error('You must be logged in to book');
       return { error: 'Not authenticated' };
     }
 
     try {
       setLoading(true);
 
-      // Create the referral appointment
-      const { data, error } = await supabase
-        .from('referral_appointments')
-        .insert({
-          referral_id: referralId,
-          referral_slot_id: slotId,
-          appointment_date: appointmentData.appointment_date,
-          start_time: appointmentData.start_time,
-          end_time: appointmentData.end_time,
-          booked_by: user.id,
-          notes: appointmentData.notes,
-          status: 'scheduled'
-        })
-        .select()
+      const { data: slot, error: slotErr } = await supabase
+        .from('referral_slots')
+        .select('*')
+        .eq('id', slotId)
         .single();
+      if (slotErr) throw slotErr;
 
-      if (error) throw error;
+      if (!slot.is_available || slot.is_reserved) {
+        toast.error('This slot is no longer available');
+        return { error: 'Slot not available' };
+      }
 
-      // Update referral status to booked
+      const { error: reserveErr } = await supabase
+        .from('referral_slots')
+        .update({
+          is_reserved: true,
+          reserved_at: new Date().toISOString(),
+          reserved_by: user.id,
+        })
+        .eq('id', slotId);
+      if (reserveErr) throw reserveErr;
+
+      const { error: apptErr } = await supabase.from('referral_appointments').insert({
+        referral_id: referralId,
+        referral_slot_id: slotId,
+        appointment_date: slot.slot_date,
+        start_time: slot.start_time,
+        end_time: slot.end_time,
+        status: 'scheduled',
+        booked_by: user.id,
+        notes: appointmentData?.notes,
+      });
+      if (apptErr) throw apptErr;
+
       await supabase
         .from('referrals')
         .update({ status: 'booked' })
         .eq('id', referralId);
 
-      // Mark slot as unavailable if using a slot
-      if (slotId) {
-        await supabase
-          .from('referral_slots')
-          .update({ is_available: false, is_reserved: true })
-          .eq('id', slotId);
-      }
-
       await supabase.rpc('log_referral_action', {
         p_referral_id: referralId,
         p_action: 'booked',
-        p_notes: `Appointment booked for ${appointmentData.appointment_date}`
+        p_notes: 'Patient booked a slot',
       });
 
-      toast.success('Appointment booked successfully');
-      await fetchAppointments();
-      return { data, success: true };
+      toast.success('Appointment booked');
+      return { success: true };
     } catch (err: any) {
       console.error('Error booking appointment:', err);
-      toast.error(err.message || 'Failed to book appointment');
+      toast.error(err.message || 'Failed to book');
       return { error: err.message };
     } finally {
       setLoading(false);
     }
   };
 
-  return {
-    appointments,
-    loading,
-    refetch: fetchAppointments,
-    bookAppointment
-  };
-};
-
-// Hook for referral notifications
-export const useReferralNotifications = () => {
-  const { user } = useAuth();
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [loading, setLoading] = useState(false);
-
-  const fetchNotifications = useCallback(async () => {
-    if (!user) {
-      setNotifications([]);
-      setUnreadCount(0);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('referral_notifications')
-        .select('*, referral:referral_id(referral_number, status)')
-        .eq('recipient_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (error) throw error;
-
-      setNotifications(data || []);
-      setUnreadCount(data?.filter(n => !n.is_read).length || 0);
-    } catch (err: any) {
-      console.error('Error fetching notifications:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    fetchNotifications();
-  }, [fetchNotifications]);
-
-  const markAsRead = async (notificationId: string) => {
-    try {
-      const { error } = await supabase
-        .from('referral_notifications')
-        .update({
-          is_read: true,
-          read_at: new Date().toISOString()
-        })
-        .eq('id', notificationId);
-
-      if (error) throw error;
-      await fetchNotifications();
-    } catch (err: any) {
-      console.error('Error marking notification as read:', err);
-    }
-  };
-
-  const markAllAsRead = async () => {
-    if (!user) return;
-
-    try {
-      const { error } = await supabase
-        .from('referral_notifications')
-        .update({
-          is_read: true,
-          read_at: new Date().toISOString()
-        })
-        .eq('recipient_id', user.id)
-        .eq('is_read', false);
-
-      if (error) throw error;
-      await fetchNotifications();
-    } catch (err: any) {
-      console.error('Error marking all as read:', err);
-    }
-  };
-
-  return {
-    notifications,
-    unreadCount,
-    loading,
-    refetch: fetchNotifications,
-    markAsRead,
-    markAllAsRead
-  };
+  return { loading, bookAppointment };
 };
