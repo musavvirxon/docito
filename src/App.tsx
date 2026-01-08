@@ -14,6 +14,12 @@ import HowItWorks from "@/pages/HowItWorks";
 import Contact from "@/pages/Contact";
 import About from "@/pages/About";
 import Auth from "@/pages/Auth";
+
+// ✅ missing pages that were causing white screen
+import ProfilePage from "@/pages/ProfilePage";
+import FeedbackCenter from "@/pages/FeedbackCenter";
+
+// verification
 import PracticeVerification from "@/pages/PracticeVerification";
 import LabVerification from "@/pages/lab/LabVerification";
 import PharmacyVerification from "@/pages/pharmacy/PharmacyVerification";
@@ -49,6 +55,10 @@ export default function AppRoutes() {
         <Route path="/auth" element={<Auth />} />
       </Route>
 
+      {/* ✅ APP PAGES (no PublicLayout) */}
+      <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/dashboard/feedback" element={<FeedbackCenter />} />
+
       {/* ✅ DASHBOARDS */}
       <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
       <Route path="/admin-dashboard" element={<AdminDashboard />} />
@@ -59,10 +69,11 @@ export default function AppRoutes() {
       <Route path="/pharmacy/dashboard" element={<PharmacyDashboard />} />
       <Route path="/imaging/dashboard" element={<ImagingDashboard />} />
 
+      {/* ✅ VERIFICATION ROUTES */}
       <Route path="/dashboard/verify" element={<PracticeVerification />} />
-<Route path="/lab/verification" element={<LabVerification />} />
-<Route path="/pharmacy/verification" element={<PharmacyVerification />} />
-<Route path="/imaging/verification" element={<ImagingVerification />} />
+      <Route path="/lab/verification" element={<LabVerification />} />
+      <Route path="/pharmacy/verification" element={<PharmacyVerification />} />
+      <Route path="/imaging/verification" element={<ImagingVerification />} />
 
       {/* ✅ Aliases to match Auth.tsx redirects */}
       <Route path="/practice-dashboard" element={<AdminDashboard />} />
