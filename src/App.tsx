@@ -34,7 +34,7 @@ import LabDashboard from "@/pages/lab/LabDashboard";
 import PharmacyDashboard from "@/pages/pharmacy/PharmacyDashboard";
 import ImagingDashboard from "@/pages/imaging/ImagingDashboard";
 
-export default function AppRoutes() {
+export default function App() {
   return (
     <Routes>
       {/* ✅ PUBLIC WEBSITE */}
