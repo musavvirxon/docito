@@ -15,6 +15,8 @@ import {
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useReferralActions } from "@/hooks/useReferrals";
+import { useAuth } from "@/contexts/AuthContext";
+import { canCreateReferrals } from "@/lib/referrals/permissions";
 
 type RegisteredPatient = {
   id: string; // profiles.user_id
@@ -26,6 +28,9 @@ type RegisteredPatient = {
 export function DoctorReferralsSection() {
   const { doctorProfile } = useDoctorData();
   const { createReferral, sendReferral } = useReferralActions();
+  const { allRoles } = useAuth();
+
+  const uiCanCreate = canCreateReferrals(allRoles);
 
   const [pickerOpen, setPickerOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
@@ -81,23 +86,19 @@ export function DoctorReferralsSection() {
 
   return (
     <>
-      {/* Lightweight header row with "New Referral" */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <ArrowRightLeft className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-lg font-semibold">Referrals</h2>
         </div>
 
-        <Button
-          onClick={() => setPickerOpen(true)}
-          variant="outline"
-          size="sm"
-        >
-          New Referral
-        </Button>
+        {uiCanCreate && (
+          <Button onClick={() => setPickerOpen(true)} variant="outline" size="sm">
+            New Referral
+          </Button>
+        )}
       </div>
 
-      {/* Existing referrals UI */}
       <ReferralsSection
         role="referrer"
         entityType="doctor"
@@ -106,8 +107,16 @@ export function DoctorReferralsSection() {
         title=""
       />
 
-      {/* Patient picker */}
-      <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
+      <Dialog
+        open={pickerOpen}
+        onOpenChange={(open) => {
+          if (!uiCanCreate && open) {
+            toast.error("Your account cannot create referrals");
+            return;
+          }
+          setPickerOpen(open);
+        }}
+      >
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Select registered patient</DialogTitle>
@@ -178,7 +187,6 @@ export function DoctorReferralsSection() {
         </DialogContent>
       </Dialog>
 
-      {/* Create referral dialog (uses your existing flow) */}
       {selected && (
         <CreateReferralDialog
           open={createOpen}
@@ -186,6 +194,10 @@ export function DoctorReferralsSection() {
           patientId={selected.id}
           patientName={selected.full_name}
           onSubmit={async (data) => {
+            if (!uiCanCreate) {
+              toast.error("Your account cannot create referrals");
+              return;
+            }
             const result = await createReferral(data, "doctor", doctorProfile.id);
             if (result.success && result.data) {
               await sendReferral(result.data.id);
