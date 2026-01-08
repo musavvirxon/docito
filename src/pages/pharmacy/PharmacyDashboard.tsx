@@ -90,33 +90,13 @@ export default function PharmacyDashboard() {
   ];
 
   const stats: StatItem[] = [
-    {
-      label: 'Pending Orders',
-      value: pendingOrders,
-      icon: <ClipboardList className="h-5 w-5" />,
-      color: 'primary',
-    },
-    {
-      label: 'Processing',
-      value: processingOrders,
-      icon: <Clock className="h-5 w-5" />,
-      color: 'info',
-    },
-    {
-      label: 'Ready for Pickup',
-      value: readyOrders,
-      icon: <CheckCircle className="h-5 w-5" />,
-      color: 'success',
-    },
-    {
-      label: 'Low Stock Items',
-      value: lowStockItems.length,
-      icon: <AlertTriangle className="h-5 w-5" />,
-      color: 'warning',
-    },
+    { label: 'Pending Orders', value: pendingOrders, icon: <ClipboardList className="h-5 w-5" />, color: 'primary' },
+    { label: 'Processing', value: processingOrders, icon: <Clock className="h-5 w-5" />, color: 'info' },
+    { label: 'Ready for Pickup', value: readyOrders, icon: <CheckCircle className="h-5 w-5" />, color: 'success' },
+    { label: 'Low Stock Items', value: lowStockItems.length, icon: <AlertTriangle className="h-5 w-5" />, color: 'warning' },
   ];
 
-  // ✅ Backend-connected verification status mapping (prevents "hard-coded pending")
+  // ✅ MUST be here (NOT inside JSX)
   const getPharmacyEntityStatus = (): 'active' | 'pending' | 'verified' | 'suspended' => {
     const vs = (pharmacy?.verification_status || '').toLowerCase();
 
@@ -125,7 +105,6 @@ export default function PharmacyDashboard() {
     if (vs === 'suspended') return 'suspended';
     if (vs === 'active') return 'active';
 
-    // pending / under_review / rejected etc.
     return 'pending';
   };
 
@@ -182,7 +161,6 @@ export default function PharmacyDashboard() {
           <div className="space-y-6">
             <StatsGrid stats={stats} />
 
-            {/* Alerts */}
             {(lowStockItems.length > 0 || expiringItems.length > 0) && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {lowStockItems.length > 0 && (
@@ -224,23 +202,14 @@ export default function PharmacyDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <ContentCard title="Recent Orders" description="Latest prescription fulfillment orders">
                 {fulfillmentOrders.length === 0 ? (
-                  <EmptyState
-                    icon={<ClipboardList className="h-12 w-12" />}
-                    title="No orders yet"
-                    description="Orders will appear here"
-                  />
+                  <EmptyState icon={<ClipboardList className="h-12 w-12" />} title="No orders yet" description="Orders will appear here" />
                 ) : (
                   <div className="space-y-3">
                     {fulfillmentOrders.slice(0, 5).map((order) => (
-                      <div
-                        key={order.id}
-                        className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-                      >
+                      <div key={order.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                         <div>
                           <p className="font-medium">{order.order_number}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {order.pickup_method === 'delivery' ? 'Delivery' : 'Pickup'}
-                          </p>
+                          <p className="text-sm text-muted-foreground">{order.pickup_method === 'delivery' ? 'Delivery' : 'Pickup'}</p>
                         </div>
                         <Badge
                           variant={
@@ -277,9 +246,7 @@ export default function PharmacyDashboard() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">Controlled Substances</span>
-                    <span className="font-bold">
-                      {inventory.filter((i) => i.is_controlled_substance).length}
-                    </span>
+                    <span className="font-bold">{inventory.filter((i) => i.is_controlled_substance).length}</span>
                   </div>
                 </div>
               </ContentCard>
@@ -299,11 +266,7 @@ export default function PharmacyDashboard() {
       onItemChange={setActiveSection}
     >
       <PageHeader
-        title={
-          activeSection === 'overview'
-            ? 'Pharmacy Dashboard'
-            : sidebarItems.find((i) => i.id === activeSection)?.label || ''
-        }
+        title={activeSection === 'overview' ? 'Pharmacy Dashboard' : sidebarItems.find((i) => i.id === activeSection)?.label || ''}
         description={activeSection === 'overview' ? `Welcome back to ${pharmacy.name}` : undefined}
         badges={
           [
