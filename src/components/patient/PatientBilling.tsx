@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Receipt, 
-  Download, 
-  CreditCard, 
+import {
+  Receipt,
+  Download,
+  CreditCard,
   DollarSign,
   Clock,
   CheckCircle2,
@@ -58,7 +58,7 @@ export const PatientBilling = () => {
   const fetchBillingData = async () => {
     try {
       setLoading(true);
-      
+
       const [invoicesRes, transactionsRes] = await Promise.all([
         supabase
           .from('invoices')
@@ -92,7 +92,22 @@ export const PatientBilling = () => {
     return configs[status] || configs.pending;
   };
 
-  // Calculate summary stats
+  const formatMoney = (amount: number, currency: string) => {
+    try {
+      return new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency: currency || 'USD',
+        maximumFractionDigits: 2,
+      }).format(amount);
+    } catch {
+      // Fallback if currency code is invalid
+      return `${amount.toLocaleString()} ${currency || ''}`.trim();
+    }
+  };
+
+  // Calculate summary stats (assumes single-currency; if mixed, we show a sum in USD fallback)
+  const summaryCurrency = invoices[0]?.currency || 'USD';
+
   const totalPaid = invoices
     .filter(i => i.status === 'paid')
     .reduce((sum, i) => sum + i.total_amount, 0);
@@ -127,7 +142,7 @@ export const PatientBilling = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Paid</p>
-                <p className="text-2xl font-bold text-green-600">${totalPaid.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-green-600">{formatMoney(totalPaid, summaryCurrency)}</p>
               </div>
               <div className="p-3 rounded-full bg-green-50 dark:bg-green-900/20">
                 <CheckCircle2 className="h-6 w-6 text-green-600" />
@@ -141,7 +156,7 @@ export const PatientBilling = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Pending</p>
-                <p className="text-2xl font-bold text-yellow-600">${totalPending.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-yellow-600">{formatMoney(totalPending, summaryCurrency)}</p>
               </div>
               <div className="p-3 rounded-full bg-yellow-50 dark:bg-yellow-900/20">
                 <Clock className="h-6 w-6 text-yellow-600" />
@@ -194,7 +209,7 @@ export const PatientBilling = () => {
               {invoices.map((invoice) => {
                 const statusConfig = getStatusConfig(invoice.status);
                 const StatusIcon = statusConfig.icon;
-                
+
                 return (
                   <Card key={invoice.id}>
                     <CardContent className="p-4">
@@ -226,7 +241,7 @@ export const PatientBilling = () => {
                         <div className="flex items-center gap-4">
                           <div className="text-right">
                             <p className="font-semibold text-lg">
-                              ${invoice.total_amount.toLocaleString()}
+                              {formatMoney(invoice.total_amount, invoice.currency)}
                             </p>
                             <p className="text-xs text-muted-foreground uppercase">
                               {invoice.currency}
@@ -265,19 +280,26 @@ export const PatientBilling = () => {
             <div className="space-y-3">
               {transactions.map((tx) => {
                 const statusConfig = getStatusConfig(tx.status);
-                const StatusIcon = statusConfig.icon;
-                
+                const isRefund = tx.transaction_type === 'refund';
+
+                // existing code indicates `amount` is stored in cents
+                const amountValue = (tx.amount || 0) / 100;
+                const formatted = formatMoney(Math.abs(amountValue), tx.currency);
+                const sign = isRefund ? '+' : '-';
+
                 return (
                   <Card key={tx.id}>
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-4">
-                          <div className={cn(
-                            "p-2 rounded-lg",
-                            tx.transaction_type === 'payment' 
-                              ? 'bg-green-50 dark:bg-green-900/20' 
-                              : 'bg-blue-50 dark:bg-blue-900/20'
-                          )}>
+                          <div
+                            className={cn(
+                              "p-2 rounded-lg",
+                              tx.transaction_type === 'payment'
+                                ? 'bg-green-50 dark:bg-green-900/20'
+                                : 'bg-blue-50 dark:bg-blue-900/20'
+                            )}
+                          >
                             {tx.transaction_type === 'payment' ? (
                               <CreditCard className="h-5 w-5 text-green-600" />
                             ) : (
@@ -307,9 +329,9 @@ export const PatientBilling = () => {
                         <div className="text-right">
                           <p className={cn(
                             "font-semibold text-lg",
-                            tx.transaction_type === 'refund' ? 'text-green-600' : ''
+                            isRefund ? 'text-green-600' : ''
                           )}>
-                            {tx.transaction_type === 'refund' ? '+' : '-'}${(tx.amount / 100).toLocaleString()}
+                            {sign}{formatted}
                           </p>
                           <p className="text-xs text-muted-foreground uppercase">
                             {tx.currency}
