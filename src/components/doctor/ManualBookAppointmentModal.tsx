@@ -23,7 +23,7 @@ interface ManualBookAppointmentModalProps {
   onClose: () => void;
   doctorId: string;
   practiceId?: string;
-  onSuccess?: () => void;
+  onSuccess?: () => Promise<void> | void;
   prefilledDate?: Date;
   prefilledTime?: string;
 }
@@ -48,12 +48,10 @@ const ManualBookAppointmentModal = ({
   useEffect(() => {
     if (!isOpen) return;
 
-    // When modal opens, sync prefilled values (if provided)
     if (prefilledDate) setSelectedDate(prefilledDate);
-    if (prefilledTime) setSelectedTime(prefilledTime);
+    else setSelectedDate(new Date());
 
-    // If no prefilled date, default to today
-    if (!prefilledDate) setSelectedDate(new Date());
+    if (prefilledTime) setSelectedTime(prefilledTime);
   }, [isOpen, prefilledDate, prefilledTime]);
 
   const resetForm = () => {
@@ -66,25 +64,13 @@ const ManualBookAppointmentModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!selectedDate) {
-      toast.error("Please select a valid date");
-      return;
-    }
-
-    if (!selectedTime) {
-      toast.error("Please select a valid time");
-      return;
-    }
-
-    if (!selectedPatient) {
-      toast.error("Please select a patient");
-      return;
-    }
+    if (!selectedDate) return toast.error("Please select a valid date");
+    if (!selectedTime) return toast.error("Please select a valid time");
+    if (!selectedPatient) return toast.error("Please select a patient");
 
     setLoading(true);
 
     try {
-      // Calculate end time (default 30 min slot)
       const startTime = selectedTime;
       const [hours, minutes] = startTime.split(":").map(Number);
 
@@ -95,7 +81,6 @@ const ManualBookAppointmentModal = ({
         endDate.getMinutes()
       ).padStart(2, "0")}`;
 
-      // Link appointment to either registered patient (patient_id) or doctor-added patient (doctor_patient_id)
       const patientPayload =
         selectedPatient.source === "doctor_added"
           ? { patient_id: null, doctor_patient_id: selectedPatient.id }
@@ -118,33 +103,16 @@ const ManualBookAppointmentModal = ({
 
       if (appointmentError) throw appointmentError;
 
-      // Notify doctor (current user)
-      const { data: authRes } = await supabase.auth.getUser();
-      const currentUser = authRes?.user;
-
-      if (currentUser) {
-        const appointmentDate = new Date(selectedDate).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        });
-
-        await supabase.from("real_time_notifications").insert([
-          {
-            recipient_user_id: currentUser.id,
-            notification_type: "appointment_created",
-            title: "Appointment Booked",
-            message: `Appointment with ${selectedPatient.name} scheduled for ${appointmentDate} at ${startTime}`,
-            data: { appointment_id: appointment.id, appointment_date: selectedDate.toISOString() },
-          },
-        ]);
-      }
-
       toast.success(`Appointment booked for ${selectedPatient.name}`);
 
-      await onSuccess?.();
+      // ✅ CLOSE IMMEDIATELY (don’t wait for refetch)
       onClose();
       resetForm();
+
+      // ✅ run parent refresh in background so UI updates but modal doesn’t hang
+      Promise.resolve(onSuccess?.()).catch((err) => {
+        console.error("onSuccess/refetch failed:", err);
+      });
     } catch (error: any) {
       console.error("❌ Booking error:", error);
       toast.error(error?.message || "Failed to book appointment");
@@ -156,7 +124,6 @@ const ManualBookAppointmentModal = ({
   return (
     <Dialog
       open={isOpen}
-      // ✅ FIX: only close when user closes the dialog
       onOpenChange={(open) => {
         if (!open) {
           onClose();
@@ -214,7 +181,7 @@ const ManualBookAppointmentModal = ({
 
           <Separator />
 
-          {/* Date/Time Selection */}
+          {/* Date/Time */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
@@ -246,8 +213,6 @@ const ManualBookAppointmentModal = ({
                   type="time"
                   value={selectedTime}
                   onChange={(e) => setSelectedTime(e.target.value)}
-                  // if you want to lock time when opened from a slot click, uncomment:
-                  // disabled={!!prefilledTime}
                 />
               </div>
             </div>
@@ -261,7 +226,7 @@ const ManualBookAppointmentModal = ({
             </div>
           </div>
 
-          {/* Notes Section */}
+          {/* Notes */}
           <div className="space-y-2">
             <Label htmlFor="notes">Appointment Notes</Label>
             <Textarea
