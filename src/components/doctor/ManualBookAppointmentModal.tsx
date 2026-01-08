@@ -3,12 +3,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { CalendarPlus, User } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 
 import PatientSelector, { type Patient } from "@/components/patient/PatientSelector";
@@ -43,6 +43,7 @@ const ManualBookAppointmentModal = ({
 
   useEffect(() => {
     if (!isOpen) return;
+
     if (prefilledDate) setSelectedDate(prefilledDate);
     if (prefilledTime) setSelectedTime(prefilledTime);
   }, [isOpen, prefilledDate, prefilledTime]);
@@ -70,8 +71,9 @@ const ManualBookAppointmentModal = ({
     setLoading(true);
 
     try {
-      // Calculate end time (default 30 min slot)
       const startTime = selectedTime;
+
+      // Calculate end time (default 30 min slot)
       const [hours, minutes] = startTime.split(":").map(Number);
       const endDate = new Date(selectedDate);
       endDate.setHours(hours, minutes, 0, 0);
@@ -81,28 +83,32 @@ const ManualBookAppointmentModal = ({
         endDate.getMinutes()
       ).padStart(2, "0")}`;
 
-const patientIdOrNull = selectedPatient.source === "registered" ? selectedPatient.id : null;
+      // Our appointments table only supports patient_id (auth users). For doctor-added
+      // patients (stored in doctor_patients), we still allow booking the slot, but we
+      // store patient details inside notes so the calendar can display the name.
+      const patientIdOrNull = selectedPatient.source === "registered" ? selectedPatient.id : null;
 
-const structuredPatientHeader = selectedPatient.source === "doctor_added"
-  ? `[PATIENT] Name: ${selectedPatient.name} | Phone: ${selectedPatient.phone ?? ""} | Email: ${selectedPatient.email ?? ""}`
-  : null;
+      const structuredPatientHeader =
+        selectedPatient.source === "doctor_added"
+          ? `[PATIENT] Name: ${selectedPatient.name} | Phone: ${selectedPatient.phone ?? ""} | Email: ${selectedPatient.email ?? ""}`
+          : null;
 
-const combinedNotes = [structuredPatientHeader, notes || null].filter(Boolean).join("\n");
+      const combinedNotes = [structuredPatientHeader, notes || null].filter(Boolean).join("\n");
 
-const { data: appointment, error: appointmentError } = await supabase
-  .from("appointments")
-  .insert({
-    doctor_id: doctorId,
-    practice_id: practiceId || null,
-    appointment_date: format(selectedDate, "yyyy-MM-dd"),
-    start_time: startTime,
-    end_time: endTime,
-    notes: combinedNotes || null,
-    status: "confirmed",
-    patient_id: patientIdOrNull,
-  })
-  .select()
-  .single();
+      const { data: appointment, error: appointmentError } = await supabase
+        .from("appointments")
+        .insert({
+          doctor_id: doctorId,
+          practice_id: practiceId || null,
+          appointment_date: format(selectedDate, "yyyy-MM-dd"),
+          start_time: startTime,
+          end_time: endTime,
+          notes: combinedNotes || null,
+          status: "confirmed",
+          patient_id: patientIdOrNull,
+        })
+        .select()
+        .single();
 
       if (appointmentError) throw appointmentError;
 
@@ -145,8 +151,6 @@ const { data: appointment, error: appointmentError } = await supabase
     <Dialog
       open={isOpen}
       onOpenChange={(open) => {
-        // shadcn Dialog calls onOpenChange with both true/false.
-        // We only want to invoke onClose when the dialog is being closed.
         if (!open) onClose();
       }}
     >
