@@ -380,7 +380,9 @@ const DoctorCalendarSection = ({ doctorStatus, todaysAppointments = [], upcoming
             }}
             doctorId={doctorId}
             practiceId={practiceId || undefined}
-            prefilledDate={selectedSlotForAction?.date}
+            // If opened from a specific slot, prefill date/time.
+            // If opened from Quick Actions, default to the currently selected calendar date.
+            prefilledDate={selectedSlotForAction?.date ?? selectedDate}
             prefilledTime={selectedSlotForAction?.time}
             onSuccess={async () => {
               await refetch();
