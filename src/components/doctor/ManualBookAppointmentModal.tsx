@@ -61,6 +61,18 @@ const ManualBookAppointmentModal = ({
     setSelectedPatient(null);
   };
 
+  const buildSupabaseErrorText = (err: any) => {
+    // Supabase/PostgREST errors usually contain: message, details, hint, code
+    const parts = [
+      err?.message ? `Message: ${err.message}` : null,
+      err?.details ? `Details: ${err.details}` : null,
+      err?.hint ? `Hint: ${err.hint}` : null,
+      err?.code ? `Code: ${err.code}` : null,
+    ].filter(Boolean);
+
+    return parts.join(" | ") || "Unknown error";
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -81,23 +93,26 @@ const ManualBookAppointmentModal = ({
         endDate.getMinutes()
       ).padStart(2, "0")}`;
 
+      // must satisfy DB constraint: exactly one of patient_id or doctor_patient_id
       const patientPayload =
         selectedPatient.source === "doctor_added"
           ? { patient_id: null, doctor_patient_id: selectedPatient.id }
           : { patient_id: selectedPatient.id, doctor_patient_id: null };
 
+      const payload = {
+        doctor_id: doctorId,
+        practice_id: practiceId || null,
+        appointment_date: format(selectedDate, "yyyy-MM-dd"),
+        start_time: startTime,
+        end_time: endTime,
+        notes: notes || null,
+        status: "confirmed",
+        ...patientPayload,
+      };
+
       const { data: appointment, error: appointmentError } = await supabase
         .from("appointments")
-        .insert({
-          doctor_id: doctorId,
-          practice_id: practiceId || null,
-          appointment_date: format(selectedDate, "yyyy-MM-dd"),
-          start_time: startTime,
-          end_time: endTime,
-          notes: notes || null,
-          status: "confirmed",
-          ...patientPayload,
-        })
+        .insert(payload)
         .select()
         .single();
 
@@ -105,17 +120,17 @@ const ManualBookAppointmentModal = ({
 
       toast.success(`Appointment booked for ${selectedPatient.name}`);
 
-      // ✅ CLOSE IMMEDIATELY (don’t wait for refetch)
+      // close immediately
       onClose();
       resetForm();
 
-      // ✅ run parent refresh in background so UI updates but modal doesn’t hang
+      // refresh in background
       Promise.resolve(onSuccess?.()).catch((err) => {
         console.error("onSuccess/refetch failed:", err);
       });
     } catch (error: any) {
-      console.error("❌ Booking error:", error);
-      toast.error(error?.message || "Failed to book appointment");
+      console.error("❌ Booking error object:", error);
+      toast.error(buildSupabaseErrorText(error));
     } finally {
       setLoading(false);
     }
@@ -214,14 +229,6 @@ const ManualBookAppointmentModal = ({
                   value={selectedTime}
                   onChange={(e) => setSelectedTime(e.target.value)}
                 />
-              </div>
-            </div>
-
-            <div className="bg-muted/50 p-4 rounded-lg space-y-1">
-              <div className="font-medium text-sm">Selected</div>
-              <div className="text-sm text-muted-foreground">
-                {format(selectedDate, "EEEE, MMMM d, yyyy")}{" "}
-                {selectedTime ? `at ${selectedTime}` : "(time not selected)"}
               </div>
             </div>
           </div>
