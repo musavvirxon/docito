@@ -42,8 +42,12 @@ import { useAdvancedFinancialMetrics } from "@/hooks/useAdvancedFinancialMetrics
 import AdvancedFinancialMetrics from "@/components/financial/AdvancedFinancialMetrics";
 import { useVerificationStatus } from "@/hooks/useVerificationStatus";
 
+// ✅ NEW: referrals UI
+import { FacilityReferralCreator, ReferralsSection } from "@/components/referrals";
+
 import {
   AlertCircle,
+  ArrowRightLeft,
   BarChart3,
   Building2,
   Calendar,
@@ -98,7 +102,8 @@ function LockedOverlay({
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Your clinic/practice/hospital dashboard is visible, but actions are disabled until your organization is verified.
+              Your clinic/practice/hospital dashboard is visible, but actions are
+              disabled until your organization is verified.
             </p>
             <div className="flex flex-col sm:flex-row gap-2">
               <Button
@@ -156,9 +161,12 @@ const AdminDashboard = () => {
   const { metrics: advancedMetrics, refreshData: refreshAdvancedMetrics } =
     useAdvancedFinancialMetrics(stats.totalRevenue, "practice", practice?.id);
 
-  const { shouldShowModal, markModalAsShown } = useVerificationStatus(practice?.id);
+  const { shouldShowModal, markModalAsShown } = useVerificationStatus(
+    practice?.id
+  );
 
-  const [activeSection, setActiveSection] = useState<AdminSection>("overview");
+  const [activeSection, setActiveSection] =
+    useState<AdminSection>("overview");
 
   // Modal states
   const [inviteProviderOpen, setInviteProviderOpen] = useState(false);
@@ -187,12 +195,36 @@ const AdminDashboard = () => {
 
   const dashboardMetrics = useMemo(
     () => [
-      { label: t("admin.metrics.totalBookings"), value: stats.totalBookings.toString(), icon: Calendar },
-      { label: t("admin.metrics.totalPatients"), value: stats.totalPatients.toString(), icon: Users },
-      { label: t("admin.metrics.revenueThisMonth"), value: `$${stats.totalRevenue.toLocaleString()}`, icon: DollarSign },
-      { label: t("admin.metrics.clinicRating"), value: stats.clinicRating.toFixed(1), icon: Star },
-      { label: t("admin.metrics.pendingInvites"), value: stats.pendingInvites.toString(), icon: UserPlus },
-      { label: t("admin.metrics.locations"), value: stats.locations.toString(), icon: MapPin },
+      {
+        label: t("admin.metrics.totalBookings"),
+        value: stats.totalBookings.toString(),
+        icon: Calendar,
+      },
+      {
+        label: t("admin.metrics.totalPatients"),
+        value: stats.totalPatients.toString(),
+        icon: Users,
+      },
+      {
+        label: t("admin.metrics.revenueThisMonth"),
+        value: `$${stats.totalRevenue.toLocaleString()}`,
+        icon: DollarSign,
+      },
+      {
+        label: t("admin.metrics.clinicRating"),
+        value: stats.clinicRating.toFixed(1),
+        icon: Star,
+      },
+      {
+        label: t("admin.metrics.pendingInvites"),
+        value: stats.pendingInvites.toString(),
+        icon: UserPlus,
+      },
+      {
+        label: t("admin.metrics.locations"),
+        value: stats.locations.toString(),
+        icon: MapPin,
+      },
     ],
     [stats, t]
   );
@@ -223,9 +255,10 @@ const AdminDashboard = () => {
     }
   };
 
-  const lockMessage = "This feature is locked until your organization is verified.";
+  const lockMessage =
+    "This feature is locked until your organization is verified.";
 
-  // ✅ NEW: guard helper that also opens requirements modal
+  // ✅ guard helper that also opens requirements modal
   const guard = (fn: () => void) => {
     if (!isVerified) {
       toast.warning(lockMessage);
@@ -244,6 +277,9 @@ const AdminDashboard = () => {
     { id: "patients", label: t("admin.tabs.patients"), icon: Users },
     { id: "billing", label: t("admin.tabs.billing"), icon: CreditCard },
     { id: "analytics", label: t("admin.tabs.analytics"), icon: TrendingUp },
+
+    // ✅ NEW: referrals tab
+    { id: "referrals", label: "Referrals", icon: ArrowRightLeft },
   ];
 
   if (loading) {
@@ -263,7 +299,9 @@ const AdminDashboard = () => {
         <Card className="max-w-md w-full">
           <CardContent className="p-6 text-center">
             <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">{t("admin.error.failed")}</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              {t("admin.error.failed")}
+            </h3>
             <p className="text-muted-foreground mb-4">{error}</p>
             <Button onClick={refreshData}>{t("admin.error.tryAgain")}</Button>
           </CardContent>
@@ -281,11 +319,17 @@ const AdminDashboard = () => {
             <div className="mx-auto w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6">
               <Building2 className="w-8 h-8 text-primary" />
             </div>
-            <h3 className="text-2xl font-bold mb-3">{t("admin.welcome.title")}</h3>
-            <p className="text-muted-foreground mb-6 text-base">{t("admin.welcome.description")}</p>
+            <h3 className="text-2xl font-bold mb-3">
+              {t("admin.welcome.title")}
+            </h3>
+            <p className="text-muted-foreground mb-6 text-base">
+              {t("admin.welcome.description")}
+            </p>
 
             <div className="bg-muted/40 rounded-xl p-6 mb-6 text-left border border-border">
-              <p className="text-sm font-medium mb-4">{t("admin.welcome.needProvide")}</p>
+              <p className="text-sm font-medium mb-4">
+                {t("admin.welcome.needProvide")}
+              </p>
               <ul className="space-y-3">
                 <li className="flex items-center gap-2 text-sm">
                   <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
@@ -302,19 +346,33 @@ const AdminDashboard = () => {
               </ul>
             </div>
 
-            <Button size="lg" onClick={() => setCreateClinicOpen(true)} className="w-full sm:w-auto">
+            <Button
+              size="lg"
+              onClick={() => setCreateClinicOpen(true)}
+              className="w-full sm:w-auto"
+            >
               <Building2 className="w-4 h-4 mr-2" />
               {t("admin.welcome.createProfile")}
             </Button>
           </CardContent>
         </Card>
 
-        <CreateClinicModal open={createClinicOpen} onOpenChange={setCreateClinicOpen} onSuccess={refreshData} />
+        <CreateClinicModal
+          open={createClinicOpen}
+          onOpenChange={setCreateClinicOpen}
+          onSuccess={refreshData}
+        />
       </div>
     );
   }
 
-  const SectionWrapper = ({ children, locked }: { children: React.ReactNode; locked: boolean }) => {
+  const SectionWrapper = ({
+    children,
+    locked,
+  }: {
+    children: React.ReactNode;
+    locked: boolean;
+  }) => {
     return (
       <div className="relative">
         <div className={locked ? "opacity-70 select-none" : ""}>{children}</div>
@@ -335,16 +393,21 @@ const AdminDashboard = () => {
       case "overview":
         return (
           <div className="space-y-6">
-            {/* ✅ NEW: always-visible warning text on main dashboard */}
+            {/* ✅ always-visible warning text on main dashboard */}
             {!isVerified && (
               <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900">
                 <div className="font-semibold">Verification required</div>
                 <div className="text-sm mt-1">
-                  Your clinic dashboard is visible, but actions are locked until verification.
-                  You can browse all sections now. Actions will unlock after approval.
+                  Your clinic dashboard is visible, but actions are locked until
+                  verification. You can browse all sections now. Actions will
+                  unlock after approval.
                 </div>
                 <div className="mt-3">
-                  <Button size="sm" variant="outline" onClick={() => setRequirementsOpen(true)}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setRequirementsOpen(true)}
+                  >
                     View verification requirements
                   </Button>
                 </div>
@@ -374,11 +437,17 @@ const AdminDashboard = () => {
                         >
                           <div>
                             <p className="font-medium">{apt.patient_name}</p>
-                            <p className="text-sm text-muted-foreground">{apt.doctor_name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {apt.doctor_name}
+                            </p>
                           </div>
                           <div className="text-right">
                             <p className="text-sm font-medium">
-                              {format(new Date(apt.appointment_date), "MMM dd")}, {apt.start_time}
+                              {format(
+                                new Date(apt.appointment_date),
+                                "MMM dd"
+                              )}
+                              , {apt.start_time}
                             </p>
                             <Badge variant="outline" className="capitalize">
                               {apt.status}
@@ -415,10 +484,17 @@ const AdminDashboard = () => {
                             <Users className="h-4 w-4" />
                           </div>
                           <div className="flex-1">
-                            <p className="font-medium text-sm">{msg.sender_name}</p>
-                            <p className="text-sm text-muted-foreground">{msg.message}</p>
+                            <p className="font-medium text-sm">
+                              {msg.sender_name}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {msg.message}
+                            </p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              {format(new Date(msg.created_at), "MMM dd, h:mm a")}
+                              {format(
+                                new Date(msg.created_at),
+                                "MMM dd, h:mm a"
+                              )}
                             </p>
                           </div>
                         </div>
@@ -435,7 +511,9 @@ const AdminDashboard = () => {
         return (
           <SectionWrapper locked={!isVerified}>
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">{t("admin.providers.title")}</h2>
+              <h2 className="text-xl font-semibold">
+                {t("admin.providers.title")}
+              </h2>
               <Button onClick={() => guard(() => setInviteProviderOpen(true))}>
                 <UserPlus className="h-4 w-4 mr-2" />
                 {t("admin.providers.inviteProvider")}
@@ -446,9 +524,15 @@ const AdminDashboard = () => {
               <Card className="mt-6 rounded-xl">
                 <CardContent className="p-12 text-center">
                   <Stethoscope className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h3 className="text-lg font-semibold mb-2">{t("admin.providers.noProviders")}</h3>
-                  <p className="text-muted-foreground mb-4">{t("admin.providers.noProvidersDesc")}</p>
-                  <Button onClick={() => guard(() => setInviteProviderOpen(true))}>
+                  <h3 className="text-lg font-semibold mb-2">
+                    {t("admin.providers.noProviders")}
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    {t("admin.providers.noProvidersDesc")}
+                  </p>
+                  <Button
+                    onClick={() => guard(() => setInviteProviderOpen(true))}
+                  >
                     <UserPlus className="h-4 w-4 mr-2" />
                     {t("admin.providers.inviteFirst")}
                   </Button>
@@ -465,18 +549,30 @@ const AdminDashboard = () => {
                             <Stethoscope className="h-6 w-6 text-primary" />
                           </div>
                           <div>
-                            <h3 className="font-semibold">{provider.profiles?.full_name || "Unknown"}</h3>
-                            <p className="text-sm text-muted-foreground">{provider.specialty}</p>
+                            <h3 className="font-semibold">
+                              {provider.profiles?.full_name || "Unknown"}
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                              {provider.specialty}
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-4 flex-wrap justify-end">
-                          <Badge variant={provider.verified ? "default" : "secondary"}>
-                            {provider.verified ? t("admin.providers.verified") : t("admin.providers.pending")}
+                          <Badge
+                            variant={provider.verified ? "default" : "secondary"}
+                          >
+                            {provider.verified
+                              ? t("admin.providers.verified")
+                              : t("admin.providers.pending")}
                           </Badge>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => guard(() => toast.info("Edit provider (coming soon)"))}
+                            onClick={() =>
+                              guard(() =>
+                                toast.info("Edit provider (coming soon)")
+                              )
+                            }
                           >
                             {t("admin.providers.edit")}
                           </Button>
@@ -505,7 +601,9 @@ const AdminDashboard = () => {
               <Card className="mt-6 rounded-xl">
                 <CardContent className="p-12 text-center">
                   <MapPin className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h3 className="text-lg font-semibold mb-2">No Locations Yet</h3>
+                  <h3 className="text-lg font-semibold mb-2">
+                    No Locations Yet
+                  </h3>
                   <p className="text-muted-foreground mb-4">
                     Add your practice locations to help patients find you
                   </p>
@@ -523,25 +621,39 @@ const AdminDashboard = () => {
                       <div className="flex items-start justify-between gap-4 flex-wrap">
                         <div className="flex-1 min-w-[240px]">
                           <div className="flex items-center gap-2 mb-2">
-                            <h3 className="text-lg font-semibold">{location.name}</h3>
-                            {location.is_primary && <Badge variant="outline">Primary</Badge>}
+                            <h3 className="text-lg font-semibold">
+                              {location.name}
+                            </h3>
+                            {location.is_primary && (
+                              <Badge variant="outline">Primary</Badge>
+                            )}
                           </div>
-                          <p className="text-muted-foreground mb-2">{location.address}</p>
-                          <p className="text-muted-foreground mb-4">{location.phone}</p>
+                          <p className="text-muted-foreground mb-2">
+                            {location.address}
+                          </p>
+                          <p className="text-muted-foreground mb-4">
+                            {location.phone}
+                          </p>
                         </div>
 
                         <div className="flex gap-2">
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => guard(() => toast.info("Edit location (coming soon)"))}
+                            onClick={() =>
+                              guard(() =>
+                                toast.info("Edit location (coming soon)")
+                              )
+                            }
                           >
                             Edit
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => guard(() => toast.info("Photos (coming soon)"))}
+                            onClick={() =>
+                              guard(() => toast.info("Photos (coming soon)"))
+                            }
                           >
                             Upload Photos
                           </Button>
@@ -560,7 +672,9 @@ const AdminDashboard = () => {
           <SectionWrapper locked={!isVerified}>
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold">Services & Treatments</h2>
-              <Button onClick={() => guard(() => setAddServiceOpen(true))}>Add New Service</Button>
+              <Button onClick={() => guard(() => setAddServiceOpen(true))}>
+                Add New Service
+              </Button>
             </div>
 
             {services.length === 0 ? (
@@ -571,7 +685,9 @@ const AdminDashboard = () => {
                   <p className="text-muted-foreground mb-4">
                     Add services and treatments offered at your practice
                   </p>
-                  <Button onClick={() => guard(() => setAddServiceOpen(true))}>Add First Service</Button>
+                  <Button onClick={() => guard(() => setAddServiceOpen(true))}>
+                    Add First Service
+                  </Button>
                 </CardContent>
               </Card>
             ) : (
@@ -590,7 +706,11 @@ const AdminDashboard = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => guard(() => toast.info("Edit service (coming soon)"))}
+                            onClick={() =>
+                              guard(() =>
+                                toast.info("Edit service (coming soon)")
+                              )
+                            }
                           >
                             Edit
                           </Button>
@@ -625,7 +745,9 @@ const AdminDashboard = () => {
               <Card className="mt-6 rounded-xl">
                 <CardContent className="p-12 text-center">
                   <Users className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h3 className="text-lg font-semibold mb-2">No Staff Members Yet</h3>
+                  <h3 className="text-lg font-semibold mb-2">
+                    No Staff Members Yet
+                  </h3>
                   <p className="text-muted-foreground mb-4">
                     Add staff members to help manage your practice
                   </p>
@@ -659,13 +781,21 @@ const AdminDashboard = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge variant={member.status === "active" ? "default" : "secondary"}>
+                          <Badge
+                            variant={
+                              member.status === "active"
+                                ? "default"
+                                : "secondary"
+                            }
+                          >
                             {member.status}
                           </Badge>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => guard(() => toast.info("Edit staff (coming soon)"))}
+                            onClick={() =>
+                              guard(() => toast.info("Edit staff (coming soon)"))
+                            }
                           >
                             Edit
                           </Button>
@@ -686,7 +816,10 @@ const AdminDashboard = () => {
               <h2 className="text-xl font-semibold">Patient Management</h2>
               <div className="flex gap-2 w-full sm:w-auto">
                 <Input placeholder="Search patients..." className="w-full sm:w-64" />
-                <Button variant="outline" onClick={() => guard(() => toast.info("Export (coming soon)"))}>
+                <Button
+                  variant="outline"
+                  onClick={() => guard(() => toast.info("Export (coming soon)"))}
+                >
                   Export
                 </Button>
               </div>
@@ -754,7 +887,9 @@ const AdminDashboard = () => {
                   <div className="space-y-4">
                     <div className="flex justify-between">
                       <span>Total Revenue (This Month)</span>
-                      <span className="font-semibold">${stats.totalRevenue.toLocaleString()}</span>
+                      <span className="font-semibold">
+                        ${stats.totalRevenue.toLocaleString()}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Pending Payments</span>
@@ -805,7 +940,9 @@ const AdminDashboard = () => {
                           </div>
                           <div className="text-right">
                             <p className="font-semibold">${payment.amount.toFixed(2)}</p>
-                            <Badge variant={payment.status === "paid" ? "default" : "outline"}>
+                            <Badge
+                              variant={payment.status === "paid" ? "default" : "outline"}
+                            >
                               {payment.status}
                             </Badge>
                           </div>
@@ -825,10 +962,16 @@ const AdminDashboard = () => {
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <h2 className="text-xl font-semibold">Practice Analytics</h2>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => guard(() => toast.info("Date range (coming soon)"))}>
+                <Button
+                  variant="outline"
+                  onClick={() => guard(() => toast.info("Date range (coming soon)"))}
+                >
                   Last 30 Days
                 </Button>
-                <Button variant="outline" onClick={() => guard(() => toast.info("Export report (coming soon)"))}>
+                <Button
+                  variant="outline"
+                  onClick={() => guard(() => toast.info("Export report (coming soon)"))}
+                >
                   Export Report
                 </Button>
               </div>
@@ -844,7 +987,9 @@ const AdminDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="h-64 bg-muted/20 rounded-xl border border-border flex items-center justify-center">
-                    <p className="text-muted-foreground">Chart visualization would go here</p>
+                    <p className="text-muted-foreground">
+                      Chart visualization would go here
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -859,12 +1004,16 @@ const AdminDashboard = () => {
                       <span>Average Rating</span>
                       <div className="flex items-center gap-2">
                         <Star className="h-4 w-4" />
-                        <span className="font-semibold">{metrics.averageRating.toFixed(1)}</span>
+                        <span className="font-semibold">
+                          {metrics.averageRating.toFixed(1)}
+                        </span>
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
                       <span>Patient Retention</span>
-                      <span className="font-semibold">{metrics.patientRetention}%</span>
+                      <span className="font-semibold">
+                        {metrics.patientRetention}%
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span>Avg. Wait Time</span>
@@ -894,6 +1043,55 @@ const AdminDashboard = () => {
           </SectionWrapper>
         );
 
+      // ✅ NEW: referrals section
+      case "referrals":
+        return (
+          <SectionWrapper locked={!isVerified}>
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div>
+                <h2 className="text-xl font-semibold">Referrals</h2>
+                <p className="text-sm text-muted-foreground">
+                  Create outgoing referrals and manage incoming referrals for your practice
+                </p>
+              </div>
+
+              {practice?.id && (
+                <FacilityReferralCreator
+                  entityType="clinic"
+                  entityId={practice.id}
+                  buttonLabel="New Referral"
+                />
+              )}
+            </div>
+
+            {practice?.id ? (
+              <div className="mt-6 space-y-6">
+                <ReferralsSection
+                  role="receiver"
+                  entityType="clinic"
+                  entityId={practice.id}
+                  showCreateButton={false}
+                  title="Incoming Referrals"
+                  description="Referrals received by your practice"
+                />
+
+                <ReferralsSection
+                  role="referrer"
+                  entityType="clinic"
+                  entityId={practice.id}
+                  showCreateButton={false}
+                  title="Outgoing Referrals"
+                  description="Referrals sent by your practice"
+                />
+              </div>
+            ) : (
+              <div className="mt-6 text-sm text-muted-foreground">
+                No practice is linked to this account.
+              </div>
+            )}
+          </SectionWrapper>
+        );
+
       default:
         return null;
     }
@@ -902,7 +1100,7 @@ const AdminDashboard = () => {
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background">
-        {/* Left Sidebar (Imaging-like layout) */}
+        {/* Left Sidebar */}
         <Sidebar className="border-r">
           <SidebarContent>
             <SidebarGroup>
@@ -986,7 +1184,10 @@ const AdminDashboard = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <h3 className="font-semibold">{t("admin.verification.status")}</h3>
-                      <Badge variant="outline" className={getVerificationStatusColor(verificationStatus)}>
+                      <Badge
+                        variant="outline"
+                        className={getVerificationStatusColor(verificationStatus)}
+                      >
                         {t(`admin.verification.statuses.${verificationStatus}`)}
                       </Badge>
                     </div>
@@ -1001,7 +1202,11 @@ const AdminDashboard = () => {
                             ? t("admin.verification.resubmit")
                             : t("admin.verification.verifyPractice")}
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => setRequirementsOpen(true)}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setRequirementsOpen(true)}
+                        >
                           {t("admin.verification.viewRequirements")}
                         </Button>
                       </div>
@@ -1053,14 +1258,14 @@ const AdminDashboard = () => {
           open={allowModals && addLocationOpen}
           onOpenChange={setAddLocationOpen}
         />
-        <SettingsPanel
-          open={settingsOpen}
-          onOpenChange={setSettingsOpen}
-        />
+        <SettingsPanel open={settingsOpen} onOpenChange={setSettingsOpen} />
 
         {practice && (
           <>
-            <ViewRequirementsModal open={requirementsOpen} onOpenChange={setRequirementsOpen} />
+            <ViewRequirementsModal
+              open={requirementsOpen}
+              onOpenChange={setRequirementsOpen}
+            />
             <ComprehensiveRegistrationModal
               open={createClinicOpen}
               onOpenChange={setCreateClinicOpen}
