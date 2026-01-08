@@ -144,13 +144,20 @@ export const useReferrals = (args?: UseReferralsArgs) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const normalized =
-    typeof args === 'string' || args === undefined ? { role: args } : args;
+  // Normalize args to always be an object
+  let role: 'referrer' | 'receiver' | 'patient' | 'all' | undefined;
+  let entityType: ReferralEntityType | undefined;
+  let entityId: string | undefined;
+  let patientId: string | undefined;
 
-  const role = normalized?.role;
-  const entityType = normalized?.entityType;
-  const entityId = normalized?.entityId;
-  const patientId = normalized?.patientId;
+  if (typeof args === 'string') {
+    role = args;
+  } else if (args !== undefined && typeof args === 'object') {
+    role = args.role;
+    entityType = args.entityType;
+    entityId = args.entityId;
+    patientId = args.patientId;
+  }
 
   const fetchReferrals = useCallback(async () => {
     if (!user) {

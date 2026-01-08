@@ -9,6 +9,9 @@ interface ProtectedRouteProps {
   requireVerification?: boolean;
 }
 
+// Admin roles that can access protected admin routes
+const ADMIN_ROLES = ['admin', 'clinic_admin', 'super_admin'];
+
 const ProtectedRoute = ({ children, requireVerification = false }: ProtectedRouteProps) => {
   const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -23,10 +26,11 @@ const ProtectedRoute = ({ children, requireVerification = false }: ProtectedRout
         return;
       }
 
-      // If this route is meant for admin-only content
-      if (profile?.role !== 'admin' && profile?.role !== 'clinic_admin') {
-        // IMPORTANT: don't navigate to '/dashboard' if you don't have that route
-        // Send them to Auth role redirect instead:
+      // Check if user has admin role
+      const userRole = profile?.role;
+      const isAdmin = userRole && ADMIN_ROLES.includes(userRole);
+      
+      if (!isAdmin) {
         navigate('/auth');
         return;
       }
@@ -39,20 +43,17 @@ const ProtectedRoute = ({ children, requireVerification = false }: ProtectedRout
           .eq('admin_id', user.id)
           .maybeSingle();
 
-        // If RLS blocks or another error occurs, don't crash -> send to verify/setup
         if (error) {
           console.error('ProtectedRoute practice check error:', error);
           navigate('/dashboard/verify');
           return;
         }
 
-        // If admin has no practice yet -> go to verify/setup page (no crash)
         if (!practice) {
           navigate('/dashboard/verify');
           return;
         }
 
-        // If not verified -> go verify page
         if (practice.verification_status !== 'verified') {
           navigate('/dashboard/verify');
           return;
