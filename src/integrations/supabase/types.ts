@@ -219,67 +219,77 @@ export type Database = {
           },
         ]
       }
-      appointments: {
-        Row: {
-          appointment_date: string
-          created_at: string | null
-          doctor_id: string | null
-          end_time: string
-          id: string
-          notes: string | null
-          patient_id: string | null
-          practice_id: string | null
-          start_time: string
-          status: Database["public"]["Enums"]["appointment_status"] | null
-        }
-        Insert: {
-          appointment_date: string
-          created_at?: string | null
-          doctor_id?: string | null
-          end_time: string
-          id?: string
-          notes?: string | null
-          patient_id?: string | null
-          practice_id?: string | null
-          start_time: string
-          status?: Database["public"]["Enums"]["appointment_status"] | null
-        }
-        Update: {
-          appointment_date?: string
-          created_at?: string | null
-          doctor_id?: string | null
-          end_time?: string
-          id?: string
-          notes?: string | null
-          patient_id?: string | null
-          practice_id?: string | null
-          start_time?: string
-          status?: Database["public"]["Enums"]["appointment_status"] | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "appointments_doctor_id_fkey"
-            columns: ["doctor_id"]
-            isOneToOne: false
-            referencedRelation: "doctor_profiles_view"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "appointments_doctor_id_fkey"
-            columns: ["doctor_id"]
-            isOneToOne: false
-            referencedRelation: "doctors"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "appointments_practice_id_fkey"
-            columns: ["practice_id"]
-            isOneToOne: false
-            referencedRelation: "practices"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+appointments: {
+  Row: {
+    appointment_date: string
+    created_at: string | null
+    doctor_id: string | null
+    doctor_patient_id: string | null
+    end_time: string
+    id: string
+    notes: string | null
+    patient_id: string | null
+    practice_id: string | null
+    start_time: string
+    status: Database["public"]["Enums"]["appointment_status"] | null
+  }
+  Insert: {
+    appointment_date: string
+    created_at?: string | null
+    doctor_id?: string | null
+    doctor_patient_id?: string | null
+    end_time: string
+    id?: string
+    notes?: string | null
+    patient_id?: string | null
+    practice_id?: string | null
+    start_time: string
+    status?: Database["public"]["Enums"]["appointment_status"] | null
+  }
+  Update: {
+    appointment_date?: string
+    created_at?: string | null
+    doctor_id?: string | null
+    doctor_patient_id?: string | null
+    end_time?: string
+    id?: string
+    notes?: string | null
+    patient_id?: string | null
+    practice_id?: string | null
+    start_time?: string
+    status?: Database["public"]["Enums"]["appointment_status"] | null
+  }
+  Relationships: [
+    {
+      foreignKeyName: "appointments_doctor_patient_id_fkey"
+      columns: ["doctor_patient_id"]
+      isOneToOne: false
+      referencedRelation: "doctor_patients"
+      referencedColumns: ["id"]
+    },
+    {
+      foreignKeyName: "appointments_doctor_id_fkey"
+      columns: ["doctor_id"]
+      isOneToOne: false
+      referencedRelation: "doctor_profiles_view"
+      referencedColumns: ["id"]
+    },
+    {
+      foreignKeyName: "appointments_doctor_id_fkey"
+      columns: ["doctor_id"]
+      isOneToOne: false
+      referencedRelation: "doctors"
+      referencedColumns: ["id"]
+    },
+    {
+      foreignKeyName: "appointments_practice_id_fkey"
+      columns: ["practice_id"]
+      isOneToOne: false
+      referencedRelation: "practices"
+      referencedColumns: ["id"]
+    },
+  ]
+}
       availability_overrides: {
         Row: {
           created_at: string
