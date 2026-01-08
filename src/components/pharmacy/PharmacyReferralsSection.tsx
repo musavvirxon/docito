@@ -1,4 +1,4 @@
-import { ReferralsSection } from '@/components/referrals';
+import { FacilityReferralCreator, ReferralsSection } from "@/components/referrals";
 
 interface PharmacyReferralsSectionProps {
   pharmacyId: string;
@@ -10,13 +10,34 @@ export function PharmacyReferralsSection({ pharmacyId }: PharmacyReferralsSectio
   }
 
   return (
-    <ReferralsSection
-      role="receiver"
-      entityType="pharmacy"
-      entityId={pharmacyId}
-      showCreateButton={false}
-      title="Pharmacy Referrals"
-      description="Manage incoming prescription referrals"
-    />
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold">Referrals</h2>
+          <p className="text-sm text-muted-foreground">
+            Manage incoming referrals and create outgoing referrals
+          </p>
+        </div>
+        <FacilityReferralCreator entityType="pharmacy" entityId={pharmacyId} />
+      </div>
+
+      <ReferralsSection
+        role="receiver"
+        entityType="pharmacy"
+        entityId={pharmacyId}
+        showCreateButton={false}
+        title="Incoming Referrals"
+        description="Referrals received by your pharmacy"
+      />
+
+      <ReferralsSection
+        role="referrer"
+        entityType="pharmacy"
+        entityId={pharmacyId}
+        showCreateButton={false}
+        title="Outgoing Referrals"
+        description="Referrals sent by your pharmacy"
+      />
+    </div>
   );
 }
