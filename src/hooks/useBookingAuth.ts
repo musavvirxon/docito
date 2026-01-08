@@ -30,15 +30,15 @@ export const useBookingAuth = () => {
     if (!isLoggedIn) {
       toast({
         title: "Sign in required",
-        description: doctorName 
+        description: doctorName
           ? `Complete sign-up to book with ${doctorName}`
           : "Please sign in to book an appointment",
       });
-      
-      // Use URL parameter method for redirect (preferred approach)
+
+      // Redirect to the existing Auth page, preserving return destination
       const returnUrl = `/book-appointment/${doctorId}`;
-      navigate(`/signup?returnTo=${encodeURIComponent(returnUrl)}`);
-      return;
+      navigate(`/auth?returnTo=${encodeURIComponent(returnUrl)}`);
+      return
     }
 
     // User is logged in, navigate directly to booking
