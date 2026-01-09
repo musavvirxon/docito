@@ -4540,6 +4540,7 @@ export type Database = {
           avatar_url: string | null
           created_at: string | null
           date_of_birth: string | null
+          doctor_id: string | null
           email: string
           full_name: string
           gender: Database["public"]["Enums"]["gender_type"] | null
@@ -4563,6 +4564,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string | null
           date_of_birth?: string | null
+          doctor_id?: string | null
           email: string
           full_name: string
           gender?: Database["public"]["Enums"]["gender_type"] | null
@@ -4586,6 +4588,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string | null
           date_of_birth?: string | null
+          doctor_id?: string | null
           email?: string
           full_name?: string
           gender?: Database["public"]["Enums"]["gender_type"] | null
@@ -4604,7 +4607,22 @@ export type Database = {
           username?: string | null
           verification_token?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       public_insurance_requests: {
         Row: {

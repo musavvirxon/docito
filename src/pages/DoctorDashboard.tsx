@@ -267,7 +267,7 @@ const DoctorDashboardContent = () => {
       case "schedule":
         return <DoctorScheduleSettingsSection />;
       case "calendar":
-        return <DoctorCalendarSection doctorStatus={doctorStatus} todaysAppointments={todaysAppointments} upcomingAppointments={upcomingAppointments} />;
+        return <DoctorCalendarSection doctorId={doctorProfile?.id} practiceId={doctorProfile?.practice_id || undefined} />;
       case "performance":
         return <DoctorPerformanceSection doctorProfile={doctorProfile} stats={stats} />;
       case "financial-stats":

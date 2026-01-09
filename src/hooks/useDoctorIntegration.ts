@@ -98,9 +98,20 @@ export const useDoctorIntegration = () => {
   const [loading, setLoading] = useState(true);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // Profile operations
+  // Profile operations - uses denormalized doctor_id from profile (no extra query)
   const fetchDoctorProfile = useCallback(async () => {
     if (!user || profile?.role !== 'doctor') return null;
+
+    // Use doctor_id from profile directly - no separate query needed
+    const doctorId = (profile as any)?.doctor_id;
+    
+    if (!doctorId) {
+      // Safety guard: doctor_id should always exist due to DB trigger
+      // Show toast if missing (indicates DB trigger didn't run)
+      toast.error("Doctor profile still loading. Please refresh the page.");
+      console.error("Missing doctor_id on profile - DB trigger may not have run");
+      return null;
+    }
 
     try {
       const { data: existingDoctor, error } = await supabase
@@ -120,53 +131,15 @@ export const useDoctorIntegration = () => {
             verified
           )
         `)
-        .eq('user_id', user.id)
-        .maybeSingle();
+        .eq('id', doctorId)
+        .single();
 
       if (error) throw error;
 
-      if (existingDoctor) {
-        setDoctorProfile(existingDoctor);
-        return existingDoctor;
-      }
-
-      // Create new doctor profile
-      const { data: newDoctor, error: createError } = await supabase
-        .from('doctors')
-        .insert({
-          user_id: user.id,
-          specialty: 'General Practice',
-          verified: false,
-          accepts_new_patients: true,
-          bio: '',
-          average_rating: 0,
-          num_reviews: 0,
-          weighted_rating: 0,
-          appointment_count: 0
-        })
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            email,
-            avatar_url,
-            phone
-          ),
-          practices:practice_id (
-            name,
-            city,
-            country,
-            verified
-          )
-        `)
-        .single();
-
-      if (createError) throw createError;
-      
-      setDoctorProfile(newDoctor);
-      return newDoctor;
+      setDoctorProfile(existingDoctor);
+      return existingDoctor;
     } catch (err: any) {
-      console.error('Error with doctor profile:', err);
+      console.error('Error fetching doctor profile:', err);
       toast.error(`Profile error: ${err.message}`);
       return null;
     }
