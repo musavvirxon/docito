@@ -8,59 +8,78 @@ const corsHeaders = {
 };
 
 interface BookAppointmentRequest {
-  patient_id: string;
-  entity_id: string;
-  provider_id?: string;
+  // ✅ allow either registered patient or doctor-added patient
+  patient_id?: string;
+  doctor_patient_id?: string;
+
+  entity_id: string;        // practice_id
+  provider_id?: string;     // doctor_id
   slot_start: string;
   appointment_type?: string;
   notes?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get authorization header
     const authHeader = req.headers.get("authorization");
     if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Missing authorization header" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    const {
+      patient_id,
+      doctor_patient_id,
+      entity_id,
+      provider_id,
+      slot_start,
+      appointment_type,
+      notes,
+    } = (await req.json()) as BookAppointmentRequest;
+
+    if (!entity_id || !slot_start) {
+      return new Response(JSON.stringify({ error: "Missing required fields: entity_id, slot_start" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // ✅ Must provide exactly one of patient_id or doctor_patient_id
+    const hasPatientId = Boolean(patient_id);
+    const hasDoctorPatientId = Boolean(doctor_patient_id);
+    if (hasPatientId === hasDoctorPatientId) {
       return new Response(
-        JSON.stringify({ error: "Missing authorization header" }),
-        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        JSON.stringify({ error: "Provide exactly one of patient_id or doctor_patient_id" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
-    // Verify the user
+    // Verify user
     const { data: { user }, error: authError } = await supabase.auth.getUser(
       authHeader.replace("Bearer ", "")
     );
 
     if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
     }
 
-    const { patient_id, entity_id, provider_id, slot_start, appointment_type, notes } =
-      (await req.json()) as BookAppointmentRequest;
+    // ✅ Authorization rules:
+    // - If booking for self (patient_id == user.id) => OK
+    // - Otherwise must be staff/doctor at this entity
+    const bookingForSelf = hasPatientId && patient_id === user.id;
 
-    // Validate input
-    if (!patient_id || !entity_id || !slot_start) {
-      return new Response(
-        JSON.stringify({ error: "Missing required fields: patient_id, entity_id, slot_start" }),
-        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
-    }
-
-    // Verify patient_id matches current user or user has staff role
-    if (patient_id !== user.id) {
-      // Check if user is staff/doctor at this entity
+    if (!bookingForSelf) {
       const { data: staffRole } = await supabase
         .from("clinic_staff")
         .select("id")
@@ -77,10 +96,10 @@ const handler = async (req: Request): Promise<Response> => {
         .maybeSingle();
 
       if (!staffRole && !doctorRole) {
-        return new Response(
-          JSON.stringify({ error: "Unauthorized: cannot book for other users" }),
-          { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
-        );
+        return new Response(JSON.stringify({ error: "Unauthorized: cannot book for this patient" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
       }
     }
 
@@ -88,38 +107,49 @@ const handler = async (req: Request): Promise<Response> => {
     const slotDate = new Date(slot_start);
     const appointmentDate = slotDate.toISOString().split("T")[0];
     const startTime = slotDate.toTimeString().slice(0, 8);
-    const endDate = new Date(slotDate.getTime() + 30 * 60000); // 30 min duration
+    const endDate = new Date(slotDate.getTime() + 30 * 60000);
     const endTime = endDate.toTimeString().slice(0, 8);
 
-    // Check if slot is still available (prevent race conditions)
+    // Prevent race conditions: check conflicts
     const { data: existingAppointments } = await supabase
       .from("appointments")
       .select("id")
       .eq("appointment_date", appointmentDate)
       .eq("doctor_id", provider_id)
       .neq("status", "canceled")
-      .or(`and(start_time.lte.${startTime},end_time.gt.${startTime}),and(start_time.lt.${endTime},end_time.gte.${endTime})`);
+      .or(
+        `and(start_time.lte.${startTime},end_time.gt.${startTime}),and(start_time.lt.${endTime},end_time.gte.${endTime})`
+      );
 
     if (existingAppointments && existingAppointments.length > 0) {
-      return new Response(
-        JSON.stringify({ error: "Slot is no longer available", code: "SLOT_TAKEN" }),
-        { status: 409, headers: { "Content-Type": "application/json", ...corsHeaders } }
-      );
+      return new Response(JSON.stringify({ error: "Slot is no longer available", code: "SLOT_TAKEN" }), {
+        status: 409,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
     }
 
-    // Create the appointment
+    // ✅ Insert appointment with correct patient field
+    const insertPayload: any = {
+      doctor_id: provider_id,
+      practice_id: entity_id,
+      appointment_date: appointmentDate,
+      start_time: startTime,
+      end_time: endTime,
+      notes: notes ?? null,
+      status: "pending",
+    };
+
+    if (hasPatientId) {
+      insertPayload.patient_id = patient_id;
+      insertPayload.doctor_patient_id = null;
+    } else {
+      insertPayload.patient_id = null;
+      insertPayload.doctor_patient_id = doctor_patient_id;
+    }
+
     const { data: appointment, error: insertError } = await supabase
       .from("appointments")
-      .insert({
-        doctor_id: provider_id,
-        patient_id: patient_id,
-        practice_id: entity_id,
-        appointment_date: appointmentDate,
-        start_time: startTime,
-        end_time: endTime,
-        notes: notes,
-        status: "pending",
-      })
+      .insert(insertPayload)
       .select()
       .single();
 
@@ -131,7 +161,6 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Write audit log
     await supabase.from("entity_audit_logs").insert({
       entity_type: "appointment",
       entity_id: appointment.id,
@@ -142,21 +171,21 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     return new Response(
-      JSON.stringify({ 
-        appointment_id: appointment.id, 
+      JSON.stringify({
+        appointment_id: appointment.id,
         status: appointment.status,
         appointment_date: appointment.appointment_date,
         start_time: appointment.start_time,
-        end_time: appointment.end_time
+        end_time: appointment.end_time,
       }),
       { status: 201, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (error: any) {
     console.error("Error in book_appointment:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
-    );
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
   }
 };
 
