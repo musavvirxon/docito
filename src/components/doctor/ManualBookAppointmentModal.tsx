@@ -1,10 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -61,8 +56,7 @@ const ManualBookAppointmentModal = ({
     setSelectedPatient(null);
   };
 
-  const buildSupabaseErrorText = (err: any) => {
-    // Supabase/PostgREST errors usually contain: message, details, hint, code
+  const buildErrorText = (err: any) => {
     const parts = [
       err?.message ? `Message: ${err.message}` : null,
       err?.details ? `Details: ${err.details}` : null,
@@ -76,6 +70,7 @@ const ManualBookAppointmentModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!practiceId) return toast.error("Missing practiceId for manual booking");
     if (!selectedDate) return toast.error("Please select a valid date");
     if (!selectedTime) return toast.error("Please select a valid time");
     if (!selectedPatient) return toast.error("Please select a patient");
@@ -83,60 +78,42 @@ const ManualBookAppointmentModal = ({
     setLoading(true);
 
     try {
-      const startTime = selectedTime;
-      const [hours, minutes] = startTime.split(":").map(Number);
+      // Build slot_start = YYYY-MM-DDTHH:mm:00 (local style used elsewhere)
+      const dateStr = format(selectedDate, "yyyy-MM-dd");
+      const hhmm = selectedTime.length === 5 ? selectedTime : selectedTime.slice(0, 5);
+      const slotStart = `${dateStr}T${hhmm}:00`;
 
-      const endDate = new Date(selectedDate);
-      endDate.setHours(hours, minutes + 30, 0, 0);
-
-      const endTime = `${String(endDate.getHours()).padStart(2, "0")}:${String(
-        endDate.getMinutes()
-      ).padStart(2, "0")}`;
-
-      // Build payload for appointments table
-      const payload: {
-        doctor_id: string;
-        practice_id: string | null;
-        appointment_date: string;
-        start_time: string;
-        end_time: string;
-        notes: string | null;
-        status: "confirmed";
-        patient_id: string | null;
-      } = {
-        doctor_id: doctorId,
-        practice_id: practiceId || null,
-        appointment_date: format(selectedDate, "yyyy-MM-dd"),
-        start_time: startTime,
-        end_time: endTime,
+      // If registered patient => patient_id
+      // If doctor-added patient => doctor_patient_id
+      const body: any = {
+        entity_id: practiceId,
+        provider_id: doctorId,
+        slot_start: slotStart,
         notes: notes || null,
-        status: "confirmed",
-        // For doctor-added patients, patient_id references doctor_patients table indirectly
-        // The schema uses patient_id for auth users; for manual patients we store their profile user_id
-        patient_id: selectedPatient.id,
       };
 
-      const { data: appointment, error: appointmentError } = await supabase
-        .from("appointments")
-        .insert(payload)
-        .select()
-        .single();
+      if (selectedPatient.source === "registered") {
+        body.patient_id = selectedPatient.id;
+      } else {
+        body.doctor_patient_id = selectedPatient.id;
+      }
 
-      if (appointmentError) throw appointmentError;
+      const response = await supabase.functions.invoke("book-appointment", { body });
+
+      if (response.error) throw new Error(response.error.message);
+      if (response.data?.error) throw new Error(response.data.error);
 
       toast.success(`Appointment booked for ${selectedPatient.name}`);
 
-      // close immediately
       onClose();
       resetForm();
 
-      // refresh in background
       Promise.resolve(onSuccess?.()).catch((err) => {
         console.error("onSuccess/refetch failed:", err);
       });
     } catch (error: any) {
-      console.error("❌ Booking error object:", error);
-      toast.error(buildSupabaseErrorText(error));
+      console.error("❌ Manual booking failed:", error);
+      toast.error(buildErrorText(error));
     } finally {
       setLoading(false);
     }
@@ -168,11 +145,7 @@ const ManualBookAppointmentModal = ({
               <Label className="text-base font-medium">Select Patient</Label>
             </div>
 
-            <PatientSelector
-              value={selectedPatient?.id}
-              required
-              onSelect={(p) => setSelectedPatient(p)}
-            />
+            <PatientSelector value={selectedPatient?.id} required onSelect={(p) => setSelectedPatient(p)} />
 
             <Button
               type="button"
@@ -264,11 +237,8 @@ const ManualBookAppointmentModal = ({
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              className="flex-1"
-              disabled={loading || !selectedPatient || !selectedTime}
-            >
+
+            <Button type="submit" className="flex-1" disabled={loading}>
               {loading ? "Booking..." : "Book Appointment"}
             </Button>
           </div>
