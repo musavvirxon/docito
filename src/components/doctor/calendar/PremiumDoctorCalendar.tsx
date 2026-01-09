@@ -1,0 +1,246 @@
+import { useState, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
+import { toast } from 'sonner';
+import { Card, CardContent } from '@/components/ui/card';
+import { useAuth } from '@/contexts/AuthContext';
+import CalendarHeader from './CalendarHeader';
+import DayView from './DayView';
+import WeekView from './WeekView';
+import MonthView from './MonthView';
+import AppointmentModal from './AppointmentModal';
+import { useCalendarData } from './useCalendarData';
+import ManualBookAppointmentModal from '../ManualBookAppointmentModal';
+import BlockTimeModal from '../BlockTimeModal';
+import SetAvailabilityModal from '../SetAvailabilityModal';
+import type { CalendarView, CalendarFilters, CalendarAppointment } from './types';
+import { defaultFilters } from './types';
+
+interface PremiumDoctorCalendarProps {
+  doctorId?: string;
+  practiceId?: string;
+}
+
+const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDoctorCalendarProps) => {
+  const { t } = useTranslation('dashboard');
+  const { profile } = useAuth();
+
+  // Use prop or denormalized doctor_id from profile
+  const doctorId = doctorIdProp || (profile as any)?.doctor_id || null;
+
+  // State
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [view, setView] = useState<CalendarView>('day');
+  const [filters, setFilters] = useState<CalendarFilters>(defaultFilters);
+  const [selectedAppointment, setSelectedAppointment] = useState<CalendarAppointment | null>(null);
+  const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
+  const [isBookModalOpen, setIsBookModalOpen] = useState(false);
+  const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
+  const [isAvailabilityModalOpen, setIsAvailabilityModalOpen] = useState(false);
+  const [prefilledTime, setPrefilledTime] = useState<string | undefined>();
+
+  // Safety check
+  useEffect(() => {
+    if (profile?.role === 'doctor' && !doctorId) {
+      toast.error(t('doctor.calendar.profileLoading', 'Doctor profile still loading. Please refresh.'));
+    }
+  }, [profile, doctorId, t]);
+
+  // Fetch calendar data
+  const {
+    appointments,
+    blockedTimes,
+    loading,
+    scheduleSettings,
+    refetch,
+    getScheduleHealth,
+    getAppointmentsForDate,
+    getBlockedTimesForDate,
+  } = useCalendarData({ doctorId, selectedDate, view });
+
+  // Handlers
+  const handleToday = useCallback(() => setSelectedDate(new Date()), []);
+
+  const handleViewChange = useCallback((newView: CalendarView) => setView(newView), []);
+
+  const handleDayClick = useCallback((date: Date) => {
+    setSelectedDate(date);
+    setView('day');
+  }, []);
+
+  const handleAppointmentClick = useCallback((apt: CalendarAppointment) => {
+    setSelectedAppointment(apt);
+    setIsAppointmentModalOpen(true);
+  }, []);
+
+  const handleSlotClick = useCallback((time: string) => {
+    setPrefilledTime(time);
+    setIsBookModalOpen(true);
+  }, []);
+
+  const handleBlockSlot = useCallback((time: string) => {
+    setPrefilledTime(time);
+    setIsBlockModalOpen(true);
+  }, []);
+
+  const handleAddAppointment = useCallback(() => {
+    setPrefilledTime(undefined);
+    setIsBookModalOpen(true);
+  }, []);
+
+  const handleBlockTime = useCallback(() => {
+    setPrefilledTime(undefined);
+    setIsBlockModalOpen(true);
+  }, []);
+
+  const handleSetAvailability = useCallback(() => {
+    setIsAvailabilityModalOpen(true);
+  }, []);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+      switch (e.key.toLowerCase()) {
+        case 't':
+          handleToday();
+          break;
+        case 'arrowleft':
+          setSelectedDate(prev => {
+            const d = new Date(prev);
+            d.setDate(d.getDate() - (view === 'day' ? 1 : view === 'week' ? 7 : 30));
+            return d;
+          });
+          break;
+        case 'arrowright':
+          setSelectedDate(prev => {
+            const d = new Date(prev);
+            d.setDate(d.getDate() + (view === 'day' ? 1 : view === 'week' ? 7 : 30));
+            return d;
+          });
+          break;
+        case 'n':
+          handleAddAppointment();
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [view, handleToday, handleAddAppointment]);
+
+  const dayAppointments = getAppointmentsForDate(selectedDate);
+  const dayBlockedTimes = getBlockedTimesForDate(selectedDate);
+  const scheduleHealth = getScheduleHealth(selectedDate);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-6"
+    >
+      {/* Header */}
+      <Card className="border-border/50 shadow-sm">
+        <CardContent className="p-4">
+          <CalendarHeader
+            selectedDate={selectedDate}
+            view={view}
+            filters={filters}
+            onDateChange={setSelectedDate}
+            onViewChange={handleViewChange}
+            onFiltersChange={setFilters}
+            onToday={handleToday}
+            onAddAppointment={handleAddAppointment}
+            onBlockTime={handleBlockTime}
+            onSetAvailability={handleSetAvailability}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Calendar View */}
+      <Card className="border-border/50 shadow-sm">
+        <CardContent className="p-6">
+          {view === 'day' && (
+            <DayView
+              selectedDate={selectedDate}
+              appointments={dayAppointments}
+              blockedTimes={dayBlockedTimes}
+              scheduleSettings={scheduleSettings}
+              scheduleHealth={scheduleHealth}
+              filters={filters}
+              loading={loading}
+              onAppointmentClick={handleAppointmentClick}
+              onSlotClick={handleSlotClick}
+              onBlockSlot={handleBlockSlot}
+            />
+          )}
+          {view === 'week' && (
+            <WeekView
+              selectedDate={selectedDate}
+              appointments={appointments}
+              blockedTimes={blockedTimes}
+              scheduleSettings={scheduleSettings}
+              getScheduleHealth={getScheduleHealth}
+              filters={filters}
+              loading={loading}
+              onAppointmentClick={handleAppointmentClick}
+              onDayClick={handleDayClick}
+            />
+          )}
+          {view === 'month' && (
+            <MonthView
+              selectedDate={selectedDate}
+              appointments={appointments}
+              scheduleSettings={scheduleSettings}
+              getScheduleHealth={getScheduleHealth}
+              filters={filters}
+              loading={loading}
+              onDayClick={handleDayClick}
+            />
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Modals */}
+      <AppointmentModal
+        appointment={selectedAppointment}
+        isOpen={isAppointmentModalOpen}
+        onClose={() => setIsAppointmentModalOpen(false)}
+        onMarkComplete={() => { refetch(); setIsAppointmentModalOpen(false); }}
+      />
+
+      {doctorId && (
+        <>
+          <ManualBookAppointmentModal
+            isOpen={isBookModalOpen}
+            onClose={() => { setIsBookModalOpen(false); setPrefilledTime(undefined); }}
+            doctorId={doctorId}
+            practiceId={practiceId}
+            onSuccess={refetch}
+            prefilledDate={selectedDate}
+            prefilledTime={prefilledTime}
+          />
+
+          <BlockTimeModal
+            isOpen={isBlockModalOpen}
+            onClose={() => { setIsBlockModalOpen(false); setPrefilledTime(undefined); }}
+            prefilledDate={selectedDate}
+            prefilledTime={prefilledTime}
+            onSuccess={refetch}
+          />
+
+          <SetAvailabilityModal
+            isOpen={isAvailabilityModalOpen}
+            onClose={() => setIsAvailabilityModalOpen(false)}
+            doctorId={doctorId}
+            practiceId={practiceId}
+            onSuccess={refetch}
+          />
+        </>
+      )}
+    </motion.div>
+  );
+};
+
+export default PremiumDoctorCalendar;
