@@ -1,0 +1,741 @@
+diff -ruN src/components/Header.tsx src/components/Header.tsx
+--- src/components/Header.tsx	2026-01-08 18:42:16.000000000 +0000
++++ src/components/Header.tsx	2026-01-09 16:11:43.725561256 +0000
+@@ -1,6 +1,6 @@
+ import { useState, useEffect } from "react";
+ import { Link, useNavigate, useLocation } from "react-router-dom";
+-import { Menu, X, User, LogOut, Settings, Bell as BellIcon } from "lucide-react";
++import { Menu, X, User, LogOut, Settings, Bell as BellIcon, Check } from "lucide-react";
+ import { motion, AnimatePresence } from "framer-motion";
+ import { Button } from "@/components/ui/button";
+ import { useAuth } from "@/contexts/AuthContext";
+@@ -14,14 +14,17 @@
+ } from "@/components/ui/dropdown-menu";
+ import { NotificationDropdown } from "@/components/NotificationDropdown";
+ import ThemeToggle from "@/components/home/ThemeToggle";
++import { DASHBOARD_ROUTES, roleLabels } from "@/lib/rbac";
+ 
+ const Header = () => {
+   const [isScrolled, setIsScrolled] = useState(false);
+   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+-  const { user, profile, signOut } = useAuth();
++  const { user, profile, signOut, allRoles, activeRole, switchRole } = useAuth();
+   const navigate = useNavigate();
+   const location = useLocation();
+ 
++  const dashboardRoute = DASHBOARD_ROUTES[activeRole] ?? "/patient-dashboard";
++
+   useEffect(() => {
+     const handleScroll = () => {
+       setIsScrolled(window.scrollY > 10);
+@@ -109,10 +112,32 @@
+                       </Button>
+                     </DropdownMenuTrigger>
+                     <DropdownMenuContent className="w-56" align="end">
+-                      <DropdownMenuItem onClick={() => navigate("/dashboard")}>
++                      <DropdownMenuItem onClick={() => navigate(dashboardRoute)}>
+                         <User className="mr-2 h-4 w-4" />
+-                        <span>Dashboard</span>
++                        <span>{roleLabels[activeRole] ?? "Dashboard"} Dashboard</span>
+                       </DropdownMenuItem>
++
++                      {allRoles.length > 1 && (
++                        <>
++                          <DropdownMenuSeparator />
++                          {allRoles.map((role) => (
++                            <DropdownMenuItem
++                              key={role}
++                              onClick={() => {
++                                switchRole(role);
++                                navigate(DASHBOARD_ROUTES[role] ?? "/patient-dashboard");
++                              }}
++                            >
++                              {activeRole === role ? (
++                                <Check className="mr-2 h-4 w-4" />
++                              ) : (
++                                <span className="mr-2 inline-block h-4 w-4" />
++                              )}
++                              <span>{roleLabels[role] ?? role}</span>
++                            </DropdownMenuItem>
++                          ))}
++                        </>
++                      )}
+                       <DropdownMenuItem onClick={() => navigate("/notifications")}>
+                         <BellIcon className="mr-2 h-4 w-4" />
+                         <span>Notifications</span>
+@@ -228,7 +253,7 @@
+                       <Button
+                         variant="outline"
+                         onClick={() => {
+-                          navigate("/dashboard");
++                          navigate(dashboardRoute);
+                           setIsMobileMenuOpen(false);
+                         }}
+                         className="w-full h-12 text-base font-medium rounded-xl"
+diff -ruN src/contexts/AuthContext.tsx src/contexts/AuthContext.tsx
+--- src/contexts/AuthContext.tsx	2026-01-08 18:42:16.000000000 +0000
++++ src/contexts/AuthContext.tsx	2026-01-09 16:10:38.108105202 +0000
+@@ -1,7 +1,7 @@
+ import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+ import { User, Session } from "@supabase/supabase-js";
+ import { supabase } from "@/integrations/supabase/client";
+-import { getPrimaryRole, type AppRole } from "@/lib/rbac";
++import { getPrimaryRole, getUserRolesFromProfile, roleLabels, type AppRole } from "@/lib/rbac";
+ import { useInactivityTimer } from "@/hooks/useInactivityTimer";
+ import { toast } from "sonner";
+ 
+@@ -55,13 +55,16 @@
+   /**
+    * allRoles:
+    * - Prefer roles from user_roles table (profile.roles)
+    * - Fallback to profiles.role (so older users still see at least one role)
+    * - Never invent roles beyond what's present in DB/profile
+    */
+   const allRoles: AppRole[] = useMemo(() => {
+-    const rolesFromDb = profile?.roles ?? [];
+-    return rolesFromDb as AppRole[];
++    return getUserRolesFromProfile(profile);
+   }, [profile]);
+ 
+   const switchRole = (role: AppRole) => {
+     // Can only switch to roles the user actually has
+     if (!allRoles.includes(role)) {
+       toast.error("You don't have access to this role");
+       return;
+     }
+     setActiveRole(role);
+     localStorage.setItem(ACTIVE_ROLE_KEY, role);
+-    toast.success(`Switched to ${role}`);
++    toast.success(`Switched to ${roleLabels[role] ?? role.split("_").join(" ")}`);
+   };
+@@ -168,9 +171,10 @@
+       if (profileError) throw profileError;
+ 
+       // Fetch actual roles from user_roles table; fallback to profiles.role if empty
+       const rolesFromDb = await fetchRoles(userId);
+-      const roles = rolesFromDb.length > 0 ? rolesFromDb : [profileData.role];
++      const roles = rolesFromDb.length > 0 ? rolesFromDb : getUserRolesFromProfile(profileData);
+       const mergedProfile = { ...profileData, roles };
+       setProfile(mergedProfile);
+diff -ruN src/lib/api/supabase-api.ts src/lib/api/supabase-api.ts
+--- src/lib/api/supabase-api.ts	2026-01-08 18:42:16.000000000 +0000
++++ src/lib/api/supabase-api.ts	2026-01-09 16:13:27.278530939 +0000
+@@ -320,25 +320,33 @@
+   async bookAppointment(appointmentData: {
+     doctor_id: string;
+     patient_id: string;
+     practice_id?: string;
+     appointment_date: string;
+     start_time: string;
+     end_time: string;
+     notes?: string;
+   }) {
+     try {
+-      // Insert appointment directly
+-      const { data, error } = await supabase
+-        .from('appointments')
+-        .insert({
+-          doctor_id: appointmentData.doctor_id,
+-          patient_id: appointmentData.patient_id,
+-          practice_id: appointmentData.practice_id || null,
+-          appointment_date: appointmentData.appointment_date,
+-          start_time: appointmentData.start_time,
+-          end_time: appointmentData.end_time,
+-          notes: appointmentData.notes || null,
+-          status: 'confirmed'
+-        })
+-        .select()
+-        .single();
++      const normTime = (t: string) => (t?.length === 5 ? `${t}:00` : t);
++      const toMinutes = (t: string) => {
++        const [hh, mm] = normTime(t).split(':').map((x) => parseInt(x, 10));
++        return (hh || 0) * 60 + (mm || 0);
++      };
++
++      const start = normTime(appointmentData.start_time);
++      const end = normTime(appointmentData.end_time);
++      const duration_minutes = Math.max(1, toMinutes(end) - toMinutes(start));
++
++      // Book via edge function (prevents double booking and bypasses RLS issues)
++      const { data, error } = await supabase.functions.invoke('book-appointment', {
++        body: {
++          patient_id: appointmentData.patient_id,
++          provider_id: appointmentData.doctor_id,
++          entity_id: appointmentData.practice_id || null,
++          slot_start: `${appointmentData.appointment_date}T${start}`,
++          duration_minutes,
++          notes: appointmentData.notes || null,
++        },
++      });
+ 
+       if (error) throw error;
+-      toast.success('Appointment booked successfully!');
+-      return { data, success: true };
++      const appointment = (data as any)?.appointment;
++      if (!appointment?.id) throw new Error('Booking failed');
++
++      toast.success('Appointment booked successfully!');
++      return { data: appointment, success: true };
+     } catch (error: any) {
+       return handleApiError(error, 'Failed to book appointment');
+     }
+   },
+diff -ruN src/pages/AppointmentBooking.tsx src/pages/AppointmentBooking.tsx
+--- src/pages/AppointmentBooking.tsx	2026-01-08 18:42:16.000000000 +0000
++++ src/pages/AppointmentBooking.tsx	2026-01-09 16:12:26.097385610 +0000
+@@ -170,27 +170,32 @@
+     (async () => {
+       const dateString = format(selectedDate, "yyyy-MM-dd");
+       try {
+-        const [{ data: appts }, { data: blocked }] = await Promise.all([
+-          supabase
+-            .from("appointments")
+-            .select("*")
+-            .eq("doctor_id", doctorId)
+-            .eq("appointment_date", dateString)
+-            .neq("status", "canceled"),
+-          supabase.from("blocked_times").select("*").eq("doctor_id", doctorId).eq("blocked_date", dateString),
+-        ]);
+-
+-        const slots = generateSlots({
+-          selectedDate,
+-          schedule,
+-          procedureMinutes: selectedProcedure.duration_minutes || 30,
+-          bufferMinutes: schedule.buffer_time || 0,
+-          appointments: appts || [],
+-          blockedTimes: blocked || [],
+-        });
++        // IMPORTANT:
++        // Patients cannot read other patients' appointments due to RLS.
++        // So we must compute availability via the edge function (service-role).
++        const { data: availability, error } = await supabase.functions.invoke("get-availability", {
++          body: {
++            provider_id: doctorId,
++            entity_id: (doctor as any)?.practice_id ?? null,
++            date: dateString,
++            duration_minutes: selectedProcedure.duration_minutes || 30,
++          },
++        });
++
++        if (error) throw error;
++
++        const slots: Slot[] = ((availability as any)?.slots ?? []).map((s: any) => ({
++          time: s.start_time,
++          endTime: s.end_time,
++          status: s.status,
++        }));
+ 
+         setTimeSlots(slots);
+         // if previously selected time is no longer available, clear it
+         if (!slots.some((s) => s.status === "available" && s.time === selectedTime)) {
+           setSelectedTime("");
+diff -ruN src/components/doctor/ManualBookAppointmentModal.tsx src/components/doctor/ManualBookAppointmentModal.tsx
+--- src/components/doctor/ManualBookAppointmentModal.tsx	2026-01-08 18:42:16.000000000 +0000
++++ src/components/doctor/ManualBookAppointmentModal.tsx	2026-01-09 16:15:25.721468447 +0000
+@@ -83,53 +83,94 @@
+ 
+     setLoading(true);
+ 
+     try {
+-      const startTime = selectedTime;
+-      const [hours, minutes] = startTime.split(":").map(Number);
++      const dateString = format(selectedDate, "yyyy-MM-dd");
++      const startTime = selectedTime.length === 5 ? `${selectedTime}:00` : selectedTime;
++      const [hours, minutes] = startTime.split(":").map(Number);
+ 
+-      const endDate = new Date(selectedDate);
+-      endDate.setHours(hours, minutes + 30, 0, 0);
++      const endDate = new Date(selectedDate);
++      endDate.setHours(hours, minutes + 30, 0, 0);
++      const endTime = `${String(endDate.getHours()).padStart(2, "0")}:${String(endDate.getMinutes()).padStart(2, "0")}:00`;
+ 
+-      const endTime = `${String(endDate.getHours()).padStart(2, "0")}:${String(
+-        endDate.getMinutes()
+-      ).padStart(2, "0")}`;
++      // Ensure we always book against a real patient profile (patient_id)
++      // so: (1) the slot blocks for everyone, and (2) the patient can see the appointment later.
++      let patientId = selectedPatient.id;
++      let verificationToken: string | null = null;
++      let shouldInviteBySms = false;
+ 
+-      // must satisfy DB constraint: exactly one of patient_id or doctor_patient_id
+-      const patientPayload =
+-        selectedPatient.source === "doctor_added"
+-          ? { patient_id: null, doctor_patient_id: selectedPatient.id }
+-          : { patient_id: selectedPatient.id, doctor_patient_id: null };
++      if (selectedPatient.source === "doctor_added") {
++        if (!selectedPatient.email && !selectedPatient.phone) {
++          toast.error("This patient record is missing both email and phone. Add at least one so we can attach the appointment to a patient profile.");
++          return;
++        }
+ 
+-      const payload = {
+-        doctor_id: doctorId,
+-        practice_id: practiceId || null,
+-        appointment_date: format(selectedDate, "yyyy-MM-dd"),
+-        start_time: startTime,
+-        end_time: endTime,
+-        notes: notes || null,
+-        status: "confirmed",
+-        ...patientPayload,
+-      };
++        const { data, error } = await supabase.rpc("create_or_get_patient_profile", {
++          p_full_name: selectedPatient.name,
++          p_email: selectedPatient.email || null,
++          p_phone: selectedPatient.phone || null,
++        });
+ 
+-      const { data: appointment, error: appointmentError } = await supabase
+-        .from("appointments")
+-        .insert(payload)
+-        .select()
+-        .single();
++        if (error) throw error;
++        const result = data as any;
++        if (!result?.success || !result?.user_id) {
++          throw new Error(result?.error || "Failed to create patient profile");
++        }
+ 
+-      if (appointmentError) throw appointmentError;
++        patientId = result.user_id;
++        verificationToken = result.verification_token || null;
++        shouldInviteBySms = !!result.send_sms;
++      }
++
++      // Book via edge function (service-role + conflict checks)
++      const { data: booked, error: bookErr } = await supabase.functions.invoke("book-appointment", {
++        body: {
++          patient_id: patientId,
++          provider_id: doctorId,
++          entity_id: practiceId || null,
++          slot_start: `${dateString}T${startTime}`,
++          duration_minutes: 30,
++          notes: notes || null,
++          status: "confirmed",
++          appointment_type: "manual",
++        },
++      });
++
++      if (bookErr) throw bookErr;
++
++      // Optional: invite new (doctor-added) patients via SMS so they can verify and see the appointment.
++      if (
++        selectedPatient.source === "doctor_added" &&
++        shouldInviteBySms &&
++        selectedPatient.phone &&
++        verificationToken
++      ) {
++        try {
++          const { data: docRow } = await supabase
++            .from("doctors")
++            .select("profiles:user_id(full_name)")
++            .eq("id", doctorId)
++            .maybeSingle();
++
++          const doctorName = (docRow as any)?.profiles?.full_name || "Doctor";
++          const apptDateTime = new Date(`${dateString}T${startTime}`);
++
++          await supabase.rpc("send_patient_invitation_sms", {
++            p_patient_id: patientId,
++            p_phone: selectedPatient.phone,
++            p_verification_token: verificationToken,
++            p_doctor_name: doctorName,
++            p_appointment_date: apptDateTime.toISOString(),
++          });
++        } catch (inviteErr) {
++          console.warn("SMS invite failed (non-fatal):", inviteErr);
++        }
++      }
+ 
+       toast.success(`Appointment booked for ${selectedPatient.name}`);
+diff -ruN supabase/functions/book-appointment/index.ts supabase/functions/book-appointment/index.ts
+--- supabase/functions/book-appointment/index.ts	2026-01-08 18:42:16.000000000 +0000
++++ supabase/functions/book-appointment/index.ts	2026-01-09 16:14:56.124734729 +0000
+@@ -1,114 +1,314 @@
+ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+ 
+ const corsHeaders = {
+   "Access-Control-Allow-Origin": "*",
+   "Access-Control-Allow-Headers":
+     "authorization, x-client-info, apikey, content-type",
+ };
+ 
+-interface BookAppointmentRequest {
+-  patient_id: string;
+-  entity_id: string;
+-  provider_id?: string;
+-  slot_start: string;
+-  appointment_type?: string;
+-  notes?: string;
+-}
++type AppointmentStatus = "pending" | "confirmed" | "canceled" | "completed";
++
++interface BookAppointmentRequest {
++  // required
++  patient_id: string;
++  provider_id: string; // doctors.id
++  slot_start: string; // e.g. 2026-01-09T10:30 or 2026-01-09T10:30:00
++
++  // optional
++  entity_id?: string | null; // practices.id (if omitted we'll derive from provider)
++  duration_minutes?: number; // default 30
++  notes?: string;
++  appointment_type?: string;
++
++  // privileged only (doctor/staff/admin)
++  status?: Exclude<AppointmentStatus, "canceled" | "completed">;
++}
++
++function timeToMinutes(t: string): number {
++  const [hh, mm, ss] = t.split(":").map((x) => parseInt(x, 10));
++  return (hh || 0) * 60 + (mm || 0) + ((ss || 0) >= 30 ? 1 : 0);
++}
++
++function minutesToTime(total: number): string {
++  const minutesInDay = 24 * 60;
++  const m = ((total % minutesInDay) + minutesInDay) % minutesInDay;
++  const hh = Math.floor(m / 60);
++  const mm = m % 60;
++  const pad = (n: number) => String(n).padStart(2, "0");
++  return `${pad(hh)}:${pad(mm)}:00`;
++}
++
++function parseSlotStart(slot_start: string): { date: string; time: string } {
++  // If slot_start includes timezone offset or Z, use Date for correctness.
++  const hasTz = /[zZ]|[+-]\d{2}:?\d{2}$/.test(slot_start);
++  if (hasTz) {
++    const d = new Date(slot_start);
++    if (Number.isNaN(d.getTime())) throw new Error("Invalid slot_start");
++    const iso = d.toISOString();
++    return { date: iso.slice(0, 10), time: iso.slice(11, 19) };
++  }
++
++  const [datePart, timePartRaw] = slot_start.split("T");
++  if (!datePart || !timePartRaw) throw new Error("Invalid slot_start");
++
++  const timePart = timePartRaw.trim();
++  // accept HH:MM, HH:MM:SS
++  const norm = timePart.length === 5 ? `${timePart}:00` : timePart.slice(0, 8);
++  if (!/^\d{2}:\d{2}:\d{2}$/.test(norm)) throw new Error("Invalid slot_start time");
++  if (!/^\d{4}-\d{2}-\d{2}$/.test(datePart)) throw new Error("Invalid slot_start date");
++  return { date: datePart, time: norm };
++}
++
++function overlaps(aStart: number, aEnd: number, bStart: number, bEnd: number): boolean {
++  // strict overlap
++  return aStart < bEnd && aEnd > bStart;
++}
+ 
+ const handler = async (req: Request): Promise<Response> => {
+   if (req.method === "OPTIONS") {
+     return new Response("ok", { headers: corsHeaders });
+   }
+ 
+   try {
+     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+     const supabase = createClient(supabaseUrl, supabaseKey);
+ 
+-    // Get authorization header
+     const authHeader = req.headers.get("authorization");
+     if (!authHeader) {
+-      return new Response(
+-        JSON.stringify({ error: "Missing authorization header" }),
+-        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+-      );
++      return new Response(JSON.stringify({ error: "Missing authorization header" }), {
++        status: 401,
++        headers: { "Content-Type": "application/json", ...corsHeaders },
++      });
+     }
+ 
+-    // Verify the user
+-    const { data: { user }, error: authError } = await supabase.auth.getUser(
+-      authHeader.replace("Bearer ", "")
+-    );
++    const token = authHeader.replace("Bearer ", "").trim();
++    const {
++      data: { user },
++      error: authError,
++    } = await supabase.auth.getUser(token);
+ 
+     if (authError || !user) {
+-      return new Response(
+-        JSON.stringify({ error: "Unauthorized" }),
+-        { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+-      );
++      return new Response(JSON.stringify({ error: "Unauthorized" }), {
++        status: 401,
++        headers: { "Content-Type": "application/json", ...corsHeaders },
++      });
+     }
+ 
+-    const { patient_id, entity_id, provider_id, slot_start, appointment_type, notes } =
+-      (await req.json()) as BookAppointmentRequest;
++    const body = (await req.json()) as BookAppointmentRequest;
++    const { patient_id, provider_id, slot_start } = body;
+ 
+-    // Validate input
+-    if (!patient_id || !entity_id || !slot_start) {
++    if (!patient_id || !provider_id || !slot_start) {
+       return new Response(
+-        JSON.stringify({ error: "Missing required fields: patient_id, entity_id, slot_start" }),
+-        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
++        JSON.stringify({
++          error: "Missing required fields: patient_id, provider_id, slot_start",
++        }),
++        {
++          status: 400,
++          headers: { "Content-Type": "application/json", ...corsHeaders },
++        },
+       );
+     }
+ 
+-    // Verify patient_id matches current user or user has staff role
+-    if (patient_id !== user.id) {
+-      // Check if user is staff/doctor at this entity
+-      const { data: staffRole } = await supabase
+-        .from("clinic_staff")
+-        .select("id")
+-        .eq("practice_id", entity_id)
+-        .eq("user_id", user.id)
+-        .eq("status", "active")
+-        .maybeSingle();
+-
+-      const { data: doctorRole } = await supabase
+-        .from("doctors")
+-        .select("id")
+-        .eq("practice_id", entity_id)
+-        .eq("user_id", user.id)
+-        .maybeSingle();
+-
+-      if (!staffRole && !doctorRole) {
+-        return new Response(
+-          JSON.stringify({ error: "Unauthorized: cannot book for other users" }),
+-          { status: 403, headers: { "Content-Type": "application/json", ...corsHeaders } }
+-        );
+-      }
+-    }
+-
+-    // Parse slot time
+-    const slotDate = new Date(slot_start);
+-    const appointmentDate = slotDate.toISOString().split("T")[0];
+-    const startTime = slotDate.toTimeString().slice(0, 8);
+-    const endDate = new Date(slotDate.getTime() + 30 * 60000); // 30 min duration
+-    const endTime = endDate.toTimeString().slice(0, 8);
+-
+-    // Check if slot is still available (prevent race conditions)
+-    const { data: existingAppointments } = await supabase
+-      .from("appointments")
+-      .select("id")
+-      .eq("appointment_date", appointmentDate)
+-      .eq("doctor_id", provider_id)
+-      .neq("status", "canceled")
+-      .or(`and(start_time.lte.${startTime},end_time.gt.${startTime}),and(start_time.lt.${endTime},end_time.gte.${endTime})`);
+-
+-    if (existingAppointments && existingAppointments.length > 0) {
+-      return new Response(
+-        JSON.stringify({ error: "Slot is no longer available", code: "SLOT_TAKEN" }),
+-        { status: 409, headers: { "Content-Type": "application/json", ...corsHeaders } }
+-      );
+-    }
+-
+-    // Create the appointment
+-    const { data: appointment, error: insertError } = await supabase
+-      .from("appointments")
+-      .insert({
+-        doctor_id: provider_id,
+-        patient_id: patient_id,
+-        practice_id: entity_id,
+-        appointment_date: appointmentDate,
+-        start_time: startTime,
+-        end_time: endTime,
+-        notes: notes,
+-        status: "pending",
+-      })
+-      .select()
+-      .single();
++    // Derive practice_id if missing
++    let practiceId: string | null = body.entity_id ?? null;
++    if (!practiceId) {
++      const { data: doctorRow, error: doctorErr } = await supabase
++        .from("doctors")
++        .select("id, practice_id, user_id")
++        .eq("id", provider_id)
++        .maybeSingle();
++
++      if (doctorErr || !doctorRow) {
++        return new Response(JSON.stringify({ error: "Invalid provider_id" }), {
++          status: 400,
++          headers: { "Content-Type": "application/json", ...corsHeaders },
++        });
++      }
++      practiceId = doctorRow.practice_id ?? null;
++    }
++
++    // Authorization:
++    // - patient can book for self
++    // - otherwise must be provider themselves, active clinic staff, or admin/super_admin
++    let isPrivilegedBooker = false;
++    if (patient_id !== user.id) {
++      // roles check (service role can read)
++      const { data: rolesData } = await supabase
++        .from("user_roles")
++        .select("role")
++        .eq("user_id", user.id);
++      const roles = (rolesData ?? []).map((r: any) => r.role as string);
++      const isAdmin = roles.includes("super_admin") || roles.includes("admin") || roles.includes("clinic_admin");
++
++      // provider themselves?
++      const { data: providerSelf } = await supabase
++        .from("doctors")
++        .select("id")
++        .eq("id", provider_id)
++        .eq("user_id", user.id)
++        .maybeSingle();
++
++      // clinic staff at this practice?
++      let staffOk = false;
++      if (practiceId) {
++        const { data: staffRow } = await supabase
++          .from("clinic_staff")
++          .select("id")
++          .eq("practice_id", practiceId)
++          .eq("user_id", user.id)
++          .eq("status", "active")
++          .maybeSingle();
++        staffOk = !!staffRow;
++      }
++
++      if (!isAdmin && !providerSelf && !staffOk) {
++        return new Response(
++          JSON.stringify({ error: "Unauthorized: cannot book for other users" }),
++          {
++            status: 403,
++            headers: { "Content-Type": "application/json", ...corsHeaders },
++          },
++        );
++      }
++
++      isPrivilegedBooker = true;
++    }
++
++    const { date: appointmentDate, time: startTime } = parseSlotStart(slot_start);
++    const duration = Number.isFinite(body.duration_minutes) && (body.duration_minutes as number) > 0
++      ? Math.floor(body.duration_minutes as number)
++      : 30;
++
++    const startMin = timeToMinutes(startTime);
++    const endMin = startMin + duration;
++    const endTime = minutesToTime(endMin);
++
++    // Prevent booking inside blocked times
++    const { data: blockedTimes, error: blockedErr } = await supabase
++      .from("blocked_times")
++      .select("start_time, end_time")
++      .eq("doctor_id", provider_id)
++      .eq("blocked_date", appointmentDate);
++
++    if (blockedErr) {
++      console.error("blocked_times query error:", blockedErr);
++      return new Response(JSON.stringify({ error: "Failed to validate availability" }), {
++        status: 500,
++        headers: { "Content-Type": "application/json", ...corsHeaders },
++      });
++    }
++
++    if ((blockedTimes ?? []).some((b: any) => overlaps(startMin, endMin, timeToMinutes(b.start_time), timeToMinutes(b.end_time)))) {
++      return new Response(
++        JSON.stringify({ error: "Time is blocked", code: "TIME_BLOCKED" }),
++        {
++          status: 409,
++          headers: { "Content-Type": "application/json", ...corsHeaders },
++        },
++      );
++    }
++
++    // Prevent double-booking & race conditions: check all appointments for that doctor/day
++    const { data: existing, error: apptErr } = await supabase
++      .from("appointments")
++      .select("id, start_time, end_time, status")
++      .eq("doctor_id", provider_id)
++      .eq("appointment_date", appointmentDate)
++      .neq("status", "canceled");
+ 
+     if (insertError) {
+       console.error("Error creating appointment:", insertError);
+-      return new Response(
+-        JSON.stringify({ error: "Failed to create appointment", details: insertError.message }),
+-        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+-      );
++      const isUniqueViolation = (insertError as any)?.code === "23505";
++      return new Response(
++        JSON.stringify({
++          error: isUniqueViolation ? "Slot is no longer available" : "Failed to create appointment",
++          code: isUniqueViolation ? "SLOT_TAKEN" : "INSERT_FAILED",
++          details: insertError.message,
++        }),
++        {
++          status: isUniqueViolation ? 409 : 500,
++          headers: { "Content-Type": "application/json", ...corsHeaders },
++        },
++      );
+     }
+ 
+-    // Write audit log
+-    await supabase.from("entity_audit_logs").insert({
+-      entity_type: "appointment",
+-      entity_id: appointment.id,
+-      action: "create",
+-      actor_id: user.id,
+-      new_values: appointment,
+-      metadata: { appointment_type, booked_via: "edge_function" },
+-    });
++    // Best-effort audit log (table may not exist)
++    try {
++      await supabase.from("entity_audit_logs").insert({
++        entity_type: "appointment",
++        entity_id: appointment.id,
++        action: "create",
++        actor_id: user.id,
++        new_values: appointment,
++        metadata: {
++          appointment_type: body.appointment_type ?? null,
++          booked_via: "edge_function",
++        },
++      });
++    } catch {
++      // ignore
++    }
+ 
+     return new Response(
+-      JSON.stringify({ 
+-        appointment_id: appointment.id, 
+-        status: appointment.status,
+-        appointment_date: appointment.appointment_date,
+-        start_time: appointment.start_time,
+-        end_time: appointment.end_time
+-      }),
+-      { status: 201, headers: { "Content-Type": "application/json", ...corsHeaders } }
++      JSON.stringify({ appointment }),
++      {
++        status: 201,
++        headers: { "Content-Type": "application/json", ...corsHeaders },
++      },
+     );
+   } catch (error: any) {
+-    console.error("Error in book_appointment:", error);
+-    return new Response(
+-      JSON.stringify({ error: error.message }),
+-      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+-    );
++    console.error("Error in book-appointment:", error);
++    return new Response(JSON.stringify({ error: error?.message || "Unknown error" }), {
++      status: 500,
++      headers: { "Content-Type": "application/json", ...corsHeaders },
++    });
+   }
+ };
+ 
+ serve(handler);
