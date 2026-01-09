@@ -20,7 +20,10 @@ import { getDashboardRoute, roleLabels, type AppRole } from "@/lib/rbac";
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // ✅ roles added
   const { user, profile, signOut, allRoles, activeRole, switchRole } = useAuth();
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -120,13 +123,13 @@ const Header = () => {
                         <span>Dashboard</span>
                       </DropdownMenuItem>
 
-                      {/* Roles list */}
+                      {/* ✅ Roles section */}
                       <DropdownMenuSeparator />
                       <DropdownMenuLabel className="text-xs text-muted-foreground">
                         Your roles
                       </DropdownMenuLabel>
 
-                      {(allRoles?.length ? allRoles : (["patient"] as AppRole[])).map((role) => (
+                      {(allRoles ?? []).map((role) => (
                         <DropdownMenuItem
                           key={role}
                           onClick={() => handleRoleClick(role)}
