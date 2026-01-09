@@ -1,12 +1,10 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
-import PatientDashboard from "./PatientDashboard";
-import DoctorDashboard from "./DoctorDashboard";
-import AdminDashboard from "./AdminDashboard";
 import { Loader2 } from "lucide-react";
+import { getDashboardRoute } from "@/lib/rbac";
 
 const Dashboard = () => {
-  const { user, profile, loading } = useAuth();
+  const { user, loading, activeRole } = useAuth();
 
   if (loading) {
     return (
@@ -23,33 +21,8 @@ const Dashboard = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  if (!profile) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
-          <p className="text-muted-foreground">Setting up your profile...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Route to appropriate dashboard based on user role from user_roles table
-  // Check for super_admin role first (highest priority)
-  if (profile.roles?.includes('super_admin')) {
-    return <Navigate to="/super-admin-dashboard" replace />;
-  }
-  
-  // Then check other roles
-  switch (profile.role) {
-    case 'doctor':
-      return <Navigate to="/doctor-dashboard" replace />;
-    case 'admin':
-      return <Navigate to="/admin-dashboard" replace />;
-    case 'patient':
-    default:
-      return <Navigate to="/patient-dashboard" replace />;
-  }
+  // Universal entrypoint: always send user to the dashboard for their currently active role
+  return <Navigate to={getDashboardRoute([activeRole])} replace />;
 };
 
 export default Dashboard;
