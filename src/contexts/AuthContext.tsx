@@ -24,6 +24,8 @@ interface Profile {
   language?: string;
   created_at: string;
   updated_at: string;
+  // Denormalized doctor_id - set automatically when role='doctor'
+  doctor_id?: string;
 }
 
 type RoleVerificationStatus = "unverified" | "pending" | "verified" | "rejected";

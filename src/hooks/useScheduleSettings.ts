@@ -43,7 +43,7 @@ const DEFAULT_WEEKEND_HOURS: WorkingHours = {
 };
 
 export const useScheduleSettings = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [scheduleSettings, setScheduleSettings] = useState<ScheduleSettings>({
     working_days: {
       monday: DEFAULT_WORKING_HOURS,
@@ -60,26 +60,23 @@ export const useScheduleSettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  // Use denormalized doctor_id from profile - no extra query
+  const doctorId = (profile as any)?.doctor_id;
+
   const fetchScheduleSettings = useCallback(async () => {
-    if (!user) return;
+    if (!user || !doctorId) {
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
-      
-      // Get doctor profile first
-      const { data: doctorData, error: doctorError } = await supabase
-        .from('doctors')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
 
-      if (doctorError) throw doctorError;
-
-      // Fetch schedule settings from backend
+      // Fetch schedule settings from backend using doctor_id directly
       const { data, error } = await supabase
         .from('schedule_settings')
         .select('*')
-        .eq('doctor_id', doctorData.id)
+        .eq('doctor_id', doctorId)
         .maybeSingle();
 
       if (error && error.code !== 'PGRST116') throw error;
@@ -97,28 +94,19 @@ export const useScheduleSettings = () => {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, doctorId]);
 
   const updateScheduleSettings = async (newSettings: ScheduleSettings) => {
-    if (!user) return { error: 'User not authenticated' };
+    if (!user || !doctorId) return { error: 'User not authenticated or doctor profile missing' };
 
     try {
       setSaving(true);
-      
-      // Get doctor profile first
-      const { data: doctorData, error: doctorError } = await supabase
-        .from('doctors')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
 
-      if (doctorError) throw doctorError;
-
-      // Upsert schedule settings to backend
+      // Upsert schedule settings to backend using doctor_id directly
       const { error } = await supabase
         .from('schedule_settings')
         .upsert({
-          doctor_id: doctorData.id,
+          doctor_id: doctorId,
           working_days: newSettings.working_days as any,
           buffer_time: newSettings.buffer_time,
           holidays: newSettings.holidays || []

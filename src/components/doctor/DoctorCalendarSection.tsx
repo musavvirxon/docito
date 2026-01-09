@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { CalendarPlus } from "lucide-react";
@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ManualBookAppointmentModal from "@/components/doctor/ManualBookAppointmentModal";
 import { useTimeSlots } from "@/hooks/useTimeSlots";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 
 type SlotAction = {
   date: Date;
@@ -17,46 +16,24 @@ type SlotAction = {
 };
 
 interface DoctorCalendarSectionProps {
-  doctorId?: string; // optional because some code passes it, otherwise derived from user
+  doctorId?: string; // optional - if not provided, uses profile.doctor_id
   practiceId?: string;
 }
 
 const DoctorCalendarSection = ({ doctorId: doctorIdProp, practiceId }: DoctorCalendarSectionProps) => {
-  const { user } = useAuth();
+  const { profile } = useAuth();
 
-  const [doctorId, setDoctorId] = useState<string | null>(doctorIdProp || null);
+  // Use prop if provided, otherwise use denormalized doctor_id from profile (no extra query)
+  const doctorId = doctorIdProp || (profile as any)?.doctor_id || null;
 
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedSlotForAction, setSelectedSlotForAction] = useState<SlotAction | null>(null);
-
   const [isBookAppointmentOpen, setIsBookAppointmentOpen] = useState(false);
 
-  // Load doctorId from authenticated user if not provided
-  useEffect(() => {
-    const loadDoctor = async () => {
-      if (doctorIdProp) {
-        setDoctorId(doctorIdProp);
-        return;
-      }
-      if (!user?.id) return;
-
-      const { data, error } = await supabase
-        .from("doctors")
-        .select("id")
-        .eq("user_id", user.id)
-        .single();
-
-      if (error) {
-        console.error(error);
-        toast.error("Failed to load doctor profile");
-        return;
-      }
-
-      setDoctorId(data?.id ?? null);
-    };
-
-    loadDoctor();
-  }, [doctorIdProp, user?.id]);
+  // Safety check: show toast if doctor_id is missing
+  if (profile?.role === 'doctor' && !doctorId) {
+    toast.error("Doctor profile still loading. Please refresh the page.");
+  }
 
   // Slots: default 30 min
   const procedureDuration = 30;

@@ -93,13 +93,17 @@ const ManualBookAppointmentModal = ({
         endDate.getMinutes()
       ).padStart(2, "0")}`;
 
-      // must satisfy DB constraint: exactly one of patient_id or doctor_patient_id
-      const patientPayload =
-        selectedPatient.source === "doctor_added"
-          ? { patient_id: null, doctor_patient_id: selectedPatient.id }
-          : { patient_id: selectedPatient.id, doctor_patient_id: null };
-
-      const payload = {
+      // Build payload for appointments table
+      const payload: {
+        doctor_id: string;
+        practice_id: string | null;
+        appointment_date: string;
+        start_time: string;
+        end_time: string;
+        notes: string | null;
+        status: "confirmed";
+        patient_id: string | null;
+      } = {
         doctor_id: doctorId,
         practice_id: practiceId || null,
         appointment_date: format(selectedDate, "yyyy-MM-dd"),
@@ -107,7 +111,9 @@ const ManualBookAppointmentModal = ({
         end_time: endTime,
         notes: notes || null,
         status: "confirmed",
-        ...patientPayload,
+        // For doctor-added patients, patient_id references doctor_patients table indirectly
+        // The schema uses patient_id for auth users; for manual patients we store their profile user_id
+        patient_id: selectedPatient.id,
       };
 
       const { data: appointment, error: appointmentError } = await supabase
