@@ -14,16 +14,13 @@ import Contact from "@/pages/Contact";
 import About from "@/pages/About";
 import Auth from "@/pages/Auth";
 import AppointmentBooking from "@/pages/AppointmentBooking";
+import Dashboard from "@/pages/Dashboard";
+
 import BookingConfirmation from "@/pages/BookingConfirmation";
-
 import ProfilePage from "@/pages/ProfilePage";
+import Notifications from "@/pages/Notifications";
+import SettingsPage from "@/pages/SettingsPage";
 import FeedbackCenter from "@/pages/FeedbackCenter";
-
-// verification
-import PracticeVerification from "@/pages/PracticeVerification";
-import LabVerification from "@/pages/lab/LabVerification";
-import PharmacyVerification from "@/pages/pharmacy/PharmacyVerification";
-import ImagingVerification from "@/pages/imaging/ImagingVerification";
 
 // dashboards
 import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
@@ -34,6 +31,16 @@ import StaffDashboard from "@/pages/StaffDashboard";
 import LabDashboard from "@/pages/lab/LabDashboard";
 import PharmacyDashboard from "@/pages/pharmacy/PharmacyDashboard";
 import ImagingDashboard from "@/pages/imaging/ImagingDashboard";
+
+// verification
+import PracticeVerification from "@/pages/verification/PracticeVerification";
+import LabVerification from "@/pages/lab/LabVerification";
+import PharmacyVerification from "@/pages/pharmacy/PharmacyVerification";
+import ImagingVerification from "@/pages/imaging/ImagingVerification";
+
+// practice & imaging center dashboards
+import PracticeDashboard from "@/pages/practice/PracticeDashboard";
+import ImagingCenterDashboard from "@/pages/imaging/ImagingCenterDashboard";
 
 export default function App() {
   return (
@@ -51,12 +58,18 @@ export default function App() {
         <Route path="how-it-works" element={<HowItWorks />} />
         <Route path="contact" element={<Contact />} />
         <Route path="about" element={<About />} />
-        <Route path="auth" element={<Auth />} />
       </Route>
+
+      {/* ✅ AUTH */}
+      <Route path="/auth" element={<Auth />} />
 
       {/* ✅ APP PAGES (no PublicLayout) */}
       <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/dashboard/feedback" element={<FeedbackCenter />} />
+
+      <Route path="/notifications" element={<Notifications />} />
+      <Route path="/settings" element={<SettingsPage />} />
 
       {/* ✅ PATIENT BOOKING FLOW */}
       <Route path="/book-appointment/:doctorId" element={<AppointmentBooking />} />
@@ -78,9 +91,9 @@ export default function App() {
       <Route path="/pharmacy/verification" element={<PharmacyVerification />} />
       <Route path="/imaging/verification" element={<ImagingVerification />} />
 
-      {/* ✅ Aliases to match Auth redirects */}
-      <Route path="/practice-dashboard" element={<AdminDashboard />} />
-      <Route path="/imaging-center/dashboard" element={<ImagingDashboard />} />
+      {/* ✅ PRACTICE/IMAGING CENTER DASHBOARDS */}
+      <Route path="/practice-dashboard" element={<PracticeDashboard />} />
+      <Route path="/imaging-center/dashboard" element={<ImagingCenterDashboard />} />
     </Routes>
   );
 }
