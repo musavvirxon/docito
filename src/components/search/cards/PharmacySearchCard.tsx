@@ -1,26 +1,38 @@
 import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Star, MapPin, Truck, Shield, Clock } from 'lucide-react';
+import { Star, MapPin, Truck, Shield, Clock, MessageSquare, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { useMessageAction } from '@/hooks/useMessageAction';
 import type { PharmacyResult } from '@/hooks/useUnifiedSearch';
 
 interface PharmacySearchCardProps {
   pharmacy: PharmacyResult;
   onView?: (pharmacy: PharmacyResult) => void;
+  onMessage?: (pharmacy: PharmacyResult) => void;
 }
 
-const PharmacySearchCard = memo(({ pharmacy, onView }: PharmacySearchCardProps) => {
+const PharmacySearchCard = memo(({ pharmacy, onView, onMessage }: PharmacySearchCardProps) => {
   const navigate = useNavigate();
+  const { startConversation, loading: messageLoading } = useMessageAction();
 
   const handleViewPharmacy = () => {
     if (onView) {
       onView(pharmacy);
     } else {
       navigate(`/pharmacy/${pharmacy.id}`);
+    }
+  };
+
+  const handleMessage = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onMessage) {
+      onMessage(pharmacy);
+    } else {
+      await startConversation(pharmacy.id);
     }
   };
 
@@ -94,13 +106,25 @@ const PharmacySearchCard = memo(({ pharmacy, onView }: PharmacySearchCardProps) 
           </div>
 
           {/* Action */}
-          <div className="mt-4">
+          <div className="mt-4 flex gap-2">
             <Button 
-              className="w-full"
+              className="flex-1"
               variant="outline"
               onClick={handleViewPharmacy}
             >
               Visit Pharmacy
+            </Button>
+            <Button 
+              variant="outline"
+              size="icon"
+              onClick={handleMessage}
+              disabled={messageLoading}
+            >
+              {messageLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <MessageSquare className="w-4 h-4" />
+              )}
             </Button>
           </div>
         </CardContent>

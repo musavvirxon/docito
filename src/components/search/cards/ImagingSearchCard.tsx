@@ -1,26 +1,38 @@
 import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Star, Shield, ScanLine, Award } from 'lucide-react';
+import { MapPin, Star, Shield, ScanLine, Award, MessageSquare, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { useMessageAction } from '@/hooks/useMessageAction';
 import type { ImagingResult } from '@/hooks/useUnifiedSearch';
 
 interface ImagingSearchCardProps {
   center: ImagingResult;
   onView?: (center: ImagingResult) => void;
+  onMessage?: (center: ImagingResult) => void;
 }
 
-const ImagingSearchCard = memo(({ center, onView }: ImagingSearchCardProps) => {
+const ImagingSearchCard = memo(({ center, onView, onMessage }: ImagingSearchCardProps) => {
   const navigate = useNavigate();
+  const { startConversation, loading: messageLoading } = useMessageAction();
 
   const handleViewCenter = () => {
     if (onView) {
       onView(center);
     } else {
       navigate(`/imaging/${center.id}`);
+    }
+  };
+
+  const handleMessage = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onMessage) {
+      onMessage(center);
+    } else {
+      await startConversation(center.id);
     }
   };
 
@@ -101,13 +113,25 @@ const ImagingSearchCard = memo(({ center, onView }: ImagingSearchCardProps) => {
           </div>
 
           {/* Action */}
-          <div className="mt-4">
+          <div className="mt-4 flex gap-2">
             <Button 
-              className="w-full"
+              className="flex-1"
               variant="outline"
               onClick={handleViewCenter}
             >
               View Center
+            </Button>
+            <Button 
+              variant="outline"
+              size="icon"
+              onClick={handleMessage}
+              disabled={messageLoading}
+            >
+              {messageLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <MessageSquare className="w-4 h-4" />
+              )}
             </Button>
           </div>
         </CardContent>

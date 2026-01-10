@@ -1,26 +1,40 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Star, MapPin, Building2, Stethoscope } from 'lucide-react';
+import { Star, MapPin, Building2, Stethoscope, MessageSquare, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { useMessageAction } from '@/hooks/useMessageAction';
 import type { ClinicResult } from '@/hooks/useUnifiedSearch';
 
 interface ClinicSearchCardProps {
   clinic: ClinicResult;
   onView?: (clinic: ClinicResult) => void;
+  onMessage?: (clinic: ClinicResult) => void;
 }
 
-const ClinicSearchCard = memo(({ clinic, onView }: ClinicSearchCardProps) => {
+const ClinicSearchCard = memo(({ clinic, onView, onMessage }: ClinicSearchCardProps) => {
   const navigate = useNavigate();
+  const { startConversation, loading: messageLoading, isAuthenticated } = useMessageAction();
 
   const handleViewClinic = () => {
     if (onView) {
       onView(clinic);
     } else {
       navigate(`/practice/${clinic.id}`);
+    }
+  };
+
+  const handleMessage = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onMessage) {
+      onMessage(clinic);
+    } else {
+      // For clinics, we'd need the admin user_id
+      // This would typically come from the clinic data
+      await startConversation(clinic.id);
     }
   };
 
@@ -98,12 +112,24 @@ const ClinicSearchCard = memo(({ clinic, onView }: ClinicSearchCardProps) => {
           </div>
 
           {/* Action */}
-          <div className="mt-4">
+          <div className="mt-4 flex gap-2">
             <Button 
-              className="w-full"
+              className="flex-1"
               onClick={handleViewClinic}
             >
               View Clinic
+            </Button>
+            <Button 
+              variant="outline"
+              size="icon"
+              onClick={handleMessage}
+              disabled={messageLoading}
+            >
+              {messageLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <MessageSquare className="w-4 h-4" />
+              )}
             </Button>
           </div>
         </CardContent>

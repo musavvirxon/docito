@@ -1,11 +1,30 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { MessagingCenter } from '@/components/messaging';
 import { useAuth } from '@/contexts/AuthContext';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 
 const Messages: React.FC = () => {
   const { user, loading } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [initialConversationId, setInitialConversationId] = useState<string | null>(null);
+
+  // Extract conversation ID from URL on mount and when params change
+  useEffect(() => {
+    const conversationId = searchParams.get('c');
+    if (conversationId) {
+      setInitialConversationId(conversationId);
+    }
+  }, [searchParams]);
+
+  // Callback to update URL when conversation changes
+  const handleConversationChange = (conversationId: string | null) => {
+    if (conversationId) {
+      setSearchParams({ c: conversationId }, { replace: true });
+    } else {
+      setSearchParams({}, { replace: true });
+    }
+  };
 
   if (loading) {
     return (
@@ -28,7 +47,10 @@ const Messages: React.FC = () => {
         </p>
       </div>
 
-      <MessagingCenter />
+      <MessagingCenter 
+        initialConversationId={initialConversationId}
+        onConversationChange={handleConversationChange}
+      />
     </div>
   );
 };
