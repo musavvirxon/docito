@@ -1,184 +1,181 @@
+import { memo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RatingStars } from "@/components/ui/rating-stars";
-import { Tag } from "@/components/ui/tag";
-import { 
-  Building2, 
-  Calendar, 
-  Clock, 
-  Languages, 
-  Lock, 
-  User 
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Star, MapPin, Calendar, User } from "lucide-react";
+import { useBookingAuth } from "@/hooks/useBookingAuth";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface DoctorCardProps {
   id: string;
   name: string;
-  specialty?: string;
-  clinicName?: string;
+  specialty: string;
+  location: string;
+  rating: number;
+  reviewCount: number;
   imageUrl?: string;
-  rating?: number;
-  reviewCount?: number;
-  experienceYears?: number;
-  languages?: string[];
-  tags?: string[];
+  availableToday?: boolean;
   consultationFee?: number;
-  isAuthenticated: boolean;
-  className?: string;
+  nextAvailable?: string;
+  languages?: string[];
+  isPremium?: boolean;
 }
 
-const DoctorCard = ({
+const DoctorCard = memo(({
   id,
   name,
   specialty,
-  clinicName,
-  imageUrl,
+  location,
   rating,
   reviewCount,
-  experienceYears,
-  languages,
-  tags,
+  imageUrl,
+  availableToday = false,
   consultationFee,
-  isAuthenticated,
-  className,
+  nextAvailable,
+  languages = [],
+  isPremium = false,
 }: DoctorCardProps) => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const { handleBookingClick, isAuthenticated } = useBookingAuth();
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleCardClick = () => {
+    navigate(`/doctor-profile/${id}`);
+  };
 
   const handleNavigation = (e: React.MouseEvent, path: string) => {
     e.stopPropagation();
-    if (!isAuthenticated) {
-      navigate(`/auth?redirect=${encodeURIComponent(path)}`);
-    } else {
-      navigate(path);
-    }
+    navigate(path);
   };
 
-  const handleCardClick = () => {
-    const path = `/doctor-profile/${id}`;
-    if (!isAuthenticated) {
-      navigate(`/auth?redirect=${encodeURIComponent(path)}`);
-    } else {
-      navigate(path);
-    }
+  const handleBookingNavigation = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Use our booking auth hook for consistent behavior
+    handleBookingClick(id);
   };
-
-  const initials = name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
 
   return (
-    <div
+    <Card 
+      className={`overflow-hidden transition-all duration-300 cursor-pointer ${
+        isHovered ? 'shadow-lg scale-[1.02]' : 'shadow-sm'
+      } ${isPremium ? 'border-primary/20 bg-gradient-to-br from-background to-primary/5' : ''}`}
       onClick={handleCardClick}
-      className={cn(
-        "group relative bg-card border border-border rounded-2xl p-4 md:p-5 cursor-pointer",
-        "transition-all duration-300 ease-out",
-        "hover:shadow-lg hover:shadow-primary/5 hover:scale-[1.02] hover:border-primary/20",
-        className
-      )}
+      onMouseEnter={() => !isMobile && setIsHovered(true)}
+      onMouseLeave={() => !isMobile && setIsHovered(false)}
     >
-      <div className="flex flex-col sm:flex-row gap-4">
-        {/* Left Section - Avatar & Basic Info */}
-        <div className="flex items-start gap-4 flex-1 min-w-0">
-          <Avatar className="w-16 h-16 md:w-[70px] md:h-[70px] ring-2 ring-primary/10 flex-shrink-0">
-            <AvatarImage src={imageUrl} alt={name} />
-            <AvatarFallback className="bg-primary/10 text-primary font-semibold text-lg">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-
-          <div className="flex-1 min-w-0">
-            {/* Name & Specialty */}
-            <h3 className="font-bold text-lg text-foreground truncate group-hover:text-primary transition-colors">
-              {name}
-            </h3>
-            {specialty && (
-              <p className="text-sm text-primary font-medium">{specialty}</p>
+      <div className="p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row gap-4">
+          {/* Doctor Image & Premium Badge */}
+          <div className="relative flex-shrink-0 self-center sm:self-start">
+            <Avatar className="h-20 w-20 sm:h-24 sm:w-24">
+              <AvatarImage src={imageUrl} alt={name} />
+              <AvatarFallback className="bg-primary/10">
+                <User className="h-10 w-10 text-primary" />
+              </AvatarFallback>
+            </Avatar>
+            {isPremium && (
+              <Badge className="absolute -top-2 -right-2 bg-gradient-to-r from-primary to-purple-500 text-white border-0">
+                Premium
+              </Badge>
             )}
-            {clinicName && (
-              <div className="flex items-center gap-1 mt-1">
-                <Building2 className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                <span className="text-xs text-muted-foreground truncate">
-                  {clinicName}
-                </span>
+          </div>
+
+          {/* Doctor Info */}
+          <div className="flex-1 space-y-3">
+            <div className="space-y-1">
+              <h3 className="text-lg sm:text-xl font-semibold text-center sm:text-left">
+                Dr. {name}
+              </h3>
+              <p className="text-muted-foreground text-center sm:text-left">
+                {specialty}
+              </p>
+            </div>
+
+            {/* Rating & Reviews */}
+            <div className="flex items-center justify-center sm:justify-start gap-2">
+              <div className="flex items-center gap-1">
+                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                <span className="font-medium">{rating.toFixed(1)}</span>
               </div>
-            )}
+              <span className="text-muted-foreground">
+                ({reviewCount} reviews)
+              </span>
+            </div>
 
-            {/* Rating & Experience Row */}
-            <div className="flex flex-wrap items-center gap-3 mt-2">
-              <RatingStars rating={rating} reviewCount={reviewCount} size="sm" />
-              
-              {experienceYears !== undefined && experienceYears > 0 && (
-                <div className="flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">
-                    {experienceYears} yrs exp
-                  </span>
-                </div>
-              )}
-
-              {consultationFee !== undefined && consultationFee > 0 && (
-                <span className="text-xs font-medium text-primary">
-                  ${consultationFee}
-                </span>
-              )}
+            {/* Location */}
+            <div className="flex items-center justify-center sm:justify-start gap-1 text-sm text-muted-foreground">
+              <MapPin className="h-4 w-4" />
+              <span>{location}</span>
             </div>
 
             {/* Languages */}
-            {languages && languages.length > 0 && (
-              <div className="flex items-center gap-1 mt-2">
-                <Languages className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                <span className="text-xs text-muted-foreground truncate">
-                  {languages.slice(0, 3).join(", ")}
-                  {languages.length > 3 && ` +${languages.length - 3}`}
-                </span>
+            {languages.length > 0 && (
+              <div className="flex flex-wrap justify-center sm:justify-start gap-1">
+                {languages.slice(0, 3).map((lang) => (
+                  <Badge key={lang} variant="secondary" className="text-xs">
+                    {lang}
+                  </Badge>
+                ))}
+                {languages.length > 3 && (
+                  <Badge variant="secondary" className="text-xs">
+                    +{languages.length - 3} more
+                  </Badge>
+                )}
               </div>
             )}
 
-            {/* Tags */}
-            {tags && tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {tags.slice(0, 3).map((tag, index) => (
-                  <Tag key={index} variant="muted" size="sm">
-                    {tag}
-                  </Tag>
-                ))}
+            {/* Availability & Fee */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-sm">
+              <div className="flex items-center justify-center sm:justify-start gap-1">
+                <Calendar className="h-4 w-4 text-primary" />
+                <span className={availableToday ? "text-green-600 font-medium" : "text-muted-foreground"}>
+                  {availableToday ? "Available today" : nextAvailable || "Check availability"}
+                </span>
               </div>
+              {consultationFee && (
+                <div className="text-center sm:text-left">
+                  <span className="text-muted-foreground">From </span>
+                  <span className="font-medium">${consultationFee}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-2 pt-2">
+              <Button
+                onClick={handleBookingNavigation}
+                size="sm"
+                className="flex-1 sm:flex-none gap-1.5"
+              >
+                <Calendar className="h-4 w-4" />
+                Book Appointment
+              </Button>
+              
+              <Button
+                onClick={(e) => handleNavigation(e, `/doctor-profile/${id}`)}
+                variant="outline"
+                size="sm"
+                className="flex-1 sm:flex-none"
+              >
+                View Profile
+              </Button>
+            </div>
+
+            {!isAuthenticated && (
+              <p className="text-xs text-muted-foreground text-center sm:text-left">
+                Sign in required to book
+              </p>
             )}
           </div>
         </div>
-
-        {/* Right Section - Actions */}
-        <div className="flex sm:flex-col gap-2 sm:justify-center flex-shrink-0">
-          <Button
-            onClick={(e) => handleNavigation(e, `/book/${id}`)}
-            size="sm"
-            className="flex-1 sm:flex-none gap-1.5"
-          >
-            {!isAuthenticated && <Lock className="w-3 h-3" />}
-            <Calendar className="w-4 h-4 sm:hidden md:block" />
-            <span className="hidden sm:inline">Book Appointment</span>
-            <span className="sm:hidden">Book</span>
-          </Button>
-          <Button
-            onClick={(e) => handleNavigation(e, `/doctor-profile/${id}`)}
-            variant="outline"
-            size="sm"
-            className="flex-1 sm:flex-none gap-1.5"
-          >
-            {!isAuthenticated && <Lock className="w-3 h-3" />}
-            <User className="w-4 h-4 sm:hidden md:block" />
-            <span className="hidden sm:inline">View Profile</span>
-            <span className="sm:hidden">Profile</span>
-          </Button>
-        </div>
       </div>
-    </div>
+    </Card>
   );
-};
+});
 
-export { DoctorCard };
+DoctorCard.displayName = "DoctorCard";
+
+export default DoctorCard;
