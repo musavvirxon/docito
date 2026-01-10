@@ -3,8 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
-export type ContextType = 'general' | 'visit' | 'referral';
-export type MessageFilter = 'all' | 'visits' | 'referrals' | 'unread';
+export type ContextType = 'general' | 'visit' | 'referral' | 'appointment';
 
 export interface MessageAttachment {
   id: string;
@@ -22,8 +21,6 @@ export interface HealthcareMessage {
   sender_id: string;
   content: string;
   message_type: string;
-  sender_role?: string;
-  context_type?: ContextType;
   metadata: any;
   is_read: boolean;
   created_at: string;
@@ -33,6 +30,7 @@ export interface HealthcareMessage {
     avatar_url?: string;
     role?: string;
   };
+  sender_role?: string;
   attachments?: MessageAttachment[];
 }
 
@@ -40,37 +38,22 @@ export interface HealthcareConversation {
   id: string;
   type: string;
   name: string | null;
-  context_type?: ContextType;
-  context_id?: string | null;
-  is_locked?: boolean;
-  locked_at?: string | null;
-  locked_reason?: string | null;
-  created_by: string | null;
+  created_by: string;
   metadata: any;
-  last_message_at: string;
   created_at: string;
-  participants?: HealthcareParticipant[];
-  last_message?: HealthcareMessage;
+  updated_at: string;
+  last_message_at: string;
+  is_locked?: boolean;
+  context_type?: string | null;
+  context_id?: string | null;
+  participants?: any[];
+  last_message?: HealthcareMessage | null;
   unread_count?: number;
   context_data?: any;
 }
 
-export interface HealthcareParticipant {
-  id: string;
-  conversation_id: string;
-  user_id: string;
-  role: string;
-  last_read_at: string | null;
-  joined_at: string;
-  profile?: {
-    full_name: string;
-    avatar_url?: string;
-    role?: string;
-  };
-}
-
-export const useHealthcareMessaging = (filter: MessageFilter = 'all') => {
-  const { user, profile } = useAuth();
+export const useHealthcareMessaging = (filter: 'all' | 'unread' = 'all') => {
+  const { user } = useAuth();
   const [conversations, setConversations] = useState<HealthcareConversation[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -78,98 +61,60 @@ export const useHealthcareMessaging = (filter: MessageFilter = 'all') => {
     if (!user?.id) return;
 
     try {
-      const { data: participations, error: partError } = await supabase
-        .from('conversation_participants')
-        .select('conversation_id')
-        .eq('user_id', user.id);
+      setLoading(true);
 
-      if (partError) throw partError;
-
-      if (!participations?.length) {
-        setConversations([]);
-        setLoading(false);
-        return;
-      }
-
-      const conversationIds = participations.map(p => p.conversation_id);
-
-      const { data: convos, error: convError } = await supabase
+      const { data: convs, error: convErr } = await supabase
         .from('conversations')
-        .select('*')
-        .in('id', conversationIds)
+        .select(`
+          *,
+          conversation_participants!inner (
+            *,
+            profiles:user_id (
+              full_name,
+              avatar_url,
+              role
+            )
+          )
+        `)
         .order('last_message_at', { ascending: false });
 
-      if (convError) throw convError;
+      if (convErr) throw convErr;
 
-      // Cast to our extended type
-      const typedConvos = (convos || []) as any[];
+      const { data: lastMessages, error: lastMsgErr } = await supabase
+        .from('messages')
+        .select(`
+          *,
+          sender:sender_id (
+            full_name,
+            avatar_url,
+            role
+          )
+        `)
+        .in('conversation_id', (convs || []).map((c: any) => c.id))
+        .order('created_at', { ascending: false });
 
-      // Apply context filter
-      let filteredConvos = typedConvos;
-      if (filter === 'visits') {
-        filteredConvos = typedConvos.filter(c => c.context_type === 'visit');
-      } else if (filter === 'referrals') {
-        filteredConvos = typedConvos.filter(c => c.context_type === 'referral');
-      }
+      if (lastMsgErr) throw lastMsgErr;
 
-      const conversationsWithDetails = await Promise.all(
-        filteredConvos.map(async (conv) => {
-          const { data: participants } = await supabase
-            .from('conversation_participants')
-            .select('*')
-            .eq('conversation_id', conv.id);
+      const conversationsWithDetails = (convs || []).map((conv: any) => {
+        const participantsWithProfiles = (conv.conversation_participants || []).map((p: any) => ({
+          ...p,
+          user: p.profiles
+        }));
 
-          const participantsWithProfiles = await Promise.all(
-            (participants || []).map(async (p) => {
-              const { data: pProfile } = await supabase
-                .from('profiles')
-                .select('full_name, avatar_url, role')
-                .eq('user_id', p.user_id)
-                .single();
-              return { ...p, profile: pProfile };
-            })
-          );
+        const convLastMessage = (lastMessages || []).find((m: any) => m.conversation_id === conv.id);
 
-          const { data: lastMessages } = await supabase
-            .from('messages')
-            .select('*')
-            .eq('conversation_id', conv.id)
-            .order('created_at', { ascending: false })
-            .limit(1);
+        const unreadCount = 0; // phase 2
 
-          const { count: unreadCount } = await supabase
-            .from('messages')
-            .select('*', { count: 'exact', head: true })
-            .eq('conversation_id', conv.id)
-            .eq('is_read', false)
-            .neq('sender_id', user.id);
+        const contextData = null;
 
-          let contextData = null;
-          if (conv.context_type === 'visit' && conv.context_id) {
-            const { data: appointment } = await supabase
-              .from('appointments')
-              .select('*')
-              .eq('id', conv.context_id)
-              .single();
-            contextData = appointment;
-          } else if (conv.context_type === 'referral' && conv.context_id) {
-            const { data: referral } = await supabase
-              .from('referrals')
-              .select('*')
-              .eq('id', conv.context_id)
-              .single();
-            contextData = referral;
-          }
-
-          return {
-            ...conv,
-            participants: participantsWithProfiles,
-            last_message: lastMessages?.[0],
-            unread_count: unreadCount || 0,
-            context_data: contextData,
-          } as HealthcareConversation;
-        })
-      );
+        return {
+          ...conv,
+          participants: participantsWithProfiles,
+          last_message: convLastMessage || null,
+          unread_count: unreadCount,
+          context_data: contextData,
+        } as HealthcareConversation;
+      });
 
       let result = conversationsWithDetails;
       if (filter === 'unread') {
@@ -179,145 +124,119 @@ export const useHealthcareMessaging = (filter: MessageFilter = 'all') => {
       setConversations(result);
     } catch (error) {
       console.error('Error fetching conversations:', error);
+      toast.error('Failed to load conversations');
     } finally {
       setLoading(false);
     }
   }, [user?.id, filter]);
 
-  const canMessageUser = useCallback(async (targetUserId: string): Promise<boolean> => {
-    if (!user?.id) return false;
-    // For now, allow messaging between users who share appointments or referrals
-    // This will be enhanced when messaging_permissions table is properly typed
-    return true;
-  }, [user?.id]);
-
-  const getAllowedContacts = useCallback(async () => {
-    if (!user?.id) return [];
-
-    try {
-      // Get users the current user can message based on appointments/referrals
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, avatar_url, role')
-        .neq('user_id', user.id)
-        .limit(50);
-
-      return profiles || [];
-    } catch (error) {
-      console.error('Error fetching allowed contacts:', error);
-      return [];
-    }
-  }, [user?.id]);
-
-  const createContextConversation = useCallback(async (
-    participantIds: string[],
-    contextType: ContextType = 'general',
-    contextId?: string,
-    name?: string
-  ) => {
-    if (!user?.id) return null;
-
-    try {
-      const convType = contextType === 'general' 
-        ? (participantIds.length > 1 ? 'group' : 'direct')
-        : contextType;
-
-      const { data: newConv, error: convError } = await supabase
-        .from('conversations')
-        .insert({
-          type: convType,
-          name: name || null,
-          created_by: user.id,
-          metadata: { context_type: contextType, context_id: contextId },
-        } as any)
-        .select()
-        .single();
-
-      if (convError) throw convError;
-
-      const allParticipants = [user.id, ...participantIds.filter(id => id !== user.id)];
-      
-      await supabase.from('conversation_participants').insert(
-        allParticipants.map((userId, index) => ({
-          conversation_id: newConv.id,
-          user_id: userId,
-          role: index === 0 ? 'admin' : 'member',
-        }))
-      );
-
-      await fetchConversations();
-      return newConv;
-    } catch (error) {
-      console.error('Error creating conversation:', error);
-      toast.error('Failed to create conversation');
-      return null;
-    }
+  useEffect(() => {
+    if (user?.id) fetchConversations();
   }, [user?.id, fetchConversations]);
 
   const getOrCreateDirectConversation = useCallback(async (otherUserId: string) => {
-    if (!user?.id) return null;
+      if (!user?.id) return null;
 
-    try {
-      const { data: myParticipations } = await supabase
-        .from('conversation_participants')
-        .select('conversation_id')
-        .eq('user_id', user.id);
+      try {
+        const { data: conversationId, error: rpcError } = await supabase.rpc(
+          'create_direct_conversation' as any,
+          { target_user_id: otherUserId } as any
+        );
 
-      if (myParticipations?.length) {
-        for (const p of myParticipations) {
-          const { data: conv } = await supabase
-            .from('conversations')
-            .select('*')
-            .eq('id', p.conversation_id)
-            .eq('type', 'direct')
-            .single();
+        if (rpcError) throw rpcError;
 
-          if (conv) {
-            const { data: otherParticipant } = await supabase
-              .from('conversation_participants')
-              .select('*')
-              .eq('conversation_id', conv.id)
-              .eq('user_id', otherUserId)
-              .single();
+        const { data: conv, error: convError } = await supabase
+          .from('conversations')
+          .select('*')
+          .eq('id', conversationId as any)
+          .single();
 
-            if (otherParticipant) {
-              return conv;
-            }
-          }
-        }
+        if (convError) throw convError;
+
+        await fetchConversations();
+        return conv as any;
+      } catch (error) {
+        console.error('Error getting/creating conversation:', error);
+        toast.error('Failed to start conversation');
+        return null;
+      }
+    }, [user?.id, fetchConversations]);
+
+  const createContextConversation = useCallback(async (
+      participantIds: string[],
+      contextType: ContextType = 'general',
+      contextId?: string,
+      name?: string
+    ) => {
+      if (!user?.id) return null;
+
+      // For now, only "general" conversations are created client-side via RPC.
+      // Visit/referral chats are created automatically by DB triggers.
+      if (contextType !== 'general') {
+        toast.error('This conversation type is created automatically.');
+        return null;
       }
 
-      return await createContextConversation([otherUserId], 'general');
-    } catch (error) {
-      console.error('Error getting/creating conversation:', error);
-      toast.error('Failed to start conversation');
-      return null;
-    }
-  }, [user?.id, createContextConversation]);
+      try {
+        const uniqueIds = Array.from(new Set(participantIds.filter(Boolean)));
+        if (uniqueIds.length === 0) return null;
 
-  useEffect(() => {
-    if (!user?.id) return;
+        if (uniqueIds.length === 1) {
+          // Direct
+          const { data: conversationId, error: rpcError } = await supabase.rpc(
+            'create_direct_conversation' as any,
+            { target_user_id: uniqueIds[0] } as any
+          );
+          if (rpcError) throw rpcError;
 
-    fetchConversations();
+          const { data: conv, error: convError } = await supabase
+            .from('conversations')
+            .select('*')
+            .eq('id', conversationId as any)
+            .single();
 
-    const channel = supabase
-      .channel('healthcare-messaging-updates')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'messages' },
-        () => fetchConversations()
-      )
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'conversations' },
-        () => fetchConversations()
-      )
-      .subscribe();
+          if (convError) throw convError;
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user?.id, fetchConversations]);
+          await fetchConversations();
+          return conv as any;
+        }
+
+        // Group (non-patient callers only; enforced in DB)
+        const allParticipants = Array.from(new Set([user.id, ...uniqueIds]));
+
+        const { data: conversationId, error: rpcError } = await supabase.rpc(
+          'create_group_conversation' as any,
+          { p_name: name || 'New group', p_participant_ids: allParticipants } as any
+        );
+        if (rpcError) throw rpcError;
+
+        const { data: conv, error: convError } = await supabase
+          .from('conversations')
+          .select('*')
+          .eq('id', conversationId as any)
+          .single();
+
+        if (convError) throw convError;
+
+        await fetchConversations();
+        return conv as any;
+      } catch (error) {
+        console.error('Error creating conversation:', error);
+        toast.error('Failed to create conversation');
+        return null;
+      }
+    }, [user?.id, fetchConversations]);
+
+  const canMessageUser = useCallback(async (_targetUserId: string) => {
+    // DB enforces patient→patient and conversation participant rules
+    return true;
+  }, []);
+
+  const getAllowedContacts = useCallback(async () => {
+    // Optional: keep as-is if you already have messaging_permissions-based logic elsewhere.
+    // For the "New chat" UI we now use the RPC search_chat_users().
+    return [];
+  }, []);
 
   return {
     conversations,
@@ -331,201 +250,147 @@ export const useHealthcareMessaging = (filter: MessageFilter = 'all') => {
 };
 
 export const useHealthcareMessages = (conversationId: string | null) => {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [messages, setMessages] = useState<HealthcareMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [conversationLocked, setConversationLocked] = useState(false);
 
   const fetchMessages = useCallback(async () => {
-    if (!conversationId || !user?.id) {
-      setMessages([]);
-      setLoading(false);
-      return;
-    }
+    if (!conversationId || !user?.id) return;
 
     try {
-      const { data: conv } = await supabase
+      setLoading(true);
+
+      const { data: conv, error: convErr } = await supabase
         .from('conversations')
-        .select('*')
+        .select('is_locked')
         .eq('id', conversationId)
         .single();
 
-      const convData = conv as any;
-      setConversationLocked(convData?.is_locked || false);
+      if (convErr) throw convErr;
+      setConversationLocked(!!conv?.is_locked);
 
-      const { data, error } = await supabase
-        .from('messages')
+      const { data: messageData, error: messageError } = await supabase
+        .from('messages_with_attachments' as any)
         .select('*')
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
+      if (messageError) throw messageError;
 
-      const messagesWithDetails = await Promise.all(
-        (data || []).map(async (msg) => {
-          const { data: senderProfile } = await supabase
-            .from('profiles')
-            .select('full_name, avatar_url, role')
-            .eq('user_id', msg.sender_id)
-            .single();
+      const senderIds = Array.from(new Set((messageData || []).map((m: any) => m.sender_id)));
 
-          return {
-            ...msg,
-            sender: senderProfile,
-            attachments: [],
-          } as HealthcareMessage;
-        })
-      );
+      const { data: senderProfiles, error: senderError } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, avatar_url, role')
+        .in('user_id', senderIds);
 
-      setMessages(messagesWithDetails);
+      if (senderError) throw senderError;
 
-      await supabase
-        .from('messages')
-        .update({ is_read: true })
-        .eq('conversation_id', conversationId)
-        .neq('sender_id', user.id)
-        .eq('is_read', false);
+      const profileMap = new Map(senderProfiles?.map(p => [p.user_id, p]) || []);
 
-      await supabase
-        .from('conversation_participants')
-        .update({ last_read_at: new Date().toISOString() })
-        .eq('conversation_id', conversationId)
-        .eq('user_id', user.id);
+      const messagesWithSenders = (messageData || []).map((msg: any) => {
+        const senderProfile = profileMap.get(msg.sender_id);
+        return {
+          ...(msg as any),
+          sender: senderProfile,
+          sender_role: senderProfile?.role,
+          attachments: (msg as any).attachments || [],
+        } as HealthcareMessage;
+      });
 
+      setMessages(messagesWithSenders);
     } catch (error) {
       console.error('Error fetching messages:', error);
+      toast.error('Failed to load messages');
     } finally {
       setLoading(false);
     }
   }, [conversationId, user?.id]);
 
-  const sendMessage = useCallback(async (
-    content: string,
-    messageType: string = 'text',
-    contextType?: ContextType
-  ) => {
-    if (!conversationId || !user?.id || conversationLocked) {
-      if (conversationLocked) {
-        toast.error('This conversation is locked');
-      }
-      return null;
-    }
+  useEffect(() => {
+    if (conversationId && user?.id) fetchMessages();
+  }, [conversationId, user?.id, fetchMessages]);
 
-    if (!content.trim() && messageType === 'text') return null;
+  const sendMessage = useCallback(async (content: string) => {
+    if (!conversationId || !user?.id || conversationLocked) return null;
 
     try {
-      const { data, error } = await supabase
+      const { data: message, error: messageError } = await supabase
         .from('messages')
         .insert({
           conversation_id: conversationId,
           sender_id: user.id,
-          content: content.trim(),
-          message_type: messageType,
+          content,
+          message_type: 'text',
         } as any)
         .select()
         .single();
 
-      if (error) throw error;
+      if (messageError) throw messageError;
 
-      await supabase
-        .from('conversations')
-        .update({ last_message_at: new Date().toISOString() })
-        .eq('id', conversationId);
-
-      return data;
+      await fetchMessages();
+      return message;
     } catch (error) {
       console.error('Error sending message:', error);
       toast.error('Failed to send message');
       return null;
     }
-  }, [conversationId, user?.id, conversationLocked]);
-
-  const uploadAttachment = useCallback(async (
-    file: File,
-    messageContent?: string
-  ) => {
-    if (!conversationId || !user?.id || conversationLocked) return null;
-
-    try {
-      const fileExt = file.name.split('.').pop();
-      const filePath = `messages/${conversationId}/${Date.now()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('message-attachments')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: message, error: msgError } = await supabase
-        .from('messages')
-        .insert({
-          conversation_id: conversationId,
-          sender_id: user.id,
-          content: messageContent || file.name,
-          message_type: 'file',
-        } as any)
-        .select()
-        .single();
-
-      if (msgError) throw msgError;
-
-      await supabase
-        .from('conversations')
-        .update({ last_message_at: new Date().toISOString() })
-        .eq('id', conversationId);
-
-      await fetchMessages();
-      return message;
-    } catch (error) {
-      console.error('Error uploading attachment:', error);
-      toast.error('Failed to upload file');
-      return null;
-    }
   }, [conversationId, user?.id, conversationLocked, fetchMessages]);
 
-  useEffect(() => {
-    if (!conversationId) return;
+  const uploadAttachment = useCallback(async (
+      file: File,
+      messageContent?: string
+    ) => {
+      if (!conversationId || !user?.id || conversationLocked) return null;
 
-    fetchMessages();
+      try {
+        // 1) Create the message (we need message_id for storage path)
+        const { data: message, error: msgError } = await supabase
+          .from('messages')
+          .insert({
+            conversation_id: conversationId,
+            sender_id: user.id,
+            content: messageContent || file.name,
+            message_type: 'file',
+          } as any)
+          .select()
+          .single();
 
-    const channel = supabase
-      .channel(`healthcare-messages-${conversationId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `conversation_id=eq.${conversationId}`,
-        },
-        async (payload) => {
-          const newMessage = payload.new as any;
+        if (msgError) throw msgError;
+        if (!message?.id) throw new Error('Failed to create message');
 
-          const { data: senderProfile } = await supabase
-            .from('profiles')
-            .select('full_name, avatar_url, role')
-            .eq('user_id', newMessage.sender_id)
-            .single();
+        // 2) Upload to PRIVATE bucket using canonical path
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const objectPath = `attachments/${conversationId}/${message.id}/${safeName}`;
 
-          setMessages(prev => [
-            ...prev,
-            { ...newMessage, sender: senderProfile, attachments: [] } as HealthcareMessage
-          ]);
+        const { error: uploadError } = await supabase.storage
+          .from('message-attachments')
+          .upload(objectPath, file, { contentType: file.type, upsert: false });
 
-          if (newMessage.sender_id !== user?.id) {
-            await supabase
-              .from('messages')
-              .update({ is_read: true })
-              .eq('id', newMessage.id);
-          }
-        }
-      )
-      .subscribe();
+        if (uploadError) throw uploadError;
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [conversationId, user?.id, fetchMessages]);
+        // 3) Create attachment row
+        const { error: attError } = await supabase
+          .from('message_attachments' as any)
+          .insert({
+            message_id: message.id,
+            file_name: file.name,
+            file_path: objectPath,
+            file_type: file.type || 'application/octet-stream',
+            file_size: file.size,
+          } as any);
+
+        if (attError) throw attError;
+
+        await fetchMessages();
+        return message as any;
+      } catch (error) {
+        console.error('Error uploading attachment:', error);
+        toast.error('Failed to upload file');
+        return null;
+      }
+    }, [conversationId, user?.id, conversationLocked, fetchMessages]);
 
   return {
     messages,
