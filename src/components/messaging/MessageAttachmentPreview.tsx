@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { FileText, Image, Download, ExternalLink } from 'lucide-react';
+import { FileText, Image, Download, ExternalLink, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { MessageAttachment } from '@/hooks/useHealthcareMessaging';
 import { cn } from '@/lib/utils';
@@ -14,34 +14,66 @@ const MessageAttachmentPreview: React.FC<MessageAttachmentPreviewProps> = ({
   attachment,
   isOwn = false,
 }) => {
+  const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const isImage = attachment.file_type?.startsWith('image/');
   const isPdf = attachment.file_type === 'application/pdf';
 
-  const getFileUrl = () => {
-    const { data } = supabase.storage
-      .from('message-attachments')
-      .getPublicUrl(attachment.file_path);
-    return data.publicUrl;
-  };
+  // Get signed URL for private bucket access
+  useEffect(() => {
+    const getSignedUrl = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const { data, error: signError } = await supabase.storage
+          .from('message-attachments')
+          .createSignedUrl(attachment.file_path, 3600); // 1 hour expiry
+
+        if (signError) throw signError;
+        
+        setSignedUrl(data.signedUrl);
+      } catch (err) {
+        console.error('Error getting signed URL:', err);
+        setError('Failed to load attachment');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getSignedUrl();
+  }, [attachment.file_path]);
 
   const handleDownload = async () => {
-    const { data, error } = await supabase.storage
-      .from('message-attachments')
-      .download(attachment.file_path);
+    try {
+      const { data, error } = await supabase.storage
+        .from('message-attachments')
+        .download(attachment.file_path);
 
-    if (error) {
-      console.error('Download error:', error);
-      return;
+      if (error) {
+        console.error('Download error:', error);
+        return;
+      }
+
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = attachment.file_name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Download failed:', err);
     }
+  };
 
-    const url = URL.createObjectURL(data);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = attachment.file_name;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const handleOpen = () => {
+    if (signedUrl) {
+      window.open(signedUrl, '_blank');
+    }
   };
 
   const formatFileSize = (bytes: number) => {
@@ -50,12 +82,32 @@ const MessageAttachmentPreview: React.FC<MessageAttachmentPreviewProps> = ({
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  if (loading) {
+    return (
+      <div className="mt-2 p-3 rounded-lg border flex items-center justify-center min-h-[60px]">
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (error || !signedUrl) {
+    return (
+      <div className="mt-2 p-3 rounded-lg border flex items-center gap-3 max-w-xs">
+        <FileText className="h-5 w-5 text-muted-foreground" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium truncate">{attachment.file_name}</p>
+          <p className="text-xs text-destructive">{error || 'Unable to load'}</p>
+        </div>
+      </div>
+    );
+  }
+
   if (isImage) {
     return (
       <div className="mt-2">
         <div className="relative group rounded-lg overflow-hidden max-w-xs">
           <img
-            src={getFileUrl()}
+            src={signedUrl}
             alt={attachment.file_name}
             className="w-full h-auto rounded-lg"
           />
@@ -72,7 +124,7 @@ const MessageAttachmentPreview: React.FC<MessageAttachmentPreviewProps> = ({
               size="icon"
               variant="secondary"
               className="h-8 w-8"
-              onClick={() => window.open(getFileUrl(), '_blank')}
+              onClick={handleOpen}
             >
               <ExternalLink className="h-4 w-4" />
             </Button>

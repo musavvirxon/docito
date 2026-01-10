@@ -1,26 +1,38 @@
 import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, FlaskConical, Clock, Shield, TestTube } from 'lucide-react';
+import { MapPin, FlaskConical, Clock, Shield, TestTube, MessageSquare, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { useMessageAction } from '@/hooks/useMessageAction';
 import type { LabResult } from '@/hooks/useUnifiedSearch';
 
 interface LabSearchCardProps {
   lab: LabResult;
   onView?: (lab: LabResult) => void;
+  onMessage?: (lab: LabResult) => void;
 }
 
-const LabSearchCard = memo(({ lab, onView }: LabSearchCardProps) => {
+const LabSearchCard = memo(({ lab, onView, onMessage }: LabSearchCardProps) => {
   const navigate = useNavigate();
+  const { startConversation, loading: messageLoading } = useMessageAction();
 
   const handleViewLab = () => {
     if (onView) {
       onView(lab);
     } else {
       navigate(`/lab/${lab.id}`);
+    }
+  };
+
+  const handleMessage = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onMessage) {
+      onMessage(lab);
+    } else {
+      await startConversation(lab.id);
     }
   };
 
@@ -93,13 +105,25 @@ const LabSearchCard = memo(({ lab, onView }: LabSearchCardProps) => {
           </div>
 
           {/* Action */}
-          <div className="mt-4">
+          <div className="mt-4 flex gap-2">
             <Button 
-              className="w-full"
+              className="flex-1"
               variant="outline"
               onClick={handleViewLab}
             >
               View Tests
+            </Button>
+            <Button 
+              variant="outline"
+              size="icon"
+              onClick={handleMessage}
+              disabled={messageLoading}
+            >
+              {messageLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <MessageSquare className="w-4 h-4" />
+              )}
             </Button>
           </div>
         </CardContent>

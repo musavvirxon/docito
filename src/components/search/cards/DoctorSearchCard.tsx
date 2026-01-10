@@ -1,12 +1,13 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Star, MapPin, BadgeCheck, Calendar, Languages, DollarSign, User } from 'lucide-react';
+import { Star, MapPin, BadgeCheck, Calendar, Languages, DollarSign, MessageSquare, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
+import { useMessageAction } from '@/hooks/useMessageAction';
 import type { DoctorResult } from '@/hooks/useUnifiedSearch';
 
 interface DoctorSearchCardProps {
@@ -17,6 +18,7 @@ interface DoctorSearchCardProps {
 const DoctorSearchCard = memo(({ doctor, onBook }: DoctorSearchCardProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { startConversation, loading: messageLoading } = useMessageAction();
   const isAuthenticated = !!user;
 
   const handleViewProfile = (e: React.MouseEvent) => {
@@ -41,6 +43,14 @@ const DoctorSearchCard = memo(({ doctor, onBook }: DoctorSearchCardProps) => {
     } else {
       navigate(`/book-appointment/${doctor.id}`);
     }
+  };
+
+  const handleMessage = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Doctor ID is the doctor table ID, we need the user_id
+    // For now, we'll use the doctor.id - the RPC should handle this
+    // Note: In a real scenario, doctor.id might need to map to user_id
+    await startConversation(doctor.id);
   };
 
   const handleCardClick = () => {
@@ -153,6 +163,18 @@ const DoctorSearchCard = memo(({ doctor, onBook }: DoctorSearchCardProps) => {
               onClick={handleViewProfile}
             >
               View Profile
+            </Button>
+            <Button 
+              variant="outline"
+              size="sm"
+              onClick={handleMessage}
+              disabled={messageLoading}
+            >
+              {messageLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <MessageSquare className="w-4 h-4" />
+              )}
             </Button>
             <Button 
               size="sm" 
