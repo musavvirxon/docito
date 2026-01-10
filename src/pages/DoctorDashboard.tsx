@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bell, Settings, User, Calendar, BarChart3, Search, Briefcase, MapPin, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2, ArrowRightLeft } from "lucide-react";
+import { Settings, User, Calendar, BarChart3, Search, Briefcase, MapPin, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2, ArrowRightLeft } from "lucide-react";
 import { DoctorDataProvider, useDoctorData } from "@/contexts/DoctorDataContext";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
@@ -28,6 +28,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/lib/api/supabase-api";
 import QuickActionModals from "@/components/doctor/QuickActionModals";
 import ThemeToggle from "@/components/home/ThemeToggle";
+import { NotificationDropdown } from "@/components/NotificationDropdown";
 import { DoctorVerificationStatusCard } from "@/components/doctor/DoctorVerificationStatusCard";
 import { DoctorReferralsSection } from "@/components/doctor/DoctorReferralsSection";
 type DoctorStatus = "independent" | "clinic-member";
