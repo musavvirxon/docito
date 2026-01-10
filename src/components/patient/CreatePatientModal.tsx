@@ -22,11 +22,14 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
+// ✅ Only phone is required. Other fields are optional.
+// The DB table currently requires full_name + date_of_birth, so we safely auto-fill defaults
+// when the doctor leaves them blank.
 const formSchema = z.object({
-  full_name: z.string().min(2, "Full name is required"),
+  full_name: z.string().optional(),
   phone: z.string().min(5, "Phone is required"),
   email: z.string().optional(),
-  date_of_birth: z.string().min(1, "Date of birth is required"),
+  date_of_birth: z.string().optional(),
 });
 
 export interface DoctorPatientRow {
@@ -94,14 +97,19 @@ const CreatePatientModal = ({
 
     setLoading(true);
     try {
+      const phone = values.phone.trim();
+      const fullName = (values.full_name || "").trim() || `Patient (${phone})`;
+      // keep UI optional, but satisfy DB NOT NULL
+      const dob = (values.date_of_birth || "").trim() || "1900-01-01";
+
       const { data, error } = await supabase
         .from("doctor_patients")
         .insert({
           doctor_id: doctorId,
-          full_name: values.full_name.trim(),
-          phone: values.phone.trim(),
+          full_name: fullName,
+          phone,
           email: values.email?.trim() || null,
-          date_of_birth: values.date_of_birth,
+          date_of_birth: dob,
           status: "active",
         })
         .select("id, full_name, phone, email, date_of_birth, created_at")
@@ -140,7 +148,7 @@ const CreatePatientModal = ({
               name="full_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full Name*</FormLabel>
+                  <FormLabel>Full Name (optional)</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g., John Smith" {...field} />
                   </FormControl>
@@ -182,7 +190,7 @@ const CreatePatientModal = ({
               name="date_of_birth"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Date of Birth*</FormLabel>
+                  <FormLabel>Date of Birth (optional)</FormLabel>
                   <FormControl>
                     <Input type="date" {...field} />
                   </FormControl>
