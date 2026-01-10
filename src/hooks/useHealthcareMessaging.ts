@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 export type ContextType = 'general' | 'visit' | 'referral' | 'appointment';
+export type MessageFilter = 'all' | 'visits' | 'referrals' | 'unread';
 
 export interface MessageAttachment {
   id: string;
@@ -34,6 +35,20 @@ export interface HealthcareMessage {
   attachments?: MessageAttachment[];
 }
 
+export interface HealthcareParticipant {
+  id: string;
+  conversation_id: string;
+  user_id: string;
+  role: string;
+  joined_at: string;
+  last_read_at: string | null;
+  profile?: {
+    full_name: string;
+    avatar_url?: string;
+    role?: string;
+  };
+}
+
 export interface HealthcareConversation {
   id: string;
   type: string;
@@ -44,15 +59,16 @@ export interface HealthcareConversation {
   updated_at: string;
   last_message_at: string;
   is_locked?: boolean;
-  context_type?: string | null;
+  locked_reason?: string | null;
+  context_type?: ContextType | null;
   context_id?: string | null;
-  participants?: any[];
+  participants?: HealthcareParticipant[];
   last_message?: HealthcareMessage | null;
   unread_count?: number;
   context_data?: any;
 }
 
-export const useHealthcareMessaging = (filter: 'all' | 'unread' = 'all') => {
+export const useHealthcareMessaging = (filter: MessageFilter = 'all') => {
   const { user } = useAuth();
   const [conversations, setConversations] = useState<HealthcareConversation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,7 +114,7 @@ export const useHealthcareMessaging = (filter: 'all' | 'unread' = 'all') => {
       const conversationsWithDetails = (convs || []).map((conv: any) => {
         const participantsWithProfiles = (conv.conversation_participants || []).map((p: any) => ({
           ...p,
-          user: p.profiles
+          profile: p.profiles || { full_name: 'Unknown', avatar_url: null, role: null }
         }));
 
         const convLastMessage = (lastMessages || []).find((m: any) => m.conversation_id === conv.id);
@@ -109,6 +125,9 @@ export const useHealthcareMessaging = (filter: 'all' | 'unread' = 'all') => {
 
         return {
           ...conv,
+          is_locked: conv.is_locked || false,
+          locked_reason: conv.locked_reason || null,
+          context_type: (conv.context_type as ContextType) || 'general',
           participants: participantsWithProfiles,
           last_message: convLastMessage || null,
           unread_count: unreadCount,
@@ -119,6 +138,10 @@ export const useHealthcareMessaging = (filter: 'all' | 'unread' = 'all') => {
       let result = conversationsWithDetails;
       if (filter === 'unread') {
         result = result.filter(c => (c.unread_count || 0) > 0);
+      } else if (filter === 'visits') {
+        result = result.filter(c => c.context_type === 'visit' || c.context_type === 'appointment');
+      } else if (filter === 'referrals') {
+        result = result.filter(c => c.context_type === 'referral');
       }
 
       setConversations(result);
@@ -261,22 +284,41 @@ export const useHealthcareMessages = (conversationId: string | null) => {
     try {
       setLoading(true);
 
+      // Try to get is_locked, but fallback gracefully if column doesn't exist
       const { data: conv, error: convErr } = await supabase
         .from('conversations')
-        .select('is_locked')
+        .select('*')
         .eq('id', conversationId)
         .single();
 
       if (convErr) throw convErr;
-      setConversationLocked(!!conv?.is_locked);
+      setConversationLocked(!!(conv as any)?.is_locked);
 
-      const { data: messageData, error: messageError } = await supabase
-        .from('messages_with_attachments' as any)
-        .select('*')
-        .eq('conversation_id', conversationId)
-        .order('created_at', { ascending: true });
-
-      if (messageError) throw messageError;
+      // Try messages_with_attachments view, fallback to messages table
+      let messageData: any[] = [];
+      try {
+        const { data, error } = await supabase
+          .from('messages_with_attachments' as any)
+          .select('*')
+          .eq('conversation_id', conversationId)
+          .order('created_at', { ascending: true });
+        
+        if (!error && data) {
+          messageData = data;
+        } else {
+          throw error;
+        }
+      } catch {
+        // Fallback to regular messages table
+        const { data, error } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('conversation_id', conversationId)
+          .order('created_at', { ascending: true });
+        
+        if (error) throw error;
+        messageData = data || [];
+      }
 
       const senderIds = Array.from(new Set((messageData || []).map((m: any) => m.sender_id)));
 
@@ -400,4 +442,9 @@ export const useHealthcareMessages = (conversationId: string | null) => {
     uploadAttachment,
     fetchMessages,
   };
+};
+
+// Hook for conversation messages (used by MessagingCenter)
+export const useConversationMessages = (conversationId: string | null) => {
+  return useHealthcareMessages(conversationId);
 };

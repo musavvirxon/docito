@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Calendar,
@@ -12,7 +11,6 @@ import {
   FileText,
   ExternalLink,
   Clock,
-  MapPin,
   Stethoscope,
   Lock,
 } from 'lucide-react';
@@ -20,7 +18,16 @@ import { format } from 'date-fns';
 import { HealthcareConversation, HealthcareParticipant } from '@/hooks/useHealthcareMessaging';
 import RoleBadge from './RoleBadge';
 import { useAuth } from '@/contexts/AuthContext';
-import { getReferralTypeLabel } from '@/lib/api/referral-api';
+
+const getReferralTypeLabel = (type: string) => {
+  const labels: Record<string, string> = {
+    consultation: 'Consultation',
+    test: 'Lab Test',
+    imaging: 'Imaging',
+    prescription: 'Prescription',
+  };
+  return labels[type] || type;
+};
 
 interface ConversationContextPanelProps {
   conversation: HealthcareConversation;

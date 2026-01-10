@@ -2,7 +2,8 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, ArrowRightLeft, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ContextType } from '@/hooks/useHealthcareMessaging';
+
+export type ContextType = 'general' | 'visit' | 'referral' | 'appointment';
 
 interface ContextBadgeProps {
   contextType: ContextType;
@@ -25,6 +26,11 @@ const contextConfig: Record<ContextType, { label: string; icon: React.ElementTyp
     label: 'Referral', 
     icon: ArrowRightLeft, 
     variant: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' 
+  },
+  appointment: { 
+    label: 'Appointment', 
+    icon: Calendar, 
+    variant: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' 
   },
 };
 

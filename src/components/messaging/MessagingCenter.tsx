@@ -4,7 +4,6 @@ import { useMessaging, useConversationMessages, Conversation } from '@/hooks/use
 import ConversationList from './ConversationList';
 import MessageThread from './MessageThread';
 import NewChatDialog from './NewChatDialog';
-
 const MessagingCenter: React.FC = () => {
   const {
     conversations,

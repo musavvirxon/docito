@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Building2 } from "lucide-react";
-import { DoctorCard } from "@/components/cards/DoctorCard";
+import DoctorCard from "@/components/cards/DoctorCard";
 import { ClinicCard } from "@/components/cards/ClinicCard";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -110,14 +110,13 @@ const SearchResults = ({
               key={result.id}
               id={result.id}
               name={result.name}
-              specialty={result.specialty}
-              clinicName={result.affiliatedPractice}
+              specialty={result.specialty || ''}
+              location={result.location || ''}
               imageUrl={result.image}
-              rating={result.rating}
-              reviewCount={result.reviewCount}
+              rating={result.rating || 0}
+              reviewCount={result.reviewCount || 0}
               languages={result.languages}
               consultationFee={result.consultationFee}
-              isAuthenticated={isAuthenticated}
             />
           ) : (
             <ClinicCard

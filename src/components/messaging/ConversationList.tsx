@@ -32,7 +32,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
     if (conv.name) return conv.name;
     if (conv.type === 'direct' && conv.participants) {
       const otherParticipant = conv.participants.find(p => p.user_id !== user?.id);
-      return otherParticipant?.profile?.full_name || 'Unknown User';
+      return otherParticipant?.user?.full_name || 'Unknown User';
     }
     return 'Group Chat';
   };
@@ -40,7 +40,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
   const getConversationAvatar = (conv: Conversation) => {
     if (conv.type === 'direct' && conv.participants) {
       const otherParticipant = conv.participants.find(p => p.user_id !== user?.id);
-      return otherParticipant?.profile?.avatar_url;
+      return otherParticipant?.user?.avatar_url;
     }
     return null;
   };

@@ -224,11 +224,13 @@ export type Database = {
           appointment_date: string
           created_at: string | null
           doctor_id: string | null
+          doctor_patient_id: string | null
           end_time: string
           id: string
           notes: string | null
           patient_id: string | null
           practice_id: string | null
+          procedure_id: string | null
           start_time: string
           status: Database["public"]["Enums"]["appointment_status"] | null
         }
@@ -236,11 +238,13 @@ export type Database = {
           appointment_date: string
           created_at?: string | null
           doctor_id?: string | null
+          doctor_patient_id?: string | null
           end_time: string
           id?: string
           notes?: string | null
           patient_id?: string | null
           practice_id?: string | null
+          procedure_id?: string | null
           start_time: string
           status?: Database["public"]["Enums"]["appointment_status"] | null
         }
@@ -248,11 +252,13 @@ export type Database = {
           appointment_date?: string
           created_at?: string | null
           doctor_id?: string | null
+          doctor_patient_id?: string | null
           end_time?: string
           id?: string
           notes?: string | null
           patient_id?: string | null
           practice_id?: string | null
+          procedure_id?: string | null
           start_time?: string
           status?: Database["public"]["Enums"]["appointment_status"] | null
         }
@@ -272,10 +278,31 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "appointments_doctor_patient_id_fkey"
+            columns: ["doctor_patient_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "appointments_practice_id_fkey"
             columns: ["practice_id"]
             isOneToOne: false
             referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_procedure_id_fkey"
+            columns: ["procedure_id"]
+            isOneToOne: false
+            referencedRelation: "procedures"
             referencedColumns: ["id"]
           },
         ]
@@ -1093,30 +1120,45 @@ export type Database = {
       }
       conversations: {
         Row: {
+          context_id: string | null
+          context_type: string | null
           created_at: string
           created_by: string | null
           id: string
+          is_locked: boolean
           last_message_at: string | null
+          locked_at: string | null
+          locked_reason: string | null
           metadata: Json | null
           name: string | null
           type: string | null
           updated_at: string
         }
         Insert: {
+          context_id?: string | null
+          context_type?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
+          is_locked?: boolean
           last_message_at?: string | null
+          locked_at?: string | null
+          locked_reason?: string | null
           metadata?: Json | null
           name?: string | null
           type?: string | null
           updated_at?: string
         }
         Update: {
+          context_id?: string | null
+          context_type?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
+          is_locked?: boolean
           last_message_at?: string | null
+          locked_at?: string | null
+          locked_reason?: string | null
           metadata?: Json | null
           name?: string | null
           type?: string | null
@@ -2786,6 +2828,51 @@ export type Database = {
           },
         ]
       }
+      message_attachments: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          message_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          message_id: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          message_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_attachments_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_attachments_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages_with_attachments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
@@ -3384,6 +3471,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "patient_all_appointments"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "payments_practice_id_fkey"
@@ -6922,6 +7016,53 @@ export type Database = {
           },
         ]
       }
+      messages_with_attachments: {
+        Row: {
+          attachments: Json | null
+          content: string | null
+          conversation_id: string | null
+          created_at: string | null
+          id: string | null
+          is_read: boolean | null
+          message_type: string | null
+          metadata: Json | null
+          sender_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          attachments?: never
+          content?: string | null
+          conversation_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_read?: boolean | null
+          message_type?: string | null
+          metadata?: Json | null
+          sender_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          attachments?: never
+          content?: string | null
+          conversation_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_read?: boolean | null
+          message_type?: string | null
+          metadata?: Json | null
+          sender_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patient_all_appointments: {
         Row: {
           appointment_date: string | null
@@ -6949,6 +7090,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "doctors"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "appointments_practice_id_fkey"
@@ -7120,6 +7268,14 @@ export type Database = {
         }
         Returns: Json
       }
+      create_direct_conversation: {
+        Args: { target_user_id: string }
+        Returns: string
+      }
+      create_group_conversation: {
+        Args: { p_name: string; p_participant_ids: string[] }
+        Returns: string
+      }
       create_guest_patient_profile: {
         Args: { p_email: string; p_full_name: string; p_phone?: string }
         Returns: Json
@@ -7260,6 +7416,16 @@ export type Database = {
       request_account_action: {
         Args: { p_notes?: string; p_request_type: string }
         Returns: Json
+      }
+      search_chat_users: {
+        Args: { p_query: string }
+        Returns: {
+          avatar_url: string
+          full_name: string
+          highest_role: Database["public"]["Enums"]["app_role"]
+          roles: Database["public"]["Enums"]["app_role"][]
+          user_id: string
+        }[]
       }
       send_notification_to_user: {
         Args: {

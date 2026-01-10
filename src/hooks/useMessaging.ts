@@ -30,6 +30,19 @@ export interface MessageAttachment {
   created_at: string;
 }
 
+export interface Participant {
+  id: string;
+  conversation_id: string;
+  user_id: string;
+  role: string;
+  joined_at: string;
+  last_read_at: string | null;
+  user?: {
+    full_name: string;
+    avatar_url?: string;
+  };
+}
+
 export interface Conversation {
   id: string;
   type: string;
@@ -42,19 +55,6 @@ export interface Conversation {
   participants?: Participant[];
   last_message?: Message;
   unread_count?: number;
-}
-
-export interface Participant {
-  id: string;
-  conversation_id: string;
-  user_id: string;
-  role: string;
-  joined_at: string;
-  last_read_at: string | null;
-  user?: {
-    full_name: string;
-    avatar_url?: string;
-  };
 }
 
 export const useMessaging = () => {
@@ -86,27 +86,35 @@ export const useMessaging = () => {
 
       const { data: lastMessages, error: lastMessageError } = await supabase
         .from('messages')
-        .select(`
-          *,
-          sender:sender_id (
-            full_name,
-            avatar_url
-          )
-        `)
+        .select('*')
         .in('conversation_id', conversationData?.map(c => c.id) || [])
         .order('created_at', { ascending: false });
 
       if (lastMessageError) throw lastMessageError;
 
+      // Get sender profiles for last messages
+      const senderIds = Array.from(new Set((lastMessages || []).map(m => m.sender_id)));
+      const { data: senderProfiles } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, avatar_url')
+        .in('user_id', senderIds);
+
+      const profileMap = new Map(senderProfiles?.map(p => [p.user_id, p]) || []);
+
       const conversationsWithLastMessage = conversationData?.map(conv => {
         const convLastMessage = lastMessages?.find(m => m.conversation_id === conv.id);
+        const lastMessageWithSender = convLastMessage ? {
+          ...convLastMessage,
+          sender: profileMap.get(convLastMessage.sender_id)
+        } : null;
+
         return {
           ...conv,
           participants: conv.conversation_participants?.map((p: any) => ({
             ...p,
             user: p.profiles
           })) || [],
-          last_message: convLastMessage || null,
+          last_message: lastMessageWithSender,
         } as Conversation;
       }) || [];
 
@@ -232,13 +240,31 @@ export const useMessages = (conversationId: string | null) => {
     try {
       setLoading(true);
 
-      const { data: messageData, error: messageError } = await supabase
-        .from('messages_with_attachments' as any)
-        .select('*')
-        .eq('conversation_id', conversationId)
-        .order('created_at', { ascending: true });
-
-      if (messageError) throw messageError;
+      // Try messages_with_attachments view, fallback to messages table
+      let messageData: any[] = [];
+      try {
+        const { data, error } = await supabase
+          .from('messages_with_attachments' as any)
+          .select('*')
+          .eq('conversation_id', conversationId)
+          .order('created_at', { ascending: true });
+        
+        if (!error && data) {
+          messageData = data;
+        } else {
+          throw error;
+        }
+      } catch {
+        // Fallback to regular messages table
+        const { data, error } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('conversation_id', conversationId)
+          .order('created_at', { ascending: true });
+        
+        if (error) throw error;
+        messageData = data || [];
+      }
 
       const senderIds = Array.from(new Set((messageData || []).map((m: any) => m.sender_id)));
 
@@ -275,9 +301,41 @@ export const useMessages = (conversationId: string | null) => {
     }
   }, [conversationId, user?.id, fetchMessages]);
 
+  const sendMessage = useCallback(async (content: string) => {
+    if (!conversationId || !user?.id) return null;
+
+    try {
+      const { data: message, error: messageError } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationId,
+          sender_id: user.id,
+          content,
+          message_type: 'text',
+        } as any)
+        .select()
+        .single();
+
+      if (messageError) throw messageError;
+
+      await fetchMessages();
+      return message;
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast.error('Failed to send message');
+      return null;
+    }
+  }, [conversationId, user?.id, fetchMessages]);
+
   return {
     messages,
     loading,
     fetchMessages,
+    sendMessage,
   };
+};
+
+// Re-export for compatibility
+export const useConversationMessages = (conversationId: string | null) => {
+  return useMessages(conversationId);
 };
