@@ -1,9 +1,15 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
@@ -23,6 +29,16 @@ interface ManualBookAppointmentModalProps {
   prefilledTime?: string;
 }
 
+const DURATION_OPTIONS_MINUTES = [15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180];
+
+const formatDuration = (minutes: number) => {
+  if (minutes < 60) return `${minutes} min`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
+};
+
 const ManualBookAppointmentModal = ({
   isOpen,
   onClose,
@@ -34,6 +50,7 @@ const ManualBookAppointmentModal = ({
 }: ManualBookAppointmentModalProps) => {
   const [selectedDate, setSelectedDate] = useState<Date>(prefilledDate || new Date());
   const [selectedTime, setSelectedTime] = useState<string>(prefilledTime || "");
+  const [durationMinutes, setDurationMinutes] = useState<number>(30);
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -47,16 +64,21 @@ const ManualBookAppointmentModal = ({
     else setSelectedDate(new Date());
 
     if (prefilledTime) setSelectedTime(prefilledTime);
+
+    // reset duration each time modal opens (can be adjusted)
+    setDurationMinutes(30);
   }, [isOpen, prefilledDate, prefilledTime]);
 
   const resetForm = () => {
     setSelectedDate(new Date());
     setSelectedTime("");
+    setDurationMinutes(30);
     setNotes("");
     setSelectedPatient(null);
   };
 
-  const buildErrorText = (err: any) => {
+  const buildSupabaseErrorText = (err: any) => {
+    // Supabase/PostgREST errors usually contain: message, details, hint, code
     const parts = [
       err?.message ? `Message: ${err.message}` : null,
       err?.details ? `Details: ${err.details}` : null,
@@ -70,7 +92,6 @@ const ManualBookAppointmentModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!practiceId) return toast.error("Missing practiceId for manual booking");
     if (!selectedDate) return toast.error("Please select a valid date");
     if (!selectedTime) return toast.error("Please select a valid time");
     if (!selectedPatient) return toast.error("Please select a patient");
@@ -78,42 +99,65 @@ const ManualBookAppointmentModal = ({
     setLoading(true);
 
     try {
-      // Build slot_start = YYYY-MM-DDTHH:mm:00 (local style used elsewhere)
-      const dateStr = format(selectedDate, "yyyy-MM-dd");
-      const hhmm = selectedTime.length === 5 ? selectedTime : selectedTime.slice(0, 5);
-      const slotStart = `${dateStr}T${hhmm}:00`;
+      const startTime = selectedTime;
+      const [hours, minutes] = startTime.split(":").map(Number);
 
-      // If registered patient => patient_id
-      // If doctor-added patient => doctor_patient_id
-      const body: any = {
-        entity_id: practiceId,
-        provider_id: doctorId,
-        slot_start: slotStart,
-        notes: notes || null,
+      const endDate = new Date(selectedDate);
+      endDate.setHours(hours, minutes + durationMinutes, 0, 0);
+
+      const endTime = `${String(endDate.getHours()).padStart(2, "0")}:${String(
+        endDate.getMinutes()
+      ).padStart(2, "0")}`;
+
+      // This project schema has only patient_id on appointments.
+      // For doctor-added patients (no auth user), store patient_id as null and include
+      // identifying info in notes (phone/name/email).
+      const patientPayload =
+        selectedPatient.source === "registered"
+          ? { patient_id: selectedPatient.id }
+          : { patient_id: null };
+
+      const notesCombined = [
+        selectedPatient?.phone ? `Patient phone: ${selectedPatient.phone}` : null,
+        selectedPatient?.email ? `Patient email: ${selectedPatient.email}` : null,
+        notes?.trim() ? notes.trim() : null,
+      ]
+        .filter(Boolean)
+        .join("\n")
+        || null;
+
+      const payload = {
+        doctor_id: doctorId,
+        practice_id: practiceId || null,
+        appointment_date: format(selectedDate, "yyyy-MM-dd"),
+        start_time: startTime,
+        end_time: endTime,
+        notes: notesCombined,
+        status: "confirmed",
+        ...patientPayload,
       };
 
-      if (selectedPatient.source === "registered") {
-        body.patient_id = selectedPatient.id;
-      } else {
-        body.doctor_patient_id = selectedPatient.id;
-      }
+      const { data: appointment, error: appointmentError } = await supabase
+        .from("appointments")
+        .insert(payload)
+        .select()
+        .single();
 
-      const response = await supabase.functions.invoke("book-appointment", { body });
-
-      if (response.error) throw new Error(response.error.message);
-      if (response.data?.error) throw new Error(response.data.error);
+      if (appointmentError) throw appointmentError;
 
       toast.success(`Appointment booked for ${selectedPatient.name}`);
 
+      // close immediately
       onClose();
       resetForm();
 
+      // refresh in background
       Promise.resolve(onSuccess?.()).catch((err) => {
         console.error("onSuccess/refetch failed:", err);
       });
     } catch (error: any) {
-      console.error("❌ Manual booking failed:", error);
-      toast.error(buildErrorText(error));
+      console.error("❌ Booking error object:", error);
+      toast.error(buildSupabaseErrorText(error));
     } finally {
       setLoading(false);
     }
@@ -145,7 +189,11 @@ const ManualBookAppointmentModal = ({
               <Label className="text-base font-medium">Select Patient</Label>
             </div>
 
-            <PatientSelector value={selectedPatient?.id} required onSelect={(p) => setSelectedPatient(p)} />
+            <PatientSelector
+              value={selectedPatient?.id}
+              required
+              onSelect={(p) => setSelectedPatient(p)}
+            />
 
             <Button
               type="button"
@@ -182,7 +230,7 @@ const ManualBookAppointmentModal = ({
               <Label className="text-base font-medium">Appointment Time</Label>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="apptDate">Date</Label>
                 <Input
@@ -205,9 +253,26 @@ const ManualBookAppointmentModal = ({
                 <Input
                   id="apptTime"
                   type="time"
+                  step={900} // 15-minute increments
                   value={selectedTime}
                   onChange={(e) => setSelectedTime(e.target.value)}
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Duration</Label>
+                <Select value={String(durationMinutes)} onValueChange={(v) => setDurationMinutes(Number(v))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select duration" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DURATION_OPTIONS_MINUTES.map((m) => (
+                      <SelectItem key={m} value={String(m)}>
+                        {formatDuration(m)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
@@ -237,8 +302,11 @@ const ManualBookAppointmentModal = ({
             >
               Cancel
             </Button>
-
-            <Button type="submit" className="flex-1" disabled={loading}>
+            <Button
+              type="submit"
+              className="flex-1"
+              disabled={loading || !selectedPatient || !selectedTime}
+            >
               {loading ? "Booking..." : "Book Appointment"}
             </Button>
           </div>
