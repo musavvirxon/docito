@@ -18,12 +18,10 @@ import {
   Loader2,
   ArrowRightLeft,
 } from "lucide-react";
-
 import { DoctorDataProvider, useDoctorData } from "@/contexts/DoctorDataContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,7 +40,6 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-
 import DoctorProfileSection from "@/components/doctor/DoctorProfileSection";
 import DoctorServicesSection from "@/components/doctor/DoctorServicesSection";
 import DoctorCalendarSection from "@/components/doctor/DoctorCalendarSection";
@@ -56,11 +53,9 @@ import DoctorScheduleSettingsSection from "@/components/doctor/DoctorScheduleSet
 import DoctorProcedureLibrarySection from "@/components/doctor/DoctorProcedureLibrarySection";
 import { DoctorFinancialStatsSection } from "@/components/doctor/DoctorFinancialStatsSection";
 import { UpcomingAppointmentCard } from "@/components/doctor/UpcomingAppointmentCard";
-
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/lib/api/supabase-api";
-
 import QuickActionModals from "@/components/doctor/QuickActionModals";
 import ThemeToggle from "@/components/home/ThemeToggle";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
@@ -94,7 +89,6 @@ const DoctorDashboardContent = () => {
   });
 
   const { t } = useTranslation("dashboard");
-
   const doctorStatus: DoctorStatus = doctorProfile?.practice_id ? "clinic-member" : "independent";
 
   // Expose refresh function globally for child components
@@ -126,11 +120,11 @@ const DoctorDashboardContent = () => {
 
     // Professional fields (2 fields)
     if (doctorProfile.specialty && doctorProfile.specialty !== "General Practice") completedCount++;
-    if (stats && (stats as any).totalServices && (stats as any).totalServices > 0) completedCount++; // Has added services
+    if (stats && (stats as any).totalServices && (stats as any).totalServices > 0) completedCount++;
 
     // Verification & practice (2 fields)
     if (doctorProfile.verified || doctorProfile.practice_id) completedCount++;
-    if (scheduleSettings && scheduleSettings.working_days) completedCount++; // Schedule configured
+    if (scheduleSettings && scheduleSettings.working_days) completedCount++;
 
     return Math.round((completedCount / totalCount) * 100);
   };
@@ -305,9 +299,7 @@ const DoctorDashboardContent = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {t("doctor.stats.totalAppointments")}
-                  </CardTitle>
+                  <CardTitle className="text-sm font-medium">{t("doctor.stats.totalAppointments")}</CardTitle>
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -346,9 +338,7 @@ const DoctorDashboardContent = () => {
                   <BarChart3 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
-                    ${(stats?.totalRevenue || 0).toLocaleString()}
-                  </div>
+                  <div className="text-2xl font-bold">${(stats?.totalRevenue || 0).toLocaleString()}</div>
                   <p className="text-xs text-muted-foreground">{t("doctor.stats.totalEarnings")}</p>
                 </CardContent>
               </Card>
@@ -371,8 +361,7 @@ const DoctorDashboardContent = () => {
                           <p className="text-sm font-medium">{appointment.patient_name}</p>
                           <p className="text-xs text-muted-foreground">
                             <Clock className="w-3 h-3 inline mr-1" />
-                            {new Date(appointment.appointment_date).toLocaleDateString()} at{" "}
-                            {appointment.start_time}
+                            {new Date(appointment.appointment_date).toLocaleDateString()} at {appointment.start_time}
                           </p>
                         </div>
                         <Badge
@@ -392,12 +381,8 @@ const DoctorDashboardContent = () => {
                   ) : (
                     <div className="text-center py-8">
                       <Calendar className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                      <p className="text-muted-foreground text-sm">
-                        {t("doctor.upcomingAppointments.noAppointments")}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {t("doctor.upcomingAppointments.scheduleIsClear")}
-                      </p>
+                      <p className="text-muted-foreground text-sm">{t("doctor.upcomingAppointments.noAppointments")}</p>
+                      <p className="text-xs text-muted-foreground">{t("doctor.upcomingAppointments.scheduleIsClear")}</p>
                     </div>
                   )}
                 </CardContent>
@@ -464,10 +449,7 @@ const DoctorDashboardContent = () => {
                 <SidebarMenu>
                   {sidebarItems.map((item) => (
                     <SidebarMenuItem key={item.id}>
-                      <SidebarMenuButton
-                        onClick={() => setActiveSection(item.id)}
-                        isActive={activeSection === item.id}
-                      >
+                      <SidebarMenuButton onClick={() => setActiveSection(item.id)} isActive={activeSection === item.id}>
                         <item.icon className="w-4 h-4" />
                         <span>{item.label}</span>
                       </SidebarMenuButton>
@@ -487,8 +469,7 @@ const DoctorDashboardContent = () => {
                 <SidebarTrigger />
                 <div>
                   <h1 className="text-lg font-semibold">
-                    {t("doctor.dashboardContent.welcomeBack")},{" "}
-                    {doctorProfile?.profiles?.full_name || "Doctor"}
+                    {t("doctor.dashboardContent.welcomeBack")}, {doctorProfile?.profiles?.full_name || "Doctor"}
                   </h1>
                   <p className="text-sm text-muted-foreground">
                     {doctorProfile?.specialty && doctorProfile.specialty !== "General Practice"
@@ -498,7 +479,7 @@ const DoctorDashboardContent = () => {
                 </div>
               </div>
 
-              {/* ✅ FIXED: theme toggle + notifications */}
+              {/* ✅ FIXED: Theme + Notifications */}
               <div className="flex items-center gap-4">
                 <ThemeToggle />
                 <LanguageSwitcher />
