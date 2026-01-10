@@ -14,6 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import MessageAttachmentPreview from './MessageAttachmentPreview';
 
 interface MessageThreadProps {
   conversation: Conversation;
@@ -37,7 +38,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({
   const getConversationName = () => {
     if (conversation.name) return conversation.name;
     if (conversation.type === 'direct' && conversation.participants) {
-      const otherParticipant = conversation.participants.find(p => p.user_id !== user?.id);
+      const otherParticipant = conversation.participants.find((p: any) => p.user_id !== user?.id);
       return otherParticipant?.profile?.full_name || 'Unknown User';
     }
     return 'Group Chat';
@@ -45,7 +46,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({
 
   const getOtherParticipant = () => {
     if (conversation.type === 'direct' && conversation.participants) {
-      return conversation.participants.find(p => p.user_id !== user?.id);
+      return conversation.participants.find((p: any) => p.user_id !== user?.id);
     }
     return null;
   };
@@ -59,7 +60,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({
 
   const handleSend = async () => {
     if (!input.trim() || sending) return;
-    
+
     setSending(true);
     try {
       await onSendMessage(input);
@@ -132,7 +133,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({
       <ScrollArea className="flex-1 p-4" ref={scrollRef}>
         {loading ? (
           <div className="space-y-4">
-            {[1, 2, 3].map(i => (
+            {[1, 2, 3].map((i) => (
               <div key={i} className={cn('flex gap-3', i % 2 === 0 && 'flex-row-reverse')}>
                 <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
                 <div className={cn('space-y-1', i % 2 === 0 && 'items-end')}>
@@ -152,31 +153,31 @@ const MessageThread: React.FC<MessageThreadProps> = ({
           <div className="space-y-4">
             {messages.map((msg, index) => {
               const isOwn = msg.sender_id === user?.id;
-              const showAvatar = !isOwn && (index === 0 || messages[index - 1]?.sender_id !== msg.sender_id);
-              
+              const showAvatar =
+                !isOwn && (index === 0 || messages[index - 1]?.sender_id !== msg.sender_id);
+
+              const attachments = ((msg as any).attachments || []) as any[];
+
               return (
-                <div
-                  key={msg.id}
-                  className={cn('flex gap-3', isOwn && 'flex-row-reverse')}
-                >
+                <div key={msg.id} className={cn('flex gap-3', isOwn && 'flex-row-reverse')}>
                   {!isOwn && (
                     <div className="w-8">
                       {showAvatar && (
                         <Avatar className="h-8 w-8">
                           <AvatarImage src={msg.sender?.avatar_url || undefined} />
-                          <AvatarFallback>
-                            {msg.sender?.full_name?.[0] || 'U'}
-                          </AvatarFallback>
+                          <AvatarFallback>{msg.sender?.full_name?.[0] || 'U'}</AvatarFallback>
                         </Avatar>
                       )}
                     </div>
                   )}
+
                   <div className={cn('max-w-[70%]', isOwn && 'items-end')}>
                     {!isOwn && showAvatar && (
                       <p className="text-xs text-muted-foreground mb-1 ml-1">
                         {msg.sender?.full_name}
                       </p>
                     )}
+
                     <div
                       className={cn(
                         'px-4 py-2 rounded-2xl break-words',
@@ -185,12 +186,28 @@ const MessageThread: React.FC<MessageThreadProps> = ({
                           : 'bg-muted rounded-bl-md'
                       )}
                     >
-                      <p className="text-sm">{msg.content}</p>
+                      {msg.message_type === 'file' && attachments.length > 0 ? (
+                        <div className="space-y-2">
+                          {msg.content ? <p className="text-sm">{msg.content}</p> : null}
+                          {attachments.map((att) => (
+                            <MessageAttachmentPreview
+                              key={att.id}
+                              attachment={att}
+                              isOwn={isOwn}
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm">{msg.content}</p>
+                      )}
                     </div>
-                    <p className={cn(
-                      'text-xs text-muted-foreground mt-1',
-                      isOwn ? 'text-right mr-1' : 'ml-1'
-                    )}>
+
+                    <p
+                      className={cn(
+                        'text-xs text-muted-foreground mt-1',
+                        isOwn ? 'text-right mr-1' : 'ml-1'
+                      )}
+                    >
                       {formatMessageDate(msg.created_at)}
                     </p>
                   </div>
