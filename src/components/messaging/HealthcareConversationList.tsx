@@ -8,7 +8,7 @@ import { HealthcareConversation } from '@/hooks/useHealthcareMessaging';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
-import ContextBadge from './ContextBadge';
+import ContextBadge, { ContextType } from './ContextBadge';
 
 interface HealthcareConversationListProps {
   conversations: HealthcareConversation[];
@@ -130,7 +130,7 @@ const HealthcareConversationList: React.FC<HealthcareConversationListProps> = me
                   
                   <div className="flex items-center gap-1.5 mt-0.5">
                     {conv.context_type && conv.context_type !== 'general' && (
-                      <ContextBadge contextType={conv.context_type} size="sm" />
+                      <ContextBadge contextType={conv.context_type as ContextType} size="sm" />
                     )}
                   </div>
                   

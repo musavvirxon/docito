@@ -39,7 +39,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({
     if (conversation.name) return conversation.name;
     if (conversation.type === 'direct' && conversation.participants) {
       const otherParticipant = conversation.participants.find((p: any) => p.user_id !== user?.id);
-      return otherParticipant?.profile?.full_name || 'Unknown User';
+      return otherParticipant?.user?.full_name || 'Unknown User';
     }
     return 'Group Chat';
   };
@@ -87,13 +87,13 @@ const MessageThread: React.FC<MessageThreadProps> = ({
 
   const otherParticipant = getOtherParticipant();
 
-  return (
+    return (
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={otherParticipant?.profile?.avatar_url || undefined} />
+            <AvatarImage src={otherParticipant?.user?.avatar_url || undefined} />
             <AvatarFallback>
               <User className="h-4 w-4" />
             </AvatarFallback>

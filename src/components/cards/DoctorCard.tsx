@@ -39,7 +39,7 @@ const DoctorCard = memo(({
 }: DoctorCardProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { handleBookingClick, isAuthenticated } = useBookingAuth();
+  const { handleBookingClick, isLoggedIn: isAuthenticated } = useBookingAuth();
   const [isHovered, setIsHovered] = useState(false);
 
   const handleCardClick = () => {

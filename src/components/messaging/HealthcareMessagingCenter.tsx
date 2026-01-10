@@ -1,7 +1,6 @@
 import React, { useState, lazy, Suspense, memo, useMemo } from 'react';
 import { MessageSquare, Lock, Plus } from 'lucide-react';
-import { useHealthcareMessaging, HealthcareConversation, MessageFilter } from '@/hooks/useHealthcareMessaging';
-import { useConversationMessages } from '@/hooks/useMessaging';
+import { useHealthcareMessaging, useConversationMessages, HealthcareConversation, MessageFilter } from '@/hooks/useHealthcareMessaging';
 import MessageFilters from './MessageFilters';
 import ConversationContextPanel from './ConversationContextPanel';
 import { cn } from '@/lib/utils';

@@ -10,7 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format, isToday, isYesterday } from 'date-fns';
 import { cn } from '@/lib/utils';
 import RoleBadge from './RoleBadge';
-import ContextBadge from './ContextBadge';
+import ContextBadge, { ContextType } from './ContextBadge';
 import FileUploadButton from './FileUploadButton';
 import MessageAttachmentPreview from './MessageAttachmentPreview';
 
@@ -108,7 +108,7 @@ const HealthcareMessageThread: React.FC<HealthcareMessageThreadProps> = memo(
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold text-sm">{getConversationName()}</h3>
                 {conversation.context_type && conversation.context_type !== 'general' && (
-                  <ContextBadge contextType={conversation.context_type} size="sm" />
+                  <ContextBadge contextType={conversation.context_type as ContextType} size="sm" />
                 )}
               </div>
 
