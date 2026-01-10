@@ -1,10 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -65,7 +60,6 @@ const ManualBookAppointmentModal = ({
 
     if (prefilledTime) setSelectedTime(prefilledTime);
 
-    // reset duration each time modal opens (can be adjusted)
     setDurationMinutes(30);
   }, [isOpen, prefilledDate, prefilledTime]);
 
@@ -78,15 +72,19 @@ const ManualBookAppointmentModal = ({
   };
 
   const buildSupabaseErrorText = (err: any) => {
-    // Supabase/PostgREST errors usually contain: message, details, hint, code
     const parts = [
       err?.message ? `Message: ${err.message}` : null,
       err?.details ? `Details: ${err.details}` : null,
       err?.hint ? `Hint: ${err.hint}` : null,
       err?.code ? `Code: ${err.code}` : null,
     ].filter(Boolean);
-
     return parts.join(" | ") || "Unknown error";
+  };
+
+  const tryInsert = async (payload: any) => {
+    const { data, error } = await supabase.from("appointments").insert(payload).select().single();
+    if (error) throw error;
+    return data;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -109,24 +107,26 @@ const ManualBookAppointmentModal = ({
         endDate.getMinutes()
       ).padStart(2, "0")}`;
 
-      // This project schema has only patient_id on appointments.
-      // For doctor-added patients (no auth user), store patient_id as null and include
-      // identifying info in notes (phone/name/email).
-      const patientPayload =
+      // Save patient link correctly:
+      // - registered patient => patient_id
+      // - doctor-added patient => doctor_patient_id
+      const patientLink =
         selectedPatient.source === "registered"
-          ? { patient_id: selectedPatient.id }
-          : { patient_id: null };
+          ? { patient_id: selectedPatient.id, doctor_patient_id: null }
+          : { patient_id: null, doctor_patient_id: selectedPatient.id };
 
-      const notesCombined = [
-        selectedPatient?.phone ? `Patient phone: ${selectedPatient.phone}` : null,
-        selectedPatient?.email ? `Patient email: ${selectedPatient.email}` : null,
-        notes?.trim() ? notes.trim() : null,
-      ]
-        .filter(Boolean)
-        .join("\n")
-        || null;
+      // Keep optional info in notes as well (useful even when linked)
+      const notesCombined =
+        [
+          `Patient name: ${selectedPatient.name}`,
+          selectedPatient.phone ? `Patient phone: ${selectedPatient.phone}` : null,
+          selectedPatient.email ? `Patient email: ${selectedPatient.email}` : null,
+          notes?.trim() ? notes.trim() : null,
+        ]
+          .filter(Boolean)
+          .join("\n") || null;
 
-      const payload = {
+      const basePayload = {
         doctor_id: doctorId,
         practice_id: practiceId || null,
         appointment_date: format(selectedDate, "yyyy-MM-dd"),
@@ -134,24 +134,33 @@ const ManualBookAppointmentModal = ({
         end_time: endTime,
         notes: notesCombined,
         status: "confirmed",
-        ...patientPayload,
+        ...patientLink,
       };
 
-      const { data: appointment, error: appointmentError } = await supabase
-        .from("appointments")
-        .insert(payload)
-        .select()
-        .single();
+      let appointment: any;
 
-      if (appointmentError) throw appointmentError;
+      try {
+        appointment = await tryInsert(basePayload);
+      } catch (err: any) {
+        // Safety fallback if your online DB doesn't yet have doctor_patient_id column
+        const msg = String(err?.message || "");
+        if (err?.code === "42703" && msg.toLowerCase().includes("doctor_patient_id")) {
+          const fallbackPayload = {
+            ...basePayload,
+            doctor_patient_id: undefined,
+            patient_id: selectedPatient.source === "registered" ? selectedPatient.id : null,
+          };
+          appointment = await tryInsert(fallbackPayload);
+        } else {
+          throw err;
+        }
+      }
 
       toast.success(`Appointment booked for ${selectedPatient.name}`);
 
-      // close immediately
       onClose();
       resetForm();
 
-      // refresh in background
       Promise.resolve(onSuccess?.()).catch((err) => {
         console.error("onSuccess/refetch failed:", err);
       });
@@ -182,25 +191,15 @@ const ManualBookAppointmentModal = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Patient Selection */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <User className="w-4 h-4" />
               <Label className="text-base font-medium">Select Patient</Label>
             </div>
 
-            <PatientSelector
-              value={selectedPatient?.id}
-              required
-              onSelect={(p) => setSelectedPatient(p)}
-            />
+            <PatientSelector value={selectedPatient?.id} required onSelect={(p) => setSelectedPatient(p)} />
 
-            <Button
-              type="button"
-              variant="link"
-              className="p-0 h-auto text-primary"
-              onClick={() => setCreatePatientOpen(true)}
-            >
+            <Button type="button" variant="link" className="p-0 h-auto text-primary" onClick={() => setCreatePatientOpen(true)}>
               Add New Patient
             </Button>
 
@@ -223,7 +222,6 @@ const ManualBookAppointmentModal = ({
 
           <Separator />
 
-          {/* Date/Time */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
@@ -250,13 +248,7 @@ const ManualBookAppointmentModal = ({
 
               <div className="space-y-2">
                 <Label htmlFor="apptTime">Time</Label>
-                <Input
-                  id="apptTime"
-                  type="time"
-                  step={900} // 15-minute increments
-                  value={selectedTime}
-                  onChange={(e) => setSelectedTime(e.target.value)}
-                />
+                <Input id="apptTime" type="time" step={900} value={selectedTime} onChange={(e) => setSelectedTime(e.target.value)} />
               </div>
 
               <div className="space-y-2">
@@ -275,38 +267,18 @@ const ManualBookAppointmentModal = ({
                 </Select>
               </div>
             </div>
+
+            <div className="space-y-2">
+              <Label>Notes (optional)</Label>
+              <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional notes..." />
+            </div>
           </div>
 
-          {/* Notes */}
-          <div className="space-y-2">
-            <Label htmlFor="notes">Appointment Notes</Label>
-            <Textarea
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Reason for visit, symptoms, special instructions, etc."
-              className="min-h-[100px]"
-            />
-          </div>
-
-          <div className="flex gap-2 pt-4 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                onClose();
-                resetForm();
-              }}
-              className="flex-1"
-              disabled={loading}
-            >
+          <div className="flex justify-end gap-2 pt-2">
+            <Button type="button" variant="outline" onClick={() => { onClose(); resetForm(); }} disabled={loading}>
               Cancel
             </Button>
-            <Button
-              type="submit"
-              className="flex-1"
-              disabled={loading || !selectedPatient || !selectedTime}
-            >
+            <Button type="submit" disabled={loading}>
               {loading ? "Booking..." : "Book Appointment"}
             </Button>
           </div>
