@@ -12,7 +12,6 @@ import Dashboard from "@/pages/Dashboard";
 import Profile from "@/pages/Profile";
 import AppointmentBooking from "@/pages/AppointmentBooking";
 import BookingConfirmation from "@/pages/BookingConfirmation";
-
 import DoctorProfile from "@/pages/DoctorProfile";
 
 import PublicLayout from "@/components/PublicLayout";
