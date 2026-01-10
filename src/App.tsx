@@ -2,12 +2,15 @@ import { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 
-import Index from "@/pages/Index";
-import Auth from "@/pages/Auth";
+import PublicLayout from "@/layouts/PublicLayout";
+import PremiumHome from "@/pages/PremiumHome";
 
+import Auth from "@/pages/Auth";
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
 import Features from "@/pages/Features";
+import Pricing from "@/pages/Pricing";
+
 import Doctors from "@/pages/Doctors";
 import Practices from "@/pages/Practices";
 
@@ -20,11 +23,11 @@ import StaffDashboard from "@/pages/StaffDashboard";
 import AdminDashboard from "@/pages/AdminDashboard";
 import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
 
-import PharmacyLandingPage from "@/pages/pharmacy/PharmacyLandingPage";
-import PharmacyDashboard from "@/pages/pharmacy/PharmacyDashboard";
-
 import LabLandingPage from "@/pages/lab/LabLandingPage";
 import LabDashboard from "@/pages/lab/LabDashboard";
+
+import PharmacyLandingPage from "@/pages/pharmacy/PharmacyLandingPage";
+import PharmacyDashboard from "@/pages/pharmacy/PharmacyDashboard";
 
 import ImagingLandingPage from "@/pages/imaging/ImagingLandingPage";
 import ImagingDashboard from "@/pages/imaging/ImagingDashboard";
@@ -35,7 +38,7 @@ import DoctorProfile from "@/pages/DoctorProfile";
 
 import NotFound from "@/pages/NotFound";
 
-const App = () => {
+export default function App() {
   useEffect(() => {
     document.title = "Medical Booking App";
   }, []);
@@ -43,30 +46,34 @@ const App = () => {
   return (
     <>
       <Toaster />
+
       <Routes>
-        {/* Public */}
-        <Route path="/" element={<Index />} />
+        {/* ✅ NEW PREMIUM HOME */}
+        <Route path="/" element={<PublicLayout />}>
+          <Route index element={<PremiumHome />} />
+        </Route>
+
+        {/* Auth */}
         <Route path="/auth" element={<Auth />} />
 
+        {/* Public pages (these already contain their own nav/footer in your repo) */}
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/features" element={<Features />} />
+        <Route path="/pricing" element={<Pricing />} />
 
         <Route path="/doctor" element={<Doctors />} />
-        {/* Alias used around the app */}
         <Route path="/find-doctors" element={<Doctors />} />
-
         <Route path="/practice" element={<Practices />} />
 
-        <Route path="/pharmacy" element={<PharmacyLandingPage />} />
         <Route path="/lab" element={<LabLandingPage />} />
+        <Route path="/pharmacy" element={<PharmacyLandingPage />} />
         <Route path="/imaging-center" element={<ImagingLandingPage />} />
 
-        {/* App */}
+        {/* Dashboards */}
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<ProfilePage />} />
 
-        {/* Role dashboards (RBAC redirects here) */}
         <Route path="/patient-dashboard" element={<PatientDashboard />} />
         <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
         <Route path="/staff-dashboard" element={<StaffDashboard />} />
@@ -74,8 +81,8 @@ const App = () => {
         <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
 
         {/* Entity dashboards */}
-        <Route path="/pharmacy/dashboard" element={<PharmacyDashboard />} />
         <Route path="/lab/dashboard" element={<LabDashboard />} />
+        <Route path="/pharmacy/dashboard" element={<PharmacyDashboard />} />
         <Route path="/imaging/dashboard" element={<ImagingDashboard />} />
 
         {/* Booking */}
@@ -88,6 +95,4 @@ const App = () => {
       </Routes>
     </>
   );
-};
-
-export default App;
+}
