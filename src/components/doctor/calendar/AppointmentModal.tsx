@@ -1,8 +1,8 @@
-import { memo, useState } from 'react';
+import { memo, useState, useCallback } from 'react';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
-import { X, Calendar, Clock, User, Phone, Mail, FileText, Pill, Video, MessageSquare, CheckCircle, XCircle, Edit, Trash2, ArrowRightLeft } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Calendar, Clock, Phone, Mail, FileText, Pill, Video, MessageSquare, CheckCircle, XCircle, Edit, ArrowRightLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import CancelAppointmentDialog from './CancelAppointmentDialog';
 import type { CalendarAppointment } from './types';
 
 interface AppointmentModalProps {
@@ -45,8 +49,68 @@ const AppointmentModal = memo(({
   onCancel,
   onMessage,
 }: AppointmentModalProps) => {
-  const { t } = useTranslation('dashboard');
+  const { t, i18n } = useTranslation('dashboard');
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('details');
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const [isRescheduling, setIsRescheduling] = useState(false);
+  
+  const isRTL = i18n.language === 'ar';
+
+  const handleCancelAppointment = useCallback(async (reason?: string) => {
+    if (!appointment) return;
+    
+    try {
+      const { error } = await supabase
+        .from('appointments')
+        .update({ 
+          status: 'canceled' as any,
+          notes: reason ? `${appointment.notes || ''}\n[Cancellation reason]: ${reason}`.trim() : appointment.notes
+        })
+        .eq('id', appointment.id);
+      
+      if (error) throw error;
+      
+      toast.success(t('doctor.calendar.cancelSuccess', 'Appointment cancelled successfully'));
+      setIsCancelDialogOpen(false);
+      onCancel?.();
+      onClose();
+    } catch (error) {
+      console.error('Error cancelling appointment:', error);
+      toast.error('Failed to cancel appointment');
+    }
+  }, [appointment, t, onCancel, onClose]);
+
+  const handleReschedule = useCallback(() => {
+    if (!appointment) return;
+    setIsRescheduling(true);
+    // For now, we'll just show a toast - in production, this would open a reschedule modal
+    toast.info('Reschedule feature coming soon');
+    setIsRescheduling(false);
+    onReschedule?.();
+  }, [appointment, onReschedule]);
+
+  const handleMessage = useCallback(async () => {
+    if (!appointment?.patient_id) {
+      toast.error('Patient information not available');
+      return;
+    }
+    
+    try {
+      const { data: conversationId, error } = await supabase.rpc(
+        'create_direct_conversation' as any,
+        { target_user_id: appointment.patient_id } as any
+      );
+      
+      if (error) throw error;
+      
+      navigate(`/messages?c=${conversationId}`);
+      onClose();
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+      toast.error('Failed to start conversation');
+    }
+  }, [appointment, navigate, onClose]);
 
   if (!appointment) return null;
 
@@ -213,7 +277,7 @@ const AppointmentModal = memo(({
 
               <Button
                 variant="outline"
-                onClick={onMessage}
+                onClick={handleMessage}
                 className="w-full gap-2"
               >
                 <MessageSquare className="h-4 w-4" />
@@ -237,15 +301,27 @@ const AppointmentModal = memo(({
 
         {/* Footer Actions */}
         <Separator className="my-4" />
-        <div className="flex items-center justify-between">
-          <div className="flex gap-2">
+        <div className={cn(
+          "flex items-center justify-between",
+          isRTL && "flex-row-reverse"
+        )}>
+          <div className={cn("flex gap-2", isRTL && "flex-row-reverse")}>
             {isActiveAppointment && (
               <>
-                <Button variant="outline" onClick={onReschedule} className="gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={handleReschedule} 
+                  disabled={isRescheduling}
+                  className="gap-2"
+                >
                   <Edit className="h-4 w-4" />
                   {t('doctor.calendar.reschedule', 'Reschedule')}
                 </Button>
-                <Button variant="outline" onClick={onCancel} className="gap-2 text-destructive hover:text-destructive">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsCancelDialogOpen(true)} 
+                  className="gap-2 text-destructive hover:text-destructive"
+                >
                   <XCircle className="h-4 w-4" />
                   {t('doctor.calendar.cancel', 'Cancel')}
                 </Button>
@@ -257,6 +333,14 @@ const AppointmentModal = memo(({
           </Button>
         </div>
       </DialogContent>
+
+      {/* Cancel Confirmation Dialog */}
+      <CancelAppointmentDialog
+        isOpen={isCancelDialogOpen}
+        onClose={() => setIsCancelDialogOpen(false)}
+        onConfirm={handleCancelAppointment}
+        patientName={appointment.patient_name}
+      />
     </Dialog>
   );
 });
