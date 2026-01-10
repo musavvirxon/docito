@@ -1,92 +1,76 @@
-import { Routes, Route } from "react-router-dom";
-import PublicLayout from "@/layouts/PublicLayout";
+import { useEffect } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { RoleProvider } from "@/contexts/RoleContext";
+import { BookingProvider } from "@/contexts/BookingContext";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-// pages
-import PremiumHome from "@/pages/PremiumHome";
-import Doctors from "@/pages/Doctors";
-import Practices from "@/pages/Practices";
-import LabLandingPage from "@/pages/lab/LabLandingPage";
-import PharmacyLandingPage from "@/pages/pharmacy/PharmacyLandingPage";
-import ImagingLandingPage from "@/pages/imaging/ImagingLandingPage";
-import Pricing from "@/pages/Pricing";
-import HowItWorks from "@/pages/HowItWorks";
-import Contact from "@/pages/Contact";
-import About from "@/pages/About";
+import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
+import Dashboard from "@/pages/Dashboard";
+import Profile from "@/pages/Profile";
 import AppointmentBooking from "@/pages/AppointmentBooking";
 import BookingConfirmation from "@/pages/BookingConfirmation";
 
-import ProfilePage from "@/pages/ProfilePage";
-import FeedbackCenter from "@/pages/FeedbackCenter";
-import Dashboard from "@/pages/Dashboard";
-import Notifications from "@/pages/Notifications";
-import Settings from "@/pages/Settings";
+import DoctorProfile from "@/pages/DoctorProfile";
 
-// verification
-import PracticeVerification from "@/pages/PracticeVerification";
-import LabVerification from "@/pages/lab/LabVerification";
-import PharmacyVerification from "@/pages/pharmacy/PharmacyVerification";
-import ImagingVerification from "@/pages/imaging/ImagingVerification";
+import PublicLayout from "@/components/PublicLayout";
+import About from "@/pages/About";
+import Contact from "@/pages/Contact";
+import Doctors from "@/pages/Doctors";
+import Services from "@/pages/Services";
+import Practices from "@/pages/Practices";
+import NotFound from "@/pages/NotFound";
 
-// dashboards
-import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
-import AdminDashboard from "@/pages/AdminDashboard";
-import DoctorDashboard from "@/pages/DoctorDashboard";
-import PatientDashboard from "@/pages/PatientDashboard";
-import StaffDashboard from "@/pages/StaffDashboard";
-import LabDashboard from "@/pages/lab/LabDashboard";
-import PharmacyDashboard from "@/pages/pharmacy/PharmacyDashboard";
-import ImagingDashboard from "@/pages/imaging/ImagingDashboard";
+const queryClient = new QueryClient();
 
-export default function App() {
+const App = () => {
+  useEffect(() => {
+    document.title = "Medical Booking App";
+  }, []);
+
   return (
-    <Routes>
-      {/* ✅ PUBLIC WEBSITE */}
-      <Route path="/" element={<PublicLayout />}>
-        <Route index element={<PremiumHome />} />
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <RoleProvider>
+          <BookingProvider>
+            <BrowserRouter>
+              <Toaster />
+              <Routes>
+                {/* ✅ PUBLIC ROUTES */}
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Auth />} />
 
-        <Route path="doctor" element={<Doctors />} />
-        <Route path="practice" element={<Practices />} />
-        <Route path="lab" element={<LabLandingPage />} />
-        <Route path="pharmacy" element={<PharmacyLandingPage />} />
-        <Route path="imaging-center" element={<ImagingLandingPage />} />
-        <Route path="pricing" element={<Pricing />} />
-        <Route path="how-it-works" element={<HowItWorks />} />
-        <Route path="contact" element={<Contact />} />
-        <Route path="about" element={<About />} />
-        <Route path="auth" element={<Auth />} />
-      </Route>
+                {/* ✅ PUBLIC LAYOUT ROUTES */}
+                <Route path="/" element={<PublicLayout />}>
+                  <Route path="about" element={<About />} />
+                  <Route path="contact" element={<Contact />} />
+                  <Route path="doctor" element={<Doctors />} />
+                  <Route path="services" element={<Services />} />
+                  <Route path="practice" element={<Practices />} />
+                </Route>
 
-      {/* ✅ APP PAGES (no PublicLayout) */}
-      <Route path="/profile" element={<ProfilePage />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/dashboard/feedback" element={<FeedbackCenter />} />
-      <Route path="/notifications" element={<Notifications />} />
-      <Route path="/settings" element={<Settings />} />
+                {/* ✅ APP ROUTES */}
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/profile" element={<Profile />} />
 
-      {/* ✅ PATIENT BOOKING FLOW */}
-      <Route path="/book-appointment/:doctorId" element={<AppointmentBooking />} />
-      <Route path="/booking-confirmation/:appointmentId" element={<BookingConfirmation />} />
+                {/* ✅ PATIENT BOOKING FLOW */}
+                <Route path="/book-appointment/:doctorId" element={<AppointmentBooking />} />
+                <Route path="/booking-confirmation/:appointmentId" element={<BookingConfirmation />} />
 
-      {/* ✅ DASHBOARDS */}
-      <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
-      <Route path="/admin-dashboard" element={<AdminDashboard />} />
-      <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
-      <Route path="/patient-dashboard" element={<PatientDashboard />} />
-      <Route path="/staff-dashboard" element={<StaffDashboard />} />
-      <Route path="/lab/dashboard" element={<LabDashboard />} />
-      <Route path="/pharmacy/dashboard" element={<PharmacyDashboard />} />
-      <Route path="/imaging/dashboard" element={<ImagingDashboard />} />
+                {/* ✅ DOCTOR PROFILE */}
+                <Route path="/doctor-profile/:id" element={<DoctorProfile />} />
 
-      {/* ✅ VERIFICATION ROUTES */}
-      <Route path="/dashboard/verify" element={<PracticeVerification />} />
-      <Route path="/lab/verification" element={<LabVerification />} />
-      <Route path="/pharmacy/verification" element={<PharmacyVerification />} />
-      <Route path="/imaging/verification" element={<ImagingVerification />} />
-
-      {/* ✅ Aliases to match Auth redirects */}
-      <Route path="/practice-dashboard" element={<AdminDashboard />} />
-      <Route path="/imaging-center/dashboard" element={<ImagingDashboard />} />
-    </Routes>
+                {/* ✅ 404 */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </BookingProvider>
+        </RoleProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
-}
+};
+
+export default App;
