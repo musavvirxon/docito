@@ -155,7 +155,7 @@ const DoctorCard = memo(({
               </Button>
               
               <Button
-                onClick={(e) => handleNavigation(e, `/doctor-profile/${id}`)}
+                onClick={(e) => handleNavigation(e, `/book-appointment/${id}`)}
                 variant="outline"
                 size="sm"
                 className="flex-1 sm:flex-none"
