@@ -6584,8 +6584,10 @@ export type Database = {
         Row: {
           created_at: string | null
           doctor_id: string | null
+          doctor_patient_id: string | null
           estimated_completion_date: string | null
           estimated_duration_weeks: number | null
+          expires_at: string | null
           id: string
           notes: string | null
           patient_id: string | null
@@ -6599,8 +6601,10 @@ export type Database = {
         Insert: {
           created_at?: string | null
           doctor_id?: string | null
+          doctor_patient_id?: string | null
           estimated_completion_date?: string | null
           estimated_duration_weeks?: number | null
+          expires_at?: string | null
           id?: string
           notes?: string | null
           patient_id?: string | null
@@ -6614,8 +6618,10 @@ export type Database = {
         Update: {
           created_at?: string | null
           doctor_id?: string | null
+          doctor_patient_id?: string | null
           estimated_completion_date?: string | null
           estimated_duration_weeks?: number | null
+          expires_at?: string | null
           id?: string
           notes?: string | null
           patient_id?: string | null
@@ -6639,6 +6645,13 @@ export type Database = {
             columns: ["doctor_id"]
             isOneToOne: false
             referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "treatment_plans_doctor_patient_id_fkey"
+            columns: ["doctor_patient_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_patients"
             referencedColumns: ["id"]
           },
         ]

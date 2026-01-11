@@ -419,7 +419,11 @@ const EnhancedCreateTreatmentPlanModal = ({
         return;
       }
 
-      // Create treatment plan (doctor_patient_id plans will expire in 7 days via DB trigger/function)
+      // Create treatment plan (doctor_patient_id plans will expire in 7 days)
+      const expiresAt = values.doctor_patient_id 
+        ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() 
+        : null;
+
       const { data: planData, error: planError } = await supabase
         .from("treatment_plans")
         .insert([
@@ -432,6 +436,7 @@ const EnhancedCreateTreatmentPlanModal = ({
             status: "draft",
             total_cost: totalCost,
             priority: values.priority,
+            expires_at: expiresAt,
           },
         ])
         .select()
