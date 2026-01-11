@@ -1,0 +1,25 @@
+{
+  "common": {
+    "close": "إغلاق",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "loading": "جاري التحميل...",
+    "success": "نجاح",
+    "error": "خطأ"
+  },
+  "confirmation": {
+    "title": "تأكيد الإجراء",
+    "deleteTitle": "تأكيد الحذف",
+    "deleteMessage": "هل أنت متأكد من أنك تريد حذف هذا العنصر؟ لا يمكن التراجع عن هذا الإجراء.",
+    "cancelMessage": "هل أنت متأكد من أنك تريد الإلغاء؟ ستفقد جميع التغييرات غير المحفوظة."
+  },
+  "notifications": {
+    "savedSuccessfully": "تم الحفظ بنجاح",
+    "deletedSuccessfully": "تم الحذف بنجاح",
+    "errorOccurred": "حدث خطأ. يرجى المحاولة مرة أخرى.",
+    "changesDiscarded": "تم تجاهل التغييرات"
+  }
+}
