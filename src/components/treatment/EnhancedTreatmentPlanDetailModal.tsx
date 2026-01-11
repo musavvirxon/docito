@@ -1,15 +1,20 @@
 import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, CheckCircle, Clock, DollarSign, FileText, Calendar, Pill, UserCheck, Send, Save } from "lucide-react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Plus,
+  Trash2,
+  CheckCircle,
+  DollarSign,
+  FileText,
+  Calendar,
+  Pill,
+  Send,
+  Save,
+} from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,10 +27,11 @@ import FileAttachmentSection from "@/components/files/FileAttachmentSection";
 
 interface TreatmentPlan {
   id: string;
-  doctor_id: string;
-  patient_id: string;
+  doctor_id: string | null;
+  patient_id: string | null;
+  doctor_patient_id?: string | null;
   title: string;
-  description?: string;
+  notes?: string | null;
   status: string;
   total_cost: number;
   created_at: string;
@@ -72,15 +78,14 @@ interface EnhancedTreatmentPlanDetailModalProps {
   onUpdate: () => void;
 }
 
-const EnhancedTreatmentPlanDetailModal = ({ 
-  open, 
-  onOpenChange, 
-  treatmentPlan, 
-  onUpdate 
+const EnhancedTreatmentPlanDetailModal = ({
+  open,
+  onOpenChange,
+  treatmentPlan,
+  onUpdate,
 }: EnhancedTreatmentPlanDetailModalProps) => {
   const [procedures, setProcedures] = useState<TreatmentPlanProcedure[]>([]);
   const [medications, setMedications] = useState<Medication[]>([]);
-  const [loading, setLoading] = useState(false);
   const [showAddProcedureModal, setShowAddProcedureModal] = useState(false);
   const [showMedicationModal, setShowMedicationModal] = useState(false);
   const [showTemplatesModal, setShowTemplatesModal] = useState(false);
@@ -90,21 +95,24 @@ const EnhancedTreatmentPlanDetailModal = ({
       fetchProcedures();
       fetchMedications();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, treatmentPlan.id]);
 
   const fetchProcedures = async () => {
     try {
       const { data, error } = await supabase
         .from("treatment_plan_procedures")
-        .select(`
+        .select(
+          `
           *,
           procedure:procedures(name, category, type, default_cost)
-        `)
+        `
+        )
         .eq("treatment_plan_id", treatmentPlan.id)
         .order("sequence_order");
 
       if (error) throw error;
-      setProcedures(data || []);
+      setProcedures((data || []) as any);
     } catch (error: any) {
       toast.error("Failed to load procedures: " + error.message);
     }
@@ -119,7 +127,7 @@ const EnhancedTreatmentPlanDetailModal = ({
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setMedications(data || []);
+      setMedications((data || []) as any);
     } catch (error: any) {
       toast.error("Failed to load medications: " + error.message);
     }
@@ -128,20 +136,15 @@ const EnhancedTreatmentPlanDetailModal = ({
   const handleStatusChange = async (newStatus: string) => {
     try {
       const updateData: any = { status: newStatus };
-      
-      if (newStatus === "in_progress" && treatmentPlan.status === "confirmed") {
-        updateData.started_at = new Date().toISOString();
-      } else if (newStatus === "completed") {
+
+      if (newStatus === "completed") {
         updateData.completed_at = new Date().toISOString();
       }
 
-      const { error } = await supabase
-        .from("treatment_plans")
-        .update(updateData)
-        .eq("id", treatmentPlan.id);
+      const { error } = await supabase.from("treatment_plans").update(updateData).eq("id", treatmentPlan.id);
 
       if (error) throw error;
-      
+
       toast.success(`Treatment plan status updated to ${newStatus}`);
       onUpdate();
     } catch (error: any) {
@@ -150,7 +153,6 @@ const EnhancedTreatmentPlanDetailModal = ({
   };
 
   const handlePublishPlan = async () => {
-    // Check if all required consents are signed
     const hasUnsignedConsents = await checkConsentStatus();
     if (hasUnsignedConsents) {
       toast.error("All required consent forms must be signed before publishing");
@@ -160,14 +162,14 @@ const EnhancedTreatmentPlanDetailModal = ({
     try {
       const { error } = await supabase
         .from("treatment_plans")
-        .update({ 
+        .update({
           status: "published",
-          published_at: new Date().toISOString()
+          published_at: new Date().toISOString(),
         })
         .eq("id", treatmentPlan.id);
 
       if (error) throw error;
-      
+
       toast.success("Treatment plan published successfully!");
       onUpdate();
     } catch (error: any) {
@@ -192,31 +194,31 @@ const EnhancedTreatmentPlanDetailModal = ({
   };
 
   const getPriorityColor = (priority: string) => {
-    const colors = {
+    const colors: Record<string, string> = {
       low: "bg-gray-100 text-gray-800",
       normal: "bg-blue-100 text-blue-800",
       high: "bg-orange-100 text-orange-800",
-      urgent: "bg-red-100 text-red-800"
+      urgent: "bg-red-100 text-red-800",
     };
-    return colors[priority as keyof typeof colors] || colors.normal;
+    return colors[priority] || colors.normal;
   };
 
   const getStatusColor = (status: string) => {
-    const colors = {
+    const colors: Record<string, string> = {
       draft: "bg-gray-100 text-gray-800",
       published: "bg-blue-100 text-blue-800",
       in_progress: "bg-orange-100 text-orange-800",
       completed: "bg-green-100 text-green-800",
       paused: "bg-yellow-100 text-yellow-800",
-      cancelled: "bg-red-100 text-red-800"
+      cancelled: "bg-red-100 text-red-800",
     };
-    return colors[status as keyof typeof colors] || colors.draft;
+    return colors[status] || colors.draft;
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
     }).format(amount);
   };
 
@@ -237,13 +239,12 @@ const EnhancedTreatmentPlanDetailModal = ({
               </DialogTitle>
               <div className="flex items-center gap-2">
                 <Badge className={getPriorityColor(treatmentPlan.priority || "normal")}>
-                  {treatmentPlan.priority || "normal"} priority
+                  {(treatmentPlan.priority || "normal") + " priority"}
                 </Badge>
+
                 <Select value={treatmentPlan.status} onValueChange={handleStatusChange}>
                   <SelectTrigger className="w-40">
-                    <Badge className={getStatusColor(treatmentPlan.status)}>
-                      {treatmentPlan.status}
-                    </Badge>
+                    <Badge className={getStatusColor(treatmentPlan.status)}>{treatmentPlan.status}</Badge>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="draft">Draft</SelectItem>
@@ -261,20 +262,15 @@ const EnhancedTreatmentPlanDetailModal = ({
           <Tabs defaultValue="overview" className="space-y-4">
             <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="procedures">
-                Procedures ({procedures.length})
-              </TabsTrigger>
-              <TabsTrigger value="medications">
-                Medications ({medications.length})
-              </TabsTrigger>
+              <TabsTrigger value="procedures">Procedures ({procedures.length})</TabsTrigger>
+              <TabsTrigger value="medications">Medications ({medications.length})</TabsTrigger>
               <TabsTrigger value="files">Files</TabsTrigger>
               <TabsTrigger value="templates">Templates</TabsTrigger>
             </TabsList>
 
-            {/* Overview Tab */}
+            {/* Overview */}
             <TabsContent value="overview" className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Plan Details */}
                 <Card className="lg:col-span-2">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -286,39 +282,41 @@ const EnhancedTreatmentPlanDetailModal = ({
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <p className="text-sm text-muted-foreground">Patient ID</p>
-                        <p className="font-medium">{treatmentPlan.patient_id}</p>
+                        <p className="font-medium">{treatmentPlan.patient_id || "—"}</p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Created</p>
                         <p className="font-medium">
-                          {format(new Date(treatmentPlan.created_at), 'MMM d, yyyy')}
+                          {format(new Date(treatmentPlan.created_at), "MMM d, yyyy")}
                         </p>
                       </div>
+
                       {treatmentPlan.estimated_duration_weeks && (
                         <div>
                           <p className="text-sm text-muted-foreground">Duration</p>
                           <p className="font-medium">{treatmentPlan.estimated_duration_weeks} weeks</p>
                         </div>
                       )}
+
                       {treatmentPlan.estimated_completion_date && (
                         <div>
                           <p className="text-sm text-muted-foreground">Est. Completion</p>
                           <p className="font-medium">
-                            {format(new Date(treatmentPlan.estimated_completion_date), 'MMM d, yyyy')}
+                            {format(new Date(treatmentPlan.estimated_completion_date), "MMM d, yyyy")}
                           </p>
                         </div>
                       )}
                     </div>
-                    {treatmentPlan.description && (
+
+                    {treatmentPlan.notes && (
                       <div>
-                        <p className="text-sm text-muted-foreground">Description</p>
-                        <p className="mt-1">{treatmentPlan.description}</p>
+                        <p className="text-sm text-muted-foreground">Notes</p>
+                        <p className="mt-1">{treatmentPlan.notes}</p>
                       </div>
                     )}
                   </CardContent>
                 </Card>
 
-                {/* Cost Summary */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -327,12 +325,11 @@ const EnhancedTreatmentPlanDetailModal = ({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold text-primary mb-2">
-                      {formatCurrency(totalCost)}
-                    </div>
+                    <div className="text-3xl font-bold text-primary mb-2">{formatCurrency(totalCost)}</div>
                     <p className="text-sm text-muted-foreground">
-                      {procedures.length} procedure{procedures.length !== 1 ? 's' : ''}
-                      {medications.length > 0 && ` + ${medications.length} medication${medications.length !== 1 ? 's' : ''}`}
+                      {procedures.length} procedure{procedures.length !== 1 ? "s" : ""}
+                      {medications.length > 0 &&
+                        ` + ${medications.length} medication${medications.length !== 1 ? "s" : ""}`}
                     </p>
                     <div className="mt-4 space-y-2">
                       <div className="flex justify-between text-sm">
@@ -348,7 +345,6 @@ const EnhancedTreatmentPlanDetailModal = ({
                 </Card>
               </div>
 
-              {/* Quick Actions */}
               <Card>
                 <CardHeader>
                   <CardTitle>Quick Actions</CardTitle>
@@ -361,24 +357,27 @@ const EnhancedTreatmentPlanDetailModal = ({
                         Publish Plan
                       </Button>
                     )}
-                    <Button 
-                      variant="outline" 
+
+                    <Button
+                      variant="outline"
                       onClick={() => setShowAddProcedureModal(true)}
                       className="flex items-center gap-2"
                     >
                       <Plus className="w-4 h-4" />
                       Add Procedure
                     </Button>
-                    <Button 
-                      variant="outline" 
+
+                    <Button
+                      variant="outline"
                       onClick={() => setShowMedicationModal(true)}
                       className="flex items-center gap-2"
                     >
                       <Pill className="w-4 h-4" />
                       Manage Medications
                     </Button>
-                    <Button 
-                      variant="outline" 
+
+                    <Button
+                      variant="outline"
                       onClick={() => setShowTemplatesModal(true)}
                       className="flex items-center gap-2"
                     >
@@ -390,14 +389,14 @@ const EnhancedTreatmentPlanDetailModal = ({
               </Card>
             </TabsContent>
 
-            {/* Procedures Tab */}
+            {/* Procedures */}
             <TabsContent value="procedures">
               <Card>
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle>Treatment Procedures</CardTitle>
-                    <Button 
-                      onClick={() => setShowAddProcedureModal(true)} 
+                    <Button
+                      onClick={() => setShowAddProcedureModal(true)}
                       size="sm"
                       className="flex items-center gap-2"
                     >
@@ -435,21 +434,15 @@ const EnhancedTreatmentPlanDetailModal = ({
                             <TableCell>
                               <div>
                                 <p className="font-medium">{proc.procedure.name}</p>
-                                <p className="text-sm text-muted-foreground">
-                                  {proc.procedure.category}
-                                </p>
+                                <p className="text-sm text-muted-foreground">{proc.procedure.category}</p>
                                 {proc.notes && (
-                                  <p className="text-sm text-muted-foreground mt-1">
-                                    {proc.notes}
-                                  </p>
+                                  <p className="text-sm text-muted-foreground mt-1">{proc.notes}</p>
                                 )}
                               </div>
                             </TableCell>
                             <TableCell>
                               {proc.tooth_numbers && proc.tooth_numbers.length > 0 ? (
-                                <div className="text-sm">
-                                  {proc.tooth_numbers.join(", ")}
-                                </div>
+                                <div className="text-sm">{proc.tooth_numbers.join(", ")}</div>
                               ) : (
                                 <span className="text-muted-foreground">All teeth</span>
                               )}
@@ -458,7 +451,7 @@ const EnhancedTreatmentPlanDetailModal = ({
                               {proc.scheduled_date ? (
                                 <div className="flex items-center gap-1 text-sm">
                                   <Calendar className="w-3 h-3" />
-                                  {format(new Date(proc.scheduled_date), 'MMM d')}
+                                  {format(new Date(proc.scheduled_date), "MMM d")}
                                 </div>
                               ) : (
                                 <Button variant="outline" size="sm">
@@ -470,17 +463,11 @@ const EnhancedTreatmentPlanDetailModal = ({
                               {formatCurrency(proc.cost || proc.procedure.default_cost || 0)}
                             </TableCell>
                             <TableCell>
-                              <Badge className={getStatusColor(proc.status)}>
-                                {proc.status}
-                              </Badge>
+                              <Badge className={getStatusColor(proc.status)}>{proc.status}</Badge>
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="text-green-600"
-                                >
+                                <Button variant="ghost" size="sm" className="text-green-600">
                                   <CheckCircle className="w-4 h-4" />
                                 </Button>
                                 <Button
@@ -501,14 +488,14 @@ const EnhancedTreatmentPlanDetailModal = ({
               </Card>
             </TabsContent>
 
-            {/* Medications Tab */}
+            {/* Medications */}
             <TabsContent value="medications">
               <Card>
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle>Prescribed Medications</CardTitle>
-                    <Button 
-                      onClick={() => setShowMedicationModal(true)} 
+                    <Button
+                      onClick={() => setShowMedicationModal(true)}
                       size="sm"
                       className="flex items-center gap-2"
                     >
@@ -537,19 +524,15 @@ const EnhancedTreatmentPlanDetailModal = ({
                               <p className="text-sm text-muted-foreground">
                                 {medication.dosage} • {medication.frequency}
                               </p>
-                              {medication.instructions && (
-                                <p className="text-sm mt-1">{medication.instructions}</p>
-                              )}
+                              {medication.instructions && <p className="text-sm mt-1">{medication.instructions}</p>}
                               <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                                <span>Start: {format(new Date(medication.start_date), 'MMM d, yyyy')}</span>
+                                <span>Start: {format(new Date(medication.start_date), "MMM d, yyyy")}</span>
                                 {medication.end_date && (
-                                  <span>End: {format(new Date(medication.end_date), 'MMM d, yyyy')}</span>
+                                  <span>End: {format(new Date(medication.end_date), "MMM d, yyyy")}</span>
                                 )}
                               </div>
                             </div>
-                            <Badge className={getStatusColor(medication.status)}>
-                              {medication.status}
-                            </Badge>
+                            <Badge className={getStatusColor(medication.status)}>{medication.status}</Badge>
                           </div>
                         </Card>
                       ))}
@@ -559,15 +542,12 @@ const EnhancedTreatmentPlanDetailModal = ({
               </Card>
             </TabsContent>
 
-            {/* Files Tab */}
+            {/* Files */}
             <TabsContent value="files">
-              <FileAttachmentSection 
-                treatmentPlanId={treatmentPlan.id}
-                title="Treatment Plan Files & Documents"
-              />
+              <FileAttachmentSection treatmentPlanId={treatmentPlan.id} title="Treatment Plan Files & Documents" />
             </TabsContent>
 
-            {/* Templates Tab */}
+            {/* Templates */}
             <TabsContent value="templates">
               <Card>
                 <CardHeader>
@@ -575,9 +555,7 @@ const EnhancedTreatmentPlanDetailModal = ({
                 </CardHeader>
                 <CardContent>
                   <div className="text-center py-8">
-                    <p className="text-muted-foreground mb-4">
-                      Save this treatment plan as a template for future use
-                    </p>
+                    <p className="text-muted-foreground mb-4">Save this treatment plan as a template for future use</p>
                     <Button onClick={() => setShowTemplatesModal(true)}>
                       <Save className="w-4 h-4 mr-2" />
                       Save as Template
@@ -605,13 +583,13 @@ const EnhancedTreatmentPlanDetailModal = ({
         open={showMedicationModal}
         onOpenChange={setShowMedicationModal}
         treatmentPlanId={treatmentPlan.id}
-        patientId={treatmentPlan.patient_id}
+        patientId={(treatmentPlan.patient_id || "") as any}
       />
 
       <TreatmentPlanTemplatesModal
         open={showTemplatesModal}
         onOpenChange={setShowTemplatesModal}
-        currentTreatmentPlan={treatmentPlan}
+        currentTreatmentPlan={treatmentPlan as any}
       />
     </>
   );
