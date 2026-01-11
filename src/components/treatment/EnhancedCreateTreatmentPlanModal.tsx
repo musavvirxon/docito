@@ -37,11 +37,9 @@ const procedureFormSchema = z.object({
 const formSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().optional(),
-  // UI-bound value; real DB columns are patient_id OR doctor_patient_id
   patient_ref: z.string().optional(),
   patient_id: z.string().optional(),
   doctor_patient_id: z.string().optional(),
-  // ✅ FIX: do NOT validate this field via RHF; we validate via procedureItems
   procedures: z.array(procedureFormSchema).optional(),
   priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
 });
@@ -72,35 +70,11 @@ interface ProcedureItem {
 }
 
 interface AvailabilitySlot {
-  start_at: string;
+  start_at: string; // "YYYY-MM-DDTHH:MM:SS" (or "YYYY-MM-DDTHH:MM")
   end_at: string;
   available: boolean;
   reason?: string;
 }
-
-const timeSlots = [
-  "08:00",
-  "08:30",
-  "09:00",
-  "09:30",
-  "10:00",
-  "10:30",
-  "11:00",
-  "11:30",
-  "12:00",
-  "12:30",
-  "13:00",
-  "13:30",
-  "14:00",
-  "14:30",
-  "15:00",
-  "15:30",
-  "16:00",
-  "16:30",
-  "17:00",
-  "17:30",
-  "18:00",
-];
 
 const EnhancedCreateTreatmentPlanModal = ({
   open,
@@ -118,6 +92,7 @@ const EnhancedCreateTreatmentPlanModal = ({
 
   const [procedureItems, setProcedureItems] = useState<ProcedureItem[]>([]);
   const [editingProcedureIndex, setEditingProcedureIndex] = useState<number | null>(null);
+
   const [currentProcedure, setCurrentProcedure] = useState<ProcedureItem>({
     procedure_id: "",
     priority: "medium",
@@ -130,8 +105,11 @@ const EnhancedCreateTreatmentPlanModal = ({
   const [selectedPatientName, setSelectedPatientName] = useState<string>("");
   const [selectedPatientSource, setSelectedPatientSource] = useState<"registered" | "doctor_added" | null>(null);
 
+  // Backend-driven slots
   const [daySlots, setDaySlots] = useState<AvailabilitySlot[]>([]);
   const [loadingDaySlots, setLoadingDaySlots] = useState(false);
+
+  // Optional: holidays highlight (if your Calendar supports it / you use it elsewhere)
   const [holidayDates, setHolidayDates] = useState<Date[]>([]);
 
   const isDentist =
@@ -162,7 +140,7 @@ const EnhancedCreateTreatmentPlanModal = ({
     }
   }, [preSelectedPatientId, form]);
 
-  // Populate form with template data when provided
+  // Populate from template
   useEffect(() => {
     if (initialTemplateData && open) {
       if (initialTemplateData.title) form.setValue("title", initialTemplateData.title);
@@ -176,9 +154,10 @@ const EnhancedCreateTreatmentPlanModal = ({
           notes: p.notes || "",
           tooth_numbers: p.tooth_numbers || [],
         }));
+
         setProcedureItems(templateProcedures);
 
-        // Keep react-hook-form in sync (prevents silent submit blocking)
+        // Keep RHF in sync (prevents silent submit)
         form.setValue(
           "procedures",
           templateProcedures.map((p) => ({
@@ -195,7 +174,7 @@ const EnhancedCreateTreatmentPlanModal = ({
     }
   }, [initialTemplateData, open, form]);
 
-  // Reset form when modal closes
+  // Reset when closing
   useEffect(() => {
     if (!open) {
       form.reset();
@@ -211,7 +190,7 @@ const EnhancedCreateTreatmentPlanModal = ({
     }
   }, [open, form]);
 
-  // Load holidays and highlight them red in calendar
+  // Load holidays (optional, used to disable holidays in calendar)
   useEffect(() => {
     const loadHolidays = async () => {
       if (!open || !profile?.id) {
@@ -238,9 +217,10 @@ const EnhancedCreateTreatmentPlanModal = ({
     loadHolidays();
   }, [open, profile?.id]);
 
-  // Load availability for selected date to show booked/blocked slots as unavailable
+  // Load availability from backend (doctor hours + clinic hours + blocks/appointments/overrides)
   useEffect(() => {
     const loadDaySlots = async () => {
+      // No slots for template mode
       if (saveAsTemplate) {
         setDaySlots([]);
         return;
@@ -259,6 +239,8 @@ const EnhancedCreateTreatmentPlanModal = ({
       setLoadingDaySlots(true);
       try {
         const dateStr = format(currentProcedure.appointment_date, "yyyy-MM-dd");
+
+        // IMPORTANT: entity_id should be practice_id (clinic/hospital)
         const { data, error } = await supabase.functions.invoke("get-availability", {
           body: {
             provider_id: profile.id,
@@ -271,10 +253,10 @@ const EnhancedCreateTreatmentPlanModal = ({
         if (error) throw error;
         if ((data as any)?.error) throw new Error((data as any).error);
 
-        setDaySlots(((data as any)?.slots ?? []) as AvailabilitySlot[]);
+        const slots = ((data as any)?.slots ?? []) as AvailabilitySlot[];
+        setDaySlots(slots);
       } catch (e: any) {
         console.error("Failed to load availability:", e);
-        // fall back to static timeSlots
         setDaySlots([]);
       } finally {
         setLoadingDaySlots(false);
@@ -284,22 +266,37 @@ const EnhancedCreateTreatmentPlanModal = ({
     loadDaySlots();
   }, [saveAsTemplate, profile?.id, profile?.practice_id, currentProcedure.appointment_date]);
 
+  // Totals
   useEffect(() => {
-    // Calculate total cost and duration
     let cost = 0;
     let duration = 0;
 
     procedureItems.forEach((item) => {
-      const procedure = procedures.find((p) => p.id === item.procedure_id);
-      if (procedure) {
-        cost += Number(procedure.default_cost || 0);
-        duration += Number(procedure.duration_minutes || 30);
+      const proc = procedures.find((p) => p.id === item.procedure_id);
+      if (proc) {
+        cost += Number(proc.default_cost || 0);
+        duration += Number(proc.duration_minutes || 30);
       }
     });
 
     setTotalCost(cost);
     setTotalDuration(duration);
   }, [procedureItems, procedures]);
+
+  // ✅ NO HARDCODED SLOTS: derive times from backend slots only
+  const timeOptions = useMemo(() => {
+    if (!daySlots.length) return [];
+
+    const seen = new Set<string>();
+    return daySlots
+      .map((s) => {
+        const time = s.start_at?.slice(11, 16); // HH:MM
+        if (!time || seen.has(time)) return null;
+        seen.add(time);
+        return { time, available: Boolean(s.available), reason: s.reason };
+      })
+      .filter(Boolean) as Array<{ time: string; available: boolean; reason?: string }>;
+  }, [daySlots]);
 
   const handleAddProcedure = () => {
     if (!currentProcedure.procedure_id) {
@@ -325,7 +322,7 @@ const EnhancedCreateTreatmentPlanModal = ({
       setProcedureItems(nextItems);
     }
 
-    // Keep react-hook-form in sync (prevents silent submit blocking)
+    // Keep RHF in sync (prevents silent submit blocking)
     form.setValue(
       "procedures",
       nextItems.map((p) => ({
@@ -339,15 +336,15 @@ const EnhancedCreateTreatmentPlanModal = ({
       { shouldValidate: false, shouldDirty: true }
     );
 
-    // Reset
     setCurrentProcedure({ procedure_id: "", priority: "medium" });
     setSelectedTeeth([]);
+    setDaySlots([]); // clear slots after adding
   };
 
   const handleEditProcedure = (index: number) => {
-    const procedure = procedureItems[index];
-    setCurrentProcedure(procedure);
-    setSelectedTeeth(procedure.tooth_numbers || []);
+    const proc = procedureItems[index];
+    setCurrentProcedure(proc);
+    setSelectedTeeth(proc.tooth_numbers || []);
     setEditingProcedureIndex(index);
   };
 
@@ -355,7 +352,6 @@ const EnhancedCreateTreatmentPlanModal = ({
     const nextItems = procedureItems.filter((_, i) => i !== index);
     setProcedureItems(nextItems);
 
-    // Keep react-hook-form in sync
     form.setValue(
       "procedures",
       nextItems.map((p) => ({
@@ -416,13 +412,11 @@ const EnhancedCreateTreatmentPlanModal = ({
       return;
     }
 
-    // Validate patient is selected when not saving as template
     if (!saveAsTemplate && !values.patient_id && !values.doctor_patient_id) {
       toast.error("Please select a patient for the treatment plan");
       return;
     }
 
-    // Safety: enforce exactly one patient reference
     if (!saveAsTemplate && values.patient_id && values.doctor_patient_id) {
       toast.error("Please select only one patient");
       return;
@@ -433,7 +427,6 @@ const EnhancedCreateTreatmentPlanModal = ({
     try {
       if (!user) throw new Error("User not authenticated");
 
-      // Get doctor ID
       const { data: doctorData, error: doctorError } = await supabase
         .from("doctors")
         .select("id")
@@ -443,7 +436,6 @@ const EnhancedCreateTreatmentPlanModal = ({
       if (doctorError || !doctorData) throw new Error("Doctor profile not found");
 
       if (saveAsTemplate) {
-        // Save as template without patient and dates
         const { error: templateError } = await supabase.from("treatment_plan_templates").insert({
           doctor_id: doctorData.id,
           name: values.title,
@@ -457,7 +449,7 @@ const EnhancedCreateTreatmentPlanModal = ({
               notes: p.notes,
               tooth_numbers: p.tooth_numbers,
             })),
-            priority: values.priority,
+            priority: values.priority ?? "medium",
           },
         });
 
@@ -468,7 +460,6 @@ const EnhancedCreateTreatmentPlanModal = ({
         return;
       }
 
-      // Create treatment plan (doctor_patient_id plans will expire in 7 days)
       const expiresAt = values.doctor_patient_id
         ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
         : null;
@@ -493,24 +484,21 @@ const EnhancedCreateTreatmentPlanModal = ({
 
       if (planError || !planData) throw planError;
 
-      // Add procedures to treatment plan and create appointments if scheduled
+      // Insert procedures (+ appointments if scheduled)
       const proceduresToInsert = await Promise.all(
         procedureItems.map(async (item, index) => {
-          const procedure = procedures.find((p) => p.id === item.procedure_id);
-          let appointmentId = null;
+          const proc = procedures.find((p) => p.id === item.procedure_id);
 
-          // Create appointment if date and time are specified
           if (item.appointment_date && item.appointment_time && (values.patient_id || values.doctor_patient_id)) {
             try {
-              const appointment = await createAppointment(
+              await createAppointment(
                 doctorData.id,
                 { patient_id: values.patient_id || null, doctor_patient_id: values.doctor_patient_id || null },
                 item.appointment_date,
                 item.appointment_time,
-                procedure?.name || "Procedure",
-                procedure?.duration_minutes || 30
+                proc?.name || "Procedure",
+                proc?.duration_minutes || 30
               );
-              appointmentId = appointment.id;
             } catch (err) {
               console.error("Failed to create appointment:", err);
             }
@@ -525,8 +513,7 @@ const EnhancedCreateTreatmentPlanModal = ({
             priority: item.priority,
             notes: item.notes,
             tooth_numbers: item.tooth_numbers,
-            cost: procedure?.default_cost || 0,
-            // If your schema supports it: appointment_id: appointmentId
+            cost: proc?.default_cost || 0,
           };
         })
       );
@@ -534,21 +521,22 @@ const EnhancedCreateTreatmentPlanModal = ({
       const { error: proceduresError } = await supabase.from("treatment_plan_procedures").insert(proceduresToInsert);
       if (proceduresError) throw proceduresError;
 
-      // Build detailed notification message for registered patient
-      const procedureDetails = procedureItems
-        .map((item) => {
-          const proc = procedures.find((p) => p.id === item.procedure_id);
-          return `- ${proc?.name || "Procedure"}: $${proc?.default_cost || 0}${
-            item.appointment_date
-              ? ` (Scheduled: ${format(item.appointment_date, "PPP")}${
-                  item.appointment_time ? ` at ${item.appointment_time}` : ""
-                })`
-              : ""
-          }`;
-        })
-        .join("\n");
+      // Notify registered patients only
+      if (values.patient_id) {
+        const procedureDetails = procedureItems
+          .map((item) => {
+            const proc = procedures.find((p) => p.id === item.procedure_id);
+            return `- ${proc?.name || "Procedure"}: $${proc?.default_cost || 0}${
+              item.appointment_date
+                ? ` (Scheduled: ${format(item.appointment_date, "PPP")}${
+                    item.appointment_time ? ` at ${item.appointment_time}` : ""
+                  })`
+                : ""
+            }`;
+          })
+          .join("\n");
 
-      const notificationMessage = `
+        const notificationMessage = `
 A new treatment plan "${values.title}" has been created for you.
 
 📋 Procedures:
@@ -557,13 +545,11 @@ ${procedureDetails}
 💰 Total Estimated Cost: $${totalCost.toFixed(2)}
 ⏱️ Total Duration: ${totalDuration} minutes
 
-⚠️ Important: Please note that the final cost may vary depending on findings during the procedure or if additional treatment is required.
+⚠️ Important: Final costs may vary depending on findings during the procedure or if additional treatment is required.
 
 Please review and confirm the treatment plan in your dashboard.
-      `.trim();
+        `.trim();
 
-      // Send notification only to REGISTERED patients
-      if (values.patient_id) {
         const { data: notifData, error: notifError } = await supabase.rpc("send_notification_to_user", {
           recipient_user_id: values.patient_id,
           notification_type: "treatment_plan",
@@ -616,32 +602,12 @@ Please review and confirm the treatment plan in your dashboard.
     urgent: "bg-red-500/10 text-red-500",
   };
 
-  const timeOptions = useMemo(() => {
-    // If availability wasn't loaded, fall back to static options
-    if (!daySlots.length) {
-      return timeSlots.map((time) => ({ time, available: true as const }));
-    }
-
-    const seen = new Set<string>();
-    const options = daySlots
-      .map((s) => {
-        const time = s.start_at?.slice(11, 16);
-        if (!time || seen.has(time)) return null;
-        seen.add(time);
-        return { time, available: Boolean(s.available), reason: s.reason };
-      })
-      .filter(Boolean) as Array<{ time: string; available: boolean; reason?: string }>;
-
-    return options.length ? options : timeSlots.map((time) => ({ time, available: true as const }));
-  }, [daySlots]);
-
   const isPatientSelected = Boolean(watchedPatientId || watchedDoctorPatientId);
 
   return (
     <Dialog
       open={open}
       onOpenChange={(next) => {
-        // Keep internal reset logic only for close
         if (!next) handleClose();
         else onOpenChange(true);
       }}
@@ -653,7 +619,6 @@ Please review and confirm the treatment plan in your dashboard.
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Save as Template Toggle */}
             <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
               <div className="flex items-center gap-2">
                 <Save className="w-4 h-4" />
@@ -670,7 +635,6 @@ Please review and confirm the treatment plan in your dashboard.
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              {/* Treatment Plan Title */}
               <FormField
                 control={form.control}
                 name="title"
@@ -685,7 +649,6 @@ Please review and confirm the treatment plan in your dashboard.
                 )}
               />
 
-              {/* Patient Selection - Required when not template */}
               {!saveAsTemplate && (
                 <FormField
                   control={form.control}
@@ -716,9 +679,7 @@ Please review and confirm the treatment plan in your dashboard.
 
                       {selectedPatientSource === "doctor_added" && (
                         <p className="text-xs text-muted-foreground mt-1">
-                          This patient is not signed up yet. The treatment plan will be kept for <b>7 days</b>. If they
-                          sign up (or add the same phone number to their profile) within that time, the plan and their
-                          medical/dental history will be restored in their account.
+                          This patient is not signed up yet. The treatment plan will be kept for <b>7 days</b>.
                         </p>
                       )}
 
@@ -728,7 +689,6 @@ Please review and confirm the treatment plan in your dashboard.
                 />
               )}
 
-              {/* Overall Priority */}
               <FormField
                 control={form.control}
                 name="priority"
@@ -754,7 +714,6 @@ Please review and confirm the treatment plan in your dashboard.
               />
             </div>
 
-            {/* Description */}
             <FormField
               control={form.control}
               name="description"
@@ -771,14 +730,12 @@ Please review and confirm the treatment plan in your dashboard.
 
             <Separator />
 
-            {/* Add Procedure Section */}
             <div className="space-y-4">
               <h3 className="font-semibold">Add Procedures *</h3>
 
               <Card>
                 <CardContent className="pt-6 space-y-4">
                   <div className="grid grid-cols-2 gap-4">
-                    {/* Procedure Selection */}
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Procedure/Service *</label>
                       <Select
@@ -798,7 +755,6 @@ Please review and confirm the treatment plan in your dashboard.
                       </Select>
                     </div>
 
-                    {/* Priority */}
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Priority</label>
                       <Select
@@ -817,7 +773,6 @@ Please review and confirm the treatment plan in your dashboard.
                       </Select>
                     </div>
 
-                    {/* Date Selection */}
                     {!saveAsTemplate && (
                       <div className="space-y-2">
                         <label className="text-sm font-medium">Schedule Date</label>
@@ -842,10 +797,13 @@ Please review and confirm the treatment plan in your dashboard.
                             <Calendar
                               mode="single"
                               selected={currentProcedure.appointment_date}
-                              onSelect={(date) =>
-                                setCurrentProcedure({ ...currentProcedure, appointment_date: date as Date })
-                              }
-                              holidayDates={holidayDates}
+                              onSelect={(date) => {
+                                setCurrentProcedure({
+                                  ...currentProcedure,
+                                  appointment_date: date as Date,
+                                  appointment_time: undefined, // reset time when date changes
+                                });
+                              }}
                               disabled={(date) =>
                                 date < new Date() ||
                                 holidayDates.some((h) => h.toDateString() === date.toDateString())
@@ -857,7 +815,6 @@ Please review and confirm the treatment plan in your dashboard.
                       </div>
                     )}
 
-                    {/* Time Selection */}
                     {!saveAsTemplate && currentProcedure.appointment_date && (
                       <div className="space-y-2">
                         <label className="text-sm font-medium">Schedule Time</label>
@@ -879,6 +836,8 @@ Please review and confirm the treatment plan in your dashboard.
                               )}
                             </SelectValue>
                           </SelectTrigger>
+
+                          {/* ✅ BACKEND ONLY - no hard coded slots */}
                           <SelectContent>
                             {loadingDaySlots ? (
                               <SelectItem value="__loading" disabled>
@@ -893,7 +852,7 @@ Please review and confirm the treatment plan in your dashboard.
                               ))
                             ) : (
                               <SelectItem value="__none" disabled>
-                                No time slots available
+                                No available slots (check doctor + clinic working hours)
                               </SelectItem>
                             )}
                           </SelectContent>
@@ -902,7 +861,6 @@ Please review and confirm the treatment plan in your dashboard.
                     )}
                   </div>
 
-                  {/* Notes */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Notes</label>
                     <Textarea
@@ -912,7 +870,6 @@ Please review and confirm the treatment plan in your dashboard.
                     />
                   </div>
 
-                  {/* Tooth Selector for Dentists */}
                   {isDentist && <ToothSelector selectedTeeth={selectedTeeth} onSelectionChange={setSelectedTeeth} />}
 
                   <Button
@@ -934,7 +891,6 @@ Please review and confirm the treatment plan in your dashboard.
               </Card>
             </div>
 
-            {/* Procedures List */}
             {procedureItems.length > 0 && (
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
@@ -979,7 +935,6 @@ Please review and confirm the treatment plan in your dashboard.
                   </Card>
                 ))}
 
-                {/* Cost Summary Card */}
                 <Card className="bg-primary/5 border-primary/20">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
@@ -1000,39 +955,30 @@ Please review and confirm the treatment plan in your dashboard.
                   </CardContent>
                 </Card>
 
-                {/* Cost Warning Alert */}
                 {!saveAsTemplate && (
                   <Alert variant="default" className="border-amber-500/50 bg-amber-500/10">
                     <AlertTriangle className="h-4 w-4 text-amber-600" />
                     <AlertTitle className="text-amber-700">Cost Disclaimer</AlertTitle>
                     <AlertDescription className="text-amber-600 text-sm">
                       The total cost shown is an estimate. Final costs may vary based on findings during the procedure,
-                      additional treatments required, or changes in the treatment plan. The patient will be notified of
-                      this when receiving the plan.
+                      additional treatments required, or changes in the treatment plan.
                     </AlertDescription>
                   </Alert>
                 )}
               </div>
             )}
 
-            {/* Patient Info Alert (registered only) */}
             {!saveAsTemplate && watchedPatientId && (
               <Alert>
-                <Info className="h-4 h-4" />
+                <Info className="h-4 w-4" />
                 <AlertTitle>Patient Notification</AlertTitle>
                 <AlertDescription className="text-sm">
-                  {selectedPatientName || "The patient"} will receive a detailed notification including:
-                  <ul className="list-disc list-inside mt-1 text-muted-foreground">
-                    <li>Complete list of procedures with individual costs</li>
-                    <li>Scheduled appointment dates and times (if set)</li>
-                    <li>Total estimated cost and duration</li>
-                    <li>Important disclaimer about potential cost changes</li>
-                  </ul>
+                  {selectedPatientName || "The patient"} will receive a detailed notification including procedures,
+                  schedule (if set), total estimate and disclaimer.
                 </AlertDescription>
               </Alert>
             )}
 
-            {/* Action Buttons */}
             <div className="flex justify-end gap-3">
               <Button type="button" variant="outline" onClick={handleClose}>
                 Cancel
