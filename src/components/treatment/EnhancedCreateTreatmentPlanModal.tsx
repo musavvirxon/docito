@@ -41,7 +41,12 @@ const formSchema = z.object({
   patient_ref: z.string().optional(),
   patient_id: z.string().optional(),
   doctor_patient_id: z.string().optional(),
-  procedures: z.array(procedureFormSchema).min(1, "Add at least one procedure"),
+  // NOTE:
+  // Procedures are managed in local state (procedureItems). The original schema required
+  // `procedures` to have at least 1 item, but the form never wrote into that field.
+  // That prevented submit with NO visible error.
+  // We keep this field optional for compatibility, and validate using procedureItems.
+  procedures: z.array(procedureFormSchema).optional(),
   priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
 });
 
@@ -176,6 +181,20 @@ const EnhancedCreateTreatmentPlanModal = ({
           tooth_numbers: p.tooth_numbers || [],
         }));
         setProcedureItems(templateProcedures);
+
+        // Keep react-hook-form in sync so submit isn't blocked by hidden validation.
+        form.setValue(
+          "procedures",
+          templateProcedures.map((p) => ({
+            procedure_id: p.procedure_id,
+            appointment_date: p.appointment_date,
+            appointment_time: p.appointment_time,
+            priority: p.priority,
+            notes: p.notes,
+            tooth_numbers: p.tooth_numbers,
+          })) as any,
+          { shouldValidate: false, shouldDirty: false }
+        );
       }
     }
   }, [initialTemplateData, open, form]);
@@ -185,6 +204,7 @@ const EnhancedCreateTreatmentPlanModal = ({
     if (!open) {
       form.reset();
       setProcedureItems([]);
+      form.setValue("procedures", [] as any, { shouldValidate: false, shouldDirty: false });
       setCurrentProcedure({ procedure_id: "", priority: "medium" });
       setSelectedTeeth([]);
       setSelectedPatientName("");
@@ -296,14 +316,32 @@ const EnhancedCreateTreatmentPlanModal = ({
       tooth_numbers: selectedTeeth.length > 0 ? selectedTeeth : undefined,
     };
 
+    let nextItems: ProcedureItem[];
+
     if (editingProcedureIndex !== null) {
       const updated = [...procedureItems];
       updated[editingProcedureIndex] = procedureToAdd;
+      nextItems = updated;
       setProcedureItems(updated);
       setEditingProcedureIndex(null);
     } else {
-      setProcedureItems([...procedureItems, procedureToAdd]);
+      nextItems = [...procedureItems, procedureToAdd];
+      setProcedureItems(nextItems);
     }
+
+    // Keep react-hook-form in sync (avoids silent no-submit)
+    form.setValue(
+      "procedures",
+      nextItems.map((p) => ({
+        procedure_id: p.procedure_id,
+        appointment_date: p.appointment_date,
+        appointment_time: p.appointment_time,
+        priority: p.priority,
+        notes: p.notes,
+        tooth_numbers: p.tooth_numbers,
+      })) as any,
+      { shouldValidate: false, shouldDirty: true }
+    );
 
     // Reset
     setCurrentProcedure({ procedure_id: "", priority: "medium" });
@@ -318,7 +356,20 @@ const EnhancedCreateTreatmentPlanModal = ({
   };
 
   const handleRemoveProcedure = (index: number) => {
-    setProcedureItems(procedureItems.filter((_, i) => i !== index));
+    const nextItems = procedureItems.filter((_, i) => i !== index);
+    setProcedureItems(nextItems);
+    form.setValue(
+      "procedures",
+      nextItems.map((p) => ({
+        procedure_id: p.procedure_id,
+        appointment_date: p.appointment_date,
+        appointment_time: p.appointment_time,
+        priority: p.priority,
+        notes: p.notes,
+        tooth_numbers: p.tooth_numbers,
+      })) as any,
+      { shouldValidate: false, shouldDirty: true }
+    );
   };
 
   const getProcedureName = (procedureId: string) => procedures.find((p) => p.id === procedureId)?.name || "Unknown";
@@ -420,8 +471,8 @@ const EnhancedCreateTreatmentPlanModal = ({
       }
 
       // Create treatment plan (doctor_patient_id plans will expire in 7 days)
-      const expiresAt = values.doctor_patient_id 
-        ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() 
+      const expiresAt = values.doctor_patient_id
+        ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
         : null;
 
       const { data: planData, error: planError } = await supabase
@@ -547,6 +598,7 @@ Please review and confirm the treatment plan in your dashboard.
   const handleClose = () => {
     form.reset();
     setProcedureItems([]);
+    form.setValue("procedures", [] as any, { shouldValidate: false, shouldDirty: false });
     setCurrentProcedure({ procedure_id: "", priority: "medium" });
     setSelectedTeeth([]);
     setEditingProcedureIndex(null);
@@ -643,7 +695,6 @@ Please review and confirm the treatment plan in your dashboard.
                     <FormItem>
                       <FormLabel>Patient *</FormLabel>
                       <FormControl>
-                        {/* ✅ EXACT SNIPPET YOU PROVIDED (kept) */}
                         <PatientSelector
                           value={field.value}
                           onSelect={(patient) => {
@@ -792,9 +843,14 @@ Please review and confirm the treatment plan in your dashboard.
                             <Calendar
                               mode="single"
                               selected={currentProcedure.appointment_date}
-                              onSelect={(date) => setCurrentProcedure({ ...currentProcedure, appointment_date: date as Date })}
+                              onSelect={(date) =>
+                                setCurrentProcedure({ ...currentProcedure, appointment_date: date as Date })
+                              }
                               holidayDates={holidayDates}
-                              disabled={(date) => date < new Date() || holidayDates.some(h => h.toDateString() === date.toDateString())}
+                              disabled={(date) =>
+                                date < new Date() ||
+                                holidayDates.some((h) => h.toDateString() === date.toDateString())
+                              }
                               initialFocus
                             />
                           </PopoverContent>
@@ -808,7 +864,9 @@ Please review and confirm the treatment plan in your dashboard.
                         <label className="text-sm font-medium">Schedule Time</label>
                         <Select
                           value={currentProcedure.appointment_time}
-                          onValueChange={(value) => setCurrentProcedure({ ...currentProcedure, appointment_time: value })}
+                          onValueChange={(value) =>
+                            setCurrentProcedure({ ...currentProcedure, appointment_time: value })
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select time">
