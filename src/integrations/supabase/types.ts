@@ -4555,6 +4555,10 @@ export type Database = {
           description: string | null
           duration_minutes: number | null
           estimated_duration_minutes: number | null
+          followup_count: number | null
+          followup_interval_days: number | null
+          followup_intervals_days: number[] | null
+          has_followup: boolean | null
           id: string
           informed_consent_template: string | null
           is_active: boolean | null
@@ -4577,6 +4581,10 @@ export type Database = {
           description?: string | null
           duration_minutes?: number | null
           estimated_duration_minutes?: number | null
+          followup_count?: number | null
+          followup_interval_days?: number | null
+          followup_intervals_days?: number[] | null
+          has_followup?: boolean | null
           id?: string
           informed_consent_template?: string | null
           is_active?: boolean | null
@@ -4599,6 +4607,10 @@ export type Database = {
           description?: string | null
           duration_minutes?: number | null
           estimated_duration_minutes?: number | null
+          followup_count?: number | null
+          followup_interval_days?: number | null
+          followup_intervals_days?: number[] | null
+          has_followup?: boolean | null
           id?: string
           informed_consent_template?: string | null
           is_active?: boolean | null
@@ -6380,6 +6392,58 @@ export type Database = {
             columns: ["treatment_plan_id"]
             isOneToOne: false
             referencedRelation: "treatment_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      treatment_plan_procedure_visits: {
+        Row: {
+          appointment_id: string | null
+          created_at: string | null
+          id: string
+          scheduled_date: string | null
+          scheduled_time: string | null
+          treatment_plan_procedure_id: string
+          visit_index: number
+        }
+        Insert: {
+          appointment_id?: string | null
+          created_at?: string | null
+          id?: string
+          scheduled_date?: string | null
+          scheduled_time?: string | null
+          treatment_plan_procedure_id: string
+          visit_index?: number
+        }
+        Update: {
+          appointment_id?: string | null
+          created_at?: string | null
+          id?: string
+          scheduled_date?: string | null
+          scheduled_time?: string | null
+          treatment_plan_procedure_id?: string
+          visit_index?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "treatment_plan_procedure_visit_treatment_plan_procedure_id_fkey"
+            columns: ["treatment_plan_procedure_id"]
+            isOneToOne: false
+            referencedRelation: "treatment_plan_procedures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "treatment_plan_procedure_visits_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "treatment_plan_procedure_visits_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "patient_all_appointments"
             referencedColumns: ["id"]
           },
         ]

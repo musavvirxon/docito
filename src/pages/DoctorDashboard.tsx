@@ -16,7 +16,6 @@ import {
   FileText,
   AlertCircle,
   Loader2,
-  ArrowRightLeft,
 } from "lucide-react";
 import { DoctorDataProvider, useDoctorData } from "@/contexts/DoctorDataContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -47,7 +46,7 @@ import DoctorPerformanceSection from "@/components/doctor/DoctorPerformanceSecti
 import ClinicFinderSection from "@/components/doctor/ClinicFinderSection";
 import DoctorSettingsSection from "@/components/doctor/DoctorSettingsSection";
 import DoctorPatientsSection from "@/components/doctor/patients/DoctorPatientsSection";
-import InternalMessagingSection from "@/components/doctor/InternalMessagingSection";
+import DoctorMessagingSection from "@/components/doctor/DoctorMessagingSection";
 import TreatmentPlanningSection from "@/components/doctor/TreatmentPlanningSection";
 import DoctorScheduleSettingsSection from "@/components/doctor/DoctorScheduleSettingsSection";
 import DoctorProcedureLibrarySection from "@/components/doctor/DoctorProcedureLibrarySection";
@@ -172,6 +171,7 @@ const DoctorDashboardContent = () => {
   }
 
   // Independent doctors don't have "My Services" - moved to Clinic Admin
+  // Messaging section added for all doctors, Referrals hidden (not available)
   const sidebarItems =
     doctorStatus === "independent"
       ? [
@@ -182,7 +182,7 @@ const DoctorDashboardContent = () => {
           { id: "treatment-planning", label: t("doctor.navigation.treatmentPlanning"), icon: Calendar },
           { id: "assigned-patients", label: t("doctor.navigation.myPatients"), icon: Users },
           { id: "calendar", label: t("doctor.navigation.calendar"), icon: Calendar },
-          { id: "referrals", label: "Referrals", icon: ArrowRightLeft },
+          { id: "messages", label: t("doctor.navigation.messages"), icon: MessageSquare },
           { id: "performance", label: t("doctor.navigation.performance"), icon: BarChart3 },
           { id: "financial-stats", label: t("doctor.navigation.financialStats"), icon: BarChart3 },
           { id: "clinic-finder", label: t("doctor.navigation.clinicFinder"), icon: Search },
@@ -198,7 +198,6 @@ const DoctorDashboardContent = () => {
           { id: "assigned-patients", label: t("doctor.navigation.myPatients"), icon: Users },
           { id: "calendar", label: t("doctor.navigation.calendar"), icon: Calendar },
           { id: "messages", label: t("doctor.navigation.messages"), icon: MessageSquare },
-          { id: "referrals", label: "Referrals", icon: ArrowRightLeft },
           { id: "performance", label: t("doctor.navigation.performance"), icon: BarChart3 },
           { id: "financial-stats", label: t("doctor.navigation.financialStats"), icon: BarChart3 },
           { id: "settings", label: t("doctor.navigation.settings"), icon: Settings },
@@ -235,15 +234,13 @@ const DoctorDashboardContent = () => {
       case "assigned-patients":
         return <DoctorPatientsSection />;
       case "messages":
-        return <InternalMessagingSection />;
+        return <DoctorMessagingSection />;
       case "procedure-library":
         return <DoctorProcedureLibrarySection />;
       case "treatment-planning":
         return <TreatmentPlanningSection />;
       case "settings":
         return <DoctorSettingsSection />;
-      case "referrals":
-        return <DoctorReferralsSection />;
       default:
         return (
           <div className="space-y-6">

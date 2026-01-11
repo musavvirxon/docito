@@ -1,22 +1,49 @@
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker } from "react-day-picker";
+import { DayPicker, Matcher } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
-export type CalendarProps = React.ComponentProps<typeof DayPicker>;
+export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
+  holidayDates?: Date[];
+  blockedDates?: Date[];
+};
 
 function Calendar({
   className,
   classNames,
   showOutsideDays = true,
+  holidayDates = [],
+  blockedDates = [],
+  modifiers: externalModifiers,
+  modifiersClassNames: externalModifiersClassNames,
   ...props
 }: CalendarProps) {
+  // Build modifiers for holidays and blocked dates
+  const modifiers: Record<string, Matcher | Matcher[]> = {
+    ...(externalModifiers as Record<string, Matcher | Matcher[]> || {}),
+  };
+  const modifiersClassNames: Record<string, string> = {
+    ...(externalModifiersClassNames || {}),
+  };
+
+  if (holidayDates.length > 0) {
+    modifiers.holiday = holidayDates;
+    modifiersClassNames.holiday = "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 font-medium";
+  }
+
+  if (blockedDates.length > 0) {
+    modifiers.blocked = blockedDates;
+    modifiersClassNames.blocked = "bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500 line-through";
+  }
+
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn("p-3", className)}
+      modifiers={modifiers}
+      modifiersClassNames={modifiersClassNames}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",

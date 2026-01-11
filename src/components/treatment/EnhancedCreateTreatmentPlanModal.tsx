@@ -787,9 +787,9 @@ Please review and confirm the treatment plan in your dashboard.
                             <Calendar
                               mode="single"
                               selected={currentProcedure.appointment_date}
-                              onSelect={(date) => setCurrentProcedure({ ...currentProcedure, appointment_date: date })}
+                              onSelect={(date) => setCurrentProcedure({ ...currentProcedure, appointment_date: date as Date })}
                               holidayDates={holidayDates}
-                              disabled={(date) => date < new Date()}
+                              disabled={(date) => date < new Date() || holidayDates.some(h => h.toDateString() === date.toDateString())}
                               initialFocus
                             />
                           </PopoverContent>
