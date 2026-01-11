@@ -1,22 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  Settings,
-  User,
-  Calendar,
-  BarChart3,
-  Search,
-  Briefcase,
-  MapPin,
-  MessageSquare,
-  Users,
-  Building2,
-  LogOut,
-  Home,
-  Clock,
-  FileText,
-  AlertCircle,
-  Loader2,
-} from "lucide-react";
+import { Settings, User, Calendar, BarChart3, Search, Briefcase, MapPin, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2 } from "lucide-react";
 import { DoctorDataProvider, useDoctorData } from "@/contexts/DoctorDataContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useTranslation } from "react-i18next";
@@ -27,18 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import DoctorProfileSection from "@/components/doctor/DoctorProfileSection";
 import DoctorServicesSection from "@/components/doctor/DoctorServicesSection";
 import DoctorCalendarSection from "@/components/doctor/DoctorCalendarSection";
@@ -60,13 +32,13 @@ import ThemeToggle from "@/components/home/ThemeToggle";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
 import { DoctorVerificationStatusCard } from "@/components/doctor/DoctorVerificationStatusCard";
 import { DoctorReferralsSection } from "@/components/doctor/DoctorReferralsSection";
-
 type DoctorStatus = "independent" | "clinic-member";
-
 const DoctorDashboardContent = () => {
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
-
+  const {
+    user,
+    profile
+  } = useAuth();
   const {
     doctorProfile,
     stats,
@@ -75,19 +47,19 @@ const DoctorDashboardContent = () => {
     todaysAppointments,
     loading,
     refreshAll,
-    scheduleSettings,
+    scheduleSettings
   } = useDoctorData();
-
   const [activeSection, setActiveSection] = useState("dashboard");
   const [quickActionModal, setQuickActionModal] = useState<{
     isOpen: boolean;
     action: "schedule" | "procedures" | "settings" | "block-time" | "add-service" | null;
   }>({
     isOpen: false,
-    action: null,
+    action: null
   });
-
-  const { t } = useTranslation("dashboard");
+  const {
+    t
+  } = useTranslation("dashboard");
   const doctorStatus: DoctorStatus = doctorProfile?.practice_id ? "clinic-member" : "independent";
 
   // Expose refresh function globally for child components
@@ -97,7 +69,6 @@ const DoctorDashboardContent = () => {
       delete (window as any).refreshDoctorProfile;
     };
   }, [refreshAll]);
-
   const handleLogout = async () => {
     await authApi.signOut();
     navigate("/");
@@ -124,29 +95,23 @@ const DoctorDashboardContent = () => {
     // Verification & practice (2 fields)
     if (doctorProfile.verified || doctorProfile.practice_id) completedCount++;
     if (scheduleSettings && scheduleSettings.working_days) completedCount++;
-
-    return Math.round((completedCount / totalCount) * 100);
+    return Math.round(completedCount / totalCount * 100);
   };
-
   const profileCompletion = calculateProfileCompletion();
   const isProfileIncomplete = profileCompletion < 80;
-
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
+    return <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
           <p className="mt-4 text-foreground">{t("doctor.loading")}</p>
           <p className="text-sm text-muted-foreground mt-2">{t("doctor.settingUp")}</p>
         </div>
-      </div>
-    );
+      </div>;
   }
 
   // Show minimal interface for partial access
   if (!doctorProfile) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
+    return <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center max-w-md p-6 bg-card border border-border rounded-lg">
           <div className="mb-4">
             <h2 className="text-xl font-semibold text-destructive mb-2">
@@ -158,51 +123,114 @@ const DoctorDashboardContent = () => {
             <Button onClick={refreshAll} className="w-full">
               {t("doctor.profileSetup.retryLoading")}
             </Button>
-            <Button variant="outline" onClick={() => navigate("/doctor-signup")} className="w-full">
-              {t("doctor.profileSetup.completeSetup")}
-            </Button>
+            
             <Button variant="ghost" onClick={() => navigate("/")} className="w-full">
               {t("doctor.profileSetup.goHome")}
             </Button>
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
 
   // Independent doctors don't have "My Services" - moved to Clinic Admin
   // Messaging section added for all doctors, Referrals hidden (not available)
-  const sidebarItems =
-    doctorStatus === "independent"
-      ? [
-          { id: "dashboard", label: t("doctor.navigation.dashboard"), icon: Home },
-          { id: "profile", label: t("doctor.navigation.myProfile"), icon: User },
-          { id: "schedule", label: t("doctor.navigation.scheduleSettings"), icon: Clock },
-          { id: "procedure-library", label: t("doctor.navigation.procedureLibrary"), icon: FileText },
-          { id: "treatment-planning", label: t("doctor.navigation.treatmentPlanning"), icon: Calendar },
-          { id: "assigned-patients", label: t("doctor.navigation.myPatients"), icon: Users },
-          { id: "calendar", label: t("doctor.navigation.calendar"), icon: Calendar },
-          { id: "messages", label: t("doctor.navigation.messages"), icon: MessageSquare },
-          { id: "performance", label: t("doctor.navigation.performance"), icon: BarChart3 },
-          { id: "financial-stats", label: t("doctor.navigation.financialStats"), icon: BarChart3 },
-          { id: "clinic-finder", label: t("doctor.navigation.clinicFinder"), icon: Search },
-          { id: "settings", label: t("doctor.navigation.settings"), icon: Settings },
-        ]
-      : [
-          { id: "dashboard", label: t("doctor.navigation.dashboard"), icon: Home },
-          { id: "profile", label: t("doctor.navigation.myProfile"), icon: User },
-          { id: "assigned-services", label: t("doctor.navigation.assignedServices"), icon: Briefcase },
-          { id: "schedule", label: t("doctor.navigation.scheduleSettings"), icon: Clock },
-          { id: "procedure-library", label: t("doctor.navigation.procedureLibrary"), icon: FileText },
-          { id: "treatment-planning", label: t("doctor.navigation.treatmentPlanning"), icon: Calendar },
-          { id: "assigned-patients", label: t("doctor.navigation.myPatients"), icon: Users },
-          { id: "calendar", label: t("doctor.navigation.calendar"), icon: Calendar },
-          { id: "messages", label: t("doctor.navigation.messages"), icon: MessageSquare },
-          { id: "performance", label: t("doctor.navigation.performance"), icon: BarChart3 },
-          { id: "financial-stats", label: t("doctor.navigation.financialStats"), icon: BarChart3 },
-          { id: "settings", label: t("doctor.navigation.settings"), icon: Settings },
-        ];
-
+  const sidebarItems = doctorStatus === "independent" ? [{
+    id: "dashboard",
+    label: t("doctor.navigation.dashboard"),
+    icon: Home
+  }, {
+    id: "profile",
+    label: t("doctor.navigation.myProfile"),
+    icon: User
+  }, {
+    id: "schedule",
+    label: t("doctor.navigation.scheduleSettings"),
+    icon: Clock
+  }, {
+    id: "procedure-library",
+    label: t("doctor.navigation.procedureLibrary"),
+    icon: FileText
+  }, {
+    id: "treatment-planning",
+    label: t("doctor.navigation.treatmentPlanning"),
+    icon: Calendar
+  }, {
+    id: "assigned-patients",
+    label: t("doctor.navigation.myPatients"),
+    icon: Users
+  }, {
+    id: "calendar",
+    label: t("doctor.navigation.calendar"),
+    icon: Calendar
+  }, {
+    id: "messages",
+    label: t("doctor.navigation.messages"),
+    icon: MessageSquare
+  }, {
+    id: "performance",
+    label: t("doctor.navigation.performance"),
+    icon: BarChart3
+  }, {
+    id: "financial-stats",
+    label: t("doctor.navigation.financialStats"),
+    icon: BarChart3
+  }, {
+    id: "clinic-finder",
+    label: t("doctor.navigation.clinicFinder"),
+    icon: Search
+  }, {
+    id: "settings",
+    label: t("doctor.navigation.settings"),
+    icon: Settings
+  }] : [{
+    id: "dashboard",
+    label: t("doctor.navigation.dashboard"),
+    icon: Home
+  }, {
+    id: "profile",
+    label: t("doctor.navigation.myProfile"),
+    icon: User
+  }, {
+    id: "assigned-services",
+    label: t("doctor.navigation.assignedServices"),
+    icon: Briefcase
+  }, {
+    id: "schedule",
+    label: t("doctor.navigation.scheduleSettings"),
+    icon: Clock
+  }, {
+    id: "procedure-library",
+    label: t("doctor.navigation.procedureLibrary"),
+    icon: FileText
+  }, {
+    id: "treatment-planning",
+    label: t("doctor.navigation.treatmentPlanning"),
+    icon: Calendar
+  }, {
+    id: "assigned-patients",
+    label: t("doctor.navigation.myPatients"),
+    icon: Users
+  }, {
+    id: "calendar",
+    label: t("doctor.navigation.calendar"),
+    icon: Calendar
+  }, {
+    id: "messages",
+    label: t("doctor.navigation.messages"),
+    icon: MessageSquare
+  }, {
+    id: "performance",
+    label: t("doctor.navigation.performance"),
+    icon: BarChart3
+  }, {
+    id: "financial-stats",
+    label: t("doctor.navigation.financialStats"),
+    icon: BarChart3
+  }, {
+    id: "settings",
+    label: t("doctor.navigation.settings"),
+    icon: Settings
+  }];
   const renderContent = () => {
     switch (activeSection) {
       case "profile":
@@ -210,21 +238,11 @@ const DoctorDashboardContent = () => {
       case "services":
         return <DoctorServicesSection />;
       case "assigned-services":
-        return (
-          <DoctorServicesSection
-            readOnly={true}
-            assignedServices={doctorProfile?.practices?.name ? ["Clinic Services"] : []}
-          />
-        );
+        return <DoctorServicesSection readOnly={true} assignedServices={doctorProfile?.practices?.name ? ["Clinic Services"] : []} />;
       case "schedule":
         return <DoctorScheduleSettingsSection />;
       case "calendar":
-        return (
-          <DoctorCalendarSection
-            doctorId={doctorProfile?.id}
-            practiceId={doctorProfile?.practice_id || undefined}
-          />
-        );
+        return <DoctorCalendarSection doctorId={doctorProfile?.id} practiceId={doctorProfile?.practice_id || undefined} />;
       case "performance":
         return <DoctorPerformanceSection doctorProfile={doctorProfile} stats={stats} />;
       case "financial-stats":
@@ -242,11 +260,9 @@ const DoctorDashboardContent = () => {
       case "settings":
         return <DoctorSettingsSection />;
       default:
-        return (
-          <div className="space-y-6">
+        return <div className="space-y-6">
             {/* Clinic Profile Card (for clinic members) */}
-            {doctorStatus === "clinic-member" && doctorProfile?.practices && (
-              <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
+            {doctorStatus === "clinic-member" && doctorProfile?.practices && <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
@@ -256,11 +272,9 @@ const DoctorDashboardContent = () => {
                       <div>
                         <CardTitle className="flex items-center gap-2">
                           {doctorProfile?.practices?.name}
-                          {doctorProfile?.practices?.verified && (
-                            <Badge variant="secondary" className="bg-green-100 text-green-700">
+                          {doctorProfile?.practices?.verified && <Badge variant="secondary" className="bg-green-100 text-green-700">
                               {t("doctor.clinic.verified")}
-                            </Badge>
-                          )}
+                            </Badge>}
                         </CardTitle>
                         <p className="text-muted-foreground flex items-center gap-1">
                           <MapPin className="w-4 h-4" />
@@ -275,22 +289,19 @@ const DoctorDashboardContent = () => {
                     </div>
                   </div>
                 </CardHeader>
-              </Card>
-            )}
+              </Card>}
 
             {/* Verification Status */}
             {!doctorProfile.verified && <DoctorVerificationStatusCard />}
 
             {/* Current/Upcoming Appointment Card */}
-            <UpcomingAppointmentCard
-              appointments={upcomingAppointments.map((apt) => ({
-                ...apt,
-                patient_name: apt.patient_name,
-                patient_email: apt.patient_email,
-                patient_phone: apt.patient_phone,
-                patient_avatar: apt.patient_avatar,
-              }))}
-            />
+            <UpcomingAppointmentCard appointments={upcomingAppointments.map(apt => ({
+            ...apt,
+            patient_name: apt.patient_name,
+            patient_email: apt.patient_email,
+            patient_phone: apt.patient_phone,
+            patient_avatar: apt.patient_avatar
+          }))} />
 
             {/* Key Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -324,7 +335,9 @@ const DoctorDashboardContent = () => {
                 <CardContent>
                   <div className="text-2xl font-bold">{(stats?.averageRating || 0).toFixed(1)}</div>
                   <p className="text-xs text-muted-foreground">
-                    {t("doctor.stats.basedOnReviews", { count: stats?.numReviews || 0 })}
+                    {t("doctor.stats.basedOnReviews", {
+                    count: stats?.numReviews || 0
+                  })}
                   </p>
                 </CardContent>
               </Card>
@@ -348,9 +361,7 @@ const DoctorDashboardContent = () => {
                   <CardTitle>{t("doctor.upcomingAppointments.title")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {upcomingAppointments.length > 0 ? (
-                    upcomingAppointments.slice(0, 3).map((appointment) => (
-                      <div key={appointment.id} className="flex items-center space-x-4">
+                  {upcomingAppointments.length > 0 ? upcomingAppointments.slice(0, 3).map(appointment => <div key={appointment.id} className="flex items-center space-x-4">
                         <Avatar className="h-8 w-8">
                           <AvatarFallback>{appointment.patient_name?.charAt(0) || "P"}</AvatarFallback>
                         </Avatar>
@@ -361,27 +372,14 @@ const DoctorDashboardContent = () => {
                             {new Date(appointment.appointment_date).toLocaleDateString()} at {appointment.start_time}
                           </p>
                         </div>
-                        <Badge
-                          variant="outline"
-                          className={
-                            appointment.status === "confirmed"
-                              ? "bg-blue-100 text-blue-700"
-                              : appointment.status === "pending"
-                              ? "bg-yellow-100 text-yellow-700"
-                              : "bg-gray-100 text-gray-700"
-                          }
-                        >
+                        <Badge variant="outline" className={appointment.status === "confirmed" ? "bg-blue-100 text-blue-700" : appointment.status === "pending" ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-700"}>
                           {t(`doctor.appointmentStatus.${appointment.status}`)}
                         </Badge>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-8">
+                      </div>) : <div className="text-center py-8">
                       <Calendar className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                       <p className="text-muted-foreground text-sm">{t("doctor.upcomingAppointments.noAppointments")}</p>
                       <p className="text-xs text-muted-foreground">{t("doctor.upcomingAppointments.scheduleIsClear")}</p>
-                    </div>
-                  )}
+                    </div>}
                 </CardContent>
               </Card>
 
@@ -390,53 +388,36 @@ const DoctorDashboardContent = () => {
                   <CardTitle>{t("doctor.quickActions.title")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Button
-                    className="w-full justify-start"
-                    variant="outline"
-                    onClick={() => setQuickActionModal({ isOpen: true, action: "schedule" })}
-                  >
+                  <Button className="w-full justify-start" variant="outline" onClick={() => setQuickActionModal({
+                  isOpen: true,
+                  action: "schedule"
+                })}>
                     <Calendar className="w-4 h-4 mr-2" />
                     {t("doctor.todaysSchedule.viewFull")} ({todaysAppointments.length})
                   </Button>
 
-                  <Button
-                    className="w-full justify-start"
-                    variant="outline"
-                    onClick={() => setActiveSection("calendar")}
-                  >
+                  <Button className="w-full justify-start" variant="outline" onClick={() => setActiveSection("calendar")}>
                     <Clock className="w-4 h-4 mr-2" />
                     {t("doctor.quickActions.updateSettings")}
                   </Button>
 
-                  {!doctorProfile?.practice_id && doctorStatus === "independent" ? (
-                    <Button
-                      className="w-full justify-start"
-                      variant="outline"
-                      onClick={() => setActiveSection("clinic-finder")}
-                    >
+                  {!doctorProfile?.practice_id && doctorStatus === "independent" ? <Button className="w-full justify-start" variant="outline" onClick={() => setActiveSection("clinic-finder")}>
                       <Search className="w-4 h-4 mr-2" />
                       {t("doctor.navigation.clinicFinder")}
-                    </Button>
-                  ) : (
-                    <Button
-                      className="w-full justify-start"
-                      variant="outline"
-                      onClick={() => setQuickActionModal({ isOpen: true, action: "block-time" })}
-                    >
+                    </Button> : <Button className="w-full justify-start" variant="outline" onClick={() => setQuickActionModal({
+                  isOpen: true,
+                  action: "block-time"
+                })}>
                       <Clock className="w-4 h-4 mr-2" />
                       {t("doctor.quickActions.blockTime")}
-                    </Button>
-                  )}
+                    </Button>}
                 </CardContent>
               </Card>
             </div>
-          </div>
-        );
+          </div>;
     }
   };
-
-  return (
-    <SidebarProvider>
+  return <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background">
         <Sidebar className="border-r">
           <SidebarContent>
@@ -444,14 +425,12 @@ const DoctorDashboardContent = () => {
               <SidebarGroupLabel>{t("doctor.title")}</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {sidebarItems.map((item) => (
-                    <SidebarMenuItem key={item.id}>
+                  {sidebarItems.map(item => <SidebarMenuItem key={item.id}>
                       <SidebarMenuButton onClick={() => setActiveSection(item.id)} isActive={activeSection === item.id}>
                         <item.icon className="w-4 h-4" />
                         <span>{item.label}</span>
                       </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                    </SidebarMenuItem>)}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
@@ -469,9 +448,7 @@ const DoctorDashboardContent = () => {
                     {t("doctor.dashboardContent.welcomeBack")}, {doctorProfile?.profiles?.full_name || "Doctor"}
                   </h1>
                   <p className="text-sm text-muted-foreground">
-                    {doctorProfile?.specialty && doctorProfile.specialty !== "General Practice"
-                      ? doctorProfile.specialty
-                      : t("doctor.dashboardContent.specialtyNotProvided")}
+                    {doctorProfile?.specialty && doctorProfile.specialty !== "General Practice" ? doctorProfile.specialty : t("doctor.dashboardContent.specialtyNotProvided")}
                   </p>
                 </div>
               </div>
@@ -496,27 +473,19 @@ const DoctorDashboardContent = () => {
             {renderContent()}
           </main>
 
-          <QuickActionModals
-            isOpen={quickActionModal.isOpen}
-            action={quickActionModal.action}
-            onClose={() => setQuickActionModal({ isOpen: false, action: null })}
-            doctorProfile={doctorProfile}
-            todaysAppointments={todaysAppointments}
-          />
+          <QuickActionModals isOpen={quickActionModal.isOpen} action={quickActionModal.action} onClose={() => setQuickActionModal({
+          isOpen: false,
+          action: null
+        })} doctorProfile={doctorProfile} todaysAppointments={todaysAppointments} />
         </div>
       </div>
-    </SidebarProvider>
-  );
+    </SidebarProvider>;
 };
-
 const DoctorDashboard = () => {
-  return (
-    <ThemeProvider>
+  return <ThemeProvider>
       <DoctorDataProvider>
         <DoctorDashboardContent />
       </DoctorDataProvider>
-    </ThemeProvider>
-  );
+    </ThemeProvider>;
 };
-
 export default DoctorDashboard;
