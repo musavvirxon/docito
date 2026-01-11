@@ -63,14 +63,14 @@ interface EnhancedCreateTreatmentPlanModalProps {
 interface ProcedureItem {
   procedure_id: string;
   appointment_date?: Date;
-  appointment_time?: string;
+  appointment_time?: string; // "HH:MM"
   priority?: "low" | "medium" | "high" | "urgent";
   notes?: string;
   tooth_numbers?: number[];
 }
 
 interface AvailabilitySlot {
-  start_at: string; // "YYYY-MM-DDTHH:MM:SS" (or "YYYY-MM-DDTHH:MM")
+  start_at: string; // "YYYY-MM-DDTHH:MM:SS" OR "YYYY-MM-DDTHH:MM"
   end_at: string;
   available: boolean;
   reason?: string;
@@ -109,7 +109,7 @@ const EnhancedCreateTreatmentPlanModal = ({
   const [daySlots, setDaySlots] = useState<AvailabilitySlot[]>([]);
   const [loadingDaySlots, setLoadingDaySlots] = useState(false);
 
-  // Optional: holidays highlight (if your Calendar supports it / you use it elsewhere)
+  // Optional holidays
   const [holidayDates, setHolidayDates] = useState<Date[]>([]);
 
   const isDentist =
@@ -157,7 +157,7 @@ const EnhancedCreateTreatmentPlanModal = ({
 
         setProcedureItems(templateProcedures);
 
-        // Keep RHF in sync (prevents silent submit)
+        // Keep RHF in sync
         form.setValue(
           "procedures",
           templateProcedures.map((p) => ({
@@ -190,7 +190,7 @@ const EnhancedCreateTreatmentPlanModal = ({
     }
   }, [open, form]);
 
-  // Load holidays (optional, used to disable holidays in calendar)
+  // Load holidays
   useEffect(() => {
     const loadHolidays = async () => {
       if (!open || !profile?.id) {
@@ -217,20 +217,17 @@ const EnhancedCreateTreatmentPlanModal = ({
     loadHolidays();
   }, [open, profile?.id]);
 
-  // Load availability from backend (doctor hours + clinic hours + blocks/appointments/overrides)
+  // Load availability from backend
   useEffect(() => {
     const loadDaySlots = async () => {
-      // No slots for template mode
       if (saveAsTemplate) {
         setDaySlots([]);
         return;
       }
-
       if (!profile?.id) {
         setDaySlots([]);
         return;
       }
-
       if (!currentProcedure.appointment_date) {
         setDaySlots([]);
         return;
@@ -240,7 +237,6 @@ const EnhancedCreateTreatmentPlanModal = ({
       try {
         const dateStr = format(currentProcedure.appointment_date, "yyyy-MM-dd");
 
-        // IMPORTANT: entity_id should be practice_id (clinic/hospital)
         const { data, error } = await supabase.functions.invoke("get-availability", {
           body: {
             provider_id: profile.id,
@@ -322,7 +318,6 @@ const EnhancedCreateTreatmentPlanModal = ({
       setProcedureItems(nextItems);
     }
 
-    // Keep RHF in sync (prevents silent submit blocking)
     form.setValue(
       "procedures",
       nextItems.map((p) => ({
@@ -338,7 +333,7 @@ const EnhancedCreateTreatmentPlanModal = ({
 
     setCurrentProcedure({ procedure_id: "", priority: "medium" });
     setSelectedTeeth([]);
-    setDaySlots([]); // clear slots after adding
+    setDaySlots([]);
   };
 
   const handleEditProcedure = (index: number) => {
@@ -369,41 +364,109 @@ const EnhancedCreateTreatmentPlanModal = ({
   const getProcedureName = (procedureId: string) => procedures.find((p) => p.id === procedureId)?.name || "Unknown";
   const getProcedureCost = (procedureId: string) => procedures.find((p) => p.id === procedureId)?.default_cost || 0;
 
-  const createAppointment = async (
-    doctorId: string,
-    opts: { patient_id?: string | null; doctor_patient_id?: string | null },
-    date: Date,
-    time: string,
-    procedureName: string,
-    durationMinutes: number
-  ) => {
-    const [hours, minutes] = time.split(":").map(Number);
-    const endHours = hours + Math.floor((minutes + durationMinutes) / 60);
-    const endMinutes = (minutes + durationMinutes) % 60;
-    const endTime = `${String(endHours).padStart(2, "0")}:${String(endMinutes).padStart(2, "0")}`;
+  // -----------------------------
+  // ✅ Point 3: Book selected slots as real appointments,
+  // and link them to treatment_plan_procedures.appointment_id
+  // -----------------------------
+
+  const assertSlotAvailable = async (date: Date, timeHHMM: string) => {
+    if (!profile?.id) throw new Error("Doctor profile not loaded");
+
+    const dateStr = format(date, "yyyy-MM-dd");
+    const { data, error } = await supabase.functions.invoke("get-availability", {
+      body: {
+        provider_id: profile.id,
+        entity_id: profile.practice_id ?? undefined,
+        from: dateStr,
+        to: dateStr,
+      },
+    });
+
+    if (error) throw error;
+    if ((data as any)?.error) throw new Error((data as any).error);
+
+    const slots = ((data as any)?.slots ?? []) as AvailabilitySlot[];
+    const matched = slots.find((s) => (s.start_at?.slice(11, 16) || "") === timeHHMM);
+
+    if (!matched) throw new Error("Selected time is not returned by availability (check working hours).");
+    if (!matched.available) throw new Error(matched.reason || "Selected time is not available");
+  };
+
+  const insertAppointmentWithFallback = async (payload: any) => {
+    // Try insert with optional columns first; if DB doesn't have them, retry without.
+    const { data, error } = await supabase.from("appointments").insert(payload).select("id").single();
+    if (!error) return data.id as string;
+
+    const msg = (error as any)?.message || "";
+    const retry = { ...payload };
+
+    // If your appointments table doesn't have these columns, it will fail. Retry without them.
+    if (msg.includes("procedure_id")) delete retry.procedure_id;
+    if (msg.includes("practice_id")) delete retry.practice_id;
+
+    const { data: data2, error: error2 } = await supabase.from("appointments").insert(retry).select("id").single();
+    if (error2) throw error2;
+
+    return data2.id as string;
+  };
+
+  const createAppointmentFromPlan = async (args: {
+    doctorId: string;
+    patient_id: string | null;
+    doctor_patient_id: string | null;
+    date: Date;
+    startTimeHHMM: string;
+    procedureId: string | null;
+    procedureName: string;
+    durationMinutes: number;
+    treatmentPlanTitle: string;
+  }) => {
+    const {
+      doctorId,
+      patient_id,
+      doctor_patient_id,
+      date,
+      startTimeHHMM,
+      procedureId,
+      procedureName,
+      durationMinutes,
+      treatmentPlanTitle,
+    } = args;
+
+    // Validate availability again right before booking
+    await assertSlotAvailable(date, startTimeHHMM);
+
+    const [hh, mm] = startTimeHHMM.split(":").map(Number);
+    const startTotal = hh * 60 + mm;
+    const endTotal = startTotal + durationMinutes;
+    const endHH = Math.floor(endTotal / 60);
+    const endMM = endTotal % 60;
+    const endTimeHHMM = `${String(endHH).padStart(2, "0")}:${String(endMM).padStart(2, "0")}`;
 
     const payload: any = {
       doctor_id: doctorId,
       appointment_date: format(date, "yyyy-MM-dd"),
-      start_time: time,
-      end_time: endTime,
+      start_time: startTimeHHMM,
+      end_time: endTimeHHMM,
       status: "confirmed",
-      notes: `Treatment Plan Procedure: ${procedureName}`,
+      notes: `Booked from Treatment Plan: "${treatmentPlanTitle}"\nProcedure: ${procedureName}`,
+
+      // Optional fields (fallback handles if columns don't exist)
+      procedure_id: procedureId,
+      practice_id: profile?.practice_id ?? null,
     };
 
-    if (opts.patient_id) {
-      payload.patient_id = opts.patient_id;
+    if (patient_id) {
+      payload.patient_id = patient_id;
       payload.doctor_patient_id = null;
-    } else if (opts.doctor_patient_id) {
+    } else if (doctor_patient_id) {
       payload.patient_id = null;
-      payload.doctor_patient_id = opts.doctor_patient_id;
+      payload.doctor_patient_id = doctor_patient_id;
     } else {
       throw new Error("Missing patient reference for appointment");
     }
 
-    const { data, error } = await supabase.from("appointments").insert(payload).select().single();
-    if (error) throw error;
-    return data;
+    return await insertAppointmentWithFallback(payload);
   };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -484,42 +547,75 @@ const EnhancedCreateTreatmentPlanModal = ({
 
       if (planError || !planData) throw planError;
 
-      // Insert procedures (+ appointments if scheduled)
-      const proceduresToInsert = await Promise.all(
-        procedureItems.map(async (item, index) => {
+      // ✅ Point 3 behavior:
+      // For each scheduled procedure, create an appointment AND store appointment_id on treatment_plan_procedures.
+      const createdAppointmentIds: string[] = [];
+
+      try {
+        const proceduresToInsert: any[] = [];
+
+        for (let index = 0; index < procedureItems.length; index++) {
+          const item = procedureItems[index];
           const proc = procedures.find((p) => p.id === item.procedure_id);
 
-          if (item.appointment_date && item.appointment_time && (values.patient_id || values.doctor_patient_id)) {
-            try {
-              await createAppointment(
-                doctorData.id,
-                { patient_id: values.patient_id || null, doctor_patient_id: values.doctor_patient_id || null },
-                item.appointment_date,
-                item.appointment_time,
-                proc?.name || "Procedure",
-                proc?.duration_minutes || 30
-              );
-            } catch (err) {
-              console.error("Failed to create appointment:", err);
-            }
+          const hasDate = Boolean(item.appointment_date);
+          const hasTime = Boolean(item.appointment_time);
+
+          // If scheduled, must have BOTH
+          if (hasDate !== hasTime) {
+            throw new Error("For a scheduled procedure you must select BOTH date and time.");
           }
 
-          return {
+          let appointmentId: string | null = null;
+
+          if (hasDate && hasTime) {
+            appointmentId = await createAppointmentFromPlan({
+              doctorId: doctorData.id,
+              patient_id: values.patient_id || null,
+              doctor_patient_id: values.doctor_patient_id || null,
+              date: item.appointment_date as Date,
+              startTimeHHMM: item.appointment_time as string,
+              procedureId: proc?.id || null,
+              procedureName: proc?.name || "Procedure",
+              durationMinutes: Number(proc?.duration_minutes || 30),
+              treatmentPlanTitle: values.title,
+            });
+
+            createdAppointmentIds.push(appointmentId);
+          }
+
+          proceduresToInsert.push({
             treatment_plan_id: planData.id,
             procedure_id: item.procedure_id,
             sequence_order: index + 1,
             scheduled_date: item.appointment_date ? format(item.appointment_date, "yyyy-MM-dd") : null,
             status: "pending",
-            priority: item.priority,
-            notes: item.notes,
-            tooth_numbers: item.tooth_numbers,
+            notes: item.notes || null,
+            tooth_numbers: item.tooth_numbers ?? null,
             cost: proc?.default_cost || 0,
-          };
-        })
-      );
 
-      const { error: proceduresError } = await supabase.from("treatment_plan_procedures").insert(proceduresToInsert);
-      if (proceduresError) throw proceduresError;
+            // Needs DB column: treatment_plan_procedures.priority
+            priority: item.priority ?? "medium",
+
+            // Needs DB column: treatment_plan_procedures.appointment_id
+            appointment_id: appointmentId,
+          });
+        }
+
+        const { error: proceduresError } = await supabase.from("treatment_plan_procedures").insert(proceduresToInsert);
+        if (proceduresError) throw proceduresError;
+      } catch (e) {
+        // Best-effort rollback:
+        try {
+          await supabase.from("treatment_plans").delete().eq("id", planData.id);
+        } catch {}
+        if (createdAppointmentIds.length) {
+          try {
+            await supabase.from("appointments").delete().in("id", createdAppointmentIds);
+          } catch {}
+        }
+        throw e;
+      }
 
       // Notify registered patients only
       if (values.patient_id) {
@@ -801,7 +897,7 @@ Please review and confirm the treatment plan in your dashboard.
                                 setCurrentProcedure({
                                   ...currentProcedure,
                                   appointment_date: date as Date,
-                                  appointment_time: undefined, // reset time when date changes
+                                  appointment_time: undefined,
                                 });
                               }}
                               disabled={(date) =>
@@ -837,7 +933,6 @@ Please review and confirm the treatment plan in your dashboard.
                             </SelectValue>
                           </SelectTrigger>
 
-                          {/* ✅ BACKEND ONLY - no hard coded slots */}
                           <SelectContent>
                             {loadingDaySlots ? (
                               <SelectItem value="__loading" disabled>
