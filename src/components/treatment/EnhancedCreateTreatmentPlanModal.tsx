@@ -41,11 +41,7 @@ const formSchema = z.object({
   patient_ref: z.string().optional(),
   patient_id: z.string().optional(),
   doctor_patient_id: z.string().optional(),
-  // NOTE:
-  // Procedures are managed in local state (procedureItems). The original schema required
-  // `procedures` to have at least 1 item, but the form never wrote into that field.
-  // That prevented submit with NO visible error.
-  // We keep this field optional for compatibility, and validate using procedureItems.
+  // ✅ FIX: do NOT validate this field via RHF; we validate via procedureItems
   procedures: z.array(procedureFormSchema).optional(),
   priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
 });
@@ -182,7 +178,7 @@ const EnhancedCreateTreatmentPlanModal = ({
         }));
         setProcedureItems(templateProcedures);
 
-        // Keep react-hook-form in sync so submit isn't blocked by hidden validation.
+        // Keep react-hook-form in sync (prevents silent submit blocking)
         form.setValue(
           "procedures",
           templateProcedures.map((p) => ({
@@ -329,7 +325,7 @@ const EnhancedCreateTreatmentPlanModal = ({
       setProcedureItems(nextItems);
     }
 
-    // Keep react-hook-form in sync (avoids silent no-submit)
+    // Keep react-hook-form in sync (prevents silent submit blocking)
     form.setValue(
       "procedures",
       nextItems.map((p) => ({
@@ -358,6 +354,8 @@ const EnhancedCreateTreatmentPlanModal = ({
   const handleRemoveProcedure = (index: number) => {
     const nextItems = procedureItems.filter((_, i) => i !== index);
     setProcedureItems(nextItems);
+
+    // Keep react-hook-form in sync
     form.setValue(
       "procedures",
       nextItems.map((p) => ({
@@ -486,7 +484,7 @@ const EnhancedCreateTreatmentPlanModal = ({
             notes: values.description,
             status: "draft",
             total_cost: totalCost,
-            priority: values.priority,
+            priority: values.priority ?? "medium",
             expires_at: expiresAt,
           },
         ])
@@ -528,8 +526,7 @@ const EnhancedCreateTreatmentPlanModal = ({
             notes: item.notes,
             tooth_numbers: item.tooth_numbers,
             cost: procedure?.default_cost || 0,
-            // NOTE: appointmentId is currently unused in insert object.
-            // If your schema supports it, add: appointment_id: appointmentId
+            // If your schema supports it: appointment_id: appointmentId
           };
         })
       );
@@ -543,7 +540,9 @@ const EnhancedCreateTreatmentPlanModal = ({
           const proc = procedures.find((p) => p.id === item.procedure_id);
           return `- ${proc?.name || "Procedure"}: $${proc?.default_cost || 0}${
             item.appointment_date
-              ? ` (Scheduled: ${format(item.appointment_date, "PPP")}${item.appointment_time ? ` at ${item.appointment_time}` : ""})`
+              ? ` (Scheduled: ${format(item.appointment_date, "PPP")}${
+                  item.appointment_time ? ` at ${item.appointment_time}` : ""
+                })`
               : ""
           }`;
         })
@@ -858,7 +857,7 @@ Please review and confirm the treatment plan in your dashboard.
                       </div>
                     )}
 
-                    {/* Time Selection - only show if date is selected */}
+                    {/* Time Selection */}
                     {!saveAsTemplate && currentProcedure.appointment_date && (
                       <div className="space-y-2">
                         <label className="text-sm font-medium">Schedule Time</label>
@@ -1019,7 +1018,7 @@ Please review and confirm the treatment plan in your dashboard.
             {/* Patient Info Alert (registered only) */}
             {!saveAsTemplate && watchedPatientId && (
               <Alert>
-                <Info className="h-4 w-4" />
+                <Info className="h-4 h-4" />
                 <AlertTitle>Patient Notification</AlertTitle>
                 <AlertDescription className="text-sm">
                   {selectedPatientName || "The patient"} will receive a detailed notification including:
