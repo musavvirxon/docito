@@ -2,18 +2,18 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+// IMPORTANT: Use .env (Lovable/Vite)
+// Required:
+//   VITE_SUPABASE_URL="https://YOURPROJECT.supabase.co"
+//   VITE_SUPABASE_PUBLISHABLE_KEY="YOUR_ANON_KEY"
+const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string) || "";
+const SUPABASE_PUBLISHABLE_KEY = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string) || "";
 
 if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-  // This will help you instantly see config problems
   console.error(
-    "Missing Supabase env vars. Please set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in your .env"
+    "Missing Supabase env vars. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in your .env"
   );
 }
-
-// Import the supabase client like this:
-// import { supabase } from "@/integrations/supabase/client";
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
