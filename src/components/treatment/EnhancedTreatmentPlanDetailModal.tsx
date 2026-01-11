@@ -1,20 +1,15 @@
 import { useState, useEffect } from "react";
+import { Plus, Edit, Trash2, CheckCircle, Clock, DollarSign, FileText, Calendar, Pill, UserCheck, Send, Save } from "lucide-react";
 import {
-  Plus,
-  Trash2,
-  CheckCircle,
-  DollarSign,
-  FileText,
-  Calendar,
-  Pill,
-  Send,
-  Save,
-} from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,9 +22,8 @@ import FileAttachmentSection from "@/components/files/FileAttachmentSection";
 
 interface TreatmentPlan {
   id: string;
-  doctor_id: string | null;
+  doctor_id: string;
   patient_id: string | null;
-  doctor_patient_id?: string | null;
   title: string;
   notes?: string | null;
   status: string;
@@ -78,14 +72,15 @@ interface EnhancedTreatmentPlanDetailModalProps {
   onUpdate: () => void;
 }
 
-const EnhancedTreatmentPlanDetailModal = ({
-  open,
-  onOpenChange,
-  treatmentPlan,
-  onUpdate,
+const EnhancedTreatmentPlanDetailModal = ({ 
+  open, 
+  onOpenChange, 
+  treatmentPlan, 
+  onUpdate 
 }: EnhancedTreatmentPlanDetailModalProps) => {
   const [procedures, setProcedures] = useState<TreatmentPlanProcedure[]>([]);
   const [medications, setMedications] = useState<Medication[]>([]);
+  const [loading, setLoading] = useState(false);
   const [showAddProcedureModal, setShowAddProcedureModal] = useState(false);
   const [showMedicationModal, setShowMedicationModal] = useState(false);
   const [showTemplatesModal, setShowTemplatesModal] = useState(false);
@@ -95,24 +90,21 @@ const EnhancedTreatmentPlanDetailModal = ({
       fetchProcedures();
       fetchMedications();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, treatmentPlan.id]);
 
   const fetchProcedures = async () => {
     try {
       const { data, error } = await supabase
         .from("treatment_plan_procedures")
-        .select(
-          `
+        .select(`
           *,
           procedure:procedures(name, category, type, default_cost)
-        `
-        )
+        `)
         .eq("treatment_plan_id", treatmentPlan.id)
         .order("sequence_order");
 
       if (error) throw error;
-      setProcedures((data || []) as any);
+      setProcedures(data || []);
     } catch (error: any) {
       toast.error("Failed to load procedures: " + error.message);
     }
@@ -127,7 +119,7 @@ const EnhancedTreatmentPlanDetailModal = ({
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setMedications((data || []) as any);
+      setMedications(data || []);
     } catch (error: any) {
       toast.error("Failed to load medications: " + error.message);
     }
@@ -136,15 +128,20 @@ const EnhancedTreatmentPlanDetailModal = ({
   const handleStatusChange = async (newStatus: string) => {
     try {
       const updateData: any = { status: newStatus };
-
-      if (newStatus === "completed") {
+      
+      if (newStatus === "in_progress" && treatmentPlan.status === "confirmed") {
+        updateData.started_at = new Date().toISOString();
+      } else if (newStatus === "completed") {
         updateData.completed_at = new Date().toISOString();
       }
 
-      const { error } = await supabase.from("treatment_plans").update(updateData).eq("id", treatmentPlan.id);
+      const { error } = await supabase
+        .from("treatment_plans")
+        .update(updateData)
+        .eq("id", treatmentPlan.id);
 
       if (error) throw error;
-
+      
       toast.success(`Treatment plan status updated to ${newStatus}`);
       onUpdate();
     } catch (error: any) {
@@ -153,6 +150,7 @@ const EnhancedTreatmentPlanDetailModal = ({
   };
 
   const handlePublishPlan = async () => {
+    // Check if all required consents are signed
     const hasUnsignedConsents = await checkConsentStatus();
     if (hasUnsignedConsents) {
       toast.error("All required consent forms must be signed before publishing");
@@ -162,14 +160,14 @@ const EnhancedTreatmentPlanDetailModal = ({
     try {
       const { error } = await supabase
         .from("treatment_plans")
-        .update({
+        .update({ 
           status: "published",
-          published_at: new Date().toISOString(),
+          published_at: new Date().toISOString()
         })
         .eq("id", treatmentPlan.id);
 
       if (error) throw error;
-
+      
       toast.success("Treatment plan published successfully!");
       onUpdate();
     } catch (error: any) {
@@ -194,31 +192,31 @@ const EnhancedTreatmentPlanDetailModal = ({
   };
 
   const getPriorityColor = (priority: string) => {
-    const colors: Record<string, string> = {
+    const colors = {
       low: "bg-gray-100 text-gray-800",
       normal: "bg-blue-100 text-blue-800",
       high: "bg-orange-100 text-orange-800",
-      urgent: "bg-red-100 text-red-800",
+      urgent: "bg-red-100 text-red-800"
     };
-    return colors[priority] || colors.normal;
+    return colors[priority as keyof typeof colors] || colors.normal;
   };
 
   const getStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
+    const colors = {
       draft: "bg-gray-100 text-gray-800",
       published: "bg-blue-100 text-blue-800",
       in_progress: "bg-orange-100 text-orange-800",
       completed: "bg-green-100 text-green-800",
       paused: "bg-yellow-100 text-yellow-800",
-      cancelled: "bg-red-100 text-red-800",
+      cancelled: "bg-red-100 text-red-800"
     };
-    return colors[status] || colors.draft;
+    return colors[status as keyof typeof colors] || colors.draft;
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
     }).format(amount);
   };
 
@@ -239,12 +237,13 @@ const EnhancedTreatmentPlanDetailModal = ({
               </DialogTitle>
               <div className="flex items-center gap-2">
                 <Badge className={getPriorityColor(treatmentPlan.priority || "normal")}>
-                  {(treatmentPlan.priority || "normal") + " priority"}
+                  {treatmentPlan.priority || "normal"} priority
                 </Badge>
-
                 <Select value={treatmentPlan.status} onValueChange={handleStatusChange}>
                   <SelectTrigger className="w-40">
-                    <Badge className={getStatusColor(treatmentPlan.status)}>{treatmentPlan.status}</Badge>
+                    <Badge className={getStatusColor(treatmentPlan.status)}>
+                      {treatmentPlan.status}
+                    </Badge>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="draft">Draft</SelectItem>
@@ -268,7 +267,7 @@ const EnhancedTreatmentPlanDetailModal = ({
               <TabsTrigger value="templates">Templates</TabsTrigger>
             </TabsList>
 
-            {/* Overview */}
+            {/* Overview Tab */}
             <TabsContent value="overview" className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <Card className="lg:col-span-2">
@@ -325,7 +324,9 @@ const EnhancedTreatmentPlanDetailModal = ({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-3xl font-bold text-primary mb-2">{formatCurrency(totalCost)}</div>
+                    <div className="text-3xl font-bold text-primary mb-2">
+                      {formatCurrency(totalCost)}
+                    </div>
                     <p className="text-sm text-muted-foreground">
                       {procedures.length} procedure{procedures.length !== 1 ? "s" : ""}
                       {medications.length > 0 &&
@@ -389,7 +390,7 @@ const EnhancedTreatmentPlanDetailModal = ({
               </Card>
             </TabsContent>
 
-            {/* Procedures */}
+            {/* Procedures Tab */}
             <TabsContent value="procedures">
               <Card>
                 <CardHeader>
@@ -488,7 +489,7 @@ const EnhancedTreatmentPlanDetailModal = ({
               </Card>
             </TabsContent>
 
-            {/* Medications */}
+            {/* Medications Tab */}
             <TabsContent value="medications">
               <Card>
                 <CardHeader>
@@ -524,7 +525,9 @@ const EnhancedTreatmentPlanDetailModal = ({
                               <p className="text-sm text-muted-foreground">
                                 {medication.dosage} • {medication.frequency}
                               </p>
-                              {medication.instructions && <p className="text-sm mt-1">{medication.instructions}</p>}
+                              {medication.instructions && (
+                                <p className="text-sm mt-1">{medication.instructions}</p>
+                              )}
                               <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                                 <span>Start: {format(new Date(medication.start_date), "MMM d, yyyy")}</span>
                                 {medication.end_date && (
@@ -542,12 +545,15 @@ const EnhancedTreatmentPlanDetailModal = ({
               </Card>
             </TabsContent>
 
-            {/* Files */}
+            {/* Files Tab */}
             <TabsContent value="files">
-              <FileAttachmentSection treatmentPlanId={treatmentPlan.id} title="Treatment Plan Files & Documents" />
+              <FileAttachmentSection 
+                treatmentPlanId={treatmentPlan.id}
+                title="Treatment Plan Files & Documents"
+              />
             </TabsContent>
 
-            {/* Templates */}
+            {/* Templates Tab */}
             <TabsContent value="templates">
               <Card>
                 <CardHeader>
@@ -555,7 +561,9 @@ const EnhancedTreatmentPlanDetailModal = ({
                 </CardHeader>
                 <CardContent>
                   <div className="text-center py-8">
-                    <p className="text-muted-foreground mb-4">Save this treatment plan as a template for future use</p>
+                    <p className="text-muted-foreground mb-4">
+                      Save this treatment plan as a template for future use
+                    </p>
                     <Button onClick={() => setShowTemplatesModal(true)}>
                       <Save className="w-4 h-4 mr-2" />
                       Save as Template
@@ -583,13 +591,13 @@ const EnhancedTreatmentPlanDetailModal = ({
         open={showMedicationModal}
         onOpenChange={setShowMedicationModal}
         treatmentPlanId={treatmentPlan.id}
-        patientId={(treatmentPlan.patient_id || "") as any}
+        patientId={treatmentPlan.patient_id || ""}
       />
 
       <TreatmentPlanTemplatesModal
         open={showTemplatesModal}
         onOpenChange={setShowTemplatesModal}
-        currentTreatmentPlan={treatmentPlan as any}
+        currentTreatmentPlan={treatmentPlan}
       />
     </>
   );
