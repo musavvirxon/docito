@@ -101,17 +101,8 @@ const DoctorProfile = () => {
         // Check if this is the doctor's own profile or if they're verified
         const isOwnProfile = user && data.user_id === user.id;
         
-        if (!data.verified && !isOwnProfile) {
-          toast({
-            title: "Profile Not Found",
-            description: "This doctor profile is not yet verified.",
-            variant: "destructive"
-          });
-          navigate('/doctors');
-          return;
-        }
-
-        // Check if profile is private and accessed via direct link
+        // Allow viewing unverified profiles but show a banner
+        // Only block if profile is explicitly private (not just unverified)
         if (data.profiles?.profile_visibility === 'private' && !data.custom_profile_link && !isOwnProfile) {
           toast({
             title: "Profile Not Found",
@@ -197,6 +188,19 @@ const DoctorProfile = () => {
         <div className="container mx-auto px-4 py-8">
           <BackButton />
           
+          {/* Unverified Profile Banner */}
+          {!doctor.verified && (
+            <Card className="mb-4 border-amber-200 bg-amber-50 dark:bg-amber-950/20">
+              <CardContent className="p-4 flex items-center gap-3">
+                <Clock className="w-5 h-5 text-amber-600" />
+                <div>
+                  <p className="font-medium text-amber-800 dark:text-amber-200">Profile Under Review</p>
+                  <p className="text-sm text-amber-600 dark:text-amber-300">This doctor's profile is pending verification. Some features may be limited.</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
           {/* Top Section */}
           <Card className="mb-8">
             <CardContent className="p-8">
@@ -220,9 +224,13 @@ const DoctorProfile = () => {
                       <p className="text-xl text-primary font-medium mb-1">
                         {doctor.specialty}
                       </p>
-                      {doctor.verified && (
+                      {doctor.verified ? (
                         <Badge variant="default" className="bg-green-100 text-green-700">
                           ✓ Verified
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="bg-amber-100 text-amber-700">
+                          Pending Verification
                         </Badge>
                       )}
                     </div>

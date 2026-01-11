@@ -53,11 +53,18 @@ const QuickActionModals = ({ isOpen, action, onClose, doctorProfile, todaysAppoi
     if (result?.success) {
       toast.success(t("doctor.quickModals.settings.profileUpdated"));
       onClose();
+    } else {
+      toast.error("Failed to update profile. Please try again.");
     }
   };
 
   const handleAddService = async () => {
     if (!addService) return;
+    
+    if (!formData.service_name.trim()) {
+      toast.error("Please enter a service name");
+      return;
+    }
     
     const serviceData = {
       name: formData.service_name,
@@ -72,10 +79,16 @@ const QuickActionModals = ({ isOpen, action, onClose, doctorProfile, todaysAppoi
     if (result?.success) {
       toast.success(t("doctor.quickModals.procedures.serviceAdded"));
       onClose();
+    } else {
+      toast.error("Failed to add service. Please try again.");
     }
   };
 
   const handleBlockTime = () => {
+    if (!formData.block_start || !formData.block_end) {
+      toast.error("Please select start and end times");
+      return;
+    }
     // Placeholder for blocking time functionality
     toast.success(t("doctor.quickModals.blockTime.timeBlocked", { start: formData.block_start, end: formData.block_end }));
     onClose();
