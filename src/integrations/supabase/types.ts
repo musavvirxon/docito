@@ -3967,6 +3967,41 @@ export type Database = {
           },
         ]
       }
+      practice_schedule_settings: {
+        Row: {
+          created_at: string
+          holidays: string[] | null
+          id: string
+          practice_id: string
+          updated_at: string
+          working_days: Json
+        }
+        Insert: {
+          created_at?: string
+          holidays?: string[] | null
+          id?: string
+          practice_id: string
+          updated_at?: string
+          working_days?: Json
+        }
+        Update: {
+          created_at?: string
+          holidays?: string[] | null
+          id?: string
+          practice_id?: string
+          updated_at?: string
+          working_days?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_schedule_settings_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: true
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       practice_settings: {
         Row: {
           buffer_time_minutes: number | null
@@ -6455,9 +6490,12 @@ export type Database = {
           consent_required: boolean | null
           cost: number | null
           created_at: string | null
+          duration_minutes: number | null
           id: string
           notes: string | null
+          priority: string | null
           procedure_id: string | null
+          scheduled_date: string | null
           sequence_order: number | null
           status: string | null
           tooth_numbers: number[] | null
@@ -6469,9 +6507,12 @@ export type Database = {
           consent_required?: boolean | null
           cost?: number | null
           created_at?: string | null
+          duration_minutes?: number | null
           id?: string
           notes?: string | null
+          priority?: string | null
           procedure_id?: string | null
+          scheduled_date?: string | null
           sequence_order?: number | null
           status?: string | null
           tooth_numbers?: number[] | null
@@ -6483,9 +6524,12 @@ export type Database = {
           consent_required?: boolean | null
           cost?: number | null
           created_at?: string | null
+          duration_minutes?: number | null
           id?: string
           notes?: string | null
+          priority?: string | null
           procedure_id?: string | null
+          scheduled_date?: string | null
           sequence_order?: number | null
           status?: string | null
           tooth_numbers?: number[] | null
@@ -7504,18 +7548,31 @@ export type Database = {
           user_id: string
         }[]
       }
-      send_notification_to_user: {
-        Args: {
-          data?: Json
-          expires_at?: string
-          message: string
-          notification_type: string
-          recipient_user_id: string
-          sender_user_id?: string
-          title: string
-        }
-        Returns: Json
-      }
+      send_notification_to_user:
+        | {
+            Args: {
+              data?: Json
+              expires_at?: string
+              message: string
+              notification_type: string
+              recipient_user_id: string
+              sender_user_id?: string
+              title: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              data?: Json
+              expires_at?: string
+              message: string
+              notification_type: string
+              recipient_user_id: string
+              sender_user_id?: string
+              title: string
+            }
+            Returns: Json
+          }
       send_patient_invitation_sms: {
         Args: {
           p_appointment_date: string

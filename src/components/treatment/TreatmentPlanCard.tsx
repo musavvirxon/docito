@@ -12,8 +12,12 @@ import {
   CheckCircle,
   Eye,
   Pill,
-  User
+  User,
+  MessageSquare,
+  Video,
+  CalendarPlus
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import EnhancedTreatmentPlanDetailModal from "./EnhancedTreatmentPlanDetailModal";
 import MedicationManagementModal from "./MedicationManagementModal";
@@ -32,6 +36,12 @@ interface TreatmentPlan {
     name: string;
     specialty: string;
   };
+  patient?: {
+    id: string;
+    name: string;
+    email?: string;
+    avatar_url?: string;
+  };
   procedures?: {
     total: number;
     completed: number;
@@ -46,11 +56,36 @@ interface TreatmentPlanCardProps {
   treatmentPlan: TreatmentPlan;
   patientId?: string;
   onUpdate?: () => void;
+  onMessage?: (patientId: string) => void;
+  onSchedule?: (patientId: string) => void;
 }
 
-export const TreatmentPlanCard = ({ treatmentPlan, patientId, onUpdate }: TreatmentPlanCardProps) => {
+export const TreatmentPlanCard = ({ treatmentPlan, patientId, onUpdate, onMessage, onSchedule }: TreatmentPlanCardProps) => {
+  const navigate = useNavigate();
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [medicationModalOpen, setMedicationModalOpen] = useState(false);
+
+  const handleMessage = () => {
+    const targetPatientId = treatmentPlan.patient?.id || patientId;
+    if (targetPatientId) {
+      if (onMessage) {
+        onMessage(targetPatientId);
+      } else {
+        navigate(`/messages?recipient=${targetPatientId}`);
+      }
+    }
+  };
+
+  const handleSchedule = () => {
+    const targetPatientId = treatmentPlan.patient?.id || patientId;
+    if (targetPatientId) {
+      if (onSchedule) {
+        onSchedule(targetPatientId);
+      } else {
+        navigate(`/doctor-dashboard?section=calendar&patient=${targetPatientId}`);
+      }
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -116,6 +151,13 @@ export const TreatmentPlanCard = ({ treatmentPlan, patientId, onUpdate }: Treatm
           <div className="flex items-start justify-between">
             <div className="space-y-1">
               <CardTitle className="text-lg leading-tight">{treatmentPlan.title}</CardTitle>
+              {/* Patient Info */}
+              {treatmentPlan.patient && (
+                <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                  <User className="w-3 h-3" />
+                  <span>{treatmentPlan.patient.name}</span>
+                </div>
+              )}
               {treatmentPlan.doctor && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <User className="w-3 h-3" />
@@ -197,16 +239,58 @@ export const TreatmentPlanCard = ({ treatmentPlan, patientId, onUpdate }: Treatm
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-2 pt-2 border-t">
+          <div className="flex flex-wrap gap-2 pt-2 border-t">
             <Button
               size="sm"
               variant="outline"
               onClick={() => setDetailModalOpen(true)}
-              className="flex-1"
+              className="flex-1 min-w-[100px]"
             >
               <Eye className="w-3 h-3 mr-2" />
               View Details
             </Button>
+
+            {/* Message Patient Button */}
+            {(treatmentPlan.patient?.id || patientId) && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleMessage}
+                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              >
+                <MessageSquare className="w-3 h-3 mr-1" />
+                Message
+              </Button>
+            )}
+
+            {/* Schedule Appointment Button */}
+            {(treatmentPlan.patient?.id || patientId) && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleSchedule}
+                className="text-green-600 hover:text-green-700 hover:bg-green-50"
+              >
+                <CalendarPlus className="w-3 h-3 mr-1" />
+                Schedule
+              </Button>
+            )}
+
+            {/* Video Call Button */}
+            {(treatmentPlan.patient?.id || patientId) && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  // Video call functionality - placeholder for future implementation
+                  navigate(`/video-call?patient=${treatmentPlan.patient?.id || patientId}`);
+                }}
+                className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+              >
+                <Video className="w-3 h-3 mr-1" />
+                Video Call
+              </Button>
+            )}
 
             {treatmentPlan.medications && treatmentPlan.medications.total > 0 && (
               <Button
@@ -229,7 +313,7 @@ export const TreatmentPlanCard = ({ treatmentPlan, patientId, onUpdate }: Treatm
         treatmentPlan={{
           id: treatmentPlan.id,
           title: treatmentPlan.title,
-          description: treatmentPlan.description,
+          notes: treatmentPlan.description,
           status: treatmentPlan.status,
           total_cost: treatmentPlan.total_cost,
           created_at: treatmentPlan.created_at,

@@ -1,11 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, User, Phone, Mail, MapPin, FileText, Pill, Heart, Stethoscope, AlertCircle, ChevronRight, Activity } from "lucide-react";
+import { Calendar, Clock, User, Phone, Mail, MapPin, FileText, Pill, Heart, Stethoscope, AlertCircle, ChevronRight, Activity, MessageSquare, Video, CalendarPlus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -85,6 +86,7 @@ interface UpcomingAppointmentCardProps {
 export const UpcomingAppointmentCard = ({ appointments }: UpcomingAppointmentCardProps) => {
   const { t } = useTranslation("dashboard");
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [showPatientModal, setShowPatientModal] = useState(false);
@@ -94,6 +96,18 @@ export const UpcomingAppointmentCard = ({ appointments }: UpcomingAppointmentCar
   const [treatmentPlans, setTreatmentPlans] = useState<TreatmentPlan[]>([]);
   const [appointmentHistory, setAppointmentHistory] = useState<AppointmentHistory[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const handleMessagePatient = (patientId: string) => {
+    navigate(`/messages?recipient=${patientId}`);
+  };
+
+  const handleScheduleAppointment = (patientId: string) => {
+    navigate(`/doctor-dashboard?section=calendar&patient=${patientId}`);
+  };
+
+  const handleVideoCall = (patientId: string) => {
+    navigate(`/video-call?patient=${patientId}`);
+  };
 
   // Get the current or next upcoming appointment
   const now = new Date();
@@ -323,6 +337,39 @@ export const UpcomingAppointmentCard = ({ appointments }: UpcomingAppointmentCar
                     <p className="text-sm">{selectedAppointment.notes}</p>
                   </div>
                 )}
+              </div>
+
+              {/* Quick Action Buttons */}
+              <div className="flex flex-wrap gap-2 pt-4 border-t">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleMessagePatient(selectedAppointment.patient_id)}
+                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                >
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  {t("doctor.appointmentDetails.message", "Message Patient")}
+                </Button>
+                
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleScheduleAppointment(selectedAppointment.patient_id)}
+                  className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                >
+                  <CalendarPlus className="w-4 h-4 mr-2" />
+                  {t("doctor.appointmentDetails.schedule", "Schedule Follow-up")}
+                </Button>
+                
+                <Button
+                  size="sm"
+                  variant="default"
+                  onClick={() => handleVideoCall(selectedAppointment.patient_id)}
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  <Video className="w-4 h-4 mr-2" />
+                  {t("doctor.appointmentDetails.videoCall", "Start Video Call")}
+                </Button>
               </div>
 
               {/* Patient Info Card */}
