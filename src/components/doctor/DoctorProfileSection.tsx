@@ -125,7 +125,7 @@ const DoctorProfileSection = ({
     setSelectedSpecialties(prev => {
       if (prev.includes(fullName)) return prev.filter(s => s !== fullName);
       if (prev.length >= 5) {
-        toast.error('Max 5 specialties');
+        toast.error(t("doctor.profile.maxSpecialties"));
         return prev;
       }
       return [...prev, fullName];
@@ -178,7 +178,7 @@ const DoctorProfileSection = ({
         consultation_types: selectedConsultationTypes
       }).eq('user_id', user.id);
       if (doctorError) throw doctorError;
-      toast.success('Profile updated successfully');
+      toast.success(t("doctor.profile.profileUpdatedSuccessfully"));
       refreshAll?.();
     } catch (error: any) {
       console.error(error);
@@ -188,11 +188,11 @@ const DoctorProfileSection = ({
   const handleAvatarUpload = async (file: File) => {
     if (!user || isEditingLocked) return;
     if (!['image/png', 'image/jpg', 'image/jpeg'].includes(file.type)) {
-      toast.error('Only PNG/JPG allowed');
+      toast.error(t("doctor.profile.avatarError"));
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Max 5MB');
+      toast.error(t("doctor.profile.avatarSizeError"));
       return;
     }
     const result = await uploadFile(file, 'avatars', `${user.id}/avatar-${Date.now()}.jpg`);
@@ -200,7 +200,7 @@ const DoctorProfileSection = ({
       await supabase.from('profiles').update({
         avatar_url: result.url
       }).eq('user_id', user.id);
-      toast.success('Avatar uploaded');
+      toast.success(t("doctor.profile.avatarUploaded"));
       refreshAll?.();
     }
   };
@@ -211,9 +211,9 @@ const DoctorProfileSection = ({
           <CardContent className="pt-6 flex items-start gap-3">
             <Lock className="w-5 h-5 text-yellow-600" />
             <div>
-              <h3 className="font-semibold">Verification Pending</h3>
-              <p className="text-sm text-muted-foreground">Profile locked during review.</p>
-              <Button variant="outline" size="sm" className="mt-2" onClick={() => navigate('/doctor-signup')}>View Status <ExternalLink className="w-3 h-3 ml-2" /></Button>
+              <h3 className="font-semibold">{t("doctor.profile.verificationPending")}</h3>
+              <p className="text-sm text-muted-foreground">{t("doctor.profile.profileLockedDuringReview")}</p>
+              <Button variant="outline" size="sm" className="mt-2" onClick={() => navigate('/doctor-signup')}>{t("doctor.profile.viewStatus")} <ExternalLink className="w-3 h-3 ml-2" /></Button>
             </div>
           </CardContent>
         </Card>}
@@ -227,20 +227,20 @@ const DoctorProfileSection = ({
             </CardTitle>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={() => navigate(`/doctor/${doctorProfile.id}`)}>
-                <Eye className="w-4 h-4 mr-2" />Preview Profile
+                <Eye className="w-4 h-4 mr-2" />{t("doctor.profile.previewProfile")}
               </Button>
               
             </div>
           </div>
           <div className="mt-4">
             <Progress value={profileCompletion} className="h-2" />
-            <p className="text-sm mt-1">{profileCompletion}% complete</p>
+            <p className="text-sm mt-1">{profileCompletion}% {t("doctor.profile.complete")}</p>
           </div>
         </CardHeader>
       </Card>
 
       <Card>
-        <CardHeader className="border-b"><CardTitle className="text-lg">Basic Information</CardTitle></CardHeader>
+        <CardHeader className="border-b"><CardTitle className="text-lg">{t("doctor.profile.basicInformation")}</CardTitle></CardHeader>
         <CardContent className="space-y-4 pt-6">
           <div className="flex items-center gap-6">
             <Avatar className="h-20 w-20">
@@ -257,23 +257,23 @@ const DoctorProfileSection = ({
             };
             i.click();
           }}>
-              <Upload className="w-4 h-4 mr-2" />{uploading ? 'Uploading...' : 'Upload Photo'}
+              <Upload className="w-4 h-4 mr-2" />{uploading ? t("doctor.profile.uploading") : t("doctor.profile.uploadPhoto")}
             </Button>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div><Label>Full Name</Label><Input value={doctorProfile.profiles?.full_name || ''} readOnly className="bg-muted/50" /></div>
-            <div><Label>Email</Label><Input value={doctorProfile.profiles?.email || ''} readOnly className="bg-muted/50" /></div>
+            <div><Label>{t("doctor.profile.fullName")}</Label><Input value={doctorProfile.profiles?.full_name || ''} readOnly className="bg-muted/50" /></div>
+            <div><Label>{t("doctor.profile.email")}</Label><Input value={doctorProfile.profiles?.email || ''} readOnly className="bg-muted/50" /></div>
           </div>
           
           {/* Phone with validation */}
           <div>
-            <Label><Phone className="w-4 h-4 inline mr-1" />Display Phone</Label>
+            <Label><Phone className="w-4 h-4 inline mr-1" />{t("doctor.profile.displayPhone")}</Label>
             <Input value={formData.phone} onChange={e => setFormData(p => ({
             ...p,
             phone: e.target.value
           }))} disabled={isEditingLocked} className={phoneValidation.isValid ? 'border-green-500' : formData.phone ? 'border-red-500' : ''} placeholder="+1234567890" />
             {formData.phone && <p className={`text-xs mt-1 ${phoneValidation.isValid ? 'text-green-600' : 'text-red-600'}`}>
-                {phoneValidation.isValid ? <><CheckCircle2 className="w-3 h-3 inline mr-1" />Valid</> : phoneValidation.message}
+                {phoneValidation.isValid ? <><CheckCircle2 className="w-3 h-3 inline mr-1" />{t("doctor.profile.validPhone")}</> : phoneValidation.message}
               </p>}
           </div>
 
@@ -282,10 +282,10 @@ const DoctorProfileSection = ({
             <CardContent className="pt-4 space-y-3">
               <div className="flex items-center gap-2">
                 <Checkbox id="useSamePhone" checked={useSamePhoneForSms} onCheckedChange={checked => setUseSamePhoneForSms(checked as boolean)} disabled={isEditingLocked} />
-                <Label htmlFor="useSamePhone" className="text-sm cursor-pointer">Use same phone for SMS notifications</Label>
+                <Label htmlFor="useSamePhone" className="text-sm cursor-pointer">{t("doctor.profile.useSamePhoneForSms")}</Label>
               </div>
               {!useSamePhoneForSms && <div>
-                  <Label>SMS Phone Number</Label>
+                  <Label>{t("doctor.profile.smsPhoneNumber")}</Label>
                   <Input value={formData.sms_phone} onChange={e => setFormData(p => ({
                 ...p,
                 sms_phone: e.target.value
@@ -297,17 +297,17 @@ const DoctorProfileSection = ({
             </CardContent>
           </Card>
 
-          <div><Label>Bio</Label><Textarea value={formData.bio} onChange={e => setFormData(p => ({
+          <div><Label>{t("doctor.profile.bio")}</Label><Textarea value={formData.bio} onChange={e => setFormData(p => ({
             ...p,
             bio: e.target.value
-          }))} disabled={isEditingLocked} className="min-h-[100px]" /></div>
+          }))} disabled={isEditingLocked} className="min-h-[100px]" placeholder={t("doctor.profile.bioPlaceholder")} /></div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="border-b">
-          <CardTitle className="text-lg">Specialties</CardTitle>
-          <p className="text-sm text-muted-foreground">First selected is your main specialty</p>
+          <CardTitle className="text-lg">{t("doctor.profile.specialties")}</CardTitle>
+          <p className="text-sm text-muted-foreground">{t("doctor.profile.specialtiesNote")}</p>
         </CardHeader>
         <CardContent className="pt-6 space-y-4">
           {selectedSpecialties.length > 0 && <div className="flex flex-wrap gap-2">
@@ -348,7 +348,7 @@ const DoctorProfileSection = ({
       </Card>
 
       <Card>
-        <CardHeader className="border-b"><CardTitle className="text-lg">Languages</CardTitle></CardHeader>
+        <CardHeader className="border-b"><CardTitle className="text-lg">{t("doctor.profile.languages")}</CardTitle></CardHeader>
         <CardContent className="pt-6 space-y-4">
           {selectedLanguages.length > 0 && <div className="flex flex-wrap gap-2">
               {selectedLanguages.map(l => <Badge key={l} variant="secondary" className="flex items-center gap-1">
@@ -357,31 +357,31 @@ const DoctorProfileSection = ({
             </div>}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input placeholder="Search..." value={languageSearch} onChange={e => setLanguageSearch(e.target.value)} className="pl-10" disabled={isEditingLocked} />
+            <Input placeholder={t("doctor.profile.search")} value={languageSearch} onChange={e => setLanguageSearch(e.target.value)} className="pl-10" disabled={isEditingLocked} />
           </div>
           <div className="border rounded-lg max-h-[250px] overflow-y-auto p-2 grid grid-cols-3 gap-1">
             {filteredLanguages.map(l => <label key={l} className="flex items-center gap-2 p-1 text-sm cursor-pointer hover:bg-muted/50 rounded">
                 <Checkbox checked={selectedLanguages.includes(l)} onCheckedChange={() => toggleLanguage(l)} disabled={isEditingLocked} />
                 {l}
               </label>)}
-            {filteredLanguages.length === 0 && <p className="text-sm text-muted-foreground col-span-3 p-2">No languages found</p>}
+            {filteredLanguages.length === 0 && <p className="text-sm text-muted-foreground col-span-3 p-2">{t("doctor.profile.noLanguagesFound")}</p>}
           </div>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader className="border-b"><CardTitle className="text-lg">Professional Details</CardTitle></CardHeader>
+        <CardHeader className="border-b"><CardTitle className="text-lg">{t("doctor.profile.professionalDetails")}</CardTitle></CardHeader>
         <CardContent className="space-y-4 pt-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>License Number</Label>
+              <Label>{t("doctor.profile.licenseNumber")}</Label>
               <Input value={formData.license_number} onChange={e => setFormData(p => ({
               ...p,
               license_number: e.target.value
             }))} disabled={isEditingLocked} />
             </div>
             <div>
-              <Label>Experience</Label>
+              <Label>{t("doctor.profile.experience")}</Label>
               <Select value={formData.years_experience} onValueChange={v => setFormData(p => ({
               ...p,
               years_experience: v
@@ -392,16 +392,16 @@ const DoctorProfileSection = ({
             </div>
           </div>
           <div>
-            <Label>Consultation Types</Label>
+            <Label>{t("doctor.profile.consultationTypes")}</Label>
             <div className="flex flex-wrap gap-2 mt-2">
-              {consultationTypes.map(t => <label key={t} className={`flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer ${selectedConsultationTypes.includes(t) ? 'border-primary bg-primary/10' : ''}`}>
-                  <Checkbox checked={selectedConsultationTypes.includes(t)} onCheckedChange={() => toggleConsultationType(t)} disabled={isEditingLocked} />
-                  {t}
+              {consultationTypes.map(ct => <label key={ct} className={`flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer ${selectedConsultationTypes.includes(ct) ? 'border-primary bg-primary/10' : ''}`}>
+                  <Checkbox checked={selectedConsultationTypes.includes(ct)} onCheckedChange={() => toggleConsultationType(ct)} disabled={isEditingLocked} />
+                  {ct}
                 </label>)}
             </div>
           </div>
           <div>
-            <Label>Consultation Fee ($)</Label>
+            <Label>{t("doctor.profile.consultationFee")}</Label>
             <Input type="number" value={formData.consultation_fee} onChange={e => setFormData(p => ({
             ...p,
             consultation_fee: e.target.value
@@ -412,7 +412,7 @@ const DoctorProfileSection = ({
 
       <div className="flex justify-end">
         <Button onClick={handleSaveChanges} disabled={isEditingLocked} size="lg">
-          {isEditingLocked ? <><Lock className="w-4 h-4 mr-2" />Locked</> : 'Save Changes'}
+          {isEditingLocked ? <><Lock className="w-4 h-4 mr-2" />{t("doctor.profile.locked")}</> : t("doctor.profile.saveChanges")}
         </Button>
       </div>
     </div>;
