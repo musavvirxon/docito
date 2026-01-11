@@ -8,14 +8,23 @@ const corsHeaders = {
 };
 
 interface GetAvailabilityRequest {
-  entity_id?: string;
-  provider_id?: string; // doctor_id
-  from: string; // YYYY-MM-DD
-  to: string; // YYYY-MM-DD
+  entity_id?: string;      // practice_id (clinic/hospital)
+  provider_id?: string;    // doctor_id
+  from: string;            // YYYY-MM-DD
+  to: string;              // YYYY-MM-DD
   appointment_type?: string;
 }
 
 type Interval = { start: number; end: number }; // minutes [start, end)
+
+type WorkingDay = {
+  enabled: boolean;
+  start_time: string;
+  end_time: string;
+  breaks?: Array<{ start_time: string; end_time: string; name?: string }>;
+};
+
+type WorkingDays = Record<string, WorkingDay>;
 
 const DAY_NAMES = [
   "sunday",
@@ -30,7 +39,6 @@ const DAY_NAMES = [
 const pad2 = (n: number) => n.toString().padStart(2, "0");
 
 const normalizeTime = (t: string): string => {
-  // Accept HH:MM or HH:MM:SS
   const parts = t.split(":").map((p) => p.trim());
   if (parts.length === 2) return `${pad2(Number(parts[0]))}:${pad2(Number(parts[1]))}:00`;
   return `${pad2(Number(parts[0] || 0))}:${pad2(Number(parts[1] || 0))}:${pad2(Number(parts[2] || 0))}`;
@@ -48,30 +56,28 @@ const minutesToTime = (m: number): string => {
 };
 
 const mergeIntervals = (intervals: Interval[]): Interval[] => {
-  if (intervals.length === 0) return [];
+  if (!intervals.length) return [];
   const sorted = [...intervals].sort((a, b) => a.start - b.start);
   const out: Interval[] = [sorted[0]];
   for (let i = 1; i < sorted.length; i++) {
     const last = out[out.length - 1];
     const cur = sorted[i];
-    if (cur.start <= last.end) {
-      last.end = Math.max(last.end, cur.end);
-    } else {
-      out.push({ ...cur });
-    }
+    if (cur.start <= last.end) last.end = Math.max(last.end, cur.end);
+    else out.push({ ...cur });
   }
   return out;
 };
 
 const subtractIntervals = (base: Interval[], cuts: Interval[]): Interval[] => {
-  if (base.length === 0) return [];
-  if (cuts.length === 0) return base;
+  if (!base.length) return [];
+  if (!cuts.length) return base;
 
   const mergedCuts = mergeIntervals(cuts);
   const result: Interval[] = [];
 
   for (const b of base) {
     let cursor = b.start;
+
     for (const c of mergedCuts) {
       if (c.end <= cursor) continue;
       if (c.start >= b.end) break;
@@ -83,26 +89,72 @@ const subtractIntervals = (base: Interval[], cuts: Interval[]): Interval[] => {
       cursor = Math.max(cursor, cutEnd);
       if (cursor >= b.end) break;
     }
+
     if (cursor < b.end) result.push({ start: cursor, end: b.end });
   }
 
   return result;
 };
 
+const intersectIntervals = (a: Interval[], b: Interval[]): Interval[] => {
+  const A = mergeIntervals(a);
+  const B = mergeIntervals(b);
+  const out: Interval[] = [];
+
+  let i = 0, j = 0;
+  while (i < A.length && j < B.length) {
+    const start = Math.max(A[i].start, B[j].start);
+    const end = Math.min(A[i].end, B[j].end);
+    if (end > start) out.push({ start, end });
+
+    if (A[i].end < B[j].end) i++;
+    else j++;
+  }
+  return out;
+};
+
 const overlaps = (aStart: number, aEnd: number, bStart: number, bEnd: number) =>
   aStart < bEnd && aEnd > bStart;
 
+const defaultWorkingDays = (start = "09:00", end = "17:00"): WorkingDays => ({
+  monday: { enabled: true, start_time: start, end_time: end, breaks: [] },
+  tuesday: { enabled: true, start_time: start, end_time: end, breaks: [] },
+  wednesday: { enabled: true, start_time: start, end_time: end, breaks: [] },
+  thursday: { enabled: true, start_time: start, end_time: end, breaks: [] },
+  friday: { enabled: true, start_time: start, end_time: end, breaks: [] },
+  saturday: { enabled: false, start_time: "10:00", end_time: "14:00", breaks: [] },
+  sunday: { enabled: false, start_time: "10:00", end_time: "14:00", breaks: [] },
+});
+
+const dayToIntervals = (day?: WorkingDay): Interval[] => {
+  if (!day?.enabled) return [];
+  const s = timeToMinutes(day.start_time);
+  const e = timeToMinutes(day.end_time);
+  if (e <= s) return [];
+  return [{ start: s, end: e }];
+};
+
+const breaksToCuts = (day?: WorkingDay): Interval[] => {
+  const br = day?.breaks;
+  if (!day?.enabled || !Array.isArray(br) || !br.length) return [];
+  return br
+    .map((b) => {
+      const s = timeToMinutes(b.start_time);
+      const e = timeToMinutes(b.end_time);
+      return e > s ? ({ start: s, end: e } as Interval) : null;
+    })
+    .filter(Boolean) as Interval[];
+};
+
 const handler = async (req: Request): Promise<Response> => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { provider_id, from, to, appointment_type } =
+    const { provider_id, entity_id, from, to, appointment_type } =
       (await req.json()) as GetAvailabilityRequest;
 
     if (!provider_id) {
@@ -111,7 +163,6 @@ const handler = async (req: Request): Promise<Response> => {
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
-
     if (!from || !to) {
       return new Response(JSON.stringify({ error: "Missing from/to dates" }), {
         status: 400,
@@ -119,7 +170,18 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // ✅ Fetch schedule settings (same source of truth as doctor calendar)
+    // Get doctor's practice_id (if entity_id not provided)
+    const { data: doctorRow, error: doctorErr } = await supabase
+      .from("doctors")
+      .select("id, practice_id")
+      .eq("id", provider_id)
+      .maybeSingle();
+
+    if (doctorErr) throw doctorErr;
+
+    const practiceId = entity_id || doctorRow?.practice_id || null;
+
+    // Doctor schedule settings
     const { data: sched, error: schedErr } = await supabase
       .from("schedule_settings")
       .select("*")
@@ -128,56 +190,32 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (schedErr) throw schedErr;
 
-    // Defaults (match UI defaults)
-    const scheduleSettings = {
-      working_days:
-        (sched?.working_days as Record<
-          string,
-          {
-            enabled: boolean;
-            start_time: string;
-            end_time: string;
-            breaks?: Array<{ start_time: string; end_time: string; name?: string }>;
-          }
-        >) ?? {
-          monday: {
-            enabled: true,
-            start_time: "09:00",
-            end_time: "17:00",
-            breaks: [{ start_time: "12:00", end_time: "13:00", name: "Lunch Break" }],
-          },
-          tuesday: {
-            enabled: true,
-            start_time: "09:00",
-            end_time: "17:00",
-            breaks: [{ start_time: "12:00", end_time: "13:00", name: "Lunch Break" }],
-          },
-          wednesday: {
-            enabled: true,
-            start_time: "09:00",
-            end_time: "17:00",
-            breaks: [{ start_time: "12:00", end_time: "13:00", name: "Lunch Break" }],
-          },
-          thursday: {
-            enabled: true,
-            start_time: "09:00",
-            end_time: "17:00",
-            breaks: [{ start_time: "12:00", end_time: "13:00", name: "Lunch Break" }],
-          },
-          friday: {
-            enabled: true,
-            start_time: "09:00",
-            end_time: "17:00",
-            breaks: [{ start_time: "12:00", end_time: "13:00", name: "Lunch Break" }],
-          },
-          saturday: { enabled: false, start_time: "09:00", end_time: "17:00", breaks: [] },
-          sunday: { enabled: false, start_time: "09:00", end_time: "17:00", breaks: [] },
-        },
-      buffer_time: typeof sched?.buffer_time === "number" ? sched.buffer_time : 15,
-      holidays: (sched?.holidays as string[]) ?? [],
-    };
+    const doctorWorkingDays: WorkingDays =
+      (sched?.working_days as WorkingDays) ?? defaultWorkingDays("09:00", "17:00");
 
-    // ✅ Fetch existing appointments in range
+    const doctorHolidays: string[] = (sched?.holidays as string[]) ?? [];
+    const bufferTime = typeof sched?.buffer_time === "number" ? sched.buffer_time : 15;
+
+    // Practice schedule settings (clinic/hospital hours)
+    let practiceWorkingDays: WorkingDays | null = null;
+    let practiceHolidays: string[] = [];
+
+    if (practiceId) {
+      const { data: ps, error: psErr } = await supabase
+        .from("practice_schedule_settings")
+        .select("*")
+        .eq("practice_id", practiceId)
+        .maybeSingle();
+
+      if (psErr) throw psErr;
+
+      practiceWorkingDays = (ps?.working_days as WorkingDays) ?? defaultWorkingDays("09:00", "17:00");
+      practiceHolidays = (ps?.holidays as string[]) ?? [];
+    }
+
+    const holidays = Array.from(new Set([...(doctorHolidays || []), ...(practiceHolidays || [])]));
+
+    // Existing appointments in range
     const { data: existingAppointments, error: apptErr } = await supabase
       .from("appointments")
       .select("appointment_date,start_time,end_time")
@@ -187,7 +225,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (apptErr) throw apptErr;
 
-    // ✅ Fetch blocked times in range
+    // Blocked times in range
     const { data: blocks, error: blockErr } = await supabase
       .from("blocked_times")
       .select("blocked_date,start_time,end_time,reason")
@@ -198,7 +236,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (blockErr) throw blockErr;
     const blockedTimes = blocks || [];
 
-    // ✅ Fetch availability overrides in range
+    // Availability overrides (doctor)
     const { data: ov, error: ovErr } = await supabase
       .from("availability_overrides")
       .select("override_date,start_time,end_time,is_available,notes")
@@ -209,9 +247,8 @@ const handler = async (req: Request): Promise<Response> => {
     if (ovErr) throw ovErr;
     const overrides = ov || [];
 
-    // Slot duration (keep as before; you can expand types later)
+    // Slot duration
     const procedureDuration = appointment_type === "consultation" ? 30 : 30;
-    const bufferTime = scheduleSettings.buffer_time ?? 0;
 
     const fromDate = new Date(`${from}T00:00:00Z`);
     const toDate = new Date(`${to}T00:00:00Z`);
@@ -227,26 +264,18 @@ const handler = async (req: Request): Promise<Response> => {
     while (current <= toDate) {
       const dateStr = current.toISOString().split("T")[0];
 
-      // ✅ Holidays
-      if ((scheduleSettings.holidays || []).includes(dateStr)) {
+      // Holidays (doctor OR practice)
+      if (holidays.includes(dateStr)) {
         current.setUTCDate(current.getUTCDate() + 1);
         continue;
       }
 
       const dayName = DAY_NAMES[current.getUTCDay()];
-      const daySchedule = scheduleSettings.working_days?.[dayName];
 
-      // Base intervals from working hours (if enabled)
-      let baseIntervals: Interval[] = [];
-      if (daySchedule?.enabled) {
-        const start = timeToMinutes(daySchedule.start_time);
-        const end = timeToMinutes(daySchedule.end_time);
-        if (end > start) baseIntervals.push({ start, end });
-      }
+      // Doctor base intervals
+      let doctorIntervals: Interval[] = dayToIntervals(doctorWorkingDays?.[dayName]);
 
-      // Apply overrides:
-      // - is_available=false => remove time
-      // - is_available=true  => add time (even outside regular hours)
+      // Apply doctor overrides (add/remove)
       const dayOverrides = overrides.filter((o) => o.override_date === dateStr);
       const addIntervals: Interval[] = [];
       const removeIntervals: Interval[] = [];
@@ -260,23 +289,22 @@ const handler = async (req: Request): Promise<Response> => {
         else removeIntervals.push({ start: oStart, end: oEnd });
       }
 
-      baseIntervals = mergeIntervals([...baseIntervals, ...addIntervals]);
-      baseIntervals = subtractIntervals(baseIntervals, removeIntervals);
+      doctorIntervals = mergeIntervals([...doctorIntervals, ...addIntervals]);
+      doctorIntervals = subtractIntervals(doctorIntervals, removeIntervals);
 
-      // Subtract breaks (from schedule_settings)
-      if (daySchedule?.enabled && Array.isArray(daySchedule.breaks) && daySchedule.breaks.length) {
-        const breakCuts: Interval[] = daySchedule.breaks
-          .map((b) => {
-            const bStart = timeToMinutes(b.start_time);
-            const bEnd = timeToMinutes(b.end_time);
-            return bEnd > bStart ? ({ start: bStart, end: bEnd } as Interval) : null;
-          })
-          .filter(Boolean) as Interval[];
+      // Subtract doctor breaks
+      doctorIntervals = subtractIntervals(doctorIntervals, breaksToCuts(doctorWorkingDays?.[dayName]));
 
-        baseIntervals = subtractIntervals(baseIntervals, breakCuts);
+      // Practice intervals (if practice schedule exists, intersect; otherwise just use doctor)
+      let baseIntervals: Interval[] = doctorIntervals;
+
+      if (practiceWorkingDays) {
+        let practiceIntervals: Interval[] = dayToIntervals(practiceWorkingDays?.[dayName]);
+        practiceIntervals = subtractIntervals(practiceIntervals, breaksToCuts(practiceWorkingDays?.[dayName]));
+        baseIntervals = intersectIntervals(doctorIntervals, practiceIntervals);
       }
 
-      // Generate slots inside the final availability intervals
+      // Generate slots inside final intervals
       for (const interval of baseIntervals) {
         let t = interval.start;
 
@@ -290,7 +318,6 @@ const handler = async (req: Request): Promise<Response> => {
           const startTime = minutesToTime(slotStart);
           const endTime = minutesToTime(procedureEnd);
 
-          // Appointment conflict
           const hasConflict = (existingAppointments || []).some((apt) => {
             if (apt.appointment_date !== dateStr) return false;
             const aptStart = timeToMinutes(apt.start_time);
@@ -298,7 +325,6 @@ const handler = async (req: Request): Promise<Response> => {
             return overlaps(slotStart, procedureEnd, aptStart, aptEnd);
           });
 
-          // Blocked time conflict (uses bufferEnd like doctor calendar)
           const overlappingBlock = blockedTimes.find((bt) => {
             if (bt.blocked_date !== dateStr) return false;
             const bStart = timeToMinutes(bt.start_time);
@@ -331,7 +357,7 @@ const handler = async (req: Request): Promise<Response> => {
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   } catch (error: any) {
-    console.error("Error in get_availability:", error);
+    console.error("Error in get-availability:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
