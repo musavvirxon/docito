@@ -1,0 +1,25 @@
+{
+  "common": {
+    "close": "Close",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading...",
+    "success": "Success",
+    "error": "Error"
+  },
+  "confirmation": {
+    "title": "Confirm Action",
+    "deleteTitle": "Confirm Delete",
+    "deleteMessage": "Are you sure you want to delete this item? This action cannot be undone.",
+    "cancelMessage": "Are you sure you want to cancel? Any unsaved changes will be lost."
+  },
+  "notifications": {
+    "savedSuccessfully": "Saved successfully",
+    "deletedSuccessfully": "Deleted successfully",
+    "errorOccurred": "An error occurred. Please try again.",
+    "changesDiscarded": "Changes discarded"
+  }
+}

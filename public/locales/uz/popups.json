@@ -1,0 +1,25 @@
+{
+  "common": {
+    "close": "Yopish",
+    "cancel": "Bekor qilish",
+    "confirm": "Tasdiqlash",
+    "save": "Saqlash",
+    "delete": "O'chirish",
+    "edit": "Tahrirlash",
+    "loading": "Yuklanmoqda...",
+    "success": "Muvaffaqiyat",
+    "error": "Xato"
+  },
+  "confirmation": {
+    "title": "Amalni tasdiqlang",
+    "deleteTitle": "O'chirishni tasdiqlang",
+    "deleteMessage": "Ushbu elementni o'chirishni xohlaysizmi? Bu amalni qaytarib bo'lmaydi.",
+    "cancelMessage": "Bekor qilishni xohlaysizmi? Saqlanmagan o'zgarishlar yo'qoladi."
+  },
+  "notifications": {
+    "savedSuccessfully": "Muvaffaqiyatli saqlandi",
+    "deletedSuccessfully": "Muvaffaqiyatli o'chirildi",
+    "errorOccurred": "Xato yuz berdi. Iltimos, qaytadan urinib ko'ring.",
+    "changesDiscarded": "O'zgarishlar bekor qilindi"
+  }
+}
