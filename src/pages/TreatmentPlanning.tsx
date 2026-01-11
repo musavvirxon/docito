@@ -1,15 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  Plus,
-  Search,
-  Filter,
-  ChevronLeft,
-  Users,
-  Calendar,
-  FileText,
-  Trash2,
-  Eye,
-} from "lucide-react";
+import { Plus, Search, Filter, ChevronLeft, Users, Calendar, DollarSign, FileText, Edit, Trash2, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,25 +14,24 @@ import EnhancedTreatmentPlanDetailModal from "@/components/treatment/EnhancedTre
 
 interface TreatmentPlan {
   id: string;
-  doctor_id: string | null;
+  doctor_id: string;
   patient_id: string | null;
-  doctor_patient_id: string | null;
+  doctor_patient_id?: string | null;
   title: string;
   notes?: string | null;
-  status: string | null;
-  total_cost?: number | null;
+  status: string;
+  total_cost: number;
   created_at: string;
-  published_at?: string | null;
-  completed_at?: string | null;
-  estimated_duration_weeks?: number | null;
-  estimated_completion_date?: string | null;
-  priority?: string | null;
-  updated_at?: string | null;
-  expires_at?: string | null;
+  published_at?: string;
+  completed_at?: string;
+  estimated_duration_weeks?: number;
+  estimated_completion_date?: string;
+  priority?: string;
+  updated_at?: string;
 }
 
 interface Patient {
-  id: string; // should match auth user id (profiles.user_id)
+  id: string;
   name: string;
   email: string;
 }
@@ -64,7 +53,7 @@ const TreatmentPlanning = () => {
     { value: "draft", label: "Draft" },
     { value: "published", label: "Published" },
     { value: "in_progress", label: "In Progress" },
-    { value: "completed", label: "Completed" },
+    { value: "completed", label: "Completed" }
   ];
 
   useEffect(() => {
@@ -78,17 +67,15 @@ const TreatmentPlanning = () => {
 
   const fetchTreatmentPlans = async () => {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
+      const { data: { user } } = await supabase.auth.getUser();
+      
       if (!user) {
         toast.error("Please sign in to view treatment plans");
         setLoading(false);
         return;
       }
 
-      // Get doctor ID from user
+      // First get doctor ID from user
       const { data: doctorData } = await supabase
         .from("doctors")
         .select("id")
@@ -108,7 +95,7 @@ const TreatmentPlanning = () => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setTreatmentPlans((data || []) as any);
+      setTreatmentPlans(data || []);
     } catch (error: any) {
       toast.error("Failed to load treatment plans: " + error.message);
     } finally {
@@ -118,12 +105,13 @@ const TreatmentPlanning = () => {
 
   const fetchPatients = async () => {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        return;
+      }
 
-      if (!user) return;
-
+      // Get unique patient IDs from appointments
       const { data: doctorData } = await supabase
         .from("doctors")
         .select("id")
@@ -132,8 +120,6 @@ const TreatmentPlanning = () => {
 
       if (!doctorData) return;
 
-      // IMPORTANT:
-      // appointments.patient_id -> profiles.user_id (per types.ts relationships)
       const { data: appointments } = await supabase
         .from("appointments")
         .select("patient_id, profiles!inner(user_id, full_name, email)")
@@ -147,14 +133,14 @@ const TreatmentPlanning = () => {
               .map((apt: any) => [
                 apt.patient_id,
                 {
-                  id: apt.patient_id, // auth user id
-                  name: apt.profiles.full_name || "Unnamed Patient",
-                  email: apt.profiles.email || "",
-                },
+                  id: apt.patient_id,
+                  name: apt.profiles.full_name,
+                  email: apt.profiles.email
+                }
               ])
           ).values()
         );
-
+        
         setPatients(uniquePatients as Patient[]);
       }
     } catch (error: any) {
@@ -166,20 +152,18 @@ const TreatmentPlanning = () => {
     let filtered = treatmentPlans;
 
     if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter((plan) => {
-        const titleMatch = (plan.title || "").toLowerCase().includes(term);
-        const notesMatch = (plan.notes || "").toLowerCase().includes(term);
-        return titleMatch || notesMatch;
-      });
+      filtered = filtered.filter(plan => 
+        plan.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (plan.notes && plan.notes.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
     }
 
     if (statusFilter !== "all") {
-      filtered = filtered.filter((plan) => (plan.status || "") === statusFilter);
+      filtered = filtered.filter(plan => plan.status === statusFilter);
     }
 
     if (patientFilter !== "all") {
-      filtered = filtered.filter((plan) => (plan.patient_id || "") === patientFilter);
+      filtered = filtered.filter(plan => plan.patient_id === patientFilter);
     }
 
     setFilteredPlans(filtered);
@@ -189,10 +173,13 @@ const TreatmentPlanning = () => {
     if (!confirm("Are you sure you want to delete this treatment plan?")) return;
 
     try {
-      const { error } = await supabase.from("treatment_plans").delete().eq("id", id);
+      const { error } = await supabase
+        .from("treatment_plans")
+        .delete()
+        .eq("id", id);
 
       if (error) throw error;
-
+      
       toast.success("Treatment plan deleted successfully");
       fetchTreatmentPlans();
     } catch (error: any) {
@@ -204,14 +191,14 @@ const TreatmentPlanning = () => {
     try {
       const { error } = await supabase
         .from("treatment_plans")
-        .update({
+        .update({ 
           status: "published",
-          published_at: new Date().toISOString(),
+          published_at: new Date().toISOString()
         })
         .eq("id", plan.id);
 
       if (error) throw error;
-
+      
       toast.success("Treatment plan published successfully");
       fetchTreatmentPlans();
     } catch (error: any) {
@@ -220,9 +207,9 @@ const TreatmentPlanning = () => {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
     }).format(amount);
   };
 
@@ -231,14 +218,14 @@ const TreatmentPlanning = () => {
       draft: "bg-gray-100 text-gray-800",
       published: "bg-blue-100 text-blue-800",
       in_progress: "bg-orange-100 text-orange-800",
-      completed: "bg-green-100 text-green-800",
+      completed: "bg-green-100 text-green-800"
     };
     return colors[status] || colors.draft;
   };
 
-  const getPatientLabel = (plan: TreatmentPlan) => {
+  const getPatientName = (plan: TreatmentPlan) => {
     if (plan.patient_id) {
-      const patient = patients.find((p) => p.id === plan.patient_id);
+      const patient = patients.find(p => p.id === plan.patient_id);
       return patient ? patient.name : "Unknown Patient";
     }
     if (plan.doctor_patient_id) return "Doctor-added patient";
@@ -273,18 +260,16 @@ const TreatmentPlanning = () => {
             <p className="text-muted-foreground">Create and manage patient treatment plans</p>
           </div>
         </div>
-        <Button
+        <Button 
           onClick={async () => {
-            const {
-              data: { user },
-            } = await supabase.auth.getUser();
+            const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
               toast.error("Please sign in to create treatment plans");
               navigate("/signup");
               return;
             }
             setShowCreateModal(true);
-          }}
+          }} 
           className="flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
@@ -311,7 +296,6 @@ const TreatmentPlanning = () => {
                 className="pl-10"
               />
             </div>
-
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger>
                 <SelectValue placeholder="Filter by status" />
@@ -324,7 +308,6 @@ const TreatmentPlanning = () => {
                 ))}
               </SelectContent>
             </Select>
-
             <Select value={patientFilter} onValueChange={setPatientFilter}>
               <SelectTrigger>
                 <SelectValue placeholder="Filter by patient" />
@@ -338,9 +321,8 @@ const TreatmentPlanning = () => {
                 ))}
               </SelectContent>
             </Select>
-
-            <Button
-              variant="outline"
+            <Button 
+              variant="outline" 
               onClick={() => {
                 setSearchTerm("");
                 setStatusFilter("all");
@@ -361,9 +343,7 @@ const TreatmentPlanning = () => {
         <CardContent>
           {filteredPlans.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">
-                No treatment plans found. Create your first treatment plan to get started.
-              </p>
+              <p className="text-muted-foreground">No treatment plans found. Create your first treatment plan to get started.</p>
               <Button onClick={() => setShowCreateModal(true)} className="mt-4">
                 <Plus className="w-4 h-4 mr-2" />
                 Create First Treatment Plan
@@ -388,41 +368,41 @@ const TreatmentPlanning = () => {
                       <div>
                         <p className="font-medium">{plan.title}</p>
                         {plan.notes && (
-                          <p className="text-sm text-muted-foreground truncate max-w-xs">{plan.notes}</p>
+                          <p className="text-sm text-muted-foreground truncate max-w-xs">
+                            {plan.notes}
+                          </p>
                         )}
                       </div>
                     </TableCell>
-
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Users className="w-4 h-4 text-muted-foreground" />
-                        {getPatientLabel(plan)}
+                        {getPatientName(plan)}
                       </div>
                     </TableCell>
-
                     <TableCell>
-                      <Badge className={getStatusBadgeColor(plan.status || "draft")}>
-                        {statusOptions.find((s) => s.value === plan.status)?.label || plan.status || "draft"}
+                      <Badge className={getStatusBadgeColor(plan.status)}>
+                        {statusOptions.find(s => s.value === plan.status)?.label || plan.status}
                       </Badge>
                     </TableCell>
-
                     <TableCell className="font-medium">
-                      {typeof plan.total_cost === "number" ? formatCurrency(plan.total_cost) : "Not calculated"}
+                      {plan.total_cost ? formatCurrency(plan.total_cost) : "Not calculated"}
                     </TableCell>
-
                     <TableCell>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Calendar className="w-4 h-4" />
-                        {plan.created_at ? new Date(plan.created_at).toLocaleDateString() : "-"}
+                        {new Date(plan.created_at).toLocaleDateString()}
                       </div>
                     </TableCell>
-
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => setSelectedPlan(plan)}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedPlan(plan)}
+                        >
                           <Eye className="w-4 h-4" />
                         </Button>
-
                         {plan.status === "draft" && (
                           <Button
                             variant="ghost"
@@ -433,7 +413,6 @@ const TreatmentPlanning = () => {
                             <FileText className="w-4 h-4" />
                           </Button>
                         )}
-
                         <Button
                           variant="ghost"
                           size="sm"
@@ -466,7 +445,7 @@ const TreatmentPlanning = () => {
         <EnhancedTreatmentPlanDetailModal
           open={!!selectedPlan}
           onOpenChange={(open) => !open && setSelectedPlan(null)}
-          treatmentPlan={selectedPlan as any}
+          treatmentPlan={selectedPlan}
           onUpdate={() => {
             fetchTreatmentPlans();
           }}
