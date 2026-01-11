@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, Filter, Users, Calendar, DollarSign, FileText, Edit, Trash2, Eye, Pill, Copy, LayoutTemplate } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Plus, Search, Filter, Users, Calendar, DollarSign, FileText, Edit, Trash2, Eye, Pill, Copy, LayoutTemplate, MessageSquare, Video, CalendarPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -52,6 +54,7 @@ interface Patient {
 const TreatmentPlanningSection = () => {
   const { t } = useTranslation("dashboard");
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [treatmentPlans, setTreatmentPlans] = useState<TreatmentPlan[]>([]);
   const [filteredPlans, setFilteredPlans] = useState<TreatmentPlan[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -64,6 +67,19 @@ const TreatmentPlanningSection = () => {
   const [showMedicationModal, setShowMedicationModal] = useState(false);
   const [selectedPlanForMeds, setSelectedPlanForMeds] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("plans");
+
+  // Action handlers
+  const handleMessagePatient = (patientId: string) => {
+    navigate(`/messages?recipient=${patientId}`);
+  };
+
+  const handleScheduleAppointment = (patientId: string) => {
+    navigate(`/doctor-dashboard?section=calendar&patient=${patientId}`);
+  };
+
+  const handleVideoCall = (patientId: string) => {
+    navigate(`/video-call?patient=${patientId}`);
+  };
   
   // Templates state
   const [templates, setTemplates] = useState<TreatmentPlanTemplate[]>([]);
@@ -525,44 +541,107 @@ const TreatmentPlanningSection = () => {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setSelectedPlan(plan)}
-                              title={t("doctor.treatmentPlanning.viewDetails")}
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleMedicationManagement(plan.id, plan.patient_id)}
-                              title={t("doctor.treatmentPlanning.manageMedications")}
-                            >
-                              <Pill className="w-4 h-4" />
-                            </Button>
-                            {plan.status === "draft" && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleConfirmPlan(plan)}
-                                className="text-blue-600 hover:text-blue-700"
-                                title={t("doctor.treatmentPlanning.publishPlan")}
-                              >
-                                <FileText className="w-4 h-4" />
-                              </Button>
-                            )}
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeletePlan(plan.id)}
-                              className="text-destructive hover:text-destructive"
-                              title={t("doctor.treatmentPlanning.deletePlan")}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
+                          <TooltipProvider>
+                            <div className="flex items-center gap-1">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setSelectedPlan(plan)}
+                                  >
+                                    <Eye className="w-4 h-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>View Details</TooltipContent>
+                              </Tooltip>
+
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleMessagePatient(plan.patient_id)}
+                                    className="text-blue-600 hover:text-blue-700"
+                                  >
+                                    <MessageSquare className="w-4 h-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Message Patient</TooltipContent>
+                              </Tooltip>
+
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleScheduleAppointment(plan.patient_id)}
+                                    className="text-green-600 hover:text-green-700"
+                                  >
+                                    <CalendarPlus className="w-4 h-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Schedule Appointment</TooltipContent>
+                              </Tooltip>
+
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleVideoCall(plan.patient_id)}
+                                    className="text-purple-600 hover:text-purple-700"
+                                  >
+                                    <Video className="w-4 h-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Start Video Call</TooltipContent>
+                              </Tooltip>
+
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleMedicationManagement(plan.id, plan.patient_id)}
+                                  >
+                                    <Pill className="w-4 h-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Manage Medications</TooltipContent>
+                              </Tooltip>
+
+                              {plan.status === "draft" && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleConfirmPlan(plan)}
+                                      className="text-blue-600 hover:text-blue-700"
+                                    >
+                                      <FileText className="w-4 h-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Publish Plan</TooltipContent>
+                                </Tooltip>
+                              )}
+
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDeletePlan(plan.id)}
+                                    className="text-destructive hover:text-destructive"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Delete Plan</TooltipContent>
+                              </Tooltip>
+                            </div>
+                          </TooltipProvider>
                         </TableCell>
                       </TableRow>
                     ))}
