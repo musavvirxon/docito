@@ -1,42 +1,50 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 
 import PublicLayout from "@/layouts/PublicLayout";
-import PremiumHome from "@/pages/PremiumHome";
 
-import Auth from "@/pages/Auth";
-import About from "@/pages/About";
-import Contact from "@/pages/Contact";
-import Features from "@/pages/Features";
-import Pricing from "@/pages/Pricing";
+// Loading fallback
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+  </div>
+);
 
-import Doctors from "@/pages/Doctors";
-import Practices from "@/pages/Practices";
+// Lazy load all pages for code splitting
+const PremiumHome = lazy(() => import("@/pages/PremiumHome"));
+const Auth = lazy(() => import("@/pages/Auth"));
+const About = lazy(() => import("@/pages/About"));
+const Contact = lazy(() => import("@/pages/Contact"));
+const Features = lazy(() => import("@/pages/Features"));
+const Pricing = lazy(() => import("@/pages/Pricing"));
 
-import Dashboard from "@/pages/Dashboard";
-import ProfilePage from "@/pages/ProfilePage";
+const Doctors = lazy(() => import("@/pages/Doctors"));
+const Practices = lazy(() => import("@/pages/Practices"));
 
-import PatientDashboard from "@/pages/PatientDashboard";
-import DoctorDashboard from "@/pages/DoctorDashboard";
-import StaffDashboard from "@/pages/StaffDashboard";
-import AdminDashboard from "@/pages/AdminDashboard";
-import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
+const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const ProfilePage = lazy(() => import("@/pages/ProfilePage"));
 
-import LabLandingPage from "@/pages/lab/LabLandingPage";
-import LabDashboard from "@/pages/lab/LabDashboard";
+const PatientDashboard = lazy(() => import("@/pages/PatientDashboard"));
+const DoctorDashboard = lazy(() => import("@/pages/DoctorDashboard"));
+const StaffDashboard = lazy(() => import("@/pages/StaffDashboard"));
+const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
+const SuperAdminDashboard = lazy(() => import("@/pages/SuperAdminDashboard"));
 
-import PharmacyLandingPage from "@/pages/pharmacy/PharmacyLandingPage";
-import PharmacyDashboard from "@/pages/pharmacy/PharmacyDashboard";
+const LabLandingPage = lazy(() => import("@/pages/lab/LabLandingPage"));
+const LabDashboard = lazy(() => import("@/pages/lab/LabDashboard"));
 
-import ImagingLandingPage from "@/pages/imaging/ImagingLandingPage";
-import ImagingDashboard from "@/pages/imaging/ImagingDashboard";
+const PharmacyLandingPage = lazy(() => import("@/pages/pharmacy/PharmacyLandingPage"));
+const PharmacyDashboard = lazy(() => import("@/pages/pharmacy/PharmacyDashboard"));
 
-import AppointmentBooking from "@/pages/AppointmentBooking";
-import BookingConfirmation from "@/pages/BookingConfirmation";
-import DoctorProfile from "@/pages/DoctorProfile";
+const ImagingLandingPage = lazy(() => import("@/pages/imaging/ImagingLandingPage"));
+const ImagingDashboard = lazy(() => import("@/pages/imaging/ImagingDashboard"));
 
-import NotFound from "@/pages/NotFound";
+const AppointmentBooking = lazy(() => import("@/pages/AppointmentBooking"));
+const BookingConfirmation = lazy(() => import("@/pages/BookingConfirmation"));
+const DoctorProfile = lazy(() => import("@/pages/DoctorProfile"));
+
+const NotFound = lazy(() => import("@/pages/NotFound"));
 
 export default function App() {
   useEffect(() => {
@@ -47,52 +55,54 @@ export default function App() {
     <>
       <Toaster />
 
-      <Routes>
-        {/* ✅ NEW PREMIUM HOME */}
-        <Route path="/" element={<PublicLayout />}>
-          <Route index element={<PremiumHome />} />
-        </Route>
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          {/* ✅ NEW PREMIUM HOME */}
+          <Route path="/" element={<PublicLayout />}>
+            <Route index element={<PremiumHome />} />
+          </Route>
 
-        {/* Auth */}
-        <Route path="/auth" element={<Auth />} />
+          {/* Auth */}
+          <Route path="/auth" element={<Auth />} />
 
-        {/* Public pages (these already contain their own nav/footer in your repo) */}
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/features" element={<Features />} />
-        <Route path="/pricing" element={<Pricing />} />
+          {/* Public pages */}
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/features" element={<Features />} />
+          <Route path="/pricing" element={<Pricing />} />
 
-        <Route path="/doctor" element={<Doctors />} />
-        <Route path="/find-doctors" element={<Doctors />} />
-        <Route path="/practice" element={<Practices />} />
+          <Route path="/doctor" element={<Doctors />} />
+          <Route path="/find-doctors" element={<Doctors />} />
+          <Route path="/practice" element={<Practices />} />
 
-        <Route path="/lab" element={<LabLandingPage />} />
-        <Route path="/pharmacy" element={<PharmacyLandingPage />} />
-        <Route path="/imaging-center" element={<ImagingLandingPage />} />
+          <Route path="/lab" element={<LabLandingPage />} />
+          <Route path="/pharmacy" element={<PharmacyLandingPage />} />
+          <Route path="/imaging-center" element={<ImagingLandingPage />} />
 
-        {/* Dashboards */}
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/profile" element={<ProfilePage />} />
+          {/* Dashboards */}
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile" element={<ProfilePage />} />
 
-        <Route path="/patient-dashboard" element={<PatientDashboard />} />
-        <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
-        <Route path="/staff-dashboard" element={<StaffDashboard />} />
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
-        <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
+          <Route path="/patient-dashboard" element={<PatientDashboard />} />
+          <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
+          <Route path="/staff-dashboard" element={<StaffDashboard />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
 
-        {/* Entity dashboards */}
-        <Route path="/lab/dashboard" element={<LabDashboard />} />
-        <Route path="/pharmacy/dashboard" element={<PharmacyDashboard />} />
-        <Route path="/imaging/dashboard" element={<ImagingDashboard />} />
+          {/* Entity dashboards */}
+          <Route path="/lab/dashboard" element={<LabDashboard />} />
+          <Route path="/pharmacy/dashboard" element={<PharmacyDashboard />} />
+          <Route path="/imaging/dashboard" element={<ImagingDashboard />} />
 
-        {/* Booking */}
-        <Route path="/book-appointment/:doctorId" element={<AppointmentBooking />} />
-        <Route path="/booking-confirmation/:appointmentId" element={<BookingConfirmation />} />
-        <Route path="/doctor-profile/:id" element={<DoctorProfile />} />
+          {/* Booking */}
+          <Route path="/book-appointment/:doctorId" element={<AppointmentBooking />} />
+          <Route path="/booking-confirmation/:appointmentId" element={<BookingConfirmation />} />
+          <Route path="/doctor-profile/:id" element={<DoctorProfile />} />
 
-        {/* 404 */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+          {/* 404 */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
     </>
   );
 }
