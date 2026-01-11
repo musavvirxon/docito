@@ -1,3 +1,4 @@
+// src/components/treatment/EnhancedCreateTreatmentPlanModal.tsx
 import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -83,10 +84,20 @@ interface ProcedureItem {
 }
 
 interface AvailabilitySlot {
-  start_at: string;
+  start_at: string; // "YYYY-MM-DDTHH:MM"
   end_at: string;
   available: boolean;
   reason?: string;
+}
+
+/** ✅ Day meta to show working hours, breaks, blocked, holiday/day off */
+interface DayAvailabilityMeta {
+  date: string;
+  is_holiday: boolean;
+  is_working_day: boolean;
+  working_hours?: { start_time: string; end_time: string };
+  breaks: Array<{ start_time: string; end_time: string; name?: string }>;
+  blocked: Array<{ start_time: string; end_time: string; reason?: string }>;
 }
 
 const EnhancedCreateTreatmentPlanModal = ({
@@ -119,8 +130,12 @@ const EnhancedCreateTreatmentPlanModal = ({
   const [selectedPatientName, setSelectedPatientName] = useState<string>("");
   const [selectedPatientSource, setSelectedPatientSource] = useState<"registered" | "doctor_added" | null>(null);
 
+  // Backend-driven slots
   const [daySlots, setDaySlots] = useState<AvailabilitySlot[]>([]);
   const [loadingDaySlots, setLoadingDaySlots] = useState(false);
+
+  // ✅ NEW: day meta (breaks/blocked/day off)
+  const [dayMeta, setDayMeta] = useState<DayAvailabilityMeta | null>(null);
 
   const [holidayDates, setHolidayDates] = useState<Date[]>([]);
 
@@ -200,10 +215,11 @@ const EnhancedCreateTreatmentPlanModal = ({
       setDaySlots([]);
       setLoadingDaySlots(false);
       setHolidayDates([]);
+      setDayMeta(null);
     }
   }, [open, form]);
 
-  // Load holidays
+  // Load holidays (used to disable holiday days in calendar picker)
   useEffect(() => {
     const loadHolidays = async () => {
       if (!open || !profile?.id) {
@@ -230,25 +246,33 @@ const EnhancedCreateTreatmentPlanModal = ({
     loadHolidays();
   }, [open, profile?.id]);
 
-  // Load availability from backend
+  // ✅ Load availability + meta from backend (doctor hours + clinic hours + breaks + blocked + overrides)
   useEffect(() => {
     const loadDaySlots = async () => {
       if (saveAsTemplate) {
         setDaySlots([]);
+        setDayMeta(null);
         return;
       }
+
       if (!profile?.id) {
         setDaySlots([]);
+        setDayMeta(null);
         return;
       }
+
       if (!currentProcedure.appointment_date) {
         setDaySlots([]);
+        setDayMeta(null);
         return;
       }
 
       setLoadingDaySlots(true);
+      setDayMeta(null);
+
       try {
         const dateStr = format(currentProcedure.appointment_date, "yyyy-MM-dd");
+        const duration = Number(currentProcedure.duration_minutes || 30);
 
         const { data, error } = await supabase.functions.invoke("get-availability", {
           body: {
@@ -256,6 +280,13 @@ const EnhancedCreateTreatmentPlanModal = ({
             entity_id: profile.practice_id ?? undefined,
             from: dateStr,
             to: dateStr,
+
+            // ✅ Make breaks visible and return meta
+            include_breaks: true,
+            return_meta: true,
+
+            // ✅ Make slots match selected duration
+            procedure_duration_minutes: duration,
           },
         });
 
@@ -264,16 +295,26 @@ const EnhancedCreateTreatmentPlanModal = ({
 
         const slots = ((data as any)?.slots ?? []) as AvailabilitySlot[];
         setDaySlots(slots);
+
+        const metaForDay = (data as any)?.meta?.[dateStr] as DayAvailabilityMeta | undefined;
+        setDayMeta(metaForDay ?? null);
       } catch (e: any) {
         console.error("Failed to load availability:", e);
         setDaySlots([]);
+        setDayMeta(null);
       } finally {
         setLoadingDaySlots(false);
       }
     };
 
     loadDaySlots();
-  }, [saveAsTemplate, profile?.id, profile?.practice_id, currentProcedure.appointment_date]);
+  }, [
+    saveAsTemplate,
+    profile?.id,
+    profile?.practice_id,
+    currentProcedure.appointment_date,
+    currentProcedure.duration_minutes,
+  ]);
 
   // Totals (use override duration if set; fallback to procedure default)
   useEffect(() => {
@@ -292,12 +333,14 @@ const EnhancedCreateTreatmentPlanModal = ({
     setTotalDuration(duration);
   }, [procedureItems, procedures]);
 
+  // ✅ derive times from backend slots only
   const timeOptions = useMemo(() => {
     if (!daySlots.length) return [];
+
     const seen = new Set<string>();
     return daySlots
       .map((s) => {
-        const time = s.start_at?.slice(11, 16);
+        const time = s.start_at?.slice(11, 16); // HH:MM
         if (!time || seen.has(time)) return null;
         seen.add(time);
         return { time, available: Boolean(s.available), reason: s.reason };
@@ -330,6 +373,7 @@ const EnhancedCreateTreatmentPlanModal = ({
       setProcedureItems(nextItems);
     }
 
+    // Keep RHF in sync
     form.setValue(
       "procedures",
       nextItems.map((p) => ({
@@ -347,6 +391,7 @@ const EnhancedCreateTreatmentPlanModal = ({
     setCurrentProcedure({ procedure_id: "", priority: "medium", duration_minutes: 30 });
     setSelectedTeeth([]);
     setDaySlots([]);
+    setDayMeta(null);
   };
 
   const handleEditProcedure = (index: number) => {
@@ -383,12 +428,17 @@ const EnhancedCreateTreatmentPlanModal = ({
     if (!profile?.id) throw new Error("Doctor profile not loaded");
 
     const dateStr = format(date, "yyyy-MM-dd");
+    const duration = Number(currentProcedure.duration_minutes || 30);
+
     const { data, error } = await supabase.functions.invoke("get-availability", {
       body: {
         provider_id: profile.id,
         entity_id: profile.practice_id ?? undefined,
         from: dateStr,
         to: dateStr,
+        include_breaks: true,
+        return_meta: false,
+        procedure_duration_minutes: duration,
       },
     });
 
@@ -503,7 +553,7 @@ const EnhancedCreateTreatmentPlanModal = ({
 
       if (doctorError || !doctorData) throw new Error("Doctor profile not found");
 
-      // ✅ Template save (call onSuccess so template list refreshes immediately)
+      // Template save
       if (saveAsTemplate) {
         const { error: templateError } = await supabase.from("treatment_plan_templates").insert({
           doctor_id: doctorData.id,
@@ -526,7 +576,7 @@ const EnhancedCreateTreatmentPlanModal = ({
         if (templateError) throw templateError;
 
         toast.success("Template saved successfully");
-        onSuccess?.(); // ✅ makes it appear immediately in UI (refetch/invalidate)
+        onSuccess?.();
         handleClose();
         return;
       }
@@ -596,20 +646,14 @@ const EnhancedCreateTreatmentPlanModal = ({
             procedure_id: item.procedure_id,
             sequence_order: index + 1,
 
-            // ✅ requires DB column scheduled_date (we added via SQL)
             scheduled_date: item.appointment_date ? format(item.appointment_date, "yyyy-MM-dd") : null,
-
-            // Save override duration (we added via SQL)
             duration_minutes: durationMinutes,
 
             status: "pending",
             notes: item.notes || null,
             tooth_numbers: item.tooth_numbers ?? null,
             cost: proc?.default_cost || 0,
-
             priority: item.priority ?? "medium",
-
-            // ✅ link booked appointment
             appointment_id: appointmentId,
           });
         }
@@ -617,7 +661,6 @@ const EnhancedCreateTreatmentPlanModal = ({
         const { error: proceduresError } = await supabase.from("treatment_plan_procedures").insert(proceduresToInsert);
         if (proceduresError) throw proceduresError;
       } catch (e) {
-        // rollback
         try {
           await supabase.from("treatment_plans").delete().eq("id", planData.id);
         } catch {}
@@ -701,6 +744,8 @@ Please review and confirm the treatment plan in your dashboard.
     setSelectedPatientSource(null);
     setDaySlots([]);
     setLoadingDaySlots(false);
+    setHolidayDates([]);
+    setDayMeta(null);
     onOpenChange(false);
   };
 
@@ -889,7 +934,7 @@ Please review and confirm the treatment plan in your dashboard.
                         </SelectContent>
                       </Select>
                       <p className="text-xs text-muted-foreground">
-                        Defaults from procedure, but you can override for this plan/booking.
+                        Defaults from procedure, but you can override for this plan.
                       </p>
                     </div>
 
@@ -924,7 +969,11 @@ Please review and confirm the treatment plan in your dashboard.
                               )}
                             >
                               <CalendarIcon className="mr-2 h-4 w-4" />
-                              {currentProcedure.appointment_date ? format(currentProcedure.appointment_date, "PPP") : <span>Pick a date</span>}
+                              {currentProcedure.appointment_date ? (
+                                format(currentProcedure.appointment_date, "PPP")
+                              ) : (
+                                <span>Pick a date</span>
+                              )}
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-0">
@@ -939,7 +988,8 @@ Please review and confirm the treatment plan in your dashboard.
                                 });
                               }}
                               disabled={(date) =>
-                                date < new Date() || holidayDates.some((h) => h.toDateString() === date.toDateString())
+                                date < new Date() ||
+                                holidayDates.some((h) => h.toDateString() === date.toDateString())
                               }
                               initialFocus
                             />
@@ -987,6 +1037,62 @@ Please review and confirm the treatment plan in your dashboard.
                             )}
                           </SelectContent>
                         </Select>
+
+                        {/* ✅ NEW: Visible blocked/day off/breaks info */}
+                        <div className="mt-3 rounded-lg border p-3 bg-muted/30">
+                          {!dayMeta ? (
+                            <p className="text-sm text-muted-foreground">Loading day info…</p>
+                          ) : dayMeta.is_holiday ? (
+                            <p className="text-sm font-medium text-destructive">
+                              This day is a holiday. No appointments can be booked.
+                            </p>
+                          ) : !dayMeta.is_working_day ? (
+                            <p className="text-sm font-medium text-amber-700">
+                              Day off (not a working day). No appointments can be booked.
+                            </p>
+                          ) : (
+                            <div className="space-y-2">
+                              <div className="text-sm">
+                                <span className="font-medium">Working hours:</span>{" "}
+                                {dayMeta.working_hours?.start_time} – {dayMeta.working_hours?.end_time}
+                              </div>
+
+                              <div className="text-sm">
+                                <span className="font-medium">Breaks:</span>
+                                {dayMeta.breaks?.length ? (
+                                  <ul className="mt-1 space-y-1 text-muted-foreground">
+                                    {dayMeta.breaks.map((b, i) => (
+                                      <li key={i}>
+                                        • {b.start_time} – {b.end_time} {b.name ? `(${b.name})` : "(Break)"}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                ) : (
+                                  <span className="text-muted-foreground"> None</span>
+                                )}
+                              </div>
+
+                              <div className="text-sm">
+                                <span className="font-medium">Blocked:</span>
+                                {dayMeta.blocked?.length ? (
+                                  <ul className="mt-1 space-y-1 text-muted-foreground">
+                                    {dayMeta.blocked.map((b, i) => (
+                                      <li key={i}>
+                                        • {b.start_time} – {b.end_time} {b.reason ? `(${b.reason})` : "(Blocked)"}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                ) : (
+                                  <span className="text-muted-foreground"> None</span>
+                                )}
+                              </div>
+
+                              <p className="text-xs text-muted-foreground">
+                                Times inside breaks/blocked ranges appear in the time list as disabled with a reason.
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
