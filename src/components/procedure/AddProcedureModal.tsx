@@ -63,6 +63,7 @@ const AddProcedureModal = ({
   open,
   onOpenChange,
   onSuccess,
+  categories: externalCategories = [],
 }: AddProcedureModalProps) => {
   const [loading, setLoading] = useState(false);
 
@@ -103,7 +104,12 @@ const AddProcedureModal = ({
       const authUser = data?.user;
       if (!authUser?.id) {
         setDentistId(null);
-        setCategoryOptions(DEFAULT_PROCEDURE_CATEGORIES);
+        // Still use external categories if provided
+        if (externalCategories.length > 0) {
+          setCategoryOptions(externalCategories);
+        } else {
+          setCategoryOptions(DEFAULT_PROCEDURE_CATEGORIES);
+        }
         return;
       }
 
@@ -117,13 +123,17 @@ const AddProcedureModal = ({
         console.error(doctorError);
         toast.error("Doctor profile not found");
         setDentistId(null);
-        setCategoryOptions(DEFAULT_PROCEDURE_CATEGORIES);
+        if (externalCategories.length > 0) {
+          setCategoryOptions(externalCategories);
+        } else {
+          setCategoryOptions(DEFAULT_PROCEDURE_CATEGORIES);
+        }
         return;
       }
 
       setDentistId(doctor.id);
 
-      // Pull existing categories for this dentist (includes custom values)
+      // Pull existing categories for this dentist (includes custom values stored in DB)
       const { data: rows, error: catErr } = await supabase
         .from("procedures")
         .select("category")
@@ -131,19 +141,34 @@ const AddProcedureModal = ({
 
       if (catErr) {
         console.error(catErr);
-        setCategoryOptions(DEFAULT_PROCEDURE_CATEGORIES);
+        if (externalCategories.length > 0) {
+          setCategoryOptions(externalCategories);
+        } else {
+          setCategoryOptions(DEFAULT_PROCEDURE_CATEGORIES);
+        }
         return;
       }
 
-      const distinct = Array.from(
+      const distinctFromDB = Array.from(
         new Set((rows ?? []).map((r: any) => r.category).filter(Boolean))
       ) as string[];
 
-      setCategoryOptions(mergeCategories(DEFAULT_PROCEDURE_CATEGORIES, distinct));
+      // Also load from localStorage (custom categories)
+      const savedCustomCategories = localStorage.getItem('customProcedureCategories');
+      const localStorageCategories = savedCustomCategories ? JSON.parse(savedCustomCategories) : [];
+      
+      // Merge all sources: DEFAULT + DB + localStorage + external
+      const allCustomValues = [
+        ...distinctFromDB,
+        ...localStorageCategories.map((c: { value: string }) => c.value),
+        ...externalCategories.map(c => c.value),
+      ];
+      
+      setCategoryOptions(mergeCategories(DEFAULT_PROCEDURE_CATEGORIES, allCustomValues));
     };
 
     loadDentistAndCategories();
-  }, [open]);
+  }, [open, externalCategories]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -239,11 +264,14 @@ const AddProcedureModal = ({
         dentist_id: dentistId, // ✅ doctors.id (RLS-safe)
         name: values.name,
         category: finalCategory as any,
-        type: "single_visit" as any,
+        type: hasFollowup ? "multi_visit" as any : "single_visit" as any,
         default_cost: values.default_cost || null,
         notes: values.notes || null,
         tooth_range: selectedTeeth.length > 0 ? selectedTeeth : null,
         informed_consent_template: requiresConsent ? consentTemplate : null,
+        has_followup: hasFollowup,
+        followup_count: hasFollowup ? values.followup_count : null,
+        followup_interval_days: hasFollowup ? values.followup_interval_days : null,
       };
 
       const { error } = await supabase
@@ -251,13 +279,6 @@ const AddProcedureModal = ({
         .insert([procedureData]);
 
       if (error) throw error;
-
-      // followup info is currently not stored in db (your existing behavior)
-      if (hasFollowup && values.followup_count && values.followup_interval_days) {
-        console.log(
-          `Follow-up: ${values.followup_count} appointment(s) every ${values.followup_interval_days} day(s)`
-        );
-      }
 
       toast.success("Procedure created successfully");
 
