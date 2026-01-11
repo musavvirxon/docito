@@ -25,10 +25,22 @@ import PatientSelector from "@/components/patient/PatientSelector";
 import ToothSelector from "@/components/procedure/ToothSelector";
 import { cn } from "@/lib/utils";
 
+const DURATION_OPTIONS_MINUTES = [10, 15, 20, 30, 45, 60, 75, 90, 105, 120, 150, 180];
+
+const formatDuration = (minutes: number) => {
+  if (!minutes || minutes <= 0) return "—";
+  if (minutes < 60) return `${minutes} min`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
+};
+
 const procedureFormSchema = z.object({
   procedure_id: z.string().min(1, "Select a procedure"),
   appointment_date: z.date().optional(),
   appointment_time: z.string().optional(),
+  duration_minutes: z.number().int().min(1).optional(),
   priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
   notes: z.string().optional(),
   tooth_numbers: z.array(z.number()).optional(),
@@ -63,14 +75,15 @@ interface EnhancedCreateTreatmentPlanModalProps {
 interface ProcedureItem {
   procedure_id: string;
   appointment_date?: Date;
-  appointment_time?: string; // "HH:MM"
+  appointment_time?: string;
+  duration_minutes?: number;
   priority?: "low" | "medium" | "high" | "urgent";
   notes?: string;
   tooth_numbers?: number[];
 }
 
 interface AvailabilitySlot {
-  start_at: string; // "YYYY-MM-DDTHH:MM:SS" OR "YYYY-MM-DDTHH:MM"
+  start_at: string;
   end_at: string;
   available: boolean;
   reason?: string;
@@ -96,6 +109,7 @@ const EnhancedCreateTreatmentPlanModal = ({
   const [currentProcedure, setCurrentProcedure] = useState<ProcedureItem>({
     procedure_id: "",
     priority: "medium",
+    duration_minutes: 30,
   });
 
   const [selectedTeeth, setSelectedTeeth] = useState<number[]>([]);
@@ -105,11 +119,9 @@ const EnhancedCreateTreatmentPlanModal = ({
   const [selectedPatientName, setSelectedPatientName] = useState<string>("");
   const [selectedPatientSource, setSelectedPatientSource] = useState<"registered" | "doctor_added" | null>(null);
 
-  // Backend-driven slots
   const [daySlots, setDaySlots] = useState<AvailabilitySlot[]>([]);
   const [loadingDaySlots, setLoadingDaySlots] = useState(false);
 
-  // Optional holidays
   const [holidayDates, setHolidayDates] = useState<Date[]>([]);
 
   const isDentist =
@@ -153,17 +165,18 @@ const EnhancedCreateTreatmentPlanModal = ({
           priority: p.priority || "medium",
           notes: p.notes || "",
           tooth_numbers: p.tooth_numbers || [],
+          duration_minutes: Number(p.duration_minutes || 30),
         }));
 
         setProcedureItems(templateProcedures);
 
-        // Keep RHF in sync
         form.setValue(
           "procedures",
           templateProcedures.map((p) => ({
             procedure_id: p.procedure_id,
             appointment_date: p.appointment_date,
             appointment_time: p.appointment_time,
+            duration_minutes: p.duration_minutes,
             priority: p.priority,
             notes: p.notes,
             tooth_numbers: p.tooth_numbers,
@@ -180,7 +193,7 @@ const EnhancedCreateTreatmentPlanModal = ({
       form.reset();
       setProcedureItems([]);
       form.setValue("procedures", [] as any, { shouldValidate: false, shouldDirty: false });
-      setCurrentProcedure({ procedure_id: "", priority: "medium" });
+      setCurrentProcedure({ procedure_id: "", priority: "medium", duration_minutes: 30 });
       setSelectedTeeth([]);
       setSelectedPatientName("");
       setSelectedPatientSource(null);
@@ -262,7 +275,7 @@ const EnhancedCreateTreatmentPlanModal = ({
     loadDaySlots();
   }, [saveAsTemplate, profile?.id, profile?.practice_id, currentProcedure.appointment_date]);
 
-  // Totals
+  // Totals (use override duration if set; fallback to procedure default)
   useEffect(() => {
     let cost = 0;
     let duration = 0;
@@ -271,7 +284,7 @@ const EnhancedCreateTreatmentPlanModal = ({
       const proc = procedures.find((p) => p.id === item.procedure_id);
       if (proc) {
         cost += Number(proc.default_cost || 0);
-        duration += Number(proc.duration_minutes || 30);
+        duration += Number(item.duration_minutes ?? proc.duration_minutes ?? 30);
       }
     });
 
@@ -279,14 +292,12 @@ const EnhancedCreateTreatmentPlanModal = ({
     setTotalDuration(duration);
   }, [procedureItems, procedures]);
 
-  // ✅ NO HARDCODED SLOTS: derive times from backend slots only
   const timeOptions = useMemo(() => {
     if (!daySlots.length) return [];
-
     const seen = new Set<string>();
     return daySlots
       .map((s) => {
-        const time = s.start_at?.slice(11, 16); // HH:MM
+        const time = s.start_at?.slice(11, 16);
         if (!time || seen.has(time)) return null;
         seen.add(time);
         return { time, available: Boolean(s.available), reason: s.reason };
@@ -302,6 +313,7 @@ const EnhancedCreateTreatmentPlanModal = ({
 
     const procedureToAdd: ProcedureItem = {
       ...currentProcedure,
+      duration_minutes: Number(currentProcedure.duration_minutes || 30),
       tooth_numbers: selectedTeeth.length > 0 ? selectedTeeth : undefined,
     };
 
@@ -324,6 +336,7 @@ const EnhancedCreateTreatmentPlanModal = ({
         procedure_id: p.procedure_id,
         appointment_date: p.appointment_date,
         appointment_time: p.appointment_time,
+        duration_minutes: p.duration_minutes,
         priority: p.priority,
         notes: p.notes,
         tooth_numbers: p.tooth_numbers,
@@ -331,7 +344,7 @@ const EnhancedCreateTreatmentPlanModal = ({
       { shouldValidate: false, shouldDirty: true }
     );
 
-    setCurrentProcedure({ procedure_id: "", priority: "medium" });
+    setCurrentProcedure({ procedure_id: "", priority: "medium", duration_minutes: 30 });
     setSelectedTeeth([]);
     setDaySlots([]);
   };
@@ -353,6 +366,7 @@ const EnhancedCreateTreatmentPlanModal = ({
         procedure_id: p.procedure_id,
         appointment_date: p.appointment_date,
         appointment_time: p.appointment_time,
+        duration_minutes: p.duration_minutes,
         priority: p.priority,
         notes: p.notes,
         tooth_numbers: p.tooth_numbers,
@@ -364,11 +378,7 @@ const EnhancedCreateTreatmentPlanModal = ({
   const getProcedureName = (procedureId: string) => procedures.find((p) => p.id === procedureId)?.name || "Unknown";
   const getProcedureCost = (procedureId: string) => procedures.find((p) => p.id === procedureId)?.default_cost || 0;
 
-  // -----------------------------
-  // ✅ Point 3: Book selected slots as real appointments,
-  // and link them to treatment_plan_procedures.appointment_id
-  // -----------------------------
-
+  // --- Booking helpers (create appointment + link via appointment_id) ---
   const assertSlotAvailable = async (date: Date, timeHHMM: string) => {
     if (!profile?.id) throw new Error("Doctor profile not loaded");
 
@@ -393,14 +403,12 @@ const EnhancedCreateTreatmentPlanModal = ({
   };
 
   const insertAppointmentWithFallback = async (payload: any) => {
-    // Try insert with optional columns first; if DB doesn't have them, retry without.
     const { data, error } = await supabase.from("appointments").insert(payload).select("id").single();
     if (!error) return data.id as string;
 
     const msg = (error as any)?.message || "";
     const retry = { ...payload };
 
-    // If your appointments table doesn't have these columns, it will fail. Retry without them.
     if (msg.includes("procedure_id")) delete retry.procedure_id;
     if (msg.includes("practice_id")) delete retry.practice_id;
 
@@ -433,7 +441,6 @@ const EnhancedCreateTreatmentPlanModal = ({
       treatmentPlanTitle,
     } = args;
 
-    // Validate availability again right before booking
     await assertSlotAvailable(date, startTimeHHMM);
 
     const [hh, mm] = startTimeHHMM.split(":").map(Number);
@@ -450,8 +457,6 @@ const EnhancedCreateTreatmentPlanModal = ({
       end_time: endTimeHHMM,
       status: "confirmed",
       notes: `Booked from Treatment Plan: "${treatmentPlanTitle}"\nProcedure: ${procedureName}`,
-
-      // Optional fields (fallback handles if columns don't exist)
       procedure_id: procedureId,
       practice_id: profile?.practice_id ?? null,
     };
@@ -498,6 +503,7 @@ const EnhancedCreateTreatmentPlanModal = ({
 
       if (doctorError || !doctorData) throw new Error("Doctor profile not found");
 
+      // ✅ Template save (call onSuccess so template list refreshes immediately)
       if (saveAsTemplate) {
         const { error: templateError } = await supabase.from("treatment_plan_templates").insert({
           doctor_id: doctorData.id,
@@ -508,9 +514,10 @@ const EnhancedCreateTreatmentPlanModal = ({
           template_data: {
             procedures: procedureItems.map((p) => ({
               procedure_id: p.procedure_id,
-              priority: p.priority,
-              notes: p.notes,
-              tooth_numbers: p.tooth_numbers,
+              priority: p.priority ?? "medium",
+              notes: p.notes ?? "",
+              tooth_numbers: p.tooth_numbers ?? [],
+              duration_minutes: Number(p.duration_minutes || 30),
             })),
             priority: values.priority ?? "medium",
           },
@@ -519,6 +526,7 @@ const EnhancedCreateTreatmentPlanModal = ({
         if (templateError) throw templateError;
 
         toast.success("Template saved successfully");
+        onSuccess?.(); // ✅ makes it appear immediately in UI (refetch/invalidate)
         handleClose();
         return;
       }
@@ -547,8 +555,6 @@ const EnhancedCreateTreatmentPlanModal = ({
 
       if (planError || !planData) throw planError;
 
-      // ✅ Point 3 behavior:
-      // For each scheduled procedure, create an appointment AND store appointment_id on treatment_plan_procedures.
       const createdAppointmentIds: string[] = [];
 
       try {
@@ -561,10 +567,11 @@ const EnhancedCreateTreatmentPlanModal = ({
           const hasDate = Boolean(item.appointment_date);
           const hasTime = Boolean(item.appointment_time);
 
-          // If scheduled, must have BOTH
           if (hasDate !== hasTime) {
             throw new Error("For a scheduled procedure you must select BOTH date and time.");
           }
+
+          const durationMinutes = Number(item.duration_minutes ?? proc?.duration_minutes ?? 30);
 
           let appointmentId: string | null = null;
 
@@ -577,7 +584,7 @@ const EnhancedCreateTreatmentPlanModal = ({
               startTimeHHMM: item.appointment_time as string,
               procedureId: proc?.id || null,
               procedureName: proc?.name || "Procedure",
-              durationMinutes: Number(proc?.duration_minutes || 30),
+              durationMinutes,
               treatmentPlanTitle: values.title,
             });
 
@@ -588,16 +595,21 @@ const EnhancedCreateTreatmentPlanModal = ({
             treatment_plan_id: planData.id,
             procedure_id: item.procedure_id,
             sequence_order: index + 1,
+
+            // ✅ requires DB column scheduled_date (we added via SQL)
             scheduled_date: item.appointment_date ? format(item.appointment_date, "yyyy-MM-dd") : null,
+
+            // Save override duration (we added via SQL)
+            duration_minutes: durationMinutes,
+
             status: "pending",
             notes: item.notes || null,
             tooth_numbers: item.tooth_numbers ?? null,
             cost: proc?.default_cost || 0,
 
-            // Needs DB column: treatment_plan_procedures.priority
             priority: item.priority ?? "medium",
 
-            // Needs DB column: treatment_plan_procedures.appointment_id
+            // ✅ link booked appointment
             appointment_id: appointmentId,
           });
         }
@@ -605,7 +617,7 @@ const EnhancedCreateTreatmentPlanModal = ({
         const { error: proceduresError } = await supabase.from("treatment_plan_procedures").insert(proceduresToInsert);
         if (proceduresError) throw proceduresError;
       } catch (e) {
-        // Best-effort rollback:
+        // rollback
         try {
           await supabase.from("treatment_plans").delete().eq("id", planData.id);
         } catch {}
@@ -622,7 +634,8 @@ const EnhancedCreateTreatmentPlanModal = ({
         const procedureDetails = procedureItems
           .map((item) => {
             const proc = procedures.find((p) => p.id === item.procedure_id);
-            return `- ${proc?.name || "Procedure"}: $${proc?.default_cost || 0}${
+            const d = Number(item.duration_minutes ?? proc?.duration_minutes ?? 30);
+            return `- ${proc?.name || "Procedure"}: $${proc?.default_cost || 0} (${formatDuration(d)})${
               item.appointment_date
                 ? ` (Scheduled: ${format(item.appointment_date, "PPP")}${
                     item.appointment_time ? ` at ${item.appointment_time}` : ""
@@ -680,7 +693,7 @@ Please review and confirm the treatment plan in your dashboard.
     form.reset();
     setProcedureItems([]);
     form.setValue("procedures", [] as any, { shouldValidate: false, shouldDirty: false });
-    setCurrentProcedure({ procedure_id: "", priority: "medium" });
+    setCurrentProcedure({ procedure_id: "", priority: "medium", duration_minutes: 30 });
     setSelectedTeeth([]);
     setEditingProcedureIndex(null);
     setSaveAsTemplate(false);
@@ -836,7 +849,14 @@ Please review and confirm the treatment plan in your dashboard.
                       <label className="text-sm font-medium">Procedure/Service *</label>
                       <Select
                         value={currentProcedure.procedure_id}
-                        onValueChange={(value) => setCurrentProcedure({ ...currentProcedure, procedure_id: value })}
+                        onValueChange={(value) => {
+                          const proc = procedures.find((p) => p.id === value);
+                          setCurrentProcedure((prev) => ({
+                            ...prev,
+                            procedure_id: value,
+                            duration_minutes: Number(prev.duration_minutes ?? proc?.duration_minutes ?? 30),
+                          }));
+                        }}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select procedure" />
@@ -844,11 +864,33 @@ Please review and confirm the treatment plan in your dashboard.
                         <SelectContent>
                           {procedures.map((proc) => (
                             <SelectItem key={proc.id} value={proc.id}>
-                              {proc.name} - ${proc.default_cost || 0}
+                              {proc.name} - ${proc.default_cost || 0} • {formatDuration(Number(proc.duration_minutes || 30))}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Duration</label>
+                      <Select
+                        value={String(currentProcedure.duration_minutes || 30)}
+                        onValueChange={(v) => setCurrentProcedure((prev) => ({ ...prev, duration_minutes: Number(v) }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {DURATION_OPTIONS_MINUTES.map((m) => (
+                            <SelectItem key={m} value={String(m)}>
+                              {formatDuration(m)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        Defaults from procedure, but you can override for this plan/booking.
+                      </p>
                     </div>
 
                     <div className="space-y-2">
@@ -882,11 +924,7 @@ Please review and confirm the treatment plan in your dashboard.
                               )}
                             >
                               <CalendarIcon className="mr-2 h-4 w-4" />
-                              {currentProcedure.appointment_date ? (
-                                format(currentProcedure.appointment_date, "PPP")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
+                              {currentProcedure.appointment_date ? format(currentProcedure.appointment_date, "PPP") : <span>Pick a date</span>}
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-0">
@@ -901,8 +939,7 @@ Please review and confirm the treatment plan in your dashboard.
                                 });
                               }}
                               disabled={(date) =>
-                                date < new Date() ||
-                                holidayDates.some((h) => h.toDateString() === date.toDateString())
+                                date < new Date() || holidayDates.some((h) => h.toDateString() === date.toDateString())
                               }
                               initialFocus
                             />
@@ -916,9 +953,7 @@ Please review and confirm the treatment plan in your dashboard.
                         <label className="text-sm font-medium">Schedule Time</label>
                         <Select
                           value={currentProcedure.appointment_time}
-                          onValueChange={(value) =>
-                            setCurrentProcedure({ ...currentProcedure, appointment_time: value })
-                          }
+                          onValueChange={(value) => setCurrentProcedure({ ...currentProcedure, appointment_time: value })}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select time">
@@ -1000,6 +1035,7 @@ Please review and confirm the treatment plan in your dashboard.
                           <div className="flex items-center gap-2 mb-2">
                             <span className="font-medium">{getProcedureName(item.procedure_id)}</span>
                             <Badge variant="outline">${getProcedureCost(item.procedure_id)}</Badge>
+                            <Badge variant="secondary">{formatDuration(Number(item.duration_minutes || 30))}</Badge>
                             {item.priority && <Badge className={priorityColors[item.priority]}>{item.priority}</Badge>}
                           </div>
 
