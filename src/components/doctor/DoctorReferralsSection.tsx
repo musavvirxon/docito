@@ -57,6 +57,7 @@ export function DoctorReferralsSection() {
     try {
       const term = q.trim();
 
+      // ✅ Registered patients only
       const { data, error } = await supabase
         .from("profiles")
         .select("user_id, full_name, email, phone")
