@@ -11,6 +11,7 @@ interface AppointmentBlockProps {
   appointment: CalendarAppointment;
   compact?: boolean;
   onClick?: () => void;
+  className?: string; // ✅ added
 }
 
 const typeIcons: Record<AppointmentType, typeof Video> = {
@@ -28,7 +29,7 @@ const statusColors: Record<string, string> = {
   'no-show': 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800',
 };
 
-const AppointmentBlock = memo(({ appointment, compact = false, onClick }: AppointmentBlockProps) => {
+const AppointmentBlock = memo(({ appointment, compact = false, onClick, className }: AppointmentBlockProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const TypeIcon = typeIcons[appointment.appointment_type || 'in-person'];
   const statusColor = statusColors[appointment.status] || statusColors.scheduled;
@@ -54,7 +55,8 @@ const AppointmentBlock = memo(({ appointment, compact = false, onClick }: Appoin
             'group relative rounded-lg border cursor-pointer transition-all duration-200',
             'bg-card hover:shadow-lg hover:shadow-primary/5',
             statusColor,
-            compact ? 'p-2' : 'p-3'
+            compact ? 'p-2' : 'p-3',
+            className // ✅ added
           )}
         >
           <div className="flex items-start gap-3">
@@ -69,10 +71,7 @@ const AppointmentBlock = memo(({ appointment, compact = false, onClick }: Appoin
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className={cn(
-                  'font-medium truncate',
-                  compact ? 'text-xs' : 'text-sm'
-                )}>
+                <span className={cn('font-medium truncate', compact ? 'text-xs' : 'text-sm')}>
                   {appointment.patient_name}
                 </span>
                 {appointment.source === 'referral' && (
@@ -81,10 +80,7 @@ const AppointmentBlock = memo(({ appointment, compact = false, onClick }: Appoin
               </div>
 
               <div className="flex items-center gap-2 mt-0.5">
-                <span className={cn(
-                  'text-muted-foreground flex items-center gap-1',
-                  compact ? 'text-[10px]' : 'text-xs'
-                )}>
+                <span className={cn('text-muted-foreground flex items-center gap-1', compact ? 'text-[10px]' : 'text-xs')}>
                   <Clock className="h-3 w-3" />
                   {appointment.start_time} - {appointment.end_time}
                 </span>
@@ -98,19 +94,14 @@ const AppointmentBlock = memo(({ appointment, compact = false, onClick }: Appoin
               )}
             </div>
 
-            {/* Status Pill */}
             <Badge
               variant="outline"
-              className={cn(
-                'capitalize shrink-0 text-[10px] h-5',
-                compact && 'hidden'
-              )}
+              className={cn('capitalize shrink-0 text-[10px] h-5', compact && 'hidden')}
             >
               {appointment.status}
             </Badge>
           </div>
 
-          {/* Animated selection indicator */}
           <motion.div
             initial={false}
             animate={{ scaleX: isHovered ? 1 : 0 }}
@@ -121,7 +112,6 @@ const AppointmentBlock = memo(({ appointment, compact = false, onClick }: Appoin
 
       <HoverCardContent align="start" className="w-80">
         <div className="space-y-3">
-          {/* Patient Info */}
           <div className="flex items-start gap-3">
             <Avatar className="h-12 w-12">
               <AvatarImage src={appointment.patient_avatar} />
@@ -148,7 +138,6 @@ const AppointmentBlock = memo(({ appointment, compact = false, onClick }: Appoin
             </div>
           </div>
 
-          {/* Appointment Details */}
           <div className="space-y-2 text-sm">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Time</span>
@@ -176,7 +165,6 @@ const AppointmentBlock = memo(({ appointment, compact = false, onClick }: Appoin
             )}
           </div>
 
-          {/* Notes */}
           {appointment.notes && (
             <div className="pt-2 border-t">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
