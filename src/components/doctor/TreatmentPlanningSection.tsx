@@ -1,3 +1,4 @@
+// src/components/doctor/TreatmentPlanningSection.tsx
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -15,21 +16,23 @@ import {
   Video,
   CalendarPlus,
 } from "lucide-react";
+
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
+
 import EnhancedCreateTreatmentPlanModal from "@/components/treatment/EnhancedCreateTreatmentPlanModal";
 import EnhancedTreatmentPlanDetailModal from "@/components/treatment/EnhancedTreatmentPlanDetailModal";
 import MedicationManagementModal from "@/components/treatment/MedicationManagementModal";
-import { useTranslation } from "react-i18next";
 
 interface TreatmentPlanTemplate {
   id: string;
@@ -42,17 +45,25 @@ interface TreatmentPlanTemplate {
   doctor_id: string;
 }
 
-type TreatmentPlanStatus = "draft" | "published" | "in_progress" | "completed" | "cancelled" | "pending_confirmation" | "confirmed";
+type TreatmentPlanStatus =
+  | "draft"
+  | "published"
+  | "pending_confirmation"
+  | "confirmed"
+  | "in_progress"
+  | "completed"
+  | "cancelled"
+  | string;
 
 interface TreatmentPlan {
   id: string;
   doctor_id: string;
-  patient_id: string | null;          // registered patient (profiles.user_id)
-  doctor_patient_id: string | null;   // doctor-added patient (doctor_patients.id)
+  patient_id: string | null; // registered patient (profiles.user_id)
+  doctor_patient_id: string | null; // doctor-added patient (doctor_patients.id)
   title: string;
-  notes?: string | null;              // real DB column in your create modal
-  description?: string | null;         // keep compat if exists
-  status: TreatmentPlanStatus | string;
+  notes?: string | null;
+  description?: string | null; // keep compat if older UI uses it
+  status: TreatmentPlanStatus;
   total_cost: number | null;
   created_at: string;
   published_at?: string | null;
@@ -64,9 +75,9 @@ interface TreatmentPlan {
 type PatientSource = "registered" | "doctor_added";
 
 /**
- * We prefix filter values to avoid collisions between:
- * - profiles.user_id (registered)
- * - doctor_patients.id (doctor-added)
+ * Prefix ids so filtering never collides:
+ * - reg:<profiles.user_id>
+ * - dp:<doctor_patients.id>
  */
 interface PatientOption {
   key: `reg:${string}` | `dp:${string}`;
@@ -96,8 +107,10 @@ const TreatmentPlanningSection = () => {
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<TreatmentPlan | null>(null);
+
   const [showMedicationModal, setShowMedicationModal] = useState(false);
   const [selectedPlanForMeds, setSelectedPlanForMeds] = useState<string | null>(null);
+
   const [activeTab, setActiveTab] = useState("plans");
 
   // Templates
@@ -120,35 +133,20 @@ const TreatmentPlanningSection = () => {
 
   const statusOptions = useMemo(
     () => [
-      { value: "all", label: t("doctor.treatmentPlanning.allStatuses") },
-      { value: "draft", label: t("doctor.treatmentPlanning.draft") },
-      { value: "published", label: t("doctor.treatmentPlanning.published") },
-      { value: "in_progress", label: t("doctor.treatmentPlanning.inProgress") },
-      { value: "completed", label: t("doctor.treatmentPlanning.completed") },
-      // if your DB uses these, they won’t break UI:
+      { value: "all", label: t("doctor.treatmentPlanning.allStatuses") || "All" },
+      { value: "draft", label: t("doctor.treatmentPlanning.draft") || "Draft" },
+      { value: "published", label: t("doctor.treatmentPlanning.published") || "Published" },
       { value: "pending_confirmation", label: "Pending confirmation" },
       { value: "confirmed", label: "Confirmed" },
+      { value: "in_progress", label: t("doctor.treatmentPlanning.inProgress") || "In progress" },
+      { value: "completed", label: t("doctor.treatmentPlanning.completed") || "Completed" },
       { value: "cancelled", label: "Cancelled" },
     ],
     [t]
   );
 
-  // Action handlers
-  const handleMessagePatient = (patientKey: string) => {
-    navigate(`/messages?recipient=${patientKey}`);
-  };
-
-  const handleScheduleAppointment = (patientKey: string) => {
-    navigate(`/doctor-dashboard?section=calendar&patient=${patientKey}`);
-  };
-
-  const handleVideoCall = (patientKey: string) => {
-    navigate(`/video-call?patient=${patientKey}`);
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
-  };
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
 
   const getStatusBadgeColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -171,10 +169,17 @@ const TreatmentPlanningSection = () => {
 
   const getPatientName = (plan: TreatmentPlan) => {
     const key = getPlanPatientKey(plan);
-    if (!key) return t("doctor.treatmentPlanning.unknownPatient");
+    if (!key) return t("doctor.treatmentPlanning.unknownPatient") || "Unknown patient";
     const p = patients.find((x) => x.key === key);
-    return p?.name || t("doctor.treatmentPlanning.unknownPatient");
+    return p?.name || (t("doctor.treatmentPlanning.unknownPatient") || "Unknown patient");
   };
+
+  // Quick actions (work for both types because we pass prefixed key)
+  const handleMessagePatient = (patientKey: string) => navigate(`/messages?recipient=${patientKey}`);
+  const handleScheduleAppointment = (patientKey: string) => navigate(`/doctor-dashboard?section=calendar&patient=${patientKey}`);
+  const handleVideoCall = (patientKey: string) => navigate(`/video-call?patient=${patientKey}`);
+
+  // ---------- DATA LOADING (REAL ONLY, NO HARDCODE) ----------
 
   const loadDoctorProfileId = useCallback(async () => {
     if (!user?.id) {
@@ -182,14 +187,10 @@ const TreatmentPlanningSection = () => {
       return null;
     }
 
-    const { data, error } = await supabase
-      .from("doctors")
-      .select("id")
-      .eq("user_id", user.id)
-      .maybeSingle();
+    const { data, error } = await supabase.from("doctors").select("id").eq("user_id", user.id).maybeSingle();
 
     if (error) {
-      console.error(error);
+      console.error("Failed to load doctor profile:", error);
       toast.error("Failed to load doctor profile");
       setDoctorProfileId(null);
       return null;
@@ -200,38 +201,34 @@ const TreatmentPlanningSection = () => {
     return id;
   }, [user?.id]);
 
-  const fetchTreatmentPlans = useCallback(
-    async (doctorIdParam?: string | null) => {
-      const did = doctorIdParam ?? doctorProfileId;
-      if (!did) {
-        setTreatmentPlans([]);
-        return;
-      }
+  const fetchTreatmentPlans = useCallback(async (doctorIdParam?: string | null) => {
+    const did = doctorIdParam ?? doctorProfileId;
+    if (!did) {
+      setTreatmentPlans([]);
+      return;
+    }
 
-      try {
-        const { data, error } = await supabase
-          .from("treatment_plans")
-          .select("*")
-          .eq("doctor_id", did)
-          .order("created_at", { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from("treatment_plans")
+        .select("*")
+        .eq("doctor_id", did)
+        .order("created_at", { ascending: false });
 
-        if (error) throw error;
-
-        setTreatmentPlans((data || []) as TreatmentPlan[]);
-      } catch (e: any) {
-        console.error(e);
-        toast.error(t("doctor.treatmentPlanning.loadFailed") + ": " + (e?.message || "Unknown error"));
-        setTreatmentPlans([]);
-      }
-    },
-    [doctorProfileId, t]
-  );
+      if (error) throw error;
+      setTreatmentPlans((data || []) as TreatmentPlan[]);
+    } catch (e: any) {
+      console.error("Failed to load plans:", e);
+      toast.error("Failed to load treatment plans: " + (e?.message || "Unknown error"));
+      setTreatmentPlans([]);
+    }
+  }, [doctorProfileId]);
 
   /**
-   * ✅ REAL patients list that includes:
-   * - ALL doctor-added patients (doctor_patients) for this doctor (active)
-   * - Registered patients the doctor has seen (appointments -> profiles)
-   * - Registered patients that appear in plans (treatment_plans.patient_id -> profiles)
+   * REAL patients list includes:
+   * 1) ALL doctor_added patients for this doctor (doctor_patients)
+   * 2) registered patients who appear in appointments for this doctor (appointments.patient_id)
+   * 3) registered patients who appear in plans (treatment_plans.patient_id)
    */
   const fetchPatients = useCallback(
     async (doctorIdParam?: string | null, plansParam?: TreatmentPlan[]) => {
@@ -242,12 +239,11 @@ const TreatmentPlanningSection = () => {
       }
 
       try {
-        // 1) doctor-added patients (always include them)
+        // 1) doctor added
         const { data: dp, error: dpErr } = await supabase
           .from("doctor_patients")
           .select("id, full_name, email, phone, status")
           .eq("doctor_id", did)
-          .eq("status", "active")
           .order("full_name");
 
         if (dpErr) throw dpErr;
@@ -261,22 +257,13 @@ const TreatmentPlanningSection = () => {
           phone: p.phone ?? null,
         }));
 
-        // 2) registered patients from appointments (doctor has seen them)
-        const { data: ap, error: apErr } = await supabase
-          .from("appointments")
-          .select("patient_id")
-          .eq("doctor_id", did);
-
+        // 2) registered from appointments
+        const { data: ap, error: apErr } = await supabase.from("appointments").select("patient_id").eq("doctor_id", did);
         if (apErr) throw apErr;
-
         const apIds = (ap || []).map((x: any) => x.patient_id).filter(Boolean) as string[];
 
-        // 3) registered patients that appear in treatment plans too (important for newly created plans)
-        const planIds =
-          (plansParam || treatmentPlans)
-            .map((p) => p.patient_id)
-            .filter(Boolean) as string[];
-
+        // 3) registered from plans
+        const planIds = ((plansParam || treatmentPlans).map((p) => p.patient_id).filter(Boolean) as string[]) || [];
         const registeredIds = Array.from(new Set([...apIds, ...planIds]));
 
         let registered: PatientOption[] = [];
@@ -286,7 +273,7 @@ const TreatmentPlanningSection = () => {
             .select("user_id, full_name, email, phone")
             .in("user_id", registeredIds);
 
-          // If RLS blocks profiles, don’t crash the UI; just show minimal
+          // if RLS blocks, note it but don't break UI
           if (!prErr && pr?.length) {
             registered = pr.map((p: any) => ({
               key: `reg:${p.user_id}`,
@@ -297,7 +284,6 @@ const TreatmentPlanningSection = () => {
               phone: p.phone ?? null,
             }));
           } else {
-            // fallback minimal if profiles is not readable
             registered = registeredIds.map((id) => ({
               key: `reg:${id}`,
               id,
@@ -309,47 +295,43 @@ const TreatmentPlanningSection = () => {
           }
         }
 
-        // Merge + sort
         const merged = [...doctorAdded, ...registered].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
         setPatients(merged);
       } catch (e: any) {
-        console.error("Error fetching patients:", e);
-        toast.error("Failed to load patients");
+        console.error("Failed to load patients:", e);
+        toast.error("Failed to load patients: " + (e?.message || "Unknown error"));
         setPatients([]);
       }
     },
     [doctorProfileId, treatmentPlans]
   );
 
-  const fetchTemplates = useCallback(
-    async (doctorIdParam?: string | null) => {
-      const did = doctorIdParam ?? doctorProfileId;
-      if (!did) {
-        setTemplates([]);
-        return;
-      }
+  const fetchTemplates = useCallback(async (doctorIdParam?: string | null) => {
+    const did = doctorIdParam ?? doctorProfileId;
+    if (!did) {
+      setTemplates([]);
+      return;
+    }
 
-      setTemplatesLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from("treatment_plan_templates")
-          .select("*")
-          .or(`doctor_id.eq.${did},is_public.eq.true`)
-          .order("created_at", { ascending: false });
+    setTemplatesLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("treatment_plan_templates")
+        .select("*")
+        .or(`doctor_id.eq.${did},is_public.eq.true`)
+        .order("created_at", { ascending: false });
 
-        if (error) throw error;
-        setTemplates((data || []) as TreatmentPlanTemplate[]);
-      } catch (e: any) {
-        console.error(e);
-        setTemplates([]);
-      } finally {
-        setTemplatesLoading(false);
-      }
-    },
-    [doctorProfileId]
-  );
+      if (error) throw error;
+      setTemplates((data || []) as TreatmentPlanTemplate[]);
+    } catch (e) {
+      console.error("Failed to load templates:", e);
+      setTemplates([]);
+    } finally {
+      setTemplatesLoading(false);
+    }
+  }, [doctorProfileId]);
 
-  // Boot: load doctor profile id, then load everything real
+  // Boot: load doctor profile id then load plans/templates
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -366,7 +348,7 @@ const TreatmentPlanningSection = () => {
     })();
   }, [loadDoctorProfileId, fetchTreatmentPlans, fetchTemplates]);
 
-  // When plans change, refresh patients so newly created plans resolve names immediately
+  // Refresh patients whenever plans change (so new plans resolve patient name immediately)
   useEffect(() => {
     if (!doctorProfileId) return;
     fetchPatients(doctorProfileId, treatmentPlans);
@@ -392,7 +374,7 @@ const TreatmentPlanningSection = () => {
     };
   }, [doctorProfileId, fetchTreatmentPlans]);
 
-  // Filtering
+  // ---------- FILTERING ----------
   useEffect(() => {
     let filtered = treatmentPlans;
 
@@ -406,31 +388,31 @@ const TreatmentPlanningSection = () => {
     }
 
     if (statusFilter !== "all") {
-      filtered = filtered.filter((plan) => plan.status === statusFilter);
+      filtered = filtered.filter((plan) => String(plan.status) === statusFilter);
     }
 
     if (patientFilter !== "all") {
       filtered = filtered.filter((plan) => {
-        const k = getPlanPatientKey(plan);
-        return k === patientFilter;
+        const key = getPlanPatientKey(plan);
+        return key === patientFilter;
       });
     }
 
     setFilteredPlans(filtered);
   }, [treatmentPlans, searchTerm, statusFilter, patientFilter]);
 
-  // Plan actions
+  // ---------- ACTIONS ----------
   const handleDeletePlan = async (id: string) => {
-    if (!confirm(t("doctor.treatmentPlanning.deleteConfirm"))) return;
+    if (!confirm(t("doctor.treatmentPlanning.deleteConfirm") || "Delete this plan?")) return;
 
     try {
       const { error } = await supabase.from("treatment_plans").delete().eq("id", id);
       if (error) throw error;
 
-      toast.success(t("doctor.treatmentPlanning.deleteSuccess"));
+      toast.success(t("doctor.treatmentPlanning.deleteSuccess") || "Deleted");
       if (doctorProfileId) fetchTreatmentPlans(doctorProfileId);
     } catch (e: any) {
-      toast.error(t("doctor.treatmentPlanning.deleteFailed") + ": " + (e?.message || "Unknown error"));
+      toast.error((t("doctor.treatmentPlanning.deleteFailed") || "Delete failed") + ": " + (e?.message || "Unknown error"));
     }
   };
 
@@ -443,25 +425,24 @@ const TreatmentPlanningSection = () => {
 
       if (error) throw error;
 
-      toast.success(t("doctor.treatmentPlanning.publishSuccess"));
+      toast.success(t("doctor.treatmentPlanning.publishSuccess") || "Published");
       if (doctorProfileId) fetchTreatmentPlans(doctorProfileId);
     } catch (e: any) {
-      toast.error(t("doctor.treatmentPlanning.publishFailed") + ": " + (e?.message || "Unknown error"));
+      toast.error((t("doctor.treatmentPlanning.publishFailed") || "Publish failed") + ": " + (e?.message || "Unknown error"));
     }
   };
 
-  // Templates actions
   const handleDeleteTemplate = async (templateId: string) => {
-    if (!confirm("Are you sure you want to delete this template?")) return;
+    if (!confirm("Delete this template?")) return;
 
     try {
       const { error } = await supabase.from("treatment_plan_templates").delete().eq("id", templateId);
       if (error) throw error;
 
-      toast.success("Template deleted successfully");
+      toast.success("Template deleted");
       if (doctorProfileId) fetchTemplates(doctorProfileId);
     } catch (e: any) {
-      toast.error("Failed to delete template: " + (e?.message || "Unknown error"));
+      toast.error("Failed to delete template: " + ((e as any)?.message || "Unknown error"));
     }
   };
 
@@ -469,6 +450,11 @@ const TreatmentPlanningSection = () => {
     setApplyingTemplateData(template.template_data);
     setShowCreateModal(true);
     toast.success(`Applying template: ${template.name}`);
+  };
+
+  const handleMedicationManagement = (plan: TreatmentPlan) => {
+    setSelectedPlanForMeds(plan.id);
+    setShowMedicationModal(true);
   };
 
   const filteredTemplates = useMemo(() => {
@@ -481,17 +467,13 @@ const TreatmentPlanningSection = () => {
     });
   }, [templates, templateSearchTerm, templateCategoryFilter]);
 
-  const handleMedicationManagement = (plan: TreatmentPlan) => {
-    setSelectedPlanForMeds(plan.id);
-    setShowMedicationModal(true);
-  };
-
+  // ---------- UI ----------
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>{t("doctor.treatmentPlanning.loading")}</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
+          <p>{t("doctor.treatmentPlanning.loading") || "Loading..."}</p>
         </div>
       </div>
     );
@@ -501,24 +483,31 @@ const TreatmentPlanningSection = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">{t("doctor.treatmentPlanning.title")}</h2>
-          <p className="text-muted-foreground">{t("doctor.treatmentPlanning.description")}</p>
+          <h2 className="text-2xl font-bold">{t("doctor.treatmentPlanning.title") || "Treatment Planning"}</h2>
+          <p className="text-muted-foreground">{t("doctor.treatmentPlanning.description") || ""}</p>
         </div>
+
         <Button
           onClick={() => {
-            if (!user) {
-              toast.error(t("doctor.treatmentPlanning.signInRequired"));
-              return;
-            }
             setApplyingTemplateData(null);
             setShowCreateModal(true);
           }}
           className="flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
-          {t("doctor.treatmentPlanning.createPlan")}
+          {t("doctor.treatmentPlanning.createPlan") || "Create plan"}
         </Button>
       </div>
+
+      {/* ✅ DEBUG PANEL (leave it until it works; you can remove later) */}
+      <pre className="text-xs p-3 bg-muted rounded-lg overflow-auto">
+doctorProfileId: {String(doctorProfileId)}
+{"\n"}user.id: {String(user?.id)}
+{"\n"}plans (raw): {String(treatmentPlans.length)}
+{"\n"}plans (filtered): {String(filteredPlans.length)}
+{"\n"}patients loaded: {String(patients.length)}
+{"\n"}templates loaded: {String(templates.length)}
+      </pre>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 max-w-md">
@@ -528,25 +517,26 @@ const TreatmentPlanningSection = () => {
           </TabsTrigger>
           <TabsTrigger value="templates" className="flex items-center gap-2">
             <LayoutTemplate className="w-4 h-4" />
-            Saved Templates
+            Templates
           </TabsTrigger>
         </TabsList>
 
-        {/* Plans */}
+        {/* -------------------- PLANS (CARDS like templates) -------------------- */}
         <TabsContent value="plans" className="space-y-6 mt-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Filter className="w-5 h-5" />
-                {t("doctor.treatmentPlanning.filtersTitle")}
+                {t("doctor.treatmentPlanning.filtersTitle") || "Filters"}
               </CardTitle>
             </CardHeader>
+
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
                   <Input
-                    placeholder={t("doctor.treatmentPlanning.searchPlaceholder")}
+                    placeholder={t("doctor.treatmentPlanning.searchPlaceholder") || "Search plans..."}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
@@ -555,7 +545,7 @@ const TreatmentPlanningSection = () => {
 
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger>
-                    <SelectValue placeholder={t("doctor.treatmentPlanning.filterByStatus")} />
+                    <SelectValue placeholder={t("doctor.treatmentPlanning.filterByStatus") || "Status"} />
                   </SelectTrigger>
                   <SelectContent>
                     {statusOptions.map((option) => (
@@ -568,12 +558,11 @@ const TreatmentPlanningSection = () => {
 
                 <Select value={patientFilter} onValueChange={setPatientFilter}>
                   <SelectTrigger>
-                    <SelectValue placeholder={t("doctor.treatmentPlanning.filterByPatient")} />
+                    <SelectValue placeholder={t("doctor.treatmentPlanning.filterByPatient") || "Patient"} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">{t("doctor.treatmentPlanning.allPatients")}</SelectItem>
+                    <SelectItem value="all">{t("doctor.treatmentPlanning.allPatients") || "All patients"}</SelectItem>
 
-                    {/* Doctor-added */}
                     {patients
                       .filter((p) => p.source === "doctor_added")
                       .map((p) => (
@@ -582,7 +571,6 @@ const TreatmentPlanningSection = () => {
                         </SelectItem>
                       ))}
 
-                    {/* Registered */}
                     {patients
                       .filter((p) => p.source === "registered")
                       .map((p) => (
@@ -601,7 +589,7 @@ const TreatmentPlanningSection = () => {
                     setPatientFilter("all");
                   }}
                 >
-                  {t("doctor.treatmentPlanning.clearFilters")}
+                  {t("doctor.treatmentPlanning.clearFilters") || "Clear"}
                 </Button>
               </div>
             </CardContent>
@@ -609,74 +597,71 @@ const TreatmentPlanningSection = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>{t("doctor.treatmentPlanning.treatmentPlansCount", { count: filteredPlans.length })}</CardTitle>
+              <CardTitle className="flex items-center justify-between">
+                <span>{t("doctor.treatmentPlanning.activePlans") || "Treatment Plans"}</span>
+                <span className="text-sm text-muted-foreground">{filteredPlans.length} plans</span>
+              </CardTitle>
             </CardHeader>
-            <CardContent>
+
+            <CardContent className="space-y-4">
               {filteredPlans.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">{t("doctor.treatmentPlanning.noPlansFound")}</p>
-                  <Button onClick={() => setShowCreateModal(true)} className="mt-4">
-                    <Plus className="w-4 h-4 mr-2" />
-                    {t("doctor.treatmentPlanning.createFirstPlan")}
-                  </Button>
+                <div className="text-center py-10 text-muted-foreground">
+                  No treatment plans found.
+                  <div className="mt-4">
+                    <Button
+                      onClick={() => {
+                        setApplyingTemplateData(null);
+                        setShowCreateModal(true);
+                      }}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create first plan
+                    </Button>
+                  </div>
                 </div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{t("doctor.treatmentPlanning.planTitle")}</TableHead>
-                      <TableHead>{t("doctor.treatmentPlanning.patient")}</TableHead>
-                      <TableHead>{t("doctor.treatmentPlanning.status")}</TableHead>
-                      <TableHead>{t("doctor.treatmentPlanning.totalCost")}</TableHead>
-                      <TableHead>{t("doctor.treatmentPlanning.created")}</TableHead>
-                      <TableHead>{t("doctor.treatmentPlanning.actions")}</TableHead>
-                    </TableRow>
-                  </TableHeader>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredPlans.map((plan) => {
+                    const patientKey = getPlanPatientKey(plan);
+                    const patientName = getPatientName(plan);
+                    const statusLabel =
+                      statusOptions.find((s) => s.value === String(plan.status))?.label || String(plan.status);
 
-                  <TableBody>
-                    {filteredPlans.map((plan) => {
-                      const patientKey = getPlanPatientKey(plan);
-
-                      return (
-                        <TableRow key={plan.id}>
-                          <TableCell>
-                            <div>
-                              <p className="font-medium">{plan.title}</p>
-                              {(plan.notes ?? plan.description) && (
-                                <p className="text-sm text-muted-foreground truncate max-w-xs">
-                                  {plan.notes ?? plan.description}
-                                </p>
-                              )}
+                    return (
+                      <Card key={plan.id}>
+                        <CardContent className="p-4 space-y-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="font-medium truncate">{plan.title}</p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {new Date(plan.created_at).toLocaleDateString()}
+                              </p>
                             </div>
-                          </TableCell>
 
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Users className="w-4 h-4 text-muted-foreground" />
-                              {getPatientName(plan)}
-                            </div>
-                          </TableCell>
+                            <Badge className={getStatusBadgeColor(String(plan.status))}>{statusLabel}</Badge>
+                          </div>
 
-                          <TableCell>
-                            <Badge className={getStatusBadgeColor(String(plan.status))}>
-                              {statusOptions.find((s) => s.value === plan.status)?.label || plan.status}
-                            </Badge>
-                          </TableCell>
+                          <div className="flex items-center gap-2 text-sm">
+                            <Users className="w-4 h-4 text-muted-foreground" />
+                            <span className="truncate">{patientName}</span>
+                          </div>
 
-                          <TableCell className="font-medium">
-                            {plan.total_cost != null ? formatCurrency(Number(plan.total_cost)) : "—"}
-                          </TableCell>
+                          {(plan.notes ?? plan.description) ? (
+                            <p className="text-sm text-muted-foreground line-clamp-2">{plan.notes ?? plan.description}</p>
+                          ) : (
+                            <p className="text-sm text-muted-foreground italic">No notes</p>
+                          )}
 
-                          <TableCell>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Calendar className="w-4 h-4" />
-                              {new Date(plan.created_at).toLocaleDateString()}
-                            </div>
-                          </TableCell>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">Total</span>
+                            <span className="font-medium">
+                              {plan.total_cost != null ? formatCurrency(Number(plan.total_cost)) : "—"}
+                            </span>
+                          </div>
 
-                          <TableCell>
-                            <TooltipProvider>
-                              <div className="flex items-center gap-1">
+                          <div className="flex items-center justify-between pt-2 border-t">
+                            <div className="flex items-center gap-1">
+                              <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <Button variant="ghost" size="sm" onClick={() => setSelectedPlan(plan)}>
@@ -695,16 +680,11 @@ const TreatmentPlanningSection = () => {
                                   <TooltipContent>Medications</TooltipContent>
                                 </Tooltip>
 
-                                {/* Quick actions that work for BOTH types */}
                                 {patientKey && (
                                   <>
                                     <Tooltip>
                                       <TooltipTrigger asChild>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          onClick={() => handleMessagePatient(patientKey)}
-                                        >
+                                        <Button variant="ghost" size="sm" onClick={() => handleMessagePatient(patientKey)}>
                                           <MessageSquare className="w-4 h-4" />
                                         </Button>
                                       </TooltipTrigger>
@@ -734,40 +714,37 @@ const TreatmentPlanningSection = () => {
                                     </Tooltip>
                                   </>
                                 )}
+                              </TooltipProvider>
+                            </div>
 
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleDeletePlan(plan.id)}
-                                      className="text-destructive hover:text-destructive"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>Delete</TooltipContent>
-                                </Tooltip>
+                            <div className="flex items-center gap-2">
+                              {String(plan.status) === "draft" && (
+                                <Button variant="outline" size="sm" onClick={() => handleConfirmPlan(plan)}>
+                                  Publish
+                                </Button>
+                              )}
 
-                                {plan.status === "draft" && (
-                                  <Button variant="outline" size="sm" onClick={() => handleConfirmPlan(plan)}>
-                                    Publish
-                                  </Button>
-                                )}
-                              </div>
-                            </TooltipProvider>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeletePlan(plan.id)}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
               )}
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* Templates */}
+        {/* -------------------- TEMPLATES (cards) -------------------- */}
         <TabsContent value="templates" className="space-y-6 mt-6">
           <Card>
             <CardHeader>
@@ -776,6 +753,7 @@ const TreatmentPlanningSection = () => {
                 {templatesLoading && <span className="text-sm text-muted-foreground">Loading…</span>}
               </CardTitle>
             </CardHeader>
+
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Input
@@ -854,7 +832,7 @@ const TreatmentPlanningSection = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Create modal */}
+      {/* Create plan modal */}
       <EnhancedCreateTreatmentPlanModal
         open={showCreateModal}
         onOpenChange={(open) => {
@@ -862,7 +840,7 @@ const TreatmentPlanningSection = () => {
           if (!open) setApplyingTemplateData(null);
         }}
         onSuccess={() => {
-          // immediate refresh (plus realtime)
+          // immediate refresh (and realtime will also update)
           if (doctorProfileId) {
             fetchTreatmentPlans(doctorProfileId);
             fetchTemplates(doctorProfileId);
@@ -871,7 +849,7 @@ const TreatmentPlanningSection = () => {
         initialTemplateData={applyingTemplateData}
       />
 
-      {/* Details modal */}
+      {/* Plan detail modal */}
       {selectedPlan && (
         <EnhancedTreatmentPlanDetailModal
           open={!!selectedPlan}
