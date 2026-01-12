@@ -1,4 +1,3 @@
-// src/components/doctor/TreatmentPlanningSection.tsx
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -15,6 +14,8 @@ import {
   MessageSquare,
   Video,
   CalendarPlus,
+  AlertTriangle,
+  RefreshCcw,
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -29,10 +30,21 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 import EnhancedCreateTreatmentPlanModal from "@/components/treatment/EnhancedCreateTreatmentPlanModal";
 import EnhancedTreatmentPlanDetailModal from "@/components/treatment/EnhancedTreatmentPlanDetailModal";
 import MedicationManagementModal from "@/components/treatment/MedicationManagementModal";
+
+type TreatmentPlanStatus =
+  | "draft"
+  | "published"
+  | "pending_confirmation"
+  | "confirmed"
+  | "in_progress"
+  | "completed"
+  | "cancelled"
+  | string;
 
 interface TreatmentPlanTemplate {
   id: string;
@@ -45,24 +57,14 @@ interface TreatmentPlanTemplate {
   doctor_id: string;
 }
 
-type TreatmentPlanStatus =
-  | "draft"
-  | "published"
-  | "pending_confirmation"
-  | "confirmed"
-  | "in_progress"
-  | "completed"
-  | "cancelled"
-  | string;
-
 interface TreatmentPlan {
   id: string;
-  doctor_id: string;
+  doctor_id: string | null;
   patient_id: string | null; // registered patient (profiles.user_id)
   doctor_patient_id: string | null; // doctor-added patient (doctor_patients.id)
   title: string;
   notes?: string | null;
-  description?: string | null; // keep compat if older UI uses it
+  description?: string | null; // compatibility
   status: TreatmentPlanStatus;
   total_cost: number | null;
   created_at: string;
@@ -70,15 +72,11 @@ interface TreatmentPlan {
   completed_at?: string | null;
   priority?: string | null;
   updated_at?: string | null;
+  expires_at?: string | null;
 }
 
 type PatientSource = "registered" | "doctor_added";
 
-/**
- * Prefix ids so filtering never collides:
- * - reg:<profiles.user_id>
- * - dp:<doctor_patients.id>
- */
 interface PatientOption {
   key: `reg:${string}` | `dp:${string}`;
   id: string;
@@ -98,6 +96,7 @@ const TreatmentPlanningSection = () => {
   const [treatmentPlans, setTreatmentPlans] = useState<TreatmentPlan[]>([]);
   const [filteredPlans, setFilteredPlans] = useState<TreatmentPlan[]>([]);
   const [patients, setPatients] = useState<PatientOption[]>([]);
+  const [templates, setTemplates] = useState<TreatmentPlanTemplate[]>([]);
 
   const [loading, setLoading] = useState(true);
 
@@ -113,12 +112,22 @@ const TreatmentPlanningSection = () => {
 
   const [activeTab, setActiveTab] = useState("plans");
 
-  // Templates
-  const [templates, setTemplates] = useState<TreatmentPlanTemplate[]>([]);
+  // Templates UI state
   const [templatesLoading, setTemplatesLoading] = useState(false);
   const [templateSearchTerm, setTemplateSearchTerm] = useState("");
   const [templateCategoryFilter, setTemplateCategoryFilter] = useState("all");
   const [applyingTemplateData, setApplyingTemplateData] = useState<any>(null);
+
+  // ✅ Self-check state
+  const [diag, setDiag] = useState<{
+    authUserId?: string;
+    doctorProfileId?: string | null;
+    countByDoctorProfile?: number | null;
+    countByAuthUser?: number | null;
+    chosenDoctorId?: string | null;
+    lastError?: string | null;
+    lastLoadedAt?: string | null;
+  }>({});
 
   const templateCategories = [
     "general",
@@ -174,12 +183,11 @@ const TreatmentPlanningSection = () => {
     return p?.name || (t("doctor.treatmentPlanning.unknownPatient") || "Unknown patient");
   };
 
-  // Quick actions (work for both types because we pass prefixed key)
+  // Quick actions (works for both: pass prefixed key)
   const handleMessagePatient = (patientKey: string) => navigate(`/messages?recipient=${patientKey}`);
-  const handleScheduleAppointment = (patientKey: string) => navigate(`/doctor-dashboard?section=calendar&patient=${patientKey}`);
+  const handleScheduleAppointment = (patientKey: string) =>
+    navigate(`/doctor-dashboard?section=calendar&patient=${patientKey}`);
   const handleVideoCall = (patientKey: string) => navigate(`/video-call?patient=${patientKey}`);
-
-  // ---------- DATA LOADING (REAL ONLY, NO HARDCODE) ----------
 
   const loadDoctorProfileId = useCallback(async () => {
     if (!user?.id) {
@@ -191,8 +199,8 @@ const TreatmentPlanningSection = () => {
 
     if (error) {
       console.error("Failed to load doctor profile:", error);
-      toast.error("Failed to load doctor profile");
       setDoctorProfileId(null);
+      setDiag((d) => ({ ...d, lastError: "doctors select error: " + error.message }));
       return null;
     }
 
@@ -201,49 +209,121 @@ const TreatmentPlanningSection = () => {
     return id;
   }, [user?.id]);
 
-  const fetchTreatmentPlans = useCallback(async (doctorIdParam?: string | null) => {
-    const did = doctorIdParam ?? doctorProfileId;
-    if (!did) {
-      setTreatmentPlans([]);
-      return;
-    }
+  /**
+   * ✅ This is the key fix:
+   * Some projects store treatment_plans.doctor_id = doctors.id
+   * Other projects store treatment_plans.doctor_id = auth.uid()
+   *
+   * We auto-detect by counting both and using whichever has data.
+   */
+  const detectDoctorIdForPlans = useCallback(
+    async (doctorIdProfile: string | null) => {
+      const authId = user?.id ?? null;
+      const profileId = doctorIdProfile;
 
-    try {
+      let countByProfile: number | null = null;
+      let countByAuth: number | null = null;
+
+      // Count by profile doctor id
+      if (profileId) {
+        const res = await supabase
+          .from("treatment_plans")
+          .select("id", { count: "exact", head: true })
+          .eq("doctor_id", profileId);
+
+        if (res.error) {
+          // likely RLS blocks SELECT
+          setDiag((d) => ({ ...d, lastError: "treatment_plans count by profile error: " + res.error?.message }));
+        } else {
+          countByProfile = res.count ?? 0;
+        }
+      }
+
+      // Count by auth user id
+      if (authId) {
+        const res = await supabase
+          .from("treatment_plans")
+          .select("id", { count: "exact", head: true })
+          .eq("doctor_id", authId);
+
+        if (res.error) {
+          setDiag((d) => ({ ...d, lastError: "treatment_plans count by auth error: " + res.error?.message }));
+        } else {
+          countByAuth = res.count ?? 0;
+        }
+      }
+
+      // Choose doctor_id that actually matches your data
+      let chosen: string | null = null;
+      if ((countByProfile ?? 0) > 0) chosen = profileId;
+      else if ((countByAuth ?? 0) > 0) chosen = authId;
+      else chosen = profileId ?? authId;
+
+      setDiag((d) => ({
+        ...d,
+        authUserId: authId ?? undefined,
+        doctorProfileId: profileId,
+        countByDoctorProfile: countByProfile,
+        countByAuthUser: countByAuth,
+        chosenDoctorId: chosen,
+      }));
+
+      return chosen;
+    },
+    [user?.id]
+  );
+
+  const fetchTreatmentPlans = useCallback(
+    async (chosenDoctorId: string | null) => {
+      if (!chosenDoctorId) {
+        setTreatmentPlans([]);
+        setDiag((d) => ({ ...d, lastLoadedAt: new Date().toISOString() }));
+        return;
+      }
+
       const { data, error } = await supabase
         .from("treatment_plans")
         .select("*")
-        .eq("doctor_id", did)
+        .eq("doctor_id", chosenDoctorId)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("fetchTreatmentPlans error:", error);
+        setTreatmentPlans([]);
+        setDiag((d) => ({
+          ...d,
+          lastError: "fetchTreatmentPlans error: " + error.message,
+          lastLoadedAt: new Date().toISOString(),
+        }));
+        // show clearly
+        toast.error("Cannot load treatment plans (RLS / policy): " + error.message);
+        return;
+      }
+
       setTreatmentPlans((data || []) as TreatmentPlan[]);
-    } catch (e: any) {
-      console.error("Failed to load plans:", e);
-      toast.error("Failed to load treatment plans: " + (e?.message || "Unknown error"));
-      setTreatmentPlans([]);
-    }
-  }, [doctorProfileId]);
+      setDiag((d) => ({ ...d, lastError: null, lastLoadedAt: new Date().toISOString() }));
+    },
+    []
+  );
 
   /**
-   * REAL patients list includes:
-   * 1) ALL doctor_added patients for this doctor (doctor_patients)
-   * 2) registered patients who appear in appointments for this doctor (appointments.patient_id)
-   * 3) registered patients who appear in plans (treatment_plans.patient_id)
+   * ✅ Patients include:
+   * - doctor_added: doctor_patients for this doctor profile id
+   * - registered: profiles for patient_ids found in plans/appointments
    */
   const fetchPatients = useCallback(
-    async (doctorIdParam?: string | null, plansParam?: TreatmentPlan[]) => {
-      const did = doctorIdParam ?? doctorProfileId;
-      if (!did) {
+    async (doctorIdProfile: string | null, plansParam?: TreatmentPlan[]) => {
+      if (!doctorIdProfile) {
         setPatients([]);
         return;
       }
 
       try {
-        // 1) doctor added
+        // doctor-added
         const { data: dp, error: dpErr } = await supabase
           .from("doctor_patients")
           .select("id, full_name, email, phone, status")
-          .eq("doctor_id", did)
+          .eq("doctor_id", doctorIdProfile)
           .order("full_name");
 
         if (dpErr) throw dpErr;
@@ -257,13 +337,17 @@ const TreatmentPlanningSection = () => {
           phone: p.phone ?? null,
         }));
 
-        // 2) registered from appointments
-        const { data: ap, error: apErr } = await supabase.from("appointments").select("patient_id").eq("doctor_id", did);
-        if (apErr) throw apErr;
-        const apIds = (ap || []).map((x: any) => x.patient_id).filter(Boolean) as string[];
+        // registered IDs from appointments + plans
+        const { data: ap, error: apErr } = await supabase
+          .from("appointments")
+          .select("patient_id")
+          .eq("doctor_id", doctorIdProfile);
 
-        // 3) registered from plans
-        const planIds = ((plansParam || treatmentPlans).map((p) => p.patient_id).filter(Boolean) as string[]) || [];
+        if (apErr) throw apErr;
+
+        const apIds = (ap || []).map((x: any) => x.patient_id).filter(Boolean) as string[];
+        const planIds = ((plansParam || []).map((p) => p.patient_id).filter(Boolean) as string[]) || [];
+
         const registeredIds = Array.from(new Set([...apIds, ...planIds]));
 
         let registered: PatientOption[] = [];
@@ -273,7 +357,6 @@ const TreatmentPlanningSection = () => {
             .select("user_id, full_name, email, phone")
             .in("user_id", registeredIds);
 
-          // if RLS blocks, note it but don't break UI
           if (!prErr && pr?.length) {
             registered = pr.map((p: any) => ({
               key: `reg:${p.user_id}`,
@@ -284,6 +367,7 @@ const TreatmentPlanningSection = () => {
               phone: p.phone ?? null,
             }));
           } else {
+            // fallback if profiles blocked by RLS
             registered = registeredIds.map((id) => ({
               key: `reg:${id}`,
               id,
@@ -298,83 +382,66 @@ const TreatmentPlanningSection = () => {
         const merged = [...doctorAdded, ...registered].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
         setPatients(merged);
       } catch (e: any) {
-        console.error("Failed to load patients:", e);
-        toast.error("Failed to load patients: " + (e?.message || "Unknown error"));
+        console.error("fetchPatients error:", e);
         setPatients([]);
       }
     },
-    [doctorProfileId, treatmentPlans]
+    []
   );
 
-  const fetchTemplates = useCallback(async (doctorIdParam?: string | null) => {
-    const did = doctorIdParam ?? doctorProfileId;
-    if (!did) {
-      setTemplates([]);
-      return;
-    }
+  const fetchTemplates = useCallback(
+    async (doctorIdProfile: string | null) => {
+      if (!doctorIdProfile) {
+        setTemplates([]);
+        return;
+      }
 
-    setTemplatesLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("treatment_plan_templates")
-        .select("*")
-        .or(`doctor_id.eq.${did},is_public.eq.true`)
-        .order("created_at", { ascending: false });
+      setTemplatesLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("treatment_plan_templates")
+          .select("*")
+          .or(`doctor_id.eq.${doctorIdProfile},is_public.eq.true`)
+          .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      setTemplates((data || []) as TreatmentPlanTemplate[]);
-    } catch (e) {
-      console.error("Failed to load templates:", e);
-      setTemplates([]);
-    } finally {
-      setTemplatesLoading(false);
-    }
-  }, [doctorProfileId]);
+        if (error) throw error;
+        setTemplates((data || []) as TreatmentPlanTemplate[]);
+      } catch (e) {
+        console.error("fetchTemplates error:", e);
+        setTemplates([]);
+      } finally {
+        setTemplatesLoading(false);
+      }
+    },
+    []
+  );
 
-  // Boot: load doctor profile id then load plans/templates
+  const refreshAll = useCallback(async () => {
+    setLoading(true);
+    const profileId = await loadDoctorProfileId();
+    const chosenDoctorId = await detectDoctorIdForPlans(profileId);
+    await fetchTreatmentPlans(chosenDoctorId);
+    await fetchTemplates(profileId);
+    // patients need profileId (doctor_patients/appointments use doctors.id in your project)
+    await fetchPatients(profileId, treatmentPlans);
+    setLoading(false);
+  }, [loadDoctorProfileId, detectDoctorIdForPlans, fetchTreatmentPlans, fetchTemplates, fetchPatients, treatmentPlans]);
+
+  // Boot
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const did = await loadDoctorProfileId();
-      if (did) {
-        await fetchTreatmentPlans(did);
-        await fetchTemplates(did);
-      } else {
-        setTreatmentPlans([]);
-        setTemplates([]);
-        setPatients([]);
-      }
+      const profileId = await loadDoctorProfileId();
+      const chosenDoctorId = await detectDoctorIdForPlans(profileId);
+      await fetchTreatmentPlans(chosenDoctorId);
+      await fetchTemplates(profileId);
+      await fetchPatients(profileId, []); // initial
       setLoading(false);
     })();
-  }, [loadDoctorProfileId, fetchTreatmentPlans, fetchTemplates]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
-  // Refresh patients whenever plans change (so new plans resolve patient name immediately)
-  useEffect(() => {
-    if (!doctorProfileId) return;
-    fetchPatients(doctorProfileId, treatmentPlans);
-  }, [doctorProfileId, treatmentPlans, fetchPatients]);
-
-  // Realtime: refresh plans immediately when created/updated/deleted
-  useEffect(() => {
-    if (!doctorProfileId) return;
-
-    const channel = supabase
-      .channel(`doctor-treatment-plans-${doctorProfileId}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "treatment_plans", filter: `doctor_id=eq.${doctorProfileId}` },
-        () => {
-          fetchTreatmentPlans(doctorProfileId);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [doctorProfileId, fetchTreatmentPlans]);
-
-  // ---------- FILTERING ----------
+  // Filter plans
   useEffect(() => {
     let filtered = treatmentPlans;
 
@@ -392,58 +459,70 @@ const TreatmentPlanningSection = () => {
     }
 
     if (patientFilter !== "all") {
-      filtered = filtered.filter((plan) => {
-        const key = getPlanPatientKey(plan);
-        return key === patientFilter;
-      });
+      filtered = filtered.filter((plan) => getPlanPatientKey(plan) === patientFilter);
     }
 
     setFilteredPlans(filtered);
   }, [treatmentPlans, searchTerm, statusFilter, patientFilter]);
 
-  // ---------- ACTIONS ----------
+  // Realtime refresh (only if we successfully chose a doctor id)
+  useEffect(() => {
+    const chosen = diag.chosenDoctorId ?? null;
+    if (!chosen) return;
+
+    const channel = supabase
+      .channel(`doctor-treatment-plans-${chosen}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "treatment_plans", filter: `doctor_id=eq.${chosen}` },
+        () => {
+          fetchTreatmentPlans(chosen);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [diag.chosenDoctorId, fetchTreatmentPlans]);
+
+  // Actions
   const handleDeletePlan = async (id: string) => {
     if (!confirm(t("doctor.treatmentPlanning.deleteConfirm") || "Delete this plan?")) return;
 
-    try {
-      const { error } = await supabase.from("treatment_plans").delete().eq("id", id);
-      if (error) throw error;
-
-      toast.success(t("doctor.treatmentPlanning.deleteSuccess") || "Deleted");
-      if (doctorProfileId) fetchTreatmentPlans(doctorProfileId);
-    } catch (e: any) {
-      toast.error((t("doctor.treatmentPlanning.deleteFailed") || "Delete failed") + ": " + (e?.message || "Unknown error"));
+    const { error } = await supabase.from("treatment_plans").delete().eq("id", id);
+    if (error) {
+      toast.error((t("doctor.treatmentPlanning.deleteFailed") || "Delete failed") + ": " + error.message);
+      return;
     }
+    toast.success(t("doctor.treatmentPlanning.deleteSuccess") || "Deleted");
+    await fetchTreatmentPlans(diag.chosenDoctorId ?? null);
   };
 
   const handleConfirmPlan = async (plan: TreatmentPlan) => {
-    try {
-      const { error } = await supabase
-        .from("treatment_plans")
-        .update({ status: "published", published_at: new Date().toISOString() })
-        .eq("id", plan.id);
+    const { error } = await supabase
+      .from("treatment_plans")
+      .update({ status: "published", published_at: new Date().toISOString() })
+      .eq("id", plan.id);
 
-      if (error) throw error;
-
-      toast.success(t("doctor.treatmentPlanning.publishSuccess") || "Published");
-      if (doctorProfileId) fetchTreatmentPlans(doctorProfileId);
-    } catch (e: any) {
-      toast.error((t("doctor.treatmentPlanning.publishFailed") || "Publish failed") + ": " + (e?.message || "Unknown error"));
+    if (error) {
+      toast.error("Publish failed: " + error.message);
+      return;
     }
+    toast.success("Published");
+    await fetchTreatmentPlans(diag.chosenDoctorId ?? null);
   };
 
   const handleDeleteTemplate = async (templateId: string) => {
     if (!confirm("Delete this template?")) return;
 
-    try {
-      const { error } = await supabase.from("treatment_plan_templates").delete().eq("id", templateId);
-      if (error) throw error;
-
-      toast.success("Template deleted");
-      if (doctorProfileId) fetchTemplates(doctorProfileId);
-    } catch (e: any) {
-      toast.error("Failed to delete template: " + ((e as any)?.message || "Unknown error"));
+    const { error } = await supabase.from("treatment_plan_templates").delete().eq("id", templateId);
+    if (error) {
+      toast.error("Failed to delete template: " + error.message);
+      return;
     }
+    toast.success("Template deleted");
+    await fetchTemplates(doctorProfileId);
   };
 
   const handleApplyTemplate = (template: TreatmentPlanTemplate) => {
@@ -467,7 +546,7 @@ const TreatmentPlanningSection = () => {
     });
   }, [templates, templateSearchTerm, templateCategoryFilter]);
 
-  // ---------- UI ----------
+  // UI
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -481,39 +560,57 @@ const TreatmentPlanningSection = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="text-2xl font-bold">{t("doctor.treatmentPlanning.title") || "Treatment Planning"}</h2>
           <p className="text-muted-foreground">{t("doctor.treatmentPlanning.description") || ""}</p>
         </div>
 
-        <Button
-          onClick={() => {
-            setApplyingTemplateData(null);
-            setShowCreateModal(true);
-          }}
-          className="flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          {t("doctor.treatmentPlanning.createPlan") || "Create plan"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={refreshAll} className="gap-2">
+            <RefreshCcw className="w-4 h-4" />
+            Refresh
+          </Button>
+
+          <Button
+            onClick={() => {
+              setApplyingTemplateData(null);
+              setShowCreateModal(true);
+            }}
+            className="gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            {t("doctor.treatmentPlanning.createPlan") || "Create plan"}
+          </Button>
+        </div>
       </div>
 
-      {/* ✅ DEBUG PANEL (leave it until it works; you can remove later) */}
-      <pre className="text-xs p-3 bg-muted rounded-lg overflow-auto">
-doctorProfileId: {String(doctorProfileId)}
-{"\n"}user.id: {String(user?.id)}
-{"\n"}plans (raw): {String(treatmentPlans.length)}
-{"\n"}plans (filtered): {String(filteredPlans.length)}
-{"\n"}patients loaded: {String(patients.length)}
-{"\n"}templates loaded: {String(templates.length)}
-      </pre>
+      {/* ✅ SELF-CHECK (do not remove until it works) */}
+      <Alert className="border-amber-500/40 bg-amber-500/5">
+        <AlertTriangle className="h-4 w-4 text-amber-600" />
+        <AlertTitle className="text-amber-700">Self-check (why plans aren’t visible)</AlertTitle>
+        <AlertDescription className="text-sm text-amber-700">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+            <div>auth user id: <b>{diag.authUserId || "—"}</b></div>
+            <div>doctor profile id (doctors.id): <b>{diag.doctorProfileId || "—"}</b></div>
+            <div>plans where doctor_id = doctors.id: <b>{diag.countByDoctorProfile ?? "—"}</b></div>
+            <div>plans where doctor_id = auth.uid(): <b>{diag.countByAuthUser ?? "—"}</b></div>
+            <div>chosen doctor_id filter: <b>{diag.chosenDoctorId || "—"}</b></div>
+            <div>last loaded: <b>{diag.lastLoadedAt ? new Date(diag.lastLoadedAt).toLocaleString() : "—"}</b></div>
+          </div>
+          {diag.lastError ? (
+            <div className="mt-2">
+              <b>Last error:</b> {diag.lastError}
+            </div>
+          ) : null}
+        </AlertDescription>
+      </Alert>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 max-w-md">
           <TabsTrigger value="plans" className="flex items-center gap-2">
             <FileText className="w-4 h-4" />
-            Treatment Plans
+            Plans
           </TabsTrigger>
           <TabsTrigger value="templates" className="flex items-center gap-2">
             <LayoutTemplate className="w-4 h-4" />
@@ -521,22 +618,21 @@ doctorProfileId: {String(doctorProfileId)}
           </TabsTrigger>
         </TabsList>
 
-        {/* -------------------- PLANS (CARDS like templates) -------------------- */}
+        {/* ---------------- PLANS (CARDS like templates) ---------------- */}
         <TabsContent value="plans" className="space-y-6 mt-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Filter className="w-5 h-5" />
-                {t("doctor.treatmentPlanning.filtersTitle") || "Filters"}
+                Filters
               </CardTitle>
             </CardHeader>
-
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
                   <Input
-                    placeholder={t("doctor.treatmentPlanning.searchPlaceholder") || "Search plans..."}
+                    placeholder="Search plans..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
@@ -545,7 +641,7 @@ doctorProfileId: {String(doctorProfileId)}
 
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger>
-                    <SelectValue placeholder={t("doctor.treatmentPlanning.filterByStatus") || "Status"} />
+                    <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent>
                     {statusOptions.map((option) => (
@@ -558,10 +654,10 @@ doctorProfileId: {String(doctorProfileId)}
 
                 <Select value={patientFilter} onValueChange={setPatientFilter}>
                   <SelectTrigger>
-                    <SelectValue placeholder={t("doctor.treatmentPlanning.filterByPatient") || "Patient"} />
+                    <SelectValue placeholder="Patient" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">{t("doctor.treatmentPlanning.allPatients") || "All patients"}</SelectItem>
+                    <SelectItem value="all">All patients</SelectItem>
 
                     {patients
                       .filter((p) => p.source === "doctor_added")
@@ -589,7 +685,7 @@ doctorProfileId: {String(doctorProfileId)}
                     setPatientFilter("all");
                   }}
                 >
-                  {t("doctor.treatmentPlanning.clearFilters") || "Clear"}
+                  Clear
                 </Button>
               </div>
             </CardContent>
@@ -598,7 +694,7 @@ doctorProfileId: {String(doctorProfileId)}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
-                <span>{t("doctor.treatmentPlanning.activePlans") || "Treatment Plans"}</span>
+                <span>Treatment Plans</span>
                 <span className="text-sm text-muted-foreground">{filteredPlans.length} plans</span>
               </CardTitle>
             </CardHeader>
@@ -647,7 +743,9 @@ doctorProfileId: {String(doctorProfileId)}
                           </div>
 
                           {(plan.notes ?? plan.description) ? (
-                            <p className="text-sm text-muted-foreground line-clamp-2">{plan.notes ?? plan.description}</p>
+                            <p className="text-sm text-muted-foreground line-clamp-2">
+                              {plan.notes ?? plan.description}
+                            </p>
                           ) : (
                             <p className="text-sm text-muted-foreground italic">No notes</p>
                           )}
@@ -693,11 +791,7 @@ doctorProfileId: {String(doctorProfileId)}
 
                                     <Tooltip>
                                       <TooltipTrigger asChild>
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          onClick={() => handleScheduleAppointment(patientKey)}
-                                        >
+                                        <Button variant="ghost" size="sm" onClick={() => handleScheduleAppointment(patientKey)}>
                                           <CalendarPlus className="w-4 h-4" />
                                         </Button>
                                       </TooltipTrigger>
@@ -744,7 +838,7 @@ doctorProfileId: {String(doctorProfileId)}
           </Card>
         </TabsContent>
 
-        {/* -------------------- TEMPLATES (cards) -------------------- */}
+        {/* ---------------- TEMPLATES (CARDS) ---------------- */}
         <TabsContent value="templates" className="space-y-6 mt-6">
           <Card>
             <CardHeader>
@@ -832,36 +926,34 @@ doctorProfileId: {String(doctorProfileId)}
         </TabsContent>
       </Tabs>
 
-      {/* Create plan modal */}
       <EnhancedCreateTreatmentPlanModal
         open={showCreateModal}
         onOpenChange={(open) => {
           setShowCreateModal(open);
           if (!open) setApplyingTemplateData(null);
         }}
-        onSuccess={() => {
-          // immediate refresh (and realtime will also update)
-          if (doctorProfileId) {
-            fetchTreatmentPlans(doctorProfileId);
-            fetchTemplates(doctorProfileId);
-          }
+        onSuccess={async () => {
+          // immediate refresh (plus realtime)
+          const profileId = await loadDoctorProfileId();
+          const chosen = await detectDoctorIdForPlans(profileId);
+          await fetchTreatmentPlans(chosen);
+          await fetchTemplates(profileId);
+          await fetchPatients(profileId, treatmentPlans);
         }}
         initialTemplateData={applyingTemplateData}
       />
 
-      {/* Plan detail modal */}
       {selectedPlan && (
         <EnhancedTreatmentPlanDetailModal
           open={!!selectedPlan}
           onOpenChange={(open) => !open && setSelectedPlan(null)}
           treatmentPlan={selectedPlan as any}
-          onUpdate={() => {
-            if (doctorProfileId) fetchTreatmentPlans(doctorProfileId);
+          onUpdate={async () => {
+            await fetchTreatmentPlans(diag.chosenDoctorId ?? null);
           }}
         />
       )}
 
-      {/* Medications modal */}
       {selectedPlanForMeds && (
         <MedicationManagementModal
           open={showMedicationModal}
