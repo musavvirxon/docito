@@ -6,3 +6,4 @@ export { BillingSection } from './BillingSection';
 export { default as PharmacyDashboardContent } from './PharmacyDashboardContent';
 export { default as LabDashboardContent } from './LabDashboardContent';
 export { default as ImagingDashboardContent } from './ImagingDashboardContent';
+export { DashboardBranding } from '../dashboard/DashboardBranding';

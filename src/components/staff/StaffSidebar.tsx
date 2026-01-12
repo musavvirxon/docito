@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { DashboardBranding } from "@/components/dashboard/DashboardBranding";
 import type { 
   StaffType, 
   EntityInfo, 
@@ -158,6 +159,11 @@ export const StaffSidebar = ({
 
   return (
     <div className="w-64 bg-card border-r border-border flex flex-col h-full">
+      {/* Logo Branding */}
+      <div className="p-4 border-b border-border">
+        <DashboardBranding size="md" />
+      </div>
+
       {/* Entity Header */}
       <div className="p-4 border-b border-border">
         <div className="flex items-center gap-3">

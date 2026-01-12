@@ -50,7 +50,7 @@ export function DashboardSidebar({
         {!collapsed ? (
           <DashboardBranding size="md" />
         ) : (
-          <DashboardBranding size="sm" showIcon={true} className="justify-center" />
+          <DashboardBranding size="sm" className="justify-center" />
         )}
         {!collapsed && (
           <Button

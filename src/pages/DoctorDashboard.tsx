@@ -32,6 +32,8 @@ import ThemeToggle from "@/components/home/ThemeToggle";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
 import { DoctorVerificationStatusCard } from "@/components/doctor/DoctorVerificationStatusCard";
 import { DoctorReferralsSection } from "@/components/doctor/DoctorReferralsSection";
+import { DashboardBranding } from "@/components/dashboard/DashboardBranding";
+
 type DoctorStatus = "independent" | "clinic-member";
 const DoctorDashboardContent = () => {
   const navigate = useNavigate();
@@ -421,6 +423,11 @@ const DoctorDashboardContent = () => {
       <div className="flex min-h-screen w-full bg-background">
         <Sidebar className="border-r">
           <SidebarContent>
+            {/* Logo Branding */}
+            <div className="p-4 border-b border-border">
+              <DashboardBranding size="md" />
+            </div>
+            
             <SidebarGroup>
               <SidebarGroupLabel>{t("doctor.title")}</SidebarGroupLabel>
               <SidebarGroupContent>
