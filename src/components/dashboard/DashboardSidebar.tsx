@@ -5,6 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { AppRole } from '@/lib/rbac';
 import { SidebarItem } from './DashboardShell';
+import { DashboardBranding } from './DashboardBranding';
 
 interface DashboardSidebarProps {
   items: SidebarItem[];
@@ -39,27 +40,41 @@ export function DashboardSidebar({
   return (
     <aside
       className={cn(
-        "sticky top-0 h-screen flex flex-col border-r border-border/50 bg-gradient-to-b transition-all duration-300",
+        "sticky top-0 h-screen flex flex-col border-r border-border/50 bg-gradient-to-b transition-all duration-300 relative",
         gradientClass,
         collapsed ? "w-16" : "w-64"
       )}
     >
       {/* Logo area */}
       <div className="h-16 flex items-center justify-between px-4 border-b border-border/30">
-        {!collapsed && (
-          <span className="text-lg font-semibold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-            Docito
-          </span>
+        {!collapsed ? (
+          <DashboardBranding size="md" />
+        ) : (
+          <DashboardBranding size="sm" showIcon={true} className="justify-center" />
         )}
+        {!collapsed && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0"
+            onClick={onToggleCollapse}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+
+      {/* Collapse button when collapsed */}
+      {collapsed && (
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 shrink-0"
+          className="absolute top-4 -right-3 h-6 w-6 rounded-full border bg-background shadow-sm z-10"
           onClick={onToggleCollapse}
         >
-          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          <ChevronRight className="h-3 w-3" />
         </Button>
-      </div>
+      )}
 
       {/* Navigation items */}
       <ScrollArea className="flex-1 py-4">

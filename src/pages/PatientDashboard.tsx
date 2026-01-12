@@ -41,7 +41,7 @@ import DoctorSearchSection from "@/components/patient/DoctorSearchSection";
 import { PatientReferralsSection } from "@/components/patient/PatientReferralsSection";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-
+import { DashboardBranding } from "@/components/dashboard/DashboardBranding";
 const PatientDashboard = () => {
   const { user, profile, signOut, loading: authLoading } = useAuth();
   const { stats, loading: statsLoading } = usePatientDashboard();
@@ -90,6 +90,11 @@ const PatientDashboard = () => {
         )}
       >
         <div className="flex flex-col h-full">
+          {/* Branding */}
+          <div className="p-4 border-b border-sidebar-border">
+            <DashboardBranding size="md" />
+          </div>
+          
           {/* User Profile Section */}
           <div className="p-6 border-b border-sidebar-border">
             <div className="flex items-center gap-3 mb-4">

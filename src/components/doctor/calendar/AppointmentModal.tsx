@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import CancelAppointmentDialog from './CancelAppointmentDialog';
+import { RescheduleAppointmentModal } from '@/components/appointments/RescheduleAppointmentModal';
 import type { CalendarAppointment } from './types';
 
 interface AppointmentModalProps {
@@ -53,6 +54,7 @@ const AppointmentModal = memo(({
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('details');
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const [isRescheduling, setIsRescheduling] = useState(false);
   
   const isRTL = i18n.language === 'ar';
@@ -83,12 +85,14 @@ const AppointmentModal = memo(({
 
   const handleReschedule = useCallback(() => {
     if (!appointment) return;
-    setIsRescheduling(true);
-    // For now, we'll just show a toast - in production, this would open a reschedule modal
-    toast.info('Reschedule feature coming soon');
-    setIsRescheduling(false);
+    setIsRescheduleModalOpen(true);
+  }, [appointment]);
+
+  const handleRescheduleComplete = useCallback(() => {
+    setIsRescheduleModalOpen(false);
     onReschedule?.();
-  }, [appointment, onReschedule]);
+    onClose();
+  }, [onReschedule, onClose]);
 
   const handleMessage = useCallback(async () => {
     if (!appointment?.patient_id) {
@@ -340,6 +344,18 @@ const AppointmentModal = memo(({
         onClose={() => setIsCancelDialogOpen(false)}
         onConfirm={handleCancelAppointment}
         patientName={appointment.patient_name}
+      />
+
+      {/* Reschedule Modal */}
+      <RescheduleAppointmentModal
+        isOpen={isRescheduleModalOpen}
+        onClose={() => setIsRescheduleModalOpen(false)}
+        appointmentId={appointment.id}
+        doctorId={appointment.doctor_id}
+        patientName={appointment.patient_name}
+        currentDate={appointment.appointment_date}
+        currentTime={appointment.start_time}
+        onRescheduled={handleRescheduleComplete}
       />
     </Dialog>
   );
