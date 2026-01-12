@@ -13,6 +13,7 @@ export interface CalendarAppointment {
   end_time: string;
   status: AppointmentStatus;
   notes?: string;
+  doctor_id?: string;
   patient_id?: string;
   patient_name?: string;
   patient_avatar?: string;

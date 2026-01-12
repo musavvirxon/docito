@@ -43,6 +43,8 @@ const ImagingDashboard = lazy(() => import("@/pages/imaging/ImagingDashboard"));
 const AppointmentBooking = lazy(() => import("@/pages/AppointmentBooking"));
 const BookingConfirmation = lazy(() => import("@/pages/BookingConfirmation"));
 const DoctorProfile = lazy(() => import("@/pages/DoctorProfile"));
+const VideoCall = lazy(() => import("@/pages/VideoCall"));
+const Messages = lazy(() => import("@/pages/Messages"));
 
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
@@ -98,6 +100,13 @@ export default function App() {
           <Route path="/book-appointment/:doctorId" element={<AppointmentBooking />} />
           <Route path="/booking-confirmation/:appointmentId" element={<BookingConfirmation />} />
           <Route path="/doctor-profile/:id" element={<DoctorProfile />} />
+
+          {/* Video Calls */}
+          <Route path="/video-call" element={<VideoCall />} />
+          <Route path="/video/:roomId" element={<VideoCall />} />
+
+          {/* Messaging */}
+          <Route path="/messages" element={<Messages />} />
 
           {/* 404 */}
           <Route path="*" element={<NotFound />} />
