@@ -13,9 +13,7 @@ import {
   Building2,
   TestTube,
   Scan,
-  Pill,
-  Phone,
-  Mail,
+  Pill
 } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -32,7 +30,7 @@ import {
   getReferralStatusColor,
   getReferralTypeLabel,
   getEntityTypeLabel,
-  isReferralValid,
+  isReferralValid
 } from '@/lib/api/referral-api';
 
 interface ReferralCardProps {
@@ -86,7 +84,7 @@ export const ReferralCard = ({
   onViewDetails,
   onBookSlot,
   onPublishSlots,
-  onComplete,
+  onComplete
 }: ReferralCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -103,16 +101,12 @@ export const ReferralCard = ({
   const showBookSlot = role === 'patient' && referral.status === 'slots_available';
   const showComplete = role === 'receiver' && referral.status === 'booked';
 
-  // ✅ 6: walk-in fallback patient fields live on referral row (after your migration)
+  // ✅ Walk-in fallback (won't break TS even if fields aren't in the interface yet)
   const rAny = referral as any;
   const patientName =
     referral.patient?.full_name ||
     rAny.patient_name ||
-    (referral.patient_id ? `${referral.patient_id.slice(0, 8)}…` : 'Unknown patient');
-
-  const patientPhone = referral.patient?.phone || rAny.patient_phone || null;
-  const patientEmail = referral.patient?.email || rAny.patient_email || null;
-  const isWalkIn = !!rAny.facility_patient_id || !referral.patient_id;
+    (referral.patient_id ? `${String(referral.patient_id).slice(0, 8)}…` : 'Unknown patient');
 
   return (
     <Card className="group hover:shadow-md transition-all duration-200 border-border/50">
@@ -154,38 +148,18 @@ export const ReferralCard = ({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* ✅ 6: Patient Info always visible (registered OR walk-in snapshot) */}
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-sm">
-            <User className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium">Patient:</span>
-            <span>{patientName}</span>
-            {isWalkIn && (
-              <Badge variant="outline" className="text-xs">
-                Walk-in
-              </Badge>
-            )}
-          </div>
-
-          <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Phone className="h-3 w-3" />
-              <span className="font-mono">{patientPhone || '—'}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Mail className="h-3 w-3" />
-              <span className="truncate max-w-[220px]">{patientEmail || '—'}</span>
-            </div>
-          </div>
+        {/* ✅ Patient Info always visible */}
+        <div className="flex items-center gap-2 text-sm">
+          <User className="h-4 w-4 text-muted-foreground" />
+          <span className="font-medium">Patient:</span>
+          <span>{patientName}</span>
         </div>
 
-        {/* Reason */}
         <div className="text-sm">
           <span className="text-muted-foreground">Reason: </span>
           <span>{referral.reason || 'Not specified'}</span>
         </div>
 
-        {/* Validity Window */}
         <div className="flex items-center gap-4 text-sm">
           <TooltipProvider>
             <Tooltip>
@@ -195,7 +169,9 @@ export const ReferralCard = ({
                   <span>
                     {format(new Date(referral.valid_from), 'MMM d')} - {format(new Date(referral.valid_until), 'MMM d, yyyy')}
                   </span>
-                  {!isValid && <AlertCircle className="h-4 w-4 text-destructive" />}
+                  {!isValid && (
+                    <AlertCircle className="h-4 w-4 text-destructive" />
+                  )}
                 </div>
               </TooltipTrigger>
               <TooltipContent>
@@ -210,7 +186,6 @@ export const ReferralCard = ({
           </div>
         </div>
 
-        {/* Expanded Details */}
         {isExpanded && (
           <div className="pt-2 border-t space-y-3">
             {referral.clinical_notes && (
@@ -245,7 +220,6 @@ export const ReferralCard = ({
           </div>
         )}
 
-        {/* Actions */}
         <div className="flex items-center justify-between pt-2 border-t">
           <Button variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)}>
             <FileText className="h-4 w-4 mr-1" />
@@ -278,10 +252,10 @@ export const ReferralCard = ({
               </Button>
             )}
 
-            {showBookSlot && (
+            {showBookSlot && isValid && (
               <Button size="sm" onClick={() => onBookSlot?.(referral)}>
                 <Calendar className="h-4 w-4 mr-1" />
-                Book Slot
+                Book Appointment
               </Button>
             )}
 
@@ -292,18 +266,14 @@ export const ReferralCard = ({
               </Button>
             )}
 
-            <Button variant="outline" size="sm" onClick={() => onViewDetails?.(referral)}>
-              <Eye className="h-4 w-4 mr-1" />
-              View
-            </Button>
+            {onViewDetails && (
+              <Button variant="outline" size="sm" onClick={() => onViewDetails(referral)}>
+                View Details
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>
     </Card>
   );
 };
-
-// Needed import (used in the bottom action button)
-function Eye(props: any) {
-  return <svg {...props} />;
-}
