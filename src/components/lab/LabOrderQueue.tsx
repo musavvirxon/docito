@@ -12,22 +12,16 @@ import {
   User,
   TestTube,
   ChevronRight,
-  Plus,
-  Phone,
-  Mail,
+  Plus
 } from 'lucide-react';
 import { useTestOrders } from '@/hooks/useTestOrders';
 import { format } from 'date-fns';
 import type { Database } from '@/integrations/supabase/types';
-
-// ✅ Manual order dialog (you must have this file created)
 import { LabManualTestOrderDialog } from './LabManualTestOrderDialog';
 
 type TestOrder = Database['public']['Tables']['test_orders']['Row'];
-
-// Since you’re adding walk-in fields via migration, we safely read them via `any`
-// (after regenerating supabase types, you can remove most `any` usage)
 type TestOrderAny = TestOrder & {
+  // walk-in snapshot fields (after your migration)
   facility_patient_id?: string | null;
   patient_name?: string | null;
   patient_phone?: string | null;
@@ -46,19 +40,14 @@ export function LabOrderQueue({ orders, labCenterId, onRefresh }: LabOrderQueueP
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedOrder, setSelectedOrder] = useState<TestOrderAny | null>(null);
 
-  // ✅ 3B: manual order dialog open state
+  // ✅ B: manual order dialog
   const [manualOpen, setManualOpen] = useState(false);
 
   const filteredOrders = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
-
     return (orders as TestOrderAny[]).filter((order) => {
-      const matchesSearch =
-        !term ||
-        (order.order_number || '').toLowerCase().includes(term) ||
-        (order.patient_name || '').toLowerCase().includes(term) ||
-        (order.patient_phone || '').toLowerCase().includes(term);
-
+      const hay = `${order.order_number ?? ''} ${order.patient_name ?? ''} ${order.patient_phone ?? ''} ${order.patient_id ?? ''}`.toLowerCase();
+      const matchesSearch = !term || hay.includes(term);
       const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
@@ -78,8 +67,7 @@ export function LabOrderQueue({ orders, labCenterId, onRefresh }: LabOrderQueueP
 
   const getPriorityBadge = (priority: string | null) => {
     if (priority === 'stat') return <Badge variant="destructive">STAT</Badge>;
-    if (priority === 'urgent')
-      return <Badge variant="outline" className="border-orange-500 text-orange-500">Urgent</Badge>;
+    if (priority === 'urgent') return <Badge variant="outline" className="border-orange-500 text-orange-500">Urgent</Badge>;
     return null;
   };
 
@@ -102,14 +90,14 @@ export function LabOrderQueue({ orders, labCenterId, onRefresh }: LabOrderQueueP
     }
   };
 
-  // ✅ 6: show patient display (registered OR walk-in via snapshot fields)
-  const getPatientDisplay = (order: TestOrderAny) => {
-    const name = order.patient_name?.trim() || 'Unknown patient';
-    const phone = order.patient_phone?.trim() || null;
-    const email = order.patient_email?.trim() || null;
-    const isWalkIn = !!order.facility_patient_id || !order.patient_id;
-
-    return { name, phone, email, isWalkIn };
+  // ✅ B: show patient for registered OR walk-in
+  const patientDisplay = (o: TestOrderAny) => {
+    const name =
+      (o.patient_name && o.patient_name.trim()) ||
+      (o.patient_id ? `Patient ${o.patient_id.slice(0, 8)}…` : 'Unknown patient');
+    const phone = o.patient_phone || null;
+    const isWalkIn = !!o.facility_patient_id || !o.patient_id;
+    return { name, phone, isWalkIn };
   };
 
   return (
@@ -120,7 +108,7 @@ export function LabOrderQueue({ orders, labCenterId, onRefresh }: LabOrderQueueP
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by order number, patient name, phone..."
+              placeholder="Search by order #, patient name/phone..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9"
@@ -142,7 +130,7 @@ export function LabOrderQueue({ orders, labCenterId, onRefresh }: LabOrderQueueP
             </SelectContent>
           </Select>
 
-          {/* ✅ 3B: New manual order button */}
+          {/* ✅ B: manual order */}
           <Button onClick={() => setManualOpen(true)} disabled={!labCenterId}>
             <Plus className="h-4 w-4 mr-2" />
             New manual order
@@ -164,13 +152,11 @@ export function LabOrderQueue({ orders, labCenterId, onRefresh }: LabOrderQueueP
             <CardContent className="p-0">
               <ScrollArea className="h-[500px]">
                 {filteredOrders.length === 0 ? (
-                  <div className="p-6 text-center text-muted-foreground">
-                    No orders found
-                  </div>
+                  <div className="p-6 text-center text-muted-foreground">No orders found</div>
                 ) : (
                   <div className="divide-y">
                     {filteredOrders.map((order) => {
-                      const p = getPatientDisplay(order);
+                      const p = patientDisplay(order);
                       return (
                         <div
                           key={order.id}
@@ -184,23 +170,13 @@ export function LabOrderQueue({ orders, labCenterId, onRefresh }: LabOrderQueueP
                               <div className="flex items-center gap-2">
                                 <span className="font-mono font-medium">{order.order_number}</span>
                                 {getPriorityBadge(order.priority)}
-                                {p.isWalkIn && (
-                                  <Badge variant="outline" className="text-xs">
-                                    Walk-in
-                                  </Badge>
-                                )}
+                                {p.isWalkIn && <Badge variant="outline" className="text-xs">Walk-in</Badge>}
                               </div>
 
-                              {/* ✅ 6: Patient info visible in list */}
                               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <User className="h-3 w-3" />
                                 <span className="line-clamp-1">{p.name}</span>
-                                {p.phone ? (
-                                  <>
-                                    <span className="opacity-60">•</span>
-                                    <span className="font-mono">{p.phone}</span>
-                                  </>
-                                ) : null}
+                                {p.phone ? <span className="font-mono opacity-80">• {p.phone}</span> : null}
                               </div>
 
                               <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -251,29 +227,21 @@ export function LabOrderQueue({ orders, labCenterId, onRefresh }: LabOrderQueueP
                     </Badge>
                   </div>
 
-                  {/* ✅ 6: Patient card (registered OR walk-in) */}
+                  {/* Patient */}
                   {(() => {
-                    const p = getPatientDisplay(selectedOrder);
+                    const p = patientDisplay(selectedOrder);
                     return (
                       <div className="border rounded-lg p-4 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <User className="h-4 w-4 text-muted-foreground" />
-                            <span className="font-medium">{p.name}</span>
-                          </div>
-                          {p.isWalkIn && <Badge variant="outline">Walk-in</Badge>}
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">{p.name}</span>
+                          {p.isWalkIn && <Badge variant="outline" className="text-xs">Walk-in</Badge>}
                         </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <Phone className="h-4 w-4" />
-                            <span className="font-mono">{p.phone || '—'}</span>
+                        {p.phone ? (
+                          <div className="text-sm text-muted-foreground">
+                            Phone: <span className="font-mono">{p.phone}</span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Mail className="h-4 w-4" />
-                            <span className="truncate">{p.email || '—'}</span>
-                          </div>
-                        </div>
+                        ) : null}
                       </div>
                     );
                   })()}
@@ -357,7 +325,7 @@ export function LabOrderQueue({ orders, labCenterId, onRefresh }: LabOrderQueueP
         </div>
       </div>
 
-      {/* ✅ 3B: Manual Order Dialog */}
+      {/* ✅ Manual order dialog */}
       <LabManualTestOrderDialog
         open={manualOpen}
         onOpenChange={setManualOpen}
