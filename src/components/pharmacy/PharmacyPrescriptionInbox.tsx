@@ -422,3 +422,197 @@ export default function PharmacyPrescriptionInbox({ pharmacyId }: Props) {
             return (
               <div className="space-y-6">
                 {/* Status and Info */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Status</p>
+                    {getStatusBadge(selectedPrescription.status)}
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Refills</p>
+                    <p className="font-medium">
+                      {(selectedPrescription.refills_remaining ?? 0)} of {(selectedPrescription.refills_total ?? 0)} remaining
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Created</p>
+                    <p className="font-medium">
+                      {format(new Date(selectedPrescription.created_at), 'MMM d, yyyy')}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Time</p>
+                    <p className="font-medium">
+                      {format(new Date(selectedPrescription.created_at), 'h:mm a')}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Patient & Doctor */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card className="p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <User className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Patient {p.isWalkIn ? '(Walk-in)' : ''}</p>
+                        <p className="text-sm text-muted-foreground">{p.name}</p>
+                      </div>
+                    </div>
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Phone className="h-4 w-4" />
+                        <span className="font-mono">{p.phone || '—'}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Mail className="h-4 w-4" />
+                        <span>{p.email || '—'}</span>
+                      </div>
+                    </div>
+                  </Card>
+
+                  <Card className="p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
+                        <Stethoscope className="h-5 w-5 text-accent" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Prescribing Doctor</p>
+                        <p className="text-sm text-muted-foreground">
+                          {selectedPrescription.doctor?.full_name || 'Unknown'}
+                        </p>
+                        {selectedPrescription.doctor?.specialty ? (
+                          <p className="text-xs text-muted-foreground">{selectedPrescription.doctor.specialty}</p>
+                        ) : null}
+                      </div>
+                    </div>
+                  </Card>
+                </div>
+
+                {/* Items */}
+                <div>
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <Pill className="h-4 w-4" />
+                    Medications
+                  </h4>
+                  <div className="space-y-3">
+                    {selectedPrescription.prescription_items?.map((item, idx) => (
+                      <Card key={idx} className="p-4">
+                        <div className="flex justify-between items-start gap-4">
+                          <div>
+                            <p className="font-medium">{item.medication_name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {item.dosage || '—'} • {item.frequency || '—'}
+                            </p>
+                            {item.instructions && (
+                              <p className="text-sm mt-2 text-muted-foreground">
+                                Instructions: {item.instructions}
+                              </p>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <p className="font-medium">Qty: {item.quantity} {item.unit}</p>
+                            {item.substitutions_allowed && (
+                              <Badge variant="outline" className="mt-1">
+                                Generic OK
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Doctor Notes */}
+                {selectedPrescription.notes && (
+                  <div>
+                    <h4 className="font-semibold mb-2">Doctor's Notes</h4>
+                    <Card className="p-4 bg-muted/50">
+                      <p className="text-sm">{selectedPrescription.notes}</p>
+                    </Card>
+                  </div>
+                )}
+
+                {/* Pharmacist Notes */}
+                <div>
+                  <h4 className="font-semibold mb-2">Pharmacist Notes</h4>
+                  <Textarea
+                    placeholder="Add notes about this prescription..."
+                    value={pharmacistNotes}
+                    onChange={(e) => setPharmacistNotes(e.target.value)}
+                    rows={3}
+                  />
+                </div>
+              </div>
+            );
+          })()}
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setIsDetailsOpen(false)}>
+              Close
+            </Button>
+
+            {selectedPrescription?.status === 'pending' && (
+              <>
+                <Button
+                  variant="destructive"
+                  onClick={() => handleStatusUpdate(selectedPrescription.id, 'out_of_stock')}
+                  disabled={processing}
+                >
+                  <AlertTriangle className="h-4 w-4 mr-1" />
+                  Out of Stock
+                </Button>
+                <Button
+                  onClick={() => handleStatusUpdate(selectedPrescription.id, 'in_review')}
+                  disabled={processing}
+                >
+                  <Clock className="h-4 w-4 mr-1" />
+                  Start Review
+                </Button>
+              </>
+            )}
+
+            {selectedPrescription?.status === 'in_review' && (
+              <>
+                <Button
+                  variant="destructive"
+                  onClick={() => handleStatusUpdate(selectedPrescription.id, 'cancelled')}
+                  disabled={processing}
+                >
+                  <XCircle className="h-4 w-4 mr-1" />
+                  Reject
+                </Button>
+                <Button
+                  onClick={() => handleStatusUpdate(selectedPrescription.id, 'approved')}
+                  disabled={processing}
+                >
+                  <CheckCircle className="h-4 w-4 mr-1" />
+                  Approve
+                </Button>
+              </>
+            )}
+
+            {selectedPrescription?.status === 'approved' && (
+              <Button
+                onClick={() => handleStatusUpdate(selectedPrescription.id, 'dispensed')}
+                disabled={processing}
+              >
+                <Pill className="h-4 w-4 mr-1" />
+                Mark as Dispensed
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ✅ 4B: Manual Prescription Dialog */}
+      <PharmacyManualPrescriptionDialog
+        open={manualOpen}
+        onOpenChange={setManualOpen}
+        pharmacyId={pharmacyId}
+        onCreated={fetchPrescriptions}
+      />
+    </>
+  );
+}
