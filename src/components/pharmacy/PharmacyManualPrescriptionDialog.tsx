@@ -1,19 +1,22 @@
-import { useMemo, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { Plus, Trash2 } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { toast } from 'sonner';
+import { Plus, Trash2 } from 'lucide-react';
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+function makeRxNumber() {
+  return `RX-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+}
 
-import { FacilityPatientSelector, type SelectedPatient } from "@/components/patient/FacilityPatientSelector";
-
-type RxItem = {
+type RxItemDraft = {
   medication_name: string;
+  medication_code: string;
   dosage: string;
   frequency: string;
   quantity: number;
@@ -29,242 +32,319 @@ export function PharmacyManualPrescriptionDialog({
   onCreated,
 }: {
   open: boolean;
-  onOpenChange: (o: boolean) => void;
+  onOpenChange: (v: boolean) => void;
   pharmacyId: string;
   onCreated?: () => void;
 }) {
-  const [patient, setPatient] = useState<SelectedPatient | null>(null);
-  const [notes, setNotes] = useState("");
-  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const [items, setItems] = useState<RxItem[]>([
+  // registered OR walk-in
+  const [patientId, setPatientId] = useState('');
+  const [patientName, setPatientName] = useState('');
+  const [patientPhone, setPatientPhone] = useState('');
+  const [patientEmail, setPatientEmail] = useState('');
+
+  const [doctorId, setDoctorId] = useState(''); // optional
+  const [notes, setNotes] = useState('');
+  const [refillsTotal, setRefillsTotal] = useState(0);
+
+  const [items, setItems] = useState<RxItemDraft[]>([
     {
-      medication_name: "",
-      dosage: "",
-      frequency: "",
+      medication_name: '',
+      medication_code: '',
+      dosage: 'as directed',
+      frequency: 'as directed',
       quantity: 1,
-      unit: "tablets",
-      instructions: "",
+      unit: 'box',
+      instructions: '',
       substitutions_allowed: true,
     },
   ]);
 
-  const canSave = useMemo(() => {
-    if (!patient) return false;
-    if (items.length === 0) return false;
-    return items.every((i) => i.medication_name.trim() && i.dosage.trim() && i.frequency.trim() && i.quantity > 0);
-  }, [patient, items]);
+  useEffect(() => {
+    if (!open) return;
 
-  const reset = () => {
-    setPatient(null);
-    setNotes("");
+    setPatientId('');
+    setPatientName('');
+    setPatientPhone('');
+    setPatientEmail('');
+    setDoctorId('');
+    setNotes('');
+    setRefillsTotal(0);
     setItems([
-      { medication_name: "", dosage: "", frequency: "", quantity: 1, unit: "tablets", instructions: "", substitutions_allowed: true },
+      {
+        medication_name: '',
+        medication_code: '',
+        dosage: 'as directed',
+        frequency: 'as directed',
+        quantity: 1,
+        unit: 'box',
+        instructions: '',
+        substitutions_allowed: true,
+      },
     ]);
+  }, [open]);
+
+  const validate = () => {
+    if (!pharmacyId) return 'Missing pharmacyId';
+    if (!patientId.trim() && !patientName.trim()) return 'Enter Patient ID (registered) OR Patient Name (walk-in)';
+    if (items.length === 0) return 'Add at least 1 medication';
+    for (const it of items) {
+      if (!it.medication_name.trim()) return 'Medication name is required';
+      if (!it.dosage.trim()) return 'Dosage is required';
+      if (!it.frequency.trim()) return 'Frequency is required';
+      if (!it.quantity || it.quantity < 1) return 'Quantity must be >= 1';
+    }
+    return null;
   };
 
   const addItem = () => {
     setItems((prev) => [
       ...prev,
-      { medication_name: "", dosage: "", frequency: "", quantity: 1, unit: "tablets", instructions: "", substitutions_allowed: true },
+      {
+        medication_name: '',
+        medication_code: '',
+        dosage: 'as directed',
+        frequency: 'as directed',
+        quantity: 1,
+        unit: 'box',
+        instructions: '',
+        substitutions_allowed: true,
+      },
     ]);
   };
 
-  const removeItem = (idx: number) => setItems((prev) => prev.filter((_, i) => i !== idx));
+  const removeItem = (idx: number) => {
+    setItems((prev) => prev.filter((_, i) => i !== idx));
+  };
 
-  const updateItem = (idx: number, patch: Partial<RxItem>) => {
+  const updateItem = (idx: number, patch: Partial<RxItemDraft>) => {
     setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
   };
 
-  const create = async () => {
-    if (!pharmacyId) return toast.error("Missing pharmacy");
-    if (!canSave) return toast.error("Fill patient + all medication fields");
+  const handleCreate = async () => {
+    const err = validate();
+    if (err) return toast.error(err);
 
-    setSaving(true);
+    setLoading(true);
     try {
+      const prescription_number = makeRxNumber();
+
       const rxPayload: any = {
+        prescription_number,
         pharmacy_id: pharmacyId,
-        status: "pending",
-        notes: notes || null,
-        refills_remaining: 0,
-        refills_total: 0,
+        status: 'pending',
+        notes: notes?.trim() || null,
+        refills_total: refillsTotal,
+        refills_remaining: refillsTotal,
+
+        // optional doctor link
+        doctor_id: doctorId.trim() ? doctorId.trim() : null,
+
+        // registered patient
+        patient_id: patientId.trim() ? patientId.trim() : null,
+
+        // walk-in snapshot (after migration)
+        patient_name: patientName.trim() || null,
+        patient_phone: patientPhone.trim() || null,
+        patient_email: patientEmail.trim() || null,
       };
 
-      if (patient!.kind === "registered") {
-        rxPayload.patient_id = patient!.patient_id;
-        rxPayload.patient_name = patient!.full_name;
-        rxPayload.patient_phone = patient!.phone;
-        rxPayload.patient_email = patient!.email;
-      } else {
-        rxPayload.facility_patient_id = patient!.facility_patient_id;
-        rxPayload.patient_name = patient!.full_name;
-        rxPayload.patient_phone = patient!.phone;
-        rxPayload.patient_email = patient!.email;
-      }
-
-      const { data: rx, error: rxErr } = await supabase
-        .from("prescriptions")
+      const { data: createdRx, error: rxErr } = await supabase
+        .from('prescriptions')
         .insert(rxPayload)
-        .select("*")
+        .select()
         .single();
 
       if (rxErr) throw rxErr;
 
-      const itemPayload = items.map((i) => ({
-        prescription_id: rx.id,
-        medication_name: i.medication_name.trim(),
-        medication_code: null,
-        dosage: i.dosage.trim(),
-        frequency: i.frequency.trim(),
-        quantity: Number(i.quantity),
-        unit: i.unit || "tablets",
-        instructions: i.instructions || null,
-        substitutions_allowed: i.substitutions_allowed,
+      const itemsPayload: any[] = items.map((it) => ({
+        prescription_id: createdRx.id,
+        medication_name: it.medication_name.trim(),
+        medication_code: it.medication_code.trim() || null,
+        dosage: it.dosage.trim(),
+        frequency: it.frequency.trim(),
+        quantity: Number(it.quantity),
+        unit: it.unit.trim() || null,
+        instructions: it.instructions.trim() || null,
+        substitutions_allowed: !!it.substitutions_allowed,
       }));
 
-      const { error: itemsErr } = await supabase.from("prescription_items").insert(itemPayload);
+      const { error: itemsErr } = await supabase.from('prescription_items').insert(itemsPayload);
       if (itemsErr) throw itemsErr;
 
-      toast.success("Manual prescription created");
-      onCreated?.();
-      reset();
+      toast.success('Manual prescription created');
       onOpenChange(false);
+      onCreated?.();
     } catch (e: any) {
-      toast.error(e?.message ?? "Failed to create prescription");
+      console.error(e);
+      toast.error(e?.message || 'Failed to create prescription');
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
   };
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(o) => {
-        if (!o) reset();
-        onOpenChange(o);
-      }}
-    >
-      <DialogContent className="max-w-5xl">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>New manual prescription</DialogTitle>
-          <DialogDescription>
-            Create a prescription for a registered patient or a walk-in patient (no account required).
-          </DialogDescription>
+          <DialogTitle>New Manual Prescription</DialogTitle>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          <div className="lg:col-span-1 space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Patient</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <FacilityPatientSelector
-                  facilityType="pharmacy"
-                  facilityId={pharmacyId}
-                  value={patient}
-                  onChange={setPatient}
-                />
-              </CardContent>
-            </Card>
+        <div className="space-y-6">
+          {/* Patient */}
+          <div className="space-y-3 border rounded-lg p-4">
+            <div className="text-sm font-semibold">Patient (Registered or Walk-in)</div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Notes (optional)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Pharmacist notes, insurance info, etc."
-                  className="min-h-[120px]"
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label>Registered Patient ID (optional)</Label>
+                <Input
+                  value={patientId}
+                  onChange={(e) => setPatientId(e.target.value)}
+                  placeholder="Paste patient user_id if registered"
                 />
-              </CardContent>
-            </Card>
+              </div>
+
+              <div className="space-y-1">
+                <Label>Walk-in Name (optional)</Label>
+                <Input
+                  value={patientName}
+                  onChange={(e) => setPatientName(e.target.value)}
+                  placeholder="Walk-in full name"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label>Phone (optional)</Label>
+                <Input value={patientPhone} onChange={(e) => setPatientPhone(e.target.value)} placeholder="+998..." />
+              </div>
+
+              <div className="space-y-1">
+                <Label>Email (optional)</Label>
+                <Input value={patientEmail} onChange={(e) => setPatientEmail(e.target.value)} placeholder="email@example.com" />
+              </div>
+            </div>
           </div>
 
-          <div className="lg:col-span-2 space-y-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Medications</CardTitle>
-                <Button variant="outline" onClick={addItem}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add medication
-                </Button>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {items.map((it, idx) => (
-                  <div key={idx} className="border rounded-lg p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="font-medium">Item #{idx + 1}</div>
-                      {items.length > 1 ? (
-                        <Button variant="ghost" size="icon" onClick={() => removeItem(idx)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      ) : null}
+          {/* Doctor / Notes */}
+          <div className="space-y-3 border rounded-lg p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label>Doctor ID (optional)</Label>
+                <Input value={doctorId} onChange={(e) => setDoctorId(e.target.value)} placeholder="Paste doctor_id if known" />
+              </div>
+
+              <div className="space-y-1">
+                <Label>Refills total</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={refillsTotal}
+                  onChange={(e) => setRefillsTotal(Number(e.target.value || 0))}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <Label>Notes (optional)</Label>
+              <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Diagnosis, instructions, etc." />
+            </div>
+          </div>
+
+          {/* Items */}
+          <div className="space-y-3 border rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-semibold">Medications</div>
+              <Button type="button" variant="outline" onClick={addItem}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add medication
+              </Button>
+            </div>
+
+            <div className="space-y-3">
+              {items.map((it, idx) => (
+                <Card key={idx} className="p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="font-medium">Item #{idx + 1}</div>
+                    {items.length > 1 && (
+                      <Button type="button" variant="ghost" onClick={() => removeItem(idx)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label>Medication name *</Label>
+                      <Input
+                        value={it.medication_name}
+                        onChange={(e) => updateItem(idx, { medication_name: e.target.value })}
+                        placeholder="Amoxicillin"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label>Medication code (optional)</Label>
+                      <Input
+                        value={it.medication_code}
+                        onChange={(e) => updateItem(idx, { medication_code: e.target.value })}
+                        placeholder="CODE123"
+                      />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <Label>Medication name</Label>
-                        <Input
-                          value={it.medication_name}
-                          onChange={(e) => updateItem(idx, { medication_name: e.target.value })}
-                          placeholder="e.g. Amoxicillin"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label>Dosage</Label>
-                        <Input
-                          value={it.dosage}
-                          onChange={(e) => updateItem(idx, { dosage: e.target.value })}
-                          placeholder="e.g. 500mg"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label>Frequency</Label>
-                        <Input
-                          value={it.frequency}
-                          onChange={(e) => updateItem(idx, { frequency: e.target.value })}
-                          placeholder="e.g. 3x/day"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <Label>Qty</Label>
-                          <Input
-                            type="number"
-                            value={it.quantity}
-                            onChange={(e) => updateItem(idx, { quantity: Number(e.target.value || 0) })}
-                            min={1}
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <Label>Unit</Label>
-                          <Input
-                            value={it.unit}
-                            onChange={(e) => updateItem(idx, { unit: e.target.value })}
-                            placeholder="tablets"
-                          />
-                        </div>
-                      </div>
-                      <div className="md:col-span-2 space-y-1">
-                        <Label>Instructions (optional)</Label>
-                        <Input
-                          value={it.instructions}
-                          onChange={(e) => updateItem(idx, { instructions: e.target.value })}
-                          placeholder="e.g. after meals"
-                        />
-                      </div>
+                    <div className="space-y-1">
+                      <Label>Dosage *</Label>
+                      <Input value={it.dosage} onChange={(e) => updateItem(idx, { dosage: e.target.value })} placeholder="500mg" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label>Frequency *</Label>
+                      <Input value={it.frequency} onChange={(e) => updateItem(idx, { frequency: e.target.value })} placeholder="2x daily" />
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label>Quantity *</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        value={it.quantity}
+                        onChange={(e) => updateItem(idx, { quantity: Number(e.target.value || 1) })}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label>Unit</Label>
+                      <Input value={it.unit} onChange={(e) => updateItem(idx, { unit: e.target.value })} placeholder="tabs/box/ml" />
                     </div>
                   </div>
-                ))}
 
-                <Button onClick={create} disabled={!canSave || saving} className="w-full">
-                  {saving ? "Creating..." : "Create prescription"}
-                </Button>
-              </CardContent>
-            </Card>
+                  <div className="space-y-1">
+                    <Label>Instructions (optional)</Label>
+                    <Textarea
+                      value={it.instructions}
+                      onChange={(e) => updateItem(idx, { instructions: e.target.value })}
+                      rows={2}
+                      placeholder="Take after meals..."
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      checked={it.substitutions_allowed}
+                      onCheckedChange={(v) => updateItem(idx, { substitutions_allowed: Boolean(v) })}
+                    />
+                    <span className="text-sm">Allow generic substitution</span>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreate} disabled={loading}>
+              {loading ? 'Creating...' : 'Create Prescription'}
+            </Button>
           </div>
         </div>
       </DialogContent>
