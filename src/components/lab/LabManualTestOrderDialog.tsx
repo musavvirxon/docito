@@ -1,31 +1,30 @@
-import { useEffect, useMemo, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { Plus, TestTube, Search, X } from "lucide-react";
-
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-
-import { FacilityPatientSelector, type SelectedPatient } from "@/components/patient/FacilityPatientSelector";
+import { useEffect, useMemo, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { toast } from 'sonner';
 
 type TestCatalogRow = {
   id: string;
-  test_code: string;
   name: string;
+  test_code: string;
   category: string;
-  sample_type: string | null;
-  turnaround_hours: number | null;
   price: number | null;
   requires_fasting: boolean | null;
+  sample_type: string | null;
+  turnaround_hours: number | null;
 };
+
+function makeOrderNumber() {
+  return `LAB-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+}
 
 export function LabManualTestOrderDialog({
   open,
@@ -34,322 +33,297 @@ export function LabManualTestOrderDialog({
   onCreated,
 }: {
   open: boolean;
-  onOpenChange: (o: boolean) => void;
+  onOpenChange: (v: boolean) => void;
   labCenterId: string;
   onCreated?: () => void;
 }) {
-  const [patient, setPatient] = useState<SelectedPatient | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // patient: either registered (patient_id) OR walk-in (snapshot fields)
+  const [patientId, setPatientId] = useState('');
+  const [patientName, setPatientName] = useState('');
+  const [patientPhone, setPatientPhone] = useState('');
+  const [patientEmail, setPatientEmail] = useState('');
+
+  const [priority, setPriority] = useState<'routine' | 'urgent' | 'stat'>('routine');
+  const [clinicalNotes, setClinicalNotes] = useState('');
 
   const [catalog, setCatalog] = useState<TestCatalogRow[]>([]);
-  const [loadingCatalog, setLoadingCatalog] = useState(false);
-
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState<string>("all");
+  const [search, setSearch] = useState('');
+  const [category, setCategory] = useState('all');
   const [selectedTests, setSelectedTests] = useState<string[]>([]);
 
-  const [priority, setPriority] = useState<string>("routine");
-  const [clinicalNotes, setClinicalNotes] = useState<string>("");
-
-  const [saving, setSaving] = useState(false);
-
   useEffect(() => {
-    if (!open || !labCenterId) return;
-    const load = async () => {
-      setLoadingCatalog(true);
-      try {
-        const { data, error } = await supabase
-          .from("test_catalog")
-          .select("id, test_code, name, category, sample_type, turnaround_hours, price, requires_fasting")
-          .eq("lab_center_id", labCenterId)
-          .eq("is_active", true)
-          .order("category", { ascending: true })
-          .order("name", { ascending: true });
+    if (!open) return;
 
-        if (error) throw error;
-        setCatalog((data ?? []) as any);
-      } catch (e: any) {
-        toast.error(e?.message ?? "Failed to load test catalog");
-      } finally {
-        setLoadingCatalog(false);
+    // reset
+    setPatientId('');
+    setPatientName('');
+    setPatientPhone('');
+    setPatientEmail('');
+    setPriority('routine');
+    setClinicalNotes('');
+    setSearch('');
+    setCategory('all');
+    setSelectedTests([]);
+
+    // load catalog
+    const run = async () => {
+      if (!labCenterId) return;
+      const { data, error } = await supabase
+        .from('test_catalog')
+        .select('id,name,test_code,category,price,requires_fasting,sample_type,turnaround_hours')
+        .eq('lab_center_id', labCenterId)
+        .order('name');
+
+      if (error) {
+        console.error(error);
+        toast.error('Failed to load test catalog');
+        return;
       }
+      setCatalog((data || []) as any);
     };
-    load();
+
+    run();
   }, [open, labCenterId]);
 
   const categories = useMemo(() => {
-    return Array.from(new Set(catalog.map((t) => t.category))).filter(Boolean);
+    return ['all', ...Array.from(new Set(catalog.map((c) => c.category))).filter(Boolean)];
   }, [catalog]);
 
-  const filtered = useMemo(() => {
-    const s = search.trim().toLowerCase();
+  const filteredCatalog = useMemo(() => {
+    const term = search.trim().toLowerCase();
     return catalog.filter((t) => {
       const matchesSearch =
-        !s ||
-        t.name.toLowerCase().includes(s) ||
-        (t.test_code || "").toLowerCase().includes(s);
-      const matchesCat = category === "all" || t.category === category;
-      return matchesSearch && matchesCat;
+        !term ||
+        t.name.toLowerCase().includes(term) ||
+        (t.test_code || '').toLowerCase().includes(term);
+
+      const matchesCategory = category === 'all' || t.category === category;
+      return matchesSearch && matchesCategory;
     });
   }, [catalog, search, category]);
 
-  const selectedDetails = useMemo(() => {
-    return catalog.filter((t) => selectedTests.includes(t.id));
-  }, [catalog, selectedTests]);
-
   const totalPrice = useMemo(() => {
-    return selectedDetails.reduce((sum, t) => sum + (t.price || 0), 0);
-  }, [selectedDetails]);
+    const map = new Map(catalog.map((t) => [t.id, t]));
+    return selectedTests.reduce((sum, id) => sum + (map.get(id)?.price || 0), 0);
+  }, [selectedTests, catalog]);
 
   const toggleTest = (id: string) => {
     setSelectedTests((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
 
-  const reset = () => {
-    setPatient(null);
-    setSearch("");
-    setCategory("all");
-    setSelectedTests([]);
-    setPriority("routine");
-    setClinicalNotes("");
+  const validate = () => {
+    if (!labCenterId) return 'Missing labCenterId';
+    if (selectedTests.length === 0) return 'Select at least 1 test';
+
+    // either patientId OR patientName is required
+    if (!patientId.trim() && !patientName.trim()) {
+      return 'Enter Patient ID (registered) OR Patient Name (walk-in)';
+    }
+    return null;
   };
 
-  const createOrder = async () => {
-    if (!labCenterId) return toast.error("Missing lab center");
-    if (!patient) return toast.error("Select a patient");
-    if (selectedTests.length === 0) return toast.error("Select at least 1 test");
+  const handleCreate = async () => {
+    const err = validate();
+    if (err) return toast.error(err);
 
-    setSaving(true);
+    setLoading(true);
     try {
-      // 1) create test_orders row
+      const order_number = makeOrderNumber();
+
+      // ✅ We cast to any so it works even if your generated types still require patient_id
+      // After your DB migration, you will have: patient_id nullable + facility_patient_id + snapshot fields
       const orderPayload: any = {
+        order_number,
         lab_center_id: labCenterId,
+        status: 'pending',
         priority,
-        clinical_notes: clinicalNotes || null,
-        status: "pending",
-        total_amount: totalPrice,
-        payment_status: "pending",
+        clinical_notes: clinicalNotes?.trim() || null,
+
+        // registered patient
+        patient_id: patientId.trim() ? patientId.trim() : null,
+
+        // walk-in snapshot (after migration)
+        patient_name: patientName.trim() || null,
+        patient_phone: patientPhone.trim() || null,
+        patient_email: patientEmail.trim() || null,
       };
 
-      if (patient.kind === "registered") {
-        orderPayload.patient_id = patient.patient_id;
-        orderPayload.patient_name = patient.full_name;
-        orderPayload.patient_phone = patient.phone;
-        orderPayload.patient_email = patient.email;
-      } else {
-        orderPayload.facility_patient_id = patient.facility_patient_id;
-        orderPayload.patient_name = patient.full_name;
-        orderPayload.patient_phone = patient.phone;
-        orderPayload.patient_email = patient.email;
-      }
-
-      const { data: order, error: orderError } = await supabase
-        .from("test_orders")
+      const { data: createdOrder, error: orderErr } = await supabase
+        .from('test_orders')
         .insert(orderPayload)
-        .select("*")
+        .select()
         .single();
 
-      if (orderError) throw orderError;
+      if (orderErr) throw orderErr;
 
-      // 2) create test_order_items
-      const items = selectedTests.map((testId) => ({
-        test_order_id: order.id,
+      const itemsPayload: any[] = selectedTests.map((testId) => ({
+        test_order_id: createdOrder.id,
         test_id: testId,
       }));
 
-      const { error: itemsError } = await supabase.from("test_order_items").insert(items);
-      if (itemsError) throw itemsError;
+      const { error: itemsErr } = await supabase.from('test_order_items').insert(itemsPayload);
+      if (itemsErr) throw itemsErr;
 
-      toast.success("Manual test order created");
-      onCreated?.();
-      reset();
+      toast.success('Manual lab order created');
       onOpenChange(false);
+      onCreated?.();
     } catch (e: any) {
-      toast.error(e?.message ?? "Failed to create order");
+      console.error(e);
+      toast.error(e?.message || 'Failed to create order');
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
   };
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(o) => {
-        if (!o) reset();
-        onOpenChange(o);
-      }}
-    >
-      <DialogContent className="max-w-5xl">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <TestTube className="h-5 w-5" />
-            New walk-in / manual test order
-          </DialogTitle>
-          <DialogDescription>
-            Create a lab order for a registered patient or a walk-in patient (no account required).
-          </DialogDescription>
+          <DialogTitle>New Manual Lab Order</DialogTitle>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          {/* Left: patient + catalog */}
-          <div className="lg:col-span-2 space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Patient</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <FacilityPatientSelector
-                  facilityType="lab"
-                  facilityId={labCenterId}
-                  value={patient}
-                  onChange={setPatient}
+        <div className="space-y-6">
+          {/* Patient */}
+          <div className="space-y-3 border rounded-lg p-4">
+            <div className="text-sm font-semibold">Patient (Registered or Walk-in)</div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label>Registered Patient ID (optional)</Label>
+                <Input
+                  value={patientId}
+                  onChange={(e) => setPatientId(e.target.value)}
+                  placeholder="Paste patient user_id if registered"
                 />
-              </CardContent>
-            </Card>
+              </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Choose tests</CardTitle>
-                <div className="flex flex-col sm:flex-row gap-3 mt-3">
-                  <div className="relative flex-1">
-                    <Search className="w-4 h-4 absolute left-3 top-3 opacity-60" />
-                    <Input
-                      className="pl-9"
-                      placeholder="Search tests..."
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                    />
-                  </div>
-                  <Select value={category} onValueChange={setCategory}>
-                    <SelectTrigger className="w-full sm:w-56">
-                      <SelectValue placeholder="Category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All categories</SelectItem>
-                      {categories.map((c) => (
-                        <SelectItem key={c} value={c}>
-                          {c}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardHeader>
+              <div className="space-y-1">
+                <Label>Walk-in Name (optional)</Label>
+                <Input
+                  value={patientName}
+                  onChange={(e) => setPatientName(e.target.value)}
+                  placeholder="Walk-in full name"
+                />
+              </div>
 
-              <CardContent className="p-0">
-                <ScrollArea className="h-[360px]">
-                  {loadingCatalog ? (
-                    <div className="p-6 text-center text-muted-foreground">Loading tests…</div>
-                  ) : filtered.length === 0 ? (
-                    <div className="p-6 text-center text-muted-foreground">No tests found</div>
-                  ) : (
-                    <div className="divide-y">
-                      {filtered.map((t) => (
-                        <div
-                          key={t.id}
-                          className={`p-4 hover:bg-muted/50 cursor-pointer ${
-                            selectedTests.includes(t.id) ? "bg-primary/5" : ""
-                          }`}
-                          onClick={() => toggleTest(t.id)}
-                        >
-                          <div className="flex items-start gap-3">
-                            <Checkbox checked={selectedTests.includes(t.id)} onCheckedChange={() => toggleTest(t.id)} />
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium">{t.name}</span>
-                                <Badge variant="outline" className="text-xs font-mono">
-                                  {t.test_code}
-                                </Badge>
-                              </div>
-                              <div className="text-sm text-muted-foreground mt-1">
-                                {t.category}
-                                {t.sample_type ? ` • ${t.sample_type}` : ""}
-                                {t.turnaround_hours ? ` • ${t.turnaround_hours}h` : ""}
-                              </div>
-                              {t.requires_fasting ? (
-                                <Badge variant="secondary" className="mt-2 text-xs">
-                                  Requires fasting
-                                </Badge>
-                              ) : null}
-                            </div>
-                            {typeof t.price === "number" ? <span className="font-medium">${t.price}</span> : null}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </ScrollArea>
-              </CardContent>
-            </Card>
+              <div className="space-y-1">
+                <Label>Phone (optional)</Label>
+                <Input
+                  value={patientPhone}
+                  onChange={(e) => setPatientPhone(e.target.value)}
+                  placeholder="+998..."
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label>Email (optional)</Label>
+                <Input
+                  value={patientEmail}
+                  onChange={(e) => setPatientEmail(e.target.value)}
+                  placeholder="email@example.com"
+                />
+              </div>
+            </div>
           </div>
 
-          {/* Right: summary */}
-          <div className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Order summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label className="text-sm text-muted-foreground">Selected tests ({selectedTests.length})</Label>
-                  {selectedDetails.length === 0 ? (
-                    <p className="text-sm text-muted-foreground mt-2">No tests selected</p>
-                  ) : (
-                    <div className="space-y-2 mt-2">
-                      {selectedDetails.map((t) => (
-                        <div key={t.id} className="flex items-center justify-between text-sm">
-                          <span className="truncate">{t.name}</span>
-                          <div className="flex items-center gap-2">
-                            {typeof t.price === "number" ? <span className="text-muted-foreground">${t.price}</span> : null}
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6"
-                              onClick={() => toggleTest(t.id)}
-                            >
-                              <X className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
+          {/* Order details */}
+          <div className="space-y-3 border rounded-lg p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label>Priority</Label>
+                <Select value={priority} onValueChange={(v) => setPriority(v as any)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Priority" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="routine">Routine</SelectItem>
+                    <SelectItem value="urgent">Urgent</SelectItem>
+                    <SelectItem value="stat">STAT</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1">
+                <Label>Total</Label>
+                <Input value={`$${totalPrice}`} readOnly />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <Label>Clinical Notes (optional)</Label>
+              <Textarea
+                value={clinicalNotes}
+                onChange={(e) => setClinicalNotes(e.target.value)}
+                placeholder="Symptoms, diagnosis, instructions..."
+                rows={3}
+              />
+            </div>
+          </div>
+
+          {/* Tests */}
+          <div className="space-y-3 border rounded-lg p-4">
+            <div className="flex flex-col md:flex-row gap-3">
+              <div className="flex-1">
+                <Label>Search tests</Label>
+                <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="CBC, glucose..." />
+              </div>
+              <div className="w-full md:w-64">
+                <Label>Category</Label>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c === 'all' ? 'All categories' : c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <ScrollArea className="h-[280px] border rounded-md">
+              <div className="divide-y">
+                {filteredCatalog.map((t) => (
+                  <div
+                    key={t.id}
+                    className="p-3 hover:bg-muted/50 cursor-pointer flex items-start gap-3"
+                    onClick={() => toggleTest(t.id)}
+                  >
+                    <Checkbox checked={selectedTests.includes(t.id)} onCheckedChange={() => toggleTest(t.id)} />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <div className="font-medium">{t.name}</div>
+                        <Badge variant="outline" className="text-xs font-mono">{t.test_code}</Badge>
+                        {t.requires_fasting ? <Badge variant="secondary" className="text-xs">Fasting</Badge> : null}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {t.category}
+                        {t.sample_type ? ` • ${t.sample_type}` : ''}
+                        {t.turnaround_hours ? ` • ${t.turnaround_hours}h` : ''}
+                      </div>
                     </div>
-                  )}
-                </div>
+                    <div className="font-medium">{t.price ? `$${t.price}` : ''}</div>
+                  </div>
+                ))}
+                {filteredCatalog.length === 0 ? (
+                  <div className="p-6 text-center text-muted-foreground">No tests found</div>
+                ) : null}
+              </div>
+            </ScrollArea>
+          </div>
 
-                <div className="space-y-2">
-                  <Label>Priority</Label>
-                  <Select value={priority} onValueChange={setPriority}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="routine">Routine</SelectItem>
-                      <SelectItem value="urgent">Urgent</SelectItem>
-                      <SelectItem value="stat">STAT</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Clinical notes (optional)</Label>
-                  <Textarea
-                    value={clinicalNotes}
-                    onChange={(e) => setClinicalNotes(e.target.value)}
-                    placeholder="Reason, symptoms, special instructions..."
-                    className="min-h-[100px]"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between pt-2 border-t">
-                  <span className="text-sm text-muted-foreground">Estimated total</span>
-                  <span className="font-bold">${totalPrice.toFixed(2)}</span>
-                </div>
-
-                <Button onClick={createOrder} disabled={saving} className="w-full">
-                  <Plus className="h-4 w-4 mr-2" />
-                  {saving ? "Creating..." : "Create order"}
-                </Button>
-              </CardContent>
-            </Card>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreate} disabled={loading}>
+              {loading ? 'Creating...' : 'Create Order'}
+            </Button>
           </div>
         </div>
       </DialogContent>
