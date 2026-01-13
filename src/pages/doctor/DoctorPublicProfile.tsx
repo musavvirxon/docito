@@ -111,8 +111,8 @@ export default function DoctorPublicProfile() {
 
       try {
         // Try to fetch by custom link first, then by ID
-        const { data, error } = await (supabase
-          .from("doctors" as any)
+        const { data, error } = await supabase
+          .from("doctors")
           .select(`
             *,
             profiles:user_id (
@@ -133,13 +133,15 @@ export default function DoctorPublicProfile() {
             )
           `)
           .or(`id.eq.${slug},custom_profile_link.eq.${slug}`)
-          .single());
+          .single();
 
         if (error) throw error;
 
+        const doctorData = data as any;
+
         // Check visibility
-        const isOwnProfile = user && data.user_id === user.id;
-        if (!data && !isOwnProfile) {
+        const isOwnProfile = user && doctorData?.user_id === user.id;
+        if (!doctorData && !isOwnProfile) {
           toast({
             title: t("common:errors.notFound"),
             description: t("doctors:profile.notFoundDescription"),
@@ -149,16 +151,16 @@ export default function DoctorPublicProfile() {
           return;
         }
 
-        setDoctor(data as unknown as DoctorProfileData);
+        setDoctor(doctorData as DoctorProfileData);
 
         // Fetch services/procedures for this doctor
-        if (data?.id) {
-          const { data: proceduresData } = await supabase
-            .from("procedures")
+        if (doctorData?.id) {
+          const { data: proceduresData } = await (supabase
+            .from("procedures" as any)
             .select("*")
-            .eq("doctor_id", data.id)
+            .eq("doctor_id", doctorData.id)
             .eq("is_active", true)
-            .limit(10);
+            .limit(10) as any);
 
           setServices(proceduresData || []);
         }
@@ -830,10 +832,10 @@ export default function DoctorPublicProfile() {
           <AppointmentBookingPopup
             open={showBookingPopup}
             onOpenChange={setShowBookingPopup}
-            doctorId={doctor.id}
-            doctorName={doctorName}
-            specialty={specialty}
-            practiceId={doctor.practices?.id}
+            entityId={doctor.practices?.id || doctor.id}
+            entityName={doctor.practices?.name || doctorName}
+            providerId={doctor.id}
+            providerName={doctorName}
           />
         )}
       </div>
