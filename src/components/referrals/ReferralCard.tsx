@@ -101,7 +101,7 @@ export const ReferralCard = ({
   const showBookSlot = role === 'patient' && referral.status === 'slots_available';
   const showComplete = role === 'receiver' && referral.status === 'booked';
 
-  // ✅ Walk-in fallback (won't break TS even if fields aren't in the interface yet)
+  // ✅ Walk-in fallback fields live on referral row after migration
   const rAny = referral as any;
   const patientName =
     referral.patient?.full_name ||
@@ -138,9 +138,7 @@ export const ReferralCard = ({
         </div>
 
         <div className="mt-2">
-          <p className="text-sm font-medium text-muted-foreground">
-            {referral.referral_number}
-          </p>
+          <p className="text-sm font-medium text-muted-foreground">{referral.referral_number}</p>
           <h3 className="font-semibold mt-1">
             {getReferralTypeLabel(referral.referral_type_enum || 'consultation')}
           </h3>
@@ -148,7 +146,7 @@ export const ReferralCard = ({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* ✅ Patient Info always visible */}
+        {/* ✅ Patient Info always visible (registered OR walk-in) */}
         <div className="flex items-center gap-2 text-sm">
           <User className="h-4 w-4 text-muted-foreground" />
           <span className="font-medium">Patient:</span>
@@ -169,9 +167,7 @@ export const ReferralCard = ({
                   <span>
                     {format(new Date(referral.valid_from), 'MMM d')} - {format(new Date(referral.valid_until), 'MMM d, yyyy')}
                   </span>
-                  {!isValid && (
-                    <AlertCircle className="h-4 w-4 text-destructive" />
-                  )}
+                  {!isValid && <AlertCircle className="h-4 w-4 text-destructive" />}
                 </div>
               </TooltipTrigger>
               <TooltipContent>
@@ -212,9 +208,7 @@ export const ReferralCard = ({
               <div className="text-sm">
                 <span className="text-muted-foreground">Preferred Date: </span>
                 <span>{format(new Date(referral.preferred_date), 'MMMM d, yyyy')}</span>
-                {referral.preferred_time_slot && (
-                  <span className="ml-2">at {referral.preferred_time_slot}</span>
-                )}
+                {referral.preferred_time_slot && <span className="ml-2">at {referral.preferred_time_slot}</span>}
               </div>
             )}
           </div>
