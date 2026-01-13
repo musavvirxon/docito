@@ -674,12 +674,23 @@ export type Database = {
           diagnosis_codes: string[] | null
           doctor_id: string
           exam_name: string
+          external_patient_ref: string | null
           findings: string | null
           id: string
           impression: string | null
           modality: string
           order_number: string
-          patient_id: string
+          patient_email: string | null
+          patient_id: string | null
+          patient_name: string | null
+          patient_phone: string | null
+          patient_snapshot_address: string | null
+          patient_snapshot_dob: string | null
+          patient_snapshot_email: string | null
+          patient_snapshot_full_name: string | null
+          patient_snapshot_gender: string | null
+          patient_snapshot_id_number: string | null
+          patient_snapshot_phone: string | null
           performed_at: string | null
           performed_by: string | null
           priority: string | null
@@ -702,12 +713,23 @@ export type Database = {
           diagnosis_codes?: string[] | null
           doctor_id: string
           exam_name: string
+          external_patient_ref?: string | null
           findings?: string | null
           id?: string
           impression?: string | null
           modality: string
           order_number?: string
-          patient_id: string
+          patient_email?: string | null
+          patient_id?: string | null
+          patient_name?: string | null
+          patient_phone?: string | null
+          patient_snapshot_address?: string | null
+          patient_snapshot_dob?: string | null
+          patient_snapshot_email?: string | null
+          patient_snapshot_full_name?: string | null
+          patient_snapshot_gender?: string | null
+          patient_snapshot_id_number?: string | null
+          patient_snapshot_phone?: string | null
           performed_at?: string | null
           performed_by?: string | null
           priority?: string | null
@@ -730,12 +752,23 @@ export type Database = {
           diagnosis_codes?: string[] | null
           doctor_id?: string
           exam_name?: string
+          external_patient_ref?: string | null
           findings?: string | null
           id?: string
           impression?: string | null
           modality?: string
           order_number?: string
-          patient_id?: string
+          patient_email?: string | null
+          patient_id?: string | null
+          patient_name?: string | null
+          patient_phone?: string | null
+          patient_snapshot_address?: string | null
+          patient_snapshot_dob?: string | null
+          patient_snapshot_email?: string | null
+          patient_snapshot_full_name?: string | null
+          patient_snapshot_gender?: string | null
+          patient_snapshot_id_number?: string | null
+          patient_snapshot_phone?: string | null
           performed_at?: string | null
           performed_by?: string | null
           priority?: string | null
@@ -4375,9 +4408,20 @@ export type Database = {
           diagnosis_code: string | null
           doctor_id: string | null
           expires_at: string | null
+          external_patient_ref: string | null
           id: string
           notes: string | null
-          patient_id: string
+          patient_email: string | null
+          patient_id: string | null
+          patient_name: string | null
+          patient_phone: string | null
+          patient_snapshot_address: string | null
+          patient_snapshot_dob: string | null
+          patient_snapshot_email: string | null
+          patient_snapshot_full_name: string | null
+          patient_snapshot_gender: string | null
+          patient_snapshot_id_number: string | null
+          patient_snapshot_phone: string | null
           pharmacy_id: string | null
           prescribed_at: string
           prescription_number: string
@@ -4393,9 +4437,20 @@ export type Database = {
           diagnosis_code?: string | null
           doctor_id?: string | null
           expires_at?: string | null
+          external_patient_ref?: string | null
           id?: string
           notes?: string | null
-          patient_id: string
+          patient_email?: string | null
+          patient_id?: string | null
+          patient_name?: string | null
+          patient_phone?: string | null
+          patient_snapshot_address?: string | null
+          patient_snapshot_dob?: string | null
+          patient_snapshot_email?: string | null
+          patient_snapshot_full_name?: string | null
+          patient_snapshot_gender?: string | null
+          patient_snapshot_id_number?: string | null
+          patient_snapshot_phone?: string | null
           pharmacy_id?: string | null
           prescribed_at?: string
           prescription_number?: string
@@ -4411,9 +4466,20 @@ export type Database = {
           diagnosis_code?: string | null
           doctor_id?: string | null
           expires_at?: string | null
+          external_patient_ref?: string | null
           id?: string
           notes?: string | null
-          patient_id?: string
+          patient_email?: string | null
+          patient_id?: string | null
+          patient_name?: string | null
+          patient_phone?: string | null
+          patient_snapshot_address?: string | null
+          patient_snapshot_dob?: string | null
+          patient_snapshot_email?: string | null
+          patient_snapshot_full_name?: string | null
+          patient_snapshot_gender?: string | null
+          patient_snapshot_id_number?: string | null
+          patient_snapshot_phone?: string | null
           pharmacy_id?: string | null
           prescribed_at?: string
           prescription_number?: string
@@ -5114,11 +5180,22 @@ export type Database = {
           created_at: string
           diagnosis_codes: string[] | null
           estimated_duration_minutes: number | null
+          external_patient_ref: string | null
           id: string
           insurance_plan_id: string | null
           insurance_provider_id: string | null
           notes: string | null
-          patient_id: string
+          patient_email: string | null
+          patient_id: string | null
+          patient_name: string | null
+          patient_phone: string | null
+          patient_snapshot_address: string | null
+          patient_snapshot_dob: string | null
+          patient_snapshot_email: string | null
+          patient_snapshot_full_name: string | null
+          patient_snapshot_gender: string | null
+          patient_snapshot_id_number: string | null
+          patient_snapshot_phone: string | null
           pre_authorization_number: string | null
           preferred_date: string | null
           preferred_time_slot: string | null
@@ -5162,11 +5239,22 @@ export type Database = {
           created_at?: string
           diagnosis_codes?: string[] | null
           estimated_duration_minutes?: number | null
+          external_patient_ref?: string | null
           id?: string
           insurance_plan_id?: string | null
           insurance_provider_id?: string | null
           notes?: string | null
-          patient_id: string
+          patient_email?: string | null
+          patient_id?: string | null
+          patient_name?: string | null
+          patient_phone?: string | null
+          patient_snapshot_address?: string | null
+          patient_snapshot_dob?: string | null
+          patient_snapshot_email?: string | null
+          patient_snapshot_full_name?: string | null
+          patient_snapshot_gender?: string | null
+          patient_snapshot_id_number?: string | null
+          patient_snapshot_phone?: string | null
           pre_authorization_number?: string | null
           preferred_date?: string | null
           preferred_time_slot?: string | null
@@ -5210,11 +5298,22 @@ export type Database = {
           created_at?: string
           diagnosis_codes?: string[] | null
           estimated_duration_minutes?: number | null
+          external_patient_ref?: string | null
           id?: string
           insurance_plan_id?: string | null
           insurance_provider_id?: string | null
           notes?: string | null
-          patient_id?: string
+          patient_email?: string | null
+          patient_id?: string | null
+          patient_name?: string | null
+          patient_phone?: string | null
+          patient_snapshot_address?: string | null
+          patient_snapshot_dob?: string | null
+          patient_snapshot_email?: string | null
+          patient_snapshot_full_name?: string | null
+          patient_snapshot_gender?: string | null
+          patient_snapshot_id_number?: string | null
+          patient_snapshot_phone?: string | null
           pre_authorization_number?: string | null
           preferred_date?: string | null
           preferred_time_slot?: string | null
@@ -5734,11 +5833,22 @@ export type Database = {
           created_at: string
           diagnosis_codes: string[] | null
           doctor_id: string | null
+          external_patient_ref: string | null
           id: string
           insurance_covered: boolean | null
           lab_center_id: string | null
           order_number: string
-          patient_id: string
+          patient_email: string | null
+          patient_id: string | null
+          patient_name: string | null
+          patient_phone: string | null
+          patient_snapshot_address: string | null
+          patient_snapshot_dob: string | null
+          patient_snapshot_email: string | null
+          patient_snapshot_full_name: string | null
+          patient_snapshot_gender: string | null
+          patient_snapshot_id_number: string | null
+          patient_snapshot_phone: string | null
           payment_status: string | null
           priority: string | null
           sample_collected_at: string | null
@@ -5756,11 +5866,22 @@ export type Database = {
           created_at?: string
           diagnosis_codes?: string[] | null
           doctor_id?: string | null
+          external_patient_ref?: string | null
           id?: string
           insurance_covered?: boolean | null
           lab_center_id?: string | null
           order_number?: string
-          patient_id: string
+          patient_email?: string | null
+          patient_id?: string | null
+          patient_name?: string | null
+          patient_phone?: string | null
+          patient_snapshot_address?: string | null
+          patient_snapshot_dob?: string | null
+          patient_snapshot_email?: string | null
+          patient_snapshot_full_name?: string | null
+          patient_snapshot_gender?: string | null
+          patient_snapshot_id_number?: string | null
+          patient_snapshot_phone?: string | null
           payment_status?: string | null
           priority?: string | null
           sample_collected_at?: string | null
@@ -5778,11 +5899,22 @@ export type Database = {
           created_at?: string
           diagnosis_codes?: string[] | null
           doctor_id?: string | null
+          external_patient_ref?: string | null
           id?: string
           insurance_covered?: boolean | null
           lab_center_id?: string | null
           order_number?: string
-          patient_id?: string
+          patient_email?: string | null
+          patient_id?: string | null
+          patient_name?: string | null
+          patient_phone?: string | null
+          patient_snapshot_address?: string | null
+          patient_snapshot_dob?: string | null
+          patient_snapshot_email?: string | null
+          patient_snapshot_full_name?: string | null
+          patient_snapshot_gender?: string | null
+          patient_snapshot_id_number?: string | null
+          patient_snapshot_phone?: string | null
           payment_status?: string | null
           priority?: string | null
           sample_collected_at?: string | null

@@ -19,7 +19,7 @@ export function DashboardFooter({ className }: DashboardFooterProps) {
         
         <div className="flex items-center gap-4">
           <Link
-            to="/dashboard/feedback"
+            to="/feedback"
             className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors"
           >
             <MessageSquareWarning className="h-4 w-4" />
