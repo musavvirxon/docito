@@ -69,10 +69,10 @@ export function getUserRolesFromProfile(
 }
 
 export const DASHBOARD_ROUTES: Record<AppRole, string> = {
-  super_admin: "/super-admin-dashboard",
-  admin: "/admin-dashboard",
-  clinic_admin: "/admin-dashboard",
-  doctor: "/doctor-dashboard",
+  super_admin: "/super-admin/dashboard",
+  admin: "/admin/dashboard",
+  clinic_admin: "/admin/dashboard",
+  doctor: "/doctor/dashboard",
 
   pharmacy_admin: "/pharmacy/dashboard",
   lab_admin: "/lab/dashboard",
@@ -87,12 +87,12 @@ export const DASHBOARD_ROUTES: Record<AppRole, string> = {
   imaging_staff: "/imaging/dashboard",
   internal_imaging_tech: "/imaging/dashboard",
 
-  clinic_staff: "/staff-dashboard",
-  staff: "/staff-dashboard",
-  receptionist: "/staff-dashboard",
-  nurse: "/staff-dashboard",
+  clinic_staff: "/staff/dashboard",
+  staff: "/staff/dashboard",
+  receptionist: "/staff/dashboard",
+  nurse: "/staff/dashboard",
 
-  patient: "/patient-dashboard",
+  patient: "/patient/dashboard",
 };
 
 export const ROLE_PRIORITY: Record<AppRole, number> = {

@@ -43,8 +43,10 @@ const ImagingDashboard = lazy(() => import("@/pages/imaging/ImagingDashboard"));
 const AppointmentBooking = lazy(() => import("@/pages/AppointmentBooking"));
 const BookingConfirmation = lazy(() => import("@/pages/BookingConfirmation"));
 const DoctorProfile = lazy(() => import("@/pages/DoctorProfile"));
+const DoctorPublicProfile = lazy(() => import("@/pages/doctor/DoctorPublicProfile"));
 const VideoCall = lazy(() => import("@/pages/VideoCall"));
 const Messages = lazy(() => import("@/pages/Messages"));
+const FeedbackCenter = lazy(() => import("@/pages/FeedbackCenter"));
 
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
@@ -84,12 +86,18 @@ export default function App() {
           {/* Dashboards */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/feedback" element={<FeedbackCenter />} />
 
           <Route path="/patient-dashboard" element={<PatientDashboard />} />
+          <Route path="/patient/dashboard" element={<PatientDashboard />} />
           <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
+          <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
           <Route path="/staff-dashboard" element={<StaffDashboard />} />
+          <Route path="/staff/dashboard" element={<StaffDashboard />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
+          <Route path="/super-admin/dashboard" element={<SuperAdminDashboard />} />
 
           {/* Entity dashboards */}
           <Route path="/lab/dashboard" element={<LabDashboard />} />
@@ -100,6 +108,7 @@ export default function App() {
           <Route path="/book-appointment/:doctorId" element={<AppointmentBooking />} />
           <Route path="/booking-confirmation/:appointmentId" element={<BookingConfirmation />} />
           <Route path="/doctor-profile/:id" element={<DoctorProfile />} />
+          <Route path="/doctor/:slug" element={<DoctorPublicProfile />} />
 
           {/* Video Calls */}
           <Route path="/video-call" element={<VideoCall />} />
