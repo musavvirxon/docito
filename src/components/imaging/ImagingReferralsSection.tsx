@@ -1,13 +1,13 @@
+import { useState } from "react";
 import { FacilityReferralCreator, ReferralsSection } from "@/components/referrals";
+import { ImagingManualOrderDialog } from "./ImagingManualOrderDialog";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-interface ImagingReferralsSectionProps {
-  centerId: string;
-}
+export function ImagingReferralsSection({ centerId }: { centerId: string }) {
+  const [manualOpen, setManualOpen] = useState(false);
 
-export function ImagingReferralsSection({ centerId }: ImagingReferralsSectionProps) {
-  if (!centerId) {
-    return null;
-  }
+  if (!centerId) return null;
 
   return (
     <div className="space-y-6">
@@ -18,7 +18,14 @@ export function ImagingReferralsSection({ centerId }: ImagingReferralsSectionPro
             Manage incoming referrals and create outgoing referrals
           </p>
         </div>
-        <FacilityReferralCreator entityType="imaging_center" entityId={centerId} />
+
+        <div className="flex gap-2">
+          <Button onClick={() => setManualOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            New walk-in order
+          </Button>
+          <FacilityReferralCreator entityType="imaging_center" entityId={centerId} />
+        </div>
       </div>
 
       <ReferralsSection
@@ -37,6 +44,16 @@ export function ImagingReferralsSection({ centerId }: ImagingReferralsSectionPro
         showCreateButton={false}
         title="Outgoing Referrals"
         description="Referrals sent by your imaging center"
+      />
+
+      <ImagingManualOrderDialog
+        open={manualOpen}
+        onOpenChange={setManualOpen}
+        imagingCenterId={centerId}
+        onCreated={() => {
+          // simplest: hard reload section queries
+          // ReferralsSection already fetches; no callback needed.
+        }}
       />
     </div>
   );
