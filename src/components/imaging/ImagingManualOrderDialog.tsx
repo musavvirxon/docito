@@ -1,16 +1,18 @@
-import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
+import { PhoneInput } from '@/components/shared/PhoneInput';
+import { validatePhone } from '@/lib/phone/phone';
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-
-import { FacilityPatientSelector, type SelectedPatient } from "@/components/patient/FacilityPatientSelector";
+function makeImagingOrderNumber() {
+  return `IMG-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+}
 
 export function ImagingManualOrderDialog({
   open,
@@ -19,148 +21,147 @@ export function ImagingManualOrderDialog({
   onCreated,
 }: {
   open: boolean;
-  onOpenChange: (o: boolean) => void;
+  onOpenChange: (v: boolean) => void;
   imagingCenterId: string;
   onCreated?: () => void;
 }) {
-  const [patient, setPatient] = useState<SelectedPatient | null>(null);
-  const [reason, setReason] = useState("");
-  const [clinicalNotes, setClinicalNotes] = useState("");
-  const [priority, setPriority] = useState<"routine" | "urgent" | "stat">("routine");
-  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const reset = () => {
-    setPatient(null);
-    setReason("");
-    setClinicalNotes("");
-    setPriority("routine");
+  const [patientId, setPatientId] = useState('');
+  const [patientName, setPatientName] = useState('');
+  const [patientPhone, setPatientPhone] = useState('');
+  const [patientEmail, setPatientEmail] = useState('');
+
+  const [studyType, setStudyType] = useState<'xray' | 'ct' | 'mri' | 'ultrasound' | 'mammography' | 'other'>('xray');
+  const [studyName, setStudyName] = useState('');
+  const [clinicalNotes, setClinicalNotes] = useState('');
+
+  useEffect(() => {
+    if (!open) return;
+    setPatientId('');
+    setPatientName('');
+    setPatientPhone('');
+    setPatientEmail('');
+    setStudyType('xray');
+    setStudyName('');
+    setClinicalNotes('');
+  }, [open]);
+
+  const validate = () => {
+    if (!imagingCenterId) return 'Missing imaging center';
+    if (!patientId.trim() && !patientName.trim()) return 'Enter Patient ID (registered) OR Patient Name (walk-in)';
+
+    const phoneCheck = validatePhone(patientPhone);
+    if (!phoneCheck.ok) return phoneCheck.reason || 'Invalid phone';
+
+    if (!studyName.trim()) return 'Study name is required (e.g. Chest X-Ray)';
+    return null;
   };
 
-  const create = async () => {
-    if (!imagingCenterId) return toast.error("Missing imaging center");
-    if (!patient) return toast.error("Select a patient");
-    if (!reason.trim()) return toast.error("Reason is required");
+  const handleCreate = async () => {
+    const err = validate();
+    if (err) return toast.error(err);
 
-    setSaving(true);
+    setLoading(true);
     try {
-      // valid_until: 30 days from now
-      const validUntil = new Date();
-      validUntil.setDate(validUntil.getDate() + 30);
+      const order_number = makeImagingOrderNumber();
+      const phone = validatePhone(patientPhone).normalized;
 
+      // clinic_imaging_orders assumed existing in your schema
       const payload: any = {
-        // patient (registered or walk-in)
-        patient_id: null,
-        facility_patient_id: null,
+        order_number,
+        imaging_center_id: imagingCenterId,
+        status: 'pending',
+        study_type: studyType,
+        study_name: studyName.trim(),
+        clinical_notes: clinicalNotes.trim() || null,
 
-        patient_name: patient.full_name,
-        patient_phone: patient.kind === "registered" ? (patient.phone ?? null) : patient.phone,
-        patient_email: patient.email ?? null,
-
-        // referrer = imaging_center (self) so it shows in outgoing too
-        referrer_type: "imaging_center",
-        referrer_entity_id: imagingCenterId,
-        referrer_user_id: (await supabase.auth.getUser()).data.user?.id,
-
-        // receiver = imaging_center (this center) so it appears in incoming queue
-        receiver_type: "imaging_center",
-        receiver_entity_id: imagingCenterId,
-
-        referral_type_enum: "imaging_study",
-        priority,
-        status: "sent",
-
-        reason: reason.trim(),
-        clinical_notes: clinicalNotes || null,
-
-        valid_from: new Date().toISOString(),
-        valid_until: validUntil.toISOString(),
-        estimated_duration_minutes: 30,
+        patient_id: patientId.trim() ? patientId.trim() : null,
+        patient_name: patientName.trim() || null,
+        patient_phone: phone,
+        patient_email: patientEmail.trim() || null,
       };
 
-      if (patient.kind === "registered") payload.patient_id = patient.patient_id;
-      else payload.facility_patient_id = patient.facility_patient_id;
-
-      const { error } = await supabase.from("referrals").insert(payload);
+      const { error } = await supabase.from('clinic_imaging_orders').insert(payload);
       if (error) throw error;
 
-      toast.success("Imaging walk-in order created");
-      onCreated?.();
-      reset();
+      toast.success('Manual imaging order created');
       onOpenChange(false);
+      onCreated?.();
     } catch (e: any) {
-      toast.error(e?.message ?? "Failed to create imaging order");
+      console.error(e);
+      toast.error(e?.message || 'Failed to create imaging order');
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
   };
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(o) => {
-        if (!o) reset();
-        onOpenChange(o);
-      }}
-    >
-      <DialogContent className="max-w-3xl">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>New walk-in imaging order</DialogTitle>
-          <DialogDescription>
-            Creates an incoming imaging referral/order for this center (registered or walk-in patient).
-          </DialogDescription>
+          <DialogTitle>New Manual Imaging Order</DialogTitle>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Patient</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <FacilityPatientSelector
-                facilityType="imaging_center"
-                facilityId={imagingCenterId}
-                value={patient}
-                onChange={setPatient}
-              />
-            </CardContent>
-          </Card>
+        <div className="space-y-6">
+          <div className="space-y-3 border rounded-lg p-4">
+            <div className="text-sm font-semibold">Patient (Registered or Walk-in)</div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Order details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>Priority</Label>
-                <div className="flex gap-2">
-                  <Button type="button" variant={priority === "routine" ? "default" : "outline"} onClick={() => setPriority("routine")}>
-                    Routine
-                  </Button>
-                  <Button type="button" variant={priority === "urgent" ? "default" : "outline"} onClick={() => setPriority("urgent")}>
-                    Urgent
-                  </Button>
-                  <Button type="button" variant={priority === "stat" ? "default" : "outline"} onClick={() => setPriority("stat")}>
-                    STAT
-                  </Button>
-                </div>
+                <Label>Registered Patient ID (optional)</Label>
+                <Input value={patientId} onChange={(e) => setPatientId(e.target.value)} placeholder="Registered patient user_id" />
               </div>
 
               <div className="space-y-1">
-                <Label>Reason</Label>
-                <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g. Suspected fracture, head CT..." />
+                <Label>Walk-in Name (optional)</Label>
+                <Input value={patientName} onChange={(e) => setPatientName(e.target.value)} placeholder="Walk-in full name" />
+              </div>
+
+              <PhoneInput value={patientPhone} onChange={setPatientPhone} />
+
+              <div className="space-y-1">
+                <Label>Email (optional)</Label>
+                <Input value={patientEmail} onChange={(e) => setPatientEmail(e.target.value)} placeholder="email@example.com" />
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3 border rounded-lg p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label>Study type</Label>
+                <Select value={studyType} onValueChange={(v) => setStudyType(v as any)}>
+                  <SelectTrigger><SelectValue placeholder="Study type" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="xray">X-Ray</SelectItem>
+                    <SelectItem value="ct">CT</SelectItem>
+                    <SelectItem value="mri">MRI</SelectItem>
+                    <SelectItem value="ultrasound">Ultrasound</SelectItem>
+                    <SelectItem value="mammography">Mammography</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-1">
-                <Label>Clinical notes (optional)</Label>
-                <Textarea value={clinicalNotes} onChange={(e) => setClinicalNotes(e.target.value)} placeholder="Symptoms, contraindications, special instructions..." />
+                <Label>Study name *</Label>
+                <Input value={studyName} onChange={(e) => setStudyName(e.target.value)} placeholder="Chest X-Ray, Brain MRI..." />
               </div>
+            </div>
 
-              <Button onClick={create} disabled={saving} className="w-full">
-                <Plus className="h-4 w-4 mr-2" />
-                {saving ? "Creating..." : "Create imaging order"}
-              </Button>
-            </CardContent>
-          </Card>
+            <div className="space-y-1">
+              <Label>Clinical notes (optional)</Label>
+              <Textarea value={clinicalNotes} onChange={(e) => setClinicalNotes(e.target.value)} rows={3} placeholder="Symptoms, suspected diagnosis, instructions..." />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>Cancel</Button>
+            <Button onClick={handleCreate} disabled={loading}>
+              {loading ? 'Creating...' : 'Create Imaging Order'}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
