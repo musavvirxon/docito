@@ -98,6 +98,19 @@
       "error": "Failed to save preferences"
     }
   },
+  "actions": {
+    "save": "Save",
+    "share": "Share",
+    "copied": "Copied!"
+  },
+  "errors": {
+    "notFound": "Not Found",
+    "error": "Error",
+    "copyFailed": "Failed to copy"
+  },
+  "nav": {
+    "doctors": "Doctors"
+  },
   "language": {
     "select": "Select language"
   }

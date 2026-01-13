@@ -26,7 +26,7 @@ export type AppRole =
   | "nurse"
   | "patient";
 
-export const PATIENT_DASHBOARD_ROUTE = "/patient-dashboard";
+export const PATIENT_DASHBOARD_ROUTE = "/patient/dashboard";
 export const roleLabels: Record<AppRole, string> = {
   super_admin: "Super Admin",
   admin: "Admin",
