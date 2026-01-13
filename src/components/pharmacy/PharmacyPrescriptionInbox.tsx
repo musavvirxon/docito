@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -42,51 +42,47 @@ import {
   RefreshCw,
   Plus,
   Phone,
-  Mail,
+  Mail
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-
-// ✅ Manual Rx dialog (you must have this file created)
 import { PharmacyManualPrescriptionDialog } from './PharmacyManualPrescriptionDialog';
-
-// Works for both registered + walk-in after your migration
-interface Prescription {
-  id: string;
-  patient_id: string | null;
-  facility_patient_id?: string | null;
-
-  // snapshot fields (registered OR walk-in)
-  patient_name?: string | null;
-  patient_phone?: string | null;
-  patient_email?: string | null;
-
-  doctor_id: string | null;
-  status: string;
-  notes: string | null;
-  refills_remaining: number;
-  refills_total: number;
-  created_at: string;
-  pharmacy_id: string | null;
-
-  prescription_number?: string | null;
-
-  prescription_items?: PrescriptionItem[];
-
-  // join doctor view (exists via foreign key)
-  doctor?: { full_name: string | null; specialty: string | null } | null;
-}
 
 interface PrescriptionItem {
   id: string;
   medication_name: string;
   medication_code: string | null;
-  dosage: string | null;
-  frequency: string | null;
+  dosage: string;
+  frequency: string;
   quantity: number;
-  unit: string;
+  unit: string | null;
   instructions: string | null;
-  substitutions_allowed: boolean;
+  substitutions_allowed: boolean | null;
+}
+
+interface Prescription {
+  id: string;
+  patient_id: string | null;
+  doctor_id: string | null;
+  status: string | null;
+  notes: string | null;
+  refills_remaining: number | null;
+  refills_total: number | null;
+  created_at: string;
+  pharmacy_id: string | null;
+  prescription_number?: string | null;
+
+  // returned by select()
+  prescription_items?: PrescriptionItem[];
+
+  // walk-in snapshot fields (after your migration)
+  facility_patient_id?: string | null;
+  patient_name?: string | null;
+  patient_phone?: string | null;
+  patient_email?: string | null;
+
+  // doctor view join (FK exists)
+  doctor?: { full_name: string | null; specialty: string | null } | null;
 }
 
 interface Props {
@@ -106,13 +102,11 @@ export default function PharmacyPrescriptionInbox({ pharmacyId }: Props) {
   const [pharmacistNotes, setPharmacistNotes] = useState('');
   const [processing, setProcessing] = useState(false);
 
-  // ✅ 4B: manual dialog open state
+  // ✅ B: manual Rx dialog
   const [manualOpen, setManualOpen] = useState(false);
 
   useEffect(() => {
-    if (pharmacyId) {
-      fetchPrescriptions();
-    }
+    if (pharmacyId) fetchPrescriptions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pharmacyId]);
 
@@ -120,27 +114,20 @@ export default function PharmacyPrescriptionInbox({ pharmacyId }: Props) {
     try {
       setLoading(true);
 
-      // ✅ Important: We rely on snapshot patient fields for walk-ins (patient_name/phone/email)
-      // Doctor info is joined from doctor_profiles_view (foreign key exists).
       const { data, error } = await supabase
         .from('prescriptions')
-        .select(
-          `
+        .select(`
           *,
           prescription_items(*),
-          doctor:doctor_id(
-            full_name,
-            specialty
-          )
-        `
-        )
-        // inbox: pharmacy's assigned + unassigned pending
+          doctor:doctor_id(full_name, specialty)
+        `)
         .or(`pharmacy_id.eq.${pharmacyId},status.eq.pending`)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+
       setPrescriptions((data || []) as any);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching prescriptions:', error);
       toast.error('Failed to load prescriptions');
     } finally {
@@ -188,28 +175,22 @@ export default function PharmacyPrescriptionInbox({ pharmacyId }: Props) {
     );
   };
 
-  // ✅ 6: compute patient display (walk-in OR registered snapshot)
-  const getPatientDisplay = (rx: Prescription) => {
-    const name = rx.patient_name?.trim() || 'Unknown patient';
-    const phone = rx.patient_phone?.trim() || null;
-    const email = rx.patient_email?.trim() || null;
+  const patientDisplay = (rx: Prescription) => {
+    const name =
+      (rx.patient_name && rx.patient_name.trim()) ||
+      (rx.patient_id ? `Patient ${rx.patient_id.slice(0, 8)}…` : 'Unknown');
+    const phone = rx.patient_phone || null;
+    const email = rx.patient_email || null;
     const isWalkIn = !!rx.facility_patient_id || !rx.patient_id;
     return { name, phone, email, isWalkIn };
   };
 
   const filteredPrescriptions = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
-
     return prescriptions.filter((rx) => {
-      const p = getPatientDisplay(rx);
-
-      const matchesSearch =
-        !term ||
-        rx.id.toLowerCase().includes(term) ||
-        (rx.prescription_number || '').toLowerCase().includes(term) ||
-        p.name.toLowerCase().includes(term) ||
-        (p.phone || '').toLowerCase().includes(term);
-
+      const p = patientDisplay(rx);
+      const hay = `${rx.id} ${rx.prescription_number ?? ''} ${p.name} ${p.phone ?? ''} ${p.email ?? ''}`.toLowerCase();
+      const matchesSearch = !term || hay.includes(term);
       const matchesStatus = statusFilter === 'all' || rx.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
@@ -242,7 +223,7 @@ export default function PharmacyPrescriptionInbox({ pharmacyId }: Props) {
                 <FileText className="h-5 w-5" />
                 Prescriptions Inbox
               </CardTitle>
-              <CardDescription>Manage incoming prescriptions and manual walk-in prescriptions</CardDescription>
+              <CardDescription>Manage incoming prescriptions + manual walk-in prescriptions</CardDescription>
             </div>
 
             <div className="flex gap-2 items-center flex-wrap">
@@ -251,7 +232,7 @@ export default function PharmacyPrescriptionInbox({ pharmacyId }: Props) {
               </Badge>
               <Badge variant="outline">{reviewCount} In Review</Badge>
 
-              {/* ✅ 4B: New manual Rx */}
+              {/* ✅ B: manual Rx */}
               <Button onClick={() => setManualOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 New manual Rx
@@ -271,12 +252,11 @@ export default function PharmacyPrescriptionInbox({ pharmacyId }: Props) {
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 className="pl-10"
-                placeholder="Search by ID, prescription #, patient name, phone..."
+                placeholder="Search by ID, prescription #, patient name/phone..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Filter by status" />
@@ -318,7 +298,7 @@ export default function PharmacyPrescriptionInbox({ pharmacyId }: Props) {
                   </TableRow>
                 ) : (
                   filteredPrescriptions.map((rx) => {
-                    const p = getPatientDisplay(rx);
+                    const p = patientDisplay(rx);
                     return (
                       <TableRow key={rx.id} className={rx.status === 'pending' ? 'bg-yellow-500/5' : ''}>
                         <TableCell className="font-mono text-sm">
@@ -326,17 +306,12 @@ export default function PharmacyPrescriptionInbox({ pharmacyId }: Props) {
                           {(rx.prescription_number || rx.id).toString().length > 12 ? '…' : ''}
                         </TableCell>
 
-                        {/* ✅ 6: Patient shows walk-in snapshot */}
                         <TableCell>
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
                               <User className="h-4 w-4 text-muted-foreground" />
                               <span className="font-medium">{p.name}</span>
-                              {p.isWalkIn && (
-                                <Badge variant="outline" className="text-xs">
-                                  Walk-in
-                                </Badge>
-                              )}
+                              {p.isWalkIn && <Badge variant="outline" className="text-xs">Walk-in</Badge>}
                             </div>
                             <div className="flex items-center gap-3 text-xs text-muted-foreground">
                               <span className="flex items-center gap-1">
@@ -365,7 +340,7 @@ export default function PharmacyPrescriptionInbox({ pharmacyId }: Props) {
                           </div>
                         </TableCell>
 
-                        <TableCell>{getStatusBadge(rx.status)}</TableCell>
+                        <TableCell>{getStatusBadge(rx.status || 'pending')}</TableCell>
 
                         <TableCell>
                           {(rx.refills_remaining ?? 0)}/{(rx.refills_total ?? 0)}
@@ -417,136 +392,132 @@ export default function PharmacyPrescriptionInbox({ pharmacyId }: Props) {
             <DialogDescription>ID: {selectedPrescription?.id}</DialogDescription>
           </DialogHeader>
 
-          {selectedPrescription && (() => {
-            const p = getPatientDisplay(selectedPrescription);
-            return (
-              <div className="space-y-6">
-                {/* Status and Info */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Status</p>
-                    {getStatusBadge(selectedPrescription.status)}
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Refills</p>
-                    <p className="font-medium">
-                      {(selectedPrescription.refills_remaining ?? 0)} of {(selectedPrescription.refills_total ?? 0)} remaining
-                    </p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Created</p>
-                    <p className="font-medium">
-                      {format(new Date(selectedPrescription.created_at), 'MMM d, yyyy')}
-                    </p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Time</p>
-                    <p className="font-medium">
-                      {format(new Date(selectedPrescription.created_at), 'h:mm a')}
-                    </p>
-                  </div>
+          {selectedPrescription && (
+            <div className="space-y-6">
+              {/* Status and Info */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Status</p>
+                  {getStatusBadge(selectedPrescription.status || 'pending')}
                 </div>
-
-                {/* Patient & Doctor */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card className="p-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <User className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-medium">Patient {p.isWalkIn ? '(Walk-in)' : ''}</p>
-                        <p className="text-sm text-muted-foreground">{p.name}</p>
-                      </div>
-                    </div>
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Phone className="h-4 w-4" />
-                        <span className="font-mono">{p.phone || '—'}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Mail className="h-4 w-4" />
-                        <span>{p.email || '—'}</span>
-                      </div>
-                    </div>
-                  </Card>
-
-                  <Card className="p-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
-                        <Stethoscope className="h-5 w-5 text-accent" />
-                      </div>
-                      <div>
-                        <p className="font-medium">Prescribing Doctor</p>
-                        <p className="text-sm text-muted-foreground">
-                          {selectedPrescription.doctor?.full_name || 'Unknown'}
-                        </p>
-                        {selectedPrescription.doctor?.specialty ? (
-                          <p className="text-xs text-muted-foreground">{selectedPrescription.doctor.specialty}</p>
-                        ) : null}
-                      </div>
-                    </div>
-                  </Card>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Refills</p>
+                  <p className="font-medium">
+                    {(selectedPrescription.refills_remaining ?? 0)} of {(selectedPrescription.refills_total ?? 0)} remaining
+                  </p>
                 </div>
-
-                {/* Items */}
-                <div>
-                  <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    <Pill className="h-4 w-4" />
-                    Medications
-                  </h4>
-                  <div className="space-y-3">
-                    {selectedPrescription.prescription_items?.map((item, idx) => (
-                      <Card key={idx} className="p-4">
-                        <div className="flex justify-between items-start gap-4">
-                          <div>
-                            <p className="font-medium">{item.medication_name}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {item.dosage || '—'} • {item.frequency || '—'}
-                            </p>
-                            {item.instructions && (
-                              <p className="text-sm mt-2 text-muted-foreground">
-                                Instructions: {item.instructions}
-                              </p>
-                            )}
-                          </div>
-                          <div className="text-right">
-                            <p className="font-medium">Qty: {item.quantity} {item.unit}</p>
-                            {item.substitutions_allowed && (
-                              <Badge variant="outline" className="mt-1">
-                                Generic OK
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Created</p>
+                  <p className="font-medium">
+                    {format(new Date(selectedPrescription.created_at), 'MMM d, yyyy')}
+                  </p>
                 </div>
-
-                {/* Doctor Notes */}
-                {selectedPrescription.notes && (
-                  <div>
-                    <h4 className="font-semibold mb-2">Doctor's Notes</h4>
-                    <Card className="p-4 bg-muted/50">
-                      <p className="text-sm">{selectedPrescription.notes}</p>
-                    </Card>
-                  </div>
-                )}
-
-                {/* Pharmacist Notes */}
-                <div>
-                  <h4 className="font-semibold mb-2">Pharmacist Notes</h4>
-                  <Textarea
-                    placeholder="Add notes about this prescription..."
-                    value={pharmacistNotes}
-                    onChange={(e) => setPharmacistNotes(e.target.value)}
-                    rows={3}
-                  />
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Time</p>
+                  <p className="font-medium">
+                    {format(new Date(selectedPrescription.created_at), 'h:mm a')}
+                  </p>
                 </div>
               </div>
-            );
-          })()}
+
+              {/* Patient & Doctor */}
+              {(() => {
+                const p = patientDisplay(selectedPrescription);
+                return (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Card className="p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <User className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium">Patient {p.isWalkIn ? '(Walk-in)' : ''}</p>
+                          <p className="text-sm text-muted-foreground">{p.name}</p>
+                        </div>
+                      </div>
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        <div>Phone: <span className="font-mono">{p.phone || '—'}</span></div>
+                        <div>Email: <span>{p.email || '—'}</span></div>
+                      </div>
+                    </Card>
+
+                    <Card className="p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
+                          <Stethoscope className="h-5 w-5 text-accent" />
+                        </div>
+                        <div>
+                          <p className="font-medium">Prescribing Doctor</p>
+                          <p className="text-sm text-muted-foreground">
+                            {selectedPrescription.doctor?.full_name || 'Unknown'}
+                          </p>
+                          {selectedPrescription.doctor?.specialty ? (
+                            <p className="text-xs text-muted-foreground">{selectedPrescription.doctor.specialty}</p>
+                          ) : null}
+                        </div>
+                      </div>
+                    </Card>
+                  </div>
+                );
+              })()}
+
+              {/* Items */}
+              <div>
+                <h4 className="font-semibold mb-3 flex items-center gap-2">
+                  <Pill className="h-4 w-4" />
+                  Medications
+                </h4>
+                <div className="space-y-3">
+                  {(selectedPrescription.prescription_items || []).map((item, idx) => (
+                    <Card key={idx} className="p-4">
+                      <div className="flex justify-between items-start gap-4">
+                        <div>
+                          <p className="font-medium">{item.medication_name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {item.dosage} • {item.frequency}
+                          </p>
+                          {item.instructions && (
+                            <p className="text-sm mt-2 text-muted-foreground">
+                              Instructions: {item.instructions}
+                            </p>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium">Qty: {item.quantity} {item.unit || ''}</p>
+                          {item.substitutions_allowed && (
+                            <Badge variant="outline" className="mt-1">
+                              Generic OK
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+
+              {/* Doctor Notes */}
+              {selectedPrescription.notes && (
+                <div>
+                  <h4 className="font-semibold mb-2">Doctor's Notes</h4>
+                  <Card className="p-4 bg-muted/50">
+                    <p className="text-sm">{selectedPrescription.notes}</p>
+                  </Card>
+                </div>
+              )}
+
+              {/* Pharmacist Notes */}
+              <div>
+                <h4 className="font-semibold mb-2">Pharmacist Notes</h4>
+                <Textarea
+                  placeholder="Add notes about this prescription..."
+                  value={pharmacistNotes}
+                  onChange={(e) => setPharmacistNotes(e.target.value)}
+                  rows={3}
+                />
+              </div>
+            </div>
+          )}
 
           <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setIsDetailsOpen(false)}>
@@ -606,7 +577,7 @@ export default function PharmacyPrescriptionInbox({ pharmacyId }: Props) {
         </DialogContent>
       </Dialog>
 
-      {/* ✅ 4B: Manual Prescription Dialog */}
+      {/* ✅ manual Rx dialog */}
       <PharmacyManualPrescriptionDialog
         open={manualOpen}
         onOpenChange={setManualOpen}
