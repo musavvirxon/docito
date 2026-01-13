@@ -9,6 +9,8 @@ import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Plus, Trash2 } from 'lucide-react';
+import { PhoneInput } from '@/components/shared/PhoneInput';
+import { validatePhone } from '@/lib/phone/phone';
 
 function makeRxNumber() {
   return `RX-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
@@ -38,13 +40,12 @@ export function PharmacyManualPrescriptionDialog({
 }) {
   const [loading, setLoading] = useState(false);
 
-  // registered OR walk-in
   const [patientId, setPatientId] = useState('');
   const [patientName, setPatientName] = useState('');
   const [patientPhone, setPatientPhone] = useState('');
   const [patientEmail, setPatientEmail] = useState('');
 
-  const [doctorId, setDoctorId] = useState(''); // optional
+  const [doctorId, setDoctorId] = useState('');
   const [notes, setNotes] = useState('');
   const [refillsTotal, setRefillsTotal] = useState(0);
 
@@ -86,8 +87,16 @@ export function PharmacyManualPrescriptionDialog({
   }, [open]);
 
   const validate = () => {
-    if (!pharmacyId) return 'Missing pharmacyId';
-    if (!patientId.trim() && !patientName.trim()) return 'Enter Patient ID (registered) OR Patient Name (walk-in)';
+    if (!pharmacyId) return 'Missing pharmacy';
+
+    if (!patientId.trim() && !patientName.trim()) {
+      return 'Enter Patient ID (registered) OR Patient Name (walk-in)';
+    }
+
+    // ✅ phone required
+    const phoneCheck = validatePhone(patientPhone);
+    if (!phoneCheck.ok) return phoneCheck.reason || 'Invalid phone';
+
     if (items.length === 0) return 'Add at least 1 medication';
     for (const it of items) {
       if (!it.medication_name.trim()) return 'Medication name is required';
@@ -129,6 +138,7 @@ export function PharmacyManualPrescriptionDialog({
     setLoading(true);
     try {
       const prescription_number = makeRxNumber();
+      const phone = validatePhone(patientPhone).normalized;
 
       const rxPayload: any = {
         prescription_number,
@@ -138,15 +148,11 @@ export function PharmacyManualPrescriptionDialog({
         refills_total: refillsTotal,
         refills_remaining: refillsTotal,
 
-        // optional doctor link
         doctor_id: doctorId.trim() ? doctorId.trim() : null,
-
-        // registered patient
         patient_id: patientId.trim() ? patientId.trim() : null,
 
-        // walk-in snapshot (after migration)
         patient_name: patientName.trim() || null,
-        patient_phone: patientPhone.trim() || null,
+        patient_phone: phone,
         patient_email: patientEmail.trim() || null,
       };
 
@@ -199,26 +205,16 @@ export function PharmacyManualPrescriptionDialog({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label>Registered Patient ID (optional)</Label>
-                <Input
-                  value={patientId}
-                  onChange={(e) => setPatientId(e.target.value)}
-                  placeholder="Paste patient user_id if registered"
-                />
+                <Input value={patientId} onChange={(e) => setPatientId(e.target.value)} placeholder="Registered patient user_id" />
               </div>
 
               <div className="space-y-1">
                 <Label>Walk-in Name (optional)</Label>
-                <Input
-                  value={patientName}
-                  onChange={(e) => setPatientName(e.target.value)}
-                  placeholder="Walk-in full name"
-                />
+                <Input value={patientName} onChange={(e) => setPatientName(e.target.value)} placeholder="Walk-in full name" />
               </div>
 
-              <div className="space-y-1">
-                <Label>Phone (optional)</Label>
-                <Input value={patientPhone} onChange={(e) => setPatientPhone(e.target.value)} placeholder="+998..." />
-              </div>
+              {/* ✅ required phone */}
+              <PhoneInput value={patientPhone} onChange={setPatientPhone} />
 
               <div className="space-y-1">
                 <Label>Email (optional)</Label>
@@ -232,17 +228,12 @@ export function PharmacyManualPrescriptionDialog({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label>Doctor ID (optional)</Label>
-                <Input value={doctorId} onChange={(e) => setDoctorId(e.target.value)} placeholder="Paste doctor_id if known" />
+                <Input value={doctorId} onChange={(e) => setDoctorId(e.target.value)} placeholder="doctor_id (optional)" />
               </div>
 
               <div className="space-y-1">
                 <Label>Refills total</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  value={refillsTotal}
-                  onChange={(e) => setRefillsTotal(Number(e.target.value || 0))}
-                />
+                <Input type="number" min={0} value={refillsTotal} onChange={(e) => setRefillsTotal(Number(e.target.value || 0))} />
               </div>
             </div>
 
@@ -277,19 +268,11 @@ export function PharmacyManualPrescriptionDialog({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <Label>Medication name *</Label>
-                      <Input
-                        value={it.medication_name}
-                        onChange={(e) => updateItem(idx, { medication_name: e.target.value })}
-                        placeholder="Amoxicillin"
-                      />
+                      <Input value={it.medication_name} onChange={(e) => updateItem(idx, { medication_name: e.target.value })} placeholder="Amoxicillin" />
                     </div>
                     <div className="space-y-1">
                       <Label>Medication code (optional)</Label>
-                      <Input
-                        value={it.medication_code}
-                        onChange={(e) => updateItem(idx, { medication_code: e.target.value })}
-                        placeholder="CODE123"
-                      />
+                      <Input value={it.medication_code} onChange={(e) => updateItem(idx, { medication_code: e.target.value })} placeholder="CODE123" />
                     </div>
 
                     <div className="space-y-1">
@@ -303,12 +286,7 @@ export function PharmacyManualPrescriptionDialog({
 
                     <div className="space-y-1">
                       <Label>Quantity *</Label>
-                      <Input
-                        type="number"
-                        min={1}
-                        value={it.quantity}
-                        onChange={(e) => updateItem(idx, { quantity: Number(e.target.value || 1) })}
-                      />
+                      <Input type="number" min={1} value={it.quantity} onChange={(e) => updateItem(idx, { quantity: Number(e.target.value || 1) })} />
                     </div>
                     <div className="space-y-1">
                       <Label>Unit</Label>
@@ -318,19 +296,11 @@ export function PharmacyManualPrescriptionDialog({
 
                   <div className="space-y-1">
                     <Label>Instructions (optional)</Label>
-                    <Textarea
-                      value={it.instructions}
-                      onChange={(e) => updateItem(idx, { instructions: e.target.value })}
-                      rows={2}
-                      placeholder="Take after meals..."
-                    />
+                    <Textarea value={it.instructions} onChange={(e) => updateItem(idx, { instructions: e.target.value })} rows={2} placeholder="Take after meals..." />
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <Checkbox
-                      checked={it.substitutions_allowed}
-                      onCheckedChange={(v) => updateItem(idx, { substitutions_allowed: Boolean(v) })}
-                    />
+                    <Checkbox checked={it.substitutions_allowed} onCheckedChange={(v) => updateItem(idx, { substitutions_allowed: Boolean(v) })} />
                     <span className="text-sm">Allow generic substitution</span>
                   </div>
                 </Card>
@@ -339,9 +309,7 @@ export function PharmacyManualPrescriptionDialog({
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-              Cancel
-            </Button>
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>Cancel</Button>
             <Button onClick={handleCreate} disabled={loading}>
               {loading ? 'Creating...' : 'Create Prescription'}
             </Button>
