@@ -57,7 +57,7 @@ export function PhoneInput({
       {showError ? (
         <p className="text-xs text-destructive">{validation.reason}</p>
       ) : (
-        <p className="text-xs text-muted-foreground">Enter with country code. UZ example: +998 90 123 45 67</p>
+        <p className="text-xs text-muted-foreground">Enter with country code. US example: +1 415 555 2671 </p>
       )}
     </div>
   );
