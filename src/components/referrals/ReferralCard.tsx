@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { 
-  ArrowRight, 
-  Calendar, 
-  Clock, 
-  FileText, 
+import {
+  ArrowRight,
+  Calendar,
+  Clock,
+  FileText,
   AlertCircle,
   CheckCircle,
   XCircle,
@@ -13,24 +13,26 @@ import {
   Building2,
   TestTube,
   Scan,
-  Pill
+  Pill,
+  Phone,
+  Mail,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { 
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import type { Referral, ReferralEntityType } from '@/hooks/useReferrals';
-import { 
-  getReferralPriorityColor, 
-  getReferralStatusColor, 
+import {
+  getReferralPriorityColor,
+  getReferralStatusColor,
   getReferralTypeLabel,
   getEntityTypeLabel,
-  isReferralValid
+  isReferralValid,
 } from '@/lib/api/referral-api';
 
 interface ReferralCardProps {
@@ -84,10 +86,10 @@ export const ReferralCard = ({
   onViewDetails,
   onBookSlot,
   onPublishSlots,
-  onComplete
+  onComplete,
 }: ReferralCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  
+
   const isValid = isReferralValid(referral);
   const StatusIcon = getStatusIcon(referral.status);
   const ReferrerIcon = getEntityIcon(referral.referrer_type);
@@ -100,6 +102,17 @@ export const ReferralCard = ({
   const showPublishSlots = role === 'receiver' && referral.status === 'accepted';
   const showBookSlot = role === 'patient' && referral.status === 'slots_available';
   const showComplete = role === 'receiver' && referral.status === 'booked';
+
+  // ✅ 6: walk-in fallback patient fields live on referral row (after your migration)
+  const rAny = referral as any;
+  const patientName =
+    referral.patient?.full_name ||
+    rAny.patient_name ||
+    (referral.patient_id ? `${referral.patient_id.slice(0, 8)}…` : 'Unknown patient');
+
+  const patientPhone = referral.patient?.phone || rAny.patient_phone || null;
+  const patientEmail = referral.patient?.email || rAny.patient_email || null;
+  const isWalkIn = !!rAny.facility_patient_id || !referral.patient_id;
 
   return (
     <Card className="group hover:shadow-md transition-all duration-200 border-border/50">
@@ -116,7 +129,7 @@ export const ReferralCard = ({
               <span>{getEntityTypeLabel(referral.receiver_type)}</span>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             {referral.priority !== 'routine' && (
               <Badge variant={priorityVariant} className="uppercase text-xs">
@@ -129,7 +142,7 @@ export const ReferralCard = ({
             </Badge>
           </div>
         </div>
-        
+
         <div className="mt-2">
           <p className="text-sm font-medium text-muted-foreground">
             {referral.referral_number}
@@ -141,14 +154,30 @@ export const ReferralCard = ({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Patient Info */}
-        {referral.patient && (
+        {/* ✅ 6: Patient Info always visible (registered OR walk-in snapshot) */}
+        <div className="space-y-1">
           <div className="flex items-center gap-2 text-sm">
             <User className="h-4 w-4 text-muted-foreground" />
             <span className="font-medium">Patient:</span>
-            <span>{referral.patient.full_name}</span>
+            <span>{patientName}</span>
+            {isWalkIn && (
+              <Badge variant="outline" className="text-xs">
+                Walk-in
+              </Badge>
+            )}
           </div>
-        )}
+
+          <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <Phone className="h-3 w-3" />
+              <span className="font-mono">{patientPhone || '—'}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Mail className="h-3 w-3" />
+              <span className="truncate max-w-[220px]">{patientEmail || '—'}</span>
+            </div>
+          </div>
+        </div>
 
         {/* Reason */}
         <div className="text-sm">
@@ -166,9 +195,7 @@ export const ReferralCard = ({
                   <span>
                     {format(new Date(referral.valid_from), 'MMM d')} - {format(new Date(referral.valid_until), 'MMM d, yyyy')}
                   </span>
-                  {!isValid && (
-                    <AlertCircle className="h-4 w-4 text-destructive" />
-                  )}
+                  {!isValid && <AlertCircle className="h-4 w-4 text-destructive" />}
                 </div>
               </TooltipTrigger>
               <TooltipContent>
@@ -192,7 +219,7 @@ export const ReferralCard = ({
                 <p className="bg-muted/50 p-2 rounded text-sm">{referral.clinical_notes}</p>
               </div>
             )}
-            
+
             {referral.diagnosis_codes && referral.diagnosis_codes.length > 0 && (
               <div className="text-sm">
                 <span className="text-muted-foreground block mb-1">Diagnosis Codes:</span>
@@ -220,11 +247,7 @@ export const ReferralCard = ({
 
         {/* Actions */}
         <div className="flex items-center justify-between pt-2 border-t">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
+          <Button variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)}>
             <FileText className="h-4 w-4 mr-1" />
             {isExpanded ? 'Less Details' : 'More Details'}
           </Button>
@@ -241,10 +264,7 @@ export const ReferralCard = ({
                   <XCircle className="h-4 w-4 mr-1" />
                   Decline
                 </Button>
-                <Button
-                  size="sm"
-                  onClick={() => onAccept?.(referral.id)}
-                >
+                <Button size="sm" onClick={() => onAccept?.(referral.id)}>
                   <CheckCircle className="h-4 w-4 mr-1" />
                   Accept
                 </Button>
@@ -258,10 +278,10 @@ export const ReferralCard = ({
               </Button>
             )}
 
-            {showBookSlot && isValid && (
+            {showBookSlot && (
               <Button size="sm" onClick={() => onBookSlot?.(referral)}>
                 <Calendar className="h-4 w-4 mr-1" />
-                Book Appointment
+                Book Slot
               </Button>
             )}
 
@@ -272,14 +292,18 @@ export const ReferralCard = ({
               </Button>
             )}
 
-            {onViewDetails && (
-              <Button variant="outline" size="sm" onClick={() => onViewDetails(referral)}>
-                View Details
-              </Button>
-            )}
+            <Button variant="outline" size="sm" onClick={() => onViewDetails?.(referral)}>
+              <Eye className="h-4 w-4 mr-1" />
+              View
+            </Button>
           </div>
         </div>
       </CardContent>
     </Card>
   );
 };
+
+// Needed import (used in the bottom action button)
+function Eye(props: any) {
+  return <svg {...props} />;
+}
