@@ -61,27 +61,27 @@ export default function App() {
 
       <Suspense fallback={<PageLoader />}>
         <Routes>
-          {/* ✅ NEW PREMIUM HOME */}
-          <Route path="/" element={<PublicLayout />}>
+          {/* Public pages with layout */}
+          <Route element={<PublicLayout />}>
             <Route index element={<PremiumHome />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/features" element={<Features />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/doctor" element={<Doctors />} />
+            <Route path="/find-doctors" element={<Doctors />} />
+            <Route path="/practice" element={<Practices />} />
+            <Route path="/lab" element={<LabLandingPage />} />
+            <Route path="/pharmacy" element={<PharmacyLandingPage />} />
+            <Route path="/imaging-center" element={<ImagingLandingPage />} />
+            <Route path="/doctor/:slug" element={<DoctorPublicProfile />} />
+            <Route path="/doctor-profile/:id" element={<DoctorProfile />} />
+            <Route path="/book-appointment/:doctorId" element={<AppointmentBooking />} />
+            <Route path="/booking-confirmation/:appointmentId" element={<BookingConfirmation />} />
           </Route>
 
           {/* Auth */}
           <Route path="/auth" element={<Auth />} />
-
-          {/* Public pages */}
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/features" element={<Features />} />
-          <Route path="/pricing" element={<Pricing />} />
-
-          <Route path="/doctor" element={<Doctors />} />
-          <Route path="/find-doctors" element={<Doctors />} />
-          <Route path="/practice" element={<Practices />} />
-
-          <Route path="/lab" element={<LabLandingPage />} />
-          <Route path="/pharmacy" element={<PharmacyLandingPage />} />
-          <Route path="/imaging-center" element={<ImagingLandingPage />} />
 
           {/* Dashboards */}
           <Route path="/dashboard" element={<Dashboard />} />
@@ -103,12 +103,6 @@ export default function App() {
           <Route path="/lab/dashboard" element={<LabDashboard />} />
           <Route path="/pharmacy/dashboard" element={<PharmacyDashboard />} />
           <Route path="/imaging/dashboard" element={<ImagingDashboard />} />
-
-          {/* Booking */}
-          <Route path="/book-appointment/:doctorId" element={<AppointmentBooking />} />
-          <Route path="/booking-confirmation/:appointmentId" element={<BookingConfirmation />} />
-          <Route path="/doctor-profile/:id" element={<DoctorProfile />} />
-          <Route path="/doctor/:slug" element={<DoctorPublicProfile />} />
 
           {/* Video Calls */}
           <Route path="/video-call" element={<VideoCall />} />

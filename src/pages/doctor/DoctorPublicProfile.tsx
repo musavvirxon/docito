@@ -39,8 +39,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import ModernNavbar from "@/components/home/ModernNavbar";
-import ModernFooter from "@/components/home/ModernFooter";
 import AppointmentBookingPopup from "@/components/booking/AppointmentBookingPopup";
 
 interface DoctorProfileData {
@@ -236,42 +234,34 @@ export default function DoctorPublicProfile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <ModernNavbar />
-        <div className="pt-24 pb-16 px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 space-y-6">
-                <Skeleton className="h-64 w-full rounded-2xl" />
-                <Skeleton className="h-48 w-full rounded-2xl" />
-                <Skeleton className="h-32 w-full rounded-2xl" />
-              </div>
-              <div className="space-y-6">
-                <Skeleton className="h-80 w-full rounded-2xl" />
-              </div>
+      <div className="pt-24 pb-16 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <Skeleton className="h-64 w-full rounded-2xl" />
+              <Skeleton className="h-48 w-full rounded-2xl" />
+              <Skeleton className="h-32 w-full rounded-2xl" />
+            </div>
+            <div className="space-y-6">
+              <Skeleton className="h-80 w-full rounded-2xl" />
             </div>
           </div>
         </div>
-        <ModernFooter />
       </div>
     );
   }
 
   if (!doctor) {
     return (
-      <div className="min-h-screen bg-background">
-        <ModernNavbar />
-        <div className="pt-24 pb-16 px-4 text-center">
-          <div className="max-w-md mx-auto">
-            <Stethoscope className="w-16 h-16 mx-auto text-muted-foreground mb-6" />
-            <h1 className="text-2xl font-bold mb-4">{t("doctors:profile.notFound")}</h1>
-            <p className="text-muted-foreground mb-6">{t("doctors:profile.notFoundDescription")}</p>
-            <Button onClick={() => navigate("/find-doctors")}>
-              {t("doctors:actions.browseDoctors")}
-            </Button>
-          </div>
+      <div className="pt-24 pb-16 px-4 text-center">
+        <div className="max-w-md mx-auto">
+          <Stethoscope className="w-16 h-16 mx-auto text-muted-foreground mb-6" />
+          <h1 className="text-2xl font-bold mb-4">{t("doctors:profile.notFound")}</h1>
+          <p className="text-muted-foreground mb-6">{t("doctors:profile.notFoundDescription")}</p>
+          <Button onClick={() => navigate("/find-doctors")}>
+            {t("doctors:actions.browseDoctors")}
+          </Button>
         </div>
-        <ModernFooter />
       </div>
     );
   }
@@ -323,8 +313,6 @@ export default function DoctorPublicProfile() {
       </Helmet>
 
       <div className={cn("min-h-screen bg-background", isRTL && "rtl")}>
-        <ModernNavbar />
-
         <main className="pt-20 pb-16">
           {/* Breadcrumb */}
           <div className="max-w-6xl mx-auto px-4 py-4">
@@ -824,8 +812,6 @@ export default function DoctorPublicProfile() {
             </div>
           </div>
         </main>
-
-        <ModernFooter />
 
         {/* Booking Popup */}
         {showBookingPopup && doctor && (
