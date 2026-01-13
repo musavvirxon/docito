@@ -1,15 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { validatePhone, formatPhone, normalizePhone } from '@/lib/phone/phone';
+import { useEffect, useMemo, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { validatePhone, formatPhone, normalizePhone } from "@/lib/phone/phone";
 
 export function PhoneInput({
-  label = 'Phone *',
+  label = "Phone *",
   value,
   onChange,
   required = true,
-  placeholder = '+998 90 123 45 67',
-  id = 'phone',
+  placeholder = "+1 415 555 2671",
+  id = "phone",
 }: {
   label?: string;
   value: string;
@@ -30,7 +30,7 @@ export function PhoneInput({
     const normalized = normalizePhone(value);
     if (normalized && normalized !== value) {
       // avoid fighting typing: only normalize when it becomes long enough
-      if (normalized.replace(/\D/g, '').length >= 9) {
+      if (normalized.replace(/\D/g, "").length >= 9) {
         onChange(normalized);
       }
     }
@@ -52,14 +52,12 @@ export function PhoneInput({
         }}
         onBlur={() => setTouched(true)}
         placeholder={placeholder}
-        aria-invalid={showError ? 'true' : 'false'}
+        aria-invalid={showError ? "true" : "false"}
       />
       {showError ? (
         <p className="text-xs text-destructive">{validation.reason}</p>
       ) : (
-        <p className="text-xs text-muted-foreground">
-          Enter with country code. UZ example: +998 90 123 45 67
-        </p>
+        <p className="text-xs text-muted-foreground">Enter with country code. UZ example: +998 90 123 45 67</p>
       )}
     </div>
   );

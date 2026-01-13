@@ -36,7 +36,7 @@ type DoctorInfo = {
 
 type AvailabilitySlot = {
   start_at: string; // YYYY-MM-DDTHH:MM:SS
-  end_at: string;   // YYYY-MM-DDTHH:MM:SS
+  end_at: string; // YYYY-MM-DDTHH:MM:SS
   available: boolean;
   reason?: string | null;
 };
@@ -82,11 +82,7 @@ export default function AppointmentBooking() {
 
       if (user.email) setPatientEmail(user.email);
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("phone")
-        .eq("user_id", user.id)
-        .maybeSingle();
+      const { data: profile } = await supabase.from("profiles").select("phone").eq("user_id", user.id).maybeSingle();
 
       if (profile?.phone) setPatientPhone(profile.phone);
     };
@@ -111,7 +107,7 @@ export default function AppointmentBooking() {
             practice_id,
             profiles:user_id ( full_name, phone, email ),
             practices:practice_id ( name, address )
-          `
+          `,
           )
           .eq("id", doctorId)
           .maybeSingle();
@@ -421,7 +417,7 @@ export default function AppointmentBooking() {
                     type="tel"
                     value={patientPhone}
                     onChange={(e) => setPatientPhone(e.target.value)}
-                    placeholder="e.g. +998 90 123 45 67"
+                    placeholder="e.g. +1 415 555 2671"
                   />
                 </div>
 
@@ -457,12 +453,7 @@ export default function AppointmentBooking() {
                   />
                 </div>
 
-                <Button
-                  type="button"
-                  className="w-full"
-                  onClick={handleBook}
-                  disabled={!canBook}
-                >
+                <Button type="button" className="w-full" onClick={handleBook} disabled={!canBook}>
                   {booking ? (
                     <span className="flex items-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -474,9 +465,7 @@ export default function AppointmentBooking() {
                 </Button>
 
                 {!selectedSlotStart && (
-                  <p className="text-xs text-muted-foreground">
-                    Select a time slot to enable booking.
-                  </p>
+                  <p className="text-xs text-muted-foreground">Select a time slot to enable booking.</p>
                 )}
               </CardContent>
             </Card>

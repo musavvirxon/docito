@@ -1,26 +1,26 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ScanLine, ArrowLeft, Building2 } from 'lucide-react';
-import { useImagingCenter, ImagingCenterInput } from '@/hooks/useImagingCenter';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScanLine, ArrowLeft, Building2 } from "lucide-react";
+import { useImagingCenter, ImagingCenterInput } from "@/hooks/useImagingCenter";
 
 export default function ImagingRegistration() {
   const navigate = useNavigate();
   const { createImagingCenter, loading } = useImagingCenter();
   const [formData, setFormData] = useState<ImagingCenterInput>({
-    name: '',
-    license_number: '',
-    address: '',
-    city: '',
-    country: 'UZ',
-    phone: '',
-    email: '',
-    website: '',
+    name: "",
+    license_number: "",
+    address: "",
+    city: "",
+    country: "UZ",
+    phone: "",
+    email: "",
+    website: "",
     modalities: [],
     accreditations: [],
     accepts_insurance: true,
@@ -30,26 +30,29 @@ export default function ImagingRegistration() {
     e.preventDefault();
     const result = await createImagingCenter(formData);
     if (result) {
-      navigate('/imaging/dashboard');
+      navigate("/imaging/dashboard");
     }
   };
 
   const handleChange = (field: keyof ImagingCenterInput, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const imagingModalities = [
-    'X-Ray', 'CT Scan', 'MRI', 'Ultrasound', 'Mammography',
-    'PET Scan', 'Fluoroscopy', 'DEXA Scan', 'Nuclear Medicine'
+    "X-Ray",
+    "CT Scan",
+    "MRI",
+    "Ultrasound",
+    "Mammography",
+    "PET Scan",
+    "Fluoroscopy",
+    "DEXA Scan",
+    "Nuclear Medicine",
   ];
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-3xl">
-      <Button 
-        variant="ghost" 
-        className="mb-6"
-        onClick={() => navigate(-1)}
-      >
+      <Button variant="ghost" className="mb-6" onClick={() => navigate(-1)}>
         <ArrowLeft className="h-4 w-4 mr-2" />
         Back
       </Button>
@@ -60,9 +63,7 @@ export default function ImagingRegistration() {
             <ScanLine className="h-8 w-8 text-primary" />
           </div>
           <CardTitle className="text-2xl">Register Imaging Center</CardTitle>
-          <CardDescription>
-            Register your imaging center to start receiving imaging orders from clinics
-          </CardDescription>
+          <CardDescription>Register your imaging center to start receiving imaging orders from clinics</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -72,14 +73,14 @@ export default function ImagingRegistration() {
                 <Building2 className="h-4 w-4" />
                 Basic Information
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Center Name *</Label>
                   <Input
                     id="name"
                     value={formData.name}
-                    onChange={(e) => handleChange('name', e.target.value)}
+                    onChange={(e) => handleChange("name", e.target.value)}
                     placeholder="Enter imaging center name"
                     required
                   />
@@ -88,8 +89,8 @@ export default function ImagingRegistration() {
                   <Label htmlFor="license">License Number</Label>
                   <Input
                     id="license"
-                    value={formData.license_number || ''}
-                    onChange={(e) => handleChange('license_number', e.target.value)}
+                    value={formData.license_number || ""}
+                    onChange={(e) => handleChange("license_number", e.target.value)}
                     placeholder="Enter license number"
                   />
                 </div>
@@ -99,13 +100,13 @@ export default function ImagingRegistration() {
             {/* Contact Info */}
             <div className="space-y-4">
               <h3 className="font-semibold">Contact Information</h3>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="address">Address *</Label>
                 <Textarea
                   id="address"
-                  value={formData.address || ''}
-                  onChange={(e) => handleChange('address', e.target.value)}
+                  value={formData.address || ""}
+                  onChange={(e) => handleChange("address", e.target.value)}
                   placeholder="Enter full address"
                   required
                 />
@@ -116,8 +117,8 @@ export default function ImagingRegistration() {
                   <Label htmlFor="city">City *</Label>
                   <Input
                     id="city"
-                    value={formData.city || ''}
-                    onChange={(e) => handleChange('city', e.target.value)}
+                    value={formData.city || ""}
+                    onChange={(e) => handleChange("city", e.target.value)}
                     required
                   />
                 </div>
@@ -125,8 +126,8 @@ export default function ImagingRegistration() {
                   <Label htmlFor="country">Country *</Label>
                   <Input
                     id="country"
-                    value={formData.country || ''}
-                    onChange={(e) => handleChange('country', e.target.value)}
+                    value={formData.country || ""}
+                    onChange={(e) => handleChange("country", e.target.value)}
                     required
                   />
                 </div>
@@ -135,9 +136,9 @@ export default function ImagingRegistration() {
                   <Input
                     id="phone"
                     type="tel"
-                    value={formData.phone || ''}
-                    onChange={(e) => handleChange('phone', e.target.value)}
-                    placeholder="+998 XX XXX XX XX"
+                    value={formData.phone || ""}
+                    onChange={(e) => handleChange("phone", e.target.value)}
+                    placeholder="+ X XXX XXX XXXX"
                     required
                   />
                 </div>
@@ -149,8 +150,8 @@ export default function ImagingRegistration() {
                   <Input
                     id="email"
                     type="email"
-                    value={formData.email || ''}
-                    onChange={(e) => handleChange('email', e.target.value)}
+                    value={formData.email || ""}
+                    onChange={(e) => handleChange("email", e.target.value)}
                     placeholder="imaging@example.com"
                   />
                 </div>
@@ -158,8 +159,8 @@ export default function ImagingRegistration() {
                   <Label htmlFor="website">Website</Label>
                   <Input
                     id="website"
-                    value={formData.website || ''}
-                    onChange={(e) => handleChange('website', e.target.value)}
+                    value={formData.website || ""}
+                    onChange={(e) => handleChange("website", e.target.value)}
                     placeholder="https://..."
                   />
                 </div>
@@ -170,7 +171,7 @@ export default function ImagingRegistration() {
             <div className="space-y-4">
               <h3 className="font-semibold">Available Modalities</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {imagingModalities.map(modality => (
+                {imagingModalities.map((modality) => (
                   <div key={modality} className="flex items-center space-x-2">
                     <Checkbox
                       id={modality}
@@ -178,13 +179,18 @@ export default function ImagingRegistration() {
                       onCheckedChange={(checked) => {
                         const modalities = formData.modalities || [];
                         if (checked) {
-                          handleChange('modalities', [...modalities, modality]);
+                          handleChange("modalities", [...modalities, modality]);
                         } else {
-                          handleChange('modalities', modalities.filter(m => m !== modality));
+                          handleChange(
+                            "modalities",
+                            modalities.filter((m) => m !== modality),
+                          );
                         }
                       }}
                     />
-                    <Label htmlFor={modality} className="text-sm">{modality}</Label>
+                    <Label htmlFor={modality} className="text-sm">
+                      {modality}
+                    </Label>
                   </div>
                 ))}
               </div>
@@ -195,13 +201,13 @@ export default function ImagingRegistration() {
               <Checkbox
                 id="insurance"
                 checked={formData.accepts_insurance}
-                onCheckedChange={(checked) => handleChange('accepts_insurance', checked)}
+                onCheckedChange={(checked) => handleChange("accepts_insurance", checked)}
               />
               <Label htmlFor="insurance">Accept Insurance</Label>
             </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Registering...' : 'Register Imaging Center'}
+              {loading ? "Registering..." : "Register Imaging Center"}
             </Button>
           </form>
         </CardContent>

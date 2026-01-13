@@ -60,11 +60,7 @@ export function CreateFacilityPatientModal({
         date_of_birth: dob ? dob : null,
       };
 
-      const { data, error } = await supabase
-        .from("facility_patients")
-        .insert(payload)
-        .select("*")
-        .single();
+      const { data, error } = await supabase.from("facility_patients").insert(payload).select("*").single();
 
       if (error) throw error;
 
@@ -104,7 +100,7 @@ export function CreateFacilityPatientModal({
 
           <div className="space-y-1">
             <Label>Phone</Label>
-            <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+998 ..." />
+            <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 ..." />
           </div>
 
           <div className="space-y-1">
