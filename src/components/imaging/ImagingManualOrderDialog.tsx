@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { PhoneInput } from '@/components/shared/PhoneInput';
 import { validatePhone } from '@/lib/phone/phone';
+import { logSession } from '@/lib/debug/authDebug';
 
 function makeImagingOrderNumber() {
   return `IMG-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
@@ -27,7 +28,7 @@ export function ImagingManualOrderDialog({
 }) {
   const [loading, setLoading] = useState(false);
 
-  const [patientId, setPatientId] = useState('');
+  // ✅ WALK-IN ONLY (manual booking)
   const [patientName, setPatientName] = useState('');
   const [patientPhone, setPatientPhone] = useState('');
   const [patientEmail, setPatientEmail] = useState('');
@@ -38,7 +39,6 @@ export function ImagingManualOrderDialog({
 
   useEffect(() => {
     if (!open) return;
-    setPatientId('');
     setPatientName('');
     setPatientPhone('');
     setPatientEmail('');
@@ -49,8 +49,11 @@ export function ImagingManualOrderDialog({
 
   const validate = () => {
     if (!imagingCenterId) return 'Missing imaging center';
-    if (!patientId.trim() && !patientName.trim()) return 'Enter Patient ID (registered) OR Patient Name (walk-in)';
 
+    // ✅ walk-in only
+    if (!patientName.trim()) return 'Walk-in patient name is required';
+
+    // ✅ phone required
     const phoneCheck = validatePhone(patientPhone);
     if (!phoneCheck.ok) return phoneCheck.reason || 'Invalid phone';
 
@@ -64,10 +67,11 @@ export function ImagingManualOrderDialog({
 
     setLoading(true);
     try {
+      await logSession('IMAGING_MANUAL_ORDER_CREATE');
+
       const order_number = makeImagingOrderNumber();
       const phone = validatePhone(patientPhone).normalized;
 
-      // clinic_imaging_orders assumed existing in your schema
       const payload: any = {
         order_number,
         imaging_center_id: imagingCenterId,
@@ -76,11 +80,14 @@ export function ImagingManualOrderDialog({
         study_name: studyName.trim(),
         clinical_notes: clinicalNotes.trim() || null,
 
-        patient_id: patientId.trim() ? patientId.trim() : null,
-        patient_name: patientName.trim() || null,
+        // ✅ walk-in only
+        patient_id: null,
+        patient_name: patientName.trim(),
         patient_phone: phone,
         patient_email: patientEmail.trim() || null,
       };
+
+      console.log('[IMAGING_MANUAL] clinic_imaging_orders payload:', payload);
 
       const { error } = await supabase.from('clinic_imaging_orders').insert(payload);
       if (error) throw error;
@@ -105,22 +112,17 @@ export function ImagingManualOrderDialog({
 
         <div className="space-y-6">
           <div className="space-y-3 border rounded-lg p-4">
-            <div className="text-sm font-semibold">Patient (Registered or Walk-in)</div>
+            <div className="text-sm font-semibold">Patient (Walk-in only)</div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>Registered Patient ID (optional)</Label>
-                <Input value={patientId} onChange={(e) => setPatientId(e.target.value)} placeholder="Registered patient user_id" />
-              </div>
-
-              <div className="space-y-1">
-                <Label>Walk-in Name (optional)</Label>
-                <Input value={patientName} onChange={(e) => setPatientName(e.target.value)} placeholder="Walk-in full name" />
+                <Label>Walk-in Name *</Label>
+                <Input value={patientName} onChange={(e) => setPatientName(e.target.value)} placeholder="Full name" />
               </div>
 
               <PhoneInput value={patientPhone} onChange={setPatientPhone} />
 
-              <div className="space-y-1">
+              <div className="space-y-1 md:col-span-2">
                 <Label>Email (optional)</Label>
                 <Input value={patientEmail} onChange={(e) => setPatientEmail(e.target.value)} placeholder="email@example.com" />
               </div>
