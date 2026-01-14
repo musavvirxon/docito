@@ -50,7 +50,7 @@ export interface TestResultFileInput {
 }
 
 interface TestOrderWithItems extends TestOrder {
-  items?: TestOrderItem[];
+  items?: any[];
 }
 
 export function useTestOrders() {
@@ -146,7 +146,7 @@ export function useTestOrders() {
     setLoading(true);
     try {
       const updateData: any = { status, ...additionalData };
-      
+
       if (status === 'sample_collected') {
         updateData.sample_collected_at = new Date().toISOString();
         updateData.sample_collected_by = user?.id;
@@ -162,7 +162,7 @@ export function useTestOrders() {
         .single();
 
       if (error) throw error;
-      setTestOrders(prev => prev.map(o => o.id === orderId ? data as TestOrderWithItems : o));
+      setTestOrders(prev => prev.map(o => (o.id === orderId ? (data as TestOrderWithItems) : o)));
       toast({ title: 'Success', description: 'Order status updated' });
       return data;
     } catch (error: any) {
@@ -173,16 +173,19 @@ export function useTestOrders() {
     }
   }, [user]);
 
-  // Fetch order items
+  /**
+   * Fetch order items INCLUDING test_catalog info (name, code, parameters)
+   * so UI can render per-parameter result entry.
+   */
   const fetchOrderItems = useCallback(async (orderId: string) => {
     try {
       const { data, error } = await supabase
         .from('test_order_items')
-        .select('*')
+        .select('*, test:test_catalog(id,name,test_code,category,sample_type,parameters)')
         .eq('test_order_id', orderId);
 
       if (error) throw error;
-      return data as TestOrderItem[];
+      return (data || []) as any[];
     } catch (error: any) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
       return [];
@@ -221,10 +224,10 @@ export function useTestOrders() {
         .single();
 
       if (error) throw error;
-      
+
       // Update order item status
       await updateItemStatus(input.test_order_item_id, 'completed');
-      
+
       setTestResults(prev => [...prev, data as TestResult]);
       toast({ title: 'Success', description: 'Result recorded successfully' });
       return data;
@@ -251,7 +254,7 @@ export function useTestOrders() {
         .single();
 
       if (error) throw error;
-      setTestResults(prev => prev.map(r => r.id === resultId ? data as TestResult : r));
+      setTestResults(prev => prev.map(r => (r.id === resultId ? (data as TestResult) : r)));
       toast({ title: 'Success', description: 'Result updated successfully' });
       return data;
     } catch (error: any) {
@@ -279,7 +282,7 @@ export function useTestOrders() {
         .single();
 
       if (error) throw error;
-      setTestResults(prev => prev.map(r => r.id === resultId ? data as TestResult : r));
+      setTestResults(prev => prev.map(r => (r.id === resultId ? (data as TestResult) : r)));
       toast({ title: 'Success', description: 'Result verified and finalized' });
       return data;
     } catch (error: any) {
