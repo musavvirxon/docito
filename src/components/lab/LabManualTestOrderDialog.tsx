@@ -18,8 +18,9 @@ type TestCatalogItem = {
   requires_fasting: boolean | null;
   sample_type: string | null;
   turnaround_hours: number | null;
-  is_global?: boolean | null;
-  lab_center_id?: string | null;
+  lab_center_id: string | null;
+  visibility: 'private' | 'public';
+  is_active: boolean | null;
 };
 
 interface LabManualTestOrderDialogProps {
@@ -69,13 +70,14 @@ export function LabManualTestOrderDialog({
 
     const run = async () => {
       setLoadingCatalog(true);
+
       const { data, error } = await supabase
         .from('test_catalog')
         .select(
-          'id,name,test_code,category,price,requires_fasting,sample_type,turnaround_hours,is_global,lab_center_id'
+          'id,name,test_code,category,price,requires_fasting,sample_type,turnaround_hours,lab_center_id,visibility,is_active'
         )
         .eq('is_active', true)
-        .or(`lab_center_id.eq.${labCenterId},is_global.eq.true`)
+        .or(`lab_center_id.eq.${labCenterId},visibility.eq.public`)
         .order('name');
 
       setLoadingCatalog(false);
@@ -223,32 +225,41 @@ export function LabManualTestOrderDialog({
                 <div className="p-4 text-sm text-muted-foreground">No tests found</div>
               ) : (
                 <div className="divide-y">
-                  {filtered.map((t) => (
-                    <label
-                      key={t.id}
-                      className="flex items-start gap-3 p-3 hover:bg-muted/30 cursor-pointer"
-                    >
-                      <Checkbox
-                        checked={!!selected[t.id]}
-                        onCheckedChange={() => toggle(t.id)}
-                        className="mt-1"
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="font-medium">{t.name}</div>
-                          <div className="text-xs text-muted-foreground font-mono">{t.test_code}</div>
+                  {filtered.map((t) => {
+                    const isMine = t.lab_center_id === labCenterId;
+                    return (
+                      <label
+                        key={t.id}
+                        className="flex items-start gap-3 p-3 hover:bg-muted/30 cursor-pointer"
+                      >
+                        <Checkbox
+                          checked={!!selected[t.id]}
+                          onCheckedChange={() => toggle(t.id)}
+                          className="mt-1"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="font-medium">{t.name}</div>
+                            <div className="text-xs text-muted-foreground font-mono">{t.test_code}</div>
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-1 flex flex-wrap gap-3">
+                            <span>{t.category}</span>
+                            {t.sample_type ? <span>Sample: {t.sample_type}</span> : null}
+                            {t.turnaround_hours != null ? <span>TAT: {t.turnaround_hours}h</span> : null}
+                            {t.requires_fasting ? <span className="text-orange-600">Fasting</span> : null}
+                            {t.price != null ? <span>Price: {t.price}</span> : null}
+                            {!isMine && t.visibility === 'public' ? (
+                              <span className="text-blue-600">Public (other lab)</span>
+                            ) : t.visibility === 'public' ? (
+                              <span className="text-blue-600">Public</span>
+                            ) : (
+                              <span className="text-muted-foreground">Private</span>
+                            )}
+                          </div>
                         </div>
-                        <div className="text-xs text-muted-foreground mt-1 flex flex-wrap gap-3">
-                          <span>{t.category}</span>
-                          {t.sample_type ? <span>Sample: {t.sample_type}</span> : null}
-                          {t.turnaround_hours != null ? <span>TAT: {t.turnaround_hours}h</span> : null}
-                          {t.requires_fasting ? <span className="text-orange-600">Fasting</span> : null}
-                          {t.price != null ? <span>Price: {t.price}</span> : null}
-                          {t.is_global ? <span className="text-blue-600">Global</span> : null}
-                        </div>
-                      </div>
-                    </label>
-                  ))}
+                      </label>
+                    );
+                  })}
                 </div>
               )}
             </div>
