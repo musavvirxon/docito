@@ -32,11 +32,12 @@ import LabHomeCollection from '@/components/lab/LabHomeCollection';
 import LabBillingInsurance from '@/components/lab/LabBillingInsurance';
 import LabAnalytics from '@/components/lab/LabAnalytics';
 import { LabReferralsSection } from '@/components/lab/LabReferralsSection';
+import LabSettings from '@/components/lab/LabSettings';
 import { Button } from '@/components/ui/button';
 
 export default function LabDashboard() {
   const navigate = useNavigate();
-  const { myLabCenter, fetchMyLabCenter, loading: labLoading } = useLabCenter();
+  const { myLabCenter, fetchMyLabCenter, updateLabCenter, loading: labLoading } = useLabCenter();
   const { testOrders, fetchLabOrders, loading: ordersLoading } = useTestOrders();
   const [activeSection, setActiveSection] = useState('overview');
 
@@ -152,11 +153,7 @@ export default function LabDashboard() {
       case 'referrals':
         return <LabReferralsSection labCenterId={myLabCenter.id} />;
       case 'settings':
-        return (
-          <ContentCard title="Lab Settings" description="Manage your lab center settings">
-            <p className="text-muted-foreground">Settings panel coming soon...</p>
-          </ContentCard>
-        );
+        return <LabSettings labCenter={myLabCenter} updateLabCenter={updateLabCenter} />;
       default:
         return (
           <div className="space-y-6">
