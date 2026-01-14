@@ -12,6 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { PhoneInput } from '@/components/shared/PhoneInput';
 import { validatePhone } from '@/lib/phone/phone';
+import { logSession } from '@/lib/debug/authDebug';
 
 type TestCatalogRow = {
   id: string;
@@ -41,8 +42,7 @@ export function LabManualTestOrderDialog({
 }) {
   const [loading, setLoading] = useState(false);
 
-  // registered OR walk-in
-  const [patientId, setPatientId] = useState('');
+  // ✅ WALK-IN ONLY (manual booking)
   const [patientName, setPatientName] = useState('');
   const [patientPhone, setPatientPhone] = useState('');
   const [patientEmail, setPatientEmail] = useState('');
@@ -59,7 +59,6 @@ export function LabManualTestOrderDialog({
     if (!open) return;
 
     // reset
-    setPatientId('');
     setPatientName('');
     setPatientPhone('');
     setPatientEmail('');
@@ -88,7 +87,10 @@ export function LabManualTestOrderDialog({
     run();
   }, [open, labCenterId]);
 
-  const categories = useMemo(() => ['all', ...Array.from(new Set(catalog.map((c) => c.category))).filter(Boolean)], [catalog]);
+  const categories = useMemo(
+    () => ['all', ...Array.from(new Set(catalog.map((c) => c.category))).filter(Boolean)],
+    [catalog]
+  );
 
   const filteredCatalog = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -116,9 +118,8 @@ export function LabManualTestOrderDialog({
     if (!labCenterId) return 'Missing lab center';
     if (selectedTests.length === 0) return 'Select at least 1 test';
 
-    if (!patientId.trim() && !patientName.trim()) {
-      return 'Enter Patient ID (registered) OR Patient Name (walk-in)';
-    }
+    // ✅ manual = walk-in only
+    if (!patientName.trim()) return 'Walk-in patient name is required';
 
     // ✅ phone required for ALL manual lab orders
     const phoneCheck = validatePhone(patientPhone);
@@ -133,23 +134,27 @@ export function LabManualTestOrderDialog({
 
     setLoading(true);
     try {
+      // ✅ DEBUG (shows anon vs authenticated in console)
+      await logSession('LAB_MANUAL_ORDER_CREATE');
+
       const order_number = makeOrderNumber();
       const phone = validatePhone(patientPhone).normalized;
 
       const orderPayload: any = {
         order_number,
-        lab_center_id: labCenterId,
+        lab_center_id: labCenterId, // if your column is lab_id, change to lab_id
         status: 'pending',
         priority,
         clinical_notes: clinicalNotes?.trim() || null,
 
-        patient_id: patientId.trim() ? patientId.trim() : null,
-
-        // ✅ columns your UI uses
-        patient_name: patientName.trim() || null,
+        // ✅ walk-in only
+        patient_id: null,
+        patient_name: patientName.trim(),
         patient_phone: phone,
         patient_email: patientEmail.trim() || null,
       };
+
+      console.log('[LAB_MANUAL] test_orders payload:', orderPayload);
 
       const { data: createdOrder, error: orderErr } = await supabase
         .from('test_orders')
@@ -163,6 +168,8 @@ export function LabManualTestOrderDialog({
         test_order_id: createdOrder.id,
         test_id: testId,
       }));
+
+      console.log('[LAB_MANUAL] test_order_items payload:', itemsPayload);
 
       const { error: itemsErr } = await supabase.from('test_order_items').insert(itemsPayload);
       if (itemsErr) throw itemsErr;
@@ -188,25 +195,28 @@ export function LabManualTestOrderDialog({
         <div className="space-y-6">
           {/* Patient */}
           <div className="space-y-3 border rounded-lg p-4">
-            <div className="text-sm font-semibold">Patient (Registered or Walk-in)</div>
+            <div className="text-sm font-semibold">Patient (Walk-in only)</div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>Registered Patient ID (optional)</Label>
-                <Input value={patientId} onChange={(e) => setPatientId(e.target.value)} placeholder="Registered patient user_id" />
+                <Label>Walk-in Name *</Label>
+                <Input
+                  value={patientName}
+                  onChange={(e) => setPatientName(e.target.value)}
+                  placeholder="Full name"
+                />
               </div>
 
-              <div className="space-y-1">
-                <Label>Walk-in Name (optional)</Label>
-                <Input value={patientName} onChange={(e) => setPatientName(e.target.value)} placeholder="Walk-in full name" />
-              </div>
-
-              {/* ✅ Phone verification input (required) */}
+              {/* ✅ Phone required */}
               <PhoneInput value={patientPhone} onChange={setPatientPhone} />
 
-              <div className="space-y-1">
+              <div className="space-y-1 md:col-span-2">
                 <Label>Email (optional)</Label>
-                <Input value={patientEmail} onChange={(e) => setPatientEmail(e.target.value)} placeholder="email@example.com" />
+                <Input
+                  value={patientEmail}
+                  onChange={(e) => setPatientEmail(e.target.value)}
+                  placeholder="email@example.com"
+                />
               </div>
             </div>
           </div>
@@ -234,7 +244,12 @@ export function LabManualTestOrderDialog({
 
             <div className="space-y-1">
               <Label>Clinical Notes (optional)</Label>
-              <Textarea value={clinicalNotes} onChange={(e) => setClinicalNotes(e.target.value)} rows={3} placeholder="Symptoms, diagnosis, instructions..." />
+              <Textarea
+                value={clinicalNotes}
+                onChange={(e) => setClinicalNotes(e.target.value)}
+                rows={3}
+                placeholder="Symptoms, diagnosis, instructions..."
+              />
             </div>
           </div>
 
@@ -251,7 +266,9 @@ export function LabManualTestOrderDialog({
                   <SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
                   <SelectContent>
                     {categories.map((c) => (
-                      <SelectItem key={c} value={c}>{c === 'all' ? 'All categories' : c}</SelectItem>
+                      <SelectItem key={c} value={c}>
+                        {c === 'all' ? 'All categories' : c}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -261,7 +278,11 @@ export function LabManualTestOrderDialog({
             <ScrollArea className="h-[280px] border rounded-md">
               <div className="divide-y">
                 {filteredCatalog.map((t) => (
-                  <div key={t.id} className="p-3 hover:bg-muted/50 cursor-pointer flex items-start gap-3" onClick={() => toggleTest(t.id)}>
+                  <div
+                    key={t.id}
+                    className="p-3 hover:bg-muted/50 cursor-pointer flex items-start gap-3"
+                    onClick={() => toggleTest(t.id)}
+                  >
                     <Checkbox checked={selectedTests.includes(t.id)} onCheckedChange={() => toggleTest(t.id)} />
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
@@ -270,13 +291,17 @@ export function LabManualTestOrderDialog({
                         {t.requires_fasting ? <Badge variant="secondary" className="text-xs">Fasting</Badge> : null}
                       </div>
                       <div className="text-xs text-muted-foreground mt-1">
-                        {t.category}{t.sample_type ? ` • ${t.sample_type}` : ''}{t.turnaround_hours ? ` • ${t.turnaround_hours}h` : ''}
+                        {t.category}
+                        {t.sample_type ? ` • ${t.sample_type}` : ''}
+                        {t.turnaround_hours ? ` • ${t.turnaround_hours}h` : ''}
                       </div>
                     </div>
                     <div className="font-medium">{t.price ? `$${t.price}` : ''}</div>
                   </div>
                 ))}
-                {filteredCatalog.length === 0 ? <div className="p-6 text-center text-muted-foreground">No tests found</div> : null}
+                {filteredCatalog.length === 0 ? (
+                  <div className="p-6 text-center text-muted-foreground">No tests found</div>
+                ) : null}
               </div>
             </ScrollArea>
           </div>
