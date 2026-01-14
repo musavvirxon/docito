@@ -27,6 +27,7 @@ export type AppRole =
   | "patient";
 
 export const PATIENT_DASHBOARD_ROUTE = "/patient/dashboard";
+
 export const roleLabels: Record<AppRole, string> = {
   super_admin: "Super Admin",
   admin: "Admin",
@@ -97,13 +98,19 @@ export const DASHBOARD_ROUTES: Record<AppRole, string> = {
 
 export const ROLE_PRIORITY: Record<AppRole, number> = {
   super_admin: 100,
-  admin: 90,
-  clinic_admin: 85,
-  doctor: 80,
 
-  pharmacy_admin: 70,
-  lab_admin: 70,
-  imaging_admin: 70,
+  // IMPORTANT:
+  // Facility admins must win over generic admin so they land on:
+  // /lab/dashboard, /pharmacy/dashboard, /imaging/dashboard after sign-in.
+  // (Many accounts may have BOTH 'admin' and 'lab_admin/pharmacy_admin/...')
+  doctor: 90,
+
+  pharmacy_admin: 88,
+  lab_admin: 88,
+  imaging_admin: 88,
+
+  admin: 80,
+  clinic_admin: 78,
 
   pharmacist: 60,
   lab_technician: 60,
