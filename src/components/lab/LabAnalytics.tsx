@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -8,29 +9,48 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { 
-  BarChart3, 
-  TrendingUp, 
+import {
+  BarChart3,
+  TrendingUp,
   DollarSign,
   TestTube,
-  Users,
   Clock,
   ArrowUpRight,
   ArrowDownRight,
   RefreshCw
 } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar, PieChart, Pie, Cell
+} from 'recharts';
 import { toast } from 'sonner';
 
 interface Props {
   labCenterId: string;
 }
 
+type TimeRange = '7d' | '30d' | '90d';
+
+type AnalyticsResponse = {
+  stats: {
+    totalRevenue: number;
+    totalTests: number;
+    avgTurnaround: number;
+    recollectionRate: number;
+    revenueChange: number;
+    testsChange: number;
+  };
+  revenueData: Array<{ date: string; revenue: number; tests: number }>;
+  topTests: Array<{ name: string; count: number; revenue: number }>;
+  testsByStatus: Array<{ name: string; value: number }>;
+};
+
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
 export default function LabAnalytics({ labCenterId }: Props) {
   const [loading, setLoading] = useState(true);
-  const [timeRange, setTimeRange] = useState('7d');
+  const [timeRange, setTimeRange] = useState<TimeRange>('7d');
+
   const [stats, setStats] = useState({
     totalRevenue: 0,
     totalTests: 0,
@@ -39,6 +59,7 @@ export default function LabAnalytics({ labCenterId }: Props) {
     revenueChange: 0,
     testsChange: 0,
   });
+
   const [revenueData, setRevenueData] = useState<any[]>([]);
   const [topTests, setTopTests] = useState<any[]>([]);
   const [testsByStatus, setTestsByStatus] = useState<any[]>([]);
@@ -47,55 +68,38 @@ export default function LabAnalytics({ labCenterId }: Props) {
     if (labCenterId) {
       fetchAnalytics();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [labCenterId, timeRange]);
 
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      
-      // Mock stats
+
+      const { data, error } = await supabase.functions.invoke('lab-analytics', {
+        body: { lab_center_id: labCenterId, time_range: timeRange },
+      });
+
+      if (error) throw error;
+
+      const analytics = (data?.analytics ?? null) as AnalyticsResponse | null;
+      if (!analytics) throw new Error('No analytics returned');
+
       setStats({
-        totalRevenue: 45680,
-        totalTests: 1234,
-        avgTurnaround: 24,
-        recollectionRate: 2.3,
-        revenueChange: 15.2,
-        testsChange: 8.5,
+        totalRevenue: Number(analytics.stats.totalRevenue ?? 0),
+        totalTests: Number(analytics.stats.totalTests ?? 0),
+        avgTurnaround: Number(analytics.stats.avgTurnaround ?? 0),
+        recollectionRate: Number(analytics.stats.recollectionRate ?? 0),
+        revenueChange: Number(analytics.stats.revenueChange ?? 0),
+        testsChange: Number(analytics.stats.testsChange ?? 0),
       });
 
-      // Mock revenue data
-      const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90;
-      const mockRevenueData = Array.from({ length: days }, (_, i) => {
-        const date = new Date();
-        date.setDate(date.getDate() - (days - 1 - i));
-        return {
-          date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-          revenue: Math.floor(Math.random() * 3000) + 1000,
-          tests: Math.floor(Math.random() * 80) + 30,
-        };
-      });
-      setRevenueData(mockRevenueData);
+      setRevenueData(Array.isArray(analytics.revenueData) ? analytics.revenueData : []);
+      setTopTests(Array.isArray(analytics.topTests) ? analytics.topTests : []);
+      setTestsByStatus(Array.isArray(analytics.testsByStatus) ? analytics.testsByStatus : []);
 
-      // Mock top tests
-      setTopTests([
-        { name: 'Complete Blood Count', count: 256, revenue: 5120 },
-        { name: 'Lipid Panel', count: 198, revenue: 7920 },
-        { name: 'Metabolic Panel', count: 165, revenue: 8250 },
-        { name: 'Thyroid Panel', count: 142, revenue: 7100 },
-        { name: 'Hemoglobin A1C', count: 128, revenue: 3840 },
-      ]);
-
-      // Mock tests by status
-      setTestsByStatus([
-        { name: 'Completed', value: 856 },
-        { name: 'Processing', value: 234 },
-        { name: 'Pending', value: 98 },
-        { name: 'Cancelled', value: 46 },
-      ]);
-
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
-      toast.error('Failed to load analytics');
+    } catch (err: any) {
+      console.error('Error fetching analytics:', err);
+      toast.error(err?.message || 'Failed to load analytics');
     } finally {
       setLoading(false);
     }
@@ -118,7 +122,7 @@ export default function LabAnalytics({ labCenterId }: Props) {
           Analytics Dashboard
         </h2>
         <div className="flex items-center gap-4">
-          <Select value={timeRange} onValueChange={setTimeRange}>
+          <Select value={timeRange} onValueChange={(v) => setTimeRange(v as TimeRange)}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Time range" />
             </SelectTrigger>
@@ -141,7 +145,7 @@ export default function LabAnalytics({ labCenterId }: Props) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Revenue</p>
-                <p className="text-3xl font-bold">${stats.totalRevenue.toLocaleString()}</p>
+                <p className="text-3xl font-bold">${Number(stats.totalRevenue).toLocaleString()}</p>
                 <div className="flex items-center gap-1 mt-1">
                   <ArrowUpRight className="h-4 w-4 text-green-600" />
                   <span className="text-sm text-green-600">+{stats.revenueChange}%</span>
@@ -159,7 +163,7 @@ export default function LabAnalytics({ labCenterId }: Props) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Tests</p>
-                <p className="text-3xl font-bold">{stats.totalTests.toLocaleString()}</p>
+                <p className="text-3xl font-bold">{Number(stats.totalTests).toLocaleString()}</p>
                 <div className="flex items-center gap-1 mt-1">
                   <ArrowUpRight className="h-4 w-4 text-green-600" />
                   <span className="text-sm text-green-600">+{stats.testsChange}%</span>
@@ -194,7 +198,7 @@ export default function LabAnalytics({ labCenterId }: Props) {
                 <p className="text-3xl font-bold">{stats.recollectionRate}%</p>
                 <div className="flex items-center gap-1 mt-1">
                   <ArrowDownRight className="h-4 w-4 text-green-600" />
-                  <span className="text-sm text-green-600">-0.5%</span>
+                  <span className="text-sm text-green-600">0%</span>
                 </div>
               </div>
               <div className="p-3 bg-orange-500/10 rounded-lg">
@@ -218,27 +222,21 @@ export default function LabAnalytics({ labCenterId }: Props) {
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={revenueData}>
                   <defs>
-                    <linearGradient id="colorLabRevenue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="date" className="text-xs fill-muted-foreground" />
-                  <YAxis className="text-xs fill-muted-foreground" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))', 
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
-                    }}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="revenue" 
-                    stroke="hsl(var(--primary))" 
-                    fillOpacity={1} 
-                    fill="url(#colorLabRevenue)" 
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Area
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="hsl(var(--primary))"
+                    fillOpacity={1}
+                    fill="url(#colorRevenue)"
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -246,43 +244,24 @@ export default function LabAnalytics({ labCenterId }: Props) {
           </CardContent>
         </Card>
 
-        {/* Tests by Status Pie Chart */}
+        {/* Status Pie */}
         <Card>
           <CardHeader>
             <CardTitle>Tests by Status</CardTitle>
-            <CardDescription>Distribution of test statuses</CardDescription>
+            <CardDescription>Order status distribution</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
+            <div className="h-[300px] flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie
-                    data={testsByStatus}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {testsByStatus.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Pie data={testsByStatus} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} label>
+                    {testsByStatus.map((_: any, idx: number) => (
+                      <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip />
                 </PieChart>
               </ResponsiveContainer>
-              <div className="flex flex-wrap justify-center gap-4 mt-4">
-                {testsByStatus.map((entry, index) => (
-                  <div key={entry.name} className="flex items-center gap-2">
-                    <div 
-                      className="w-3 h-3 rounded-full" 
-                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                    />
-                    <span className="text-sm text-muted-foreground">{entry.name}</span>
-                  </div>
-                ))}
-              </div>
             </div>
           </CardContent>
         </Card>
@@ -291,36 +270,20 @@ export default function LabAnalytics({ labCenterId }: Props) {
       {/* Top Tests */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TestTube className="h-5 w-5" />
-            Top Performing Tests
-          </CardTitle>
-          <CardDescription>Most ordered tests this period</CardDescription>
+          <CardTitle>Top Tests</CardTitle>
+          <CardDescription>Most frequently ordered tests</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {topTests.map((test, index) => (
-              <div key={test.name} className="flex items-center gap-4">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
-                  {index + 1}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-medium">{test.name}</span>
-                    <span className="text-sm text-muted-foreground">{test.count} orders</span>
-                  </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-primary rounded-full"
-                      style={{ width: `${(test.count / topTests[0].count) * 100}%` }}
-                    />
-                  </div>
-                </div>
-                <div className="text-right w-20">
-                  <span className="font-medium text-green-600">${test.revenue.toLocaleString()}</span>
-                </div>
-              </div>
-            ))}
+          <div className="h-[260px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={topTests}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" hide />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="count" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </CardContent>
       </Card>
