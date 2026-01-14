@@ -69,8 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const allRoles: AppRole[] = useMemo(() => {
     const rolesFromDb = profile?.roles ?? [];
-    const validRoles = rolesFromDb.filter(Boolean) as AppRole[];
-    return validRoles;
+    return rolesFromDb.filter(Boolean) as AppRole[];
   }, [profile?.roles]);
 
   const switchRole = (role: AppRole) => {
@@ -152,16 +151,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const pickInitialRole = (roles: AppRole[]) => {
     const computedPrimary = getPrimaryRole(roles);
-
     const saved = localStorage.getItem(ACTIVE_ROLE_KEY) as AppRole | null;
 
-    // ✅ Only honor saved role if it still exists AND is not lower priority than computed primary
+    // ✅ Only keep saved role if it exists AND isn't lower priority than computed primary
     if (saved && roles.includes(saved)) {
       const savedScore = ROLE_PRIORITY[saved] ?? 0;
       const primaryScore = ROLE_PRIORITY[computedPrimary] ?? 0;
       if (savedScore >= primaryScore) return saved;
     }
-
     return computedPrimary;
   };
 
