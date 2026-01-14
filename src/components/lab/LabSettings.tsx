@@ -10,27 +10,9 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Save, Plus, X } from 'lucide-react';
+import type { LabCenterInput } from '@/hooks/useLabCenter';
 
 type LabCenter = Database['public']['Tables']['lab_centers']['Row'];
-
-export interface LabCenterInput {
-  name: string;
-  type: string;
-  license_number?: string;
-  address: string;
-  city: string;
-  state?: string;
-  country: string;
-  postal_code?: string;
-  phone: string;
-  email?: string;
-  website?: string;
-  services_offered?: string[];
-  accreditations?: string[];
-  accepts_insurance?: boolean;
-  average_turnaround_hours?: number;
-  operating_hours?: any;
-}
 
 interface Props {
   labCenter: LabCenter;
@@ -45,7 +27,15 @@ const DAY_LABELS: Record<DayKey, string> = {
 
 function defaultOperatingHours() {
   const base = { open: '09:00', close: '18:00', closed: false };
-  return { mon: { ...base }, tue: { ...base }, wed: { ...base }, thu: { ...base }, fri: { ...base }, sat: { ...base, closed: true }, sun: { ...base, closed: true } };
+  return {
+    mon: { ...base },
+    tue: { ...base },
+    wed: { ...base },
+    thu: { ...base },
+    fri: { ...base },
+    sat: { ...base, closed: true },
+    sun: { ...base, closed: true }
+  };
 }
 
 export default function LabSettings({ labCenter, updateLabCenter }: Props) {
@@ -74,7 +64,7 @@ export default function LabSettings({ labCenter, updateLabCenter }: Props) {
 
   const [operatingHours, setOperatingHours] = useState<any>(() => {
     const oh = labCenter.operating_hours as any;
-    return (oh && typeof oh === 'object') ? oh : defaultOperatingHours();
+    return (oh && typeof oh === 'object' && Object.keys(oh).length > 0) ? oh : defaultOperatingHours();
   });
 
   const [rawOperatingHours, setRawOperatingHours] = useState<string>('');
@@ -100,7 +90,7 @@ export default function LabSettings({ labCenter, updateLabCenter }: Props) {
       avgTurnaround !== (labCenter.average_turnaround_hours ?? 24) ||
       JSON.stringify(services) !== JSON.stringify(labCenter.services_offered ?? []) ||
       JSON.stringify(accreditations) !== JSON.stringify(labCenter.accreditations ?? []) ||
-      JSON.stringify(operatingHours) !== JSON.stringify((labCenter.operating_hours as any) ?? defaultOperatingHours())
+      JSON.stringify(operatingHours) !== JSON.stringify((labCenter.operating_hours as any) ?? {})
     );
   }, [
     labCenter, name, email, phone, website, license, acceptsInsurance,
@@ -189,7 +179,6 @@ export default function LabSettings({ labCenter, updateLabCenter }: Props) {
           <TabsTrigger value="services">Services</TabsTrigger>
         </TabsList>
 
-        {/* Profile */}
         <TabsContent value="profile" className="space-y-6">
           <Card>
             <CardHeader>
@@ -270,7 +259,6 @@ export default function LabSettings({ labCenter, updateLabCenter }: Props) {
           </Card>
         </TabsContent>
 
-        {/* Operations */}
         <TabsContent value="operations" className="space-y-6">
           <Card>
             <CardHeader>
@@ -361,7 +349,6 @@ export default function LabSettings({ labCenter, updateLabCenter }: Props) {
           </Card>
         </TabsContent>
 
-        {/* Services */}
         <TabsContent value="services" className="space-y-6">
           <Card>
             <CardHeader>
