@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { Plus, Trash2 } from 'lucide-react';
 import { PhoneInput } from '@/components/shared/PhoneInput';
 import { validatePhone } from '@/lib/phone/phone';
+import { logSession } from '@/lib/debug/authDebug';
 
 function makeRxNumber() {
   return `RX-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
@@ -40,7 +41,7 @@ export function PharmacyManualPrescriptionDialog({
 }) {
   const [loading, setLoading] = useState(false);
 
-  const [patientId, setPatientId] = useState('');
+  // ✅ WALK-IN ONLY (manual booking)
   const [patientName, setPatientName] = useState('');
   const [patientPhone, setPatientPhone] = useState('');
   const [patientEmail, setPatientEmail] = useState('');
@@ -65,7 +66,6 @@ export function PharmacyManualPrescriptionDialog({
   useEffect(() => {
     if (!open) return;
 
-    setPatientId('');
     setPatientName('');
     setPatientPhone('');
     setPatientEmail('');
@@ -89,9 +89,8 @@ export function PharmacyManualPrescriptionDialog({
   const validate = () => {
     if (!pharmacyId) return 'Missing pharmacy';
 
-    if (!patientId.trim() && !patientName.trim()) {
-      return 'Enter Patient ID (registered) OR Patient Name (walk-in)';
-    }
+    // ✅ walk-in only
+    if (!patientName.trim()) return 'Walk-in patient name is required';
 
     // ✅ phone required
     const phoneCheck = validatePhone(patientPhone);
@@ -137,6 +136,8 @@ export function PharmacyManualPrescriptionDialog({
 
     setLoading(true);
     try {
+      await logSession('PHARMACY_MANUAL_PRESCRIPTION_CREATE');
+
       const prescription_number = makeRxNumber();
       const phone = validatePhone(patientPhone).normalized;
 
@@ -149,12 +150,15 @@ export function PharmacyManualPrescriptionDialog({
         refills_remaining: refillsTotal,
 
         doctor_id: doctorId.trim() ? doctorId.trim() : null,
-        patient_id: patientId.trim() ? patientId.trim() : null,
 
-        patient_name: patientName.trim() || null,
+        // ✅ walk-in only
+        patient_id: null,
+        patient_name: patientName.trim(),
         patient_phone: phone,
         patient_email: patientEmail.trim() || null,
       };
+
+      console.log('[PHARMACY_MANUAL] prescriptions payload:', rxPayload);
 
       const { data: createdRx, error: rxErr } = await supabase
         .from('prescriptions')
@@ -175,6 +179,8 @@ export function PharmacyManualPrescriptionDialog({
         instructions: it.instructions.trim() || null,
         substitutions_allowed: !!it.substitutions_allowed,
       }));
+
+      console.log('[PHARMACY_MANUAL] prescription_items payload:', itemsPayload);
 
       const { error: itemsErr } = await supabase.from('prescription_items').insert(itemsPayload);
       if (itemsErr) throw itemsErr;
@@ -200,23 +206,18 @@ export function PharmacyManualPrescriptionDialog({
         <div className="space-y-6">
           {/* Patient */}
           <div className="space-y-3 border rounded-lg p-4">
-            <div className="text-sm font-semibold">Patient (Registered or Walk-in)</div>
+            <div className="text-sm font-semibold">Patient (Walk-in only)</div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>Registered Patient ID (optional)</Label>
-                <Input value={patientId} onChange={(e) => setPatientId(e.target.value)} placeholder="Registered patient user_id" />
-              </div>
-
-              <div className="space-y-1">
-                <Label>Walk-in Name (optional)</Label>
-                <Input value={patientName} onChange={(e) => setPatientName(e.target.value)} placeholder="Walk-in full name" />
+                <Label>Walk-in Name *</Label>
+                <Input value={patientName} onChange={(e) => setPatientName(e.target.value)} placeholder="Full name" />
               </div>
 
               {/* ✅ required phone */}
               <PhoneInput value={patientPhone} onChange={setPatientPhone} />
 
-              <div className="space-y-1">
+              <div className="space-y-1 md:col-span-2">
                 <Label>Email (optional)</Label>
                 <Input value={patientEmail} onChange={(e) => setPatientEmail(e.target.value)} placeholder="email@example.com" />
               </div>
