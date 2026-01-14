@@ -49,36 +49,21 @@ export const roleLabels: Record<AppRole, string> = {
   patient: "Patient",
 };
 
-export function getUserRolesFromProfile(
-  profile: { role?: string; roles?: string[] } | null | undefined
-): AppRole[] {
-  if (!profile) return ["patient"];
-
-  const rawRoles: string[] =
-    Array.isArray(profile.roles) && profile.roles.length > 0
-      ? profile.roles
-      : profile.role
-        ? [profile.role]
-        : [];
-
-  const cleaned = rawRoles.map((r) => String(r).trim()).filter(Boolean);
-
-  const known = new Set<AppRole>(Object.keys(DASHBOARD_ROUTES) as AppRole[]);
-  const result = cleaned.filter((r) => known.has(r as AppRole)) as AppRole[];
-
-  return result.length > 0 ? result : ["patient"];
-}
-
 export const DASHBOARD_ROUTES: Record<AppRole, string> = {
   super_admin: "/super-admin/dashboard",
+
+  // Generic admin (clinic) dashboard
   admin: "/admin/dashboard",
   clinic_admin: "/admin/dashboard",
+
   doctor: "/doctor/dashboard",
 
+  // ✅ Facility dashboards
   pharmacy_admin: "/pharmacy/dashboard",
   lab_admin: "/lab/dashboard",
   imaging_admin: "/imaging/dashboard",
 
+  // Staff dashboards (same facility dashboard)
   pharmacy_staff: "/pharmacy/dashboard",
   pharmacist: "/pharmacy/dashboard",
 
@@ -96,15 +81,16 @@ export const DASHBOARD_ROUTES: Record<AppRole, string> = {
   patient: "/patient/dashboard",
 };
 
+/**
+ * ✅ Priority order determines default redirect after login.
+ * Facility admins MUST win over generic admin.
+ */
 export const ROLE_PRIORITY: Record<AppRole, number> = {
   super_admin: 100,
 
-  // IMPORTANT:
-  // Facility admins must win over generic admin so they land on:
-  // /lab/dashboard, /pharmacy/dashboard, /imaging/dashboard after sign-in.
-  // (Many accounts may have BOTH 'admin' and 'lab_admin/pharmacy_admin/...')
   doctor: 90,
 
+  // ✅ facility admins > generic admin
   pharmacy_admin: 88,
   lab_admin: 88,
   imaging_admin: 88,
@@ -150,29 +136,15 @@ export function getDashboardRoute(roles: string[]): string {
   return DASHBOARD_ROUTES[primary] ?? PATIENT_DASHBOARD_ROUTE;
 }
 
-export function canAccessPatientPortal(userRoles: string[]): boolean {
-  return (userRoles || []).includes("patient");
-}
-
-/**
- * Fetch roles from Supabase user_roles table
- * Use anywhere you need roles outside AuthContext.
- */
 export async function getUserRoles(userId: string): Promise<AppRole[]> {
-  const { data, error } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", userId);
-
+  const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", userId);
   if (error) {
     console.error("getUserRoles error:", error);
     return [];
   }
-
   return (data || []).map((r: any) => r.role as AppRole);
 }
 
-/** helper utilities */
 export function hasRole(userRoles: string[], role: AppRole): boolean {
   return (userRoles || []).includes(role);
 }
