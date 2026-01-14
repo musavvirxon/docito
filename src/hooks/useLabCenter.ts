@@ -278,7 +278,7 @@ export function useLabCenter() {
       try {
         const isGlobal = (input as any).is_global === true || (input as any).visibility === 'public';
 
-        const payload: any = {
+        const basePayload: any = {
           ...input,
           // enforce active so it appears
           is_active: true,
@@ -288,10 +288,23 @@ export function useLabCenter() {
           is_global: isGlobal,
           visibility: isGlobal ? 'public' : ((input as any).visibility ?? 'private'),
           lab_center_id: isGlobal ? null : (input.lab_center_id ?? null),
-          parameters: (input as any).parameters ?? [],
         };
 
-        const { data, error } = await supabase.from('test_catalog').insert(payload).select().single();
+        // Some deployments don't have the optional `parameters` column yet.
+        // Try with parameters (if provided), then retry without on schema-cache error.
+        const attemptInsert = async (payload: any) => {
+          return await supabase.from('test_catalog').insert(payload).select().single();
+        };
+
+        let insertPayload: any = { ...basePayload };
+        const params = (input as any).parameters;
+        if (Array.isArray(params)) insertPayload.parameters = params;
+
+        let { data, error } = await attemptInsert(insertPayload);
+        if (error && (error as any)?.code === 'PGRST204' && String((error as any)?.message || '').includes('parameters')) {
+          ({ data, error } = await attemptInsert(basePayload));
+        }
+
         if (error) throw error;
 
         setTestCatalog((prev) => [...prev, data as TestCatalog]);
