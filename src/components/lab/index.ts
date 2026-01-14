@@ -8,3 +8,4 @@ export { default as LabHomeCollection } from './LabHomeCollection';
 export { default as LabBillingInsurance } from './LabBillingInsurance';
 export { default as LabAnalytics } from './LabAnalytics';
 export { LabReferralsSection } from './LabReferralsSection';
+export { default as LabSettings } from './LabSettings';
