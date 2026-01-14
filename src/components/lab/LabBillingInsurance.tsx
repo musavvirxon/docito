@@ -53,6 +53,8 @@ interface InsuranceClaim {
   submitted_at: string | null;
   processed_at: string | null;
   notes: string | null;
+  lab_center_id?: string;
+  created_at?: string;
 }
 
 interface Props {
@@ -89,17 +91,19 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
       setClaims(
         rows.map((r) => ({
           id: r.id,
+          lab_center_id: r.lab_center_id,
           order_id: r.order_id,
-          patient_name: r.patient_name,
-          insurance_provider: r.insurance_provider,
+          patient_name: r.patient_name ?? '',
+          insurance_provider: r.insurance_provider ?? '',
           policy_number: r.policy_number ?? '',
           claim_amount: Number(r.claim_amount ?? 0),
           approved_amount: r.approved_amount === null ? null : Number(r.approved_amount),
           copay_amount: r.copay_amount === null ? null : Number(r.copay_amount),
-          status: r.status,
-          submitted_at: r.submitted_at,
-          processed_at: r.processed_at,
-          notes: r.notes,
+          status: r.status ?? 'pending',
+          submitted_at: r.submitted_at ?? null,
+          processed_at: r.processed_at ?? null,
+          notes: r.notes ?? null,
+          created_at: r.created_at ?? null,
         }))
       );
     } catch (err: any) {
@@ -296,7 +300,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
                   {filteredClaims.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                        No claims found
+                        No claims found (table is now connected — add real claims to see data)
                       </TableCell>
                     </TableRow>
                   ) : (
