@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
 import { PhoneInput } from '@/components/shared/PhoneInput';
 import { validatePhone } from '@/lib/phone/phone';
@@ -25,19 +24,31 @@ type TestCatalogRow = {
   sample_type: string | null;
   turnaround_hours: number | null;
 
-  // optional (depends on your schema version)
+  // optional depending on schema version
   visibility?: 'private' | 'public' | null;
   is_global?: boolean | null;
   is_active?: boolean | null;
   lab_center_id?: string | null;
 };
 
+type PatientMatch = {
+  user_id: string; // profiles.user_id
+  full_name: string;
+  phone: string | null;
+  email: string;
+};
+
 function makeOrderNumber() {
   return `LAB-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
 }
 
-type PatientMode = 'registered' | 'walkin';
-
+/**
+ * Manual Lab Order:
+ * - Staff can enter phone/email.
+ * - App auto-detects if the patient has an account (profiles.role='patient') by matching phone/email.
+ * - If matched -> saves patient_id = profiles.user_id (no UUID typing).
+ * - If not matched -> creates as walk-in using patient_name/phone/email and external_patient_ref (phone or email).
+ */
 export function LabManualTestOrderDialog({
   open,
   onOpenChange,
@@ -51,37 +62,37 @@ export function LabManualTestOrderDialog({
 }) {
   const [loading, setLoading] = useState(false);
 
-  // Patient mode
-  const [patientMode, setPatientMode] = useState<PatientMode>('walkin');
-
-  // Registered patient
-  const [patientId, setPatientId] = useState(''); // profiles.user_id (uuid)
-
-  // Walk-in patient
-  const [patientName, setPatientName] = useState('');
+  // Patient inputs
   const [patientPhone, setPatientPhone] = useState('');
   const [patientEmail, setPatientEmail] = useState('');
-  const [patientDob, setPatientDob] = useState(''); // YYYY-MM-DD (optional)
+  const [patientName, setPatientName] = useState(''); // required for walk-in if no match
 
+  // Auto-detected registered patient (if exists)
+  const [matchedPatient, setMatchedPatient] = useState<PatientMatch | null>(null);
+  const [patientLookupLoading, setPatientLookupLoading] = useState(false);
+
+  // Order fields
   const [priority, setPriority] = useState<'routine' | 'urgent' | 'stat'>('routine');
   const [clinicalNotes, setClinicalNotes] = useState('');
 
+  // Catalog
   const [catalog, setCatalog] = useState<TestCatalogRow[]>([]);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
   const [selectedTests, setSelectedTests] = useState<string[]>([]);
 
+  // Load catalog (supports: visibility/public OR is_global OR lab-only)
   useEffect(() => {
     if (!open) return;
 
     // reset
     setLoading(false);
-    setPatientMode('walkin');
-    setPatientId('');
-    setPatientName('');
     setPatientPhone('');
     setPatientEmail('');
-    setPatientDob('');
+    setPatientName('');
+    setMatchedPatient(null);
+    setPatientLookupLoading(false);
+
     setPriority('routine');
     setClinicalNotes('');
     setSearch('');
@@ -91,7 +102,7 @@ export function LabManualTestOrderDialog({
     const run = async () => {
       if (!labCenterId) return;
 
-      // Try "visibility" (public/private) schema first
+      // Attempt #1: public/private visibility schema
       const tryVisibility = async () => {
         return await supabase
           .from('test_catalog')
@@ -103,7 +114,7 @@ export function LabManualTestOrderDialog({
           .order('name');
       };
 
-      // Fallback: older schema with is_global
+      // Attempt #2: older global schema
       const tryIsGlobal = async () => {
         return await supabase
           .from('test_catalog')
@@ -115,7 +126,7 @@ export function LabManualTestOrderDialog({
           .order('name');
       };
 
-      // Last fallback: lab-only
+      // Attempt #3: lab-only schema
       const tryLabOnly = async () => {
         return await supabase
           .from('test_catalog')
@@ -142,6 +153,72 @@ export function LabManualTestOrderDialog({
 
     run();
   }, [open, labCenterId]);
+
+  // Patient lookup by phone/email (auto-detect signed up)
+  const lookupPatient = async () => {
+    // If no usable input, clear
+    const email = patientEmail.trim().toLowerCase();
+    const phoneCheck = validatePhone(patientPhone);
+    const hasPhone = phoneCheck.ok && !!phoneCheck.normalized;
+    const hasEmail = !!email;
+
+    if (!hasPhone && !hasEmail) {
+      setMatchedPatient(null);
+      return;
+    }
+
+    setPatientLookupLoading(true);
+    try {
+      // Prefer phone if valid, otherwise email
+      let q = supabase
+        .from('profiles')
+        .select('user_id,full_name,phone,email,role')
+        .eq('role', 'patient')
+        .limit(1);
+
+      if (hasPhone && hasEmail) {
+        q = q.or(`phone.eq.${phoneCheck.normalized},email.eq.${email}`);
+      } else if (hasPhone) {
+        q = q.eq('phone', phoneCheck.normalized);
+      } else {
+        q = q.eq('email', email);
+      }
+
+      const { data, error } = await q;
+      if (error) throw error;
+
+      const row = (data || [])[0] as any;
+      if (row?.user_id) {
+        setMatchedPatient({
+          user_id: row.user_id,
+          full_name: row.full_name,
+          phone: row.phone,
+          email: row.email,
+        });
+
+        // Helpful auto-fill for name if blank
+        if (!patientName.trim()) setPatientName(row.full_name || '');
+      } else {
+        setMatchedPatient(null);
+      }
+    } catch (e: any) {
+      console.error(e);
+      // Don't hard-fail UI on lookup issues (RLS might block)
+      setMatchedPatient(null);
+    } finally {
+      setPatientLookupLoading(false);
+    }
+  };
+
+  // Run lookup when phone/email changes (debounced-ish via timeout)
+  useEffect(() => {
+    if (!open) return;
+    const t = setTimeout(() => {
+      lookupPatient();
+    }, 450);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [patientPhone, patientEmail, open]);
 
   const categories = useMemo(
     () => ['all', ...Array.from(new Set(catalog.map((c) => c.category))).filter(Boolean)],
@@ -174,50 +251,14 @@ export function LabManualTestOrderDialog({
     if (!labCenterId) return 'Missing lab center';
     if (selectedTests.length === 0) return 'Select at least 1 test';
 
-    if (patientMode === 'registered') {
-      if (!patientId.trim()) return 'Patient ID is required (registered patient)';
-      const uuidRe =
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      if (!uuidRe.test(patientId.trim())) return 'Patient ID must be a valid UUID';
-      return null;
-    }
-
-    if (!patientName.trim()) return 'Walk-in patient name is required';
-
+    // Phone required for manual orders (for matching / later restore)
     const phoneCheck = validatePhone(patientPhone);
     if (!phoneCheck.ok) return phoneCheck.reason || 'Invalid phone';
 
-    if (patientDob.trim()) {
-      const dobRe = /^\d{4}-\d{2}-\d{2}$/;
-      if (!dobRe.test(patientDob.trim())) return 'DOB must be in YYYY-MM-DD format';
-    }
+    // If not matched to a registered patient, require name
+    if (!matchedPatient && !patientName.trim()) return 'Patient name is required for walk-in';
 
     return null;
-  };
-
-  const upsertFacilityPatient = async (args: {
-    full_name: string;
-    phone: string;
-    email?: string | null;
-    date_of_birth?: string | null;
-  }) => {
-    const payload: any = {
-      facility_type: 'lab',
-      facility_id: labCenterId,
-      full_name: args.full_name,
-      phone: args.phone,
-      email: args.email ?? null,
-      date_of_birth: args.date_of_birth ? args.date_of_birth : null,
-    };
-
-    const { data, error } = await supabase
-      .from('facility_patients')
-      .upsert(payload, { onConflict: 'facility_type,facility_id,phone' })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
   };
 
   const handleCreate = async () => {
@@ -229,43 +270,33 @@ export function LabManualTestOrderDialog({
       await logSession('LAB_MANUAL_ORDER_CREATE');
 
       const order_number = makeOrderNumber();
+      const phone = validatePhone(patientPhone).normalized;
+      const email = patientEmail.trim().toLowerCase() || null;
 
-      let orderPayload: any = {
+      // external_patient_ref helps "restore" later (phone is best)
+      const external_patient_ref = phone || email || null;
+
+      const orderPayload: any = {
         order_number,
         lab_center_id: labCenterId,
         status: 'pending',
         priority,
         clinical_notes: clinicalNotes?.trim() || null,
+        total_amount: totalPrice || null,
+
+        // If matched -> attach registered patient id; otherwise walk-in
+        patient_id: matchedPatient?.user_id || null,
+        external_patient_ref,
+
+        patient_name: patientName.trim() || matchedPatient?.full_name || null,
+        patient_phone: phone,
+        patient_email: email,
+
+        // snapshot fields (optional but useful)
+        patient_snapshot_full_name: patientName.trim() || matchedPatient?.full_name || null,
+        patient_snapshot_phone: phone,
+        patient_snapshot_email: email,
       };
-
-      if (patientMode === 'registered') {
-        orderPayload = {
-          ...orderPayload,
-          patient_id: patientId.trim(),
-          facility_patient_id: null,
-          patient_name: null,
-          patient_phone: null,
-          patient_email: null,
-        };
-      } else {
-        const phone = validatePhone(patientPhone).normalized;
-
-        const facilityPatient = await upsertFacilityPatient({
-          full_name: patientName.trim(),
-          phone,
-          email: patientEmail.trim() || null,
-          date_of_birth: patientDob.trim() || null,
-        });
-
-        orderPayload = {
-          ...orderPayload,
-          patient_id: null,
-          facility_patient_id: facilityPatient.id,
-          patient_name: patientName.trim(),
-          patient_phone: phone,
-          patient_email: patientEmail.trim() || null,
-        };
-      }
 
       const { data: createdOrder, error: orderErr } = await supabase
         .from('test_orders')
@@ -294,6 +325,13 @@ export function LabManualTestOrderDialog({
     }
   };
 
+  const patientBadge = useMemo(() => {
+    if (patientLookupLoading) return <Badge variant="secondary">Checking…</Badge>;
+    if (matchedPatient) return <Badge variant="secondary">Registered patient</Badge>;
+    if (validatePhone(patientPhone).ok) return <Badge variant="outline">Walk-in</Badge>;
+    return null;
+  }, [matchedPatient, patientLookupLoading, patientPhone]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -304,71 +342,47 @@ export function LabManualTestOrderDialog({
         <div className="space-y-6">
           {/* Patient */}
           <div className="space-y-3 border rounded-lg p-4">
-            <div className="text-sm font-semibold">Patient</div>
-
-            <div className="space-y-2">
-              <Label>Patient type</Label>
-              <RadioGroup
-                value={patientMode}
-                onValueChange={(v) => setPatientMode(v as PatientMode)}
-                className="grid grid-cols-1 md:grid-cols-2 gap-3"
-              >
-                <div className="flex items-center space-x-2 border rounded-md p-3">
-                  <RadioGroupItem value="registered" id="patientModeRegistered" />
-                  <Label htmlFor="patientModeRegistered" className="cursor-pointer">
-                    Registered (has Patient ID)
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2 border rounded-md p-3">
-                  <RadioGroupItem value="walkin" id="patientModeWalkin" />
-                  <Label htmlFor="patientModeWalkin" className="cursor-pointer">
-                    Walk-in (no account)
-                  </Label>
-                </div>
-              </RadioGroup>
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-sm font-semibold">Patient</div>
+              {patientBadge}
             </div>
 
-            {patientMode === 'registered' ? (
-              <div className="space-y-2">
-                <Label>Patient ID (UUID) *</Label>
-                <Input
-                  value={patientId}
-                  onChange={(e) => setPatientId(e.target.value)}
-                  placeholder="e.g. 3f2c1a6e-9b9f-4f3a-8f7a-2e7c8c1d0abc"
-                />
-                <div className="text-xs text-muted-foreground">
-                  This should match the patient’s <span className="font-mono">profiles.user_id</span>.
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label>Walk-in Name *</Label>
-                  <Input value={patientName} onChange={(e) => setPatientName(e.target.value)} placeholder="Full name" />
-                </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label>Phone *</Label>
                 <PhoneInput value={patientPhone} onChange={setPatientPhone} />
-
-                <div className="space-y-1">
-                  <Label>DOB (optional)</Label>
-                  <Input value={patientDob} onChange={(e) => setPatientDob(e.target.value)} placeholder="YYYY-MM-DD" />
-                </div>
-
-                <div className="space-y-1">
-                  <Label>Email (optional)</Label>
-                  <Input
-                    value={patientEmail}
-                    onChange={(e) => setPatientEmail(e.target.value)}
-                    placeholder="email@example.com"
-                  />
-                </div>
-
-                <div className="md:col-span-2 text-xs text-muted-foreground">
-                  Walk-in patients are saved in <span className="font-mono">facility_patients</span> for this lab
-                  (unique by phone).
+                <div className="text-xs text-muted-foreground">
+                  Phone is required (for matching &amp; restoring history later).
                 </div>
               </div>
-            )}
+
+              <div className="space-y-1">
+                <Label>Email (optional)</Label>
+                <Input
+                  value={patientEmail}
+                  onChange={(e) => setPatientEmail(e.target.value)}
+                  placeholder="email@example.com"
+                />
+              </div>
+
+              <div className="space-y-1 md:col-span-2">
+                <Label>Name {matchedPatient ? '(auto-filled)' : '*'}</Label>
+                <Input
+                  value={patientName}
+                  onChange={(e) => setPatientName(e.target.value)}
+                  placeholder="Full name"
+                />
+                {matchedPatient ? (
+                  <div className="text-xs text-muted-foreground">
+                    Linked to account: <span className="font-medium">{matchedPatient.full_name}</span>
+                  </div>
+                ) : (
+                  <div className="text-xs text-muted-foreground">
+                    If patient has no account, we’ll save this as a walk-in order.
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Order details */}
@@ -470,7 +484,10 @@ export function LabManualTestOrderDialog({
                   </div>
                 ))}
                 {filteredCatalog.length === 0 ? (
-                  <div className="p-6 text-center text-muted-foreground">No tests found</div>
+                  <div className="p-6 text-center text-muted-foreground">
+                    No tests found. If you made tests public/global, ensure they are active and your query includes
+                    visibility/global.
+                  </div>
                 ) : null}
               </div>
             </ScrollArea>
