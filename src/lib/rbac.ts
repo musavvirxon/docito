@@ -52,18 +52,17 @@ export const roleLabels: Record<AppRole, string> = {
 export const DASHBOARD_ROUTES: Record<AppRole, string> = {
   super_admin: "/super-admin/dashboard",
 
-  // Generic admin (clinic) dashboard
+  // Generic clinic admin
   admin: "/admin/dashboard",
   clinic_admin: "/admin/dashboard",
 
   doctor: "/doctor/dashboard",
 
-  // ✅ Facility dashboards
+  // Facility dashboards
   pharmacy_admin: "/pharmacy/dashboard",
   lab_admin: "/lab/dashboard",
   imaging_admin: "/imaging/dashboard",
 
-  // Staff dashboards (same facility dashboard)
   pharmacy_staff: "/pharmacy/dashboard",
   pharmacist: "/pharmacy/dashboard",
 
@@ -82,15 +81,14 @@ export const DASHBOARD_ROUTES: Record<AppRole, string> = {
 };
 
 /**
- * ✅ Priority order determines default redirect after login.
- * Facility admins MUST win over generic admin.
+ * ✅ IMPORTANT: Facility admins must win over generic admin.
  */
 export const ROLE_PRIORITY: Record<AppRole, number> = {
   super_admin: 100,
 
   doctor: 90,
 
-  // ✅ facility admins > generic admin
+  // ✅ facility admin > admin
   pharmacy_admin: 88,
   lab_admin: 88,
   imaging_admin: 88,
@@ -113,6 +111,26 @@ export const ROLE_PRIORITY: Record<AppRole, number> = {
 
   patient: 10,
 };
+
+export function getUserRolesFromProfile(
+  profile: { role?: string; roles?: string[] } | null | undefined
+): AppRole[] {
+  if (!profile) return ["patient"];
+
+  const rawRoles: string[] =
+    Array.isArray(profile.roles) && profile.roles.length > 0
+      ? profile.roles
+      : profile.role
+        ? [profile.role]
+        : [];
+
+  const cleaned = rawRoles.map((r) => String(r).trim()).filter(Boolean);
+
+  const known = new Set<AppRole>(Object.keys(DASHBOARD_ROUTES) as AppRole[]);
+  const result = cleaned.filter((r) => known.has(r as AppRole)) as AppRole[];
+
+  return result.length > 0 ? result : ["patient"];
+}
 
 export function getPrimaryRole(roles: string[]): AppRole {
   if (!roles?.length) return "patient";
@@ -137,11 +155,16 @@ export function getDashboardRoute(roles: string[]): string {
 }
 
 export async function getUserRoles(userId: string): Promise<AppRole[]> {
-  const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+  const { data, error } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId);
+
   if (error) {
     console.error("getUserRoles error:", error);
     return [];
   }
+
   return (data || []).map((r: any) => r.role as AppRole);
 }
 
