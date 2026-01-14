@@ -31,7 +31,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { AuthIllustration } from "@/components/Visuals/illustrations";
-import { DASHBOARD_ROUTES, PATIENT_DASHBOARD_ROUTE } from "@/lib/rbac";
+import { DASHBOARD_ROUTES, getDashboardRoute } from "@/lib/rbac";
 
 const Auth = () => {
   const { t } = useTranslation("auth");
@@ -53,18 +53,20 @@ const Auth = () => {
   const [searchParams] = useSearchParams();
 
   const returnToParam = searchParams.get("returnTo");
-  // Basic safety: only allow in-app relative paths
   const safeReturnTo = returnToParam && returnToParam.startsWith("/") ? returnToParam : null;
 
-  // ✅ Always send the user to the dashboard for their CURRENT active role.
   const getDashboardPath = () => {
-    return DASHBOARD_ROUTES[activeRole] ?? PATIENT_DASHBOARD_ROUTE;
+    // Prefer activeRole picked by AuthContext (it already resolves priority correctly)
+    const byActive = DASHBOARD_ROUTES[activeRole];
+    if (byActive) return byActive;
+
+    // Fallback based on roles array
+    const roles = profile?.roles || [];
+    return getDashboardRoute(roles);
   };
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (user && profile) {
-      // Pending staff invitation
       const pendingInviteToken = sessionStorage.getItem("pending_staff_invite_token");
       if (pendingInviteToken) {
         sessionStorage.removeItem("pending_staff_invite_token");
@@ -72,7 +74,7 @@ const Auth = () => {
         return;
       }
 
-      // If booking flow provided a returnTo, prefer it. Otherwise use role dashboard.
+      // Use returnTo if provided, otherwise go to correct role dashboard
       navigate(safeReturnTo || getDashboardPath());
     }
   }, [user, profile, activeRole, navigate, safeReturnTo]);
@@ -80,7 +82,6 @@ const Auth = () => {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       await signIn(signInEmail, signInPassword);
     } catch (error) {
@@ -93,7 +94,6 @@ const Auth = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       await signUp(signUpEmail, signUpPassword, {
         fullName: signUpFullName,
