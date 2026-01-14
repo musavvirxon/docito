@@ -50,6 +50,10 @@ export interface TestCatalogInput {
   turnaround_hours?: number;
   price?: number;
   requires_fasting?: boolean;
+  visibility?: 'public' | 'private';
+  is_global?: boolean;
+  is_active?: boolean;
+  parameters?: any[];
 }
 
 export function useLabCenter() {
@@ -272,7 +276,7 @@ export function useLabCenter() {
     async (input: TestCatalogInput) => {
       setLoading(true);
       try {
-        const isGlobal = (input as any).is_global === true || input.visibility === 'public';
+        const isGlobal = (input as any).is_global === true || (input as any).visibility === 'public';
 
         const payload: any = {
           ...input,
@@ -282,9 +286,9 @@ export function useLabCenter() {
           // - if global/public: visible to all, no owner lab required
           // - if private: must be owned by the creating lab
           is_global: isGlobal,
-          visibility: isGlobal ? 'public' : (input.visibility ?? 'private'),
+          visibility: isGlobal ? 'public' : ((input as any).visibility ?? 'private'),
           lab_center_id: isGlobal ? null : (input.lab_center_id ?? null),
-          parameters: input.parameters ?? [],
+          parameters: (input as any).parameters ?? [],
         };
 
         const { data, error } = await supabase.from('test_catalog').insert(payload).select().single();
@@ -302,25 +306,6 @@ export function useLabCenter() {
     },
     []
   );
-
-try {
-      const { data, error } = await supabase
-        .from('test_catalog')
-        .insert(input)
-        .select()
-        .single();
-
-      if (error) throw error;
-      setTestCatalog(prev => [...prev, data as TestCatalog]);
-      toast({ title: 'Success', description: 'Test added to catalog' });
-      return data;
-    } catch (error: any) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   const updateTest = useCallback(async (id: string, updates: Partial<TestCatalogInput>) => {
     setLoading(true);
