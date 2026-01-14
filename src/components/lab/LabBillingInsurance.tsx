@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -62,11 +62,13 @@ interface Props {
 export default function LabBillingInsurance({ labCenterId }: Props) {
   const [claims, setClaims] = useState<InsuranceClaim[]>([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+
   const [selectedClaim, setSelectedClaim] = useState<InsuranceClaim | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (labCenterId) fetchClaims();
@@ -100,7 +102,6 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
           notes: r.notes,
         }))
       );
-
     } catch (err: any) {
       console.error('Error fetching claims:', err);
       toast.error(err?.message || 'Failed to load claims');
@@ -113,31 +114,14 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
     try {
       setSubmitting(true);
 
-      const { data, error } = await supabase.functions.invoke('lab-claims', {
+      const { error } = await supabase.functions.invoke('lab-claims', {
         body: { action: 'submit', lab_center_id: labCenterId, claim_id: claimId },
       });
 
       if (error) throw error;
 
       toast.success('Claim submitted');
-      // refresh list for accurate statuses/timestamps
       await fetchClaims();
-
-      // If dialog open, refresh selected claim too
-      if (selectedClaim?.id === claimId) {
-        const updated = data?.claim;
-        if (updated) {
-          setSelectedClaim((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  status: updated.status,
-                  submitted_at: updated.submitted_at,
-                }
-              : prev
-          );
-        }
-      }
     } catch (err: any) {
       console.error('Error submitting claim:', err);
       toast.error(err?.message || 'Failed to submit claim');
@@ -161,14 +145,17 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
     );
   };
 
-  const filteredClaims = claims.filter(claim => {
-    const matchesSearch =
-      claim.patient_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (claim.policy_number || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (claim.order_id || '').toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || claim.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const filteredClaims = useMemo(() => {
+    return claims.filter((claim) => {
+      const matchesSearch =
+        claim.patient_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (claim.policy_number || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (claim.order_id || '').toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesStatus = statusFilter === 'all' || claim.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [claims, searchTerm, statusFilter]);
 
   const totalPending = claims.filter(c => c.status === 'pending' || c.status === 'submitted').length;
   const totalApproved = claims
@@ -202,6 +189,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
               </div>
             </CardContent>
           </Card>
+
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
@@ -215,6 +203,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
               </div>
             </CardContent>
           </Card>
+
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
@@ -228,6 +217,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
               </div>
             </CardContent>
           </Card>
+
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
@@ -254,6 +244,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
                 </CardTitle>
                 <CardDescription>Manage insurance claims and billing</CardDescription>
               </div>
+
               <Button variant="ghost" size="sm" onClick={fetchClaims}>
                 <RefreshCw className="h-4 w-4" />
               </Button>
@@ -271,6 +262,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
+
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Filter by status" />
@@ -315,11 +307,10 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
                         <TableCell className="font-mono text-sm">{claim.policy_number}</TableCell>
                         <TableCell>${claim.claim_amount.toFixed(2)}</TableCell>
                         <TableCell>
-                          {claim.approved_amount !== null
-                            ? `$${claim.approved_amount.toFixed(2)}`
-                            : '-'}
+                          {claim.approved_amount !== null ? `$${claim.approved_amount.toFixed(2)}` : '-'}
                         </TableCell>
                         <TableCell>{getStatusBadge(claim.status)}</TableCell>
+
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             <Button
@@ -403,9 +394,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
                   </div>
                   <div className="flex justify-between border-t pt-2">
                     <span className="font-medium">Patient Copay</span>
-                    <span className="font-bold">
-                      ${selectedClaim.copay_amount?.toFixed(2) || '0.00'}
-                    </span>
+                    <span className="font-bold">${selectedClaim.copay_amount?.toFixed(2) || '0.00'}</span>
                   </div>
                 </div>
               </div>
@@ -423,17 +412,13 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Submitted</p>
                   <p className="font-medium">
-                    {selectedClaim.submitted_at
-                      ? format(new Date(selectedClaim.submitted_at), 'MMM d, yyyy')
-                      : '-'}
+                    {selectedClaim.submitted_at ? format(new Date(selectedClaim.submitted_at), 'MMM d, yyyy') : '-'}
                   </p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Processed</p>
                   <p className="font-medium">
-                    {selectedClaim.processed_at
-                      ? format(new Date(selectedClaim.processed_at), 'MMM d, yyyy')
-                      : '-'}
+                    {selectedClaim.processed_at ? format(new Date(selectedClaim.processed_at), 'MMM d, yyyy') : '-'}
                   </p>
                 </div>
               </div>
@@ -444,15 +429,6 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
             <Button variant="outline" onClick={() => setIsDetailsOpen(false)}>
               Close
             </Button>
-            {selectedClaim?.status === 'pending' && (
-              <Button
-                disabled={submitting}
-                onClick={() => selectedClaim && submitClaim(selectedClaim.id)}
-              >
-                <Send className="h-4 w-4 mr-1" />
-                Submit Claim
-              </Button>
-            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
