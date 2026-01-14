@@ -38,44 +38,22 @@ export interface LabStaffInput {
   can_manage_equipment?: boolean;
 }
 
-/**
- * parameters JSON structure stored in test_catalog.parameters:
- * [
- *   {
- *     id: "uuid",
- *     name: "WBC",
- *     unit: "10^9/L",
- *     result_type: "number" | "text",
- *     default_range: { low?: number|null, high?: number|null, text?: string|null },
- *     ranges: [
- *       { gender: "any"|"male"|"female"|"other", age_min_years?: number|null, age_max_years?: number|null, low?: number|null, high?: number|null, text?: string|null }
- *     ]
- *   }
- * ]
- */
 export interface TestCatalogInput {
-  lab_center_id?: string | null; // owner lab (private/public tests still have an owner)
+  lab_center_id?: string;
   test_code: string;
   name: string;
   category: string;
-  subcategory?: string | null;
-  description?: string | null;
-  sample_type?: string | null;
-  preparation_instructions?: string | null;
-  turnaround_hours?: number | null;
-  price?: number | null;
-  requires_fasting?: boolean | null;
-
-  // NEW: public/private visibility
-  visibility?: 'private' | 'public';
-
-  // Measured parameters (JSONB)
-  parameters?: any[];
+  subcategory?: string;
+  description?: string;
+  sample_type?: string;
+  preparation_instructions?: string;
+  turnaround_hours?: number;
+  price?: number;
+  requires_fasting?: boolean;
 }
 
 export function useLabCenter() {
   const { user } = useAuth();
-
   const [labCenters, setLabCenters] = useState<LabCenter[]>([]);
   const [myLabCenter, setMyLabCenter] = useState<LabCenter | null>(null);
   const [labStaff, setLabStaff] = useState<LabStaff[]>([]);
@@ -85,7 +63,11 @@ export function useLabCenter() {
   const fetchLabCenters = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.from('lab_centers').select('*').order('name');
+      const { data, error } = await supabase
+        .from('lab_centers')
+        .select('*')
+        .order('name');
+
       if (error) throw error;
       setLabCenters((data || []) as LabCenter[]);
     } catch (error: any) {
@@ -99,7 +81,7 @@ export function useLabCenter() {
     if (!user) return;
     setLoading(true);
     try {
-      // Admin of a lab center
+      // Check if user is admin of a lab center
       const { data: adminData } = await supabase
         .from('lab_centers')
         .select('*')
@@ -111,7 +93,7 @@ export function useLabCenter() {
         return;
       }
 
-      // Staff at a lab center
+      // Check if user is staff at a lab center
       const { data: staffData } = await supabase
         .from('lab_staff')
         .select('lab_center_id')
@@ -137,38 +119,45 @@ export function useLabCenter() {
     }
   }, [user]);
 
-  const createLabCenter = useCallback(
-    async (input: LabCenterInput) => {
-      if (!user) return null;
-      setLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('lab_centers')
-          .insert({ ...input, admin_id: user.id })
-          .select()
-          .single();
+  const createLabCenter = useCallback(async (input: LabCenterInput) => {
+    if (!user) return null;
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('lab_centers')
+        .insert({
+          ...input,
+          admin_id: user.id,
+        })
+        .select()
+        .single();
 
-        if (error) throw error;
+      if (error) throw error;
 
-        // Assign lab_admin role to user
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .upsert({ user_id: user.id, role: 'lab_admin' }, { onConflict: 'user_id,role' });
+      // Assign lab_admin role to user
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .upsert({ 
+          user_id: user.id, 
+          role: 'lab_admin' 
+        }, { 
+          onConflict: 'user_id,role' 
+        });
 
-        if (roleError) console.error('Error assigning lab_admin role:', roleError);
-
-        setMyLabCenter(data as LabCenter);
-        toast({ title: 'Success', description: 'Lab center registered successfully' });
-        return data;
-      } catch (error: any) {
-        toast({ title: 'Error', description: error.message, variant: 'destructive' });
-        return null;
-      } finally {
-        setLoading(false);
+      if (roleError) {
+        console.error('Error assigning lab_admin role:', roleError);
       }
-    },
-    [user]
-  );
+
+      setMyLabCenter(data as LabCenter);
+      toast({ title: 'Success', description: 'Lab center registered successfully' });
+      return data;
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
 
   const updateLabCenter = useCallback(async (id: string, updates: Partial<LabCenterInput>) => {
     setLoading(true);
@@ -214,10 +203,14 @@ export function useLabCenter() {
   const addLabStaff = useCallback(async (input: LabStaffInput) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.from('lab_staff').insert(input).select().single();
-      if (error) throw error;
+      const { data, error } = await supabase
+        .from('lab_staff')
+        .insert(input)
+        .select()
+        .single();
 
-      setLabStaff((prev) => [data as LabStaff, ...prev]);
+      if (error) throw error;
+      setLabStaff(prev => [data as LabStaff, ...prev]);
       toast({ title: 'Success', description: 'Staff member added successfully' });
       return data;
     } catch (error: any) {
@@ -231,10 +224,15 @@ export function useLabCenter() {
   const updateLabStaff = useCallback(async (id: string, updates: Partial<LabStaffInput>) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.from('lab_staff').update(updates).eq('id', id).select().single();
-      if (error) throw error;
+      const { data, error } = await supabase
+        .from('lab_staff')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
 
-      setLabStaff((prev) => prev.map((s) => (s.id === id ? (data as LabStaff) : s)));
+      if (error) throw error;
+      setLabStaff(prev => prev.map(s => s.id === id ? data as LabStaff : s));
       toast({ title: 'Success', description: 'Staff member updated successfully' });
       return data;
     } catch (error: any) {
@@ -245,20 +243,18 @@ export function useLabCenter() {
     }
   }, []);
 
-  /**
-   * ✅ Test Catalog Management
-   * This fetch returns:
-   * - all active tests owned by this lab (lab_center_id = labCenterId)
-   * - plus all active public tests (visibility = 'public')
-   */
+  // Test Catalog Management
   const fetchTestCatalog = useCallback(async (labCenterId?: string) => {
     setLoading(true);
     try {
-      let query = supabase.from('test_catalog').select('*').eq('is_active', true);
+      let query = supabase
+        .from('test_catalog')
+        .select('*')
+        .eq('is_active', true);
 
       if (labCenterId) {
-        // IMPORTANT: private+public owned by this lab, plus all public from others
-        query = query.or(`lab_center_id.eq.${labCenterId},visibility.eq.public`);
+        // Show: lab-owned OR public (new schema) OR global (older schema)
+        query = query.or(`lab_center_id.eq.${labCenterId},visibility.eq.public,is_global.eq.true`);
       }
 
       const { data, error } = await query.order('category').order('name');
@@ -272,30 +268,50 @@ export function useLabCenter() {
     }
   }, []);
 
-  /**
-   * Add Test
-   * Owner is always the lab creating it.
-   * visibility defaults to 'private' if not provided.
-   */
-  const addTest = useCallback(async (input: TestCatalogInput) => {
-    setLoading(true);
-    try {
-      const payload: any = {
-        ...input,
-        // Owner lab must be set by caller (UI passes labCenterId)
-        lab_center_id: input.lab_center_id ?? null,
-        // Default private unless specified
-        visibility: input.visibility ?? 'private',
-        // Ensure active so it appears
-        is_active: true,
-        // Keep parameters (JSONB)
-        parameters: input.parameters ?? [],
-      };
+  const addTest = useCallback(
+    async (input: TestCatalogInput) => {
+      setLoading(true);
+      try {
+        const isGlobal = (input as any).is_global === true || input.visibility === 'public';
 
-      const { data, error } = await supabase.from('test_catalog').insert(payload).select().single();
+        const payload: any = {
+          ...input,
+          // enforce active so it appears
+          is_active: true,
+          // enforce consistency:
+          // - if global/public: visible to all, no owner lab required
+          // - if private: must be owned by the creating lab
+          is_global: isGlobal,
+          visibility: isGlobal ? 'public' : (input.visibility ?? 'private'),
+          lab_center_id: isGlobal ? null : (input.lab_center_id ?? null),
+          parameters: input.parameters ?? [],
+        };
+
+        const { data, error } = await supabase.from('test_catalog').insert(payload).select().single();
+        if (error) throw error;
+
+        setTestCatalog((prev) => [...prev, data as TestCatalog]);
+        toast({ title: 'Success', description: 'Test added to catalog' });
+        return data;
+      } catch (error: any) {
+        toast({ title: 'Error', description: error.message, variant: 'destructive' });
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+try {
+      const { data, error } = await supabase
+        .from('test_catalog')
+        .insert(input)
+        .select()
+        .single();
+
       if (error) throw error;
-
-      setTestCatalog((prev) => [...prev, data as TestCatalog]);
+      setTestCatalog(prev => [...prev, data as TestCatalog]);
       toast({ title: 'Success', description: 'Test added to catalog' });
       return data;
     } catch (error: any) {
@@ -306,22 +322,18 @@ export function useLabCenter() {
     }
   }, []);
 
-  /**
-   * Update Test
-   * Keeps ownership the same unless explicitly changed (generally you should NOT change owner).
-   */
   const updateTest = useCallback(async (id: string, updates: Partial<TestCatalogInput>) => {
     setLoading(true);
     try {
-      const payload: any = { ...updates };
+      const { data, error } = await supabase
+        .from('test_catalog')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
 
-      if ('parameters' in updates) payload.parameters = updates.parameters ?? [];
-      if ('visibility' in updates) payload.visibility = updates.visibility ?? 'private';
-
-      const { data, error } = await supabase.from('test_catalog').update(payload).eq('id', id).select().single();
       if (error) throw error;
-
-      setTestCatalog((prev) => prev.map((t) => (t.id === id ? (data as TestCatalog) : t)));
+      setTestCatalog(prev => prev.map(t => t.id === id ? data as TestCatalog : t));
       toast({ title: 'Success', description: 'Test updated successfully' });
       return data;
     } catch (error: any) {
@@ -335,10 +347,13 @@ export function useLabCenter() {
   const deleteTest = useCallback(async (id: string) => {
     setLoading(true);
     try {
-      const { error } = await supabase.from('test_catalog').delete().eq('id', id);
-      if (error) throw error;
+      const { error } = await supabase
+        .from('test_catalog')
+        .delete()
+        .eq('id', id);
 
-      setTestCatalog((prev) => prev.filter((t) => t.id !== id));
+      if (error) throw error;
+      setTestCatalog(prev => prev.filter(t => t.id !== id));
       toast({ title: 'Success', description: 'Test removed from catalog' });
       return true;
     } catch (error: any) {
@@ -349,26 +364,19 @@ export function useLabCenter() {
     }
   }, []);
 
-  useEffect(() => {
-    // keep these as-is; pages call fetch* when needed
-  }, []);
-
   return {
     labCenters,
     myLabCenter,
     labStaff,
     testCatalog,
     loading,
-
     fetchLabCenters,
     fetchMyLabCenter,
     createLabCenter,
     updateLabCenter,
-
     fetchLabStaff,
     addLabStaff,
     updateLabStaff,
-
     fetchTestCatalog,
     addTest,
     updateTest,
