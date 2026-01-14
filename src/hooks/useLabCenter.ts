@@ -24,6 +24,9 @@ export interface LabCenterInput {
   accreditations?: string[];
   accepts_insurance?: boolean;
   average_turnaround_hours?: number;
+
+  // ✅ added for Settings screen (weekly schedule / JSON schedule)
+  operating_hours?: any;
 }
 
 export interface LabStaffInput {
@@ -141,12 +144,15 @@ export function useLabCenter() {
       // Assign lab_admin role to user
       const { error: roleError } = await supabase
         .from('user_roles')
-        .upsert({ 
-          user_id: user.id, 
-          role: 'lab_admin' 
-        }, { 
-          onConflict: 'user_id,role' 
-        });
+        .upsert(
+          {
+            user_id: user.id,
+            role: 'lab_admin',
+          },
+          {
+            onConflict: 'user_id,role',
+          }
+        );
 
       if (roleError) {
         console.error('Error assigning lab_admin role:', roleError);
