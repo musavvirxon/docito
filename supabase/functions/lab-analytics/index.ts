@@ -29,20 +29,12 @@ serve(async (req) => {
       });
     }
 
-    // Use anon + user JWT => RLS + auth.uid() works
+    // anon + user JWT => RLS + auth.uid() works
     const supabase = createClient(supabaseUrl, supabaseAnon, {
       global: { headers: { Authorization: authHeader } },
     });
 
-    const { data: { user }, error: userErr } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
-    if (userErr || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const body = await req.json().catch(() => ({})) as { lab_center_id?: string; time_range?: TimeRange };
+    const body = (await req.json().catch(() => ({}))) as { lab_center_id?: string; time_range?: TimeRange };
     const labCenterId = body.lab_center_id;
     const timeRange = (body.time_range ?? "7d") as TimeRange;
 
