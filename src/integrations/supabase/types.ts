@@ -5722,6 +5722,7 @@ export type Database = {
           is_global: boolean | null
           lab_center_id: string | null
           name: string
+          parameters: Json
           preparation_instructions: string | null
           price: number | null
           requires_fasting: boolean | null
@@ -5740,6 +5741,7 @@ export type Database = {
           is_global?: boolean | null
           lab_center_id?: string | null
           name: string
+          parameters?: Json
           preparation_instructions?: string | null
           price?: number | null
           requires_fasting?: boolean | null
@@ -5758,6 +5760,7 @@ export type Database = {
           is_global?: boolean | null
           lab_center_id?: string | null
           name?: string
+          parameters?: Json
           preparation_instructions?: string | null
           price?: number | null
           requires_fasting?: boolean | null
