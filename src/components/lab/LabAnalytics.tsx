@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,6 @@ import {
   TestTube,
   Clock,
   ArrowUpRight,
-  ArrowDownRight,
   RefreshCw
 } from 'lucide-react';
 import {
@@ -45,13 +44,19 @@ type AnalyticsResponse = {
   testsByStatus: Array<{ name: string; value: number }>;
 };
 
-const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+const COLORS = [
+  'hsl(var(--primary))',
+  'hsl(var(--accent))',
+  'hsl(var(--chart-3))',
+  'hsl(var(--chart-4))',
+  'hsl(var(--chart-5))',
+];
 
 export default function LabAnalytics({ labCenterId }: Props) {
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<TimeRange>('7d');
 
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<AnalyticsResponse['stats']>({
     totalRevenue: 0,
     totalTests: 0,
     avgTurnaround: 0,
@@ -60,14 +65,12 @@ export default function LabAnalytics({ labCenterId }: Props) {
     testsChange: 0,
   });
 
-  const [revenueData, setRevenueData] = useState<any[]>([]);
-  const [topTests, setTopTests] = useState<any[]>([]);
-  const [testsByStatus, setTestsByStatus] = useState<any[]>([]);
+  const [revenueData, setRevenueData] = useState<AnalyticsResponse['revenueData']>([]);
+  const [topTests, setTopTests] = useState<AnalyticsResponse['topTests']>([]);
+  const [testsByStatus, setTestsByStatus] = useState<AnalyticsResponse['testsByStatus']>([]);
 
   useEffect(() => {
-    if (labCenterId) {
-      fetchAnalytics();
-    }
+    if (labCenterId) fetchAnalytics();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [labCenterId, timeRange]);
 
@@ -96,7 +99,6 @@ export default function LabAnalytics({ labCenterId }: Props) {
       setRevenueData(Array.isArray(analytics.revenueData) ? analytics.revenueData : []);
       setTopTests(Array.isArray(analytics.topTests) ? analytics.topTests : []);
       setTestsByStatus(Array.isArray(analytics.testsByStatus) ? analytics.testsByStatus : []);
-
     } catch (err: any) {
       console.error('Error fetching analytics:', err);
       toast.error(err?.message || 'Failed to load analytics');
@@ -115,7 +117,7 @@ export default function LabAnalytics({ labCenterId }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* Time Range Selector */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold flex items-center gap-2">
           <BarChart3 className="h-6 w-6" />
@@ -138,7 +140,7 @@ export default function LabAnalytics({ labCenterId }: Props) {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
@@ -196,10 +198,6 @@ export default function LabAnalytics({ labCenterId }: Props) {
               <div>
                 <p className="text-sm text-muted-foreground">Recollection Rate</p>
                 <p className="text-3xl font-bold">{stats.recollectionRate}%</p>
-                <div className="flex items-center gap-1 mt-1">
-                  <ArrowDownRight className="h-4 w-4 text-green-600" />
-                  <span className="text-sm text-green-600">0%</span>
-                </div>
               </div>
               <div className="p-3 bg-orange-500/10 rounded-lg">
                 <TrendingUp className="h-6 w-6 text-orange-600" />
@@ -209,9 +207,8 @@ export default function LabAnalytics({ labCenterId }: Props) {
         </Card>
       </div>
 
-      {/* Charts Row */}
+      {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Revenue Chart */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Revenue & Test Volume</CardTitle>
@@ -221,30 +218,17 @@ export default function LabAnalytics({ labCenterId }: Props) {
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={revenueData}>
-                  <defs>
-                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
                   <YAxis />
                   <Tooltip />
-                  <Area
-                    type="monotone"
-                    dataKey="revenue"
-                    stroke="hsl(var(--primary))"
-                    fillOpacity={1}
-                    fill="url(#colorRevenue)"
-                  />
+                  <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.2} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
 
-        {/* Status Pie */}
         <Card>
           <CardHeader>
             <CardTitle>Tests by Status</CardTitle>
@@ -255,7 +239,7 @@ export default function LabAnalytics({ labCenterId }: Props) {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie data={testsByStatus} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} label>
-                    {testsByStatus.map((_: any, idx: number) => (
+                    {testsByStatus.map((_, idx) => (
                       <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
                     ))}
                   </Pie>
@@ -267,7 +251,6 @@ export default function LabAnalytics({ labCenterId }: Props) {
         </Card>
       </div>
 
-      {/* Top Tests */}
       <Card>
         <CardHeader>
           <CardTitle>Top Tests</CardTitle>
