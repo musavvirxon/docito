@@ -43,11 +43,11 @@ function makeOrderNumber() {
 }
 
 /**
- * Manual Lab Order:
- * - Staff can enter phone/email.
- * - App auto-detects if the patient has an account (profiles.role='patient') by matching phone/email.
- * - If matched -> saves patient_id = profiles.user_id (no UUID typing).
- * - If not matched -> creates as walk-in using patient_name/phone/email and external_patient_ref (phone or email).
+ * FIXED catalog visibility logic:
+ * - Some rows are is_global=true but visibility='private' and lab_center_id=NULL.
+ * - Previously, the "visibility" query succeeded (no error) but returned 0 rows, so we never fell back to is_global.
+ * - Now we ALWAYS include public OR global OR lab-owned in ONE query:
+ *   (lab_center_id = currentLab) OR (visibility = 'public') OR (is_global = true)
  */
 export function LabManualTestOrderDialog({
   open,
@@ -62,10 +62,10 @@ export function LabManualTestOrderDialog({
 }) {
   const [loading, setLoading] = useState(false);
 
-  // Patient inputs
+  // Patient inputs (no UUID typing)
   const [patientPhone, setPatientPhone] = useState('');
   const [patientEmail, setPatientEmail] = useState('');
-  const [patientName, setPatientName] = useState(''); // required for walk-in if no match
+  const [patientName, setPatientName] = useState('');
 
   // Auto-detected registered patient (if exists)
   const [matchedPatient, setMatchedPatient] = useState<PatientMatch | null>(null);
@@ -81,7 +81,7 @@ export function LabManualTestOrderDialog({
   const [category, setCategory] = useState('all');
   const [selectedTests, setSelectedTests] = useState<string[]>([]);
 
-  // Load catalog (supports: visibility/public OR is_global OR lab-only)
+  // Load catalog
   useEffect(() => {
     if (!open) return;
 
@@ -98,39 +98,30 @@ export function LabManualTestOrderDialog({
     setSearch('');
     setCategory('all');
     setSelectedTests([]);
+    setCatalog([]);
 
     const run = async () => {
       if (!labCenterId) return;
 
-      // Attempt #1: public/private visibility schema
-      const tryVisibility = async () => {
+      // One query that works with BOTH schemas, because selecting a missing column will error:
+      // We try a "full select" (includes visibility + is_global). If it errors, we retry with a minimal select.
+      const tryFull = async () => {
         return await supabase
           .from('test_catalog')
           .select(
-            'id,name,test_code,category,price,requires_fasting,sample_type,turnaround_hours,visibility,is_active,lab_center_id'
+            'id,name,test_code,category,price,requires_fasting,sample_type,turnaround_hours,visibility,is_global,is_active,lab_center_id'
           )
           .eq('is_active', true)
-          .or(`lab_center_id.eq.${labCenterId},visibility.eq.public`)
+          .or(`lab_center_id.eq.${labCenterId},visibility.eq.public,is_global.eq.true`)
           .order('name');
       };
 
-      // Attempt #2: older global schema
-      const tryIsGlobal = async () => {
+      const tryMinimal = async () => {
+        // For older schemas that may not have visibility/is_global
         return await supabase
           .from('test_catalog')
-          .select(
-            'id,name,test_code,category,price,requires_fasting,sample_type,turnaround_hours,is_global,is_active,lab_center_id'
-          )
+          .select('id,name,test_code,category,price,requires_fasting,sample_type,turnaround_hours,is_active,lab_center_id')
           .eq('is_active', true)
-          .or(`lab_center_id.eq.${labCenterId},is_global.eq.true`)
-          .order('name');
-      };
-
-      // Attempt #3: lab-only schema
-      const tryLabOnly = async () => {
-        return await supabase
-          .from('test_catalog')
-          .select('id,name,test_code,category,price,requires_fasting,sample_type,turnaround_hours')
           .eq('lab_center_id', labCenterId)
           .order('name');
       };
@@ -138,13 +129,14 @@ export function LabManualTestOrderDialog({
       let data: any = null;
       let error: any = null;
 
-      ({ data, error } = await tryVisibility());
-      if (error) ({ data, error } = await tryIsGlobal());
-      if (error) ({ data, error } = await tryLabOnly());
+      ({ data, error } = await tryFull());
+      if (error) {
+        ({ data, error } = await tryMinimal());
+      }
 
       if (error) {
         console.error(error);
-        toast.error('Failed to load test catalog');
+        toast.error(error.message || 'Failed to load test catalog');
         return;
       }
 
@@ -156,7 +148,6 @@ export function LabManualTestOrderDialog({
 
   // Patient lookup by phone/email (auto-detect signed up)
   const lookupPatient = async () => {
-    // If no usable input, clear
     const email = patientEmail.trim().toLowerCase();
     const phoneCheck = validatePhone(patientPhone);
     const hasPhone = phoneCheck.ok && !!phoneCheck.normalized;
@@ -169,7 +160,6 @@ export function LabManualTestOrderDialog({
 
     setPatientLookupLoading(true);
     try {
-      // Prefer phone if valid, otherwise email
       let q = supabase
         .from('profiles')
         .select('user_id,full_name,phone,email,role')
@@ -196,21 +186,18 @@ export function LabManualTestOrderDialog({
           email: row.email,
         });
 
-        // Helpful auto-fill for name if blank
         if (!patientName.trim()) setPatientName(row.full_name || '');
       } else {
         setMatchedPatient(null);
       }
     } catch (e: any) {
       console.error(e);
-      // Don't hard-fail UI on lookup issues (RLS might block)
       setMatchedPatient(null);
     } finally {
       setPatientLookupLoading(false);
     }
   };
 
-  // Run lookup when phone/email changes (debounced-ish via timeout)
   useEffect(() => {
     if (!open) return;
     const t = setTimeout(() => {
@@ -251,11 +238,9 @@ export function LabManualTestOrderDialog({
     if (!labCenterId) return 'Missing lab center';
     if (selectedTests.length === 0) return 'Select at least 1 test';
 
-    // Phone required for manual orders (for matching / later restore)
     const phoneCheck = validatePhone(patientPhone);
     if (!phoneCheck.ok) return phoneCheck.reason || 'Invalid phone';
 
-    // If not matched to a registered patient, require name
     if (!matchedPatient && !patientName.trim()) return 'Patient name is required for walk-in';
 
     return null;
@@ -273,7 +258,6 @@ export function LabManualTestOrderDialog({
       const phone = validatePhone(patientPhone).normalized;
       const email = patientEmail.trim().toLowerCase() || null;
 
-      // external_patient_ref helps "restore" later (phone is best)
       const external_patient_ref = phone || email || null;
 
       const orderPayload: any = {
@@ -284,7 +268,6 @@ export function LabManualTestOrderDialog({
         clinical_notes: clinicalNotes?.trim() || null,
         total_amount: totalPrice || null,
 
-        // If matched -> attach registered patient id; otherwise walk-in
         patient_id: matchedPatient?.user_id || null,
         external_patient_ref,
 
@@ -292,7 +275,6 @@ export function LabManualTestOrderDialog({
         patient_phone: phone,
         patient_email: email,
 
-        // snapshot fields (optional but useful)
         patient_snapshot_full_name: patientName.trim() || matchedPatient?.full_name || null,
         patient_snapshot_phone: phone,
         patient_snapshot_email: email,
@@ -340,7 +322,6 @@ export function LabManualTestOrderDialog({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Patient */}
           <div className="space-y-3 border rounded-lg p-4">
             <div className="flex items-center justify-between gap-2">
               <div className="text-sm font-semibold">Patient</div>
@@ -351,9 +332,6 @@ export function LabManualTestOrderDialog({
               <div className="space-y-1">
                 <Label>Phone *</Label>
                 <PhoneInput value={patientPhone} onChange={setPatientPhone} />
-                <div className="text-xs text-muted-foreground">
-                  Phone is required (for matching &amp; restoring history later).
-                </div>
               </div>
 
               <div className="space-y-1">
@@ -367,25 +345,11 @@ export function LabManualTestOrderDialog({
 
               <div className="space-y-1 md:col-span-2">
                 <Label>Name {matchedPatient ? '(auto-filled)' : '*'}</Label>
-                <Input
-                  value={patientName}
-                  onChange={(e) => setPatientName(e.target.value)}
-                  placeholder="Full name"
-                />
-                {matchedPatient ? (
-                  <div className="text-xs text-muted-foreground">
-                    Linked to account: <span className="font-medium">{matchedPatient.full_name}</span>
-                  </div>
-                ) : (
-                  <div className="text-xs text-muted-foreground">
-                    If patient has no account, we’ll save this as a walk-in order.
-                  </div>
-                )}
+                <Input value={patientName} onChange={(e) => setPatientName(e.target.value)} placeholder="Full name" />
               </div>
             </div>
           </div>
 
-          {/* Order details */}
           <div className="space-y-3 border rounded-lg p-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1">
@@ -410,16 +374,10 @@ export function LabManualTestOrderDialog({
 
             <div className="space-y-1">
               <Label>Clinical Notes (optional)</Label>
-              <Textarea
-                value={clinicalNotes}
-                onChange={(e) => setClinicalNotes(e.target.value)}
-                rows={3}
-                placeholder="Symptoms, diagnosis, instructions..."
-              />
+              <Textarea value={clinicalNotes} onChange={(e) => setClinicalNotes(e.target.value)} rows={3} />
             </div>
           </div>
 
-          {/* Tests */}
           <div className="space-y-3 border rounded-lg p-4">
             <div className="flex flex-col md:flex-row gap-3">
               <div className="flex-1">
@@ -458,19 +416,14 @@ export function LabManualTestOrderDialog({
                         <Badge variant="outline" className="text-xs font-mono">
                           {t.test_code}
                         </Badge>
-                        {t.requires_fasting ? (
+                        {t.is_global ? (
                           <Badge variant="secondary" className="text-xs">
-                            Fasting
+                            Global
                           </Badge>
                         ) : null}
                         {t.visibility === 'public' ? (
                           <Badge variant="secondary" className="text-xs">
                             Public
-                          </Badge>
-                        ) : null}
-                        {t.is_global ? (
-                          <Badge variant="secondary" className="text-xs">
-                            Global
                           </Badge>
                         ) : null}
                       </div>
@@ -484,10 +437,7 @@ export function LabManualTestOrderDialog({
                   </div>
                 ))}
                 {filteredCatalog.length === 0 ? (
-                  <div className="p-6 text-center text-muted-foreground">
-                    No tests found. If you made tests public/global, ensure they are active and your query includes
-                    visibility/global.
-                  </div>
+                  <div className="p-6 text-center text-muted-foreground">No tests found.</div>
                 ) : null}
               </div>
             </ScrollArea>
