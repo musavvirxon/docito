@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,11 +26,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { 
-  CreditCard, 
-  Search, 
-  Eye, 
-  DollarSign, 
+import {
+  Search,
+  Eye,
+  DollarSign,
   Clock,
   CheckCircle,
   XCircle,
@@ -66,67 +66,83 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedClaim, setSelectedClaim] = useState<InsuranceClaim | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (labCenterId) {
-      fetchClaims();
-    }
+    if (labCenterId) fetchClaims();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [labCenterId]);
 
   const fetchClaims = async () => {
     try {
       setLoading(true);
-      // Mock data
-      const mockClaims: InsuranceClaim[] = [
-        {
-          id: '1',
-          order_id: 'ORD-001',
-          patient_name: 'John Doe',
-          insurance_provider: 'Blue Cross',
-          policy_number: 'BC-123456',
-          claim_amount: 250.00,
-          approved_amount: 200.00,
-          copay_amount: 50.00,
-          status: 'approved',
-          submitted_at: new Date(Date.now() - 86400000 * 3).toISOString(),
-          processed_at: new Date(Date.now() - 86400000).toISOString(),
-          notes: null,
-        },
-        {
-          id: '2',
-          order_id: 'ORD-002',
-          patient_name: 'Jane Smith',
-          insurance_provider: 'Aetna',
-          policy_number: 'AE-789012',
-          claim_amount: 180.00,
-          approved_amount: null,
-          copay_amount: null,
-          status: 'pending',
-          submitted_at: new Date().toISOString(),
-          processed_at: null,
-          notes: null,
-        },
-        {
-          id: '3',
-          order_id: 'ORD-003',
-          patient_name: 'Robert Johnson',
-          insurance_provider: 'United Health',
-          policy_number: 'UH-345678',
-          claim_amount: 320.00,
-          approved_amount: 0,
-          copay_amount: 320.00,
-          status: 'rejected',
-          submitted_at: new Date(Date.now() - 86400000 * 5).toISOString(),
-          processed_at: new Date(Date.now() - 86400000 * 2).toISOString(),
-          notes: 'Pre-authorization required',
-        },
-      ];
-      setClaims(mockClaims);
-    } catch (error) {
-      console.error('Error fetching claims:', error);
-      toast.error('Failed to load claims');
+
+      const { data, error } = await supabase.functions.invoke('lab-claims', {
+        body: { action: 'list', lab_center_id: labCenterId },
+      });
+
+      if (error) throw error;
+
+      const rows = (data?.claims ?? []) as any[];
+      setClaims(
+        rows.map((r) => ({
+          id: r.id,
+          order_id: r.order_id,
+          patient_name: r.patient_name,
+          insurance_provider: r.insurance_provider,
+          policy_number: r.policy_number ?? '',
+          claim_amount: Number(r.claim_amount ?? 0),
+          approved_amount: r.approved_amount === null ? null : Number(r.approved_amount),
+          copay_amount: r.copay_amount === null ? null : Number(r.copay_amount),
+          status: r.status,
+          submitted_at: r.submitted_at,
+          processed_at: r.processed_at,
+          notes: r.notes,
+        }))
+      );
+
+    } catch (err: any) {
+      console.error('Error fetching claims:', err);
+      toast.error(err?.message || 'Failed to load claims');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const submitClaim = async (claimId: string) => {
+    try {
+      setSubmitting(true);
+
+      const { data, error } = await supabase.functions.invoke('lab-claims', {
+        body: { action: 'submit', lab_center_id: labCenterId, claim_id: claimId },
+      });
+
+      if (error) throw error;
+
+      toast.success('Claim submitted');
+      // refresh list for accurate statuses/timestamps
+      await fetchClaims();
+
+      // If dialog open, refresh selected claim too
+      if (selectedClaim?.id === claimId) {
+        const updated = data?.claim;
+        if (updated) {
+          setSelectedClaim((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  status: updated.status,
+                  submitted_at: updated.submitted_at,
+                }
+              : prev
+          );
+        }
+      }
+    } catch (err: any) {
+      console.error('Error submitting claim:', err);
+      toast.error(err?.message || 'Failed to submit claim');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -146,15 +162,17 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
   };
 
   const filteredClaims = claims.filter(claim => {
-    const matchesSearch = 
+    const matchesSearch =
       claim.patient_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      claim.policy_number.toLowerCase().includes(searchTerm.toLowerCase());
+      (claim.policy_number || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (claim.order_id || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || claim.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
   const totalPending = claims.filter(c => c.status === 'pending' || c.status === 'submitted').length;
-  const totalApproved = claims.filter(c => c.status === 'approved' || c.status === 'paid')
+  const totalApproved = claims
+    .filter(c => c.status === 'approved' || c.status === 'paid')
     .reduce((sum, c) => sum + (c.approved_amount || 0), 0);
   const totalRejected = claims.filter(c => c.status === 'rejected').length;
 
@@ -241,13 +259,14 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
               </Button>
             </div>
           </CardHeader>
+
           <CardContent>
             <div className="flex gap-4 mb-6">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   className="pl-10"
-                  placeholder="Search by patient or policy..."
+                  placeholder="Search by patient, policy, order..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -280,6 +299,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
+
                 <TableBody>
                   {filteredClaims.length === 0 ? (
                     <TableRow>
@@ -295,15 +315,15 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
                         <TableCell className="font-mono text-sm">{claim.policy_number}</TableCell>
                         <TableCell>${claim.claim_amount.toFixed(2)}</TableCell>
                         <TableCell>
-                          {claim.approved_amount !== null 
+                          {claim.approved_amount !== null
                             ? `$${claim.approved_amount.toFixed(2)}`
                             : '-'}
                         </TableCell>
                         <TableCell>{getStatusBadge(claim.status)}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            <Button 
-                              size="sm" 
+                            <Button
+                              size="sm"
                               variant="ghost"
                               onClick={() => {
                                 setSelectedClaim(claim);
@@ -312,8 +332,13 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
+
                             {claim.status === 'pending' && (
-                              <Button size="sm">
+                              <Button
+                                size="sm"
+                                disabled={submitting}
+                                onClick={() => submitClaim(claim.id)}
+                              >
                                 <Send className="h-4 w-4 mr-1" />
                                 Submit
                               </Button>
@@ -371,7 +396,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Approved Amount</span>
                     <span className="font-medium text-green-600">
-                      {selectedClaim.approved_amount !== null 
+                      {selectedClaim.approved_amount !== null
                         ? `$${selectedClaim.approved_amount.toFixed(2)}`
                         : 'Pending'}
                     </span>
@@ -398,7 +423,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Submitted</p>
                   <p className="font-medium">
-                    {selectedClaim.submitted_at 
+                    {selectedClaim.submitted_at
                       ? format(new Date(selectedClaim.submitted_at), 'MMM d, yyyy')
                       : '-'}
                   </p>
@@ -406,7 +431,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Processed</p>
                   <p className="font-medium">
-                    {selectedClaim.processed_at 
+                    {selectedClaim.processed_at
                       ? format(new Date(selectedClaim.processed_at), 'MMM d, yyyy')
                       : '-'}
                   </p>
@@ -420,7 +445,10 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
               Close
             </Button>
             {selectedClaim?.status === 'pending' && (
-              <Button>
+              <Button
+                disabled={submitting}
+                onClick={() => selectedClaim && submitClaim(selectedClaim.id)}
+              >
                 <Send className="h-4 w-4 mr-1" />
                 Submit Claim
               </Button>
