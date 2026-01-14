@@ -31,6 +31,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { AuthIllustration } from "@/components/Visuals/illustrations";
+import { DASHBOARD_ROUTES, PATIENT_DASHBOARD_ROUTE } from "@/lib/rbac";
 
 const Auth = () => {
   const { t } = useTranslation("auth");
@@ -47,7 +48,7 @@ const Auth = () => {
   const [signUpFullName, setSignUpFullName] = useState("");
   const [signUpRole, setSignUpRole] = useState<string>("patient");
 
-  const { signIn, signUp, user, profile } = useAuth();
+  const { signIn, signUp, user, profile, activeRole } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -55,74 +56,26 @@ const Auth = () => {
   // Basic safety: only allow in-app relative paths
   const safeReturnTo = returnToParam && returnToParam.startsWith("/") ? returnToParam : null;
 
-  // ✅ Single place to decide dashboard route (canonical routes only)
+  // ✅ Always send the user to the dashboard for their CURRENT active role.
   const getDashboardPath = () => {
-    const userRoles: string[] = profile?.roles || [];
-    const primaryRole = (profile?.role as string) || "";
-
-    // Priority: super_admin > doctor > admin > pharmacy > lab > imaging > staff > patient
-    if (userRoles.includes("super_admin")) return "/super-admin-dashboard";
-
-    if (userRoles.includes("doctor") || primaryRole === "doctor")
-      return "/doctor-dashboard";
-
-    if (
-      userRoles.includes("admin") ||
-      userRoles.includes("clinic_admin") ||
-      primaryRole === "admin"
-    )
-      return "/admin-dashboard";
-
-    if (userRoles.includes("pharmacy_admin") || primaryRole === "pharmacy_admin")
-      return "/pharmacy/dashboard";
-
-    if (userRoles.includes("lab_admin") || primaryRole === "lab_admin")
-      return "/lab/dashboard";
-
-    if (userRoles.includes("imaging_admin") || primaryRole === "imaging_admin")
-      return "/imaging/dashboard";
-
-    if (userRoles.includes("pharmacy_staff") || userRoles.includes("pharmacist"))
-      return "/pharmacy/dashboard";
-
-    if (userRoles.includes("lab_staff") || userRoles.includes("lab_technician"))
-      return "/lab/dashboard";
-
-    if (
-      userRoles.includes("imaging_staff") ||
-      userRoles.includes("internal_imaging_tech")
-    )
-      return "/imaging/dashboard";
-
-    if (
-      userRoles.includes("clinic_staff") ||
-      userRoles.includes("staff") ||
-      userRoles.includes("receptionist") ||
-      userRoles.includes("nurse")
-    )
-      return "/staff-dashboard";
-
-    return "/patient-dashboard";
+    return DASHBOARD_ROUTES[activeRole] ?? PATIENT_DASHBOARD_ROUTE;
   };
 
-  // Redirect if already authenticated based on role
+  // Redirect if already authenticated
   useEffect(() => {
     if (user && profile) {
       // Pending staff invitation
-      const pendingInviteToken = sessionStorage.getItem(
-        "pending_staff_invite_token"
-      );
+      const pendingInviteToken = sessionStorage.getItem("pending_staff_invite_token");
       if (pendingInviteToken) {
         sessionStorage.removeItem("pending_staff_invite_token");
         navigate(`/accept-invite/${pendingInviteToken}`);
         return;
       }
 
-      // If booking flow (or any other flow) provided a returnTo, prefer that.
-      // Otherwise fall back to role-based dashboards.
+      // If booking flow provided a returnTo, prefer it. Otherwise use role dashboard.
       navigate(safeReturnTo || getDashboardPath());
     }
-  }, [user, profile, navigate, safeReturnTo]);
+  }, [user, profile, activeRole, navigate, safeReturnTo]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -215,9 +168,7 @@ const Auth = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="signin-password">
-                      {t("auth.signIn.password")}
-                    </Label>
+                    <Label htmlFor="signin-password">{t("auth.signIn.password")}</Label>
                     <Input
                       id="signin-password"
                       type="password"
@@ -255,9 +206,7 @@ const Auth = () => {
               <form onSubmit={handleSignUp}>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signup-name">
-                      {t("auth.signUp.fullName")}
-                    </Label>
+                    <Label htmlFor="signup-name">{t("auth.signUp.fullName")}</Label>
                     <Input
                       id="signup-name"
                       type="text"
@@ -269,9 +218,7 @@ const Auth = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="signup-email">
-                      {t("auth.signUp.email")}
-                    </Label>
+                    <Label htmlFor="signup-email">{t("auth.signUp.email")}</Label>
                     <Input
                       id="signup-email"
                       type="email"
@@ -283,9 +230,7 @@ const Auth = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password">
-                      {t("auth.signUp.password")}
-                    </Label>
+                    <Label htmlFor="signup-password">{t("auth.signUp.password")}</Label>
                     <Input
                       id="signup-password"
                       type="password"
@@ -297,16 +242,12 @@ const Auth = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="signup-role">
-                      {t("auth.signUp.accountType")}
-                    </Label>
+                    <Label htmlFor="signup-role">{t("auth.signUp.accountType")}</Label>
                     <Select value={signUpRole} onValueChange={setSignUpRole}>
                       <SelectTrigger>
                         <div className="flex items-center gap-2">
                           {getRoleIcon(signUpRole)}
-                          <SelectValue
-                            placeholder={t("auth.signUp.accountTypePlaceholder")}
-                          />
+                          <SelectValue placeholder={t("auth.signUp.accountTypePlaceholder")} />
                         </div>
                       </SelectTrigger>
                       <SelectContent>
@@ -331,10 +272,7 @@ const Auth = () => {
                         <SelectItem value="pharmacy_admin">
                           <div className="flex items-center gap-2">
                             <Pill className="w-4 h-4" />
-                            {t(
-                              "auth.signUp.roles.pharmacyAdmin",
-                              "Pharmacy Admin"
-                            )}
+                            {t("auth.signUp.roles.pharmacyAdmin", "Pharmacy Admin")}
                           </div>
                         </SelectItem>
                         <SelectItem value="lab_admin">
@@ -346,10 +284,7 @@ const Auth = () => {
                         <SelectItem value="imaging_admin">
                           <div className="flex items-center gap-2">
                             <Scan className="w-4 h-4" />
-                            {t(
-                              "auth.signUp.roles.imagingAdmin",
-                              "Imaging Center Admin"
-                            )}
+                            {t("auth.signUp.roles.imagingAdmin", "Imaging Center Admin")}
                           </div>
                         </SelectItem>
                       </SelectContent>
