@@ -49,8 +49,6 @@ interface DoctorProfileData {
     phone: string | null;
     email: string;
     username: string | null;
-    city?: string;
-    country?: string;
   };
   practices: {
     id: string;
@@ -94,7 +92,7 @@ export default function DoctorPublicProfile() {
           .from("doctors")
           .select(`
             *,
-            profiles:user_id (full_name, avatar_url, phone, email, username, city, country),
+            profiles:user_id (full_name, avatar_url, phone, email, username),
             practices (id, name, address, phone, city, country, verified)
           `)
           .or(`id.eq.${slug},custom_profile_link.eq.${slug}`)
@@ -196,7 +194,7 @@ export default function DoctorPublicProfile() {
   const canonicalUrl = `https://docito.lovable.app/doctor/${slug}`;
   const doctorName = doctor.profiles.full_name;
   const specialty = getLocalizedSpecialty();
-  const location = [doctor.profiles.city, doctor.profiles.country].filter(Boolean).join(", ");
+  const location = [doctor.practices?.city, doctor.practices?.country].filter(Boolean).join(", ");
 
   return (
     <>
@@ -215,7 +213,7 @@ export default function DoctorPublicProfile() {
             "@type": "Physician",
             name: `Dr. ${doctorName}`,
             medicalSpecialty: specialty,
-            address: { "@type": "PostalAddress", addressLocality: doctor.profiles.city, addressCountry: doctor.profiles.country },
+            address: { "@type": "PostalAddress", addressLocality: doctor.practices?.city, addressCountry: doctor.practices?.country },
             aggregateRating: doctor.average_rating ? { "@type": "AggregateRating", ratingValue: doctor.average_rating, reviewCount: doctor.num_reviews || 0 } : undefined,
             worksFor: doctor.practices ? { "@type": "MedicalOrganization", name: doctor.practices.name } : undefined,
           })}
