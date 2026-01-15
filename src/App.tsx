@@ -1,66 +1,51 @@
-// File: src/App.tsx
-
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect } from "react";
 import { Routes, Route, Link, useLocation } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 
 import PublicLayout from "@/layouts/PublicLayout";
 import { Button } from "@/components/ui/button";
 
-// Loading fallback
-const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-background">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-  </div>
-);
+// IMPORTANT: Avoid React.lazy in Lovable previews to prevent stale chunk fetch errors.
+import PremiumHome from "@/pages/PremiumHome";
+import Auth from "@/pages/Auth";
+import About from "@/pages/About";
+import Contact from "@/pages/Contact";
+import Features from "@/pages/Features";
+import Pricing from "@/pages/Pricing";
 
-// Lazy load pages (keep for most routes)
-const PremiumHome = lazy(() => import("@/pages/PremiumHome"));
-const Auth = lazy(() => import("@/pages/Auth"));
-const About = lazy(() => import("@/pages/About"));
-const Contact = lazy(() => import("@/pages/Contact"));
-const Features = lazy(() => import("@/pages/Features"));
-const Pricing = lazy(() => import("@/pages/Pricing"));
+import DoctorLandingPage from "@/pages/doctor/DoctorLandingPage";
+import Doctors from "@/pages/Doctors";
+import Practices from "@/pages/Practices";
 
-const DoctorLandingPage = lazy(() => import("@/pages/doctor/DoctorLandingPage"));
-const Doctors = lazy(() => import("@/pages/Doctors"));
-const Practices = lazy(() => import("@/pages/Practices"));
+import Dashboard from "@/pages/Dashboard";
+import ProfilePage from "@/pages/ProfilePage";
 
-const Dashboard = lazy(() => import("@/pages/Dashboard"));
-const ProfilePage = lazy(() => import("@/pages/ProfilePage"));
+import PatientDashboard from "@/pages/PatientDashboard";
+import DoctorDashboard from "@/pages/DoctorDashboard";
+import StaffDashboard from "@/pages/StaffDashboard";
+import AdminDashboard from "@/pages/AdminDashboard";
+import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
 
-const PatientDashboard = lazy(() => import("@/pages/PatientDashboard"));
-const DoctorDashboard = lazy(() => import("@/pages/DoctorDashboard"));
-const StaffDashboard = lazy(() => import("@/pages/StaffDashboard"));
-const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
-const SuperAdminDashboard = lazy(() => import("@/pages/SuperAdminDashboard"));
+import LabLandingPage from "@/pages/lab/LabLandingPage";
+import LabDashboard from "@/pages/lab/LabDashboard";
 
-const LabLandingPage = lazy(() => import("@/pages/lab/LabLandingPage"));
-const LabDashboard = lazy(() => import("@/pages/lab/LabDashboard"));
+import PharmacyLandingPage from "@/pages/pharmacy/PharmacyLandingPage";
+import PharmacyDashboard from "@/pages/pharmacy/PharmacyDashboard";
 
-const PharmacyLandingPage = lazy(() => import("@/pages/pharmacy/PharmacyLandingPage"));
-const PharmacyDashboard = lazy(() => import("@/pages/pharmacy/PharmacyDashboard"));
+import ImagingLandingPage from "@/pages/imaging/ImagingLandingPage";
+import ImagingDashboard from "@/pages/imaging/ImagingDashboard";
+import ImagingSettings from "@/pages/imaging/ImagingSettings";
+import ImagingRegistration from "@/pages/imaging/ImagingRegistration";
+import ImagingVerification from "@/pages/imaging/ImagingVerification";
 
-const ImagingLandingPage = lazy(() => import("@/pages/imaging/ImagingLandingPage"));
-const ImagingDashboard = lazy(() => import("@/pages/imaging/ImagingDashboard"));
-const ImagingSettings = lazy(() => import("@/pages/imaging/ImagingSettings"));
-const ImagingRegistration = lazy(() => import("@/pages/imaging/ImagingRegistration"));
-const ImagingVerification = lazy(() => import("@/pages/imaging/ImagingVerification"));
+import AppointmentBooking from "@/pages/AppointmentBooking";
+import BookingConfirmation from "@/pages/BookingConfirmation";
+import DoctorProfile from "@/pages/DoctorProfile";
+import DoctorPublicProfile from "@/pages/doctor/DoctorPublicProfile";
+import VideoCall from "@/pages/VideoCall";
+import Messages from "@/pages/Messages";
+import FeedbackCenter from "@/pages/FeedbackCenter";
 
-const AppointmentBooking = lazy(() => import("@/pages/AppointmentBooking"));
-const BookingConfirmation = lazy(() => import("@/pages/BookingConfirmation"));
-const DoctorProfile = lazy(() => import("@/pages/DoctorProfile"));
-const DoctorPublicProfile = lazy(() => import("@/pages/doctor/DoctorPublicProfile"));
-const VideoCall = lazy(() => import("@/pages/VideoCall"));
-const Messages = lazy(() => import("@/pages/Messages"));
-const FeedbackCenter = lazy(() => import("@/pages/FeedbackCenter"));
-
-/**
- * IMPORTANT:
- * Do NOT lazy-load NotFound. A stale browser cache can try to fetch an old chunk name
- * (e.g., NotFound-xxxx.js) and cause a blank screen in Lovable previews.
- * Keeping NotFound inline avoids that entire failure mode.
- */
 function NotFoundInline() {
   const location = useLocation();
 
@@ -96,65 +81,63 @@ export default function App() {
     <>
       <Toaster />
 
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          {/* Public pages with layout */}
-          <Route element={<PublicLayout />}>
-            <Route index element={<PremiumHome />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/features" element={<Features />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/doctor" element={<DoctorLandingPage />} />
-            <Route path="/find-doctors" element={<Doctors />} />
-            <Route path="/practice" element={<Practices />} />
-            <Route path="/lab" element={<LabLandingPage />} />
-            <Route path="/pharmacy" element={<PharmacyLandingPage />} />
-            <Route path="/imaging-center" element={<ImagingLandingPage />} />
-            <Route path="/doctor/:slug" element={<DoctorPublicProfile />} />
-            <Route path="/doctor-profile/:id" element={<DoctorProfile />} />
-            <Route path="/book-appointment/:doctorId" element={<AppointmentBooking />} />
-            <Route path="/booking-confirmation/:appointmentId" element={<BookingConfirmation />} />
-          </Route>
+      <Routes>
+        {/* Public pages with layout */}
+        <Route element={<PublicLayout />}>
+          <Route index element={<PremiumHome />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/features" element={<Features />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/doctor" element={<DoctorLandingPage />} />
+          <Route path="/find-doctors" element={<Doctors />} />
+          <Route path="/practice" element={<Practices />} />
+          <Route path="/lab" element={<LabLandingPage />} />
+          <Route path="/pharmacy" element={<PharmacyLandingPage />} />
+          <Route path="/imaging-center" element={<ImagingLandingPage />} />
+          <Route path="/doctor/:slug" element={<DoctorPublicProfile />} />
+          <Route path="/doctor-profile/:id" element={<DoctorProfile />} />
+          <Route path="/book-appointment/:doctorId" element={<AppointmentBooking />} />
+          <Route path="/booking-confirmation/:appointmentId" element={<BookingConfirmation />} />
+        </Route>
 
-          {/* Auth */}
-          <Route path="/auth" element={<Auth />} />
+        {/* Auth */}
+        <Route path="/auth" element={<Auth />} />
 
-          {/* Dashboards */}
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/feedback" element={<FeedbackCenter />} />
+        {/* Dashboards */}
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/feedback" element={<FeedbackCenter />} />
 
-          <Route path="/patient-dashboard" element={<PatientDashboard />} />
-          <Route path="/patient/dashboard" element={<PatientDashboard />} />
-          <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
-          <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
-          <Route path="/staff-dashboard" element={<StaffDashboard />} />
-          <Route path="/staff/dashboard" element={<StaffDashboard />} />
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
-          <Route path="/super-admin/dashboard" element={<SuperAdminDashboard />} />
+        <Route path="/patient-dashboard" element={<PatientDashboard />} />
+        <Route path="/patient/dashboard" element={<PatientDashboard />} />
+        <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
+        <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
+        <Route path="/staff-dashboard" element={<StaffDashboard />} />
+        <Route path="/staff/dashboard" element={<StaffDashboard />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
+        <Route path="/super-admin/dashboard" element={<SuperAdminDashboard />} />
 
-          {/* Entity dashboards */}
-          <Route path="/lab/dashboard" element={<LabDashboard />} />
-          <Route path="/pharmacy/dashboard" element={<PharmacyDashboard />} />
-          <Route path="/imaging/dashboard" element={<ImagingDashboard />} />
-          <Route path="/imaging/settings" element={<ImagingSettings />} />
-          <Route path="/imaging/register" element={<ImagingRegistration />} />
-          <Route path="/imaging/verify" element={<ImagingVerification />} />
+        {/* Entity dashboards */}
+        <Route path="/lab/dashboard" element={<LabDashboard />} />
+        <Route path="/pharmacy/dashboard" element={<PharmacyDashboard />} />
+        <Route path="/imaging/dashboard" element={<ImagingDashboard />} />
+        <Route path="/imaging/settings" element={<ImagingSettings />} />
+        <Route path="/imaging/register" element={<ImagingRegistration />} />
+        <Route path="/imaging/verify" element={<ImagingVerification />} />
 
-          {/* Video Calls */}
-          <Route path="/video-call" element={<VideoCall />} />
-          <Route path="/video/:roomId" element={<VideoCall />} />
+        {/* Video Calls */}
+        <Route path="/video-call" element={<VideoCall />} />
+        <Route path="/video/:roomId" element={<VideoCall />} />
 
-          {/* Messaging */}
-          <Route path="/messages" element={<Messages />} />
+        {/* Messaging */}
+        <Route path="/messages" element={<Messages />} />
 
-          {/* 404 (NOT lazy-loaded) */}
-          <Route path="*" element={<NotFoundInline />} />
-        </Routes>
-      </Suspense>
+        {/* 404 */}
+        <Route path="*" element={<NotFoundInline />} />
+      </Routes>
     </>
   );
 }
