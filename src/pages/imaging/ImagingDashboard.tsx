@@ -1,8 +1,8 @@
 // File: src/pages/imaging/ImagingDashboard.tsx
 
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -19,16 +19,16 @@ import {
   FileText,
   ArrowRightLeft,
   LayoutDashboard,
+  RefreshCw,
 } from "lucide-react";
 
 import { useImagingCenter } from "@/hooks/useImagingCenter";
 import { useAuth } from "@/contexts/AuthContext";
 import { DashboardShell, SidebarItem } from "@/components/dashboard/DashboardShell";
 import { PageHeader } from "@/components/dashboard/PageHeader";
-import { StatsGrid, StatItem } from "@/components/dashboard/StatsGrid";
+import { StatsGrid, StatCardProps } from "@/components/dashboard/StatsGrid";
 import { ContentCard } from "@/components/dashboard/ContentCard";
 import { EmptyState } from "@/components/dashboard/EmptyState";
-
 import ImagingEquipmentManager from "@/components/imaging/ImagingEquipmentManager";
 import ImagingScanWorkflow from "@/components/imaging/ImagingScanWorkflow";
 import ImagingReportManager from "@/components/imaging/ImagingReportManager";
@@ -70,10 +70,17 @@ type DashboardResponse = {
   equipment: DashboardEquipmentItem[];
 };
 
+function useQueryParam(name: string) {
+  const { search } = useLocation();
+  return useMemo(() => new URLSearchParams(search).get(name), [name, search]);
+}
+
 export default function ImagingDashboard() {
   const navigate = useNavigate();
   const { user, loading: authLoading, activeRole } = useAuth();
   const { myImagingCenter, fetchMyImagingCenter, loading: centerLoading } = useImagingCenter();
+
+  const tabParam = useQueryParam("tab");
 
   const [activeTab, setActiveTab] = useState<
     "overview" | "workflow" | "reports" | "equipment" | "analytics" | "staff" | "referrals" | "settings"
@@ -90,7 +97,21 @@ export default function ImagingDashboard() {
     fetchMyImagingCenter();
   }, [fetchMyImagingCenter]);
 
-  const centerId = myImagingCenter?.id || "";
+  useEffect(() => {
+    const t = (tabParam || "").toLowerCase();
+    if (
+      t === "overview" ||
+      t === "workflow" ||
+      t === "reports" ||
+      t === "equipment" ||
+      t === "analytics" ||
+      t === "staff" ||
+      t === "referrals" ||
+      t === "settings"
+    ) {
+      setActiveTab(t);
+    }
+  }, [tabParam]);
 
   const sidebarItems: SidebarItem[] = useMemo(
     () => [
@@ -106,6 +127,8 @@ export default function ImagingDashboard() {
     []
   );
 
+  const centerId = myImagingCenter?.id || "";
+
   const refreshDashboard = async () => {
     if (!centerId) return;
     setDashLoading(true);
@@ -113,14 +136,14 @@ export default function ImagingDashboard() {
       const { data, error } = await supabase.functions.invoke("imaging-dashboard", {
         body: { centerId },
       });
-
       if (error) throw error;
 
-      const parsed = data as DashboardResponse;
+      const parsed = (data || {}) as DashboardResponse;
+
       setDash({
-        stats: parsed?.stats || { scheduledToday: 0, inProgress: 0, pendingReports: 0, completedToday: 0 },
-        queue: Array.isArray(parsed?.queue) ? parsed.queue : [],
-        equipment: Array.isArray(parsed?.equipment) ? parsed.equipment : [],
+        stats: parsed.stats || { scheduledToday: 0, inProgress: 0, pendingReports: 0, completedToday: 0 },
+        queue: Array.isArray(parsed.queue) ? parsed.queue : [],
+        equipment: Array.isArray(parsed.equipment) ? parsed.equipment : [],
       });
     } catch (e: any) {
       console.error(e);
@@ -140,7 +163,7 @@ export default function ImagingDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [centerId]);
 
-  const stats: StatItem[] = useMemo(
+  const stats: StatCardProps[] = useMemo(
     () => [
       { label: "Scheduled Today", value: dash.stats.scheduledToday, icon: <Calendar className="h-6 w-6" /> },
       { label: "In Progress", value: dash.stats.inProgress, icon: <ScanLine className="h-6 w-6" /> },
@@ -183,8 +206,8 @@ export default function ImagingDashboard() {
           <CardContent className="pt-6 text-center">
             <ScanLine className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <CardTitle className="mb-2">No Imaging Center Found</CardTitle>
-            <CardDescription className="mb-4">Your account is not linked to an imaging center.</CardDescription>
-            <Button onClick={() => navigate("/imaging-center")}>Go to Imaging Center</Button>
+            <CardDescription className="mb-4">You don't have an imaging center associated with your account.</CardDescription>
+            <Button onClick={() => navigate("/imaging/register")}>Register Imaging Center</Button>
           </CardContent>
         </Card>
       </div>
@@ -200,7 +223,11 @@ export default function ImagingDashboard() {
       entityStatus={myImagingCenter.is_verified ? "verified" : "pending"}
       sidebarItems={sidebarItems}
       activeItem={activeTab}
-      onItemChange={(id) => setActiveTab(id as any)}
+      onItemChange={(id) => {
+        const next = id as any;
+        setActiveTab(next);
+        navigate(`/imaging/dashboard?tab=${encodeURIComponent(next)}`, { replace: true });
+      }}
     >
       {activeTab === "overview" && (
         <>
@@ -209,19 +236,17 @@ export default function ImagingDashboard() {
             description="Monitor your imaging center's performance"
             badges={[
               { label: statusLabel, variant: myImagingCenter.is_verified ? "default" : "secondary" },
-              { label: dashLoading ? "Refreshing..." : "Live Data", variant: "outline" },
+              { label: dashLoading ? "Refreshing..." : "Live", variant: "outline" },
             ]}
             actions={
-              <div className="flex items-center gap-2">
-                <Button variant="outline" onClick={refreshDashboard} disabled={dashLoading}>
-                  {dashLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                  Refresh
-                </Button>
-              </div>
+              <Button variant="outline" size="sm" onClick={refreshDashboard} disabled={dashLoading}>
+                {dashLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+                Refresh
+              </Button>
             }
           />
 
-          <StatsGrid stats={stats} />
+          <StatsGrid stats={stats} className="mb-8" />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ContentCard title="Today's Queue" description="Scheduled referrals for today" icon={<ClipboardList className="h-5 w-5" />}>
@@ -230,19 +255,23 @@ export default function ImagingDashboard() {
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
               ) : dash.queue.length === 0 ? (
-                <EmptyState icon={<ClipboardList className="h-12 w-12" />} title="No scheduled referrals" description="No imaging referrals scheduled for today." />
+                <EmptyState
+                  icon={<ClipboardList className="h-12 w-12" />}
+                  title="No scheduled referrals"
+                  description="No imaging referrals scheduled for today."
+                />
               ) : (
                 <div className="space-y-3">
-                  {dash.queue.slice(0, 8).map((q) => (
-                    <div key={q.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  {dash.queue.slice(0, 12).map((item) => (
+                    <div key={item.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                       <div className="min-w-0">
-                        <p className="font-medium truncate">{q.patientName}</p>
+                        <p className="font-medium truncate">{item.patientName}</p>
                         <p className="text-sm text-muted-foreground truncate">
-                          {q.examName} • {q.modality} • {q.orderNumber}
+                          {item.examName} • {item.modality} • {item.orderNumber}
                         </p>
                       </div>
-                      <Badge variant="outline" className="ml-3 shrink-0">
-                        {q.status}
+                      <Badge variant={item.status === "in_progress" ? "default" : "outline"} className="shrink-0 ml-3">
+                        {String(item.status || "").replaceAll("_", " ")}
                       </Badge>
                     </div>
                   ))}
@@ -263,7 +292,7 @@ export default function ImagingDashboard() {
                 />
               ) : (
                 <div className="space-y-3">
-                  {dash.equipment.slice(0, 6).map((eq) => (
+                  {dash.equipment.slice(0, 10).map((eq) => (
                     <div key={eq.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                       <div className="min-w-0">
                         <p className="font-medium truncate">{eq.name}</p>
@@ -289,21 +318,21 @@ export default function ImagingDashboard() {
 
       {activeTab === "workflow" && (
         <>
-          <PageHeader title="Scan Workflow" description="Manage imaging scan scheduling and execution" />
+          <PageHeader title="Scan Workflow" description="Manage imaging procedures and patient flow" />
           <ImagingScanWorkflow centerId={centerId} />
         </>
       )}
 
       {activeTab === "reports" && (
         <>
-          <PageHeader title="Reports" description="Generate and manage imaging reports" />
+          <PageHeader title="Reports" description="View and manage imaging reports" />
           <ImagingReportManager centerId={centerId} />
         </>
       )}
 
       {activeTab === "equipment" && (
         <>
-          <PageHeader title="Equipment" description="Register and manage imaging equipment" />
+          <PageHeader title="Equipment Management" description="Monitor and manage imaging equipment" />
           <ImagingEquipmentManager centerId={centerId} />
         </>
       )}
