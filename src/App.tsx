@@ -1,19 +1,20 @@
 // File: src/App.tsx
 
 import { useEffect, lazy, Suspense } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Link, useLocation } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 
 import PublicLayout from "@/layouts/PublicLayout";
+import { Button } from "@/components/ui/button";
 
 // Loading fallback
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
   </div>
 );
 
-// Lazy load all pages for code splitting
+// Lazy load pages (keep for most routes)
 const PremiumHome = lazy(() => import("@/pages/PremiumHome"));
 const Auth = lazy(() => import("@/pages/Auth"));
 const About = lazy(() => import("@/pages/About"));
@@ -52,7 +53,37 @@ const VideoCall = lazy(() => import("@/pages/VideoCall"));
 const Messages = lazy(() => import("@/pages/Messages"));
 const FeedbackCenter = lazy(() => import("@/pages/FeedbackCenter"));
 
-const NotFound = lazy(() => import("@/pages/NotFound"));
+/**
+ * IMPORTANT:
+ * Do NOT lazy-load NotFound. A stale browser cache can try to fetch an old chunk name
+ * (e.g., NotFound-xxxx.js) and cause a blank screen in Lovable previews.
+ * Keeping NotFound inline avoids that entire failure mode.
+ */
+function NotFoundInline() {
+  const location = useLocation();
+
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center px-6">
+      <div className="max-w-lg w-full rounded-xl border bg-card p-8 text-center space-y-4">
+        <div className="text-6xl font-bold tracking-tight">404</div>
+        <div className="space-y-1">
+          <div className="text-xl font-semibold">Page not found</div>
+          <div className="text-sm text-muted-foreground">
+            No route matches <span className="font-mono">{location.pathname}</span>
+          </div>
+        </div>
+        <div className="flex items-center justify-center gap-3 pt-2">
+          <Button asChild>
+            <Link to="/">Go Home</Link>
+          </Button>
+          <Button variant="outline" onClick={() => window.history.back()}>
+            Go Back
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
   useEffect(() => {
@@ -116,8 +147,8 @@ export default function App() {
           {/* Messaging */}
           <Route path="/messages" element={<Messages />} />
 
-          {/* 404 */}
-          <Route path="*" element={<NotFound />} />
+          {/* 404 (NOT lazy-loaded) */}
+          <Route path="*" element={<NotFoundInline />} />
         </Routes>
       </Suspense>
     </>
