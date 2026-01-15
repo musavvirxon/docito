@@ -81,6 +81,59 @@
     "at": "at",
     "confirmAppointment": "Confirm Appointment"
   },
+  "publicProfile": {
+    "nextAvailable": "Next available: Today",
+    "automates": {
+      "headline": "Less admin. More care.",
+      "subheadline": "Docito handles the busywork so providers can focus on what matters.",
+      "scheduling": {
+        "title": "Auto Scheduling & Reminders",
+        "description": "Reduce no-shows with automated confirmations and smart reminders."
+      },
+      "documentation": {
+        "title": "Visit Documentation",
+        "description": "From diagnosis to treatment, prescriptions, and notes — all captured."
+      },
+      "referrals": {
+        "title": "Referrals & Follow-ups",
+        "description": "Seamless coordination across labs, imaging, and pharmacies."
+      },
+      "records": {
+        "title": "Secure Records & Sharing",
+        "description": "Patient files, reports, and results — all in one secure place."
+      }
+    },
+    "about": {
+      "experienceDescription": "Dedicated healthcare professional"
+    },
+    "availability": {
+      "title": "Next Available",
+      "seeAll": "See all availability"
+    },
+    "reviews": {
+      "emptyState": "Reviews appear after verified visits. Be the first to book and leave a review!"
+    },
+    "trust": {
+      "headline": "Your data. Your control.",
+      "subheadline": "We take security and privacy seriously.",
+      "verified": {
+        "title": "Verified Provider",
+        "description": "Credentials checked"
+      },
+      "encrypted": {
+        "title": "End-to-End Encrypted",
+        "description": "Secure communications"
+      },
+      "hipaa": {
+        "title": "HIPAA & GDPR",
+        "description": "Compliant standards"
+      },
+      "noSell": {
+        "title": "No Data Selling",
+        "description": "We never sell your data"
+      }
+    }
+  },
   "actions": {
     "bookAppointment": "Book Appointment",
     "sendMessage": "Send Message",
