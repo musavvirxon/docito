@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, Settings, CheckCircle, XCircle, Wrench, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { withSchemaReloadRetry } from "@/lib/pgrstSchemaRetry";
 
 type EquipmentStatus = "active" | "maintenance" | "offline" | "retired";
 
@@ -65,16 +66,21 @@ export default function ImagingEquipmentManager({ centerId }: Props) {
   const fetchEquipment = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("imaging_equipment")
-        .select("*")
-        .eq("imaging_center_id", centerId)
-        .order("created_at", { ascending: true });
+      const data = await withSchemaReloadRetry(async () => {
+        const { data, error } = await supabase
+          .from("imaging_equipment")
+          .select("*")
+          .eq("imaging_center_id", centerId)
+          .order("created_at", { ascending: true });
 
-      if (error) throw error;
-      setEquipment((data || []) as Equipment[]);
+        if (error) throw error;
+        return (data || []) as Equipment[];
+      });
+
+      setEquipment(data);
     } catch (e: any) {
       console.error(e);
+      // If table truly doesn't exist yet, don't crash the dashboard
       toast.error(e?.message || "Failed to load equipment");
       setEquipment([]);
     } finally {
@@ -101,8 +107,10 @@ export default function ImagingEquipmentManager({ centerId }: Props) {
         capacity_per_day: Number.isFinite(formData.capacity_per_day) ? formData.capacity_per_day : 0,
       };
 
-      const { error } = await supabase.from("imaging_equipment").insert(payload);
-      if (error) throw error;
+      await withSchemaReloadRetry(async () => {
+        const { error } = await supabase.from("imaging_equipment").insert(payload);
+        if (error) throw error;
+      });
 
       toast.success("Equipment added");
       setDialogOpen(false);
@@ -126,8 +134,11 @@ export default function ImagingEquipmentManager({ centerId }: Props) {
 
   const updateStatus = async (id: string, status: EquipmentStatus) => {
     try {
-      const { error } = await supabase.from("imaging_equipment").update({ status }).eq("id", id);
-      if (error) throw error;
+      await withSchemaReloadRetry(async () => {
+        const { error } = await supabase.from("imaging_equipment").update({ status }).eq("id", id);
+        if (error) throw error;
+      });
+
       setEquipment((prev) => prev.map((e) => (e.id === id ? { ...e, status } : e)));
       toast.success("Status updated");
     } catch (e: any) {
