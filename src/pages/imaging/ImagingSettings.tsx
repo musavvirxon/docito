@@ -1,3 +1,5 @@
+// File: src/pages/imaging/ImagingSettings.tsx
+
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -99,7 +101,6 @@ export default function ImagingSettings() {
             report_template: (data.report_template as string | null) || "",
           });
         } else {
-          // initialize defaults for this center (do not write until save)
           setSettings({
             imaging_center_id: centerId,
             timezone: "UTC",
@@ -144,7 +145,6 @@ export default function ImagingSettings() {
 
     setSaving(true);
     try {
-      // Update imaging center profile
       const updated = await updateImagingCenter(myImagingCenter.id, {
         name: centerForm.name.trim(),
         phone: centerForm.phone.trim() || undefined,
@@ -157,11 +157,8 @@ export default function ImagingSettings() {
         accepts_insurance: centerForm.accepts_insurance,
       });
 
-      if (!updated) {
-        throw new Error("Failed to update imaging center profile");
-      }
+      if (!updated) throw new Error("Failed to update imaging center profile");
 
-      // Upsert settings row
       const { error: upsertErr } = await supabase.from("imaging_center_settings").upsert(
         {
           imaging_center_id: myImagingCenter.id,
@@ -238,7 +235,6 @@ export default function ImagingSettings() {
           </Button>
         </div>
 
-        {/* Center Profile */}
         <Card>
           <CardHeader>
             <CardTitle>Center Profile</CardTitle>
@@ -309,7 +305,6 @@ export default function ImagingSettings() {
           </CardContent>
         </Card>
 
-        {/* Preferences */}
         <Card>
           <CardHeader>
             <CardTitle>Preferences</CardTitle>
