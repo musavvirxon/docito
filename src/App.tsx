@@ -1,5 +1,3 @@
-// File: src/App.tsx
-
 import { useEffect } from "react";
 import { Routes, Route, Link, useLocation } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
@@ -30,9 +28,13 @@ import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
 
 import LabLandingPage from "@/pages/lab/LabLandingPage";
 import LabDashboard from "@/pages/lab/LabDashboard";
+import LabRegistration from "@/pages/lab/LabRegistration";
+import LabVerification from "@/pages/lab/LabVerification";
 
 import PharmacyLandingPage from "@/pages/pharmacy/PharmacyLandingPage";
 import PharmacyDashboard from "@/pages/pharmacy/PharmacyDashboard";
+import PharmacyRegistration from "@/pages/pharmacy/PharmacyRegistration";
+import PharmacyVerification from "@/pages/pharmacy/PharmacyVerification";
 
 import ImagingLandingPage from "@/pages/imaging/ImagingLandingPage";
 import ImagingDashboard from "@/pages/imaging/ImagingDashboard";
@@ -122,10 +124,17 @@ export default function App() {
         <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
         <Route path="/super-admin/dashboard" element={<SuperAdminDashboard />} />
 
-        {/* Entity dashboards */}
+        {/* Lab */}
         <Route path="/lab/dashboard" element={<LabDashboard />} />
-        <Route path="/pharmacy/dashboard" element={<PharmacyDashboard />} />
+        <Route path="/lab/register" element={<LabRegistration />} />
+        <Route path="/lab/verify" element={<LabVerification />} />
 
+        {/* Pharmacy */}
+        <Route path="/pharmacy/dashboard" element={<PharmacyDashboard />} />
+        <Route path="/pharmacy/register" element={<PharmacyRegistration />} />
+        <Route path="/pharmacy/verify" element={<PharmacyVerification />} />
+
+        {/* Imaging */}
         <Route path="/imaging/dashboard" element={<ImagingDashboard />} />
         <Route path="/imaging/settings" element={<ImagingSettings />} />
         <Route path="/imaging/register" element={<ImagingRegistration />} />
