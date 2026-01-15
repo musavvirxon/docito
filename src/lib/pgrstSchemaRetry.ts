@@ -26,7 +26,7 @@ export async function withSchemaReloadRetry<T>(fn: () => Promise<T>): Promise<T>
 
     // Best-effort schema reload (ignore errors)
     try {
-      await supabase.rpc("reload_pgrst_schema");
+      await (supabase.rpc as any)("reload_pgrst_schema");
     } catch {
       // ignore
     }

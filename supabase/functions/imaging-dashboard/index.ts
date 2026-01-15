@@ -65,7 +65,7 @@ function pickExamAndModality(attachments: unknown, fallbackReason: string | null
   return { examName: exam, modality };
 }
 
-async function getPatientNames(supabase: ReturnType<typeof createClient>, patientIds: string[]) {
+async function getPatientNames(supabase: any, patientIds: string[]) {
   const unique = Array.from(new Set(patientIds)).filter(Boolean);
   if (unique.length === 0) return new Map<string, string>();
 
@@ -84,7 +84,7 @@ async function getPatientNames(supabase: ReturnType<typeof createClient>, patien
   return m;
 }
 
-async function ensureCenterAccess(supabase: ReturnType<typeof createClient>, userId: string, centerId: string) {
+async function ensureCenterAccess(supabase: any, userId: string, centerId: string) {
   const { data: adminRow, error: adminErr } = await supabase
     .from("imaging_centers")
     .select("id")
@@ -93,7 +93,7 @@ async function ensureCenterAccess(supabase: ReturnType<typeof createClient>, use
     .maybeSingle();
 
   if (adminErr) return false;
-  if (adminRow?.id) return true;
+  if ((adminRow as any)?.id) return true;
 
   const { data: staffRow, error: staffErr } = await supabase
     .from("imaging_staff")
@@ -104,7 +104,7 @@ async function ensureCenterAccess(supabase: ReturnType<typeof createClient>, use
     .maybeSingle();
 
   if (staffErr) return false;
-  return Boolean(staffRow?.id);
+  return Boolean((staffRow as any)?.id);
 }
 
 serve(async (req) => {

@@ -81,8 +81,7 @@ export default function ImagingSettings() {
 
       setSettingsLoading(true);
       try {
-        const { data, error } = await supabase
-          .from("imaging_center_settings")
+        const { data, error } = await (supabase.from as any)("imaging_center_settings")
           .select("imaging_center_id, timezone, billing_currency, notify_email, notify_sms, report_template")
           .eq("imaging_center_id", centerId)
           .maybeSingle();
@@ -90,13 +89,14 @@ export default function ImagingSettings() {
         if (error) throw error;
 
         if (data) {
+          const row = data as any;
           setSettings({
-            imaging_center_id: data.imaging_center_id,
-            timezone: data.timezone || "UTC",
-            billing_currency: data.billing_currency || "usd",
-            notify_email: Boolean(data.notify_email),
-            notify_sms: Boolean(data.notify_sms),
-            report_template: (data.report_template as string | null) || "",
+            imaging_center_id: row.imaging_center_id,
+            timezone: row.timezone || "UTC",
+            billing_currency: row.billing_currency || "usd",
+            notify_email: Boolean(row.notify_email),
+            notify_sms: Boolean(row.notify_sms),
+            report_template: (row.report_template as string | null) || "",
           });
         } else {
           setSettings({
@@ -157,7 +157,7 @@ export default function ImagingSettings() {
 
       if (!updated) throw new Error("Failed to update imaging center profile");
 
-      const { error: upsertErr } = await supabase.from("imaging_center_settings").upsert(
+      const { error: upsertErr } = await (supabase.from as any)("imaging_center_settings").upsert(
         {
           imaging_center_id: myImagingCenter.id,
           timezone: settings.timezone,
@@ -166,7 +166,7 @@ export default function ImagingSettings() {
           notify_sms: settings.notify_sms,
           report_template: settings.report_template || null,
           updated_at: new Date().toISOString(),
-        } as any,
+        },
         { onConflict: "imaging_center_id" }
       );
 

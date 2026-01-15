@@ -271,7 +271,7 @@ export default function ImagingDashboard() {
                         </p>
                       </div>
                       <Badge variant={item.status === "in_progress" ? "default" : "outline"} className="shrink-0 ml-3">
-                        {String(item.status || "").replaceAll("_", " ")}
+                        {String(item.status || "").split("_").join(" ")}
                       </Badge>
                     </div>
                   ))}
