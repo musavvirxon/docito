@@ -1,5 +1,3 @@
-// File: src/pages/imaging/ImagingSettings.tsx
-
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -235,7 +233,6 @@ export default function ImagingSettings() {
           </Button>
         </div>
 
-        {/* Center Profile */}
         <Card>
           <CardHeader>
             <CardTitle>Center Profile</CardTitle>
@@ -309,7 +306,6 @@ export default function ImagingSettings() {
           </CardContent>
         </Card>
 
-        {/* Preferences */}
         <Card>
           <CardHeader>
             <CardTitle>Preferences</CardTitle>
@@ -376,9 +372,7 @@ export default function ImagingSettings() {
                 placeholder="Provide a default report template for radiologists..."
                 className="min-h-[140px]"
               />
-              <p className="text-xs text-muted-foreground">
-                This template can be used to pre-fill report text in your workflow UI.
-              </p>
+              <p className="text-xs text-muted-foreground">This template can be used to pre-fill report text in your workflow UI.</p>
             </div>
           </CardContent>
         </Card>
