@@ -78,10 +78,7 @@ async function getPatientNames(supabase: ReturnType<typeof createClient>, patien
 
   const m = new Map<string, string>();
   for (const row of data as Array<{ user_id: string; full_name: string | null; first_name: string | null; last_name: string | null }>) {
-    const name =
-      row.full_name ||
-      [row.first_name, row.last_name].filter(Boolean).join(" ") ||
-      "Patient";
+    const name = row.full_name || [row.first_name, row.last_name].filter(Boolean).join(" ") || "Patient";
     m.set(row.user_id, name);
   }
   return m;
@@ -126,11 +123,7 @@ serve(async (req) => {
   }
 
   const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    global: {
-      headers: {
-        Authorization: authHeader,
-      },
-    },
+    global: { headers: { Authorization: authHeader } },
   });
 
   const {
@@ -155,7 +148,6 @@ serve(async (req) => {
 
   const today = toISODateUTC(new Date());
 
-  // Fetch today's referrals (queue + stats)
   const { data: referrals, error: refErr } = await supabase
     .from("referrals")
     .select("id, referral_number, preferred_date, patient_id, status, reason, attachments, created_at, completed_at, result_attachments")
@@ -195,18 +187,17 @@ serve(async (req) => {
   });
 
   const scheduledToday = refRows.length;
-
   const inProgress = refRows.filter((r) => r.status === "in_progress" || r.status === "accepted").length;
 
-  // "Pending reports" = not completed and has images/attachments started or simply accepted/in_progress
-  const pendingReports = refRows.filter((r) => r.status !== "completed").filter((r) => {
-    const ra = (r.result_attachments ?? null) as unknown;
-    return r.status === "accepted" || r.status === "in_progress" || (ra !== null && JSON.stringify(ra) !== "[]" && JSON.stringify(ra) !== "{}");
-  }).length;
+  const pendingReports = refRows
+    .filter((r) => r.status !== "completed")
+    .filter((r) => {
+      const ra = (r.result_attachments ?? null) as unknown;
+      return r.status === "accepted" || r.status === "in_progress" || (ra !== null && JSON.stringify(ra) !== "[]" && JSON.stringify(ra) !== "{}");
+    }).length;
 
   const completedToday = refRows.filter((r) => r.status === "completed").length;
 
-  // Equipment + utilization (based on today's volume per modality vs capacity)
   const { data: equipmentRows, error: eqErr } = await supabase
     .from("imaging_equipment")
     .select("id, name, modality, status, capacity_per_day")
@@ -235,12 +226,7 @@ serve(async (req) => {
   });
 
   const response: DashboardResponse = {
-    stats: {
-      scheduledToday,
-      inProgress,
-      pendingReports,
-      completedToday,
-    },
+    stats: { scheduledToday, inProgress, pendingReports, completedToday },
     queue,
     equipment,
   };
