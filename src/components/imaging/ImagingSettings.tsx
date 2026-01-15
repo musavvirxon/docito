@@ -1,5 +1,3 @@
-// File: src/pages/imaging/ImagingSettings.tsx
-
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,14 +21,19 @@ type CenterSettings = {
   report_template: string | null;
 };
 
+type Props = {
+  embedded?: boolean;
+};
+
 const TIMEZONES = ["UTC", "Asia/Tashkent", "Europe/London", "Europe/Berlin", "Asia/Dubai", "Asia/Kolkata"];
 const CURRENCIES = ["usd", "uzs", "eur", "gbp"];
 
-export default function ImagingSettings() {
+export default function ImagingSettings({ embedded = false }: Props) {
   const navigate = useNavigate();
   const { myImagingCenter, fetchMyImagingCenter, updateImagingCenter, loading } = useImagingCenter();
 
   const [saving, setSaving] = useState(false);
+  const [settingsLoading, setSettingsLoading] = useState(false);
 
   const [centerForm, setCenterForm] = useState({
     name: "",
@@ -70,8 +73,8 @@ export default function ImagingSettings() {
       address: myImagingCenter.address || "",
       city: myImagingCenter.city || "",
       website: myImagingCenter.website || "",
-      modalities: (myImagingCenter.modalities || []).join(", "),
-      accreditations: (myImagingCenter.accreditations || []).join(", "),
+      modalities: Array.isArray(myImagingCenter.modalities) ? myImagingCenter.modalities.join(", ") : "",
+      accreditations: Array.isArray(myImagingCenter.accreditations) ? myImagingCenter.accreditations.join(", ") : "",
       accepts_insurance: Boolean(myImagingCenter.accepts_insurance),
     });
   }, [myImagingCenter]);
@@ -80,6 +83,7 @@ export default function ImagingSettings() {
     const loadSettings = async () => {
       if (!centerId) return;
 
+      setSettingsLoading(true);
       try {
         const { data, error } = await supabase
           .from("imaging_center_settings")
@@ -99,11 +103,20 @@ export default function ImagingSettings() {
             report_template: (data.report_template as string | null) || "",
           });
         } else {
-          setSettings((s) => ({ ...s, imaging_center_id: centerId }));
+          setSettings({
+            imaging_center_id: centerId,
+            timezone: "UTC",
+            billing_currency: "usd",
+            notify_email: true,
+            notify_sms: false,
+            report_template: "",
+          });
         }
       } catch (e: any) {
         console.error(e);
         toast.error(e?.message || "Failed to load settings");
+      } finally {
+        setSettingsLoading(false);
       }
     };
 
@@ -127,9 +140,13 @@ export default function ImagingSettings() {
   const saveAll = async () => {
     if (!myImagingCenter) return;
 
+    if (!centerForm.name.trim()) {
+      toast.error("Center name is required");
+      return;
+    }
+
     setSaving(true);
     try {
-      // Update imaging_centers
       const updated = await updateImagingCenter(myImagingCenter.id, {
         name: centerForm.name.trim(),
         phone: centerForm.phone.trim() || undefined,
@@ -137,14 +154,13 @@ export default function ImagingSettings() {
         address: centerForm.address.trim() || undefined,
         city: centerForm.city.trim() || undefined,
         website: centerForm.website.trim() || undefined,
-        modalities: parsedModalities.length ? parsedModalities : undefined,
-        accreditations: parsedAccreditations.length ? parsedAccreditations : undefined,
+        modalities: parsedModalities.length ? parsedModalities : [],
+        accreditations: parsedAccreditations.length ? parsedAccreditations : [],
         accepts_insurance: centerForm.accepts_insurance,
       });
 
       if (!updated) throw new Error("Failed to update imaging center profile");
 
-      // Upsert imaging_center_settings
       const { error: upsertErr } = await supabase.from("imaging_center_settings").upsert(
         {
           imaging_center_id: myImagingCenter.id,
@@ -154,7 +170,7 @@ export default function ImagingSettings() {
           notify_sms: settings.notify_sms,
           report_template: settings.report_template || null,
           updated_at: new Date().toISOString(),
-        },
+        } as any,
         { onConflict: "imaging_center_id" }
       );
 
@@ -169,9 +185,11 @@ export default function ImagingSettings() {
     }
   };
 
+  const busy = saving || settingsLoading;
+
   if (loading && !myImagingCenter) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className={embedded ? "flex items-center justify-center py-10" : "min-h-screen bg-background flex items-center justify-center"}>
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
           <p className="mt-4 text-muted-foreground">Loading settings...</p>
@@ -182,8 +200,8 @@ export default function ImagingSettings() {
 
   if (!myImagingCenter) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="max-w-md w-full">
+      <div className={embedded ? "py-8" : "min-h-screen bg-background flex items-center justify-center"}>
+        <Card className="max-w-md w-full mx-auto">
           <CardHeader>
             <CardTitle>No Imaging Center</CardTitle>
             <CardDescription>You don’t have an imaging center linked to your account.</CardDescription>
@@ -198,9 +216,9 @@ export default function ImagingSettings() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-5xl mx-auto p-6 space-y-6">
+  const content = (
+    <div className={embedded ? "space-y-6" : "max-w-5xl mx-auto p-6 space-y-6"}>
+      {!embedded && (
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Button variant="outline" onClick={() => navigate("/imaging/dashboard")}>
@@ -213,154 +231,160 @@ export default function ImagingSettings() {
             </div>
           </div>
 
-          <Button onClick={saveAll} disabled={saving}>
-            <Save className="h-4 w-4 mr-2" />
-            {saving ? "Saving..." : "Save"}
+          <Button onClick={saveAll} disabled={busy}>
+            {busy ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+            {busy ? "Saving..." : "Save"}
           </Button>
         </div>
+      )}
 
-        {/* Center Profile */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Center Profile</CardTitle>
-            <CardDescription>Public-facing and operational information</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label>Name</Label>
-                <Input value={centerForm.name} onChange={(e) => setCenterForm({ ...centerForm, name: e.target.value })} />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Website</Label>
-                <Input value={centerForm.website} onChange={(e) => setCenterForm({ ...centerForm, website: e.target.value })} placeholder="https://..." />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Phone</Label>
-                <Input value={centerForm.phone} onChange={(e) => setCenterForm({ ...centerForm, phone: e.target.value })} />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Email</Label>
-                <Input value={centerForm.email} onChange={(e) => setCenterForm({ ...centerForm, email: e.target.value })} />
-              </div>
-
-              <div className="space-y-2 md:col-span-2">
-                <Label>Address</Label>
-                <Input value={centerForm.address} onChange={(e) => setCenterForm({ ...centerForm, address: e.target.value })} />
-              </div>
-
-              <div className="space-y-2">
-                <Label>City</Label>
-                <Input value={centerForm.city} onChange={(e) => setCenterForm({ ...centerForm, city: e.target.value })} />
-              </div>
-
-              <div className="flex items-center justify-between rounded-lg border p-4">
-                <div>
-                  <p className="font-medium">Accepts Insurance</p>
-                  <p className="text-sm text-muted-foreground">Show insurance acceptance in search results</p>
-                </div>
-                <Switch checked={centerForm.accepts_insurance} onCheckedChange={(v) => setCenterForm({ ...centerForm, accepts_insurance: v })} />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Modalities (comma-separated)</Label>
-              <Input
-                value={centerForm.modalities}
-                onChange={(e) => setCenterForm({ ...centerForm, modalities: e.target.value })}
-                placeholder="MRI, CT, X-ray, Ultrasound"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Accreditations (comma-separated)</Label>
-              <Input value={centerForm.accreditations} onChange={(e) => setCenterForm({ ...centerForm, accreditations: e.target.value })} placeholder="JCI, ISO..." />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Preferences */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Preferences</CardTitle>
-            <CardDescription>Notifications, timezone, billing and templates</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label>Timezone</Label>
-                <Select value={settings.timezone} onValueChange={(v) => setSettings({ ...settings, timezone: v })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select timezone" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TIMEZONES.map((tz) => (
-                      <SelectItem key={tz} value={tz}>
-                        {tz}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Billing Currency</Label>
-                <Select value={settings.billing_currency} onValueChange={(v) => setSettings({ ...settings, billing_currency: v })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select currency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CURRENCIES.map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {c.toUpperCase()}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="flex items-center justify-between rounded-lg border p-4">
-                <div>
-                  <p className="font-medium">Email Notifications</p>
-                  <p className="text-sm text-muted-foreground">Referral updates, report status, reminders</p>
-                </div>
-                <Switch checked={settings.notify_email} onCheckedChange={(v) => setSettings({ ...settings, notify_email: v })} />
-              </div>
-
-              <div className="flex items-center justify-between rounded-lg border p-4">
-                <div>
-                  <p className="font-medium">SMS Notifications</p>
-                  <p className="text-sm text-muted-foreground">Optional SMS alerts (if enabled)</p>
-                </div>
-                <Switch checked={settings.notify_sms} onCheckedChange={(v) => setSettings({ ...settings, notify_sms: v })} />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Report Template (optional)</Label>
-              <Textarea
-                value={settings.report_template || ""}
-                onChange={(e) => setSettings({ ...settings, report_template: e.target.value })}
-                placeholder="Provide a default report template for radiologists..."
-                className="min-h-[140px]"
-              />
-              <p className="text-xs text-muted-foreground">This template can be used to pre-fill report text in your workflow UI.</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="flex justify-end">
-          <Button onClick={saveAll} disabled={saving}>
-            <Save className="h-4 w-4 mr-2" />
-            {saving ? "Saving..." : "Save"}
+      {embedded && (
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-semibold">Settings</h2>
+            <p className="text-sm text-muted-foreground">Profile, notifications, billing, and templates</p>
+          </div>
+          <Button onClick={saveAll} disabled={busy}>
+            {busy ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+            {busy ? "Saving..." : "Save Changes"}
           </Button>
         </div>
-      </div>
+      )}
+
+      {/* Center Profile */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Center Profile</CardTitle>
+          <CardDescription>Public-facing and operational information</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Name *</Label>
+              <Input value={centerForm.name} onChange={(e) => setCenterForm({ ...centerForm, name: e.target.value })} />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Website</Label>
+              <Input value={centerForm.website} onChange={(e) => setCenterForm({ ...centerForm, website: e.target.value })} placeholder="https://..." />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Phone</Label>
+              <Input value={centerForm.phone} onChange={(e) => setCenterForm({ ...centerForm, phone: e.target.value })} />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input value={centerForm.email} onChange={(e) => setCenterForm({ ...centerForm, email: e.target.value })} />
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label>Address</Label>
+              <Input value={centerForm.address} onChange={(e) => setCenterForm({ ...centerForm, address: e.target.value })} />
+            </div>
+
+            <div className="space-y-2">
+              <Label>City</Label>
+              <Input value={centerForm.city} onChange={(e) => setCenterForm({ ...centerForm, city: e.target.value })} />
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border p-4 md:col-span-2">
+              <div>
+                <p className="font-medium">Accepts Insurance</p>
+                <p className="text-sm text-muted-foreground">Show insurance acceptance in search results</p>
+              </div>
+              <Switch checked={centerForm.accepts_insurance} onCheckedChange={(v) => setCenterForm({ ...centerForm, accepts_insurance: v })} />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Modalities (comma-separated)</Label>
+            <Input value={centerForm.modalities} onChange={(e) => setCenterForm({ ...centerForm, modalities: e.target.value })} placeholder="MRI, CT, X-ray, Ultrasound" />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Accreditations (comma-separated)</Label>
+            <Input value={centerForm.accreditations} onChange={(e) => setCenterForm({ ...centerForm, accreditations: e.target.value })} placeholder="JCI, ISO..." />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Preferences */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Preferences</CardTitle>
+          <CardDescription>Notifications, timezone, billing and templates</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Timezone</Label>
+              <Select value={settings.timezone} onValueChange={(v) => setSettings({ ...settings, timezone: v })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select timezone" />
+                </SelectTrigger>
+                <SelectContent>
+                  {TIMEZONES.map((tz) => (
+                    <SelectItem key={tz} value={tz}>
+                      {tz}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Billing Currency</Label>
+              <Select value={settings.billing_currency} onValueChange={(v) => setSettings({ ...settings, billing_currency: v })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select currency" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CURRENCIES.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c.toUpperCase()}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div>
+                <p className="font-medium">Email Notifications</p>
+                <p className="text-sm text-muted-foreground">Referral updates, report status, reminders</p>
+              </div>
+              <Switch checked={settings.notify_email} onCheckedChange={(v) => setSettings({ ...settings, notify_email: v })} />
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div>
+                <p className="font-medium">SMS Notifications</p>
+                <p className="text-sm text-muted-foreground">Optional SMS alerts (if enabled)</p>
+              </div>
+              <Switch checked={settings.notify_sms} onCheckedChange={(v) => setSettings({ ...settings, notify_sms: v })} />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Report Template (optional)</Label>
+            <Textarea
+              value={settings.report_template || ""}
+              onChange={(e) => setSettings({ ...settings, report_template: e.target.value })}
+              placeholder="Provide a default report template for radiologists..."
+              className="min-h-[140px]"
+            />
+            <p className="text-xs text-muted-foreground">This template can be used to pre-fill report text in your workflow UI.</p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
+
+  if (embedded) return content;
+
+  return <div className="min-h-screen bg-background">{content}</div>;
 }
