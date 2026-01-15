@@ -13,7 +13,6 @@ import { ArrowLeft, Save, Loader2 } from "lucide-react";
 import { useImagingCenter } from "@/hooks/useImagingCenter";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { withSchemaReloadRetry } from "@/lib/pgrstSchemaRetry";
 
 type CenterSettingsRow = {
   imaging_center_id: string;
@@ -84,25 +83,22 @@ export default function ImagingSettings() {
 
       setSettingsLoading(true);
       try {
-        const row = await withSchemaReloadRetry(async () => {
-          const { data, error } = await supabase
-            .from("imaging_center_settings")
-            .select("imaging_center_id, timezone, billing_currency, notify_email, notify_sms, report_template")
-            .eq("imaging_center_id", centerId)
-            .maybeSingle();
+        const { data, error } = await supabase
+          .from("imaging_center_settings")
+          .select("imaging_center_id, timezone, billing_currency, notify_email, notify_sms, report_template")
+          .eq("imaging_center_id", centerId)
+          .maybeSingle();
 
-          if (error) throw error;
-          return data as CenterSettingsRow | null;
-        });
+        if (error) throw error;
 
-        if (row) {
+        if (data) {
           setSettings({
-            imaging_center_id: row.imaging_center_id,
-            timezone: row.timezone || "UTC",
-            billing_currency: row.billing_currency || "usd",
-            notify_email: Boolean(row.notify_email),
-            notify_sms: Boolean(row.notify_sms),
-            report_template: (row.report_template as string | null) || "",
+            imaging_center_id: data.imaging_center_id,
+            timezone: data.timezone || "UTC",
+            billing_currency: data.billing_currency || "usd",
+            notify_email: Boolean(data.notify_email),
+            notify_sms: Boolean(data.notify_sms),
+            report_template: (data.report_template as string | null) || "",
           });
         } else {
           setSettings({
@@ -163,22 +159,20 @@ export default function ImagingSettings() {
 
       if (!updated) throw new Error("Failed to update imaging center profile");
 
-      await withSchemaReloadRetry(async () => {
-        const { error } = await supabase.from("imaging_center_settings").upsert(
-          {
-            imaging_center_id: myImagingCenter.id,
-            timezone: settings.timezone,
-            billing_currency: settings.billing_currency,
-            notify_email: settings.notify_email,
-            notify_sms: settings.notify_sms,
-            report_template: settings.report_template || null,
-            updated_at: new Date().toISOString(),
-          } as any,
-          { onConflict: "imaging_center_id" }
-        );
+      const { error: upsertErr } = await supabase.from("imaging_center_settings").upsert(
+        {
+          imaging_center_id: myImagingCenter.id,
+          timezone: settings.timezone,
+          billing_currency: settings.billing_currency,
+          notify_email: settings.notify_email,
+          notify_sms: settings.notify_sms,
+          report_template: settings.report_template || null,
+          updated_at: new Date().toISOString(),
+        } as any,
+        { onConflict: "imaging_center_id" }
+      );
 
-        if (error) throw error;
-      });
+      if (upsertErr) throw upsertErr;
 
       toast.success("Settings saved");
     } catch (e: any) {
@@ -256,7 +250,11 @@ export default function ImagingSettings() {
 
               <div className="space-y-2">
                 <Label>Website</Label>
-                <Input value={centerForm.website} onChange={(e) => setCenterForm({ ...centerForm, website: e.target.value })} placeholder="https://..." />
+                <Input
+                  value={centerForm.website}
+                  onChange={(e) => setCenterForm({ ...centerForm, website: e.target.value })}
+                  placeholder="https://..."
+                />
               </div>
 
               <div className="space-y-2">
@@ -284,18 +282,29 @@ export default function ImagingSettings() {
                   <p className="font-medium">Accepts Insurance</p>
                   <p className="text-sm text-muted-foreground">Show insurance acceptance in search results</p>
                 </div>
-                <Switch checked={centerForm.accepts_insurance} onCheckedChange={(v) => setCenterForm({ ...centerForm, accepts_insurance: v })} />
+                <Switch
+                  checked={centerForm.accepts_insurance}
+                  onCheckedChange={(v) => setCenterForm({ ...centerForm, accepts_insurance: v })}
+                />
               </div>
             </div>
 
             <div className="space-y-2">
               <Label>Modalities (comma-separated)</Label>
-              <Input value={centerForm.modalities} onChange={(e) => setCenterForm({ ...centerForm, modalities: e.target.value })} placeholder="MRI, CT, X-ray, Ultrasound" />
+              <Input
+                value={centerForm.modalities}
+                onChange={(e) => setCenterForm({ ...centerForm, modalities: e.target.value })}
+                placeholder="MRI, CT, X-ray, Ultrasound"
+              />
             </div>
 
             <div className="space-y-2">
               <Label>Accreditations (comma-separated)</Label>
-              <Input value={centerForm.accreditations} onChange={(e) => setCenterForm({ ...centerForm, accreditations: e.target.value })} placeholder="JCI, ISO..." />
+              <Input
+                value={centerForm.accreditations}
+                onChange={(e) => setCenterForm({ ...centerForm, accreditations: e.target.value })}
+                placeholder="JCI, ISO..."
+              />
             </div>
           </CardContent>
         </Card>
@@ -367,7 +376,9 @@ export default function ImagingSettings() {
                 placeholder="Provide a default report template for radiologists..."
                 className="min-h-[140px]"
               />
-              <p className="text-xs text-muted-foreground">This template can be used to pre-fill report text in your workflow UI.</p>
+              <p className="text-xs text-muted-foreground">
+                This template can be used to pre-fill report text in your workflow UI.
+              </p>
             </div>
           </CardContent>
         </Card>
