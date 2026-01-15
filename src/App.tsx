@@ -19,6 +19,7 @@ const Contact = lazy(() => import("@/pages/Contact"));
 const Features = lazy(() => import("@/pages/Features"));
 const Pricing = lazy(() => import("@/pages/Pricing"));
 
+const DoctorLandingPage = lazy(() => import("@/pages/doctor/DoctorLandingPage"));
 const Doctors = lazy(() => import("@/pages/Doctors"));
 const Practices = lazy(() => import("@/pages/Practices"));
 
@@ -68,7 +69,7 @@ export default function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/features" element={<Features />} />
             <Route path="/pricing" element={<Pricing />} />
-            <Route path="/doctor" element={<Doctors />} />
+            <Route path="/doctor" element={<DoctorLandingPage />} />
             <Route path="/find-doctors" element={<Doctors />} />
             <Route path="/practice" element={<Practices />} />
             <Route path="/lab" element={<LabLandingPage />} />
