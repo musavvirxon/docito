@@ -1,6 +1,6 @@
 // File: src/components/imaging/ImagingSettings.tsx
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,12 +28,17 @@ type Settings = {
 const TIMEZONES = ["UTC", "Asia/Tashkent", "Europe/London", "Europe/Berlin", "Asia/Dubai", "Asia/Kolkata"];
 const CURRENCIES = ["usd", "uzs", "eur", "gbp"];
 
+function isSchemaCacheMissing(err: unknown) {
+  const msg = String((err as any)?.message ?? err ?? "");
+  const m = msg.toLowerCase();
+  return msg.includes("Could not find the table") || m.includes("schema cache") || (m.includes("relation") && m.includes("does not exist"));
+}
+
 export default function ImagingSettings({ centerId }: Props) {
   const { myImagingCenter, updateImagingCenter, fetchMyImagingCenter } = useImagingCenter();
 
   const [saving, setSaving] = useState(false);
   const [loadingSettings, setLoadingSettings] = useState(false);
-  const [settingsAvailable, setSettingsAvailable] = useState(true);
 
   const [centerForm, setCenterForm] = useState({
     name: "",
@@ -54,6 +59,9 @@ export default function ImagingSettings({ centerId }: Props) {
     notify_sms: false,
     report_template: "",
   });
+
+  const [settingsAvailable, setSettingsAvailable] = useState(true);
+  const schemaReloadAttemptedRef = useRef(false);
 
   useEffect(() => {
     fetchMyImagingCenter();
@@ -79,13 +87,29 @@ export default function ImagingSettings({ centerId }: Props) {
     () => centerForm.modalities.split(",").map((s) => s.trim()).filter(Boolean),
     [centerForm.modalities],
   );
+
   const parsedAccreditations = useMemo(
     () => centerForm.accreditations.split(",").map((s) => s.trim()).filter(Boolean),
     [centerForm.accreditations],
   );
 
+  const reloadSchemaOnce = async () => {
+    if (schemaReloadAttemptedRef.current) return false;
+    schemaReloadAttemptedRef.current = true;
+
+    try {
+      const { data, error } = await supabase.functions.invoke("pgrst-reload", { body: {} });
+      if (error) throw error;
+      if ((data as any)?.ok) return true;
+      return false;
+    } catch {
+      return false;
+    }
+  };
+
   const loadSettings = async () => {
     if (!centerId) return;
+
     setLoadingSettings(true);
     try {
       const { data, error } = await supabase.functions.invoke("imaging-settings", {
@@ -109,10 +133,41 @@ export default function ImagingSettings({ centerId }: Props) {
 
       if (!available) {
         toast.message("Settings storage not ready yet", {
-          description: "Tables are still syncing. Apply migrations + redeploy functions, then refresh.",
+          description: "Attempting schema reload…",
         });
+
+        const reloaded = await reloadSchemaOnce();
+        if (reloaded) {
+          const retry = await supabase.functions.invoke("imaging-settings", {
+            body: { centerId, action: "get" },
+          });
+          if (!retry.error) {
+            const retryAvail = Boolean((retry.data as any)?.available ?? true);
+            setSettingsAvailable(retryAvail);
+            const rs = (retry.data as any)?.settings ?? null;
+            if (rs) {
+              setSettings({
+                timezone: String(rs.timezone ?? "UTC"),
+                billing_currency: String(rs.billing_currency ?? "usd"),
+                notify_email: Boolean(rs.notify_email ?? true),
+                notify_sms: Boolean(rs.notify_sms ?? false),
+                report_template: String(rs.report_template ?? ""),
+              });
+            }
+          }
+        }
       }
     } catch (e: any) {
+      if (isSchemaCacheMissing(e)) {
+        toast.message("Settings storage not ready yet", {
+          description: "Attempting schema reload…",
+        });
+        const reloaded = await reloadSchemaOnce();
+        if (reloaded) {
+          await loadSettings();
+          return;
+        }
+      }
       console.error(e);
       toast.error(e?.message || "Failed to load settings");
     } finally {
@@ -121,6 +176,7 @@ export default function ImagingSettings({ centerId }: Props) {
   };
 
   useEffect(() => {
+    schemaReloadAttemptedRef.current = false;
     loadSettings();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [centerId]);
@@ -168,13 +224,51 @@ export default function ImagingSettings({ centerId }: Props) {
       setSettingsAvailable(available);
 
       if (!available) {
-        toast.message("Saved profile, settings pending", {
-          description: "Settings table not ready yet. Apply migrations + redeploy, then save again.",
+        toast.message("Settings storage not ready yet", {
+          description: "Attempting schema reload…",
         });
+
+        const reloaded = await reloadSchemaOnce();
+        if (reloaded) {
+          const retry = await supabase.functions.invoke("imaging-settings", {
+            body: {
+              centerId,
+              action: "upsert",
+              settings: {
+                timezone: settings.timezone,
+                billing_currency: settings.billing_currency,
+                notify_email: settings.notify_email,
+                notify_sms: settings.notify_sms,
+                report_template: settings.report_template,
+              },
+            },
+          });
+
+          if (retry.error) throw retry.error;
+
+          const retryAvail = Boolean((retry.data as any)?.available ?? true);
+          setSettingsAvailable(retryAvail);
+
+          if (retryAvail) toast.success("Settings saved");
+          else toast.message("Settings still syncing", { description: "Try again in a few seconds." });
+        } else {
+          toast.message("Settings still syncing", { description: "Try again in a few seconds." });
+        }
       } else {
         toast.success("Settings saved");
       }
     } catch (e: any) {
+      if (isSchemaCacheMissing(e)) {
+        toast.message("Settings storage not ready yet", {
+          description: "Attempting schema reload…",
+        });
+        const reloaded = await reloadSchemaOnce();
+        if (reloaded) {
+          setSaving(false);
+          await saveAll();
+          return;
+        }
+      }
       console.error(e);
       toast.error(e?.message || "Failed to save settings");
     } finally {
@@ -190,8 +284,7 @@ export default function ImagingSettings({ centerId }: Props) {
         <div>
           <h2 className="text-2xl font-semibold">Settings</h2>
           <p className="text-sm text-muted-foreground">
-            Profile + operational preferences
-            {!settingsAvailable ? " (storage syncing…)" : ""}
+            Profile + operational preferences{!settingsAvailable ? " (storage syncing…)" : ""}
           </p>
         </div>
         <Button onClick={saveAll} disabled={busy || !centerId}>
@@ -232,18 +325,13 @@ export default function ImagingSettings({ centerId }: Props) {
           </div>
           <div className="space-y-2">
             <Label>Modalities (comma-separated)</Label>
-            <Input
-              value={centerForm.modalities}
-              onChange={(e) => setCenterForm((s) => ({ ...s, modalities: e.target.value }))}
-              placeholder="MRI, CT, X-ray"
-            />
+            <Input value={centerForm.modalities} onChange={(e) => setCenterForm((s) => ({ ...s, modalities: e.target.value }))} />
           </div>
           <div className="space-y-2 md:col-span-2">
             <Label>Accreditations (comma-separated)</Label>
             <Input
               value={centerForm.accreditations}
               onChange={(e) => setCenterForm((s) => ({ ...s, accreditations: e.target.value }))}
-              placeholder="JCI, ISO..."
             />
           </div>
           <div className="flex items-center justify-between md:col-span-2 p-3 rounded-lg border">
@@ -280,7 +368,11 @@ export default function ImagingSettings({ centerId }: Props) {
 
           <div className="space-y-2">
             <Label>Billing Currency</Label>
-            <Select value={settings.billing_currency} onValueChange={(v) => setSettings((s) => ({ ...s, billing_currency: v }))} disabled={loadingSettings}>
+            <Select
+              value={settings.billing_currency}
+              onValueChange={(v) => setSettings((s) => ({ ...s, billing_currency: v }))}
+              disabled={loadingSettings}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select currency" />
               </SelectTrigger>
