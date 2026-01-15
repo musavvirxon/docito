@@ -1,3 +1,5 @@
+// File: src/App.tsx
+
 import { useEffect } from "react";
 import { Routes, Route, Link, useLocation } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
@@ -123,6 +125,7 @@ export default function App() {
         {/* Entity dashboards */}
         <Route path="/lab/dashboard" element={<LabDashboard />} />
         <Route path="/pharmacy/dashboard" element={<PharmacyDashboard />} />
+
         <Route path="/imaging/dashboard" element={<ImagingDashboard />} />
         <Route path="/imaging/settings" element={<ImagingSettings />} />
         <Route path="/imaging/register" element={<ImagingRegistration />} />
