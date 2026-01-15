@@ -21,9 +21,9 @@ const queryClient = new QueryClient({
 });
 
 /**
- * Fix Lovable/Vite preview blank screens caused by stale cached JS chunks.
- * When a dynamic import fails, we hard-navigate with a cache-busting query param
- * and attempt to clear Cache Storage once.
+ * Prevent blank screens on Vite/Lovable deploys when the browser has cached old chunk names.
+ * If a dynamic import fails ("Failed to fetch dynamically imported module" / chunk load error),
+ * we do a single hard reload WITH a cache-busting query param to force fresh assets.
  */
 (function installChunkLoadRecovery() {
   const KEY = "chunk_reload_once_v2";
@@ -39,7 +39,7 @@ const queryClient = new QueryClient({
     );
   };
 
-  const cacheBustNavigateOnce = () => {
+  const cacheBustReloadOnce = () => {
     try {
       const already = window.sessionStorage.getItem(KEY);
       if (already === "1") return;
@@ -48,30 +48,9 @@ const queryClient = new QueryClient({
       // ignore
     }
 
-    const go = () => {
-      try {
-        const url = new URL(window.location.href);
-        url.searchParams.set("__cb", String(Date.now()));
-        window.location.replace(url.toString());
-      } catch {
-        window.location.replace(window.location.href);
-      }
-    };
-
-    try {
-      // Best-effort cache clear (won't exist in all environments)
-      if ("caches" in window) {
-        (window as any).caches
-          .keys()
-          .then((keys: string[]) => Promise.all(keys.map((k) => (window as any).caches.delete(k))))
-          .finally(go);
-        return;
-      }
-    } catch {
-      // ignore
-    }
-
-    go();
+    const url = new URL(window.location.href);
+    url.searchParams.set("__v", String(Date.now()));
+    window.location.replace(url.toString());
   };
 
   window.addEventListener("unhandledrejection", (event) => {
@@ -80,18 +59,18 @@ const queryClient = new QueryClient({
       typeof reason === "string"
         ? reason
         : reason?.message
-          ? String(reason.message)
-          : reason?.toString
-            ? String(reason.toString())
-            : "";
+        ? String(reason.message)
+        : reason?.toString
+        ? String(reason.toString())
+        : "";
 
-    if (msg && shouldReloadFor(msg)) cacheBustNavigateOnce();
+    if (msg && shouldReloadFor(msg)) cacheBustReloadOnce();
   });
 
   window.addEventListener("error", (event) => {
     const e = event as ErrorEvent;
     const msg = e?.message ? String(e.message) : "";
-    if (msg && shouldReloadFor(msg)) cacheBustNavigateOnce();
+    if (msg && shouldReloadFor(msg)) cacheBustReloadOnce();
   });
 })();
 
