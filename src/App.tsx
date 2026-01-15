@@ -44,6 +44,8 @@ const PharmacyDashboard = lazy(() => import("@/pages/pharmacy/PharmacyDashboard"
 const ImagingLandingPage = lazy(() => import("@/pages/imaging/ImagingLandingPage"));
 const ImagingDashboard = lazy(() => import("@/pages/imaging/ImagingDashboard"));
 const ImagingSettings = lazy(() => import("@/pages/imaging/ImagingSettings"));
+const ImagingRegistration = lazy(() => import("@/pages/imaging/ImagingRegistration"));
+const ImagingVerification = lazy(() => import("@/pages/imaging/ImagingVerification"));
 
 const AppointmentBooking = lazy(() => import("@/pages/AppointmentBooking"));
 const BookingConfirmation = lazy(() => import("@/pages/BookingConfirmation"));
@@ -139,6 +141,8 @@ export default function App() {
           <Route path="/pharmacy/dashboard" element={<PharmacyDashboard />} />
           <Route path="/imaging/dashboard" element={<ImagingDashboard />} />
           <Route path="/imaging/settings" element={<ImagingSettings />} />
+          <Route path="/imaging/register" element={<ImagingRegistration />} />
+          <Route path="/imaging/verify" element={<ImagingVerification />} />
 
           {/* Video Calls */}
           <Route path="/video-call" element={<VideoCall />} />
