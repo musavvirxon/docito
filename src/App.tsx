@@ -1,3 +1,5 @@
+// File: src/App.tsx
+
 import { useEffect, lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
@@ -40,6 +42,7 @@ const PharmacyDashboard = lazy(() => import("@/pages/pharmacy/PharmacyDashboard"
 
 const ImagingLandingPage = lazy(() => import("@/pages/imaging/ImagingLandingPage"));
 const ImagingDashboard = lazy(() => import("@/pages/imaging/ImagingDashboard"));
+const ImagingSettings = lazy(() => import("@/pages/imaging/ImagingSettings"));
 
 const AppointmentBooking = lazy(() => import("@/pages/AppointmentBooking"));
 const BookingConfirmation = lazy(() => import("@/pages/BookingConfirmation"));
@@ -104,6 +107,7 @@ export default function App() {
           <Route path="/lab/dashboard" element={<LabDashboard />} />
           <Route path="/pharmacy/dashboard" element={<PharmacyDashboard />} />
           <Route path="/imaging/dashboard" element={<ImagingDashboard />} />
+          <Route path="/imaging/settings" element={<ImagingSettings />} />
 
           {/* Video Calls */}
           <Route path="/video-call" element={<VideoCall />} />
