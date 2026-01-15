@@ -42,6 +42,7 @@ type DashboardResponse = {
   };
   queue: QueueItem[];
   equipment: EquipmentItem[];
+  warnings?: string[];
 };
 
 function json(data: unknown, status = 200) {
@@ -51,6 +52,16 @@ function json(data: unknown, status = 200) {
   });
 }
 
+function isMissingTableError(err: unknown) {
+  const msg = String((err as any)?.message ?? err ?? "");
+  return (
+    msg.includes("Could not find the table") ||
+    msg.toLowerCase().includes("schema cache") ||
+    msg.toLowerCase().includes("does not exist") ||
+    msg.toLowerCase().includes("relation") && msg.toLowerCase().includes("does not exist")
+  );
+}
+
 function toISODateUTC(d: Date) {
   const y = d.getUTCFullYear();
   const m = String(d.getUTCMonth() + 1).padStart(2, "0");
@@ -58,14 +69,20 @@ function toISODateUTC(d: Date) {
   return `${y}-${m}-${day}`;
 }
 
-function pickExamAndModality(attachments: unknown, fallbackReason: string | null): { examName: string; modality: string } {
+function pickExamAndModality(
+  attachments: unknown,
+  fallbackReason: string | null,
+): { examName: string; modality: string } {
   const a = (attachments ?? null) as Record<string, unknown> | null;
   const exam = (a?.exam_name as string) || fallbackReason || "Imaging Exam";
   const modality = (a?.modality as string) || "X-ray";
   return { examName: exam, modality };
 }
 
-async function getPatientNames(supabase: any, patientIds: string[]) {
+async function getPatientNames(
+  supabase: ReturnType<typeof createClient>,
+  patientIds: string[],
+) {
   const unique = Array.from(new Set(patientIds)).filter(Boolean);
   if (unique.length === 0) return new Map<string, string>();
 
@@ -77,14 +94,28 @@ async function getPatientNames(supabase: any, patientIds: string[]) {
   if (error || !data) return new Map<string, string>();
 
   const m = new Map<string, string>();
-  for (const row of data as Array<{ user_id: string; full_name: string | null; first_name: string | null; last_name: string | null }>) {
-    const name = row.full_name || [row.first_name, row.last_name].filter(Boolean).join(" ") || "Patient";
+  for (
+    const row of data as Array<{
+      user_id: string;
+      full_name: string | null;
+      first_name: string | null;
+      last_name: string | null;
+    }>
+  ) {
+    const name =
+      row.full_name ||
+      [row.first_name, row.last_name].filter(Boolean).join(" ") ||
+      "Patient";
     m.set(row.user_id, name);
   }
   return m;
 }
 
-async function ensureCenterAccess(supabase: any, userId: string, centerId: string) {
+async function ensureCenterAccess(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+  centerId: string,
+) {
   const { data: adminRow, error: adminErr } = await supabase
     .from("imaging_centers")
     .select("id")
@@ -93,7 +124,7 @@ async function ensureCenterAccess(supabase: any, userId: string, centerId: strin
     .maybeSingle();
 
   if (adminErr) return false;
-  if ((adminRow as any)?.id) return true;
+  if (adminRow?.id) return true;
 
   const { data: staffRow, error: staffErr } = await supabase
     .from("imaging_staff")
@@ -104,12 +135,11 @@ async function ensureCenterAccess(supabase: any, userId: string, centerId: strin
     .maybeSingle();
 
   if (staffErr) return false;
-  return Boolean((staffRow as any)?.id);
+  return Boolean(staffRow?.id);
 }
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-
   if (req.method !== "POST") return json({ error: "Method Not Allowed" }, 405);
 
   const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
@@ -117,7 +147,6 @@ serve(async (req) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
-
   if (!supabaseUrl || !supabaseAnonKey) {
     return json({ error: "Missing SUPABASE_URL or SUPABASE_ANON_KEY" }, 500);
   }
@@ -146,17 +175,34 @@ serve(async (req) => {
   const allowed = await ensureCenterAccess(supabase, user.id, centerId);
   if (!allowed) return json({ error: "Forbidden" }, 403);
 
+  const warnings: string[] = [];
   const today = toISODateUTC(new Date());
 
+  // ---------------------------
+  // Queue + Stats from referrals
+  // ---------------------------
   const { data: referrals, error: refErr } = await supabase
     .from("referrals")
-    .select("id, referral_number, preferred_date, patient_id, status, reason, attachments, created_at, completed_at, result_attachments")
+    .select(
+      "id, referral_number, preferred_date, patient_id, status, reason, attachments, created_at, completed_at, result_attachments",
+    )
     .eq("receiver_type", "imaging_center")
     .eq("receiver_entity_id", centerId)
     .eq("preferred_date", today)
     .order("created_at", { ascending: true });
 
-  if (refErr) return json({ error: refErr.message }, 500);
+  if (refErr) {
+    // Referrals table should exist, but if anything goes wrong, return safe empty dashboard rather than 500.
+    return json(
+      {
+        stats: { scheduledToday: 0, inProgress: 0, pendingReports: 0, completedToday: 0 },
+        queue: [],
+        equipment: [],
+        warnings: [`referrals_query_failed:${refErr.message}`],
+      } satisfies DashboardResponse,
+      200,
+    );
+  }
 
   const refRows = (referrals ?? []) as Array<{
     id: string;
@@ -192,11 +238,18 @@ serve(async (req) => {
   const pendingReports = refRows
     .filter((r) => r.status !== "completed")
     .filter((r) => {
-      const ra = (r.result_attachments ?? null) as unknown;
-      return r.status === "accepted" || r.status === "in_progress" || (ra !== null && JSON.stringify(ra) !== "[]" && JSON.stringify(ra) !== "{}");
+      const ra = r.result_attachments ?? null;
+      // "pending reports" = accepted/in_progress OR has any results uploaded but not completed
+      const hasResults = ra !== null && JSON.stringify(ra) !== "[]" && JSON.stringify(ra) !== "{}";
+      return r.status === "accepted" || r.status === "in_progress" || hasResults;
     }).length;
 
   const completedToday = refRows.filter((r) => r.status === "completed").length;
+
+  // ---------------------------
+  // Equipment (graceful fallback)
+  // ---------------------------
+  let equipment: EquipmentItem[] = [];
 
   const { data: equipmentRows, error: eqErr } = await supabase
     .from("imaging_equipment")
@@ -204,31 +257,41 @@ serve(async (req) => {
     .eq("imaging_center_id", centerId)
     .order("created_at", { ascending: true });
 
-  if (eqErr) return json({ error: eqErr.message }, 500);
+  if (eqErr) {
+    // This is the exact error you're seeing when the migration hasn't been applied yet OR PostgREST cache hasn't reloaded.
+    // Never 500 the whole dashboard: return empty equipment + warning.
+    if (isMissingTableError(eqErr)) {
+      warnings.push("missing_table:imaging_equipment");
+    } else {
+      warnings.push(`equipment_query_failed:${eqErr.message}`);
+    }
+    equipment = [];
+  } else {
+    const modalityCounts = new Map<string, number>();
+    for (const r of refRows) {
+      const { modality } = pickExamAndModality(r.attachments, r.reason);
+      modalityCounts.set(modality, (modalityCounts.get(modality) || 0) + 1);
+    }
 
-  const modalityCounts = new Map<string, number>();
-  for (const r of refRows) {
-    const { modality } = pickExamAndModality(r.attachments, r.reason);
-    modalityCounts.set(modality, (modalityCounts.get(modality) || 0) + 1);
+    equipment = (equipmentRows ?? []).map((e: any) => {
+      const count = modalityCounts.get(e.modality) || 0;
+      const cap = Number(e.capacity_per_day || 0);
+      const utilization = cap > 0 ? Math.min(100, Math.round((count / cap) * 100)) : 0;
+      return {
+        id: e.id,
+        name: e.name,
+        modality: e.modality,
+        status: (e.status as ImagingEquipmentStatus) || "active",
+        utilization,
+      };
+    });
   }
-
-  const equipment: EquipmentItem[] = (equipmentRows ?? []).map((e: any) => {
-    const count = modalityCounts.get(e.modality) || 0;
-    const cap = Number(e.capacity_per_day || 0);
-    const utilization = cap > 0 ? Math.min(100, Math.round((count / cap) * 100)) : 0;
-    return {
-      id: e.id,
-      name: e.name,
-      modality: e.modality,
-      status: (e.status as ImagingEquipmentStatus) || "active",
-      utilization,
-    };
-  });
 
   const response: DashboardResponse = {
     stats: { scheduledToday, inProgress, pendingReports, completedToday },
     queue,
     equipment,
+    ...(warnings.length ? { warnings } : {}),
   };
 
   return json(response, 200);
