@@ -1,5 +1,3 @@
-// File: supabase/functions/imaging-analytics/index.ts
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -70,6 +68,11 @@ function pickModality(attachments: unknown, fallback: string) {
   return (a?.modality as string) || fallback || "X-ray";
 }
 
+function isSchemaCacheOrMissingTable(error: any): boolean {
+  const msg = String(error?.message || "").toLowerCase();
+  return msg.includes("schema cache") || msg.includes("could not find the table") || (msg.includes("relation") && msg.includes("does not exist"));
+}
+
 async function ensureCenterAccess(supabase: ReturnType<typeof createClient>, userId: string, centerId: string) {
   const { data: adminRow } = await supabase
     .from("imaging_centers")
@@ -89,6 +92,14 @@ async function ensureCenterAccess(supabase: ReturnType<typeof createClient>, use
     .maybeSingle();
 
   return Boolean(staffRow?.id);
+}
+
+async function reloadSchema(supabase: ReturnType<typeof createClient>) {
+  try {
+    await supabase.rpc("reload_pgrst_schema");
+  } catch {
+    // ignore
+  }
 }
 
 serve(async (req) => {
@@ -122,7 +133,6 @@ serve(async (req) => {
 
   const centerId = body?.centerId?.trim();
   const days = Math.max(7, Math.min(365, Math.floor(body?.days ?? 30)));
-
   if (!centerId) return json({ error: "Missing centerId" }, 400);
 
   const allowed = await ensureCenterAccess(supabase, user.id, centerId);
@@ -135,7 +145,6 @@ serve(async (req) => {
   const prevEnd = toISODateUTC(dateAddDaysUTC(today, -days));
   const prevStart = toISODateUTC(dateAddDaysUTC(today, -(days * 2) + 1));
 
-  // Referrals in period (analytics base)
   const { data: refs, error: refErr } = await supabase
     .from("referrals")
     .select("id, preferred_date, status, attachments, reason, created_at, completed_at")
@@ -157,7 +166,6 @@ serve(async (req) => {
   }>;
 
   const totalScans = rows.length;
-  const completed = rows.filter((r) => r.status === "completed").length;
 
   // Avg turnaround hours (created_at -> completed_at)
   let sumHours = 0;
@@ -247,12 +255,9 @@ serve(async (req) => {
 
   const monthlyData: TrendPoint[] = Array.from(dayBuckets.entries())
     .sort((a, b) => (a[0] < b[0] ? -1 : 1))
-    .map(([date, v]) => {
-      const label = date.slice(5); // MM-DD
-      return { name: label, scans: v.scans, completed: v.completed, revenue: v.revenue };
-    });
+    .map(([date, v]) => ({ name: date.slice(5), scans: v.scans, completed: v.completed, revenue: v.revenue }));
 
-  // Modality mix from referrals + revenue split from provider_data.modality if present
+  // Modality mix
   const modalityCounts = new Map<string, number>();
   for (const r of rows) {
     const mod = pickModality(r.attachments, r.reason || "X-ray");
@@ -267,34 +272,49 @@ serve(async (req) => {
   }
 
   const modalityData: ModalityPoint[] = Array.from(modalityCounts.entries())
-    .map(([name, value]) => ({
-      name,
-      value,
-      revenue: modalityRevenue.get(name) || 0,
-    }))
+    .map(([name, value]) => ({ name, value, revenue: modalityRevenue.get(name) || 0 }))
     .sort((a, b) => b.value - a.value);
 
-  // Utilization: compare daily scans vs equipment capacity
-  const { data: equipment, error: eqErr } = await supabase
-    .from("imaging_equipment")
-    .select("capacity_per_day, status")
-    .eq("imaging_center_id", centerId);
+  // Utilization: tolerate missing imaging_equipment (return 0% if missing)
+  let utilizationPct = 0;
 
-  if (eqErr) return json({ error: eqErr.message }, 500);
+  const fetchCapacity = async () => {
+    const { data: equipment, error: eqErr } = await supabase
+      .from("imaging_equipment")
+      .select("capacity_per_day, status")
+      .eq("imaging_center_id", centerId);
 
-  const activeCapacity = (equipment ?? [])
-    .filter((e: any) => (e.status || "active") === "active")
-    .reduce((s: number, e: any) => s + safeNum(e.capacity_per_day), 0);
+    if (eqErr) throw eqErr;
 
-  const avgDailyScans = days ? totalScans / days : 0;
-  const utilizationPct = activeCapacity > 0 ? Math.min(100, Math.round((avgDailyScans / activeCapacity) * 100)) : 0;
+    const activeCapacity = (equipment ?? [])
+      .filter((e: any) => (e.status || "active") === "active")
+      .reduce((s: number, e: any) => s + safeNum(e.capacity_per_day), 0);
+
+    const avgDailyScans = days ? totalScans / days : 0;
+    utilizationPct = activeCapacity > 0 ? Math.min(100, Math.round((avgDailyScans / activeCapacity) * 100)) : 0;
+  };
+
+  try {
+    await fetchCapacity();
+  } catch (e: any) {
+    if (isSchemaCacheOrMissingTable(e)) {
+      await reloadSchema(supabase);
+      try {
+        await fetchCapacity();
+      } catch {
+        utilizationPct = 0;
+      }
+    } else {
+      utilizationPct = 0;
+    }
+  }
 
   const utilizationData: UtilPoint[] = [
     { name: "Used", value: utilizationPct },
     { name: "Available", value: Math.max(0, 100 - utilizationPct) },
   ];
 
-  // Turnaround by modality (avg hours)
+  // Turnaround by modality
   const turnaroundAgg = new Map<string, { sum: number; count: number }>();
   for (const r of rows) {
     if (!r.completed_at) continue;
@@ -330,5 +350,6 @@ serve(async (req) => {
     turnaroundData,
   };
 
+  // Always 200 to prevent client-side "non-2xx" hard failures.
   return json(resp, 200);
 });
