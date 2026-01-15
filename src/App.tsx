@@ -1,7 +1,7 @@
 // File: src/App.tsx
 
 import { useEffect, lazy, Suspense } from "react";
-import { Routes, Route, Link, useLocation, Navigate } from "react-router-dom";
+import { Routes, Route, Link, useLocation } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 
 import PublicLayout from "@/layouts/PublicLayout";
@@ -14,7 +14,7 @@ const PageLoader = () => (
   </div>
 );
 
-// Lazy load pages
+// Lazy load pages (keep for most routes)
 const PremiumHome = lazy(() => import("@/pages/PremiumHome"));
 const Auth = lazy(() => import("@/pages/Auth"));
 const About = lazy(() => import("@/pages/About"));
@@ -43,8 +43,6 @@ const PharmacyDashboard = lazy(() => import("@/pages/pharmacy/PharmacyDashboard"
 
 const ImagingLandingPage = lazy(() => import("@/pages/imaging/ImagingLandingPage"));
 const ImagingDashboard = lazy(() => import("@/pages/imaging/ImagingDashboard"));
-const ImagingRegistration = lazy(() => import("@/pages/imaging/ImagingRegistration"));
-const ImagingVerification = lazy(() => import("@/pages/imaging/ImagingVerification"));
 
 const AppointmentBooking = lazy(() => import("@/pages/AppointmentBooking"));
 const BookingConfirmation = lazy(() => import("@/pages/BookingConfirmation"));
@@ -57,7 +55,8 @@ const FeedbackCenter = lazy(() => import("@/pages/FeedbackCenter"));
 /**
  * IMPORTANT:
  * Do NOT lazy-load NotFound. A stale browser cache can try to fetch an old chunk name
- * and cause a blank screen in Lovable previews.
+ * (e.g., NotFound-xxxx.js) and cause a blank screen in Lovable previews.
+ * Keeping NotFound inline avoids that entire failure mode.
  */
 function NotFoundInline() {
   const location = useLocation();
@@ -139,13 +138,6 @@ export default function App() {
           <Route path="/pharmacy/dashboard" element={<PharmacyDashboard />} />
           <Route path="/imaging/dashboard" element={<ImagingDashboard />} />
 
-          {/* Imaging onboarding */}
-          <Route path="/imaging/register" element={<ImagingRegistration />} />
-          <Route path="/imaging/verify" element={<ImagingVerification />} />
-
-          {/* Compatibility: settings is now a section in dashboard */}
-          <Route path="/imaging/settings" element={<Navigate to="/imaging/dashboard?tab=settings" replace />} />
-
           {/* Video Calls */}
           <Route path="/video-call" element={<VideoCall />} />
           <Route path="/video/:roomId" element={<VideoCall />} />
@@ -153,7 +145,7 @@ export default function App() {
           {/* Messaging */}
           <Route path="/messages" element={<Messages />} />
 
-          {/* 404 */}
+          {/* 404 (NOT lazy-loaded) */}
           <Route path="*" element={<NotFoundInline />} />
         </Routes>
       </Suspense>
