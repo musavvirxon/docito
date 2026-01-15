@@ -1,6 +1,6 @@
 // File: src/components/imaging/ImagingEquipmentManager.tsx
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,6 +58,8 @@ export default function ImagingEquipmentManager({ centerId }: Props) {
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState<Equipment | null>(null);
 
+  const schemaReloadAttemptedRef = useRef(false);
+
   const [form, setForm] = useState({
     name: "",
     modality: "MRI",
@@ -69,30 +71,47 @@ export default function ImagingEquipmentManager({ centerId }: Props) {
     scan_types: "",
   });
 
+  const reloadSchemaOnce = async () => {
+    if (schemaReloadAttemptedRef.current) return false;
+    schemaReloadAttemptedRef.current = true;
+
+    try {
+      const { data, error } = await supabase.functions.invoke("pgrst-reload", { body: {} });
+      if (error) throw error;
+      if ((data as any)?.ok) return true;
+      return false;
+    } catch {
+      return false;
+    }
+  };
+
   const load = async () => {
     if (!centerId) return;
     setLoading(true);
+
     try {
       const { data, error } = await supabase.functions.invoke("imaging-equipment", {
         body: { centerId, action: "list" },
       });
       if (error) throw error;
 
-      const ok = Boolean((data as any)?.ok ?? true);
       const avail = Boolean((data as any)?.available ?? true);
       setAvailable(avail);
-
-      const eq = ((data as any)?.equipment ?? []) as Equipment[];
-      setItems(eq);
+      setItems(((data as any)?.equipment ?? []) as Equipment[]);
 
       if (!avail) {
-        toast.message("Equipment storage not ready yet", {
-          description: "Tables are still syncing. Apply migrations + redeploy functions, then refresh.",
-        });
-      }
-
-      if (!ok) {
-        toast.error("Failed to load equipment");
+        toast.message("Equipment storage not ready yet", { description: "Attempting schema reload…" });
+        const reloaded = await reloadSchemaOnce();
+        if (reloaded) {
+          const retry = await supabase.functions.invoke("imaging-equipment", {
+            body: { centerId, action: "list" },
+          });
+          if (!retry.error) {
+            const retryAvail = Boolean((retry.data as any)?.available ?? true);
+            setAvailable(retryAvail);
+            setItems(((retry.data as any)?.equipment ?? []) as Equipment[]);
+          }
+        }
       }
     } catch (e: any) {
       console.error(e);
@@ -104,6 +123,7 @@ export default function ImagingEquipmentManager({ centerId }: Props) {
   };
 
   useEffect(() => {
+    schemaReloadAttemptedRef.current = false;
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [centerId]);
@@ -146,14 +166,8 @@ export default function ImagingEquipmentManager({ centerId }: Props) {
 
   const save = async () => {
     if (!centerId) return;
-    if (!form.name.trim()) {
-      toast.error("Name is required");
-      return;
-    }
-    if (!form.modality.trim()) {
-      toast.error("Modality is required");
-      return;
-    }
+    if (!form.name.trim()) return toast.error("Name is required");
+    if (!form.modality.trim()) return toast.error("Modality is required");
 
     setSaving(true);
     try {
@@ -184,9 +198,40 @@ export default function ImagingEquipmentManager({ centerId }: Props) {
       setAvailable(avail);
 
       if (!avail) {
-        toast.message("Equipment not saved yet", {
-          description: "Tables are still syncing. Apply migrations + redeploy functions, then try again.",
-        });
+        toast.message("Equipment storage not ready yet", { description: "Attempting schema reload…" });
+        const reloaded = await reloadSchemaOnce();
+        if (reloaded) {
+          const retry = await supabase.functions.invoke("imaging-equipment", {
+            body: {
+              centerId,
+              action: "upsert",
+              equipment: {
+                id: editing?.id,
+                name: form.name.trim(),
+                modality: form.modality.trim(),
+                manufacturer: form.manufacturer.trim() || null,
+                model: form.model.trim() || null,
+                serial_number: form.serial_number.trim() || null,
+                status: form.status,
+                capacity_per_day: Number(form.capacity_per_day || 0),
+                scan_types: form.scan_types
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter(Boolean),
+              },
+            },
+          });
+
+          if (retry.error) throw retry.error;
+
+          const retryAvail = Boolean((retry.data as any)?.available ?? true);
+          setAvailable(retryAvail);
+
+          if (retryAvail) toast.success(editing ? "Equipment updated" : "Equipment added");
+          else toast.message("Equipment still syncing", { description: "Try again in a few seconds." });
+        } else {
+          toast.message("Equipment still syncing", { description: "Try again in a few seconds." });
+        }
       } else {
         toast.success(editing ? "Equipment updated" : "Equipment added");
       }
@@ -203,6 +248,7 @@ export default function ImagingEquipmentManager({ centerId }: Props) {
 
   const remove = async (id: string) => {
     if (!centerId) return;
+
     setSaving(true);
     try {
       const { data, error } = await supabase.functions.invoke("imaging-equipment", {
@@ -214,12 +260,26 @@ export default function ImagingEquipmentManager({ centerId }: Props) {
       setAvailable(avail);
 
       if (!avail) {
-        toast.message("Delete pending", {
-          description: "Tables are still syncing. Apply migrations + redeploy functions, then try again.",
-        });
+        toast.message("Equipment storage not ready yet", { description: "Attempting schema reload…" });
+        const reloaded = await reloadSchemaOnce();
+        if (reloaded) {
+          const retry = await supabase.functions.invoke("imaging-equipment", {
+            body: { centerId, action: "delete", id },
+          });
+          if (retry.error) throw retry.error;
+
+          const retryAvail = Boolean((retry.data as any)?.available ?? true);
+          setAvailable(retryAvail);
+
+          if (retryAvail) toast.success("Equipment removed");
+          else toast.message("Delete still syncing", { description: "Try again in a few seconds." });
+        } else {
+          toast.message("Delete still syncing", { description: "Try again in a few seconds." });
+        }
       } else {
         toast.success("Equipment removed");
       }
+
       await load();
     } catch (e: any) {
       console.error(e);
@@ -236,8 +296,7 @@ export default function ImagingEquipmentManager({ centerId }: Props) {
           <div>
             <CardTitle>Equipment</CardTitle>
             <CardDescription>
-              Manage scanners and capacity
-              {!available ? " (storage syncing…)" : ""}
+              Manage scanners and capacity{!available ? " (storage syncing…)" : ""}
             </CardDescription>
           </div>
           <div className="flex gap-2">
@@ -367,7 +426,8 @@ export default function ImagingEquipmentManager({ centerId }: Props) {
               <Input
                 type="number"
                 value={String(form.capacity_per_day)}
-                onChange={(e) => setForm((s) => ({ ...s, capacity_per_day: Number(e.target.value) }))} />
+                onChange={(e) => setForm((s) => ({ ...s, capacity_per_day: Number(e.target.value) }))}
+              />
             </div>
 
             <div className="space-y-2 md:col-span-2">
