@@ -1,3 +1,5 @@
+// File: src/components/imaging/ImagingSettings.tsx
+
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -85,7 +87,7 @@ export default function ImagingSettings({ embedded = false }: Props) {
 
       setSettingsLoading(true);
       try {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from("imaging_center_settings")
           .select("imaging_center_id, timezone, billing_currency, notify_email, notify_sms, report_template")
           .eq("imaging_center_id", centerId)
@@ -123,19 +125,23 @@ export default function ImagingSettings({ embedded = false }: Props) {
     loadSettings();
   }, [centerId]);
 
-  const parsedModalities = useMemo(() => {
-    return centerForm.modalities
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-  }, [centerForm.modalities]);
+  const parsedModalities = useMemo(
+    () =>
+      centerForm.modalities
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+    [centerForm.modalities]
+  );
 
-  const parsedAccreditations = useMemo(() => {
-    return centerForm.accreditations
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-  }, [centerForm.accreditations]);
+  const parsedAccreditations = useMemo(
+    () =>
+      centerForm.accreditations
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+    [centerForm.accreditations]
+  );
 
   const saveAll = async () => {
     if (!myImagingCenter) return;
@@ -161,18 +167,20 @@ export default function ImagingSettings({ embedded = false }: Props) {
 
       if (!updated) throw new Error("Failed to update imaging center profile");
 
-      const { error: upsertErr } = await supabase.from("imaging_center_settings").upsert(
-        {
-          imaging_center_id: myImagingCenter.id,
-          timezone: settings.timezone,
-          billing_currency: settings.billing_currency,
-          notify_email: settings.notify_email,
-          notify_sms: settings.notify_sms,
-          report_template: settings.report_template || null,
-          updated_at: new Date().toISOString(),
-        } as any,
-        { onConflict: "imaging_center_id" }
-      );
+      const { error: upsertErr } = await (supabase as any)
+        .from("imaging_center_settings")
+        .upsert(
+          {
+            imaging_center_id: myImagingCenter.id,
+            timezone: settings.timezone,
+            billing_currency: settings.billing_currency,
+            notify_email: settings.notify_email,
+            notify_sms: settings.notify_sms,
+            report_template: settings.report_template || null,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "imaging_center_id" }
+        );
 
       if (upsertErr) throw upsertErr;
 
@@ -251,7 +259,6 @@ export default function ImagingSettings({ embedded = false }: Props) {
         </div>
       )}
 
-      {/* Center Profile */}
       <Card>
         <CardHeader>
           <CardTitle>Center Profile</CardTitle>
@@ -266,7 +273,11 @@ export default function ImagingSettings({ embedded = false }: Props) {
 
             <div className="space-y-2">
               <Label>Website</Label>
-              <Input value={centerForm.website} onChange={(e) => setCenterForm({ ...centerForm, website: e.target.value })} placeholder="https://..." />
+              <Input
+                value={centerForm.website}
+                onChange={(e) => setCenterForm({ ...centerForm, website: e.target.value })}
+                placeholder="https://..."
+              />
             </div>
 
             <div className="space-y-2">
@@ -300,17 +311,24 @@ export default function ImagingSettings({ embedded = false }: Props) {
 
           <div className="space-y-2">
             <Label>Modalities (comma-separated)</Label>
-            <Input value={centerForm.modalities} onChange={(e) => setCenterForm({ ...centerForm, modalities: e.target.value })} placeholder="MRI, CT, X-ray, Ultrasound" />
+            <Input
+              value={centerForm.modalities}
+              onChange={(e) => setCenterForm({ ...centerForm, modalities: e.target.value })}
+              placeholder="MRI, CT, X-ray, Ultrasound"
+            />
           </div>
 
           <div className="space-y-2">
             <Label>Accreditations (comma-separated)</Label>
-            <Input value={centerForm.accreditations} onChange={(e) => setCenterForm({ ...centerForm, accreditations: e.target.value })} placeholder="JCI, ISO..." />
+            <Input
+              value={centerForm.accreditations}
+              onChange={(e) => setCenterForm({ ...centerForm, accreditations: e.target.value })}
+              placeholder="JCI, ISO..."
+            />
           </div>
         </CardContent>
       </Card>
 
-      {/* Preferences */}
       <Card>
         <CardHeader>
           <CardTitle>Preferences</CardTitle>
