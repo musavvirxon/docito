@@ -73,7 +73,7 @@ function isSchemaCacheOrMissingTable(error: any): boolean {
   return msg.includes("schema cache") || msg.includes("could not find the table") || (msg.includes("relation") && msg.includes("does not exist"));
 }
 
-async function ensureCenterAccess(supabase: ReturnType<typeof createClient>, userId: string, centerId: string) {
+async function ensureCenterAccess(supabase: any, userId: string, centerId: string) {
   const { data: adminRow } = await supabase
     .from("imaging_centers")
     .select("id")
@@ -81,7 +81,7 @@ async function ensureCenterAccess(supabase: ReturnType<typeof createClient>, use
     .eq("admin_id", userId)
     .maybeSingle();
 
-  if (adminRow?.id) return true;
+  if ((adminRow as any)?.id) return true;
 
   const { data: staffRow } = await supabase
     .from("imaging_staff")
@@ -91,10 +91,10 @@ async function ensureCenterAccess(supabase: ReturnType<typeof createClient>, use
     .eq("status", "active")
     .maybeSingle();
 
-  return Boolean(staffRow?.id);
+  return Boolean((staffRow as any)?.id);
 }
 
-async function reloadSchema(supabase: ReturnType<typeof createClient>) {
+async function reloadSchema(supabase: any) {
   try {
     await supabase.rpc("reload_pgrst_schema");
   } catch {

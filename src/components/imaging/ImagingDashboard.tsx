@@ -215,7 +215,7 @@ export default function ImagingDashboard() {
                           {item.examName} • {item.modality} • {item.preferredDate || "—"} • {item.orderNumber}
                         </p>
                       </div>
-                      <Badge variant={item.status === "in_progress" ? "default" : "outline"}>{item.status.replaceAll("_", " ")}</Badge>
+                      <Badge variant={item.status === "in_progress" ? "default" : "outline"}>{item.status.split("_").join(" ")}</Badge>
                     </div>
                   ))}
                 </div>

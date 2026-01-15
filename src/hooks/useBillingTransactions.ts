@@ -19,9 +19,14 @@ export interface BillingTransaction {
   updated_at: string;
 }
 
-export const useBillingTransactions = (userId?: string, practiceId?: string) => {
+interface EntityFilter {
+  entityType?: string;
+  entityId?: string;
+}
+
+export const useBillingTransactions = (userId?: string, practiceId?: string, entityFilter?: EntityFilter) => {
   const { data: transactions, isLoading, refetch } = useQuery({
-    queryKey: ['billing-transactions', userId, practiceId],
+    queryKey: ['billing-transactions', userId, practiceId, entityFilter?.entityType, entityFilter?.entityId],
     queryFn: async () => {
       let query = supabase
         .from('billing_transactions')
@@ -41,7 +46,7 @@ export const useBillingTransactions = (userId?: string, practiceId?: string) => 
       if (error) throw error;
       return data as BillingTransaction[];
     },
-    enabled: !!(userId || practiceId),
+    enabled: !!(userId || practiceId || (entityFilter?.entityType && entityFilter?.entityId)),
   });
 
   const totalRevenue = transactions?.reduce((sum, t) => {
