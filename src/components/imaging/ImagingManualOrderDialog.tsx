@@ -1,3 +1,5 @@
+// File: src/components/imaging/ImagingManualOrderDialog.tsx
+
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -10,10 +12,6 @@ import { toast } from 'sonner';
 import { PhoneInput } from '@/components/shared/PhoneInput';
 import { validatePhone } from '@/lib/phone/phone';
 import { logSession } from '@/lib/debug/authDebug';
-
-function makeImagingOrderNumber() {
-  return `IMG-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
-}
 
 export function ImagingManualOrderDialog({
   open,
@@ -28,32 +26,43 @@ export function ImagingManualOrderDialog({
 }) {
   const [loading, setLoading] = useState(false);
 
-  // ✅ WALK-IN ONLY (manual booking)
+  // Walk-in patient
   const [patientName, setPatientName] = useState('');
   const [patientPhone, setPatientPhone] = useState('');
   const [patientEmail, setPatientEmail] = useState('');
+  const [patientDob, setPatientDob] = useState('');
 
-  const [studyType, setStudyType] = useState<'xray' | 'ct' | 'mri' | 'ultrasound' | 'mammography' | 'other'>('xray');
+  // Study
+  const [modality, setModality] = useState<'xray' | 'ct' | 'mri' | 'ultrasound' | 'mammography' | 'other'>('xray');
   const [studyName, setStudyName] = useState('');
+
+  // Referral fields
+  const [priority, setPriority] = useState<'routine' | 'urgent' | 'stat'>('routine');
+  const [preferredDate, setPreferredDate] = useState('');
+  const [preferredSlot, setPreferredSlot] = useState('');
+  const [reason, setReason] = useState('');
   const [clinicalNotes, setClinicalNotes] = useState('');
 
   useEffect(() => {
     if (!open) return;
+    setLoading(false);
     setPatientName('');
     setPatientPhone('');
     setPatientEmail('');
-    setStudyType('xray');
+    setPatientDob('');
+    setModality('xray');
     setStudyName('');
+    setPriority('routine');
+    setPreferredDate('');
+    setPreferredSlot('');
+    setReason('');
     setClinicalNotes('');
   }, [open]);
 
   const validate = () => {
     if (!imagingCenterId) return 'Missing imaging center';
-
-    // ✅ walk-in only
     if (!patientName.trim()) return 'Walk-in patient name is required';
 
-    // ✅ phone required
     const phoneCheck = validatePhone(patientPhone);
     if (!phoneCheck.ok) return phoneCheck.reason || 'Invalid phone';
 
@@ -67,32 +76,35 @@ export function ImagingManualOrderDialog({
 
     setLoading(true);
     try {
-      await logSession('IMAGING_MANUAL_ORDER_CREATE');
+      await logSession('IMAGING_DASHBOARD_MANUAL_ORDER_CREATE');
 
-      const order_number = makeImagingOrderNumber();
       const phone = validatePhone(patientPhone).normalized;
 
-      const payload: any = {
-        order_number,
-        imaging_center_id: imagingCenterId,
-        status: 'pending',
-        study_type: studyType,
-        study_name: studyName.trim(),
-        clinical_notes: clinicalNotes.trim() || null,
+      const { data, error } = await supabase.functions.invoke('imaging-create-order', {
+        body: {
+          centerId: imagingCenterId,
+          patient: {
+            full_name: patientName.trim(),
+            phone,
+            email: patientEmail.trim() || null,
+            date_of_birth: patientDob || null,
+          },
+          study: {
+            modality,
+            name: studyName.trim(),
+          },
+          priority,
+          preferred_date: preferredDate || null,
+          preferred_time_slot: preferredSlot.trim() || null,
+          reason: reason.trim() || studyName.trim(),
+          clinical_notes: clinicalNotes.trim() || null,
+        },
+      });
 
-        // ✅ walk-in only
-        patient_id: null,
-        patient_name: patientName.trim(),
-        patient_phone: phone,
-        patient_email: patientEmail.trim() || null,
-      };
-
-      console.log('[IMAGING_MANUAL] clinic_imaging_orders payload:', payload);
-
-      const { error } = await supabase.from('clinic_imaging_orders').insert(payload);
       if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || 'Failed to create order');
 
-      toast.success('Manual imaging order created');
+      toast.success(`Manual imaging order created (${data.referralNumber || 'REF'})`);
       onOpenChange(false);
       onCreated?.();
     } catch (e: any) {
@@ -112,29 +124,42 @@ export function ImagingManualOrderDialog({
 
         <div className="space-y-6">
           <div className="space-y-3 border rounded-lg p-4">
-            <div className="text-sm font-semibold">Patient (Walk-in only)</div>
+            <div className="text-sm font-semibold">Patient (Walk-in)</div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>Walk-in Name *</Label>
+                <Label>Full name *</Label>
                 <Input value={patientName} onChange={(e) => setPatientName(e.target.value)} placeholder="Full name" />
               </div>
 
               <PhoneInput value={patientPhone} onChange={setPatientPhone} />
 
-              <div className="space-y-1 md:col-span-2">
+              <div className="space-y-1">
                 <Label>Email (optional)</Label>
-                <Input value={patientEmail} onChange={(e) => setPatientEmail(e.target.value)} placeholder="email@example.com" />
+                <Input
+                  value={patientEmail}
+                  onChange={(e) => setPatientEmail(e.target.value)}
+                  placeholder="email@example.com"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label>Date of birth (optional)</Label>
+                <Input type="date" value={patientDob} onChange={(e) => setPatientDob(e.target.value)} />
               </div>
             </div>
           </div>
 
           <div className="space-y-3 border rounded-lg p-4">
+            <div className="text-sm font-semibold">Study</div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>Study type</Label>
-                <Select value={studyType} onValueChange={(v) => setStudyType(v as any)}>
-                  <SelectTrigger><SelectValue placeholder="Study type" /></SelectTrigger>
+                <Label>Modality</Label>
+                <Select value={modality} onValueChange={(v) => setModality(v as any)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Modality" />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="xray">X-Ray</SelectItem>
                     <SelectItem value="ct">CT</SelectItem>
@@ -151,6 +176,41 @@ export function ImagingManualOrderDialog({
                 <Input value={studyName} onChange={(e) => setStudyName(e.target.value)} placeholder="Chest X-Ray, Brain MRI..." />
               </div>
             </div>
+          </div>
+
+          <div className="space-y-3 border rounded-lg p-4">
+            <div className="text-sm font-semibold">Scheduling & Notes</div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label>Priority</Label>
+                <Select value={priority} onValueChange={(v) => setPriority(v as any)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Priority" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="routine">Routine</SelectItem>
+                    <SelectItem value="urgent">Urgent</SelectItem>
+                    <SelectItem value="stat">STAT</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1">
+                <Label>Preferred date (optional)</Label>
+                <Input type="date" value={preferredDate} onChange={(e) => setPreferredDate(e.target.value)} />
+              </div>
+
+              <div className="space-y-1 md:col-span-2">
+                <Label>Preferred time slot (optional)</Label>
+                <Input value={preferredSlot} onChange={(e) => setPreferredSlot(e.target.value)} placeholder="e.g. 09:00-11:00" />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <Label>Reason (optional)</Label>
+              <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Reason for study (defaults to study name)" />
+            </div>
 
             <div className="space-y-1">
               <Label>Clinical notes (optional)</Label>
@@ -159,7 +219,9 @@ export function ImagingManualOrderDialog({
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>Cancel</Button>
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+              Cancel
+            </Button>
             <Button onClick={handleCreate} disabled={loading}>
               {loading ? 'Creating...' : 'Create Imaging Order'}
             </Button>
