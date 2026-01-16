@@ -1,6 +1,6 @@
 // File: src/components/imaging/ImagingSettingsSection.tsx
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,6 +46,7 @@ const CURRENCIES = ["usd", "uzs", "eur", "gbp"];
 export default function ImagingSettingsSection({ centerId }: Props) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const notifiedRef = useRef(false);
 
   const [center, setCenter] = useState<CenterRow>({
     name: "",
@@ -70,6 +71,8 @@ export default function ImagingSettingsSection({ centerId }: Props) {
     default_turnaround_hours: 24,
   });
 
+  const [available, setAvailable] = useState(true);
+
   const [modalitiesInput, setModalitiesInput] = useState("");
   const [accreditationsInput, setAccreditationsInput] = useState("");
 
@@ -87,7 +90,7 @@ export default function ImagingSettingsSection({ centerId }: Props) {
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean),
-    [modalitiesInput]
+    [modalitiesInput],
   );
 
   const parsedAccreditations = useMemo(
@@ -96,12 +99,14 @@ export default function ImagingSettingsSection({ centerId }: Props) {
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean),
-    [accreditationsInput]
+    [accreditationsInput],
   );
 
   const load = async () => {
     if (!centerId) return;
     setLoading(true);
+    notifiedRef.current = false;
+
     try {
       const { data, error } = await supabase.functions.invoke("imaging-settings", {
         body: { action: "get", centerId },
@@ -110,8 +115,13 @@ export default function ImagingSettingsSection({ centerId }: Props) {
 
       if (!data?.ok) throw new Error(data?.error || "Failed to load settings");
 
-      if (Array.isArray(data?.warnings) && data.warnings.length) {
-        toast.warning("Settings storage not ready yet");
+      setAvailable(Boolean(data.available));
+
+      if (!data.available && !notifiedRef.current) {
+        notifiedRef.current = true;
+        toast.message("Settings storage not ready yet", {
+          description: "Apply migrations, set SUPABASE_DB_URL secret, redeploy functions, then refresh.",
+        });
       }
 
       setCenter((data.center || {}) as CenterRow);
@@ -132,6 +142,7 @@ export default function ImagingSettingsSection({ centerId }: Props) {
   const save = async () => {
     if (!centerId) return;
     setSaving(true);
+
     try {
       const { data, error } = await supabase.functions.invoke("imaging-settings", {
         body: {
@@ -163,14 +174,18 @@ export default function ImagingSettingsSection({ centerId }: Props) {
       if (error) throw error;
       if (!data?.ok) throw new Error(data?.error || "Failed to save settings");
 
-      if (Array.isArray(data?.warnings) && data.warnings.length) {
-        toast.warning("Settings storage not ready yet");
-      } else {
-        toast.success("Settings saved");
+      setAvailable(Boolean(data.available));
+
+      if (!data.available) {
+        toast.message("Settings storage not ready yet", {
+          description: "Apply migrations, set SUPABASE_DB_URL secret, redeploy functions, then refresh.",
+        });
+        return;
       }
 
       setCenter((data.center || {}) as CenterRow);
       setSettings((data.settings || {}) as SettingsRow);
+      toast.success("Settings saved");
     } catch (e: any) {
       console.error(e);
       toast.error(e?.message || "Failed to save settings");
@@ -245,7 +260,9 @@ export default function ImagingSettingsSection({ centerId }: Props) {
       <Card>
         <CardHeader>
           <CardTitle>Operational Settings</CardTitle>
-          <CardDescription>Notifications, defaults and billing preferences</CardDescription>
+          <CardDescription>
+            Notifications, defaults and billing preferences{!available ? " (storage not ready)" : ""}
+          </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
@@ -324,7 +341,10 @@ export default function ImagingSettingsSection({ centerId }: Props) {
             />
           </div>
 
-          <div className="md:col-span-2 flex items-center justify-end">
+          <div className="md:col-span-2 flex items-center justify-end gap-2">
+            <Button variant="outline" onClick={load} disabled={saving}>
+              Refresh
+            </Button>
             <Button onClick={save} disabled={saving}>
               {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
               Save Changes
