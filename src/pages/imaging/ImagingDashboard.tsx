@@ -20,6 +20,7 @@ import {
   ArrowRightLeft,
   LayoutDashboard,
   CreditCard,
+  ListChecks,
 } from "lucide-react";
 import { useImagingCenter } from "@/hooks/useImagingCenter";
 import { useAuth } from "@/contexts/AuthContext";
@@ -34,7 +35,9 @@ import ImagingReportManager from "@/components/imaging/ImagingReportManager";
 import ImagingAnalytics from "@/components/imaging/ImagingAnalytics";
 import { ImagingReferralsSection } from "@/components/imaging/ImagingReferralsSection";
 import ImagingBillingSection from "@/components/imaging/ImagingBillingSection";
-import ImagingSettings from "@/components/imaging/ImagingSettings";
+import ImagingOrdersManager from "@/components/imaging/ImagingOrdersManager";
+import ImagingStaffManager from "@/components/imaging/ImagingStaffManager";
+import ImagingSettingsSection from "@/components/imaging/ImagingSettingsSection";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -68,7 +71,10 @@ export default function ImagingDashboard() {
   const { user, loading: authLoading, activeRole } = useAuth();
   const { myImagingCenter, fetchMyImagingCenter, loading: centerLoading } = useImagingCenter();
 
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "orders" | "workflow" | "reports" | "equipment" | "analytics" | "billing" | "staff" | "referrals" | "settings"
+  >("overview");
+
   const [overviewLoading, setOverviewLoading] = useState(false);
   const [overview, setOverview] = useState<DashboardData | null>(null);
 
@@ -78,6 +84,7 @@ export default function ImagingDashboard() {
 
   const sidebarItems: SidebarItem[] = [
     { id: "overview", label: "Overview", icon: <LayoutDashboard className="h-5 w-5" /> },
+    { id: "orders", label: "Orders", icon: <ListChecks className="h-5 w-5" /> },
     { id: "workflow", label: "Scan Workflow", icon: <ClipboardList className="h-5 w-5" /> },
     { id: "reports", label: "Reports", icon: <FileImage className="h-5 w-5" /> },
     { id: "equipment", label: "Equipment", icon: <Wrench className="h-5 w-5" /> },
@@ -98,7 +105,7 @@ export default function ImagingDashboard() {
         body: { centerId },
       });
       if (error) throw error;
-      setOverview(data as DashboardData);
+      setOverview((data || null) as DashboardData | null);
     } catch (e: any) {
       console.error(e);
       toast.error(e?.message || "Failed to load dashboard overview");
@@ -174,7 +181,7 @@ export default function ImagingDashboard() {
       sidebarItems={sidebarItems}
       activeItem={activeTab}
       onItemChange={(id) => {
-        setActiveTab(id);
+        setActiveTab(id as any);
         if (id === "overview") fetchOverview();
       }}
     >
@@ -184,7 +191,10 @@ export default function ImagingDashboard() {
             title="Dashboard Overview"
             description="Monitor your imaging center's performance"
             badges={[
-              { label: myImagingCenter.is_verified ? "Verified" : "Pending Verification", variant: myImagingCenter.is_verified ? "default" : "secondary" },
+              {
+                label: myImagingCenter.is_verified ? "Verified" : "Pending Verification",
+                variant: myImagingCenter.is_verified ? "default" : "secondary",
+              },
             ]}
             actions={
               <Button variant="outline" onClick={fetchOverview} disabled={overviewLoading}>
@@ -216,14 +226,14 @@ export default function ImagingDashboard() {
                           {item.examName} • {item.modality} • {item.preferredDate || "—"} • {item.orderNumber}
                         </p>
                       </div>
-                      <Badge variant={item.status === "in_progress" ? "default" : "outline"}>{item.status.replaceAll("_", " ")}</Badge>
+                      <Badge variant={item.status === "in_progress" ? "default" : "outline"}>{String(item.status).replaceAll("_", " ")}</Badge>
                     </div>
                   ))}
                 </div>
               )}
             </ContentCard>
 
-            <ContentCard title="Equipment Utilization" description="Live capacity and status" icon={<Wrench className="h-5 w-5" />}>
+            <ContentCard title="Equipment Status" description="Current equipment availability" icon={<Wrench className="h-5 w-5" />}>
               {overviewLoading ? (
                 <div className="space-y-3">
                   {[1, 2, 3].map((i) => (
@@ -233,20 +243,20 @@ export default function ImagingDashboard() {
               ) : (overview?.equipment?.length || 0) === 0 ? (
                 <EmptyState
                   icon={<Wrench className="h-12 w-12" />}
-                  title="No equipment configured"
-                  description="Add equipment in the Equipment tab to track utilization."
+                  title="No equipment registered"
+                  description="Add your modalities and devices in the Equipment section to see live status here."
                 />
               ) : (
                 <div className="space-y-3">
-                  {overview!.equipment.map((e) => (
-                    <div key={e.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  {overview!.equipment.map((eq) => (
+                    <div key={eq.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                       <div>
-                        <p className="font-medium">
-                          {e.name} <span className="text-sm text-muted-foreground">({e.modality})</span>
+                        <p className="font-medium">{eq.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {eq.modality} • {eq.utilization}% utilized
                         </p>
-                        <p className="text-sm text-muted-foreground">Utilization: {e.utilization}%</p>
                       </div>
-                      <Badge variant={e.status === "active" ? "default" : "secondary"}>{e.status}</Badge>
+                      <Badge variant={eq.status === "active" ? "default" : "secondary"}>{eq.status}</Badge>
                     </div>
                   ))}
                 </div>
@@ -256,20 +266,67 @@ export default function ImagingDashboard() {
         </>
       )}
 
-      {activeTab === "workflow" && <ImagingScanWorkflow centerId={centerId} />}
-      {activeTab === "reports" && <ImagingReportManager centerId={centerId} />}
-      {activeTab === "equipment" && <ImagingEquipmentManager centerId={centerId} />}
-      {activeTab === "analytics" && <ImagingAnalytics centerId={centerId} />}
-      {activeTab === "billing" && <ImagingBillingSection centerId={centerId} />}
-      {activeTab === "referrals" && <ImagingReferralsSection centerId={centerId} />}
-      {activeTab === "settings" && <ImagingSettings centerId={centerId} />}
+      {activeTab === "orders" && (
+        <>
+          <PageHeader title="Orders" description="Control incoming imaging orders: assign staff, update workflow, manage statuses" />
+          <ImagingOrdersManager centerId={centerId} />
+        </>
+      )}
+
+      {activeTab === "workflow" && (
+        <>
+          <PageHeader title="Scan Workflow" description="Manage imaging procedures and patient flow" />
+          <ImagingScanWorkflow centerId={centerId} />
+        </>
+      )}
+
+      {activeTab === "reports" && (
+        <>
+          <PageHeader title="Reports" description="View and manage imaging reports" />
+          <ImagingReportManager centerId={centerId} />
+        </>
+      )}
+
+      {activeTab === "equipment" && (
+        <>
+          <PageHeader title="Equipment Management" description="Monitor and manage imaging equipment" />
+          <ImagingEquipmentManager centerId={centerId} />
+        </>
+      )}
+
+      {activeTab === "analytics" && (
+        <>
+          <PageHeader title="Analytics" description="Full operational analytics for your imaging center" />
+          <ImagingAnalytics centerId={centerId} />
+        </>
+      )}
+
+      {activeTab === "billing" && (
+        <>
+          <PageHeader title="Billing" description="Revenue and transaction history for this imaging center" />
+          <ImagingBillingSection centerId={centerId} />
+        </>
+      )}
+
       {activeTab === "staff" && (
-        <div className="space-y-4">
-          <PageHeader title="Staff" description="Staff management is coming next." />
-          <Card>
-            <CardContent className="p-6 text-muted-foreground">This section will be connected after staff CRUD is enabled.</CardContent>
-          </Card>
-        </div>
+        <>
+          <PageHeader title="Staff Management" description="Invite and manage radiologists and technicians" />
+          <ImagingStaffManager centerId={centerId} />
+        </>
+      )}
+
+      {activeTab === "referrals" && (
+        <>
+          <PageHeader title="Referrals" description="Manage incoming referrals for imaging procedures" />
+          <ImagingReferralsSection centerId={centerId} />
+        </>
+      )}
+
+      {activeTab === "settings" && (
+        <>
+          <PageHeader title="Settings" description="Center profile, notifications, report defaults, and billing preferences" />
+          <ImagingSettingsSection centerId={centerId} />
+        </>
       )}
     </DashboardShell>
   );
