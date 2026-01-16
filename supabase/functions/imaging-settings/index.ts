@@ -2,6 +2,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { Client } from "https://deno.land/x/postgres@v0.17.0/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -39,11 +40,32 @@ type ReqBody =
 type RespBody =
   | {
       ok: true;
-      center: any;
-      settings: any;
+      available: boolean;
+      center: {
+        id: string;
+        name: string | null;
+        phone: string | null;
+        email: string | null;
+        address: string | null;
+        city: string | null;
+        website: string | null;
+        modalities: string[];
+        accreditations: string[];
+        accepts_insurance: boolean;
+      };
+      settings: {
+        imaging_center_id: string;
+        timezone: string;
+        billing_currency: string;
+        notify_email: boolean;
+        notify_sms: boolean;
+        report_template: string;
+        auto_accept_referrals: boolean;
+        default_turnaround_hours: number;
+      };
       warnings?: string[];
     }
-  | { ok: false; error: string; warnings?: string[] };
+  | { ok: false; error: string; available?: boolean; warnings?: string[] };
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -52,36 +74,222 @@ function json(data: unknown, status = 200) {
   });
 }
 
-function isMissingSchemaError(err: unknown) {
-  const msg = String((err as any)?.message ?? err ?? "");
-  const m = msg.toLowerCase();
-  return (
-    msg.includes("Could not find the table") ||
-    m.includes("schema cache") ||
-    (m.includes("column") && m.includes("does not exist")) ||
-    (m.includes("relation") && m.includes("does not exist"))
+function asText(v: unknown, fallback = ""): string {
+  if (v === null || v === undefined) return fallback;
+  return String(v);
+}
+
+function asBool(v: unknown, fallback = false): boolean {
+  if (v === null || v === undefined) return fallback;
+  return Boolean(v);
+}
+
+function asInt(v: unknown, fallback = 0): number {
+  const n = Number(v);
+  return Number.isFinite(n) ? Math.trunc(n) : fallback;
+}
+
+async function getAuthedUserId(authHeader: string) {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  if (!supabaseUrl || !supabaseAnonKey) return { ok: false as const, error: "Missing SUPABASE_URL or SUPABASE_ANON_KEY" };
+
+  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: authHeader } },
+  });
+
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) return { ok: false as const, error: "Unauthorized" };
+  return { ok: true as const, userId: user.id };
+}
+
+function requireDbUrl(): string | null {
+  return Deno.env.get("SUPABASE_DB_URL") || Deno.env.get("DATABASE_URL") || null;
+}
+
+async function tableExists(client: Client, tableName: string): Promise<boolean> {
+  const res = await client.queryObject<{ exists: boolean }>(
+    `select exists (
+       select 1
+       from information_schema.tables
+       where table_schema = 'public' and table_name = $1
+     ) as exists`,
+    tableName,
+  );
+  return Boolean(res.rows?.[0]?.exists);
+}
+
+async function ensureCenterAccessPg(client: Client, userId: string, centerId: string): Promise<boolean> {
+  // admin?
+  const admin = await client.queryObject<{ id: string }>(
+    `select id from public.imaging_centers where id = $1 and admin_id = $2 limit 1`,
+    centerId,
+    userId,
+  );
+  if (admin.rows.length) return true;
+
+  // staff?
+  const staff = await client.queryObject<{ id: string }>(
+    `select id
+     from public.imaging_staff
+     where imaging_center_id = $1 and user_id = $2 and status = 'active'
+     limit 1`,
+    centerId,
+    userId,
+  );
+  return staff.rows.length > 0;
+}
+
+async function readCenterPg(client: Client, centerId: string) {
+  const r = await client.queryObject<{
+    id: string;
+    name: string | null;
+    phone: string | null;
+    email: string | null;
+    address: string | null;
+    city: string | null;
+    website: string | null;
+    modalities: string[] | null;
+    accreditations: string[] | null;
+    accepts_insurance: boolean | null;
+  }>(
+    `select id, name, phone, email, address, city, website, modalities, accreditations, accepts_insurance
+     from public.imaging_centers
+     where id = $1
+     limit 1`,
+    centerId,
+  );
+
+  if (!r.rows.length) throw new Error("Imaging center not found");
+
+  const c = r.rows[0];
+  return {
+    id: c.id,
+    name: c.name ?? null,
+    phone: c.phone ?? null,
+    email: c.email ?? null,
+    address: c.address ?? null,
+    city: c.city ?? null,
+    website: c.website ?? null,
+    modalities: Array.isArray(c.modalities) ? c.modalities : [],
+    accreditations: Array.isArray(c.accreditations) ? c.accreditations : [],
+    accepts_insurance: Boolean(c.accepts_insurance),
+  };
+}
+
+async function readSettingsPg(client: Client, centerId: string) {
+  const r = await client.queryObject<{
+    imaging_center_id: string;
+    timezone: string | null;
+    billing_currency: string | null;
+    notify_email: boolean | null;
+    notify_sms: boolean | null;
+    report_template: string | null;
+    auto_accept_referrals: boolean | null;
+    default_turnaround_hours: number | null;
+  }>(
+    `select imaging_center_id, timezone, billing_currency, notify_email, notify_sms, report_template,
+            auto_accept_referrals, default_turnaround_hours
+     from public.imaging_center_settings
+     where imaging_center_id = $1
+     limit 1`,
+    centerId,
+  );
+
+  if (!r.rows.length) {
+    return {
+      imaging_center_id: centerId,
+      timezone: "UTC",
+      billing_currency: "usd",
+      notify_email: true,
+      notify_sms: false,
+      report_template: "",
+      auto_accept_referrals: false,
+      default_turnaround_hours: 24,
+    };
+  }
+
+  const s = r.rows[0];
+  return {
+    imaging_center_id: centerId,
+    timezone: asText(s.timezone, "UTC"),
+    billing_currency: asText(s.billing_currency, "usd"),
+    notify_email: asBool(s.notify_email, true),
+    notify_sms: asBool(s.notify_sms, false),
+    report_template: asText(s.report_template, ""),
+    auto_accept_referrals: asBool(s.auto_accept_referrals, false),
+    default_turnaround_hours: asInt(s.default_turnaround_hours, 24),
+  };
+}
+
+async function saveCenterPg(client: Client, centerId: string, center: NonNullable<Extract<ReqBody, { action: "save" }>["center"]>) {
+  await client.queryArray(
+    `update public.imaging_centers
+     set name = $2,
+         phone = $3,
+         email = $4,
+         address = $5,
+         city = $6,
+         website = $7,
+         modalities = $8,
+         accreditations = $9,
+         accepts_insurance = $10
+     where id = $1`,
+    [
+      centerId,
+      center.name ?? null,
+      center.phone ?? null,
+      center.email ?? null,
+      center.address ?? null,
+      center.city ?? null,
+      center.website ?? null,
+      Array.isArray(center.modalities) ? center.modalities : [],
+      Array.isArray(center.accreditations) ? center.accreditations : [],
+      Boolean(center.accepts_insurance),
+    ],
   );
 }
 
-async function ensureCenterAccess(supabase: ReturnType<typeof createClient>, userId: string, centerId: string) {
-  const { data: adminRow } = await supabase
-    .from("imaging_centers")
-    .select("id")
-    .eq("id", centerId)
-    .eq("admin_id", userId)
-    .maybeSingle();
+async function upsertSettingsPg(
+  client: Client,
+  centerId: string,
+  userId: string,
+  settings: NonNullable<Extract<ReqBody, { action: "save" }>["settings"]>,
+) {
+  await client.queryArray(
+    `insert into public.imaging_center_settings (
+        imaging_center_id, timezone, billing_currency, notify_email, notify_sms, report_template,
+        auto_accept_referrals, default_turnaround_hours, created_at, updated_at
+     )
+     values ($1, $2, $3, $4, $5, $6, $7, $8, now(), now())
+     on conflict (imaging_center_id) do update
+     set timezone = excluded.timezone,
+         billing_currency = excluded.billing_currency,
+         notify_email = excluded.notify_email,
+         notify_sms = excluded.notify_sms,
+         report_template = excluded.report_template,
+         auto_accept_referrals = excluded.auto_accept_referrals,
+         default_turnaround_hours = excluded.default_turnaround_hours,
+         updated_at = now()`,
+    [
+      centerId,
+      asText(settings.timezone, "UTC"),
+      asText(settings.billing_currency, "usd"),
+      asBool(settings.notify_email, true),
+      asBool(settings.notify_sms, false),
+      settings.report_template ?? null,
+      asBool(settings.auto_accept_referrals, false),
+      asInt(settings.default_turnaround_hours, 24),
+    ],
+  );
 
-  if (adminRow?.id) return true;
-
-  const { data: staffRow } = await supabase
-    .from("imaging_staff")
-    .select("id")
-    .eq("imaging_center_id", centerId)
-    .eq("user_id", userId)
-    .eq("status", "active")
-    .maybeSingle();
-
-  return Boolean(staffRow?.id);
+  // best-effort: reload PostgREST cache so direct REST queries also start working
+  await client.queryArray(`select pg_notify('pgrst', 'reload schema');`);
+  void userId; // reserved for future auditing
 }
 
 serve(async (req) => {
@@ -91,20 +299,8 @@ serve(async (req) => {
   const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
   if (!authHeader) return json({ ok: false, error: "Missing Authorization header" } satisfies RespBody, 401);
 
-  const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
-  if (!supabaseUrl || !supabaseAnonKey) return json({ ok: false, error: "Missing SUPABASE_URL or SUPABASE_ANON_KEY" } satisfies RespBody, 500);
-
-  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    global: { headers: { Authorization: authHeader } },
-  });
-
-  const {
-    data: { user },
-    error: userErr,
-  } = await supabase.auth.getUser();
-
-  if (userErr || !user) return json({ ok: false, error: "Unauthorized" } satisfies RespBody, 401);
+  const auth = await getAuthedUserId(authHeader);
+  if (!auth.ok) return json({ ok: false, error: auth.error } satisfies RespBody, auth.error === "Unauthorized" ? 401 : 500);
 
   let body: ReqBody;
   try {
@@ -113,133 +309,100 @@ serve(async (req) => {
     return json({ ok: false, error: "Invalid JSON body" } satisfies RespBody, 400);
   }
 
-  const centerId = (body.centerId || "").trim();
+  const centerId = asText((body as any)?.centerId, "").trim();
   if (!centerId) return json({ ok: false, error: "Missing centerId" } satisfies RespBody, 400);
 
-  const allowed = await ensureCenterAccess(supabase, user.id, centerId);
-  if (!allowed) return json({ ok: false, error: "Forbidden" } satisfies RespBody, 403);
+  const dbUrl = requireDbUrl();
+  if (!dbUrl) {
+    return json(
+      {
+        ok: false,
+        error: "Missing SUPABASE_DB_URL (or DATABASE_URL) function secret. Set it, then redeploy this function.",
+      } satisfies RespBody,
+      501,
+    );
+  }
 
+  const client = new Client(dbUrl);
   const warnings: string[] = [];
 
   try {
+    await client.connect();
+
+    const allowed = await ensureCenterAccessPg(client, auth.userId, centerId);
+    if (!allowed) return json({ ok: false, error: "Forbidden" } satisfies RespBody, 403);
+
+    // If the table truly doesn't exist, return available=false (no more schema-cache guessing).
+    const settingsTableOk = await tableExists(client, "imaging_center_settings");
+    if (!settingsTableOk) {
+      const center = await readCenterPg(client, centerId);
+      return json(
+        {
+          ok: true,
+          available: false,
+          center,
+          settings: {
+            imaging_center_id: centerId,
+            timezone: "UTC",
+            billing_currency: "usd",
+            notify_email: true,
+            notify_sms: false,
+            report_template: "",
+            auto_accept_referrals: false,
+            default_turnaround_hours: 24,
+          },
+          warnings: ["missing_table:imaging_center_settings"],
+        } satisfies RespBody,
+        200,
+      );
+    }
+
     if (body.action === "get") {
-      const { data: center, error: cErr } = await supabase
-        .from("imaging_centers")
-        .select("id, name, phone, email, address, city, website, modalities, accreditations, accepts_insurance")
-        .eq("id", centerId)
-        .single();
-
-      if (cErr) return json({ ok: false, error: cErr.message } satisfies RespBody, 500);
-
-      let settings: any = {
-        imaging_center_id: centerId,
-        timezone: "UTC",
-        billing_currency: "usd",
-        notify_email: true,
-        notify_sms: false,
-        report_template: "",
-        auto_accept_referrals: false,
-        default_turnaround_hours: 24,
-      };
-
-      const { data: sData, error: sErr } = await supabase
-        .from("imaging_center_settings")
-        .select("imaging_center_id, timezone, billing_currency, notify_email, notify_sms, report_template, auto_accept_referrals, default_turnaround_hours")
-        .eq("imaging_center_id", centerId)
-        .maybeSingle();
-
-      if (sErr) {
-        if (isMissingSchemaError(sErr)) warnings.push("schema_not_ready:imaging_center_settings");
-        else warnings.push(`settings_query_failed:${sErr.message}`);
-      } else if (sData) {
-        settings = {
-          imaging_center_id: centerId,
-          timezone: sData.timezone ?? "UTC",
-          billing_currency: sData.billing_currency ?? "usd",
-          notify_email: Boolean(sData.notify_email),
-          notify_sms: Boolean(sData.notify_sms),
-          report_template: sData.report_template ?? "",
-          auto_accept_referrals: Boolean(sData.auto_accept_referrals),
-          default_turnaround_hours: Number(sData.default_turnaround_hours ?? 24),
-        };
-      }
-
-      return json({ ok: true, center, settings, ...(warnings.length ? { warnings } : {}) } satisfies RespBody, 200);
+      const center = await readCenterPg(client, centerId);
+      const settings = await readSettingsPg(client, centerId);
+      return json(
+        {
+          ok: true,
+          available: true,
+          center,
+          settings,
+          ...(warnings.length ? { warnings } : {}),
+        } satisfies RespBody,
+        200,
+      );
     }
 
     // save
-    const { center, settings } = body;
+    await saveCenterPg(client, centerId, body.center);
+    await upsertSettingsPg(client, centerId, auth.userId, body.settings);
 
-    const { error: upCenterErr } = await supabase
-      .from("imaging_centers")
-      .update({
-        name: center.name ?? null,
-        phone: center.phone ?? null,
-        email: center.email ?? null,
-        address: center.address ?? null,
-        city: center.city ?? null,
-        website: center.website ?? null,
-        modalities: center.modalities ?? [],
-        accreditations: center.accreditations ?? [],
-        accepts_insurance: Boolean(center.accepts_insurance),
-      })
-      .eq("id", centerId);
+    const center = await readCenterPg(client, centerId);
+    const settings = await readSettingsPg(client, centerId);
 
-    if (upCenterErr) return json({ ok: false, error: upCenterErr.message } satisfies RespBody, 500);
-
-    const payload = {
-      imaging_center_id: centerId,
-      timezone: settings.timezone ?? "UTC",
-      billing_currency: settings.billing_currency ?? "usd",
-      notify_email: Boolean(settings.notify_email),
-      notify_sms: Boolean(settings.notify_sms),
-      report_template: settings.report_template ?? null,
-      auto_accept_referrals: Boolean(settings.auto_accept_referrals),
-      default_turnaround_hours: Number(settings.default_turnaround_hours ?? 24),
-    };
-
-    const { error: upSettingsErr } = await supabase
-      .from("imaging_center_settings")
-      .upsert(payload, { onConflict: "imaging_center_id" });
-
-    if (upSettingsErr) {
-      if (isMissingSchemaError(upSettingsErr)) warnings.push("schema_not_ready:imaging_center_settings");
-      else return json({ ok: false, error: upSettingsErr.message } satisfies RespBody, 500);
+    return json(
+      {
+        ok: true,
+        available: true,
+        center,
+        settings,
+        ...(warnings.length ? { warnings } : {}),
+      } satisfies RespBody,
+      200,
+    );
+  } catch (e: any) {
+    return json(
+      {
+        ok: false,
+        error: String(e?.message ?? e),
+        available: false,
+      } satisfies RespBody,
+      200,
+    );
+  } finally {
+    try {
+      await client.end();
+    } catch {
+      // ignore
     }
-
-    const { data: centerOut, error: cOutErr } = await supabase
-      .from("imaging_centers")
-      .select("id, name, phone, email, address, city, website, modalities, accreditations, accepts_insurance")
-      .eq("id", centerId)
-      .single();
-
-    if (cOutErr) return json({ ok: false, error: cOutErr.message } satisfies RespBody, 500);
-
-    let settingsOut: any = payload;
-    const { data: sOut, error: sOutErr } = await supabase
-      .from("imaging_center_settings")
-      .select("imaging_center_id, timezone, billing_currency, notify_email, notify_sms, report_template, auto_accept_referrals, default_turnaround_hours")
-      .eq("imaging_center_id", centerId)
-      .maybeSingle();
-
-    if (sOutErr) {
-      if (isMissingSchemaError(sOutErr)) warnings.push("schema_not_ready:imaging_center_settings");
-      else warnings.push(`settings_readback_failed:${sOutErr.message}`);
-    } else if (sOut) {
-      settingsOut = {
-        imaging_center_id: centerId,
-        timezone: sOut.timezone ?? "UTC",
-        billing_currency: sOut.billing_currency ?? "usd",
-        notify_email: Boolean(sOut.notify_email),
-        notify_sms: Boolean(sOut.notify_sms),
-        report_template: sOut.report_template ?? "",
-        auto_accept_referrals: Boolean(sOut.auto_accept_referrals),
-        default_turnaround_hours: Number(sOut.default_turnaround_hours ?? 24),
-      };
-    }
-
-    return json({ ok: true, center: centerOut, settings: settingsOut, ...(warnings.length ? { warnings } : {}) } satisfies RespBody, 200);
-  } catch (e) {
-    return json({ ok: false, error: String((e as any)?.message ?? e) } satisfies RespBody, 200);
   }
 });
