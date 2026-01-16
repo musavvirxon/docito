@@ -1,162 +1,274 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+// File: src/components/lab/LabBillingInsurance.tsx
+
+import { useEffect, useMemo, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { 
-  CreditCard, 
-  Search, 
-  Eye, 
-  DollarSign, 
-  Clock,
-  CheckCircle,
-  XCircle,
-  Send,
-  RefreshCw,
-  Shield
-} from 'lucide-react';
-import { format } from 'date-fns';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-
-interface InsuranceClaim {
-  id: string;
-  order_id: string;
-  patient_name: string;
-  insurance_provider: string;
-  policy_number: string;
-  claim_amount: number;
-  approved_amount: number | null;
-  copay_amount: number | null;
-  status: string;
-  submitted_at: string | null;
-  processed_at: string | null;
-  notes: string | null;
-}
+import { format } from 'date-fns';
+import { CreditCard, Shield, RefreshCw } from 'lucide-react';
 
 interface Props {
   labCenterId: string;
 }
 
+type BillingTx = {
+  id: string;
+  created_at: string;
+  amount: number;
+  currency: string | null;
+  status: string | null;
+  transaction_type: string | null;
+  description: string | null;
+};
+
+type InsuranceOrder = {
+  id: string;
+  order_number: string;
+  created_at: string;
+  total_amount: number;
+  payment_status: string | null;
+  patient_id: string | null;
+  facility_patient_id: string | null;
+  patient_name: string;
+  insurance_provider: string;
+  member_id: string;
+};
+
+type ProfileRow = { user_id: string; full_name: string | null; first_name: string | null; last_name: string | null; phone: string | null; email: string | null };
+type FacilityPatientRow = { id: string; full_name: string; phone: string; email: string | null };
+
+function asName(p?: ProfileRow | null) {
+  if (!p) return '';
+  return p.full_name || [p.first_name, p.last_name].filter(Boolean).join(' ') || '';
+}
+
+function money(n: number) {
+  const v = Number(n);
+  if (!Number.isFinite(v)) return '$0.00';
+  return `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function statusBadge(status: string | null | undefined) {
+  const s = (status || 'pending').toLowerCase();
+  switch (s) {
+    case 'completed':
+    case 'paid':
+      return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Paid</Badge>;
+    case 'pending':
+      return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Pending</Badge>;
+    case 'failed':
+    case 'rejected':
+      return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">Failed</Badge>;
+    case 'refunded':
+      return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">Refunded</Badge>;
+    case 'processing':
+      return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Processing</Badge>;
+    default:
+      return <Badge variant="secondary">{status || '—'}</Badge>;
+  }
+}
+
 export default function LabBillingInsurance({ labCenterId }: Props) {
-  const [claims, setClaims] = useState<InsuranceClaim[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [selectedClaim, setSelectedClaim] = useState<InsuranceClaim | null>(null);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [txLoading, setTxLoading] = useState(false);
 
-  useEffect(() => {
-    if (labCenterId) {
-      fetchClaims();
-    }
-  }, [labCenterId]);
+  const [transactions, setTransactions] = useState<BillingTx[]>([]);
+  const [insuranceOrders, setInsuranceOrders] = useState<InsuranceOrder[]>([]);
 
-  const fetchClaims = async () => {
+  const [txSearch, setTxSearch] = useState('');
+  const [insuranceSearch, setInsuranceSearch] = useState('');
+  const [insuranceStatus, setInsuranceStatus] = useState('all');
+
+  const fetchTransactions = async () => {
+    if (!labCenterId) return;
+    setTxLoading(true);
     try {
-      setLoading(true);
-      // Mock data
-      const mockClaims: InsuranceClaim[] = [
-        {
-          id: '1',
-          order_id: 'ORD-001',
-          patient_name: 'John Doe',
-          insurance_provider: 'Blue Cross',
-          policy_number: 'BC-123456',
-          claim_amount: 250.00,
-          approved_amount: 200.00,
-          copay_amount: 50.00,
-          status: 'approved',
-          submitted_at: new Date(Date.now() - 86400000 * 3).toISOString(),
-          processed_at: new Date(Date.now() - 86400000).toISOString(),
-          notes: null,
-        },
-        {
-          id: '2',
-          order_id: 'ORD-002',
-          patient_name: 'Jane Smith',
-          insurance_provider: 'Aetna',
-          policy_number: 'AE-789012',
-          claim_amount: 180.00,
-          approved_amount: null,
-          copay_amount: null,
-          status: 'pending',
-          submitted_at: new Date().toISOString(),
-          processed_at: null,
-          notes: null,
-        },
-        {
-          id: '3',
-          order_id: 'ORD-003',
-          patient_name: 'Robert Johnson',
-          insurance_provider: 'United Health',
-          policy_number: 'UH-345678',
-          claim_amount: 320.00,
-          approved_amount: 0,
-          copay_amount: 320.00,
-          status: 'rejected',
-          submitted_at: new Date(Date.now() - 86400000 * 5).toISOString(),
-          processed_at: new Date(Date.now() - 86400000 * 2).toISOString(),
-          notes: 'Pre-authorization required',
-        },
-      ];
-      setClaims(mockClaims);
-    } catch (error) {
-      console.error('Error fetching claims:', error);
-      toast.error('Failed to load claims');
+      const { data, error } = await supabase
+        .from('billing_transactions')
+        .select('id,created_at,amount,currency,status,transaction_type,description')
+        .eq('entity_type', 'lab_center')
+        .eq('entity_id', labCenterId)
+        .order('created_at', { ascending: false })
+        .limit(200);
+
+      if (error) throw error;
+
+      setTransactions((data || []) as any);
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || 'Failed to load transactions');
+    } finally {
+      setTxLoading(false);
+    }
+  };
+
+  const fetchInsuranceOrders = async () => {
+    if (!labCenterId) return;
+    try {
+      const { data: orders, error: oErr } = await supabase
+        .from('test_orders')
+        .select('id,order_number,created_at,total_amount,payment_status,patient_id,facility_patient_id')
+        .eq('lab_center_id', labCenterId)
+        .eq('insurance_covered', true)
+        .order('created_at', { ascending: false })
+        .limit(200);
+
+      if (oErr) throw oErr;
+
+      const orderRows = (orders || []) as any[];
+      const patientIds = Array.from(new Set(orderRows.map((o) => o.patient_id).filter(Boolean)));
+      const facilityIds = Array.from(new Set(orderRows.map((o) => o.facility_patient_id).filter(Boolean)));
+
+      const [profilesRes, facilityRes, insuranceRes] = await Promise.all([
+        patientIds.length
+          ? supabase
+              .from('profiles')
+              .select('user_id,full_name,first_name,last_name,phone,email')
+              .in('user_id', patientIds)
+          : Promise.resolve({ data: [], error: null } as any),
+        facilityIds.length
+          ? supabase.from('facility_patients').select('id,full_name,phone,email').in('id', facilityIds)
+          : Promise.resolve({ data: [], error: null } as any),
+        patientIds.length
+          ? supabase
+              .from('patient_insurance')
+              .select('patient_id,member_id,is_primary,provider:insurance_providers(provider_name)')
+              .in('patient_id', patientIds)
+              .order('is_primary', { ascending: false })
+          : Promise.resolve({ data: [], error: null } as any),
+      ]);
+
+      if (profilesRes.error) throw profilesRes.error;
+      if (facilityRes.error) throw facilityRes.error;
+      if (insuranceRes.error) throw insuranceRes.error;
+
+      const profilesMap = new Map<string, ProfileRow>();
+      for (const p of (profilesRes.data || []) as any[]) profilesMap.set(p.user_id, p);
+
+      const facilityMap = new Map<string, FacilityPatientRow>();
+      for (const fp of (facilityRes.data || []) as any[]) facilityMap.set(fp.id, fp);
+
+      // pick primary insurance first, otherwise first row
+      const insuranceByPatient = new Map<string, { provider_name: string; member_id: string }>();
+      for (const row of (insuranceRes.data || []) as any[]) {
+        const pid = row.patient_id;
+        if (!pid) continue;
+        if (insuranceByPatient.has(pid)) continue;
+        insuranceByPatient.set(pid, {
+          provider_name: row?.provider?.provider_name || '',
+          member_id: row?.member_id || '',
+        });
+      }
+
+      const formatted: InsuranceOrder[] = orderRows.map((o) => {
+        const profile = o.patient_id ? profilesMap.get(o.patient_id) || null : null;
+        const facility = o.facility_patient_id ? facilityMap.get(o.facility_patient_id) || null : null;
+        const ins = o.patient_id ? insuranceByPatient.get(o.patient_id) : null;
+
+        const patient_name =
+          facility?.full_name ||
+          asName(profile) ||
+          (o.patient_id ? 'Patient' : 'Walk-in');
+
+        const provider = ins?.provider_name || '—';
+        const memberId = ins?.member_id || '—';
+
+        return {
+          id: o.id,
+          order_number: o.order_number,
+          created_at: o.created_at,
+          total_amount: Number(o.total_amount || 0),
+          payment_status: o.payment_status || 'pending',
+          patient_id: o.patient_id,
+          facility_patient_id: o.facility_patient_id,
+          patient_name,
+          insurance_provider: provider,
+          member_id: memberId,
+        };
+      });
+
+      setInsuranceOrders(formatted);
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || 'Failed to load insurance orders');
+    }
+  };
+
+  const fetchAll = async () => {
+    setLoading(true);
+    try {
+      await Promise.all([fetchTransactions(), fetchInsuranceOrders()]);
     } finally {
       setLoading(false);
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      pending: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30',
-      submitted: 'bg-blue-500/10 text-blue-600 border-blue-500/30',
-      approved: 'bg-green-500/10 text-green-600 border-green-500/30',
-      rejected: 'bg-destructive/10 text-destructive border-destructive/30',
-      paid: 'bg-primary/10 text-primary border-primary/30',
+  useEffect(() => {
+    fetchAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [labCenterId]);
+
+  const txSummary = useMemo(() => {
+    let total = 0;
+    let refunds = 0;
+    let completed = 0;
+
+    for (const t of transactions) {
+      const status = (t.status || '').toLowerCase();
+      if (status !== 'completed') continue;
+
+      const amt = Number(t.amount || 0);
+      const type = (t.transaction_type || '').toLowerCase();
+
+      completed += 1;
+
+      if (type.includes('refund') || amt < 0) {
+        refunds += Math.abs(amt);
+      } else {
+        total += amt;
+      }
+    }
+
+    return {
+      gross: total,
+      refunds,
+      net: total - refunds,
+      completed,
     };
-    return (
-      <Badge variant="outline" className={colors[status] || ''}>
-        {status}
-      </Badge>
-    );
-  };
+  }, [transactions]);
 
-  const filteredClaims = claims.filter(claim => {
-    const matchesSearch = 
-      claim.patient_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      claim.policy_number.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || claim.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const filteredTx = useMemo(() => {
+    const q = txSearch.trim().toLowerCase();
+    if (!q) return transactions;
+    return transactions.filter((t) => {
+      const hay = [
+        t.id,
+        t.transaction_type || '',
+        t.status || '',
+        t.currency || '',
+        t.description || '',
+      ]
+        .join(' ')
+        .toLowerCase();
+      return hay.includes(q);
+    });
+  }, [transactions, txSearch]);
 
-  const totalPending = claims.filter(c => c.status === 'pending' || c.status === 'submitted').length;
-  const totalApproved = claims.filter(c => c.status === 'approved' || c.status === 'paid')
-    .reduce((sum, c) => sum + (c.approved_amount || 0), 0);
-  const totalRejected = claims.filter(c => c.status === 'rejected').length;
+  const filteredInsurance = useMemo(() => {
+    const q = insuranceSearch.trim().toLowerCase();
+    return insuranceOrders.filter((o) => {
+      const matchesStatus = insuranceStatus === 'all' || (o.payment_status || '').toLowerCase() === insuranceStatus;
+      const hay = [o.order_number, o.patient_name, o.insurance_provider, o.member_id].join(' ').toLowerCase();
+      return matchesStatus && (!q || hay.includes(q));
+    });
+  }, [insuranceOrders, insuranceSearch, insuranceStatus]);
 
   if (loading) {
     return (
@@ -167,267 +279,205 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
   }
 
   return (
-    <>
-      <div className="space-y-6">
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-yellow-500/10 rounded-lg">
-                  <Clock className="h-6 w-6 text-yellow-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Pending Claims</p>
-                  <p className="text-2xl font-bold">{totalPending}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-green-500/10 rounded-lg">
-                  <CheckCircle className="h-6 w-6 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Approved</p>
-                  <p className="text-2xl font-bold">{claims.filter(c => c.status === 'approved').length}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-primary/10 rounded-lg">
-                  <DollarSign className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Approved</p>
-                  <p className="text-2xl font-bold">${totalApproved.toFixed(2)}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-destructive/10 rounded-lg">
-                  <XCircle className="h-6 w-6 text-destructive" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Rejected</p>
-                  <p className="text-2xl font-bold">{totalRejected}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            <CreditCard className="h-6 w-6" />
+            Billing & Insurance
+          </h2>
+          <p className="text-muted-foreground">Live billing transactions and insurance-covered orders.</p>
         </div>
+        <Button variant="outline" onClick={fetchAll} disabled={txLoading}>
+          <RefreshCw className={`h-4 w-4 mr-2 ${txLoading ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
+      </div>
 
-        {/* Claims Table */}
+      {/* Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
-          <CardHeader>
+          <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5" />
-                  Insurance Claims
-                </CardTitle>
-                <CardDescription>Manage insurance claims and billing</CardDescription>
+                <p className="text-sm text-muted-foreground">Gross Revenue</p>
+                <p className="text-3xl font-bold">{money(txSummary.gross)}</p>
               </div>
-              <Button variant="ghost" size="sm" onClick={fetchClaims}>
-                <RefreshCw className="h-4 w-4" />
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-4 mb-6">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  className="pl-10"
-                  placeholder="Search by patient or policy..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+              <div className="p-3 bg-green-500/10 rounded-lg">
+                <CreditCard className="h-6 w-6 text-green-600" />
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="submitted">Submitted</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
-                  <SelectItem value="paid">Paid</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
-
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Patient</TableHead>
-                    <TableHead>Insurance Provider</TableHead>
-                    <TableHead>Policy #</TableHead>
-                    <TableHead>Claim Amount</TableHead>
-                    <TableHead>Approved</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredClaims.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                        No claims found
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredClaims.map((claim) => (
-                      <TableRow key={claim.id}>
-                        <TableCell className="font-medium">{claim.patient_name}</TableCell>
-                        <TableCell>{claim.insurance_provider}</TableCell>
-                        <TableCell className="font-mono text-sm">{claim.policy_number}</TableCell>
-                        <TableCell>${claim.claim_amount.toFixed(2)}</TableCell>
-                        <TableCell>
-                          {claim.approved_amount !== null 
-                            ? `$${claim.approved_amount.toFixed(2)}`
-                            : '-'}
-                        </TableCell>
-                        <TableCell>{getStatusBadge(claim.status)}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button 
-                              size="sm" 
-                              variant="ghost"
-                              onClick={() => {
-                                setSelectedClaim(claim);
-                                setIsDetailsOpen(true);
-                              }}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            {claim.status === 'pending' && (
-                              <Button size="sm">
-                                <Send className="h-4 w-4 mr-1" />
-                                Submit
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Refunds</p>
+                <p className="text-3xl font-bold">{money(txSummary.refunds)}</p>
+              </div>
+              <div className="p-3 bg-gray-500/10 rounded-lg">
+                <CreditCard className="h-6 w-6 text-gray-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Net Revenue</p>
+                <p className="text-3xl font-bold">{money(txSummary.net)}</p>
+                <p className="text-xs text-muted-foreground mt-1">{txSummary.completed} completed transactions</p>
+              </div>
+              <div className="p-3 bg-primary/10 rounded-lg">
+                <CreditCard className="h-6 w-6 text-primary" />
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Details Dialog */}
-      <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Claim Details
-            </DialogTitle>
-          </DialogHeader>
+      <Tabs defaultValue="transactions" className="w-full">
+        <TabsList>
+          <TabsTrigger value="transactions">Transactions</TabsTrigger>
+          <TabsTrigger value="insurance">Insurance Orders</TabsTrigger>
+        </TabsList>
 
-          {selectedClaim && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Patient</p>
-                  <p className="font-medium">{selectedClaim.patient_name}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Status</p>
-                  {getStatusBadge(selectedClaim.status)}
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Insurance Provider</p>
-                  <p className="font-medium">{selectedClaim.insurance_provider}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Policy Number</p>
-                  <p className="font-medium font-mono">{selectedClaim.policy_number}</p>
-                </div>
+        <TabsContent value="transactions" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Transactions</CardTitle>
+              <CardDescription>Entity-scoped billing transactions from Supabase.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Search</Label>
+                <Input
+                  value={txSearch}
+                  onChange={(e) => setTxSearch(e.target.value)}
+                  placeholder="Search by status, type, description..."
+                />
               </div>
 
-              <div className="border-t pt-4">
-                <h4 className="font-medium mb-4">Financial Summary</h4>
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredTx.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                          No transactions found
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredTx.map((t) => (
+                        <TableRow key={t.id}>
+                          <TableCell className="whitespace-nowrap">
+                            {t.created_at ? format(new Date(t.created_at), 'MMM d, yyyy') : '—'}
+                          </TableCell>
+                          <TableCell className="font-mono text-xs">{t.transaction_type || '—'}</TableCell>
+                          <TableCell>{statusBadge(t.status)}</TableCell>
+                          <TableCell className="max-w-[420px] truncate">{t.description || '—'}</TableCell>
+                          <TableCell className="text-right whitespace-nowrap">
+                            {money(Number(t.amount || 0))} {t.currency ? t.currency.toUpperCase() : ''}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="insurance" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Insurance-covered Orders
+              </CardTitle>
+              <CardDescription>Orders marked as insurance_covered=true, enriched with patient insurance (when available).</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Claim Amount</span>
-                    <span className="font-medium">${selectedClaim.claim_amount.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Approved Amount</span>
-                    <span className="font-medium text-green-600">
-                      {selectedClaim.approved_amount !== null 
-                        ? `$${selectedClaim.approved_amount.toFixed(2)}`
-                        : 'Pending'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between border-t pt-2">
-                    <span className="font-medium">Patient Copay</span>
-                    <span className="font-bold">
-                      ${selectedClaim.copay_amount?.toFixed(2) || '0.00'}
-                    </span>
-                  </div>
+                  <Label>Search</Label>
+                  <Input
+                    value={insuranceSearch}
+                    onChange={(e) => setInsuranceSearch(e.target.value)}
+                    placeholder="Search by patient, provider, member ID..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Status</Label>
+                  <Select value={insuranceStatus} onValueChange={setInsuranceStatus}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="paid">Paid</SelectItem>
+                      <SelectItem value="processing">Processing</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
-              {selectedClaim.notes && (
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">Notes</p>
-                  <Card className="p-4 bg-muted/50">
-                    <p className="text-sm">{selectedClaim.notes}</p>
-                  </Card>
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-4 border-t pt-4">
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Submitted</p>
-                  <p className="font-medium">
-                    {selectedClaim.submitted_at 
-                      ? format(new Date(selectedClaim.submitted_at), 'MMM d, yyyy')
-                      : '-'}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Processed</p>
-                  <p className="font-medium">
-                    {selectedClaim.processed_at 
-                      ? format(new Date(selectedClaim.processed_at), 'MMM d, yyyy')
-                      : '-'}
-                  </p>
-                </div>
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Order</TableHead>
+                      <TableHead>Patient</TableHead>
+                      <TableHead>Provider</TableHead>
+                      <TableHead>Member ID</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredInsurance.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                          No insurance orders found
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredInsurance.map((o) => (
+                        <TableRow key={o.id}>
+                          <TableCell className="whitespace-nowrap">
+                            {o.created_at ? format(new Date(o.created_at), 'MMM d, yyyy') : '—'}
+                          </TableCell>
+                          <TableCell className="font-mono text-xs">{o.order_number}</TableCell>
+                          <TableCell className="font-medium">{o.patient_name}</TableCell>
+                          <TableCell>{o.insurance_provider}</TableCell>
+                          <TableCell className="font-mono text-xs">{o.member_id}</TableCell>
+                          <TableCell>{statusBadge(o.payment_status)}</TableCell>
+                          <TableCell className="text-right whitespace-nowrap">{money(o.total_amount)}</TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
               </div>
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDetailsOpen(false)}>
-              Close
-            </Button>
-            {selectedClaim?.status === 'pending' && (
-              <Button>
-                <Send className="h-4 w-4 mr-1" />
-                Submit Claim
-              </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }
