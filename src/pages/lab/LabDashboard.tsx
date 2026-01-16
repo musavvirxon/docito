@@ -1,10 +1,12 @@
+// File: src/pages/lab/LabDashboard.tsx
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  FlaskConical, 
-  ClipboardList, 
-  Users, 
-  FileText, 
+import {
+  FlaskConical,
+  ClipboardList,
+  Users,
+  FileText,
   Settings,
   Clock,
   CheckCircle,
@@ -14,7 +16,7 @@ import {
   Home,
   CreditCard,
   BarChart3,
-  ArrowRightLeft
+  ArrowRightLeft,
 } from 'lucide-react';
 import { DashboardShell, SidebarItem } from '@/components/dashboard/DashboardShell';
 import { PageHeader } from '@/components/dashboard/PageHeader';
@@ -32,12 +34,13 @@ import LabHomeCollection from '@/components/lab/LabHomeCollection';
 import LabBillingInsurance from '@/components/lab/LabBillingInsurance';
 import LabAnalytics from '@/components/lab/LabAnalytics';
 import { LabReferralsSection } from '@/components/lab/LabReferralsSection';
+import { LabSettingsSection } from '@/components/lab/LabSettingsSection';
 import { Button } from '@/components/ui/button';
 
 export default function LabDashboard() {
   const navigate = useNavigate();
   const { myLabCenter, fetchMyLabCenter, loading: labLoading } = useLabCenter();
-  const { testOrders, fetchLabOrders, loading: ordersLoading } = useTestOrders();
+  const { testOrders, fetchLabOrders } = useTestOrders();
   const [activeSection, setActiveSection] = useState('overview');
 
   useEffect(() => {
@@ -50,13 +53,18 @@ export default function LabDashboard() {
     }
   }, [myLabCenter, fetchLabOrders]);
 
-  const pendingOrders = testOrders.filter(o => o.status === 'pending' || o.status === 'scheduled');
-  const processingOrders = testOrders.filter(o => o.status === 'sample_collected' || o.status === 'processing');
-  const completedOrders = testOrders.filter(o => o.status === 'completed');
+  const pendingOrders = testOrders.filter((o) => o.status === 'pending' || o.status === 'scheduled');
+  const processingOrders = testOrders.filter((o) => o.status === 'sample_collected' || o.status === 'processing');
+  const completedOrders = testOrders.filter((o) => o.status === 'completed');
 
   const sidebarItems: SidebarItem[] = [
     { id: 'overview', label: 'Overview', icon: <Home className="h-5 w-5" /> },
-    { id: 'orders', label: 'Orders', icon: <ClipboardList className="h-5 w-5" />, badge: pendingOrders.length || undefined },
+    {
+      id: 'orders',
+      label: 'Orders',
+      icon: <ClipboardList className="h-5 w-5" />,
+      badge: pendingOrders.length || undefined,
+    },
     { id: 'samples', label: 'Samples', icon: <Droplets className="h-5 w-5" /> },
     { id: 'results', label: 'Results', icon: <FileText className="h-5 w-5" /> },
     { id: 'home-collection', label: 'Home Collection', icon: <Home className="h-5 w-5" /> },
@@ -110,11 +118,7 @@ export default function LabDashboard() {
           icon={<FlaskConical className="h-16 w-16" />}
           title="No Lab Center Found"
           description="You don't have a lab center associated with your account yet."
-          action={
-            <Button onClick={() => navigate('/lab/register')}>
-              Register Lab Center
-            </Button>
-          }
+          action={<Button onClick={() => navigate('/lab/register')}>Register Lab Center</Button>}
         />
       </div>
     );
@@ -124,8 +128,8 @@ export default function LabDashboard() {
     switch (activeSection) {
       case 'orders':
         return (
-          <LabOrderQueue 
-            orders={testOrders} 
+          <LabOrderQueue
+            orders={testOrders}
             labCenterId={myLabCenter.id}
             onRefresh={() => fetchLabOrders(myLabCenter.id)}
           />
@@ -133,12 +137,7 @@ export default function LabDashboard() {
       case 'samples':
         return <LabSampleManager labCenterId={myLabCenter.id} />;
       case 'results':
-        return (
-          <ResultEntry 
-            orders={processingOrders}
-            labCenterId={myLabCenter.id}
-          />
-        );
+        return <ResultEntry orders={processingOrders} labCenterId={myLabCenter.id} />;
       case 'home-collection':
         return <LabHomeCollection labCenterId={myLabCenter.id} />;
       case 'catalog':
@@ -152,16 +151,12 @@ export default function LabDashboard() {
       case 'referrals':
         return <LabReferralsSection labCenterId={myLabCenter.id} />;
       case 'settings':
-        return (
-          <ContentCard title="Lab Settings" description="Manage your lab center settings">
-            <p className="text-muted-foreground">Settings panel coming soon...</p>
-          </ContentCard>
-        );
+        return <LabSettingsSection labCenterId={myLabCenter.id} />;
       default:
         return (
           <div className="space-y-6">
             <StatsGrid stats={stats} />
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <ContentCard title="Recent Orders" description="Latest test orders">
                 {pendingOrders.length === 0 ? (
@@ -173,10 +168,15 @@ export default function LabDashboard() {
                 ) : (
                   <div className="space-y-3">
                     {pendingOrders.slice(0, 5).map((order) => (
-                      <div key={order.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <div
+                        key={order.id}
+                        className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                      >
                         <div>
                           <p className="font-medium">{order.order_number}</p>
-                          <p className="text-sm text-muted-foreground">Priority: {order.priority || 'Normal'}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Priority: {order.priority || 'Normal'}
+                          </p>
                         </div>
                         <span className="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">
                           {order.status}
@@ -196,14 +196,19 @@ export default function LabDashboard() {
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">Completion Rate</span>
                     <span className="font-semibold text-green-600">
-                      {testOrders.length > 0 
+                      {testOrders.length > 0
                         ? Math.round((completedOrders.length / testOrders.length) * 100)
-                        : 0}%
+                        : 0}
+                      %
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">Verification Status</span>
-                    <span className={`font-semibold ${myLabCenter.is_verified ? 'text-green-600' : 'text-yellow-600'}`}>
+                    <span
+                      className={`font-semibold ${
+                        myLabCenter.is_verified ? 'text-green-600' : 'text-yellow-600'
+                      }`}
+                    >
                       {myLabCenter.is_verified ? 'Verified' : 'Pending'}
                     </span>
                   </div>
@@ -225,7 +230,11 @@ export default function LabDashboard() {
       onItemChange={setActiveSection}
     >
       <PageHeader
-        title={activeSection === 'overview' ? 'Lab Dashboard' : sidebarItems.find(i => i.id === activeSection)?.label || ''}
+        title={
+          activeSection === 'overview'
+            ? 'Lab Dashboard'
+            : sidebarItems.find((i) => i.id === activeSection)?.label || ''
+        }
         description={activeSection === 'overview' ? `Welcome back to ${myLabCenter.name}` : undefined}
       />
       {renderContent()}
