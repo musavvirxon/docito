@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { RefreshCw, Save, Loader2 } from "lucide-react";
+import { RefreshCw, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -18,7 +18,6 @@ type ReferralRow = {
   id: string;
   referral_number: string | null;
   status: string | null;
-  imaging_workflow_status: string | null;
   priority: string | null;
   preferred_date: string | null;
   preferred_time_slot: string | null;
@@ -30,7 +29,15 @@ type ReferralRow = {
   created_at: string;
   accepted_at: string | null;
   completed_at: string | null;
-  assigned_imaging_staff_id: string | null;
+};
+
+type OrderStateRow = {
+  referral_id: string;
+  imaging_center_id: string;
+  workflow_status: string;
+  priority: string;
+  assigned_staff_id: string | null;
+  updated_at: string;
 };
 
 type StaffRow = {
@@ -67,12 +74,14 @@ interface Props {
 
 const WORKFLOW_STATUSES = ["scheduled", "checked_in", "in_progress", "awaiting_report", "completed", "cancelled"];
 const REFERRAL_STATUSES = ["pending", "accepted", "declined", "completed"];
+const PRIORITIES = ["routine", "urgent", "stat"];
 
 export default function ImagingOrdersManager({ centerId }: Props) {
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
 
   const [orders, setOrders] = useState<ReferralRow[]>([]);
+  const [orderState, setOrderState] = useState<Record<string, OrderStateRow>>({});
   const [patientProfiles, setPatientProfiles] = useState<Record<string, ProfileRow>>({});
   const [staff, setStaff] = useState<StaffRow[]>([]);
   const [staffProfiles, setStaffProfiles] = useState<Record<string, ProfileRow>>({});
@@ -85,11 +94,11 @@ export default function ImagingOrdersManager({ centerId }: Props) {
     if (!centerId) return;
     setLoading(true);
     try {
-      // Orders
+      // Orders from referrals (no optional imaging_workflow_status dependency)
       const { data: refData, error: refErr } = await supabase
         .from("referrals")
         .select(
-          "id, referral_number, status, imaging_workflow_status, priority, preferred_date, preferred_time_slot, patient_id, reason, clinical_notes, attachments, result_notes, created_at, accepted_at, completed_at, assigned_imaging_staff_id"
+          "id, referral_number, status, priority, preferred_date, preferred_time_slot, patient_id, reason, clinical_notes, attachments, result_notes, created_at, accepted_at, completed_at"
         )
         .eq("receiver_type", "imaging_center")
         .eq("receiver_entity_id", centerId)
@@ -99,6 +108,27 @@ export default function ImagingOrdersManager({ centerId }: Props) {
       if (refErr) throw refErr;
       const refRows = (refData || []) as ReferralRow[];
       setOrders(refRows);
+
+      // Order state (workflow + assigned staff) stored separately for reliability
+      const referralIds = refRows.map((r) => r.id);
+      if (referralIds.length) {
+        const { data: stData, error: stErr } = await supabase
+          .from("imaging_order_state")
+          .select("referral_id, imaging_center_id, workflow_status, priority, assigned_staff_id, updated_at")
+          .eq("imaging_center_id", centerId)
+          .in("referral_id", referralIds);
+
+        if (stErr) {
+          toast.warning("Orders state not ready yet (apply migrations)");
+          setOrderState({});
+        } else {
+          const map: Record<string, OrderStateRow> = {};
+          for (const s of (stData || []) as OrderStateRow[]) map[s.referral_id] = s;
+          setOrderState(map);
+        }
+      } else {
+        setOrderState({});
+      }
 
       // Staff
       const { data: staffData, error: staffErr } = await supabase
@@ -139,6 +169,7 @@ export default function ImagingOrdersManager({ centerId }: Props) {
       console.error(e);
       toast.error(e?.message || "Failed to load orders");
       setOrders([]);
+      setOrderState({});
     } finally {
       setLoading(false);
     }
@@ -149,26 +180,6 @@ export default function ImagingOrdersManager({ centerId }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [centerId]);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return orders.filter((o) => {
-      if (workflowFilter !== "all" && (o.imaging_workflow_status || "scheduled") !== workflowFilter) return false;
-      if (statusFilter !== "all" && (o.status || "pending") !== statusFilter) return false;
-
-      if (!q) return true;
-
-      const pn = o.referral_number || "";
-      const patientName = asName(patientProfiles[o.patient_id]).toLowerCase();
-      const { examName, modality } = pickExam(o.attachments, o.reason);
-      return (
-        pn.toLowerCase().includes(q) ||
-        patientName.includes(q) ||
-        String(examName).toLowerCase().includes(q) ||
-        String(modality).toLowerCase().includes(q)
-      );
-    });
-  }, [orders, query, workflowFilter, statusFilter, patientProfiles]);
-
   const staffOptions = useMemo(() => {
     return staff
       .filter((s) => s.status === "active")
@@ -178,17 +189,68 @@ export default function ImagingOrdersManager({ centerId }: Props) {
       }));
   }, [staff, staffProfiles]);
 
-  const saveOrder = async (id: string, patch: Partial<ReferralRow>) => {
-    setSavingId(id);
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return orders.filter((o) => {
+      const state = orderState[o.id];
+      const wf = state?.workflow_status || "scheduled";
+      const st = o.status || "pending";
+
+      if (workflowFilter !== "all" && wf !== workflowFilter) return false;
+      if (statusFilter !== "all" && st !== statusFilter) return false;
+
+      if (!q) return true;
+
+      const pn = o.referral_number || "";
+      const patientName = asName(patientProfiles[o.patient_id]).toLowerCase();
+      const { examName, modality } = pickExam(o.attachments, o.reason);
+
+      return (
+        pn.toLowerCase().includes(q) ||
+        patientName.includes(q) ||
+        String(examName).toLowerCase().includes(q) ||
+        String(modality).toLowerCase().includes(q)
+      );
+    });
+  }, [orders, query, workflowFilter, statusFilter, patientProfiles, orderState]);
+
+  const upsertState = async (referralId: string, patch: Partial<OrderStateRow>) => {
+    setSavingId(referralId);
     try {
-      const { error } = await supabase.from("referrals").update(patch).eq("id", id);
+      const existing = orderState[referralId];
+      const payload = {
+        referral_id: referralId,
+        imaging_center_id: centerId,
+        workflow_status: patch.workflow_status ?? existing?.workflow_status ?? "scheduled",
+        priority: patch.priority ?? existing?.priority ?? "routine",
+        assigned_staff_id: patch.assigned_staff_id ?? existing?.assigned_staff_id ?? null,
+        updated_at: new Date().toISOString(),
+      };
+
+      const { error } = await supabase.from("imaging_order_state").upsert(payload, { onConflict: "referral_id" });
       if (error) throw error;
 
-      setOrders((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
-      toast.success("Order updated");
+      setOrderState((prev) => ({ ...prev, [referralId]: payload as OrderStateRow }));
+      toast.success("Order state updated");
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to update order");
+      toast.error(e?.message || "Failed to update order state (apply migrations)");
+    } finally {
+      setSavingId(null);
+    }
+  };
+
+  const updateReferralStatus = async (referralId: string, status: string) => {
+    setSavingId(referralId);
+    try {
+      const { error } = await supabase.from("referrals").update({ status }).eq("id", referralId);
+      if (error) throw error;
+
+      setOrders((prev) => prev.map((r) => (r.id === referralId ? { ...r, status } : r)));
+      toast.success("Referral updated");
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || "Failed to update referral");
     } finally {
       setSavingId(null);
     }
@@ -210,15 +272,14 @@ export default function ImagingOrdersManager({ centerId }: Props) {
         <CardHeader className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
           <div>
             <CardTitle>Orders Control</CardTitle>
-            <CardDescription>Search, assign staff, and update workflow/status without leaving the dashboard</CardDescription>
+            <CardDescription>Search, assign staff, and update workflow/status without relying on missing referral columns</CardDescription>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
-            <Button variant="outline" size="sm" onClick={fetchAll}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh
-            </Button>
-          </div>
+          <Button variant="outline" size="sm" onClick={fetchAll}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
         </CardHeader>
+
         <CardContent className="space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="space-y-1">
@@ -272,7 +333,7 @@ export default function ImagingOrdersManager({ centerId }: Props) {
                   <TableHead>Status</TableHead>
                   <TableHead>Workflow</TableHead>
                   <TableHead>Assigned</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-right">Manage</TableHead>
                 </TableRow>
               </TableHeader>
 
@@ -287,9 +348,13 @@ export default function ImagingOrdersManager({ centerId }: Props) {
                   filtered.map((o) => {
                     const patientName = asName(patientProfiles[o.patient_id]);
                     const { examName, modality } = pickExam(o.attachments, o.reason);
-                    const wf = o.imaging_workflow_status || "scheduled";
+
+                    const state = orderState[o.id];
+                    const wf = state?.workflow_status || "scheduled";
+                    const pr = state?.priority || o.priority || "routine";
                     const st = o.status || "pending";
-                    const assigned = staff.find((s) => s.id === o.assigned_imaging_staff_id) || null;
+
+                    const assigned = staff.find((s) => s.id === (state?.assigned_staff_id || null)) || null;
                     const assignedLabel = assigned ? `${asName(staffProfiles[assigned.user_id])} • ${assigned.staff_role}` : "—";
 
                     return (
@@ -317,6 +382,7 @@ export default function ImagingOrdersManager({ centerId }: Props) {
 
                         <TableCell>
                           <Badge variant={wf === "completed" ? "default" : wf === "cancelled" ? "destructive" : "secondary"}>{wf}</Badge>
+                          <div className="mt-1 text-xs text-muted-foreground">priority: {pr}</div>
                         </TableCell>
 
                         <TableCell className="max-w-[220px] truncate">{assignedLabel}</TableCell>
@@ -328,6 +394,7 @@ export default function ImagingOrdersManager({ centerId }: Props) {
                                 Manage
                               </Button>
                             </DialogTrigger>
+
                             <DialogContent className="max-w-2xl">
                               <DialogHeader>
                                 <DialogTitle>Manage Order</DialogTitle>
@@ -338,7 +405,7 @@ export default function ImagingOrdersManager({ centerId }: Props) {
                                   <Label>Status</Label>
                                   <Select
                                     value={st}
-                                    onValueChange={(v) => saveOrder(o.id, { status: v })}
+                                    onValueChange={(v) => updateReferralStatus(o.id, v)}
                                     disabled={savingId === o.id}
                                   >
                                     <SelectTrigger>
@@ -358,7 +425,7 @@ export default function ImagingOrdersManager({ centerId }: Props) {
                                   <Label>Workflow</Label>
                                   <Select
                                     value={wf}
-                                    onValueChange={(v) => saveOrder(o.id, { imaging_workflow_status: v })}
+                                    onValueChange={(v) => upsertState(o.id, { workflow_status: v })}
                                     disabled={savingId === o.id}
                                   >
                                     <SelectTrigger>
@@ -377,8 +444,8 @@ export default function ImagingOrdersManager({ centerId }: Props) {
                                 <div className="space-y-2">
                                   <Label>Assign Staff</Label>
                                   <Select
-                                    value={o.assigned_imaging_staff_id || "none"}
-                                    onValueChange={(v) => saveOrder(o.id, { assigned_imaging_staff_id: v === "none" ? null : v })}
+                                    value={state?.assigned_staff_id || "none"}
+                                    onValueChange={(v) => upsertState(o.id, { assigned_staff_id: v === "none" ? null : v })}
                                     disabled={savingId === o.id}
                                   >
                                     <SelectTrigger>
@@ -398,17 +465,19 @@ export default function ImagingOrdersManager({ centerId }: Props) {
                                 <div className="space-y-2">
                                   <Label>Priority</Label>
                                   <Select
-                                    value={o.priority || "routine"}
-                                    onValueChange={(v) => saveOrder(o.id, { priority: v })}
+                                    value={pr}
+                                    onValueChange={(v) => upsertState(o.id, { priority: v })}
                                     disabled={savingId === o.id}
                                   >
                                     <SelectTrigger>
                                       <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                      <SelectItem value="routine">routine</SelectItem>
-                                      <SelectItem value="urgent">urgent</SelectItem>
-                                      <SelectItem value="stat">stat</SelectItem>
+                                      {PRIORITIES.map((s) => (
+                                        <SelectItem key={s} value={s}>
+                                          {s}
+                                        </SelectItem>
+                                      ))}
                                     </SelectContent>
                                   </Select>
                                 </div>
@@ -423,25 +492,29 @@ export default function ImagingOrdersManager({ centerId }: Props) {
                                   <Textarea
                                     defaultValue={o.result_notes || ""}
                                     className="min-h-[120px]"
-                                    onBlur={(e) => {
+                                    onBlur={async (e) => {
                                       const v = e.currentTarget.value;
-                                      if ((o.result_notes || "") !== v) saveOrder(o.id, { result_notes: v || null });
+                                      if ((o.result_notes || "") === v) return;
+                                      setSavingId(o.id);
+                                      try {
+                                        const { error } = await supabase.from("referrals").update({ result_notes: v || null }).eq("id", o.id);
+                                        if (error) throw error;
+                                        setOrders((prev) => prev.map((r) => (r.id === o.id ? { ...r, result_notes: v || null } : r)));
+                                        toast.success("Result notes updated");
+                                      } catch (err: any) {
+                                        toast.error(err?.message || "Failed to update notes");
+                                      } finally {
+                                        setSavingId(null);
+                                      }
                                     }}
                                     disabled={savingId === o.id}
                                   />
-                                  <div className="text-xs text-muted-foreground">
-                                    Tip: result notes are used in reports and analytics turnaround calculations.
-                                  </div>
                                 </div>
 
                                 <div className="md:col-span-2 flex items-center justify-end gap-2">
-                                  <Button variant="outline" onClick={() => fetchAll()} disabled={savingId === o.id}>
+                                  <Button variant="outline" onClick={fetchAll} disabled={savingId === o.id}>
                                     <RefreshCw className="h-4 w-4 mr-2" />
                                     Reload
-                                  </Button>
-                                  <Button disabled>
-                                    <Save className="h-4 w-4 mr-2" />
-                                    Auto-saved
                                   </Button>
                                 </div>
                               </div>
