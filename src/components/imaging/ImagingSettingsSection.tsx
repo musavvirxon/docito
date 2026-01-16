@@ -17,6 +17,7 @@ interface Props {
 }
 
 type CenterRow = {
+  id?: string;
   name: string | null;
   phone: string | null;
   email: string | null;
@@ -69,58 +70,11 @@ export default function ImagingSettingsSection({ centerId }: Props) {
     default_turnaround_hours: 24,
   });
 
-  useEffect(() => {
-    const load = async () => {
-      if (!centerId) return;
-      setLoading(true);
-      try {
-        const { data: centerData, error: cErr } = await supabase
-          .from("imaging_centers")
-          .select("name, phone, email, address, city, website, modalities, accreditations, accepts_insurance")
-          .eq("id", centerId)
-          .single();
-
-        if (cErr) throw cErr;
-        setCenter((centerData || {}) as CenterRow);
-
-        const { data: sData, error: sErr } = await supabase
-          .from("imaging_center_settings")
-          .select("imaging_center_id, timezone, billing_currency, notify_email, notify_sms, report_template, auto_accept_referrals, default_turnaround_hours")
-          .eq("imaging_center_id", centerId)
-          .maybeSingle();
-
-        if (sErr) throw sErr;
-
-        if (sData) {
-          setSettings({
-            imaging_center_id: centerId,
-            timezone: sData.timezone || "UTC",
-            billing_currency: sData.billing_currency || "usd",
-            notify_email: Boolean(sData.notify_email),
-            notify_sms: Boolean(sData.notify_sms),
-            report_template: (sData.report_template as string | null) || "",
-            auto_accept_referrals: Boolean(sData.auto_accept_referrals),
-            default_turnaround_hours: Number(sData.default_turnaround_hours ?? 24),
-          });
-        } else {
-          setSettings((prev) => ({ ...prev, imaging_center_id: centerId }));
-        }
-      } catch (e: any) {
-        console.error(e);
-        toast.error(e?.message || "Failed to load settings");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    load();
-  }, [centerId]);
+  const [modalitiesInput, setModalitiesInput] = useState("");
+  const [accreditationsInput, setAccreditationsInput] = useState("");
 
   const modalitiesText = useMemo(() => (center.modalities || []).join(", "), [center.modalities]);
   const accreditationsText = useMemo(() => (center.accreditations || []).join(", "), [center.accreditations]);
-
-  const [modalitiesInput, setModalitiesInput] = useState("");
-  const [accreditationsInput, setAccreditationsInput] = useState("");
 
   useEffect(() => {
     setModalitiesInput(modalitiesText);
@@ -145,42 +99,78 @@ export default function ImagingSettingsSection({ centerId }: Props) {
     [accreditationsInput]
   );
 
+  const load = async () => {
+    if (!centerId) return;
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("imaging-settings", {
+        body: { action: "get", centerId },
+      });
+      if (error) throw error;
+
+      if (!data?.ok) throw new Error(data?.error || "Failed to load settings");
+
+      if (Array.isArray(data?.warnings) && data.warnings.length) {
+        toast.warning("Settings storage not ready yet");
+      }
+
+      setCenter((data.center || {}) as CenterRow);
+      setSettings((data.settings || {}) as SettingsRow);
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || "Failed to load settings");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [centerId]);
+
   const save = async () => {
     if (!centerId) return;
     setSaving(true);
     try {
-      const { error: cErr } = await supabase
-        .from("imaging_centers")
-        .update({
-          name: center.name?.trim() || null,
-          phone: center.phone?.trim() || null,
-          email: center.email?.trim() || null,
-          address: center.address?.trim() || null,
-          city: center.city?.trim() || null,
-          website: center.website?.trim() || null,
-          modalities: parsedModalities,
-          accreditations: parsedAccreditations,
-          accepts_insurance: Boolean(center.accepts_insurance),
-        })
-        .eq("id", centerId);
+      const { data, error } = await supabase.functions.invoke("imaging-settings", {
+        body: {
+          action: "save",
+          centerId,
+          center: {
+            name: center.name?.trim() || null,
+            phone: center.phone?.trim() || null,
+            email: center.email?.trim() || null,
+            address: center.address?.trim() || null,
+            city: center.city?.trim() || null,
+            website: center.website?.trim() || null,
+            modalities: parsedModalities,
+            accreditations: parsedAccreditations,
+            accepts_insurance: Boolean(center.accepts_insurance),
+          },
+          settings: {
+            timezone: settings.timezone || "UTC",
+            billing_currency: settings.billing_currency || "usd",
+            notify_email: Boolean(settings.notify_email),
+            notify_sms: Boolean(settings.notify_sms),
+            report_template: settings.report_template || null,
+            auto_accept_referrals: Boolean(settings.auto_accept_referrals),
+            default_turnaround_hours: Number(settings.default_turnaround_hours ?? 24),
+          },
+        },
+      });
 
-      if (cErr) throw cErr;
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || "Failed to save settings");
 
-      const upsertPayload = {
-        imaging_center_id: centerId,
-        timezone: settings.timezone || "UTC",
-        billing_currency: settings.billing_currency || "usd",
-        notify_email: Boolean(settings.notify_email),
-        notify_sms: Boolean(settings.notify_sms),
-        report_template: settings.report_template || null,
-        auto_accept_referrals: Boolean(settings.auto_accept_referrals),
-        default_turnaround_hours: Number(settings.default_turnaround_hours ?? 24),
-      };
+      if (Array.isArray(data?.warnings) && data.warnings.length) {
+        toast.warning("Settings storage not ready yet");
+      } else {
+        toast.success("Settings saved");
+      }
 
-      const { error: sErr } = await supabase.from("imaging_center_settings").upsert(upsertPayload, { onConflict: "imaging_center_id" });
-      if (sErr) throw sErr;
-
-      toast.success("Settings saved");
+      setCenter((data.center || {}) as CenterRow);
+      setSettings((data.settings || {}) as SettingsRow);
     } catch (e: any) {
       console.error(e);
       toast.error(e?.message || "Failed to save settings");
