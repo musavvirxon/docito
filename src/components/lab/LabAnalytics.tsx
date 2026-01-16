@@ -1,105 +1,142 @@
-import { useState, useEffect } from 'react';
+// File: src/components/lab/LabAnalytics.tsx
+
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { 
-  BarChart3, 
-  TrendingUp, 
+  BarChart3,
+  TrendingUp,
   DollarSign,
   TestTube,
-  Users,
   Clock,
   ArrowUpRight,
   ArrowDownRight,
-  RefreshCw
+  RefreshCw,
 } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from 'recharts';
 import { toast } from 'sonner';
 
 interface Props {
   labCenterId: string;
 }
 
-const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+type AnalyticsResp = {
+  ok: boolean;
+  error?: string;
+  kpis?: {
+    totalRevenueCents: number;
+    totalTests: number;
+    avgTurnaroundHours: number;
+    recollectionRatePct: number;
+    revenueChangePct: number;
+    testsChangePct: number;
+  };
+  dailyTrend?: Array<{ date: string; revenueCents: number; tests: number }>;
+  topTests?: Array<{ name: string; count: number; revenueCents: number }>;
+  statusBreakdown?: Array<{ name: string; value: number }>;
+};
+
+const COLORS = [
+  'hsl(var(--primary))',
+  'hsl(var(--accent))',
+  'hsl(var(--chart-3))',
+  'hsl(var(--chart-4))',
+  'hsl(var(--chart-5))',
+];
+
+function moneyFromCents(cents: number) {
+  return `$${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+}
 
 export default function LabAnalytics({ labCenterId }: Props) {
   const [loading, setLoading] = useState(true);
-  const [timeRange, setTimeRange] = useState('7d');
+  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('7d');
   const [stats, setStats] = useState({
-    totalRevenue: 0,
+    totalRevenueCents: 0,
     totalTests: 0,
     avgTurnaround: 0,
     recollectionRate: 0,
     revenueChange: 0,
     testsChange: 0,
   });
+
   const [revenueData, setRevenueData] = useState<any[]>([]);
   const [topTests, setTopTests] = useState<any[]>([]);
   const [testsByStatus, setTestsByStatus] = useState<any[]>([]);
 
-  useEffect(() => {
-    if (labCenterId) {
-      fetchAnalytics();
-    }
-  }, [labCenterId, timeRange]);
-
   const fetchAnalytics = async () => {
+    if (!labCenterId) return;
     try {
       setLoading(true);
-      
-      // Mock stats
+
+      const { data, error } = await supabase.functions.invoke('lab-analytics', {
+        body: { labCenterId, timeRange },
+      });
+
+      if (error) throw error;
+
+      const payload = data as AnalyticsResp;
+      if (!payload?.ok) throw new Error(payload?.error || 'Failed to load analytics');
+
+      const k = payload.kpis!;
       setStats({
-        totalRevenue: 45680,
-        totalTests: 1234,
-        avgTurnaround: 24,
-        recollectionRate: 2.3,
-        revenueChange: 15.2,
-        testsChange: 8.5,
+        totalRevenueCents: k.totalRevenueCents,
+        totalTests: k.totalTests,
+        avgTurnaround: k.avgTurnaroundHours,
+        recollectionRate: k.recollectionRatePct,
+        revenueChange: k.revenueChangePct,
+        testsChange: k.testsChangePct,
       });
 
-      // Mock revenue data
-      const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90;
-      const mockRevenueData = Array.from({ length: days }, (_, i) => {
-        const date = new Date();
-        date.setDate(date.getDate() - (days - 1 - i));
-        return {
-          date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-          revenue: Math.floor(Math.random() * 3000) + 1000,
-          tests: Math.floor(Math.random() * 80) + 30,
-        };
-      });
-      setRevenueData(mockRevenueData);
+      setRevenueData(
+        (payload.dailyTrend || []).map((d) => ({
+          date: new Date(d.date + 'T00:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+          revenue: Math.round((d.revenueCents || 0) / 100),
+          tests: d.tests || 0,
+        })),
+      );
 
-      // Mock top tests
-      setTopTests([
-        { name: 'Complete Blood Count', count: 256, revenue: 5120 },
-        { name: 'Lipid Panel', count: 198, revenue: 7920 },
-        { name: 'Metabolic Panel', count: 165, revenue: 8250 },
-        { name: 'Thyroid Panel', count: 142, revenue: 7100 },
-        { name: 'Hemoglobin A1C', count: 128, revenue: 3840 },
-      ]);
+      setTopTests(
+        (payload.topTests || []).map((t) => ({
+          name: t.name,
+          count: t.count,
+          revenue: Math.round((t.revenueCents || 0) / 100),
+        })),
+      );
 
-      // Mock tests by status
-      setTestsByStatus([
-        { name: 'Completed', value: 856 },
-        { name: 'Processing', value: 234 },
-        { name: 'Pending', value: 98 },
-        { name: 'Cancelled', value: 46 },
-      ]);
-
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
-      toast.error('Failed to load analytics');
+      const sb = payload.statusBreakdown || [];
+      setTestsByStatus(
+        sb.length
+          ? sb.map((s) => ({ name: s.name, value: s.value }))
+          : [
+              { name: 'No data', value: 1 },
+            ],
+      );
+    } catch (e: any) {
+      console.error('Error fetching analytics:', e);
+      toast.error(e?.message || 'Failed to load analytics');
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchAnalytics();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [labCenterId, timeRange]);
 
   if (loading) {
     return (
@@ -108,6 +145,8 @@ export default function LabAnalytics({ labCenterId }: Props) {
       </div>
     );
   }
+
+  const topMax = topTests?.[0]?.count || 1;
 
   return (
     <div className="space-y-6">
@@ -118,7 +157,7 @@ export default function LabAnalytics({ labCenterId }: Props) {
           Analytics Dashboard
         </h2>
         <div className="flex items-center gap-4">
-          <Select value={timeRange} onValueChange={setTimeRange}>
+          <Select value={timeRange} onValueChange={(v) => setTimeRange(v as any)}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Time range" />
             </SelectTrigger>
@@ -141,10 +180,13 @@ export default function LabAnalytics({ labCenterId }: Props) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Revenue</p>
-                <p className="text-3xl font-bold">${stats.totalRevenue.toLocaleString()}</p>
+                <p className="text-3xl font-bold">{moneyFromCents(stats.totalRevenueCents)}</p>
                 <div className="flex items-center gap-1 mt-1">
                   <ArrowUpRight className="h-4 w-4 text-green-600" />
-                  <span className="text-sm text-green-600">+{stats.revenueChange}%</span>
+                  <span className="text-sm text-green-600">
+                    {stats.revenueChange >= 0 ? '+' : ''}
+                    {stats.revenueChange}%
+                  </span>
                 </div>
               </div>
               <div className="p-3 bg-primary/10 rounded-lg">
@@ -162,7 +204,10 @@ export default function LabAnalytics({ labCenterId }: Props) {
                 <p className="text-3xl font-bold">{stats.totalTests.toLocaleString()}</p>
                 <div className="flex items-center gap-1 mt-1">
                   <ArrowUpRight className="h-4 w-4 text-green-600" />
-                  <span className="text-sm text-green-600">+{stats.testsChange}%</span>
+                  <span className="text-sm text-green-600">
+                    {stats.testsChange >= 0 ? '+' : ''}
+                    {stats.testsChange}%
+                  </span>
                 </div>
               </div>
               <div className="p-3 bg-accent/10 rounded-lg">
@@ -194,7 +239,7 @@ export default function LabAnalytics({ labCenterId }: Props) {
                 <p className="text-3xl font-bold">{stats.recollectionRate}%</p>
                 <div className="flex items-center gap-1 mt-1">
                   <ArrowDownRight className="h-4 w-4 text-green-600" />
-                  <span className="text-sm text-green-600">-0.5%</span>
+                  <span className="text-sm text-green-600">-</span>
                 </div>
               </div>
               <div className="p-3 bg-orange-500/10 rounded-lg">
@@ -219,26 +264,26 @@ export default function LabAnalytics({ labCenterId }: Props) {
                 <AreaChart data={revenueData}>
                   <defs>
                     <linearGradient id="colorLabRevenue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                   <XAxis dataKey="date" className="text-xs fill-muted-foreground" />
                   <YAxis className="text-xs fill-muted-foreground" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))', 
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--card))',
                       border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
+                      borderRadius: '8px',
                     }}
                   />
-                  <Area 
-                    type="monotone" 
-                    dataKey="revenue" 
-                    stroke="hsl(var(--primary))" 
-                    fillOpacity={1} 
-                    fill="url(#colorLabRevenue)" 
+                  <Area
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="hsl(var(--primary))"
+                    fillOpacity={1}
+                    fill="url(#colorLabRevenue)"
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -275,8 +320,8 @@ export default function LabAnalytics({ labCenterId }: Props) {
               <div className="flex flex-wrap justify-center gap-4 mt-4">
                 {testsByStatus.map((entry, index) => (
                   <div key={entry.name} className="flex items-center gap-2">
-                    <div 
-                      className="w-3 h-3 rounded-full" 
+                    <div
+                      className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: COLORS[index % COLORS.length] }}
                     />
                     <span className="text-sm text-muted-foreground">{entry.name}</span>
@@ -299,28 +344,32 @@ export default function LabAnalytics({ labCenterId }: Props) {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {topTests.map((test, index) => (
-              <div key={test.name} className="flex items-center gap-4">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
-                  {index + 1}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-medium">{test.name}</span>
-                    <span className="text-sm text-muted-foreground">{test.count} orders</span>
+            {topTests.length === 0 ? (
+              <div className="text-sm text-muted-foreground">No test item data available for this period.</div>
+            ) : (
+              topTests.map((test: any, index: number) => (
+                <div key={test.name} className="flex items-center gap-4">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
+                    {index + 1}
                   </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-primary rounded-full"
-                      style={{ width: `${(test.count / topTests[0].count) * 100}%` }}
-                    />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-medium">{test.name}</span>
+                      <span className="text-sm text-muted-foreground">{test.count} orders</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-primary rounded-full"
+                        style={{ width: `${Math.max(2, (test.count / topMax) * 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div className="text-right w-28">
+                    <span className="font-medium text-green-600">${test.revenue.toLocaleString()}</span>
                   </div>
                 </div>
-                <div className="text-right w-20">
-                  <span className="font-medium text-green-600">${test.revenue.toLocaleString()}</span>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </CardContent>
       </Card>
