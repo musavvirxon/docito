@@ -11,8 +11,41 @@ const corsHeaders = {
 
 type ReqBody = { centerId: string; days?: number };
 
+type AnalyticsResponse = {
+  kpis: {
+    totalScans: number;
+    completedScans: number;
+    pendingScans: number;
+    revenueCents: number;
+    refundsCents: number;
+    netRevenueCents: number;
+    avgReportHours: number;
+    avgAcceptHours: number;
+    utilizationPct: number;
+    reportBacklog: number;
+    scansChangePct: number;
+    revenueChangePct: number;
+    reportChangePct: number;
+  };
+  dailyTrend: Array<{ date: string; scans: number; completed: number; revenue: number }>;
+  modalityData: Array<{ name: string; value: number; revenue: number }>;
+  workflowBreakdown: Array<{ name: string; value: number }>;
+  statusBreakdown: Array<{ name: string; value: number }>;
+  peakHours: Array<{ hour: string; scans: number }>;
+  demographics: {
+    gender: Array<{ name: string; value: number }>;
+    ageBuckets: Array<{ name: string; value: number }>;
+  };
+  topReferrers: Array<{ name: string; value: number }>;
+  turnaroundByModality: Array<{ type: string; avgHours: number }>;
+  warnings?: string[];
+};
+
 function json(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json", ...corsHeaders } });
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { "Content-Type": "application/json", ...corsHeaders },
+  });
 }
 
 function safeInt(n: unknown, fallback = 0) {
@@ -40,6 +73,17 @@ function parseAttachments(a: unknown): { modality: string; examName: string } {
   return { modality: String(modality), examName: String(examName) };
 }
 
+function isMissingSchemaError(err: unknown) {
+  const msg = String((err as any)?.message ?? err ?? "");
+  const m = msg.toLowerCase();
+  return (
+    msg.includes("Could not find the table") ||
+    m.includes("schema cache") ||
+    (m.includes("column") && m.includes("does not exist")) ||
+    (m.includes("relation") && m.includes("does not exist"))
+  );
+}
+
 async function ensureCenterAccess(supabase: ReturnType<typeof createClient>, userId: string, centerId: string) {
   const { data: adminRow } = await supabase
     .from("imaging_centers")
@@ -59,6 +103,35 @@ async function ensureCenterAccess(supabase: ReturnType<typeof createClient>, use
     .maybeSingle();
 
   return Boolean(staffRow?.id);
+}
+
+function emptyResponse(warnings: string[] = []): AnalyticsResponse {
+  return {
+    kpis: {
+      totalScans: 0,
+      completedScans: 0,
+      pendingScans: 0,
+      revenueCents: 0,
+      refundsCents: 0,
+      netRevenueCents: 0,
+      avgReportHours: 0,
+      avgAcceptHours: 0,
+      utilizationPct: 0,
+      reportBacklog: 0,
+      scansChangePct: 0,
+      revenueChangePct: 0,
+      reportChangePct: 0,
+    },
+    dailyTrend: [],
+    modalityData: [],
+    workflowBreakdown: [],
+    statusBreakdown: [],
+    peakHours: [],
+    demographics: { gender: [], ageBuckets: [] },
+    topReferrers: [],
+    turnaroundByModality: [],
+    ...(warnings.length ? { warnings } : {}),
+  };
 }
 
 serve(async (req) => {
@@ -98,449 +171,437 @@ serve(async (req) => {
   const allowed = await ensureCenterAccess(supabase, user.id, centerId);
   if (!allowed) return json({ error: "Forbidden" }, 403);
 
-  const end = new Date();
-  const start = addDaysUTC(new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate())), -days + 1);
-  const startISO = start.toISOString();
-  const prevStart = addDaysUTC(start, -days);
-  const prevStartISO = prevStart.toISOString();
-  const prevEndISO = start.toISOString();
+  const warnings: string[] = [];
 
-  // Build daily buckets
-  const dailyBuckets: Record<string, { date: string; scans: number; completed: number; revenue: number }> = {};
-  for (let i = 0; i < days; i++) {
-    const d = addDaysUTC(start, i);
-    const k = dateKey(d);
-    dailyBuckets[k] = { date: k, scans: 0, completed: 0, revenue: 0 };
-  }
+  try {
+    const end = new Date();
+    const start = addDaysUTC(new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate())), -days + 1);
+    const startISO = start.toISOString();
+    const prevStart = addDaysUTC(start, -days);
+    const prevStartISO = prevStart.toISOString();
+    const prevEndISO = start.toISOString();
 
-  // Referrals (orders)
-  const { data: refData, error: refErr } = await supabase
-    .from("referrals")
-    .select(
-      "id, status, imaging_workflow_status, priority, attachments, created_at, accepted_at, completed_at, patient_id, referrer_type, referrer_entity_id"
-    )
-    .eq("receiver_type", "imaging_center")
-    .eq("receiver_entity_id", centerId)
-    .gte("created_at", startISO)
-    .order("created_at", { ascending: false });
-
-  if (refErr) return json({ error: refErr.message }, 500);
-
-  const referrals = (refData || []) as Array<{
-    id: string;
-    status: string | null;
-    imaging_workflow_status: string | null;
-    priority: string | null;
-    attachments: unknown;
-    created_at: string;
-    accepted_at: string | null;
-    completed_at: string | null;
-    patient_id: string;
-    referrer_type: string | null;
-    referrer_entity_id: string | null;
-  }>;
-
-  // Previous period referrals (for deltas)
-  const { data: refPrevData, error: refPrevErr } = await supabase
-    .from("referrals")
-    .select("id, created_at, completed_at")
-    .eq("receiver_type", "imaging_center")
-    .eq("receiver_entity_id", centerId)
-    .gte("created_at", prevStartISO)
-    .lt("created_at", prevEndISO);
-
-  if (refPrevErr) return json({ error: refPrevErr.message }, 500);
-
-  const prevTotalScans = (refPrevData || []).length;
-  const totalScans = referrals.length;
-
-  // Status breakdowns
-  const statusMap = new Map<string, number>();
-  const wfMap = new Map<string, number>();
-  const modMap = new Map<string, { count: number; revenue: number }>();
-
-  // Report backlog heuristic:
-  // - workflow awaiting_report OR (status accepted/in_progress) without completion
-  let reportBacklog = 0;
-
-  // Accept/report timing
-  let acceptSumHours = 0;
-  let acceptCount = 0;
-
-  // For demographics
-  const patientIds = new Set<string>();
-
-  // For top referrers
-  const referrerCounter = new Map<string, number>();
-  const doctorIds: string[] = [];
-  const practiceIds: string[] = [];
-
-  // Peak hours buckets (0-23)
-  const hourCounts = new Array(24).fill(0) as number[];
-
-  for (const r of referrals) {
-    const createdAt = new Date(r.created_at);
-    const k = dateKey(createdAt);
-    if (dailyBuckets[k]) {
-      dailyBuckets[k].scans += 1;
-      if ((r.status || "") === "completed" || (r.imaging_workflow_status || "") === "completed" || r.completed_at) {
-        dailyBuckets[k].completed += 1;
-      }
+    // Buckets
+    const dailyBuckets: Record<string, { date: string; scans: number; completed: number; revenue: number }> = {};
+    for (let i = 0; i < days; i++) {
+      const d = addDaysUTC(start, i);
+      const k = dateKey(d);
+      dailyBuckets[k] = { date: k, scans: 0, completed: 0, revenue: 0 };
     }
 
-    const hr = createdAt.getUTCHours();
-    hourCounts[hr] += 1;
+    // Referrals (DO NOT select optional columns that might not exist yet)
+    const { data: refData, error: refErr } = await supabase
+      .from("referrals")
+      .select("id, status, priority, attachments, created_at, accepted_at, completed_at, patient_id, referrer_type, referrer_entity_id")
+      .eq("receiver_type", "imaging_center")
+      .eq("receiver_entity_id", centerId)
+      .gte("created_at", startISO)
+      .order("created_at", { ascending: false });
 
-    const status = (r.status || "unknown").toLowerCase();
-    statusMap.set(status, (statusMap.get(status) || 0) + 1);
-
-    const wf = (r.imaging_workflow_status || "scheduled").toLowerCase();
-    wfMap.set(wf, (wfMap.get(wf) || 0) + 1);
-
-    if (wf === "awaiting_report" || (["accepted", "in_progress"].includes(status) && !r.completed_at)) reportBacklog += 1;
-
-    const { modality } = parseAttachments(r.attachments);
-    const m = modMap.get(modality) || { count: 0, revenue: 0 };
-    m.count += 1;
-    modMap.set(modality, m);
-
-    patientIds.add(r.patient_id);
-
-    if (r.accepted_at) {
-      const acc = new Date(r.accepted_at);
-      const diffH = Math.max(0, (acc.getTime() - createdAt.getTime()) / 3600000);
-      acceptSumHours += diffH;
-      acceptCount += 1;
+    if (refErr) {
+      if (isMissingSchemaError(refErr)) return json(emptyResponse(["schema_not_ready:referrals"]), 200);
+      return json({ error: refErr.message }, 500);
     }
 
-    // Track referrers
-    if (r.referrer_type && r.referrer_entity_id) {
-      const key = `${r.referrer_type}:${r.referrer_entity_id}`;
-      referrerCounter.set(key, (referrerCounter.get(key) || 0) + 1);
-      if (r.referrer_type === "doctor") doctorIds.push(r.referrer_entity_id);
-      if (r.referrer_type === "clinic") practiceIds.push(r.referrer_entity_id);
+    const referrals = (refData || []) as Array<{
+      id: string;
+      status: string | null;
+      priority: string | null;
+      attachments: unknown;
+      created_at: string;
+      accepted_at: string | null;
+      completed_at: string | null;
+      patient_id: string;
+      referrer_type: string | null;
+      referrer_entity_id: string | null;
+    }>;
+
+    const { data: refPrevData, error: refPrevErr } = await supabase
+      .from("referrals")
+      .select("id")
+      .eq("receiver_type", "imaging_center")
+      .eq("receiver_entity_id", centerId)
+      .gte("created_at", prevStartISO)
+      .lt("created_at", prevEndISO);
+
+    if (refPrevErr) {
+      if (isMissingSchemaError(refPrevErr)) warnings.push("schema_not_ready:referrals_prev");
     }
-  }
 
-  // Billing transactions
-  const { data: txData, error: txErr } = await supabase
-    .from("billing_transactions")
-    .select("amount, transaction_type, status, created_at, provider_data")
-    .eq("entity_type", "imaging_center")
-    .eq("entity_id", centerId)
-    .gte("created_at", startISO);
+    const prevTotalScans = (refPrevData || []).length;
+    const totalScans = referrals.length;
 
-  if (txErr) return json({ error: txErr.message }, 500);
+    const statusMap = new Map<string, number>();
+    const wfMap = new Map<string, number>(); // derived from status
+    const modMap = new Map<string, { count: number; revenue: number }>();
+    let reportBacklog = 0;
 
-  const transactions = (txData || []) as Array<{
-    amount: number;
-    transaction_type: string;
-    status: string;
-    created_at: string;
-    provider_data: Record<string, unknown> | null;
-  }>;
+    let acceptSumHours = 0;
+    let acceptCount = 0;
 
-  // Previous period billing (for deltas)
-  const { data: txPrevData, error: txPrevErr } = await supabase
-    .from("billing_transactions")
-    .select("amount, transaction_type, status, created_at")
-    .eq("entity_type", "imaging_center")
-    .eq("entity_id", centerId)
-    .gte("created_at", prevStartISO)
-    .lt("created_at", prevEndISO);
+    const patientIds = new Set<string>();
+    const referrerCounter = new Map<string, number>();
+    const doctorIds: string[] = [];
+    const practiceIds: string[] = [];
 
-  if (txPrevErr) return json({ error: txPrevErr.message }, 500);
+    const hourCounts = new Array(24).fill(0) as number[];
 
-  const prevTransactions = (txPrevData || []) as Array<{ amount: number; transaction_type: string; status: string; created_at: string }>;
-
-  let revenueCents = 0;
-  let refundsCents = 0;
-
-  for (const t of transactions) {
-    const isCompleted = (t.status || "").toLowerCase() === "completed";
-    if (!isCompleted) continue;
-
-    const type = (t.transaction_type || "").toLowerCase();
-    if (["appointment_payment", "subscription_payment", "hold_capture"].includes(type)) revenueCents += safeInt(t.amount, 0);
-    if (["refund", "hold_release"].includes(type)) refundsCents += safeInt(t.amount, 0);
-
-    const createdAt = new Date(t.created_at);
-    const k = dateKey(createdAt);
-    if (dailyBuckets[k]) dailyBuckets[k].revenue += safeInt(t.amount, 0);
-
-    // Revenue-by-modality (provider_data.modality)
-    const pd = t.provider_data || {};
-    const mod = (pd as any)?.modality ? String((pd as any).modality) : null;
-    if (mod) {
-      const m = modMap.get(mod) || { count: 0, revenue: 0 };
-      m.revenue += safeInt(t.amount, 0);
-      modMap.set(mod, m);
-    }
-  }
-
-  let prevRevenueCents = 0;
-  for (const t of prevTransactions) {
-    const isCompleted = (t.status || "").toLowerCase() === "completed";
-    if (!isCompleted) continue;
-
-    const type = (t.transaction_type || "").toLowerCase();
-    if (["appointment_payment", "subscription_payment", "hold_capture"].includes(type)) prevRevenueCents += safeInt(t.amount, 0);
-  }
-
-  // Turnaround: imaging_reports if present, else use referrals completed_at - created_at as fallback
-  const { data: repData, error: repErr } = await supabase
-    .from("imaging_reports")
-    .select("modality, created_at, finalized_at, status")
-    .eq("imaging_center_id", centerId)
-    .gte("created_at", startISO);
-
-  if (repErr) return json({ error: repErr.message }, 500);
-
-  const reports = (repData || []) as Array<{ modality: string | null; created_at: string; finalized_at: string | null; status: string | null }>;
-
-  // Prev period reports for delta
-  const { data: repPrevData, error: repPrevErr } = await supabase
-    .from("imaging_reports")
-    .select("created_at, finalized_at")
-    .eq("imaging_center_id", centerId)
-    .gte("created_at", prevStartISO)
-    .lt("created_at", prevEndISO);
-
-  if (repPrevErr) return json({ error: repPrevErr.message }, 500);
-
-  const prevReports = (repPrevData || []) as Array<{ created_at: string; finalized_at: string | null }>;
-
-  const modTurnMap = new Map<string, { sumH: number; cnt: number }>();
-  let reportSumH = 0;
-  let reportCnt = 0;
-
-  for (const r of reports) {
-    if (!r.finalized_at) continue;
-    const createdAt = new Date(r.created_at);
-    const finalizedAt = new Date(r.finalized_at);
-    const diffH = Math.max(0, (finalizedAt.getTime() - createdAt.getTime()) / 3600000);
-    reportSumH += diffH;
-    reportCnt += 1;
-
-    const mod = (r.modality || "Unknown").toString();
-    const agg = modTurnMap.get(mod) || { sumH: 0, cnt: 0 };
-    agg.sumH += diffH;
-    agg.cnt += 1;
-    modTurnMap.set(mod, agg);
-  }
-
-  // Fallback: if no reports exist but referrals have completed_at, approximate report time from completed_at - created_at
-  if (reportCnt === 0) {
     for (const r of referrals) {
-      if (!r.completed_at) continue;
       const createdAt = new Date(r.created_at);
-      const completedAt = new Date(r.completed_at);
-      const diffH = Math.max(0, (completedAt.getTime() - createdAt.getTime()) / 3600000);
-      reportSumH += diffH;
-      reportCnt += 1;
-
-      const mod = parseAttachments((referrals.find((x) => x.id === r.id) as any)?.attachments).modality;
-      const agg = modTurnMap.get(mod) || { sumH: 0, cnt: 0 };
-      agg.sumH += diffH;
-      agg.cnt += 1;
-      modTurnMap.set(mod, agg);
-    }
-  }
-
-  const avgReportHours = reportCnt ? Math.round((reportSumH / reportCnt) * 10) / 10 : 0;
-  const avgAcceptHours = acceptCount ? Math.round((acceptSumHours / acceptCount) * 10) / 10 : 0;
-
-  // Prev period avg report hours (for delta)
-  let prevReportSumH = 0;
-  let prevReportCnt = 0;
-  for (const r of prevReports) {
-    if (!r.finalized_at) continue;
-    const createdAt = new Date(r.created_at);
-    const finalizedAt = new Date(r.finalized_at);
-    const diffH = Math.max(0, (finalizedAt.getTime() - createdAt.getTime()) / 3600000);
-    prevReportSumH += diffH;
-    prevReportCnt += 1;
-  }
-  const prevAvgReportHours = prevReportCnt ? prevReportSumH / prevReportCnt : avgReportHours;
-
-  // Utilization: active equipment capacity vs daily avg scans
-  const { data: eqData, error: eqErr } = await supabase
-    .from("imaging_equipment")
-    .select("capacity_per_day, status")
-    .eq("imaging_center_id", centerId);
-
-  if (eqErr) return json({ error: eqErr.message }, 500);
-
-  const equipment = (eqData || []) as Array<{ capacity_per_day: number | null; status: string | null }>;
-  const activeCapacityPerDay = equipment
-    .filter((e) => (e.status || "active") === "active")
-    .reduce((sum, e) => sum + safeInt(e.capacity_per_day, 0), 0);
-
-  const avgDailyScans = days ? totalScans / days : 0;
-  const utilizationPct = activeCapacityPerDay > 0 ? Math.min(100, Math.round((avgDailyScans / activeCapacityPerDay) * 100)) : 0;
-
-  // Demographics (profiles)
-  const patientIdArr = Array.from(patientIds);
-  let genderCounts = new Map<string, number>();
-  let ageCounts = { "0-17": 0, "18-29": 0, "30-44": 0, "45-59": 0, "60+": 0, unknown: 0 };
-
-  if (patientIdArr.length) {
-    const { data: profData, error: profErr } = await supabase.from("profiles").select("user_id, gender, date_of_birth").in("user_id", patientIdArr);
-    if (profErr) return json({ error: profErr.message }, 500);
-
-    const now = new Date();
-    for (const p of (profData || []) as Array<{ user_id: string; gender: string | null; date_of_birth: string | null }>) {
-      const g = (p.gender || "unknown").toString();
-      genderCounts.set(g, (genderCounts.get(g) || 0) + 1);
-
-      if (!p.date_of_birth) {
-        ageCounts.unknown += 1;
-        continue;
+      const k = dateKey(createdAt);
+      if (dailyBuckets[k]) {
+        dailyBuckets[k].scans += 1;
+        if ((r.status || "") === "completed" || r.completed_at) dailyBuckets[k].completed += 1;
       }
-      const dob = new Date(p.date_of_birth);
-      let age = now.getUTCFullYear() - dob.getUTCFullYear();
-      const m = now.getUTCMonth() - dob.getUTCMonth();
-      if (m < 0 || (m === 0 && now.getUTCDate() < dob.getUTCDate())) age -= 1;
 
-      if (age < 18) ageCounts["0-17"] += 1;
-      else if (age < 30) ageCounts["18-29"] += 1;
-      else if (age < 45) ageCounts["30-44"] += 1;
-      else if (age < 60) ageCounts["45-59"] += 1;
-      else if (age >= 60) ageCounts["60+"] += 1;
-      else ageCounts.unknown += 1;
-    }
-  }
+      hourCounts[createdAt.getUTCHours()] += 1;
 
-  // Top referrers: resolve names (doctors + practices)
-  const uniqueDoctorIds = Array.from(new Set(doctorIds)).filter(Boolean);
-  const uniquePracticeIds = Array.from(new Set(practiceIds)).filter(Boolean);
+      const status = (r.status || "unknown").toLowerCase();
+      statusMap.set(status, (statusMap.get(status) || 0) + 1);
 
-  const doctorNameById = new Map<string, string>();
-  if (uniqueDoctorIds.length) {
-    const { data: docs, error: docsErr } = await supabase.from("doctors").select("id, user_id").in("id", uniqueDoctorIds);
-    if (docsErr) return json({ error: docsErr.message }, 500);
+      // Workflow fallback (no referrals.imaging_workflow_status dependency)
+      const workflow =
+        status === "completed"
+          ? "completed"
+          : status === "declined"
+          ? "cancelled"
+          : status === "accepted" || status === "in_progress"
+          ? "in_progress"
+          : "scheduled";
 
-    const docRows = (docs || []) as Array<{ id: string; user_id: string }>;
-    const uids = Array.from(new Set(docRows.map((d) => d.user_id)));
+      wfMap.set(workflow, (wfMap.get(workflow) || 0) + 1);
 
-    let profMap = new Map<string, string>();
-    if (uids.length) {
-      const { data: p2, error: p2Err } = await supabase.from("profiles").select("user_id, full_name, first_name, last_name").in("user_id", uids);
-      if (p2Err) return json({ error: p2Err.message }, 500);
+      if ((status === "accepted" || status === "in_progress") && !r.completed_at) reportBacklog += 1;
 
-      for (const r of (p2 || []) as Array<{ user_id: string; full_name: string | null; first_name: string | null; last_name: string | null }>) {
-        const nm = r.full_name || [r.first_name, r.last_name].filter(Boolean).join(" ") || "Doctor";
-        profMap.set(r.user_id, nm);
+      const { modality } = parseAttachments(r.attachments);
+      const m = modMap.get(modality) || { count: 0, revenue: 0 };
+      m.count += 1;
+      modMap.set(modality, m);
+
+      patientIds.add(r.patient_id);
+
+      if (r.accepted_at) {
+        const acc = new Date(r.accepted_at);
+        const diffH = Math.max(0, (acc.getTime() - createdAt.getTime()) / 3600000);
+        acceptSumHours += diffH;
+        acceptCount += 1;
+      }
+
+      if (r.referrer_type && r.referrer_entity_id) {
+        const key = `${r.referrer_type}:${r.referrer_entity_id}`;
+        referrerCounter.set(key, (referrerCounter.get(key) || 0) + 1);
+        if (r.referrer_type === "doctor") doctorIds.push(r.referrer_entity_id);
+        if (r.referrer_type === "clinic") practiceIds.push(r.referrer_entity_id);
       }
     }
 
-    for (const d of docRows) doctorNameById.set(d.id, profMap.get(d.user_id) || "Doctor");
+    // Billing (optional schema: if entity columns missing, just warn and proceed with zeros)
+    let revenueCents = 0;
+    let refundsCents = 0;
+    let prevRevenueCents = 0;
+
+    const { data: txData, error: txErr } = await supabase
+      .from("billing_transactions")
+      .select("amount, transaction_type, status, created_at, provider_data")
+      .eq("entity_type", "imaging_center")
+      .eq("entity_id", centerId)
+      .gte("created_at", startISO);
+
+    if (txErr) {
+      if (isMissingSchemaError(txErr)) warnings.push("schema_not_ready:billing_transactions_entity_scope");
+      else warnings.push(`billing_query_failed:${txErr.message}`);
+    } else {
+      const transactions = (txData || []) as Array<{
+        amount: number;
+        transaction_type: string;
+        status: string;
+        created_at: string;
+        provider_data: Record<string, unknown> | null;
+      }>;
+
+      for (const t of transactions) {
+        const isCompleted = (t.status || "").toLowerCase() === "completed";
+        if (!isCompleted) continue;
+
+        const type = (t.transaction_type || "").toLowerCase();
+        if (["appointment_payment", "subscription_payment", "hold_capture"].includes(type)) revenueCents += safeInt(t.amount, 0);
+        if (["refund", "hold_release"].includes(type)) refundsCents += safeInt(t.amount, 0);
+
+        const createdAt = new Date(t.created_at);
+        const k = dateKey(createdAt);
+        if (dailyBuckets[k]) dailyBuckets[k].revenue += safeInt(t.amount, 0);
+
+        const pd = t.provider_data || {};
+        const mod = (pd as any)?.modality ? String((pd as any).modality) : null;
+        if (mod) {
+          const mm = modMap.get(mod) || { count: 0, revenue: 0 };
+          mm.revenue += safeInt(t.amount, 0);
+          modMap.set(mod, mm);
+        }
+      }
+
+      const { data: txPrevData, error: txPrevErr } = await supabase
+        .from("billing_transactions")
+        .select("amount, transaction_type, status")
+        .eq("entity_type", "imaging_center")
+        .eq("entity_id", centerId)
+        .gte("created_at", prevStartISO)
+        .lt("created_at", prevEndISO);
+
+      if (txPrevErr) {
+        if (isMissingSchemaError(txPrevErr)) warnings.push("schema_not_ready:billing_prev");
+      } else {
+        const prevTransactions = (txPrevData || []) as Array<{ amount: number; transaction_type: string; status: string }>;
+        for (const t of prevTransactions) {
+          const isCompleted = (t.status || "").toLowerCase() === "completed";
+          if (!isCompleted) continue;
+          const type = (t.transaction_type || "").toLowerCase();
+          if (["appointment_payment", "subscription_payment", "hold_capture"].includes(type)) prevRevenueCents += safeInt(t.amount, 0);
+        }
+      }
+    }
+
+    // Reports (optional: if table missing, compute fallback from referrals)
+    let reportSumH = 0;
+    let reportCnt = 0;
+    const modTurnMap = new Map<string, { sumH: number; cnt: number }>();
+
+    const { data: repData, error: repErr } = await supabase
+      .from("imaging_reports")
+      .select("modality, created_at, finalized_at")
+      .eq("imaging_center_id", centerId)
+      .gte("created_at", startISO);
+
+    if (repErr) {
+      if (isMissingSchemaError(repErr)) warnings.push("schema_not_ready:imaging_reports");
+    } else {
+      const reports = (repData || []) as Array<{ modality: string | null; created_at: string; finalized_at: string | null }>;
+      for (const r of reports) {
+        if (!r.finalized_at) continue;
+        const createdAt = new Date(r.created_at);
+        const finalizedAt = new Date(r.finalized_at);
+        const diffH = Math.max(0, (finalizedAt.getTime() - createdAt.getTime()) / 3600000);
+        reportSumH += diffH;
+        reportCnt += 1;
+
+        const mod = (r.modality || "Unknown").toString();
+        const agg = modTurnMap.get(mod) || { sumH: 0, cnt: 0 };
+        agg.sumH += diffH;
+        agg.cnt += 1;
+        modTurnMap.set(mod, agg);
+      }
+    }
+
+    // Fallback from referrals if no report timing
+    if (reportCnt === 0) {
+      for (const r of referrals) {
+        if (!r.completed_at) continue;
+        const createdAt = new Date(r.created_at);
+        const completedAt = new Date(r.completed_at);
+        const diffH = Math.max(0, (completedAt.getTime() - createdAt.getTime()) / 3600000);
+        reportSumH += diffH;
+        reportCnt += 1;
+
+        const mod = parseAttachments(r.attachments).modality;
+        const agg = modTurnMap.get(mod) || { sumH: 0, cnt: 0 };
+        agg.sumH += diffH;
+        agg.cnt += 1;
+        modTurnMap.set(mod, agg);
+      }
+    }
+
+    const avgReportHours = reportCnt ? Math.round((reportSumH / reportCnt) * 10) / 10 : 0;
+    const avgAcceptHours = acceptCount ? Math.round((acceptSumHours / acceptCount) * 10) / 10 : 0;
+
+    // Previous report avg (optional)
+    let prevAvgReportHours = avgReportHours;
+    const { data: repPrevData, error: repPrevErr } = await supabase
+      .from("imaging_reports")
+      .select("created_at, finalized_at")
+      .eq("imaging_center_id", centerId)
+      .gte("created_at", prevStartISO)
+      .lt("created_at", prevEndISO);
+
+    if (repPrevErr) {
+      if (isMissingSchemaError(repPrevErr)) warnings.push("schema_not_ready:imaging_reports_prev");
+    } else {
+      let prevReportSumH = 0;
+      let prevReportCnt = 0;
+      for (const r of (repPrevData || []) as Array<{ created_at: string; finalized_at: string | null }>) {
+        if (!r.finalized_at) continue;
+        const createdAt = new Date(r.created_at);
+        const finalizedAt = new Date(r.finalized_at);
+        const diffH = Math.max(0, (finalizedAt.getTime() - createdAt.getTime()) / 3600000);
+        prevReportSumH += diffH;
+        prevReportCnt += 1;
+      }
+      if (prevReportCnt) prevAvgReportHours = prevReportSumH / prevReportCnt;
+    }
+
+    // Equipment utilization (optional)
+    let utilizationPct = 0;
+    const { data: eqData, error: eqErr } = await supabase
+      .from("imaging_equipment")
+      .select("capacity_per_day, status")
+      .eq("imaging_center_id", centerId);
+
+    if (eqErr) {
+      if (isMissingSchemaError(eqErr)) warnings.push("schema_not_ready:imaging_equipment");
+    } else {
+      const equipment = (eqData || []) as Array<{ capacity_per_day: number | null; status: string | null }>;
+      const activeCapacityPerDay = equipment
+        .filter((e) => (e.status || "active") === "active")
+        .reduce((sum, e) => sum + safeInt(e.capacity_per_day, 0), 0);
+
+      const avgDailyScans = days ? totalScans / days : 0;
+      utilizationPct = activeCapacityPerDay > 0 ? Math.min(100, Math.round((avgDailyScans / activeCapacityPerDay) * 100)) : 0;
+    }
+
+    // Demographics (optional)
+    let genderCounts = new Map<string, number>();
+    const ageCounts: Record<string, number> = { "0-17": 0, "18-29": 0, "30-44": 0, "45-59": 0, "60+": 0, unknown: 0 };
+
+    const patientIdArr = Array.from(patientIds);
+    if (patientIdArr.length) {
+      const { data: profData, error: profErr } = await supabase
+        .from("profiles")
+        .select("user_id, gender, date_of_birth")
+        .in("user_id", patientIdArr);
+
+      if (profErr) {
+        if (isMissingSchemaError(profErr)) warnings.push("schema_not_ready:profiles");
+      } else {
+        const now = new Date();
+        for (const p of (profData || []) as Array<{ user_id: string; gender: string | null; date_of_birth: string | null }>) {
+          const g = (p.gender || "unknown").toString();
+          genderCounts.set(g, (genderCounts.get(g) || 0) + 1);
+
+          if (!p.date_of_birth) {
+            ageCounts.unknown += 1;
+            continue;
+          }
+          const dob = new Date(p.date_of_birth);
+          let age = now.getUTCFullYear() - dob.getUTCFullYear();
+          const m = now.getUTCMonth() - dob.getUTCMonth();
+          if (m < 0 || (m === 0 && now.getUTCDate() < dob.getUTCDate())) age -= 1;
+
+          if (age < 18) ageCounts["0-17"] += 1;
+          else if (age < 30) ageCounts["18-29"] += 1;
+          else if (age < 45) ageCounts["30-44"] += 1;
+          else if (age < 60) ageCounts["45-59"] += 1;
+          else if (age >= 60) ageCounts["60+"] += 1;
+          else ageCounts.unknown += 1;
+        }
+      }
+    }
+
+    // Referrer names (optional)
+    const uniqueDoctorIds = Array.from(new Set(doctorIds)).filter(Boolean);
+    const uniquePracticeIds = Array.from(new Set(practiceIds)).filter(Boolean);
+
+    const doctorNameById = new Map<string, string>();
+    if (uniqueDoctorIds.length) {
+      const { data: docs, error: docsErr } = await supabase.from("doctors").select("id, user_id").in("id", uniqueDoctorIds);
+      if (!docsErr) {
+        const docRows = (docs || []) as Array<{ id: string; user_id: string }>;
+        const uids = Array.from(new Set(docRows.map((d) => d.user_id)));
+
+        const profMap = new Map<string, string>();
+        if (uids.length) {
+          const { data: p2, error: p2Err } = await supabase.from("profiles").select("user_id, full_name, first_name, last_name").in("user_id", uids);
+          if (!p2Err) {
+            for (const r of (p2 || []) as Array<{ user_id: string; full_name: string | null; first_name: string | null; last_name: string | null }>) {
+              const nm = r.full_name || [r.first_name, r.last_name].filter(Boolean).join(" ") || "Doctor";
+              profMap.set(r.user_id, nm);
+            }
+          }
+        }
+        for (const d of docRows) doctorNameById.set(d.id, profMap.get(d.user_id) || "Doctor");
+      }
+    }
+
+    const practiceNameById = new Map<string, string>();
+    if (uniquePracticeIds.length) {
+      const { data: prs, error: prsErr } = await supabase.from("practices").select("id, name").in("id", uniquePracticeIds);
+      if (!prsErr) {
+        for (const p of (prs || []) as Array<{ id: string; name: string }>) practiceNameById.set(p.id, p.name);
+      }
+    }
+
+    const topReferrersArr = Array.from(referrerCounter.entries())
+      .map(([k, v]) => {
+        const [t, id] = k.split(":");
+        if (t === "doctor") return { name: doctorNameById.get(id) || "Doctor", value: v };
+        if (t === "clinic") return { name: practiceNameById.get(id) || "Clinic", value: v };
+        return { name: t, value: v };
+      })
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 10);
+
+    const dailyTrend = Object.values(dailyBuckets).sort((a, b) => (a.date < b.date ? -1 : 1));
+
+    const modalityData = Array.from(modMap.entries())
+      .map(([name, v]) => ({ name, value: v.count, revenue: v.revenue }))
+      .sort((a, b) => b.value - a.value);
+
+    const statusBreakdown = Array.from(statusMap.entries())
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+
+    const workflowBreakdown = Array.from(wfMap.entries())
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+
+    const peakHours = hourCounts.map((scans, h) => ({ hour: String(h).padStart(2, "0"), scans }));
+
+    const turnaroundByModality = Array.from(modTurnMap.entries())
+      .map(([type, agg]) => ({ type, avgHours: agg.cnt ? Math.round((agg.sumH / agg.cnt) * 10) / 10 : 0 }))
+      .sort((a, b) => b.avgHours - a.avgHours);
+
+    const scansChangePct =
+      prevTotalScans > 0 ? Math.round(((totalScans - prevTotalScans) / prevTotalScans) * 100) : totalScans > 0 ? 100 : 0;
+
+    const revenueChangePct =
+      prevRevenueCents > 0 ? Math.round(((revenueCents - prevRevenueCents) / prevRevenueCents) * 100) : revenueCents > 0 ? 100 : 0;
+
+    const reportChangePct =
+      prevAvgReportHours > 0 ? Math.round(((avgReportHours - prevAvgReportHours) / prevAvgReportHours) * 100) : avgReportHours > 0 ? 100 : 0;
+
+    const completedScans = statusMap.get("completed") || 0;
+    const pendingScans = Math.max(0, totalScans - completedScans);
+
+    const response: AnalyticsResponse = {
+      kpis: {
+        totalScans,
+        completedScans,
+        pendingScans,
+        revenueCents,
+        refundsCents,
+        netRevenueCents: revenueCents - refundsCents,
+        avgReportHours,
+        avgAcceptHours,
+        utilizationPct,
+        reportBacklog,
+        scansChangePct,
+        revenueChangePct,
+        reportChangePct,
+      },
+      dailyTrend,
+      modalityData,
+      workflowBreakdown,
+      statusBreakdown,
+      peakHours,
+      demographics: {
+        gender: Array.from(genderCounts.entries()).map(([name, value]) => ({ name, value })),
+        ageBuckets: Object.entries(ageCounts).map(([name, value]) => ({ name, value })),
+      },
+      topReferrers: topReferrersArr,
+      turnaroundByModality,
+      ...(warnings.length ? { warnings } : {}),
+    };
+
+    return json(response, 200);
+  } catch (e) {
+    return json(emptyResponse([`unhandled:${String((e as any)?.message ?? e)}`]), 200);
   }
-
-  const practiceNameById = new Map<string, string>();
-  if (uniquePracticeIds.length) {
-    const { data: prs, error: prsErr } = await supabase.from("practices").select("id, name").in("id", uniquePracticeIds);
-    if (prsErr) return json({ error: prsErr.message }, 500);
-    for (const p of (prs || []) as Array<{ id: string; name: string }>) practiceNameById.set(p.id, p.name);
-  }
-
-  const topReferrersArr = Array.from(referrerCounter.entries())
-    .map(([k, v]) => {
-      const [t, id] = k.split(":");
-      if (t === "doctor") return { name: doctorNameById.get(id) || "Doctor", value: v };
-      if (t === "clinic") return { name: practiceNameById.get(id) || "Clinic", value: v };
-      return { name: t, value: v };
-    })
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 10);
-
-  // Prepare response arrays
-  const dailyTrend = Object.values(dailyBuckets).sort((a, b) => (a.date < b.date ? -1 : 1));
-
-  const modalityData = Array.from(modMap.entries())
-    .map(([name, v]) => ({ name, value: v.count, revenue: v.revenue }))
-    .sort((a, b) => b.value - a.value);
-
-  const statusBreakdown = Array.from(statusMap.entries())
-    .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value);
-
-  const workflowBreakdown = Array.from(wfMap.entries())
-    .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value);
-
-  const peakHours = hourCounts.map((scans, h) => ({ hour: String(h).padStart(2, "0"), scans }));
-
-  const turnaroundByModality = Array.from(modTurnMap.entries())
-    .map(([type, agg]) => ({ type, avgHours: agg.cnt ? Math.round((agg.sumH / agg.cnt) * 10) / 10 : 0 }))
-    .sort((a, b) => b.avgHours - a.avgHours);
-
-  // Changes
-  const scansChangePct = prevTotalScans > 0 ? Math.round(((totalScans - prevTotalScans) / prevTotalScans) * 100) : totalScans > 0 ? 100 : 0;
-  const revenueChangePct = prevRevenueCents > 0 ? Math.round(((revenueCents - prevRevenueCents) / prevRevenueCents) * 100) : revenueCents > 0 ? 100 : 0;
-  const reportChangePct =
-    prevAvgReportHours > 0 ? Math.round(((avgReportHours - prevAvgReportHours) / prevAvgReportHours) * 100) : avgReportHours > 0 ? 100 : 0;
-
-  const completedScans = statusMap.get("completed") || (workflowBreakdown.find((x) => x.name === "completed")?.value || 0);
-  const pendingScans = totalScans - completedScans;
-
-  const response: AnalyticsResponse = {
-    kpis: {
-      totalScans,
-      completedScans,
-      pendingScans: Math.max(0, pendingScans),
-      revenueCents,
-      refundsCents,
-      netRevenueCents: revenueCents - refundsCents,
-      avgReportHours,
-      avgAcceptHours,
-      utilizationPct,
-      reportBacklog,
-      scansChangePct,
-      revenueChangePct,
-      reportChangePct,
-    },
-    dailyTrend,
-    modalityData,
-    workflowBreakdown,
-    statusBreakdown,
-    peakHours,
-    demographics: {
-      gender: Array.from(genderCounts.entries()).map(([name, value]) => ({ name, value })),
-      ageBuckets: Object.entries(ageCounts).map(([name, value]) => ({ name, value })),
-    },
-    topReferrers: topReferrersArr,
-    turnaroundByModality,
-  };
-
-  return json(response, 200);
 });
-
-type AnalyticsResponse = {
-  kpis: {
-    totalScans: number;
-    completedScans: number;
-    pendingScans: number;
-    revenueCents: number;
-    refundsCents: number;
-    netRevenueCents: number;
-    avgReportHours: number;
-    avgAcceptHours: number;
-    utilizationPct: number;
-    reportBacklog: number;
-    scansChangePct: number;
-    revenueChangePct: number;
-    reportChangePct: number;
-  };
-  dailyTrend: Array<{ date: string; scans: number; completed: number; revenue: number }>;
-  modalityData: Array<{ name: string; value: number; revenue: number }>;
-  workflowBreakdown: Array<{ name: string; value: number }>;
-  statusBreakdown: Array<{ name: string; value: number }>;
-  peakHours: Array<{ hour: string; scans: number }>;
-  demographics: {
-    gender: Array<{ name: string; value: number }>;
-    ageBuckets: Array<{ name: string; value: number }>;
-  };
-  topReferrers: Array<{ name: string; value: number }>;
-  turnaroundByModality: Array<{ type: string; avgHours: number }>;
-};
