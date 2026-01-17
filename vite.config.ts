@@ -1,15 +1,20 @@
 // File: vite.config.ts
 
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import { componentTagger } from "lovable-tagger";
 
 /**
- * Prevent blank-screen issues in preview environments caused by stale dynamically imported chunks.
- * We inline dynamic imports so route-level lazy chunks can't 404 after a deployment.
+ * Lovable route pills (top bar) require component tagging in development.
+ * The `componentTagger()` plugin injects data attributes used by Lovable’s editor.
  */
-export default defineConfig({
-  plugins: [react()],
+export default defineConfig(({ mode }) => ({
+  server: {
+    host: "::",
+    port: 8080,
+  },
+  plugins: [react(), mode === "development" && componentTagger()].filter(Boolean) as any,
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -23,4 +28,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));
