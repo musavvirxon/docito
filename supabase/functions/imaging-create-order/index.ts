@@ -45,24 +45,33 @@ async function requireEnv() {
   return { ok: true as const, url, anon, service };
 }
 
-async function assertImagingAccess(serviceClient: ReturnType<typeof createClient>, userId: string, centerId: string) {
+async function assertImagingManualOrderAccess(
+  serviceClient: ReturnType<typeof createClient>,
+  userId: string,
+  centerId: string,
+) {
   const { data: center, error: cErr } = await serviceClient
     .from("imaging_centers")
     .select("id,admin_id")
     .eq("id", centerId)
     .maybeSingle();
+
   if (cErr) throw cErr;
-  if (center?.admin_id === userId) return true;
+  if (center?.admin_id === userId) return { ok: true as const };
 
   const { data: staff, error: sErr } = await serviceClient
     .from("imaging_staff")
-    .select("id")
+    .select("id,status,can_view_orders")
     .eq("imaging_center_id", centerId)
     .eq("user_id", userId)
-    .eq("status", "active")
     .maybeSingle();
+
   if (sErr) throw sErr;
-  return Boolean(staff?.id);
+
+  if (!staff?.id || staff.status !== "active") return { ok: false as const, reason: "Not assigned to this imaging center" };
+  if (!staff.can_view_orders) return { ok: false as const, reason: "Missing permission: can_view_orders" };
+
+  return { ok: true as const };
 }
 
 serve(async (req) => {
@@ -93,11 +102,10 @@ serve(async (req) => {
 
   const service = createClient(env.url, env.service);
 
-  const allowed = await assertImagingAccess(service, userRes.user.id, body.centerId);
-  if (!allowed) return json({ ok: false, error: "Forbidden" }, 403);
+  const allowed = await assertImagingManualOrderAccess(service, userRes.user.id, body.centerId);
+  if (!allowed.ok) return json({ ok: false, error: allowed.reason || "Forbidden" }, 403);
 
   try {
-    // 1) Upsert facility patient (walk-in registry)
     const { data: fp, error: fpErr } = await service
       .from("facility_patients")
       .upsert(
@@ -116,7 +124,6 @@ serve(async (req) => {
 
     if (fpErr) throw fpErr;
 
-    // 2) Create referral (imaging order) pointing to facility_patient_id
     const priority = body.priority || "routine";
 
     const attachments = {
@@ -128,12 +135,10 @@ serve(async (req) => {
     const { data: referral, error: rErr } = await service
       .from("referrals")
       .insert({
-        // referrer = same imaging center (walk-in)
         referrer_type: "imaging_center",
         referrer_entity_id: body.centerId,
         referrer_user_id: userRes.user.id,
 
-        // receiver = imaging center
         receiver_type: "imaging_center",
         receiver_entity_id: body.centerId,
 
@@ -145,7 +150,6 @@ serve(async (req) => {
         preferred_time_slot: body.preferred_time_slot || null,
         attachments,
 
-        // walk-in patient linkage
         patient_id: null,
         facility_patient_id: fp.id,
         patient_name: fp.full_name,
@@ -160,7 +164,6 @@ serve(async (req) => {
 
     if (rErr) throw rErr;
 
-    // 3) Ensure imaging_order_state exists for workflow display
     const { error: stErr } = await service
       .from("imaging_order_state")
       .upsert(
@@ -176,7 +179,6 @@ serve(async (req) => {
       );
 
     if (stErr) {
-      // Non-fatal: the UI can still show the referral row; but return warning
       return json({ ok: true, referralId: referral.id, referralNumber: referral.referral_number, warning: stErr.message });
     }
 
