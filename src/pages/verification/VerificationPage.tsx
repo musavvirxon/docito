@@ -1,16 +1,16 @@
 // Path: src/pages/verification/VerificationPage.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Save, Send } from "lucide-react";
+import { Loader2, Save, Send, Upload, Trash2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { useStaffContext } from "@/hooks/useStaffContext";
-
-type EntityType = "clinic" | "lab" | "imaging" | "pharmacy";
+import { useVerificationFiles, type EntityType } from "@/hooks/useVerificationFiles";
+import { Input } from "@/components/ui/input";
 
 type DraftRow = {
   id: string;
@@ -52,11 +52,15 @@ export default function VerificationPage() {
   const [draft, setDraft] = useState<DraftRow | null>(null);
   const [jsonText, setJsonText] = useState<string>("{}");
 
-  const canSubmit = useMemo(() => {
-    // Phase 5: keep permissive. Admin-only submit can be enforced later.
-    // If the viewer has entity_id resolved, allow submit.
-    return Boolean(entityId);
-  }, [entityId]);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const { loading: filesLoading, files, error: filesError, actions: fileActions } = useVerificationFiles({
+    entityType,
+    entityId,
+    submissionId: draft?.id ?? null,
+  });
+
+  const canSubmit = useMemo(() => Boolean(entityId), [entityId]);
 
   const title = useMemo(() => {
     if (entityType === "clinic") return "Clinic Verification";
@@ -125,6 +129,9 @@ export default function VerificationPage() {
 
       setDraft(data.draft as DraftRow);
       toast.success("Draft saved");
+
+      // Ensure file list rebinds to draft id
+      await fileActions.refetch();
     } catch (e: any) {
       toast.error(e?.message || "Failed to save draft");
     } finally {
@@ -150,10 +157,53 @@ export default function VerificationPage() {
 
       toast.success("Verification submitted");
       await loadDraft();
+      await fileActions.refetch();
     } catch (e: any) {
       toast.error(e?.message || "Failed to submit");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const chooseFiles = () => {
+    fileInputRef.current?.click();
+  };
+
+  const onFilesSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const picked = Array.from(e.target.files || []);
+    e.target.value = "";
+    if (picked.length === 0) return;
+
+    if (!entityId) {
+      toast.error("No entity scope");
+      return;
+    }
+
+    // Ensure draft exists so we can attach files to submissionId
+    if (!draft?.id) {
+      toast.message("Saving draft first…");
+      await saveDraft();
+    }
+
+    const filesToUpload = picked.slice(0, 10);
+    for (const f of filesToUpload) {
+      try {
+        await fileActions.uploadFile(f);
+        toast.success(`Uploaded: ${f.name}`);
+      } catch (err: any) {
+        toast.error(err?.message || `Upload failed: ${f.name}`);
+      }
+    }
+
+    await fileActions.refetch();
+  };
+
+  const removeFile = async (id: string) => {
+    try {
+      await fileActions.removeFile(id);
+      toast.success("File removed");
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to remove file");
     }
   };
 
@@ -181,6 +231,8 @@ export default function VerificationPage() {
     );
   }
 
+  const isSubmitted = (draft?.status || "draft") !== "draft";
+
   return (
     <div className="space-y-6">
       <Card>
@@ -191,18 +243,16 @@ export default function VerificationPage() {
                 {title}
                 <Badge variant={badgeVariant as any}>{draft?.status || "draft"}</Badge>
               </CardTitle>
-              <CardDescription>
-                Draft payload is allowed. Save draft anytime; submit when ready.
-              </CardDescription>
+              <CardDescription>Draft payload is allowed. Save draft anytime; submit when ready.</CardDescription>
             </div>
 
             <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={saveDraft} disabled={saving}>
+              <Button variant="outline" onClick={saveDraft} disabled={saving || isSubmitted}>
                 {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                 Save Draft
               </Button>
 
-              <Button onClick={submit} disabled={saving || !canSubmit}>
+              <Button onClick={submit} disabled={saving || !canSubmit || isSubmitted}>
                 {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
                 Submit
               </Button>
@@ -210,21 +260,101 @@ export default function VerificationPage() {
           </div>
 
           <div className="text-xs text-muted-foreground">
-            Scope: <span className="font-medium">{staffType}</span> • Entity:{" "}
-            <span className="font-medium">{entityId}</span>
+            Scope: <span className="font-medium">{staffType}</span> • Entity: <span className="font-medium">{entityId}</span>
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-3">
-          <div className="text-sm font-medium">Draft JSON Payload</div>
-          <Textarea
-            value={jsonText}
-            onChange={(e) => setJsonText(e.target.value)}
-            rows={18}
-            placeholder='{"license":"...", "documents":[...]}'
-          />
-          <div className="text-xs text-muted-foreground">
-            This is intentionally flexible during build. Later we can enforce schema validation and file uploads.
+        <CardContent className="space-y-6">
+          <div className="space-y-3">
+            <div className="text-sm font-medium">Draft JSON Payload</div>
+            <Textarea
+              value={jsonText}
+              onChange={(e) => setJsonText(e.target.value)}
+              rows={14}
+              placeholder='{"license":"...", "documents":[...]}'
+              disabled={isSubmitted}
+            />
+            <div className="text-xs text-muted-foreground">
+              This remains flexible for now. In later phases, we can enforce schema + validation.
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="text-sm font-medium">Documents</div>
+                <div className="text-xs text-muted-foreground">
+                  Upload PDF/images/docs. Files are private and entity-scoped.
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Input
+                  ref={fileInputRef}
+                  type="file"
+                  className="hidden"
+                  multiple
+                  accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx,application/pdf,image/png,image/jpeg,image/webp,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  onChange={onFilesSelected}
+                  disabled={isSubmitted}
+                />
+                <Button variant="outline" onClick={chooseFiles} disabled={saving || filesLoading || isSubmitted}>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Upload
+                </Button>
+                <Button variant="outline" onClick={fileActions.refetch} disabled={filesLoading}>
+                  {filesLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                  Refresh
+                </Button>
+              </div>
+            </div>
+
+            {filesError ? <div className="text-sm text-destructive">{filesError}</div> : null}
+
+            {filesLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              </div>
+            ) : files.length === 0 ? (
+              <div className="text-sm text-muted-foreground">No documents uploaded yet.</div>
+            ) : (
+              <div className="space-y-2">
+                {files.map((f) => (
+                  <div key={f.id} className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 rounded-lg border p-3">
+                    <div className="space-y-1">
+                      <div className="font-medium">{f.file_name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {f.mime_type || "file"} • {typeof f.size_bytes === "number" ? `${Math.round(f.size_bytes / 1024)} KB` : "—"} •{" "}
+                        {new Date(f.created_at).toLocaleString()}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 justify-end">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (f.downloadUrl) window.open(f.downloadUrl, "_blank");
+                          else toast.error("Download URL not available. Refresh and try again.");
+                        }}
+                      >
+                        View <ExternalLink className="h-4 w-4 ml-2" />
+                      </Button>
+
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => removeFile(f.id)}
+                        disabled={saving || isSubmitted}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
