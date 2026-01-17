@@ -3,18 +3,21 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders: Record<string, string> = {
+const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 type ReqBody =
-  | { action: "get"; pharmacyId: string }
+  | {
+      action: "get";
+      pharmacyId: string;
+    }
   | {
       action: "save";
       pharmacyId: string;
-      profile?: {
+      pharmacy: {
         name?: string | null;
         address?: string | null;
         city?: string | null;
@@ -25,21 +28,21 @@ type ReqBody =
         email?: string | null;
         website?: string | null;
         license_number?: string | null;
+        accepts_insurance?: boolean | null;
+        delivery_available?: boolean | null;
+        operating_hours?: unknown;
       };
-      settings?: {
-        delivery_available?: boolean;
-        delivery_radius_km?: number;
-        delivery_fee?: number;
-        free_delivery_threshold?: number;
-        is_24_hours?: boolean;
-        accepts_insurance?: boolean;
-        accepts_online_orders?: boolean;
-        requires_prescription_verification?: boolean;
-        billing_currency?: string;
-        timezone?: string;
+      settings: {
+        timezone?: string | null;
+        billing_currency?: string | null;
+        delivery_radius_km?: number | null;
+        delivery_fee_cents?: number | null;
+        free_delivery_threshold_cents?: number | null;
+        is_24_hours?: boolean | null;
+        accepts_online_orders?: boolean | null;
+        requires_prescription_verification?: boolean | null;
+        notification_settings?: Record<string, unknown> | null;
       };
-      operating_hours?: unknown;
-      notifications?: unknown;
     };
 
 function json(data: unknown, status = 200) {
@@ -49,9 +52,17 @@ function json(data: unknown, status = 200) {
   });
 }
 
+function badRequest(msg: string) {
+  return json({ ok: false, error: msg }, 400);
+}
+
+function unauthorized(msg = "Unauthorized") {
+  return json({ ok: false, error: msg }, 401);
+}
+
 function asText(v: unknown, fallback: string) {
   if (v === null || v === undefined) return fallback;
-  const s = String(v);
+  const s = String(v).trim();
   return s.length ? s : fallback;
 }
 
@@ -60,179 +71,248 @@ function asBool(v: unknown, fallback: boolean) {
   return Boolean(v);
 }
 
+function asInt(v: unknown, fallback: number) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.trunc(n);
+}
+
 function asNum(v: unknown, fallback: number) {
   const n = Number(v);
-  return Number.isFinite(n) ? n : fallback;
+  if (!Number.isFinite(n)) return fallback;
+  return n;
 }
 
-async function requireEnv() {
-  const url = Deno.env.get("SUPABASE_URL");
-  const anon = Deno.env.get("SUPABASE_ANON_KEY");
-  const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!url || !anon || !service) {
-    return { ok: false as const, error: "Missing SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY" };
-  }
-  return { ok: true as const, url, anon, service };
+async function getAuthedUserId(authHeader: string) {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  if (!supabaseUrl || !supabaseAnonKey) return { ok: false as const, error: "Missing SUPABASE_URL or SUPABASE_ANON_KEY" };
+
+  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: authHeader } },
+  });
+
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data?.user) return { ok: false as const, error: "Unauthorized" };
+  return { ok: true as const, userId: data.user.id };
 }
 
-async function assertPharmacyAccess(serviceClient: ReturnType<typeof createClient>, userId: string, pharmacyId: string) {
-  const { data: pRow, error: pErr } = await serviceClient
+function getServiceClient() {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!supabaseUrl || !serviceKey) return null;
+  return createClient(supabaseUrl, serviceKey, {
+    auth: { persistSession: false },
+  });
+}
+
+async function ensurePharmacyAccess(supabase: ReturnType<typeof createClient>, userId: string, pharmacyId: string) {
+  // Admin
+  const admin = await supabase
     .from("pharmacies")
-    .select("id,admin_id")
+    .select("id")
     .eq("id", pharmacyId)
+    .eq("admin_id", userId)
     .maybeSingle();
-  if (pErr) throw pErr;
-  if (pRow?.admin_id === userId) return { ok: true, isAdmin: true };
+  if (admin.data?.id) return true;
 
-  const { data: staffRow, error: sErr } = await serviceClient
+  // Staff
+  const staff = await supabase
     .from("pharmacy_staff")
-    .select("id,staff_role,status")
+    .select("id")
     .eq("pharmacy_id", pharmacyId)
     .eq("user_id", userId)
     .eq("status", "active")
     .maybeSingle();
-  if (sErr) throw sErr;
 
-  if (!staffRow?.id) return { ok: false, isAdmin: false };
+  return Boolean(staff.data?.id);
+}
 
-  const role = String((staffRow as any).staff_role || "staff").toLowerCase();
-  return { ok: true, isAdmin: role === "admin" };
+async function readPharmacy(supabase: ReturnType<typeof createClient>, pharmacyId: string) {
+  const { data, error } = await supabase
+    .from("pharmacies")
+    .select(
+      "id, name, address, city, state, postal_code, country, phone, email, website, license_number, accepts_insurance, delivery_available, operating_hours, verified, verification_status",
+    )
+    .eq("id", pharmacyId)
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+async function readSettings(supabase: ReturnType<typeof createClient>, pharmacyId: string) {
+  const { data, error } = await supabase
+    .from("pharmacy_settings")
+    .select(
+      "pharmacy_id, timezone, billing_currency, delivery_radius_km, delivery_fee_cents, free_delivery_threshold_cents, is_24_hours, accepts_online_orders, requires_prescription_verification, notification_settings",
+    )
+    .eq("pharmacy_id", pharmacyId)
+    .maybeSingle();
+
+  if (error) {
+    // If migration hasn't been applied yet, surface a helpful message.
+    const msg = (error as any)?.message || "Failed to read pharmacy settings";
+    if (String(msg).toLowerCase().includes("does not exist")) {
+      return {
+        available: false,
+        row: {
+          pharmacy_id: pharmacyId,
+          timezone: "UTC",
+          billing_currency: "usd",
+          delivery_radius_km: 10,
+          delivery_fee_cents: 0,
+          free_delivery_threshold_cents: 0,
+          is_24_hours: false,
+          accepts_online_orders: true,
+          requires_prescription_verification: true,
+          notification_settings: {},
+        },
+        warnings: ["pharmacy_settings table not found (run latest migrations)"] as string[],
+      };
+    }
+    throw error;
+  }
+
+  if (!data) {
+    return {
+      available: true,
+      row: {
+        pharmacy_id: pharmacyId,
+        timezone: "UTC",
+        billing_currency: "usd",
+        delivery_radius_km: 10,
+        delivery_fee_cents: 0,
+        free_delivery_threshold_cents: 0,
+        is_24_hours: false,
+        accepts_online_orders: true,
+        requires_prescription_verification: true,
+        notification_settings: {},
+      },
+      warnings: [] as string[],
+    };
+  }
+
+  return {
+    available: true,
+    row: {
+      pharmacy_id: data.pharmacy_id,
+      timezone: asText(data.timezone, "UTC"),
+      billing_currency: asText(data.billing_currency, "usd"),
+      delivery_radius_km: asNum(data.delivery_radius_km, 10),
+      delivery_fee_cents: asInt(data.delivery_fee_cents, 0),
+      free_delivery_threshold_cents: asInt(data.free_delivery_threshold_cents, 0),
+      is_24_hours: asBool(data.is_24_hours, false),
+      accepts_online_orders: asBool(data.accepts_online_orders, true),
+      requires_prescription_verification: asBool(data.requires_prescription_verification, true),
+      notification_settings: (data.notification_settings || {}) as Record<string, unknown>,
+    },
+    warnings: [] as string[],
+  };
+}
+
+async function savePharmacy(supabase: ReturnType<typeof createClient>, pharmacyId: string, patch: any) {
+  const updates: any = {};
+  for (const k of [
+    "name",
+    "address",
+    "city",
+    "state",
+    "postal_code",
+    "country",
+    "phone",
+    "email",
+    "website",
+    "license_number",
+    "accepts_insurance",
+    "delivery_available",
+    "operating_hours",
+  ]) {
+    if (Object.prototype.hasOwnProperty.call(patch, k)) updates[k] = patch[k];
+  }
+
+  const { error } = await supabase
+    .from("pharmacies")
+    .update(updates)
+    .eq("id", pharmacyId);
+  if (error) throw error;
+}
+
+async function saveSettings(supabase: ReturnType<typeof createClient>, pharmacyId: string, patch: any) {
+  const upsertRow: any = {
+    pharmacy_id: pharmacyId,
+  };
+
+  if (Object.prototype.hasOwnProperty.call(patch, "timezone")) upsertRow.timezone = patch.timezone;
+  if (Object.prototype.hasOwnProperty.call(patch, "billing_currency")) upsertRow.billing_currency = patch.billing_currency;
+  if (Object.prototype.hasOwnProperty.call(patch, "delivery_radius_km")) upsertRow.delivery_radius_km = patch.delivery_radius_km;
+  if (Object.prototype.hasOwnProperty.call(patch, "delivery_fee_cents")) upsertRow.delivery_fee_cents = patch.delivery_fee_cents;
+  if (Object.prototype.hasOwnProperty.call(patch, "free_delivery_threshold_cents")) {
+    upsertRow.free_delivery_threshold_cents = patch.free_delivery_threshold_cents;
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "is_24_hours")) upsertRow.is_24_hours = patch.is_24_hours;
+  if (Object.prototype.hasOwnProperty.call(patch, "accepts_online_orders")) upsertRow.accepts_online_orders = patch.accepts_online_orders;
+  if (Object.prototype.hasOwnProperty.call(patch, "requires_prescription_verification")) {
+    upsertRow.requires_prescription_verification = patch.requires_prescription_verification;
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "notification_settings")) {
+    upsertRow.notification_settings = patch.notification_settings || {};
+  }
+
+  const { error } = await supabase
+    .from("pharmacy_settings")
+    .upsert(upsertRow, { onConflict: "pharmacy_id" });
+  if (error) throw error;
 }
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
-  if (req.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 405);
+  if (req.method !== "POST") return badRequest("POST required");
 
-  const authHeader = req.headers.get("authorization") || req.headers.get("Authorization") || "";
-  if (!authHeader) return json({ ok: false, error: "Missing Authorization" }, 401);
+  const authHeader = req.headers.get("authorization") || "";
+  if (!authHeader) return unauthorized();
 
-  const env = await requireEnv();
-  if (!env.ok) return json({ ok: false, error: env.error }, 500);
+  const authed = await getAuthedUserId(authHeader);
+  if (!authed.ok) return unauthorized(authed.error);
 
-  const authed = createClient(env.url, env.anon, { global: { headers: { Authorization: authHeader } } });
-  const { data: userRes, error: userErr } = await authed.auth.getUser();
-  if (userErr || !userRes?.user) return json({ ok: false, error: "Unauthorized" }, 401);
+  const supabase = getServiceClient();
+  if (!supabase) return json({ ok: false, error: "Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY" }, 500);
 
   let body: ReqBody;
   try {
     body = (await req.json()) as ReqBody;
   } catch {
-    return json({ ok: false, error: "Invalid JSON body" }, 400);
+    return badRequest("Invalid JSON");
   }
 
-  const pharmacyId = (body as any)?.pharmacyId;
-  if (!pharmacyId) return json({ ok: false, error: "Missing pharmacyId" }, 400);
+  const action = (body as any)?.action;
+  const pharmacyId = String((body as any)?.pharmacyId || "").trim();
+  if (!pharmacyId) return badRequest("pharmacyId is required");
 
-  const service = createClient(env.url, env.service);
-  const access = await assertPharmacyAccess(service, userRes.user.id, pharmacyId);
-  if (!access.ok) return json({ ok: false, error: "Forbidden" }, 403);
+  const allowed = await ensurePharmacyAccess(supabase, authed.userId, pharmacyId);
+  if (!allowed) return unauthorized("Not authorized for this pharmacy");
 
   try {
-    if (body.action === "get") {
-      const { data: pharmacy, error: pErr } = await service
-        .from("pharmacies")
-        .select("id,name,address,city,state,postal_code,country,phone,email,website,license_number,delivery_available,accepts_insurance,operating_hours,verified,verification_status")
-        .eq("id", pharmacyId)
-        .maybeSingle();
-      if (pErr) throw pErr;
-
-      const { data: settings, error: sErr } = await service
-        .from("pharmacy_settings")
-        .select("pharmacy_id,delivery_radius_km,delivery_fee,free_delivery_threshold,is_24_hours,accepts_online_orders,requires_prescription_verification,billing_currency,timezone,notifications")
-        .eq("pharmacy_id", pharmacyId)
-        .maybeSingle();
-      if (sErr) throw sErr;
-
-      return json({
-        ok: true,
-        profile: {
-          id: pharmacy?.id ?? pharmacyId,
-          name: pharmacy?.name ?? "",
-          address: pharmacy?.address ?? "",
-          city: pharmacy?.city ?? "",
-          state: pharmacy?.state ?? "",
-          postal_code: pharmacy?.postal_code ?? "",
-          country: pharmacy?.country ?? "US",
-          phone: pharmacy?.phone ?? "",
-          email: pharmacy?.email ?? "",
-          website: pharmacy?.website ?? "",
-          license_number: pharmacy?.license_number ?? "",
-          verified: Boolean((pharmacy as any)?.verified),
-          verification_status: (pharmacy as any)?.verification_status ?? "pending",
-        },
-        settings: {
-          delivery_available: Boolean((pharmacy as any)?.delivery_available),
-          accepts_insurance: Boolean((pharmacy as any)?.accepts_insurance),
-          delivery_radius_km: asNum(settings?.delivery_radius_km, 10),
-          delivery_fee: asNum(settings?.delivery_fee, 5),
-          free_delivery_threshold: asNum(settings?.free_delivery_threshold, 50),
-          is_24_hours: asBool(settings?.is_24_hours, false),
-          accepts_online_orders: asBool(settings?.accepts_online_orders, true),
-          requires_prescription_verification: asBool(settings?.requires_prescription_verification, true),
-          billing_currency: asText(settings?.billing_currency, "usd"),
-          timezone: asText(settings?.timezone, "UTC"),
-        },
-        operating_hours: (pharmacy as any)?.operating_hours ?? {},
-        notifications: settings?.notifications ?? {},
-        can_edit: access.isAdmin,
-      });
+    if (action === "get") {
+      const pharmacy = await readPharmacy(supabase, pharmacyId);
+      const s = await readSettings(supabase, pharmacyId);
+      return json({ ok: true, available: s.available, pharmacy, settings: s.row, warnings: s.warnings });
     }
 
-    if (body.action === "save") {
-      if (!access.isAdmin) return json({ ok: false, error: "Only pharmacy admins can change settings" }, 403);
+    if (action === "save") {
+      const p = (body as any)?.pharmacy || {};
+      const sPatch = (body as any)?.settings || {};
 
-      const profile = body.profile || {};
-      const settingsPatch = body.settings || {};
-      const operatingHours = body.operating_hours;
-      const notifications = body.notifications;
+      await savePharmacy(supabase, pharmacyId, p);
+      await saveSettings(supabase, pharmacyId, sPatch);
 
-      const { error: upPharmacyErr } = await service
-        .from("pharmacies")
-        .update({
-          name: profile.name ?? undefined,
-          address: profile.address ?? undefined,
-          city: profile.city ?? undefined,
-          state: profile.state ?? undefined,
-          postal_code: profile.postal_code ?? undefined,
-          country: profile.country ?? undefined,
-          phone: profile.phone ?? undefined,
-          email: profile.email ?? undefined,
-          website: profile.website ?? undefined,
-          license_number: profile.license_number ?? undefined,
-          delivery_available: settingsPatch.delivery_available ?? undefined,
-          accepts_insurance: settingsPatch.accepts_insurance ?? undefined,
-          operating_hours: operatingHours ?? undefined,
-        })
-        .eq("id", pharmacyId);
-
-      if (upPharmacyErr) throw upPharmacyErr;
-
-      const { error: upSettingsErr } = await service
-        .from("pharmacy_settings")
-        .upsert(
-          {
-            pharmacy_id: pharmacyId,
-            delivery_radius_km: settingsPatch.delivery_radius_km ?? undefined,
-            delivery_fee: settingsPatch.delivery_fee ?? undefined,
-            free_delivery_threshold: settingsPatch.free_delivery_threshold ?? undefined,
-            is_24_hours: settingsPatch.is_24_hours ?? undefined,
-            accepts_online_orders: settingsPatch.accepts_online_orders ?? undefined,
-            requires_prescription_verification: settingsPatch.requires_prescription_verification ?? undefined,
-            billing_currency: settingsPatch.billing_currency ?? undefined,
-            timezone: settingsPatch.timezone ?? undefined,
-            notifications: notifications ?? undefined,
-          },
-          { onConflict: "pharmacy_id" },
-        );
-
-      if (upSettingsErr) throw upSettingsErr;
-
-      return json({ ok: true });
+      const pharmacy = await readPharmacy(supabase, pharmacyId);
+      const s = await readSettings(supabase, pharmacyId);
+      return json({ ok: true, available: s.available, pharmacy, settings: s.row, warnings: s.warnings });
     }
 
-    return json({ ok: false, error: "Invalid action" }, 400);
+    return badRequest("Invalid action");
   } catch (e: any) {
     console.error(e);
-    return json({ ok: false, error: e?.message || "Failed to process pharmacy settings" }, 500);
+    return json({ ok: false, error: e?.message || "Unexpected error" }, 500);
   }
 });
