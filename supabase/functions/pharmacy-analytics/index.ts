@@ -3,7 +3,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders: Record<string, string> = {
+const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -11,24 +11,12 @@ const corsHeaders: Record<string, string> = {
 
 type ReqBody = {
   pharmacyId: string;
-  timeRange: "7d" | "30d" | "90d";
+  timeRangeDays?: number;
 };
 
-type Resp = {
-  ok: boolean;
-  error?: string;
-  kpis?: {
-    totalRevenueCents: number;
-    totalOrders: number;
-    totalPrescriptions: number;
-    avgOrderValueCents: number;
-    revenueChangePct: number;
-    ordersChangePct: number;
-  };
-  dailyTrend?: Array<{ date: string; revenueCents: number; orders: number }>;
-  topMedications?: Array<{ name: string; count: number; revenueCents: number }>;
-  statusBreakdown?: Array<{ name: string; value: number }>;
-};
+type TrendRow = { date: string; revenueCents: number; orders: number };
+type StatusRow = { name: string; value: number };
+type MedicationRow = { name: string; count: number; revenueCents: number };
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -37,292 +25,328 @@ function json(data: unknown, status = 200) {
   });
 }
 
-function daysFromRange(r: string) {
-  if (r === "30d") return 30;
-  if (r === "90d") return 90;
-  return 7;
+function badRequest(msg: string) {
+  return json({ ok: false, error: msg }, 400);
 }
 
-function startOfDayUTC(d: Date) {
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0));
+function unauthorized(msg = "Unauthorized") {
+  return json({ ok: false, error: msg }, 401);
 }
 
-function dateKeyUTC(d: Date) {
+function asInt(v: unknown, fallback: number) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(1, Math.trunc(n));
+}
+
+function dayKey(d: Date) {
+  // YYYY-MM-DD
   const y = d.getUTCFullYear();
   const m = String(d.getUTCMonth() + 1).padStart(2, "0");
   const day = String(d.getUTCDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
 }
 
-function toCentsMoney(n: unknown) {
-  const v = typeof n === "number" ? n : Number(n);
-  if (!Number.isFinite(v)) return 0;
-  return Math.round(v * 100);
+function dateAddDays(d: Date, days: number) {
+  const out = new Date(d);
+  out.setUTCDate(out.getUTCDate() + days);
+  return out;
 }
 
-function safeLower(v: unknown) {
-  return String(v ?? "").toLowerCase();
+function diffHours(a: Date, b: Date) {
+  const ms = b.getTime() - a.getTime();
+  return ms / (1000 * 60 * 60);
 }
 
-async function requireEnv() {
-  const url = Deno.env.get("SUPABASE_URL");
-  const anon = Deno.env.get("SUPABASE_ANON_KEY");
-  const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!url || !anon || !service) {
-    return { ok: false as const, error: "Missing SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY" };
-  }
-  return { ok: true as const, url, anon, service };
+function safePctChange(curr: number, prev: number) {
+  if (!Number.isFinite(curr) || !Number.isFinite(prev)) return 0;
+  if (prev === 0) return curr === 0 ? 0 : 100;
+  return ((curr - prev) / prev) * 100;
 }
 
-async function assertPharmacyAccess(serviceClient: ReturnType<typeof createClient>, userId: string, pharmacyId: string) {
-  const { data: pRow, error: pErr } = await serviceClient
+async function getAuthedUserId(authHeader: string) {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  if (!supabaseUrl || !supabaseAnonKey) return { ok: false as const, error: "Missing SUPABASE_URL or SUPABASE_ANON_KEY" };
+
+  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: authHeader } },
+  });
+
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data?.user) return { ok: false as const, error: "Unauthorized" };
+  return { ok: true as const, userId: data.user.id };
+}
+
+function getServiceClient() {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!supabaseUrl || !serviceKey) return null;
+  return createClient(supabaseUrl, serviceKey, {
+    auth: { persistSession: false },
+  });
+}
+
+async function ensurePharmacyAccess(supabase: ReturnType<typeof createClient>, userId: string, pharmacyId: string) {
+  // Admin
+  const admin = await supabase
     .from("pharmacies")
-    .select("id,admin_id")
+    .select("id")
     .eq("id", pharmacyId)
+    .eq("admin_id", userId)
     .maybeSingle();
-  if (pErr) throw pErr;
-  if (pRow?.admin_id === userId) return true;
 
-  const { data: staffRow, error: sErr } = await serviceClient
+  if (admin.data?.id) return true;
+
+  // Staff
+  const staff = await supabase
     .from("pharmacy_staff")
     .select("id")
     .eq("pharmacy_id", pharmacyId)
     .eq("user_id", userId)
     .eq("status", "active")
     .maybeSingle();
-  if (sErr) throw sErr;
 
-  return Boolean(staffRow?.id);
+  return Boolean(staff.data?.id);
+}
+
+type FulfillmentOrderRow = {
+  id: string;
+  created_at: string;
+  status: string | null;
+  total_amount: number | null;
+  prescription_id: string;
+  ready_at: string | null;
+  picked_up_at: string | null;
+};
+
+type PrescriptionItemRow = {
+  prescription_id: string;
+  medication_name: string;
+  quantity: number;
+};
+
+function dollarsToCents(v: number | null | undefined) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return 0;
+  return Math.round(n * 100);
+}
+
+async function fetchOrders(
+  supabase: ReturnType<typeof createClient>,
+  pharmacyId: string,
+  startIso: string,
+  endIso: string,
+) {
+  const { data, error } = await supabase
+    .from("fulfillment_orders")
+    .select("id, created_at, status, total_amount, prescription_id, ready_at, picked_up_at")
+    .eq("pharmacy_id", pharmacyId)
+    .gte("created_at", startIso)
+    .lt("created_at", endIso)
+    .order("created_at", { ascending: true })
+    .limit(5000);
+
+  if (error) throw error;
+  return (data || []) as FulfillmentOrderRow[];
+}
+
+async function fetchPrescriptionItems(
+  supabase: ReturnType<typeof createClient>,
+  prescriptionIds: string[],
+) {
+  if (!prescriptionIds.length) return [] as PrescriptionItemRow[];
+
+  const uniq = Array.from(new Set(prescriptionIds));
+  const chunks: string[][] = [];
+  for (let i = 0; i < uniq.length; i += 500) chunks.push(uniq.slice(i, i + 500));
+
+  const out: PrescriptionItemRow[] = [];
+  for (const ch of chunks) {
+    const { data, error } = await supabase
+      .from("prescription_items")
+      .select("prescription_id, medication_name, quantity")
+      .in("prescription_id", ch)
+      .limit(10000);
+    if (error) throw error;
+    out.push(...((data || []) as PrescriptionItemRow[]));
+  }
+  return out;
+}
+
+function buildTrend(
+  start: Date,
+  days: number,
+  orders: FulfillmentOrderRow[],
+) {
+  const buckets = new Map<string, { revenueCents: number; orders: number }>();
+  for (let i = 0; i < days; i++) {
+    const k = dayKey(dateAddDays(start, i));
+    buckets.set(k, { revenueCents: 0, orders: 0 });
+  }
+
+  for (const o of orders) {
+    const created = new Date(o.created_at);
+    const k = dayKey(created);
+    const b = buckets.get(k);
+    if (!b) continue;
+    b.orders += 1;
+    b.revenueCents += dollarsToCents(o.total_amount);
+  }
+
+  const out: TrendRow[] = [];
+  for (let i = 0; i < days; i++) {
+    const d = dateAddDays(start, i);
+    const k = dayKey(d);
+    const b = buckets.get(k)!;
+    out.push({ date: k, revenueCents: b.revenueCents, orders: b.orders });
+  }
+  return out;
+}
+
+function buildStatusDist(orders: FulfillmentOrderRow[]) {
+  const map = new Map<string, number>();
+  for (const o of orders) {
+    const s = (o.status || "unknown").toLowerCase();
+    map.set(s, (map.get(s) || 0) + 1);
+  }
+  const out: StatusRow[] = Array.from(map.entries())
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
+  return out;
+}
+
+function buildAvgFulfillmentHours(orders: FulfillmentOrderRow[]) {
+  const durations: number[] = [];
+  for (const o of orders) {
+    const start = new Date(o.created_at);
+    const endStr = o.ready_at || o.picked_up_at;
+    if (!endStr) continue;
+    const end = new Date(endStr);
+    const h = diffHours(start, end);
+    if (Number.isFinite(h) && h >= 0) durations.push(h);
+  }
+  if (!durations.length) return 0;
+  const sum = durations.reduce((a, b) => a + b, 0);
+  return sum / durations.length;
+}
+
+function buildTopMedications(
+  orders: FulfillmentOrderRow[],
+  items: PrescriptionItemRow[],
+  limit = 10,
+) {
+  const byPrescription = new Map<string, PrescriptionItemRow[]>();
+  for (const it of items) {
+    const arr = byPrescription.get(it.prescription_id) || [];
+    arr.push(it);
+    byPrescription.set(it.prescription_id, arr);
+  }
+
+  const agg = new Map<string, { count: number; revenueCents: number }>();
+
+  for (const o of orders) {
+    const arr = byPrescription.get(o.prescription_id) || [];
+    if (!arr.length) continue;
+
+    const totalUnits = arr.reduce((sum, it) => sum + (Number(it.quantity) || 0), 0);
+    const orderRevenueCents = dollarsToCents(o.total_amount);
+
+    for (const it of arr) {
+      const qty = Number(it.quantity) || 0;
+      if (!qty) continue;
+      const name = String(it.medication_name || "Unknown");
+      const share = totalUnits > 0 ? qty / totalUnits : 0;
+      const rev = Math.round(orderRevenueCents * share);
+      const prev = agg.get(name) || { count: 0, revenueCents: 0 };
+      prev.count += qty;
+      prev.revenueCents += rev;
+      agg.set(name, prev);
+    }
+  }
+
+  const out: MedicationRow[] = Array.from(agg.entries())
+    .map(([name, v]) => ({ name, count: v.count, revenueCents: v.revenueCents }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limit);
+
+  return out;
 }
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
-  if (req.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 405);
+  if (req.method !== "POST") return badRequest("POST required");
 
-  const authHeader = req.headers.get("authorization") || req.headers.get("Authorization") || "";
-  if (!authHeader) return json({ ok: false, error: "Missing Authorization" }, 401);
+  const authHeader = req.headers.get("authorization") || "";
+  if (!authHeader) return unauthorized();
 
-  const env = await requireEnv();
-  if (!env.ok) return json({ ok: false, error: env.error }, 500);
+  const authed = await getAuthedUserId(authHeader);
+  if (!authed.ok) return unauthorized(authed.error);
 
-  const authed = createClient(env.url, env.anon, { global: { headers: { Authorization: authHeader } } });
-  const { data: userRes, error: userErr } = await authed.auth.getUser();
-  if (userErr || !userRes?.user) return json({ ok: false, error: "Unauthorized" }, 401);
+  const supabase = getServiceClient();
+  if (!supabase) return json({ ok: false, error: "Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY" }, 500);
 
   let body: ReqBody;
   try {
     body = (await req.json()) as ReqBody;
   } catch {
-    return json({ ok: false, error: "Invalid JSON body" }, 400);
+    return badRequest("Invalid JSON");
   }
 
-  const pharmacyId = body?.pharmacyId;
-  if (!pharmacyId) return json({ ok: false, error: "Missing pharmacyId" }, 400);
+  const pharmacyId = String(body?.pharmacyId || "").trim();
+  if (!pharmacyId) return badRequest("pharmacyId is required");
 
-  const service = createClient(env.url, env.service);
-  const allowed = await assertPharmacyAccess(service, userRes.user.id, pharmacyId);
-  if (!allowed) return json({ ok: false, error: "Forbidden" }, 403);
+  const timeRangeDays = Math.min(365, asInt(body?.timeRangeDays, 30));
 
-  const days = daysFromRange(body.timeRange);
+  const allowed = await ensurePharmacyAccess(supabase, authed.userId, pharmacyId);
+  if (!allowed) return unauthorized("Not authorized for this pharmacy");
+
+  // Current period: [now - N days, now)
   const now = new Date();
-  const end = now;
-  const start = new Date(end.getTime() - days * 24 * 60 * 60 * 1000);
+  const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0));
+  const start = dateAddDays(end, -timeRangeDays);
   const prevEnd = start;
-  const prevStart = new Date(prevEnd.getTime() - days * 24 * 60 * 60 * 1000);
+  const prevStart = dateAddDays(prevEnd, -timeRangeDays);
 
   try {
-    const [{ data: orders, error: oErr }, { data: prevOrders, error: poErr }] = await Promise.all([
-      service
-        .from("fulfillment_orders")
-        .select("id,status,created_at,total_amount,payment_status,prescription_id")
-        .eq("pharmacy_id", pharmacyId)
-        .gte("created_at", start.toISOString())
-        .lt("created_at", end.toISOString())
-        .limit(5000),
-      service
-        .from("fulfillment_orders")
-        .select("id,status,created_at,total_amount,payment_status,prescription_id")
-        .eq("pharmacy_id", pharmacyId)
-        .gte("created_at", prevStart.toISOString())
-        .lt("created_at", prevEnd.toISOString())
-        .limit(5000),
+    const [currOrders, prevOrders] = await Promise.all([
+      fetchOrders(supabase, pharmacyId, start.toISOString(), end.toISOString()),
+      fetchOrders(supabase, pharmacyId, prevStart.toISOString(), prevEnd.toISOString()),
     ]);
 
-    if (oErr) throw oErr;
-    if (poErr) throw poErr;
+    const currRevenueCents = currOrders.reduce((sum, o) => sum + dollarsToCents(o.total_amount), 0);
+    const prevRevenueCents = prevOrders.reduce((sum, o) => sum + dollarsToCents(o.total_amount), 0);
 
-    const orderRows = orders || [];
-    const prevOrderRows = prevOrders || [];
+    const currPrescriptions = new Set(currOrders.map((o) => o.prescription_id)).size;
+    const prevPrescriptions = new Set(prevOrders.map((o) => o.prescription_id)).size;
 
-    // Optional: billing_transactions (if present). If missing/blocked, fallback to order totals.
-    const [{ data: txs, error: tErr }, { data: prevTxs, error: ptErr }] = await Promise.all([
-      service
-        .from("billing_transactions")
-        .select("amount,created_at,status,transaction_type")
-        .eq("entity_type", "pharmacy")
-        .eq("entity_id", pharmacyId)
-        .gte("created_at", start.toISOString())
-        .lt("created_at", end.toISOString())
-        .limit(5000),
-      service
-        .from("billing_transactions")
-        .select("amount,created_at,status,transaction_type")
-        .eq("entity_type", "pharmacy")
-        .eq("entity_id", pharmacyId)
-        .gte("created_at", prevStart.toISOString())
-        .lt("created_at", prevEnd.toISOString())
-        .limit(5000),
-    ]);
+    const avgFulfillmentHours = buildAvgFulfillmentHours(currOrders);
 
-    const txRows = tErr ? [] : (txs || []);
-    const prevTxRows = ptErr ? [] : (prevTxs || []);
+    const revenueTrend = buildTrend(start, timeRangeDays, currOrders);
+    const ordersByStatus = buildStatusDist(currOrders);
 
-    const revenueCentsFromTx = txRows.reduce((sum, r) => {
-      const status = String((r as any).status || "");
-      if (status !== "completed") return sum;
-      const type = safeLower((r as any).transaction_type);
-      const amt = toCentsMoney((r as any).amount);
-      if (type.includes("refund") || amt < 0) return sum + amt;
-      return sum + amt;
-    }, 0);
+    const currPrescriptionIds = currOrders.map((o) => o.prescription_id).filter(Boolean);
+    const items = await fetchPrescriptionItems(supabase, currPrescriptionIds);
+    const topMedications = buildTopMedications(currOrders, items, 10);
 
-    const revenueCentsFromOrders = orderRows.reduce((sum, r) => sum + toCentsMoney((r as any).total_amount), 0);
-    const totalRevenueCents = revenueCentsFromTx !== 0 ? revenueCentsFromTx : revenueCentsFromOrders;
-
-    const prevRevenueCentsFromTx = prevTxRows.reduce((sum, r) => {
-      const status = String((r as any).status || "");
-      if (status !== "completed") return sum;
-      const type = safeLower((r as any).transaction_type);
-      const amt = toCentsMoney((r as any).amount);
-      if (type.includes("refund") || amt < 0) return sum + amt;
-      return sum + amt;
-    }, 0);
-
-    const prevRevenueCentsFromOrders = prevOrderRows.reduce((sum, r) => sum + toCentsMoney((r as any).total_amount), 0);
-    const prevTotalRevenueCents = prevRevenueCentsFromTx !== 0 ? prevRevenueCentsFromTx : prevRevenueCentsFromOrders;
-
-    const totalOrders = orderRows.length;
-    const prevTotalOrders = prevOrderRows.length;
-
-    const revenueChangePct =
-      prevTotalRevenueCents > 0 ? ((totalRevenueCents - prevTotalRevenueCents) / prevTotalRevenueCents) * 100 : 0;
-
-    const ordersChangePct = prevTotalOrders > 0 ? ((totalOrders - prevTotalOrders) / prevTotalOrders) * 100 : 0;
-
-    const totalPrescriptions = orderRows.filter((o) => safeLower((o as any).status) === "completed").length;
-
-    const avgOrderValueCents = totalOrders > 0 ? Math.round(totalRevenueCents / totalOrders) : 0;
-
-    // Daily trend (use orders totals for consistency)
-    const dayMap: Record<string, { date: string; revenueCents: number; orders: number }> = {};
-    for (let i = 0; i < days; i++) {
-      const d = startOfDayUTC(new Date(end.getTime() - (days - 1 - i) * 24 * 60 * 60 * 1000));
-      const key = dateKeyUTC(d);
-      dayMap[key] = { date: key, revenueCents: 0, orders: 0 };
-    }
-
-    for (const o of orderRows) {
-      const created = new Date((o as any).created_at);
-      const key = dateKeyUTC(startOfDayUTC(created));
-      if (!dayMap[key]) continue;
-      dayMap[key].orders += 1;
-      dayMap[key].revenueCents += toCentsMoney((o as any).total_amount);
-    }
-
-    const dailyTrend = Object.values(dayMap).sort((a, b) => a.date.localeCompare(b.date));
-
-    // Status breakdown
-    const statusCounts: Record<string, number> = {};
-    for (const o of orderRows) {
-      const s = safeLower((o as any).status) || "unknown";
-      statusCounts[s] = (statusCounts[s] || 0) + 1;
-    }
-    const statusBreakdown = Object.entries(statusCounts)
-      .map(([k, v]) => ({
-        name: k.charAt(0).toUpperCase() + k.slice(1),
-        value: v,
-      }))
-      .sort((a, b) => b.value - a.value);
-
-    // Top medications (approximate revenue allocation per order by item quantity)
-    const prescriptionIds = Array.from(
-      new Set(orderRows.map((o) => (o as any).prescription_id).filter(Boolean)),
-    ) as string[];
-
-    type ItemRow = { prescription_id: string; medication_name: string; quantity: number };
-
-    const topMedications: Array<{ name: string; count: number; revenueCents: number }> = [];
-
-    if (prescriptionIds.length) {
-      const { data: items, error: iErr } = await service
-        .from("prescription_items")
-        .select("prescription_id,medication_name,quantity")
-        .in("prescription_id", prescriptionIds)
-        .limit(20000);
-
-      if (iErr) throw iErr;
-
-      const itemsRows = (items || []) as any as ItemRow[];
-
-      const orderByRx = new Map<string, { totalCents: number }>();
-      for (const o of orderRows) {
-        const rx = (o as any).prescription_id;
-        if (!rx) continue;
-        orderByRx.set(rx, { totalCents: toCentsMoney((o as any).total_amount) });
-      }
-
-      const totalQtyByRx = new Map<string, number>();
-      for (const it of itemsRows) {
-        const q = Number(it.quantity || 0);
-        if (!it.prescription_id) continue;
-        totalQtyByRx.set(it.prescription_id, (totalQtyByRx.get(it.prescription_id) || 0) + Math.max(0, q));
-      }
-
-      const agg = new Map<string, { count: number; revenueCents: number }>();
-      for (const it of itemsRows) {
-        const name = String(it.medication_name || "").trim() || "Unknown medication";
-        const q = Math.max(0, Number(it.quantity || 0));
-        const rx = it.prescription_id;
-        const order = orderByRx.get(rx);
-        const denom = totalQtyByRx.get(rx) || 0;
-
-        let alloc = 0;
-        if (order && denom > 0) {
-          alloc = Math.round((order.totalCents * q) / denom);
-        }
-
-        const cur = agg.get(name) || { count: 0, revenueCents: 0 };
-        cur.count += q;
-        cur.revenueCents += alloc;
-        agg.set(name, cur);
-      }
-
-      topMedications.push(
-        ...Array.from(agg.entries())
-          .map(([name, v]) => ({ name, count: v.count, revenueCents: v.revenueCents }))
-          .sort((a, b) => b.count - a.count)
-          .slice(0, 10),
-      );
-    }
-
-    const resp: Resp = {
+    return json({
       ok: true,
-      kpis: {
-        totalRevenueCents,
-        totalOrders,
-        totalPrescriptions,
-        avgOrderValueCents,
-        revenueChangePct: Math.round(revenueChangePct * 10) / 10,
-        ordersChangePct: Math.round(ordersChangePct * 10) / 10,
+      timeRangeDays,
+      totals: {
+        revenueCents: currRevenueCents,
+        orders: currOrders.length,
+        prescriptions: currPrescriptions,
+        avgFulfillmentHours,
+        revenueChangePct: safePctChange(currRevenueCents, prevRevenueCents),
+        ordersChangePct: safePctChange(currOrders.length, prevOrders.length),
+        prescriptionsChangePct: safePctChange(currPrescriptions, prevPrescriptions),
       },
-      dailyTrend,
+      revenueTrend,
+      ordersByStatus,
       topMedications,
-      statusBreakdown: statusBreakdown.length ? statusBreakdown : [{ name: "No data", value: 1 }],
-    };
-
-    return json(resp);
+    });
   } catch (e: any) {
     console.error(e);
-    return json({ ok: false, error: e?.message || "Failed to load pharmacy analytics" }, 500);
+    return json({ ok: false, error: e?.message || "Failed to compute analytics" }, 500);
   }
 });
