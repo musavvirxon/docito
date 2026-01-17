@@ -10,13 +10,13 @@
     node scripts/phase0-audit.mjs
 */
 
-import fs from 'node:fs';
-import path from 'node:path';
+import fs from "node:fs";
+import path from "node:path";
 
 const ROOT = process.cwd();
 
 function readText(p) {
-  return fs.readFileSync(p, 'utf8');
+  return fs.readFileSync(p, "utf8");
 }
 
 function listFiles(dir, exts = null) {
@@ -24,11 +24,12 @@ function listFiles(dir, exts = null) {
   const stack = [dir];
   while (stack.length) {
     const d = stack.pop();
+    if (!fs.existsSync(d)) continue;
     const ents = fs.readdirSync(d, { withFileTypes: true });
     for (const e of ents) {
       const full = path.join(d, e.name);
       if (e.isDirectory()) {
-        if (e.name === 'node_modules' || e.name === 'dist' || e.name === '.git') continue;
+        if (e.name === "node_modules" || e.name === "dist" || e.name === ".git" || e.name === ".next") continue;
         stack.push(full);
       } else if (!exts) {
         out.push(full);
@@ -41,36 +42,48 @@ function listFiles(dir, exts = null) {
   return out;
 }
 
-function extractRoutes(appTsx) {
-  const txt = readText(appTsx);
+function extractRoutes(appTsxPath) {
+  const txt = readText(appTsxPath);
   const routes = new Set();
 
-  // Extract <Route path="..."> occurrences
+  // <Route path="...">
   const re = /\bpath=\"([^\"]+)\"/g;
   let m;
-  while ((m = re.exec(txt))) {
-    routes.add(m[1]);
-  }
+  while ((m = re.exec(txt))) routes.add(m[1]);
 
-  // Include index route
-  if (txt.includes('<Route index')) routes.add('/');
+  // <Route index element=...>
+  if (txt.includes("<Route index")) routes.add("/");
+
+  // <Navigate to="...">
+  const nav = /\bto=\"([^\"]+)\"/g;
+  while ((m = nav.exec(txt))) {
+    const v = m[1];
+    if (v.startsWith("/")) routes.add(v);
+  }
 
   return Array.from(routes).sort((a, b) => a.localeCompare(b));
 }
 
 const PATTERNS = [
-  { id: 'mock_keyword', re: /\bmock\b/i, severity: 'high' },
-  { id: 'math_random', re: /Math\.random\(/, severity: 'high' },
-  { id: 'coming_soon', re: /coming soon/i, severity: 'medium' },
-  { id: 'placeholder', re: /placeholder\.svg|\/placeholder\.svg/i, severity: 'low' },
-  { id: 'todo_fixme', re: /\bTODO\b|\bFIXME\b/, severity: 'low' },
+  { id: "mock_keyword", re: /\bmock\b/i, severity: "high" },
+  { id: "hardcoded_array", re: /\bconst\s+\w+\s*=\s*\[/, severity: "medium" },
+  { id: "math_random", re: /Math\.random\(/, severity: "high" },
+  { id: "coming_soon", re: /coming\s+soon/i, severity: "medium" },
+  { id: "placeholder", re: /placeholder\.svg|\/placeholder\.svg/i, severity: "low" },
+  { id: "todo_fixme", re: /\bTODO\b|\bFIXME\b/, severity: "low" },
+  { id: "demo_data", re: /\bdemo\b/i, severity: "medium" },
 ];
 
 function scanForPatterns(files) {
   const findings = [];
   for (const f of files) {
     const rel = path.relative(ROOT, f);
-    const txt = readText(f);
+    let txt = "";
+    try {
+      txt = readText(f);
+    } catch {
+      continue;
+    }
     const lines = txt.split(/\r?\n/);
 
     for (const p of PATTERNS) {
@@ -78,13 +91,13 @@ function scanForPatterns(files) {
       for (let i = 0; i < lines.length; i++) {
         if (p.re.test(lines[i])) {
           hitCount++;
-          if (hitCount <= 25) {
+          if (hitCount <= 30) {
             findings.push({
               file: rel,
               line: i + 1,
               pattern: p.id,
               severity: p.severity,
-              snippet: lines[i].slice(0, 240),
+              snippet: lines[i].slice(0, 260),
             });
           }
         }
@@ -107,13 +120,11 @@ function groupByFile(findings) {
 }
 
 function main() {
-  const appPath = path.join(ROOT, 'src', 'App.tsx');
+  const appPath = path.join(ROOT, "src", "App.tsx");
   const routes = fs.existsSync(appPath) ? extractRoutes(appPath) : [];
 
-  const srcFiles = listFiles(path.join(ROOT, 'src'), ['.ts', '.tsx', '.js', '.jsx', '.json']);
-  const supaFiles = fs.existsSync(path.join(ROOT, 'supabase'))
-    ? listFiles(path.join(ROOT, 'supabase'), ['.ts', '.sql', '.json', '.toml'])
-    : [];
+  const srcFiles = listFiles(path.join(ROOT, "src"), [".ts", ".tsx", ".js", ".jsx", ".json", ".md"]);
+  const supaFiles = listFiles(path.join(ROOT, "supabase"), [".ts", ".sql", ".json", ".toml", ".md"]);
 
   const findings = scanForPatterns([...srcFiles, ...supaFiles]);
   const grouped = groupByFile(findings);
@@ -125,21 +136,23 @@ function main() {
     findings_by_file: grouped,
   };
 
-  fs.writeFileSync(path.join(ROOT, 'PHASE0_AUDIT.json'), JSON.stringify(out, null, 2));
+  fs.writeFileSync(path.join(ROOT, "PHASE0_AUDIT.json"), JSON.stringify(out, null, 2));
 
-  // Console summary
-  console.log('Phase 0 audit complete');
-  console.log('Routes:', routes.length);
-  console.log('Findings:', findings.length);
+  console.log("Phase 0 audit complete");
+  console.log("Routes:", routes.length);
+  console.log("Findings:", findings.length);
+
   const top = grouped
     .map((g) => ({ file: g.file, count: g.items.length }))
     .sort((a, b) => b.count - a.count)
-    .slice(0, 15);
+    .slice(0, 20);
+
   if (top.length) {
-    console.log('\nTop files with findings:');
-    for (const t of top) console.log(`- ${t.count.toString().padStart(3, ' ')}  ${t.file}`);
+    console.log("\nTop files with findings:");
+    for (const t of top) console.log(`- ${String(t.count).padStart(3, " ")}  ${t.file}`);
   }
-  console.log('\nWrote PHASE0_AUDIT.json');
+
+  console.log("\nWrote PHASE0_AUDIT.json");
 }
 
 main();
