@@ -7,14 +7,12 @@ import { Toaster } from "@/components/ui/sonner";
 import PublicLayout from "@/layouts/PublicLayout";
 import { Button } from "@/components/ui/button";
 
-// Loading fallback
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
   </div>
 );
 
-// Lazy load pages (keep for most routes)
 const PremiumHome = lazy(() => import("@/pages/PremiumHome"));
 const Auth = lazy(() => import("@/pages/Auth"));
 const About = lazy(() => import("@/pages/About"));
@@ -37,12 +35,21 @@ const SuperAdminDashboard = lazy(() => import("@/pages/SuperAdminDashboard"));
 
 const LabLandingPage = lazy(() => import("@/pages/lab/LabLandingPage"));
 const LabDashboard = lazy(() => import("@/pages/lab/LabDashboard"));
+const LabRegistration = lazy(() => import("@/pages/lab/LabRegistration"));
+const LabVerification = lazy(() => import("@/pages/lab/LabVerification"));
 
 const PharmacyLandingPage = lazy(() => import("@/pages/pharmacy/PharmacyLandingPage"));
 const PharmacyDashboard = lazy(() => import("@/pages/pharmacy/PharmacyDashboard"));
+const PharmacyRegistration = lazy(() => import("@/pages/pharmacy/PharmacyRegistration"));
+const PharmacyVerification = lazy(() => import("@/pages/pharmacy/PharmacyVerification"));
 
 const ImagingLandingPage = lazy(() => import("@/pages/imaging/ImagingLandingPage"));
 const ImagingDashboard = lazy(() => import("@/pages/imaging/ImagingDashboard"));
+const ImagingRegistration = lazy(() => import("@/pages/imaging/ImagingRegistration"));
+const ImagingVerification = lazy(() => import("@/pages/imaging/ImagingVerification"));
+
+const PracticeVerification = lazy(() => import("@/pages/PracticeVerification"));
+const Notifications = lazy(() => import("@/pages/Notifications"));
 
 const AppointmentBooking = lazy(() => import("@/pages/AppointmentBooking"));
 const BookingConfirmation = lazy(() => import("@/pages/BookingConfirmation"));
@@ -52,12 +59,6 @@ const VideoCall = lazy(() => import("@/pages/VideoCall"));
 const Messages = lazy(() => import("@/pages/Messages"));
 const FeedbackCenter = lazy(() => import("@/pages/FeedbackCenter"));
 
-/**
- * IMPORTANT:
- * Do NOT lazy-load NotFound. A stale browser cache can try to fetch an old chunk name
- * (e.g., NotFound-xxxx.js) and cause a blank screen in Lovable previews.
- * Keeping NotFound inline avoids that entire failure mode.
- */
 function NotFoundInline() {
   const location = useLocation();
 
@@ -95,7 +96,6 @@ export default function App() {
 
       <Suspense fallback={<PageLoader />}>
         <Routes>
-          {/* Public pages with layout */}
           <Route element={<PublicLayout />}>
             <Route index element={<PremiumHome />} />
             <Route path="/about" element={<About />} />
@@ -114,13 +114,12 @@ export default function App() {
             <Route path="/booking-confirmation/:appointmentId" element={<BookingConfirmation />} />
           </Route>
 
-          {/* Auth */}
           <Route path="/auth" element={<Auth />} />
 
-          {/* Dashboards */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/feedback" element={<FeedbackCenter />} />
+          <Route path="/notifications" element={<Notifications />} />
 
           <Route path="/patient-dashboard" element={<PatientDashboard />} />
           <Route path="/patient/dashboard" element={<PatientDashboard />} />
@@ -130,25 +129,32 @@ export default function App() {
           <Route path="/staff/dashboard" element={<StaffDashboard />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/practice-dashboard" element={<AdminDashboard />} />
           <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
           <Route path="/super-admin/dashboard" element={<SuperAdminDashboard />} />
 
-          {/* Entity dashboards */}
-          <Route path="/lab/dashboard" element={<LabDashboard />} />
-          <Route path="/pharmacy/dashboard" element={<PharmacyDashboard />} />
-          <Route path="/imaging/dashboard" element={<ImagingDashboard />} />
+          <Route path="/dashboard/verify" element={<PracticeVerification />} />
 
-          {/* Keep old settings route, but route into dashboard (no separate settings page/chunk) */}
+          <Route path="/lab/dashboard" element={<LabDashboard />} />
+          <Route path="/lab/register" element={<LabRegistration />} />
+          <Route path="/lab/verification" element={<LabVerification />} />
+
+          <Route path="/pharmacy/dashboard" element={<PharmacyDashboard />} />
+          <Route path="/pharmacy/register" element={<PharmacyRegistration />} />
+          <Route path="/pharmacy/verification" element={<PharmacyVerification />} />
+
+          <Route path="/imaging/dashboard" element={<ImagingDashboard />} />
+          <Route path="/imaging-center/dashboard" element={<ImagingDashboard />} />
+          <Route path="/imaging/register" element={<ImagingRegistration />} />
+          <Route path="/imaging/verification" element={<ImagingVerification />} />
+
           <Route path="/imaging/settings" element={<Navigate to="/imaging/dashboard" replace />} />
 
-          {/* Video Calls */}
           <Route path="/video-call" element={<VideoCall />} />
           <Route path="/video/:roomId" element={<VideoCall />} />
 
-          {/* Messaging */}
           <Route path="/messages" element={<Messages />} />
 
-          {/* 404 (NOT lazy-loaded) */}
           <Route path="*" element={<NotFoundInline />} />
         </Routes>
       </Suspense>
