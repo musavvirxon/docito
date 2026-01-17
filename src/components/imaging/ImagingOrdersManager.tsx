@@ -14,6 +14,7 @@ import { RefreshCw, Loader2, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ImagingManualOrderDialog } from "@/components/imaging/ImagingManualOrderDialog";
+import { useAuth } from "@/contexts/AuthContext";
 
 type ReferralRow = {
   id: string;
@@ -67,6 +68,13 @@ type ProfileRow = {
   last_name: string | null;
 };
 
+type MyStaffPermsRow = {
+  can_view_orders: boolean | null;
+  can_process_scans: boolean | null;
+  can_upload_results: boolean | null;
+  can_verify_results: boolean | null;
+};
+
 function asName(p?: ProfileRow | null) {
   if (!p) return "User";
   return p.full_name || [p.first_name, p.last_name].filter(Boolean).join(" ") || "User";
@@ -90,6 +98,8 @@ const REFERRAL_STATUSES = ["pending", "accepted", "declined", "completed"];
 const PRIORITIES = ["routine", "urgent", "stat"];
 
 export default function ImagingOrdersManager({ centerId }: Props) {
+  const { user } = useAuth();
+
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
 
@@ -106,15 +116,85 @@ export default function ImagingOrdersManager({ centerId }: Props) {
 
   const [manualOpen, setManualOpen] = useState(false);
 
+  const [permLoading, setPermLoading] = useState(true);
+  const [isCenterAdmin, setIsCenterAdmin] = useState(false);
+  const [myPerms, setMyPerms] = useState<MyStaffPermsRow | null>(null);
+
+  const canViewOrders = Boolean(isCenterAdmin || myPerms?.can_view_orders);
+  const canCreateManualOrder = Boolean(isCenterAdmin || myPerms?.can_view_orders);
+  const canManageWorkflow = Boolean(isCenterAdmin || myPerms?.can_process_scans);
+  const canUpdateReferral = Boolean(isCenterAdmin || myPerms?.can_process_scans || myPerms?.can_upload_results || myPerms?.can_verify_results);
+
+  const fetchMyPerms = async () => {
+    if (!centerId || !user?.id) {
+      setIsCenterAdmin(false);
+      setMyPerms(null);
+      setPermLoading(false);
+      return;
+    }
+
+    setPermLoading(true);
+    try {
+      const { data: center, error: cErr } = await supabase
+        .from("imaging_centers")
+        .select("admin_id")
+        .eq("id", centerId)
+        .maybeSingle();
+
+      if (cErr) throw cErr;
+
+      const admin = center?.admin_id === user.id;
+      setIsCenterAdmin(admin);
+
+      if (admin) {
+        setMyPerms({
+          can_view_orders: true,
+          can_process_scans: true,
+          can_upload_results: true,
+          can_verify_results: true,
+        });
+        return;
+      }
+
+      const { data: s, error: sErr } = await supabase
+        .from("imaging_staff")
+        .select("can_view_orders,can_process_scans,can_upload_results,can_verify_results")
+        .eq("imaging_center_id", centerId)
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .maybeSingle();
+
+      if (sErr) throw sErr;
+
+      setMyPerms((s as any) || null);
+    } catch (e: any) {
+      console.error(e);
+      setIsCenterAdmin(false);
+      setMyPerms(null);
+    } finally {
+      setPermLoading(false);
+    }
+  };
+
   const fetchAll = async () => {
     if (!centerId) return;
+
     setLoading(true);
     try {
-      // Orders from referrals (supports registered + walk-in via facility_patient_id)
+      if (!canViewOrders) {
+        setOrders([]);
+        setOrderState({});
+        setPatientProfiles({});
+        setFacilityPatients({});
+        setStaff([]);
+        setStaffProfiles({});
+        return;
+      }
+
       const { data: refData, error: refErr } = await supabase
         .from("referrals")
         .select(
-          "id, referral_number, status, priority, preferred_date, preferred_time_slot, patient_id, facility_patient_id, patient_name, patient_phone, reason, clinical_notes, attachments, result_notes, created_at, accepted_at, completed_at"
+          "id, referral_number, status, priority, preferred_date, preferred_time_slot, patient_id, facility_patient_id, patient_name, patient_phone, reason, clinical_notes, attachments, result_notes, created_at, accepted_at, completed_at",
         )
         .eq("receiver_type", "imaging_center")
         .eq("receiver_entity_id", centerId)
@@ -129,7 +209,6 @@ export default function ImagingOrdersManager({ centerId }: Props) {
       const patientIds = Array.from(new Set(refRows.map((r) => r.patient_id).filter(Boolean))) as string[];
       const facilityIds = Array.from(new Set(refRows.map((r) => r.facility_patient_id).filter(Boolean))) as string[];
 
-      // Order state (workflow + assigned staff)
       if (referralIds.length) {
         const { data: stData, error: stErr } = await supabase
           .from("imaging_order_state")
@@ -146,13 +225,8 @@ export default function ImagingOrdersManager({ centerId }: Props) {
         setOrderState({});
       }
 
-      // Patient profiles (registered)
       if (patientIds.length) {
-        const { data: pData, error: pErr } = await supabase
-          .from("profiles")
-          .select("user_id, full_name, first_name, last_name")
-          .in("user_id", patientIds);
-
+        const { data: pData, error: pErr } = await supabase.from("profiles").select("user_id, full_name, first_name, last_name").in("user_id", patientIds);
         if (pErr) throw pErr;
 
         const pMap: Record<string, ProfileRow> = {};
@@ -162,13 +236,8 @@ export default function ImagingOrdersManager({ centerId }: Props) {
         setPatientProfiles({});
       }
 
-      // Facility patients (walk-in)
       if (facilityIds.length) {
-        const { data: fData, error: fErr } = await supabase
-          .from("facility_patients")
-          .select("id, full_name, phone, email")
-          .in("id", facilityIds);
-
+        const { data: fData, error: fErr } = await supabase.from("facility_patients").select("id, full_name, phone, email").in("id", facilityIds);
         if (fErr) throw fErr;
 
         const fMap: Record<string, FacilityPatientRow> = {};
@@ -178,7 +247,6 @@ export default function ImagingOrdersManager({ centerId }: Props) {
         setFacilityPatients({});
       }
 
-      // Staff list for assignment dropdown
       const { data: sData, error: sErr } = await supabase
         .from("imaging_staff")
         .select("id, user_id, staff_role, status")
@@ -192,11 +260,7 @@ export default function ImagingOrdersManager({ centerId }: Props) {
 
       const staffUserIds = staffRows.map((s) => s.user_id);
       if (staffUserIds.length) {
-        const { data: spData, error: spErr } = await supabase
-          .from("profiles")
-          .select("user_id, full_name, first_name, last_name")
-          .in("user_id", staffUserIds);
-
+        const { data: spData, error: spErr } = await supabase.from("profiles").select("user_id, full_name, first_name, last_name").in("user_id", staffUserIds);
         if (spErr) throw spErr;
 
         const spMap: Record<string, ProfileRow> = {};
@@ -214,9 +278,14 @@ export default function ImagingOrdersManager({ centerId }: Props) {
   };
 
   useEffect(() => {
-    fetchAll();
+    fetchMyPerms();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [centerId]);
+  }, [centerId, user?.id]);
+
+  useEffect(() => {
+    if (!permLoading) fetchAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [centerId, permLoading, canViewOrders]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -236,17 +305,7 @@ export default function ImagingOrdersManager({ centerId }: Props) {
 
       const exam = pickExam(o.attachments, o.reason);
 
-      const hay = [
-        o.referral_number || "",
-        exam.examName,
-        exam.modality,
-        patientDisplay,
-        referralStatus,
-        st,
-      ]
-        .join(" ")
-        .toLowerCase();
-
+      const hay = [o.referral_number || "", exam.examName, exam.modality, patientDisplay, referralStatus, st].join(" ").toLowerCase();
       const matchesQuery = !q || hay.includes(q);
 
       return matchesWorkflow && matchesStatus && matchesQuery;
@@ -254,6 +313,11 @@ export default function ImagingOrdersManager({ centerId }: Props) {
   }, [orders, orderState, patientProfiles, facilityPatients, query, workflowFilter, statusFilter]);
 
   const updateWorkflow = async (referralId: string, patch: Partial<OrderStateRow>) => {
+    if (!canManageWorkflow) {
+      toast.error("You don't have permission to manage imaging workflow.");
+      return;
+    }
+
     setSavingId(referralId);
     try {
       const existing = orderState[referralId];
@@ -262,24 +326,42 @@ export default function ImagingOrdersManager({ centerId }: Props) {
         imaging_center_id: centerId,
         workflow_status: patch.workflow_status || existing?.workflow_status || "scheduled",
         priority: patch.priority || existing?.priority || "routine",
-        assigned_staff_id: patch.assigned_staff_id ?? existing?.assigned_staff_id ?? null,
+        assigned_staff_id: patch.assigned_staff_id !== undefined ? patch.assigned_staff_id : existing?.assigned_staff_id || null,
         updated_at: new Date().toISOString(),
       };
 
-      const { error } = await supabase.from("imaging_order_state").upsert(next, { onConflict: "referral_id" });
+      const { error } = await supabase
+        .from("imaging_order_state")
+        .upsert(
+          {
+            referral_id: next.referral_id,
+            imaging_center_id: next.imaging_center_id,
+            workflow_status: next.workflow_status,
+            priority: next.priority,
+            assigned_staff_id: next.assigned_staff_id,
+            updated_at: next.updated_at,
+          },
+          { onConflict: "referral_id" },
+        );
+
       if (error) throw error;
 
       setOrderState((prev) => ({ ...prev, [referralId]: next }));
-      toast.success("Order updated");
+      toast.success("Workflow updated");
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to update order");
+      toast.error(e?.message || "Failed to update workflow");
     } finally {
       setSavingId(null);
     }
   };
 
   const updateReferralStatus = async (referralId: string, status: string, resultNotes?: string | null) => {
+    if (!canUpdateReferral) {
+      toast.error("You don't have permission to update referral status/notes.");
+      return;
+    }
+
     setSavingId(referralId);
     try {
       const patch: any = { status };
@@ -300,11 +382,27 @@ export default function ImagingOrdersManager({ centerId }: Props) {
     }
   };
 
-  if (loading) {
+  if (permLoading || loading) {
     return (
       <div className="flex justify-center py-10">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
+    );
+  }
+
+  if (!canViewOrders) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Orders</CardTitle>
+          <CardDescription>You do not have permission to view orders for this imaging center.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-sm text-muted-foreground">
+            Ask your imaging center admin to grant <span className="font-medium">can_view_orders</span>.
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -322,7 +420,8 @@ export default function ImagingOrdersManager({ centerId }: Props) {
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh
             </Button>
-            <Button onClick={() => setManualOpen(true)}>
+
+            <Button onClick={() => setManualOpen(true)} disabled={!canCreateManualOrder}>
               <Plus className="h-4 w-4 mr-2" />
               New Manual Order
             </Button>
@@ -333,11 +432,7 @@ export default function ImagingOrdersManager({ centerId }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2 md:col-span-1">
               <Label>Search</Label>
-              <Input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search by referral #, patient, exam..."
-              />
+              <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by referral #, patient, exam..." />
             </div>
 
             <div className="space-y-2">
@@ -393,24 +488,25 @@ export default function ImagingOrdersManager({ centerId }: Props) {
               <TableBody>
                 {filtered.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-10 text-muted-foreground">
-                      No orders found
+                    <TableCell colSpan={8} className="py-10 text-center text-muted-foreground">
+                      No matching orders.
                     </TableCell>
                   </TableRow>
                 ) : (
                   filtered.map((o) => {
                     const st = orderState[o.id]?.workflow_status || "scheduled";
-                    const pri = orderState[o.id]?.priority || o.priority || "routine";
-                    const assigned = orderState[o.id]?.assigned_staff_id || null;
+                    const priority = (orderState[o.id]?.priority || o.priority || "routine") as string;
+                    const saving = savingId === o.id;
+
+                    const exam = pickExam(o.attachments, o.reason);
 
                     const patientDisplay =
                       (o.facility_patient_id && facilityPatients[o.facility_patient_id]?.full_name) ||
                       o.patient_name ||
-                      (o.patient_id ? asName(patientProfiles[o.patient_id]) : "Walk-in");
+                      (o.patient_id ? asName(patientProfiles[o.patient_id]) : "") ||
+                      "—";
 
-                    const exam = pickExam(o.attachments, o.reason);
-
-                    const saving = savingId === o.id;
+                    const assignedStaffId = orderState[o.id]?.assigned_staff_id || null;
 
                     return (
                       <TableRow key={o.id}>
@@ -419,7 +515,10 @@ export default function ImagingOrdersManager({ centerId }: Props) {
                           <div className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString()}</div>
                         </TableCell>
 
-                        <TableCell className="font-medium">{patientDisplay}</TableCell>
+                        <TableCell>
+                          <div className="font-medium">{patientDisplay}</div>
+                          <div className="text-xs text-muted-foreground">{o.patient_phone || "—"}</div>
+                        </TableCell>
 
                         <TableCell>
                           <div className="font-medium">{exam.examName}</div>
@@ -427,24 +526,37 @@ export default function ImagingOrdersManager({ centerId }: Props) {
                         </TableCell>
 
                         <TableCell>
-                          <Badge variant={pri === "stat" ? "destructive" : pri === "urgent" ? "default" : "secondary"}>
-                            {pri}
-                          </Badge>
+                          <Select
+                            value={priority}
+                            onValueChange={(v) => updateWorkflow(o.id, { priority: v })}
+                            disabled={saving || !canManageWorkflow}
+                          >
+                            <SelectTrigger className="w-[140px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {PRIORITIES.map((p) => (
+                                <SelectItem key={p} value={p}>
+                                  {p}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </TableCell>
 
                         <TableCell>
                           <Select
                             value={st}
                             onValueChange={(v) => updateWorkflow(o.id, { workflow_status: v })}
-                            disabled={saving}
+                            disabled={saving || !canManageWorkflow}
                           >
-                            <SelectTrigger className="w-[160px]">
+                            <SelectTrigger className="w-[170px]">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
                               {WORKFLOW_STATUSES.map((s) => (
                                 <SelectItem key={s} value={s}>
-                                  {s}
+                                  {s.replaceAll("_", " ")}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -453,18 +565,18 @@ export default function ImagingOrdersManager({ centerId }: Props) {
 
                         <TableCell>
                           <Select
-                            value={assigned || "unassigned"}
+                            value={assignedStaffId || "unassigned"}
                             onValueChange={(v) => updateWorkflow(o.id, { assigned_staff_id: v === "unassigned" ? null : v })}
-                            disabled={saving}
+                            disabled={saving || !canManageWorkflow}
                           >
-                            <SelectTrigger className="w-[200px]">
+                            <SelectTrigger className="w-[190px]">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="unassigned">Unassigned</SelectItem>
                               {staff.map((s) => (
-                                <SelectItem key={s.user_id} value={s.user_id}>
-                                  {asName(staffProfiles[s.user_id])} · {s.staff_role}
+                                <SelectItem key={s.id} value={s.id}>
+                                  {asName(staffProfiles[s.user_id])} • {s.staff_role}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -472,7 +584,9 @@ export default function ImagingOrdersManager({ centerId }: Props) {
                         </TableCell>
 
                         <TableCell>
-                          <Badge variant="secondary">{o.status || "pending"}</Badge>
+                          <Badge variant={o.status === "accepted" ? "default" : o.status === "completed" ? "secondary" : "outline"}>
+                            {String(o.status || "pending").replaceAll("_", " ")}
+                          </Badge>
                         </TableCell>
 
                         <TableCell className="text-right">
@@ -493,9 +607,7 @@ export default function ImagingOrdersManager({ centerId }: Props) {
                                     <div>
                                       <div className="text-sm text-muted-foreground">Patient</div>
                                       <div className="font-medium">{patientDisplay}</div>
-                                      {o.patient_phone ? (
-                                        <div className="text-xs text-muted-foreground mt-1">{o.patient_phone}</div>
-                                      ) : null}
+                                      {o.patient_phone ? <div className="text-xs text-muted-foreground mt-1">{o.patient_phone}</div> : null}
                                     </div>
                                     <div>
                                       <div className="text-sm text-muted-foreground">Referral #</div>
@@ -524,6 +636,7 @@ export default function ImagingOrdersManager({ centerId }: Props) {
                                       referralId={o.id}
                                       initial={o.result_notes || ""}
                                       saving={savingId === o.id}
+                                      disabled={!canUpdateReferral}
                                       onSave={(val) => updateReferralStatus(o.id, o.status || "pending", val)}
                                     />
                                   </div>
@@ -531,11 +644,7 @@ export default function ImagingOrdersManager({ centerId }: Props) {
                               </DialogContent>
                             </Dialog>
 
-                            <Select
-                              value={o.status || "pending"}
-                              onValueChange={(v) => updateReferralStatus(o.id, v)}
-                              disabled={saving}
-                            >
+                            <Select value={o.status || "pending"} onValueChange={(v) => updateReferralStatus(o.id, v)} disabled={saving || !canUpdateReferral}>
                               <SelectTrigger className="w-[150px]">
                                 <SelectValue />
                               </SelectTrigger>
@@ -573,11 +682,13 @@ function ResultNotesEditor({
   referralId,
   initial,
   saving,
+  disabled,
   onSave,
 }: {
   referralId: string;
   initial: string;
   saving: boolean;
+  disabled: boolean;
   onSave: (val: string) => void;
 }) {
   const [val, setVal] = useState(initial);
@@ -588,9 +699,9 @@ function ResultNotesEditor({
 
   return (
     <div className="space-y-2">
-      <Textarea value={val} onChange={(e) => setVal(e.target.value)} rows={4} placeholder="Enter result notes..." />
+      <Textarea value={val} onChange={(e) => setVal(e.target.value)} rows={4} placeholder="Enter result notes..." disabled={disabled} />
       <div className="flex justify-end">
-        <Button size="sm" onClick={() => onSave(val)} disabled={saving}>
+        <Button size="sm" onClick={() => onSave(val)} disabled={saving || disabled}>
           {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
           Save
         </Button>
