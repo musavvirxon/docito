@@ -1,26 +1,28 @@
 // File: src/pages/StaffDashboard.tsx
 
-import { useState } from "react";
-import { Loader2, AlertCircle, Building2 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { useStaffContext } from "@/hooks/useStaffContext";
-import { useStaffDashboard } from "@/hooks/useStaffDashboard";
-import { StaffSidebar } from "@/components/staff/StaffSidebar";
-import { StaffDashboardOverview } from "@/components/staff/StaffDashboardOverview";
-import { TodayScheduleSection } from "@/components/staff/TodayScheduleSection";
-import { PatientListSection } from "@/components/staff/PatientListSection";
-import { BillingSection } from "@/components/staff/BillingSection";
-import PharmacyDashboardContent from "@/components/staff/PharmacyDashboardContent";
-import LabDashboardContent from "@/components/staff/LabDashboardContent";
-import ImagingDashboardContent from "@/components/staff/ImagingDashboardContent";
-import { DashboardTopBar } from "@/components/dashboard/DashboardTopBar";
-import { useAuth } from "@/contexts/AuthContext";
+import { useState, useMemo } from 'react';
+import { Loader2, AlertCircle, Building2 } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { useStaffContext } from '@/hooks/useStaffContext';
+import { useStaffDashboard } from '@/hooks/useStaffDashboard';
+import { StaffSidebar } from '@/components/staff/StaffSidebar';
+import { StaffDashboardOverview } from '@/components/staff/StaffDashboardOverview';
+import { TodayScheduleSection } from '@/components/staff/TodayScheduleSection';
+import { PatientListSection } from '@/components/staff/PatientListSection';
+import { BillingSection } from '@/components/staff/BillingSection';
+import PharmacyDashboardContent from '@/components/staff/PharmacyDashboardContent';
+import LabDashboardContent from '@/components/staff/LabDashboardContent';
+import ImagingDashboardContent from '@/components/staff/ImagingDashboardContent';
+import { DashboardTopBar } from '@/components/dashboard/DashboardTopBar';
+import { useAuth } from '@/contexts/AuthContext';
+
+type EntityStatus = 'active' | 'pending' | 'verified' | 'suspended';
 
 const StaffDashboard = () => {
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState("dashboard");
+  const [activeSection, setActiveSection] = useState('dashboard');
   const { activeRole } = useAuth();
 
   const {
@@ -45,8 +47,28 @@ const StaffDashboard = () => {
     updateAppointmentStatus,
   } = useStaffDashboard();
 
-  const loading = contextLoading || (staffType === "clinic" && dataLoading);
-  const error = contextError || (staffType === "clinic" && dataError);
+  const loading = contextLoading || (staffType === 'clinic' && dataLoading);
+  const error = contextError || (staffType === 'clinic' && dataError);
+
+  const entityStatus: EntityStatus = useMemo(() => {
+    // Prefer entityInfo verification fields (added in useStaffContext)
+    const verified = Boolean(entityInfo?.is_verified || entityInfo?.verified);
+
+    const rawStatus = String(
+      entityInfo?.status ??
+        entityInfo?.verification_status ??
+        ''
+    ).toLowerCase();
+
+    if (rawStatus === 'suspended') return 'suspended';
+    if (verified) return 'verified';
+    if (rawStatus === 'active') return 'active';
+
+    // Clinic fallback: some pages may have practice object with is_verified
+    if (staffType === 'clinic' && (practice as any)?.is_verified) return 'verified';
+
+    return 'pending';
+  }, [entityInfo, practice, staffType]);
 
   if (loading) {
     return (
@@ -67,13 +89,15 @@ const StaffDashboard = () => {
             <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-foreground mb-2">Access Denied</h2>
             <p className="text-muted-foreground mb-6">
-              {error || "You are not assigned to any organization. Please contact your administrator."}
+              {error || 'You are not assigned to any organization. Please contact your administrator.'}
             </p>
             <div className="flex gap-2 justify-center">
-              <Button variant="outline" onClick={() => navigate("/")}>
+              <Button variant="outline" onClick={() => navigate('/')}>
                 Go Home
               </Button>
-              <Button onClick={refetchContext}>Try Again</Button>
+              <Button onClick={refetchContext}>
+                Try Again
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -82,7 +106,7 @@ const StaffDashboard = () => {
   }
 
   const renderContent = () => {
-    if (activeSection === "settings") {
+    if (activeSection === 'settings') {
       return (
         <div className="space-y-4">
           <h2 className="text-2xl font-bold text-foreground">Settings</h2>
@@ -98,9 +122,9 @@ const StaffDashboard = () => {
     }
 
     switch (staffType) {
-      case "clinic":
+      case 'clinic':
         switch (activeSection) {
-          case "dashboard":
+          case 'dashboard':
             return (
               <StaffDashboardOverview
                 practice={practice}
@@ -111,17 +135,17 @@ const StaffDashboard = () => {
                 onNavigate={setActiveSection}
               />
             );
-          case "today":
-          case "appointments":
+          case 'today':
+          case 'appointments':
             return (
               <TodayScheduleSection
-                appointments={activeSection === "today" ? todaysAppointments : upcomingAppointments}
+                appointments={activeSection === 'today' ? todaysAppointments : upcomingAppointments}
                 onStatusUpdate={updateAppointmentStatus}
                 onRefresh={refreshData}
                 canUpdateAppointments={clinicPermissions?.can_book_appointments || false}
               />
             );
-          case "patients":
+          case 'patients':
             return (
               <PatientListSection
                 patients={recentPatients}
@@ -129,28 +153,37 @@ const StaffDashboard = () => {
                 canManagePatients={clinicPermissions?.can_manage_patients || false}
               />
             );
-          case "billing":
-            return <BillingSection payments={recentPayments} onRefresh={refreshData} />;
+          case 'billing':
+            return (
+              <BillingSection
+                payments={recentPayments}
+                onRefresh={refreshData}
+              />
+            );
         }
         break;
 
-      case "pharmacy":
+      case 'pharmacy':
         return <PharmacyDashboardContent />;
 
-      case "lab":
+      case 'lab':
         return <LabDashboardContent />;
 
-      case "imaging":
+      case 'imaging':
         return <ImagingDashboardContent />;
     }
 
     return (
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-foreground capitalize">{activeSection.replace("-", " ")}</h2>
+        <h2 className="text-2xl font-bold text-foreground capitalize">
+          {activeSection.replace('-', ' ')}
+        </h2>
         <Card>
           <CardContent className="p-6 text-center">
             <Building2 className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <p className="text-muted-foreground">This section is under development.</p>
+            <p className="text-muted-foreground">
+              This section is under development.
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -168,8 +201,16 @@ const StaffDashboard = () => {
       />
 
       <div className="flex-1 flex flex-col">
-        <DashboardTopBar role={activeRole} />
-        <main className="flex-1 p-6 overflow-y-auto">{renderContent()}</main>
+        {/* ✅ Top Bar with clickable verification badge (routes now exist in App.tsx) */}
+        <DashboardTopBar
+          role={activeRole}
+          entityName={entityInfo?.name}
+          entityStatus={entityStatus}
+        />
+
+        <main className="flex-1 p-6 overflow-y-auto">
+          {renderContent()}
+        </main>
       </div>
     </div>
   );
