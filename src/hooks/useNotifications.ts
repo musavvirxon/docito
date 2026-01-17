@@ -1,135 +1,96 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
-import { useEffect } from 'react';
+// Path: src/hooks/useNotifications.ts
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
-export interface Notification {
+export type AppNotification = {
   id: string;
   user_id: string;
+  entity_type: string | null;
+  entity_id: string | null;
+  role_scope: string | null;
+  level: "info" | "success" | "warning" | "error";
   title: string;
-  message: string;
-  type: string;
-  is_read: boolean;
+  body: string | null;
+  action_url: string | null;
+  read_at: string | null;
   created_at: string;
-  related_id?: string;
-  related_type?: string;
-}
+  metadata: Record<string, unknown>;
+};
 
-export const useNotifications = () => {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
+export function useNotifications(options?: { limit?: number; unreadOnly?: boolean; autoRefreshMs?: number }) {
+  const limit = options?.limit ?? 25;
+  const unreadOnly = options?.unreadOnly ?? false;
+  const autoRefreshMs = options?.autoRefreshMs ?? 0;
 
-  const { data: notifications = [], isLoading } = useQuery({
-    queryKey: ['notifications', user?.id],
-    queryFn: async () => {
-      if (!user) return [];
-      
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(50);
+  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<AppNotification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
-      if (error) {
-        console.error('Error fetching notifications:', error);
-        throw error;
-      }
-      return data as Notification[];
-    },
-    enabled: !!user,
-    staleTime: 30000, // Cache for 30 seconds
-    refetchOnWindowFocus: true,
-  });
+  const fetchNotifications = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: fnErr } = await supabase.functions.invoke("notifications", {
+        body: { action: "list", limit, unreadOnly },
+      });
+      if (fnErr) throw fnErr;
+      if (!data?.ok) throw new Error(data?.error || "Failed to load notifications");
 
-  // Real-time subscription for new notifications
+      setItems((data.notifications || []) as AppNotification[]);
+      setUnreadCount(Number(data.unreadCount || 0));
+    } catch (e: any) {
+      setError(e?.message || "Failed to load notifications");
+      setItems([]);
+      setUnreadCount(0);
+    } finally {
+      setLoading(false);
+    }
+  }, [limit, unreadOnly]);
+
+  const markRead = useCallback(async (id: string) => {
+    const { data, error: fnErr } = await supabase.functions.invoke("notifications", {
+      body: { action: "mark_read", id },
+    });
+    if (fnErr) throw fnErr;
+    if (!data?.ok) throw new Error(data?.error || "Failed to mark read");
+
+    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n)));
+    setUnreadCount((c) => Math.max(0, c - 1));
+  }, []);
+
+  const markAllRead = useCallback(async () => {
+    const { data, error: fnErr } = await supabase.functions.invoke("notifications", {
+      body: { action: "mark_all_read" },
+    });
+    if (fnErr) throw fnErr;
+    if (!data?.ok) throw new Error(data?.error || "Failed to mark all read");
+
+    const now = new Date().toISOString();
+    setItems((prev) => prev.map((n) => ({ ...n, read_at: n.read_at ?? now })));
+    setUnreadCount(0);
+  }, []);
+
   useEffect(() => {
-    if (!user?.id) return;
+    fetchNotifications();
+  }, [fetchNotifications]);
 
-    const channel = supabase
-      .channel(`user-notifications-table-${user.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['notifications', user.id] });
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['notifications', user.id] });
-        }
-      )
-      .subscribe();
+  useEffect(() => {
+    if (!autoRefreshMs || autoRefreshMs < 5000) return;
+    const t = window.setInterval(() => fetchNotifications(), autoRefreshMs);
+    return () => window.clearInterval(t);
+  }, [autoRefreshMs, fetchNotifications]);
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user?.id, queryClient]);
-
-  const unreadCount = notifications.filter(n => !n.is_read).length;
-
-  const markAsReadMutation = useMutation({
-    mutationFn: async (notificationId: string) => {
-      if (!user?.id) throw new Error('User not authenticated');
-      
-      const { error } = await supabase
-        .from('notifications')
-        .update({ is_read: true })
-        .eq('id', notificationId)
-        .eq('user_id', user.id); // Ensure user can only mark their own notifications
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-    },
-    onError: (error) => {
-      console.error('Error marking notification as read:', error);
-      toast.error('Failed to mark notification as read');
-    },
-  });
-
-  const markAllAsReadMutation = useMutation({
-    mutationFn: async () => {
-      if (!user?.id) throw new Error('User not authenticated');
-      
-      const { error } = await supabase
-        .from('notifications')
-        .update({ is_read: true })
-        .eq('user_id', user.id)
-        .eq('is_read', false);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      toast.success('All notifications marked as read');
-    },
-    onError: (error) => {
-      console.error('Error marking all as read:', error);
-      toast.error('Failed to mark all as read');
-    },
-  });
+  const unread = useMemo(() => items.filter((n) => !n.read_at), [items]);
 
   return {
-    notifications,
+    loading,
+    items,
+    unread,
     unreadCount,
-    isLoading,
-    markAsRead: markAsReadMutation.mutate,
-    markAllAsRead: markAllAsReadMutation.mutate,
+    error,
+    refetch: fetchNotifications,
+    markRead,
+    markAllRead,
   };
-};
+}
