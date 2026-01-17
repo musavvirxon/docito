@@ -2,8 +2,17 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -12,161 +21,168 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  BarChart3,
+  TrendingUp,
   DollarSign,
   Package,
-  Pill,
-  ArrowUpRight,
-  ArrowDownRight,
+  Users,
   RefreshCw,
+  Loader2,
+  Pill,
 } from "lucide-react";
+
 import {
-  AreaChart,
   Area,
+  AreaChart,
+  CartesianGrid,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
   Cell,
 } from "recharts";
-import { toast } from "sonner";
 
 interface Props {
   pharmacyId: string;
 }
 
-type AnalyticsResp = {
-  ok: boolean;
-  error?: string;
-  kpis?: {
-    totalRevenueCents: number;
-    totalOrders: number;
-    totalPrescriptions: number;
-    avgOrderValueCents: number;
+type TimeRange = "7d" | "30d" | "90d";
+
+type AnalyticsResponse = {
+  ok: true;
+  timeRangeDays: number;
+  totals: {
+    revenueCents: number;
+    orders: number;
+    prescriptions: number;
+    avgFulfillmentHours: number;
     revenueChangePct: number;
     ordersChangePct: number;
+    prescriptionsChangePct: number;
   };
-  dailyTrend?: Array<{ date: string; revenueCents: number; orders: number }>;
-  topMedications?: Array<{ name: string; count: number; revenueCents: number }>;
-  statusBreakdown?: Array<{ name: string; value: number }>;
+  revenueTrend: Array<{ date: string; revenueCents: number; orders: number }>;
+  ordersByStatus: Array<{ name: string; value: number }>;
+  topMedications: Array<{ name: string; count: number; revenueCents: number }>;
+} | {
+  ok: false;
+  error: string;
 };
 
 const COLORS = [
   "hsl(var(--primary))",
+  "hsl(var(--secondary))",
+  "hsl(var(--muted-foreground))",
+  "hsl(var(--destructive))",
   "hsl(var(--accent))",
-  "hsl(var(--chart-3))",
-  "hsl(var(--chart-4))",
-  "hsl(var(--chart-5))",
 ];
 
-function moneyFromCents(cents: number) {
-  return new Intl.NumberFormat(undefined, {
+function formatMoneyFromCents(cents: number, currency: string = "USD") {
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "USD",
+    currency,
     maximumFractionDigits: 0,
   }).format((cents || 0) / 100);
 }
 
+function formatPct(n: number) {
+  const v = Number.isFinite(n) ? n : 0;
+  const sign = v > 0 ? "+" : "";
+  return `${sign}${v.toFixed(1)}%`;
+}
+
+function toDays(range: TimeRange) {
+  if (range === "7d") return 7;
+  if (range === "90d") return 90;
+  return 30;
+}
+
 export default function PharmacyAnalytics({ pharmacyId }: Props) {
+  const [timeRange, setTimeRange] = useState<TimeRange>("30d");
   const [loading, setLoading] = useState(true);
-  const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d">("7d");
+  const [refreshing, setRefreshing] = useState(false);
+  const [data, setData] = useState<Extract<AnalyticsResponse, { ok: true }> | null>(null);
 
-  const [stats, setStats] = useState({
-    totalRevenueCents: 0,
-    totalOrders: 0,
-    totalPrescriptions: 0,
-    avgOrderValueCents: 0,
-    revenueChange: 0,
-    ordersChange: 0,
-  });
-
-  const [revenueData, setRevenueData] = useState<Array<{ date: string; revenue: number; orders: number }>>([]);
-  const [topMedications, setTopMedications] = useState<Array<{ name: string; count: number; revenue: number }>>([]);
-  const [ordersByStatus, setOrdersByStatus] = useState<Array<{ name: string; value: number }>>([]);
-
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = async (opts?: { silent?: boolean }) => {
     if (!pharmacyId) return;
-    try {
-      setLoading(true);
+    const silent = Boolean(opts?.silent);
 
-      const { data, error } = await supabase.functions.invoke("pharmacy-analytics", {
-        body: { pharmacyId, timeRange },
+    try {
+      silent ? setRefreshing(true) : setLoading(true);
+
+      const { data: fnData, error } = await supabase.functions.invoke("pharmacy-analytics", {
+        body: {
+          pharmacyId,
+          timeRangeDays: toDays(timeRange),
+        },
       });
 
       if (error) throw error;
 
-      const payload = data as AnalyticsResp;
-      if (!payload?.ok) throw new Error(payload?.error || "Failed to load analytics");
+      const payload = fnData as AnalyticsResponse;
+      if (!payload || payload.ok !== true) {
+        throw new Error((payload as any)?.error || "Failed to load analytics");
+      }
 
-      const k = payload.kpis!;
-      setStats({
-        totalRevenueCents: k.totalRevenueCents,
-        totalOrders: k.totalOrders,
-        totalPrescriptions: k.totalPrescriptions,
-        avgOrderValueCents: k.avgOrderValueCents,
-        revenueChange: k.revenueChangePct,
-        ordersChange: k.ordersChangePct,
-      });
-
-      setRevenueData(
-        (payload.dailyTrend || []).map((d) => ({
-          date: new Date(d.date + "T00:00:00Z").toLocaleDateString(undefined, { month: "short", day: "numeric" }),
-          revenue: Math.round((d.revenueCents || 0) / 100),
-          orders: d.orders || 0,
-        })),
-      );
-
-      setTopMedications(
-        (payload.topMedications || []).map((m) => ({
-          name: m.name,
-          count: m.count,
-          revenue: Math.round((m.revenueCents || 0) / 100),
-        })),
-      );
-
-      setOrdersByStatus(
-        (payload.statusBreakdown || []).map((s) => ({
-          name: s.name,
-          value: s.value,
-        })),
-      );
+      setData(payload);
     } catch (e: any) {
-      console.error("Error fetching pharmacy analytics:", e);
-      toast.error(e?.message || "Failed to load analytics");
+      console.error(e);
+      setData(null);
+      toast.error(e?.message || "Failed to load pharmacy analytics");
     } finally {
-      setLoading(false);
+      silent ? setRefreshing(false) : setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (pharmacyId) fetchAnalytics();
+    fetchAnalytics();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pharmacyId, timeRange]);
 
-  const revenueChangeUp = useMemo(() => stats.revenueChange >= 0, [stats.revenueChange]);
-  const ordersChangeUp = useMemo(() => stats.ordersChange >= 0, [stats.ordersChange]);
+  const revenueTrend = useMemo(() => {
+    const rows = data?.revenueTrend || [];
+    return rows.map((r) => ({
+      date: r.date,
+      revenue: Math.round((r.revenueCents || 0) / 100),
+      orders: r.orders || 0,
+    }));
+  }, [data]);
+
+  const ordersByStatus = useMemo(() => {
+    return data?.ordersByStatus || [];
+  }, [data]);
+
+  const topMedications = useMemo(() => {
+    return (data?.topMedications || []).map((m) => ({
+      name: m.name,
+      count: m.count,
+      revenue: Math.round((m.revenueCents || 0) / 100),
+    }));
+  }, [data]);
 
   if (loading) {
     return (
-      <div className="flex justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className="flex items-center justify-center py-10">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
+  const totals = data?.totals;
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold flex items-center gap-2">
-          <BarChart3 className="h-6 w-6" />
-          Analytics Dashboard
-        </h2>
-        <div className="flex items-center gap-4">
-          <Select value={timeRange} onValueChange={(v) => setTimeRange(v as any)}>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            <TrendingUp className="h-6 w-6" />
+            Pharmacy Analytics
+          </h2>
+          <p className="text-muted-foreground">Track your pharmacy performance and trends</p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Select value={timeRange} onValueChange={(v) => setTimeRange(v as TimeRange)}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Time range" />
             </SelectTrigger>
@@ -176,34 +192,34 @@ export default function PharmacyAnalytics({ pharmacyId }: Props) {
               <SelectItem value="90d">Last 90 days</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="ghost" size="sm" onClick={fetchAnalytics}>
-            <RefreshCw className="h-4 w-4" />
+
+          <Button
+            variant="outline"
+            onClick={() => fetchAnalytics({ silent: true })}
+            disabled={refreshing}
+          >
+            {refreshing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+            Refresh
           </Button>
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Revenue</p>
-                <p className="text-3xl font-bold">{moneyFromCents(stats.totalRevenueCents)}</p>
-                <div className="flex items-center gap-1 mt-1">
-                  {revenueChangeUp ? (
-                    <ArrowUpRight className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <ArrowDownRight className="h-4 w-4 text-destructive" />
-                  )}
-                  <span className={`text-sm ${revenueChangeUp ? "text-green-600" : "text-destructive"}`}>
-                    {revenueChangeUp ? "+" : "-"}
-                    {Math.abs(stats.revenueChange).toFixed(1)}%
-                  </span>
-                </div>
+                <p className="text-2xl font-bold text-green-600">
+                  {formatMoneyFromCents(totals?.revenueCents || 0)}
+                </p>
+                <Badge variant="secondary" className="mt-2">
+                  {formatPct(totals?.revenueChangePct || 0)}
+                </Badge>
               </div>
-              <div className="p-3 bg-primary/10 rounded-lg">
-                <DollarSign className="h-6 w-6 text-primary" />
+              <div className="p-3 bg-green-500/10 rounded-lg">
+                <DollarSign className="h-6 w-6 text-green-600" />
               </div>
             </div>
           </CardContent>
@@ -213,22 +229,14 @@ export default function PharmacyAnalytics({ pharmacyId }: Props) {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Orders</p>
-                <p className="text-3xl font-bold">{stats.totalOrders}</p>
-                <div className="flex items-center gap-1 mt-1">
-                  {ordersChangeUp ? (
-                    <ArrowUpRight className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <ArrowDownRight className="h-4 w-4 text-destructive" />
-                  )}
-                  <span className={`text-sm ${ordersChangeUp ? "text-green-600" : "text-destructive"}`}>
-                    {ordersChangeUp ? "+" : "-"}
-                    {Math.abs(stats.ordersChange).toFixed(1)}%
-                  </span>
-                </div>
+                <p className="text-sm text-muted-foreground">Orders Processed</p>
+                <p className="text-2xl font-bold">{totals?.orders ?? 0}</p>
+                <Badge variant="secondary" className="mt-2">
+                  {formatPct(totals?.ordersChangePct || 0)}
+                </Badge>
               </div>
-              <div className="p-3 bg-accent/10 rounded-lg">
-                <Package className="h-6 w-6 text-accent" />
+              <div className="p-3 bg-blue-500/10 rounded-lg">
+                <Package className="h-6 w-6 text-blue-600" />
               </div>
             </div>
           </CardContent>
@@ -239,10 +247,13 @@ export default function PharmacyAnalytics({ pharmacyId }: Props) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Prescriptions Filled</p>
-                <p className="text-3xl font-bold">{stats.totalPrescriptions}</p>
+                <p className="text-2xl font-bold">{totals?.prescriptions ?? 0}</p>
+                <Badge variant="secondary" className="mt-2">
+                  {formatPct(totals?.prescriptionsChangePct || 0)}
+                </Badge>
               </div>
-              <div className="p-3 bg-green-500/10 rounded-lg">
-                <Pill className="h-6 w-6 text-green-600" />
+              <div className="p-3 bg-purple-500/10 rounded-lg">
+                <Users className="h-6 w-6 text-purple-600" />
               </div>
             </div>
           </CardContent>
@@ -252,58 +263,97 @@ export default function PharmacyAnalytics({ pharmacyId }: Props) {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Avg Order Value</p>
-                <p className="text-3xl font-bold">{moneyFromCents(stats.avgOrderValueCents)}</p>
+                <p className="text-sm text-muted-foreground">Avg. Fulfillment</p>
+                <p className="text-2xl font-bold">{(totals?.avgFulfillmentHours ?? 0).toFixed(1)}h</p>
+                <p className="text-xs text-muted-foreground mt-2">Created → Ready/Pickup</p>
               </div>
-              <div className="p-3 bg-purple-500/10 rounded-lg">
-                <DollarSign className="h-6 w-6 text-purple-600" />
+              <div className="p-3 bg-orange-500/10 rounded-lg">
+                <TrendingUp className="h-6 w-6 text-orange-600" />
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Revenue Trend */}
         <Card>
           <CardHeader>
-            <CardTitle>Revenue & Orders Trend</CardTitle>
+            <CardTitle>Revenue Trend</CardTitle>
+            <CardDescription>Daily revenue over the selected period</CardDescription>
           </CardHeader>
-          <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={revenueData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Area type="monotone" dataKey="revenue" strokeWidth={2} fillOpacity={0.2} />
-                <Area type="monotone" dataKey="orders" strokeWidth={2} fillOpacity={0.1} />
-              </AreaChart>
-            </ResponsiveContainer>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={revenueTrend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="date" className="text-xs fill-muted-foreground" />
+                  <YAxis className="text-xs fill-muted-foreground" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px",
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="hsl(var(--primary))"
+                    fillOpacity={1}
+                    fill="url(#colorRevenue)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
 
+        {/* Orders by Status */}
         <Card>
           <CardHeader>
             <CardTitle>Orders by Status</CardTitle>
+            <CardDescription>Distribution of order statuses</CardDescription>
           </CardHeader>
-          <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={ordersByStatus}
-                  dataKey="value"
-                  nameKey="name"
-                  outerRadius={110}
-                  label
-                >
-                  {ordersByStatus.map((_, idx) => (
-                    <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={ordersByStatus}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {ordersByStatus.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+
+              <div className="flex flex-wrap justify-center gap-4 mt-4">
+                {ordersByStatus.map((entry, index) => (
+                  <div key={entry.name} className="flex items-center gap-2">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                    />
+                    <span className="text-sm text-muted-foreground">{entry.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -311,20 +361,37 @@ export default function PharmacyAnalytics({ pharmacyId }: Props) {
       {/* Top Medications */}
       <Card>
         <CardHeader>
-          <CardTitle>Top Medications</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Pill className="h-5 w-5" />
+            Top Selling Medications
+          </CardTitle>
+          <CardDescription>Most dispensed medications this period</CardDescription>
         </CardHeader>
         <CardContent>
-          {!topMedications.length ? (
-            <div className="text-sm text-muted-foreground py-6 text-center">No medication data in this period.</div>
+          {(topMedications?.length || 0) === 0 ? (
+            <div className="text-sm text-muted-foreground">No medication data for the selected period.</div>
           ) : (
-            <div className="space-y-3">
-              {topMedications.slice(0, 8).map((m) => (
-                <div key={m.name} className="flex items-center justify-between p-3 rounded-lg border bg-card">
-                  <div>
-                    <div className="font-medium">{m.name}</div>
-                    <div className="text-sm text-muted-foreground">{m.count} units</div>
+            <div className="space-y-4">
+              {topMedications.map((med, index) => (
+                <div key={med.name} className="flex items-center gap-4">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
+                    {index + 1}
                   </div>
-                  <div className="font-semibold">${m.revenue.toLocaleString()}</div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-medium">{med.name}</span>
+                      <span className="text-sm text-muted-foreground">{med.count} units</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-primary rounded-full"
+                        style={{ width: `${(med.count / topMedications[0].count) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-medium text-green-600">${med.revenue}</span>
+                  </div>
                 </div>
               ))}
             </div>
