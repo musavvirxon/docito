@@ -6,15 +6,19 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 /**
- * Lovable route pills (top bar) require component tagging in development.
- * The `componentTagger()` plugin injects data attributes used by Lovable’s editor.
+ * Lovable "Page routes" (top bar) relies on component tagging in dev/preview.
+ * This config:
+ * - Uses the same React plugin Lovable expects (@vitejs/plugin-react-swc)
+ * - Enables lovable-tagger only when serving (command === "serve")
+ * - Forces the dev server host/port Lovable embeds against
  */
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ command }) => ({
   server: {
     host: "::",
     port: 8080,
+    strictPort: true,
   },
-  plugins: [react(), mode === "development" && componentTagger()].filter(Boolean) as any,
+  plugins: [react(), command === "serve" ? componentTagger() : null].filter(Boolean) as any,
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
