@@ -1,33 +1,10 @@
 // File: src/hooks/useStaffContext.ts
-import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { useUserRoles, AppRole } from './useUserRoles';
 
-// Staff type categories
-export type StaffType = 'clinic' | 'pharmacy' | 'lab' | 'imaging' | 'unknown';
+import { useMemo } from "react";
+import { useAccessScope, type AccessScope } from "@/hooks/useAccessScope";
 
-// Map roles to staff types
-const roleToStaffType: Partial<Record<AppRole, StaffType>> = {
-  clinic_admin: 'clinic',
-  clinic_staff: 'clinic',
-  receptionist: 'clinic',
-  nurse: 'clinic',
-  billing_manager: 'clinic',
-  staff: 'clinic',
-  pharmacy_admin: 'pharmacy',
-  pharmacy_staff: 'pharmacy',
-  pharmacist: 'pharmacy',
-  lab_admin: 'lab',
-  lab_staff: 'lab',
-  lab_technician: 'lab',
-  internal_lab_tech: 'lab',
-  imaging_admin: 'imaging',
-  imaging_staff: 'imaging',
-  internal_imaging_tech: 'imaging',
-};
+export type StaffType = "clinic" | "pharmacy" | "lab" | "imaging" | "unknown";
 
-// Entity info for each staff type
 export interface EntityInfo {
   id: string;
   name: string;
@@ -38,378 +15,131 @@ export interface EntityInfo {
   country?: string;
 }
 
-// Base permissions that all staff types share
-export interface BaseStaffPermissions {
-  entity_id: string | null;
-  staff_role: string | null;
-  status: string;
+export type StaffPermissions =
+  | ({ staffType: "clinic" } & {
+      entity_id: string | null;
+      staff_role: string | null;
+      status: string;
+      can_book_appointments: boolean;
+      can_view_medical_records: boolean;
+      can_manage_billing: boolean;
+      can_manage_patients: boolean;
+      can_view_schedule: boolean;
+    })
+  | ({ staffType: "lab" } & {
+      entity_id: string | null;
+      staff_role: string | null;
+      status: string;
+      can_process_samples: boolean;
+      can_upload_results: boolean;
+      can_verify_results: boolean;
+      can_manage_equipment: boolean;
+    })
+  | ({ staffType: "imaging" } & {
+      entity_id: string | null;
+      staff_role: string | null;
+      status: string;
+      can_view_orders: boolean;
+      can_process_scans: boolean;
+      can_upload_results: boolean;
+      can_verify_results: boolean;
+      can_manage_equipment: boolean;
+    })
+  | ({ staffType: "pharmacy" } & {
+      entity_id: string | null;
+      staff_role: string | null;
+      status: string;
+      can_dispense: boolean;
+      can_manage_inventory: boolean;
+      can_process_prescriptions: boolean;
+    });
+
+function staffTypeFromScope(scope: AccessScope | null): StaffType {
+  if (!scope) return "unknown";
+  if (scope.entity_type === "clinic") return "clinic";
+  if (scope.entity_type === "lab") return "lab";
+  if (scope.entity_type === "imaging") return "imaging";
+  if (scope.entity_type === "pharmacy") return "pharmacy";
+  return "unknown";
 }
 
-// Clinic-specific permissions
-export interface ClinicPermissions extends BaseStaffPermissions {
-  can_book_appointments: boolean;
-  can_view_medical_records: boolean;
-  can_manage_billing: boolean;
-  can_manage_patients: boolean;
-  can_view_schedule: boolean;
-}
+export const useStaffContext = () => {
+  const { loading, scope, error, refetch } = useAccessScope();
 
-// Pharmacy-specific permissions
-export interface PharmacyPermissions extends BaseStaffPermissions {
-  can_dispense: boolean;
-  can_manage_inventory: boolean;
-  can_process_prescriptions: boolean;
-}
+  const staffType = useMemo(() => staffTypeFromScope(scope), [scope]);
 
-// Lab-specific permissions
-export interface LabPermissions extends BaseStaffPermissions {
-  can_process_samples: boolean;
-  can_upload_results: boolean;
-  can_verify_results: boolean;
-  can_manage_equipment: boolean;
-}
+  const permissions: StaffPermissions | null = useMemo(() => {
+    if (!scope || !scope.entity_id || staffType === "unknown") return null;
 
-// Imaging-specific permissions  
-export interface ImagingPermissions extends BaseStaffPermissions {
-  can_view_orders: boolean;
-  can_process_scans: boolean;
-  can_upload_results: boolean;
-  can_verify_results: boolean;
-  can_manage_equipment: boolean;
-}
+    const base = {
+      entity_id: scope.entity_id,
+      staff_role: scope.staff_role,
+      status: scope.status,
+    };
 
-// Union type for all permissions
-export type StaffPermissions = 
-  | (ClinicPermissions & { staffType: 'clinic' })
-  | (PharmacyPermissions & { staffType: 'pharmacy' })
-  | (LabPermissions & { staffType: 'lab' })
-  | (ImagingPermissions & { staffType: 'imaging' });
+    const p = scope.permissions || {};
 
-interface UseStaffContextReturn {
-  staffType: StaffType;
-  entityInfo: EntityInfo | null;
-  permissions: StaffPermissions | null;
-  loading: boolean;
-  error: string | null;
-  isAdmin: boolean;
-  refetch: () => Promise<void>;
-}
-
-export const useStaffContext = (): UseStaffContextReturn => {
-  const { user } = useAuth();
-  const { roles, primaryRole, loading: rolesLoading } = useUserRoles();
-  const [staffType, setStaffType] = useState<StaffType>('unknown');
-  const [entityInfo, setEntityInfo] = useState<EntityInfo | null>(null);
-  const [permissions, setPermissions] = useState<StaffPermissions | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Determine if user is admin
-  const isAdmin = roles.some(role => 
-    ['clinic_admin', 'pharmacy_admin', 'lab_admin', 'imaging_admin', 'admin', 'super_admin'].includes(role)
-  );
-
-  // Determine staff type from roles
-  const determineStaffType = useCallback((): StaffType => {
-    // Prefer primaryRole when available to avoid mismatches when users have multiple roles
-    if (primaryRole) {
-      const primaryType = roleToStaffType[primaryRole];
-      if (primaryType) return primaryType;
-    }
-    for (const role of roles) {
-      const type = roleToStaffType[role];
-      if (type) return type;
-    }
-    return 'unknown';
-  }, [roles, primaryRole]);
-
-  // Fetch clinic staff data
-  const fetchClinicData = useCallback(async (): Promise<{ entity: EntityInfo | null; perms: ClinicPermissions | null }> => {
-    if (!user) return { entity: null, perms: null };
-
-    try {
-      const { data: staffData, error: staffError } = await supabase
-        .from('clinic_staff')
-        .select(`
-          practice_id,
-          staff_role,
-          status,
-          can_book_appointments,
-          can_view_medical_records,
-          can_manage_billing,
-          can_manage_patients,
-          can_view_schedule,
-          practices (
-            id, name, phone, email, address, city, country
-          )
-        `)
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (staffError || !staffData) return { entity: null, perms: null };
-
-      const practice = staffData.practices as any;
+    if (staffType === "clinic") {
       return {
-        entity: practice ? {
-          id: practice.id,
-          name: practice.name,
-          phone: practice.phone,
-          email: practice.email,
-          address: practice.address,
-          city: practice.city,
-          country: practice.country,
-        } : null,
-        perms: {
-          entity_id: staffData.practice_id,
-          staff_role: staffData.staff_role,
-          status: staffData.status || 'active',
-          can_book_appointments: staffData.can_book_appointments || false,
-          can_view_medical_records: staffData.can_view_medical_records || false,
-          can_manage_billing: staffData.can_manage_billing || false,
-          can_manage_patients: staffData.can_manage_patients || false,
-          can_view_schedule: staffData.can_view_schedule || false,
-        }
+        staffType: "clinic",
+        ...base,
+        can_book_appointments: Boolean(p.can_book_appointments),
+        can_view_medical_records: Boolean(p.can_view_medical_records),
+        can_manage_billing: Boolean(p.can_manage_billing),
+        can_manage_patients: Boolean(p.can_manage_patients),
+        can_view_schedule: Boolean(p.can_view_schedule),
       };
-    } catch (err) {
-      console.error('Error fetching clinic data:', err);
-      return { entity: null, perms: null };
     }
-  }, [user]);
 
-  // Fetch pharmacy staff data
-  const fetchPharmacyData = useCallback(async (): Promise<{ entity: EntityInfo | null; perms: PharmacyPermissions | null }> => {
-    if (!user) return { entity: null, perms: null };
-
-    try {
-      const { data: staffData, error: staffError } = await supabase
-        .from('pharmacy_staff')
-        .select(`
-          pharmacy_id,
-          staff_role,
-          status,
-          can_dispense,
-          can_manage_inventory,
-          can_process_prescriptions,
-          pharmacies (
-            id, name, phone, email, address, city, country
-          )
-        `)
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (staffError || !staffData) return { entity: null, perms: null };
-
-      const pharmacy = staffData.pharmacies as any;
+    if (staffType === "lab") {
       return {
-        entity: pharmacy ? {
-          id: pharmacy.id,
-          name: pharmacy.name,
-          phone: pharmacy.phone,
-          email: pharmacy.email,
-          address: pharmacy.address,
-          city: pharmacy.city,
-          country: pharmacy.country,
-        } : null,
-        perms: {
-          entity_id: staffData.pharmacy_id,
-          staff_role: staffData.staff_role,
-          status: staffData.status || 'active',
-          can_dispense: staffData.can_dispense || false,
-          can_manage_inventory: staffData.can_manage_inventory || false,
-          can_process_prescriptions: staffData.can_process_prescriptions || false,
-        }
+        staffType: "lab",
+        ...base,
+        can_process_samples: Boolean(p.can_process_samples),
+        can_upload_results: Boolean(p.can_upload_results),
+        can_verify_results: Boolean(p.can_verify_results),
+        can_manage_equipment: Boolean(p.can_manage_equipment),
       };
-    } catch (err) {
-      console.error('Error fetching pharmacy data:', err);
-      return { entity: null, perms: null };
     }
-  }, [user]);
 
-  // Fetch lab staff data
-  const fetchLabData = useCallback(async (): Promise<{ entity: EntityInfo | null; perms: LabPermissions | null }> => {
-    if (!user) return { entity: null, perms: null };
-
-    try {
-      const { data: staffData, error: staffError } = await supabase
-        .from('lab_staff')
-        .select(`
-          lab_center_id,
-          staff_role,
-          status,
-          can_process_samples,
-          can_upload_results,
-          can_verify_results,
-          can_manage_equipment,
-          lab_centers (
-            id, name, phone, email, address, city, country
-          )
-        `)
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (staffError || !staffData) return { entity: null, perms: null };
-
-      const labCenter = staffData.lab_centers as any;
+    if (staffType === "imaging") {
       return {
-        entity: labCenter ? {
-          id: labCenter.id,
-          name: labCenter.name,
-          phone: labCenter.phone,
-          email: labCenter.email,
-          address: labCenter.address,
-          city: labCenter.city,
-          country: labCenter.country,
-        } : null,
-        perms: {
-          entity_id: staffData.lab_center_id,
-          staff_role: staffData.staff_role,
-          status: staffData.status || 'active',
-          can_process_samples: staffData.can_process_samples || false,
-          can_upload_results: staffData.can_upload_results || false,
-          can_verify_results: staffData.can_verify_results || false,
-          can_manage_equipment: staffData.can_manage_equipment || false,
-        }
+        staffType: "imaging",
+        ...base,
+        can_view_orders: Boolean(p.can_view_orders),
+        can_process_scans: Boolean(p.can_process_scans),
+        can_upload_results: Boolean(p.can_upload_results),
+        can_verify_results: Boolean(p.can_verify_results),
+        can_manage_equipment: Boolean(p.can_manage_equipment),
       };
-    } catch (err) {
-      console.error('Error fetching lab data:', err);
-      return { entity: null, perms: null };
     }
-  }, [user]);
 
-  // Fetch imaging staff data
-  const fetchImagingData = useCallback(async (): Promise<{ entity: EntityInfo | null; perms: ImagingPermissions | null }> => {
-    if (!user) return { entity: null, perms: null };
-
-    try {
-      const { data: staffData, error: staffError } = await supabase
-        .from('imaging_staff')
-        .select(`
-          imaging_center_id,
-          staff_role,
-          status,
-          can_view_orders,
-          can_process_scans,
-          can_upload_results,
-          can_verify_results,
-          can_manage_equipment,
-          imaging_centers (
-            id, name, phone, email, address, city, country
-          )
-        `)
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (staffError || !staffData) return { entity: null, perms: null };
-
-      const imagingCenter = staffData.imaging_centers as any;
+    if (staffType === "pharmacy") {
       return {
-        entity: imagingCenter ? {
-          id: imagingCenter.id,
-          name: imagingCenter.name,
-          phone: imagingCenter.phone,
-          email: imagingCenter.email,
-          address: imagingCenter.address,
-          city: imagingCenter.city,
-          country: imagingCenter.country,
-        } : null,
-        perms: {
-          entity_id: staffData.imaging_center_id,
-          staff_role: staffData.staff_role,
-          status: staffData.status || 'active',
-          can_view_orders: staffData.can_view_orders || false,
-          can_process_scans: staffData.can_process_scans || false,
-          can_upload_results: staffData.can_upload_results || false,
-          can_verify_results: staffData.can_verify_results || false,
-          can_manage_equipment: staffData.can_manage_equipment || false,
-        }
+        staffType: "pharmacy",
+        ...base,
+        can_dispense: Boolean(p.can_dispense),
+        can_manage_inventory: Boolean(p.can_manage_inventory),
+        can_process_prescriptions: Boolean(p.can_process_prescriptions),
       };
-    } catch (err) {
-      console.error('Error fetching imaging data:', err);
-      return { entity: null, perms: null };
     }
-  }, [user]);
 
-  // Main fetch function
-  const fetchStaffData = useCallback(async () => {
-    if (!user || rolesLoading) return;
+    return null;
+  }, [scope, staffType]);
 
-    setLoading(true);
-    setError(null);
-
-    try {
-      const type = determineStaffType();
-      setStaffType(type);
-
-      let result: { entity: EntityInfo | null; perms: any } = { entity: null, perms: null };
-
-      switch (type) {
-        case 'clinic':
-          result = await fetchClinicData();
-          if (result.perms) {
-            setPermissions({ ...result.perms, staffType: 'clinic' });
-          }
-          break;
-        case 'pharmacy':
-          result = await fetchPharmacyData();
-          if (result.perms) {
-            setPermissions({ ...result.perms, staffType: 'pharmacy' });
-          }
-          break;
-        case 'lab':
-          result = await fetchLabData();
-          if (result.perms) {
-            setPermissions({ ...result.perms, staffType: 'lab' });
-          }
-          break;
-        case 'imaging':
-          result = await fetchImagingData();
-          if (result.perms) {
-            setPermissions({ ...result.perms, staffType: 'imaging' });
-          }
-          break;
-        default:
-          setError('Unable to determine staff type');
-          break;
-      }
-
-      setEntityInfo(result.entity);
-
-      if (!result.entity && type !== 'unknown') {
-        setError('You are not assigned to any organization. Please contact your administrator.');
-      }
-    } catch (err: any) {
-      console.error('Error fetching staff data:', err);
-      setError(err.message || 'Failed to load staff data');
-    } finally {
-      setLoading(false);
-    }
-  }, [user, rolesLoading, determineStaffType, fetchClinicData, fetchPharmacyData, fetchLabData, fetchImagingData]);
-
-  useEffect(() => {
-    if (!rolesLoading) {
-      fetchStaffData();
-    }
-  }, [rolesLoading, fetchStaffData]);
+  // Phase 1: entityInfo is optional and will be filled in Phase 2+ (admin-managed profiles + scoped read).
+  const entityInfo: EntityInfo | null = useMemo(() => {
+    if (!scope?.entity_id) return null;
+    return { id: scope.entity_id, name: "" };
+  }, [scope]);
 
   return {
     staffType,
     entityInfo,
     permissions,
-    loading: loading || rolesLoading,
+    loading,
     error,
-    isAdmin,
-    refetch: fetchStaffData,
+    isAdmin: Boolean(scope?.staff_role?.includes("admin")),
+    refetch,
   };
 };
