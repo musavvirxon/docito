@@ -101,91 +101,15 @@ const DEFAULT_FILTERS: SearchFilters = {
   imaging: true,
 };
 
-type RpcPayload = Partial<UnifiedSearchResults> & {
-  doctors?: any[];
-  clinics?: any[];
-  pharmacies?: any[];
-  labs?: any[];
-  imaging?: any[];
-};
-
-function asArray<T = any>(v: unknown): T[] {
-  return Array.isArray(v) ? (v as T[]) : [];
+function cleanTerm(term: string) {
+  return (term || "").replace(/[,()]/g, " ").trim();
 }
 
-function normalizeDoctor(row: any): DoctorResult {
-  return {
-    id: String(row?.id ?? ""),
-    type: "doctor",
-    name: String(row?.name ?? "Unknown"),
-    specialty: String(row?.specialty ?? ""),
-    specialties: Array.isArray(row?.specialties)
-      ? row.specialties
-      : row?.specialty
-        ? [String(row.specialty)]
-        : [],
-    rating: row?.rating ?? null,
-    reviewCount: Number(row?.reviewCount ?? 0),
-    image: row?.image ?? null,
-    clinicAffiliation: row?.clinicAffiliation ?? null,
-    location: row?.location ?? null,
-    consultationFee: row?.consultationFee ?? null,
-    acceptsNewPatients: Boolean(row?.acceptsNewPatients ?? true),
-    languages: Array.isArray(row?.languages) ? row.languages : null,
-  };
-}
-
-function normalizeClinic(row: any): ClinicResult {
-  return {
-    id: String(row?.id ?? ""),
-    type: "clinic",
-    name: String(row?.name ?? "Unknown"),
-    image: row?.image ?? null,
-    location: row?.location ?? null,
-    rating: row?.rating ?? null,
-    reviewCount: Number(row?.reviewCount ?? 0),
-    specialties: Array.isArray(row?.specialties) ? row.specialties : null,
-  };
-}
-
-function normalizePharmacy(row: any): PharmacyResult {
-  return {
-    id: String(row?.id ?? ""),
-    type: "pharmacy",
-    name: String(row?.name ?? "Unknown"),
-    image: row?.image ?? null,
-    location: row?.location ?? null,
-    deliveryAvailable: Boolean(row?.deliveryAvailable ?? false),
-    acceptsInsurance: Boolean(row?.acceptsInsurance ?? false),
-    rating: row?.rating ?? null,
-    reviewCount: Number(row?.reviewCount ?? 0),
-  };
-}
-
-function normalizeLab(row: any): LabResult {
-  return {
-    id: String(row?.id ?? ""),
-    type: "lab",
-    name: String(row?.name ?? "Unknown"),
-    image: row?.image ?? null,
-    location: row?.location ?? null,
-    servicesOffered: Array.isArray(row?.servicesOffered) ? row.servicesOffered : null,
-    turnaroundHours: row?.turnaroundHours ?? null,
-    acceptsInsurance: Boolean(row?.acceptsInsurance ?? false),
-  };
-}
-
-function normalizeImaging(row: any): ImagingResult {
-  return {
-    id: String(row?.id ?? ""),
-    type: "imaging",
-    name: String(row?.name ?? "Unknown"),
-    image: row?.image ?? null,
-    location: row?.location ?? null,
-    procedures: Array.isArray(row?.procedures) ? row.procedures : [],
-    accreditations: Array.isArray(row?.accreditations) ? row.accreditations : null,
-    acceptsInsurance: Boolean(row?.acceptsInsurance ?? false),
-  };
+function firstWord(term: string) {
+  const clean = cleanTerm(term);
+  if (!clean) return "";
+  const words = clean.split(/\s+/).filter((w) => w.length > 0);
+  return words[0] || "";
 }
 
 export function useUnifiedSearch() {
@@ -201,6 +125,203 @@ export function useUnifiedSearch() {
   const [filters, setFilters] = useState<SearchFilters>(DEFAULT_FILTERS);
   const [hasSearched, setHasSearched] = useState(false);
 
+  const searchDoctors = async (query: string, location?: string): Promise<DoctorResult[]> => {
+    try {
+      let dbQuery = supabase
+        .from("doctor_public_search_view")
+        .select(
+          "id, full_name, avatar_url, specialty, bio, languages, consultation_fee, accepts_new_patients, rating, num_reviews, appointment_count, practice_name, practice_city, practice_country"
+        );
+
+      const q = firstWord(query);
+      if (q) {
+        dbQuery = dbQuery.or(`full_name.ilike.%${q}%,specialty.ilike.%${q}%,bio.ilike.%${q}%`);
+      }
+
+      const loc = firstWord(location || "");
+      if (loc) {
+        dbQuery = dbQuery.or(`practice_city.ilike.%${loc}%,practice_country.ilike.%${loc}%`);
+      }
+
+      const { data, error } = await dbQuery
+        .order("rating", { ascending: false })
+        .order("appointment_count", { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+
+      return (data || []).map((d: any) => ({
+        id: String(d.id),
+        type: "doctor" as const,
+        name: d.full_name || "Unknown",
+        specialty: d.specialty || "",
+        specialties: d.specialty ? [d.specialty] : [],
+        rating: d.rating ?? null,
+        reviewCount: Number(d.num_reviews ?? 0),
+        image: d.avatar_url ?? null,
+        clinicAffiliation: d.practice_name ?? null,
+        location:
+          d.practice_city && d.practice_country ? `${d.practice_city}, ${d.practice_country}` : null,
+        consultationFee: d.consultation_fee ?? null,
+        acceptsNewPatients: Boolean(d.accepts_new_patients ?? true),
+        languages: Array.isArray(d.languages) ? d.languages : null,
+      }));
+    } catch (err) {
+      console.error("Error searching doctors:", err);
+      return [];
+    }
+  };
+
+  const searchClinics = async (query: string, location?: string): Promise<ClinicResult[]> => {
+    try {
+      let dbQuery = supabase
+        .from("practice_public_search_view")
+        .select("id, name, logo_url, specialties, city, country, rating, num_reviews, appointment_count, description");
+
+      const q = firstWord(query);
+      if (q) {
+        dbQuery = dbQuery.or(`name.ilike.%${q}%,description.ilike.%${q}%`);
+      }
+
+      const loc = firstWord(location || "");
+      if (loc) {
+        dbQuery = dbQuery.or(`city.ilike.%${loc}%,country.ilike.%${loc}%`);
+      }
+
+      const { data, error } = await dbQuery
+        .order("rating", { ascending: false })
+        .order("appointment_count", { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+
+      return (data || []).map((p: any) => ({
+        id: String(p.id),
+        type: "clinic" as const,
+        name: p.name || "Unknown",
+        image: p.logo_url ?? null,
+        location: p.city && p.country ? `${p.city}, ${p.country}` : null,
+        rating: p.rating ?? null,
+        reviewCount: Number(p.num_reviews ?? 0),
+        specialties: Array.isArray(p.specialties) ? p.specialties : null,
+      }));
+    } catch (err) {
+      console.error("Error searching clinics:", err);
+      return [];
+    }
+  };
+
+  const searchPharmacies = async (query: string, location?: string): Promise<PharmacyResult[]> => {
+    try {
+      let dbQuery = supabase
+        .from("pharmacy_public_search_view")
+        .select("id, name, logo_url, city, country, delivery_available, accepts_insurance, rating, num_reviews");
+
+      const q = firstWord(query);
+      if (q) {
+        dbQuery = dbQuery.ilike("name", `%${q}%`);
+      }
+
+      const loc = firstWord(location || "");
+      if (loc) {
+        dbQuery = dbQuery.or(`city.ilike.%${loc}%,country.ilike.%${loc}%`);
+      }
+
+      const { data, error } = await dbQuery
+        .order("rating", { ascending: false })
+        .order("num_reviews", { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+
+      return (data || []).map((ph: any) => ({
+        id: String(ph.id),
+        type: "pharmacy" as const,
+        name: ph.name || "Unknown",
+        image: ph.logo_url ?? null,
+        location: ph.city && ph.country ? `${ph.city}, ${ph.country}` : null,
+        deliveryAvailable: Boolean(ph.delivery_available ?? false),
+        acceptsInsurance: Boolean(ph.accepts_insurance ?? false),
+        rating: ph.rating ?? null,
+        reviewCount: Number(ph.num_reviews ?? 0),
+      }));
+    } catch (err) {
+      console.error("Error searching pharmacies:", err);
+      return [];
+    }
+  };
+
+  const searchLabsAndImaging = async (
+    query: string,
+    location?: string
+  ): Promise<{ labs: LabResult[]; imaging: ImagingResult[] }> => {
+    try {
+      let dbQuery = supabase
+        .from("lab_center_public_search_view")
+        .select(
+          "id, name, city, country, accepts_insurance, services_offered, accreditations, average_turnaround_hours, type"
+        );
+
+      const q = firstWord(query);
+      if (q) {
+        dbQuery = dbQuery.ilike("name", `%${q}%`);
+      }
+
+      const loc = firstWord(location || "");
+      if (loc) {
+        dbQuery = dbQuery.or(`city.ilike.%${loc}%,country.ilike.%${loc}%`);
+      }
+
+      const { data, error } = await dbQuery.limit(50);
+      if (error) throw error;
+
+      const labs: LabResult[] = [];
+      const imaging: ImagingResult[] = [];
+
+      (data || []).forEach((c: any) => {
+        const services: string[] = Array.isArray(c.services_offered) ? c.services_offered : [];
+        const type = String(c.type || "").toLowerCase();
+
+        const isImaging =
+          type.includes("imaging") ||
+          type.includes("radiology") ||
+          services.some((s) =>
+            ["mri", "ct", "x-ray", "xray", "ultrasound", "mammography"].some((k) =>
+              String(s || "").toLowerCase().includes(k)
+            )
+          );
+
+        const base = {
+          id: String(c.id),
+          name: c.name || "Unknown",
+          location: c.city && c.country ? `${c.city}, ${c.country}` : null,
+          acceptsInsurance: Boolean(c.accepts_insurance ?? false),
+        };
+
+        if (isImaging) {
+          imaging.push({
+            ...base,
+            type: "imaging",
+            procedures: services,
+            accreditations: Array.isArray(c.accreditations) ? c.accreditations : null,
+          });
+        } else {
+          labs.push({
+            ...base,
+            type: "lab",
+            servicesOffered: services.length ? services : null,
+            turnaroundHours: c.average_turnaround_hours ?? null,
+          });
+        }
+      });
+
+      return { labs, imaging };
+    } catch (err) {
+      console.error("Error searching labs/imaging:", err);
+      return { labs: [], imaging: [] };
+    }
+  };
+
   const search = useCallback(
     async (query: string, location?: string, activeFilters: SearchFilters = filters) => {
       setLoading(true);
@@ -208,55 +329,50 @@ export function useUnifiedSearch() {
       setHasSearched(true);
 
       try {
-        // IMPORTANT: match function signature order: (search_location, search_query)
-        const { data, error: rpcError } = await supabase.rpc("homepage_unified_search", {
-          search_location: location ?? "",
-          search_query: query ?? "",
-        });
+        const tasks: Promise<any>[] = [
+          activeFilters.doctors ? searchDoctors(query, location) : Promise.resolve([]),
+          activeFilters.clinics ? searchClinics(query, location) : Promise.resolve([]),
+          activeFilters.pharmacies ? searchPharmacies(query, location) : Promise.resolve([]),
+          activeFilters.labs || activeFilters.imaging
+            ? searchLabsAndImaging(query, location)
+            : Promise.resolve({ labs: [], imaging: [] }),
+        ];
 
-        if (rpcError) throw rpcError;
-
-        const payload = (data ?? {}) as RpcPayload;
-
-        const doctorsRaw = asArray(payload.doctors).map(normalizeDoctor);
-        const clinicsRaw = asArray(payload.clinics).map(normalizeClinic);
-        const pharmaciesRaw = asArray(payload.pharmacies).map(normalizePharmacy);
-        const labsRaw = asArray(payload.labs).map(normalizeLab);
-        const imagingRaw = asArray(payload.imaging).map(normalizeImaging);
+        const [doctors, clinics, pharmacies, labsImaging] = await Promise.all(tasks);
 
         const newResults: UnifiedSearchResults = {
-          doctors: activeFilters.doctors ? doctorsRaw : [],
-          clinics: activeFilters.clinics ? clinicsRaw : [],
-          pharmacies: activeFilters.pharmacies ? pharmaciesRaw : [],
-          labs: activeFilters.labs ? labsRaw : [],
-          imaging: activeFilters.imaging ? imagingRaw : [],
+          doctors: activeFilters.doctors ? doctors : [],
+          clinics: activeFilters.clinics ? clinics : [],
+          pharmacies: activeFilters.pharmacies ? pharmacies : [],
+          labs: activeFilters.labs ? labsImaging.labs : [],
+          imaging: activeFilters.imaging ? labsImaging.imaging : [],
         };
 
         setResults(newResults);
         setFilters(activeFilters);
 
-        const totalCount =
+        const total =
           newResults.doctors.length +
           newResults.clinics.length +
           newResults.pharmacies.length +
           newResults.labs.length +
           newResults.imaging.length;
 
-        if (totalCount === 0 && query) toast.info("No results found. Try adjusting your search.");
+        if (total === 0 && (query || location)) {
+          toast.info("No results found. Try adjusting your search.");
+        }
 
         return newResults;
       } catch (err: any) {
-        const msg =
-          err?.message || err?.details || err?.hint || "Search failed (homepage_unified_search RPC)";
-        console.error("Unified search error:", err);
-        setError(msg);
+        console.error("Search error:", err);
+        setError(err?.message || "Search failed");
         toast.error("Search failed. Please try again.");
         return null;
       } finally {
         setLoading(false);
       }
     },
-    [filters],
+    [filters]
   );
 
   const updateFilters = useCallback((newFilters: Partial<SearchFilters>) => {
