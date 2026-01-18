@@ -1,21 +1,14 @@
 // File: src/pages/Practices.tsx
 
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import {
-  ArrowRight,
-  BarChart3,
-  CalendarCheck,
-  DollarSign,
-  ShieldCheck,
-  Sparkles,
-  Users,
-  Workflow,
-} from "lucide-react";
+import { ArrowRight, BarChart3, CalendarCheck, DollarSign, ShieldCheck, Sparkles, Users, Workflow } from "lucide-react";
+
+// Use relative imports so this page works even if the project doesn't have "@/..." alias configured.
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import { Button } from "../components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Badge } from "../components/ui/badge";
 
 export default function Practices() {
   return (
