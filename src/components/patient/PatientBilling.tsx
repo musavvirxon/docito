@@ -1,11 +1,11 @@
 // File: src/components/patient/PatientBilling.tsx
-// NOTE: FULL REPLACEMENT that fixes setup intent secret usage and finalizes SCA invoice payments.
-
 import { useEffect, useMemo, useRef, useState } from "react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
-import { format } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,17 +13,13 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-import {
-  CreditCard,
-  Receipt,
-  ShieldCheck,
-  RefreshCw,
-  Trash2,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { CreditCard, Receipt, ShieldCheck, RefreshCw, Trash2, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+
+declare global {
+  interface Window {
+    Stripe?: any;
+  }
+}
 
 type BillingSummaryResponse = {
   ok: boolean;
@@ -67,8 +63,6 @@ type BillingSummaryResponse = {
 };
 
 type CreateSetupIntentResponse = { ok: boolean; error?: string; client_secret?: string };
-type SetDefaultPmResponse = { ok: boolean; error?: string };
-type RemovePmResponse = { ok: boolean; error?: string };
 type PayInvoiceResponse = {
   ok: boolean;
   error?: string;
@@ -82,11 +76,7 @@ function formatMoney(amount: number, currency: string) {
   const n = Number(amount || 0);
   const cur = String(currency || "USD").toUpperCase();
   try {
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency: cur,
-      maximumFractionDigits: 2,
-    }).format(n);
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: cur, maximumFractionDigits: 2 }).format(n);
   } catch {
     return `${n.toFixed(2)} ${cur}`;
   }
@@ -121,13 +111,14 @@ async function loadStripeJs(): Promise<void> {
     script.src = "https://js.stripe.com/v3/";
     script.async = true;
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Failed to load Stripe.js"));
+    script.onerror = () => reject(new Error("Failed to load Stripe.js")));
     document.head.appendChild(script);
   });
 }
 
 export const PatientBilling = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<BillingSummaryResponse | null>(null);
@@ -164,6 +155,14 @@ export const PatientBilling = () => {
     [data?.invoices],
   );
 
+  const notifyError = (title: string, description?: string) => {
+    toast({ title, description, variant: "destructive" as any });
+  };
+
+  const notifyOk = (title: string, description?: string) => {
+    toast({ title, description });
+  };
+
   const fetchSummary = async () => {
     if (!user) return;
     setLoading(true);
@@ -171,14 +170,12 @@ export const PatientBilling = () => {
       const { data: resp, error } = await supabase.functions.invoke<BillingSummaryResponse>("patient-billing", {
         body: { action: "get_summary" },
       });
-
       if (error) throw error;
       if (!resp?.ok) throw new Error(resp?.error || "Failed to load billing");
-
       setData(resp);
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to load billing");
+      notifyError("Billing failed to load", e?.message || "Unknown error");
       setData(null);
     } finally {
       setLoading(false);
@@ -210,7 +207,7 @@ export const PatientBilling = () => {
 
   const openCardDialog = async () => {
     if (!publishableKey) {
-      toast.error("Missing VITE_STRIPE_PUBLISHABLE_KEY");
+      notifyError("Missing Stripe key", "Set VITE_STRIPE_PUBLISHABLE_KEY in your frontend env.");
       return;
     }
 
@@ -228,7 +225,7 @@ export const PatientBilling = () => {
       await mountCardElement(si.client_secret);
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to start card setup");
+      notifyError("Card setup failed", e?.message || "Unknown error");
       setCardDialogOpen(false);
       setStripeReady(false);
       setSetupClientSecret(null);
@@ -255,34 +252,31 @@ export const PatientBilling = () => {
     if (!stripeRef.current || !cardElRef.current || !setupClientSecret) return;
 
     setCardDialogBusy(true);
-
     try {
       const email = user?.email || undefined;
 
       const res = await stripeRef.current.confirmCardSetup(setupClientSecret, {
-        payment_method: {
-          card: cardElRef.current,
-          billing_details: { email },
-        },
+        payment_method: { card: cardElRef.current, billing_details: { email } },
       });
 
       if (res?.error) throw new Error(res.error.message || "Card confirmation failed");
       const pmId = res?.setupIntent?.payment_method;
       if (!pmId) throw new Error("No payment method returned");
 
-      const { data: setRes, error: setErr } = await supabase.functions.invoke<SetDefaultPmResponse>("patient-billing", {
-        body: { action: "set_default_payment_method", paymentMethodId: pmId },
-      });
+      const { data: setRes, error: setErr } = await supabase.functions.invoke<{ ok: boolean; error?: string }>(
+        "patient-billing",
+        { body: { action: "set_default_payment_method", paymentMethodId: pmId } },
+      );
 
       if (setErr) throw setErr;
       if (!setRes?.ok) throw new Error(setRes?.error || "Failed to save payment method");
 
-      toast.success("Card saved");
+      notifyOk("Card saved", "Your card is now set as default.");
       closeCardDialog();
       await fetchSummary();
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to save card");
+      notifyError("Failed to save card", e?.message || "Unknown error");
     } finally {
       setCardDialogBusy(false);
     }
@@ -292,23 +286,23 @@ export const PatientBilling = () => {
     if (!defaultPm) return;
 
     try {
-      const { data: r, error } = await supabase.functions.invoke<RemovePmResponse>("patient-billing", {
+      const { data: r, error } = await supabase.functions.invoke<{ ok: boolean; error?: string }>("patient-billing", {
         body: { action: "remove_payment_method", paymentMethodId: defaultPm.provider_payment_method_id },
       });
       if (error) throw error;
       if (!r?.ok) throw new Error(r?.error || "Failed to remove card");
 
-      toast.success("Card removed");
+      notifyOk("Card removed");
       await fetchSummary();
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to remove card");
+      notifyError("Failed to remove card", e?.message || "Unknown error");
     }
   };
 
   const payInvoice = async (invoiceId: string) => {
     if (!publishableKey) {
-      toast.error("Missing VITE_STRIPE_PUBLISHABLE_KEY");
+      notifyError("Missing Stripe key", "Set VITE_STRIPE_PUBLISHABLE_KEY in your frontend env.");
       return;
     }
 
@@ -316,7 +310,6 @@ export const PatientBilling = () => {
       const { data: r, error } = await supabase.functions.invoke<PayInvoiceResponse>("patient-billing", {
         body: { action: "pay_invoice", invoiceId },
       });
-
       if (error) throw error;
       if (!r?.ok) throw new Error(r?.error || "Payment failed");
 
@@ -328,22 +321,21 @@ export const PatientBilling = () => {
         const result = await stripe.confirmCardPayment(r.client_secret);
         if (result?.error) throw new Error(result.error.message || "Authentication failed");
 
-        // finalize on server (idempotent)
         const { data: c, error: cErr } = await supabase.functions.invoke<ConfirmPiResponse>("patient-billing", {
           body: { action: "confirm_payment_intent", invoiceId, paymentIntentId: r.payment_intent_id },
         });
         if (cErr) throw cErr;
         if (!c?.ok) throw new Error(c?.error || "Failed to finalize payment");
 
-        toast.success("Payment completed");
+        notifyOk("Payment completed");
       } else {
-        toast.success("Payment completed");
+        notifyOk("Payment completed");
       }
 
       await fetchSummary();
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Payment failed");
+      notifyError("Payment failed", e?.message || "Unknown error");
     }
   };
 
@@ -614,9 +606,7 @@ export const PatientBilling = () => {
               <div id="stripe-card-mount" className="min-h-[44px]" />
             </div>
 
-            {!stripeReady ? (
-              <div className="text-xs text-muted-foreground">Loading payment form…</div>
-            ) : null}
+            {!stripeReady ? <div className="text-xs text-muted-foreground">Loading payment form…</div> : null}
           </div>
 
           <DialogFooter className="gap-2">
