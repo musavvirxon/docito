@@ -1,3 +1,5 @@
+// File: src/pages/SuperAdminDashboard.tsx
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
@@ -38,6 +40,7 @@ import EcosystemOverview from "@/components/super-admin/EcosystemOverview";
 import EntityManagement from "@/components/super-admin/EntityManagement";
 import GlobalStaffManagement from "@/components/super-admin/GlobalStaffManagement";
 import ReferralManagement from "@/components/super-admin/ReferralManagement";
+import FacilityVerificationRequestsTable from "@/components/super-admin/FacilityVerificationRequestsTable";
 import { useTranslation } from "react-i18next";
 
 const SuperAdminLogin = () => {
@@ -143,7 +146,6 @@ const SuperAdminDashboard = () => {
   const { metrics: advancedMetrics, refreshData: refreshAdvancedMetrics } =
     useAdvancedFinancialMetrics(stats?.totalRevenue || 0, "platform");
 
-  // Inactivity timer - auto logout after 30 minutes
   const handleInactive = async () => {
     await supabase.auth.signOut();
     toast({
@@ -159,7 +161,6 @@ const SuperAdminDashboard = () => {
     enabled: !!user && isSuperAdmin === true,
   });
 
-  // RBAC role check: user_roles is source of truth
   useEffect(() => {
     const checkSuperAdminRole = async () => {
       if (!user) {
@@ -223,239 +224,79 @@ const SuperAdminDashboard = () => {
               </p>
             </div>
 
-            <KPICards />
-            <AnalyticsCharts />
+            <KPICards stats={stats} />
 
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-              <div className="xl:col-span-2">
-                <ManagementTable
-                  title={t("superAdmin.dashboard.recentAppointments")}
-                  type="appointments"
-                />
-              </div>
-              <div>
-                <ActivityFeed />
-              </div>
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              <AnalyticsCharts stats={stats} />
+              <ActivityFeed />
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              <AdvancedFinancialMetrics
+                metrics={advancedMetrics}
+                onRefresh={refreshAdvancedMetrics}
+              />
+              <ManagementTable />
             </div>
           </div>
         );
 
-      case "feedback":
+      case "verifications":
         return (
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Feedback Inbox</h1>
+              <h1 className="text-3xl font-bold text-foreground">Verifications</h1>
               <p className="text-muted-foreground mt-1">
-                Review bug reports & feature requests submitted by dashboard users (coming next).
+                Facility verification requests (clinics, pharmacies, labs, imaging)
               </p>
             </div>
-
-            <Card className="rounded-xl">
-              <CardHeader>
-                <CardTitle>Not wired yet</CardTitle>
-                <CardDescription>
-                  This section is ready. Next step is connecting it to your bug/feature request table in Supabase,
-                  plus upvotes + status (“working on”, “done”).
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground space-y-2">
-                <div>✅ Sidebar nav exists</div>
-                <div>✅ Top header shortcut exists</div>
-                <div>⏳ Data + moderation UI to be connected later</div>
-              </CardContent>
-            </Card>
+            <FacilityVerificationRequestsTable />
           </div>
         );
 
       case "doctors":
         return (
           <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                {t("superAdmin.doctors.title")}
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                {t("superAdmin.doctors.subtitle")}
-              </p>
-            </div>
-
-            <ManagementTable
-              title={t("superAdmin.doctors.allDoctors")}
-              type="doctors"
-            />
-
-            <div className="mt-8 space-y-6">
-              <h2 className="text-2xl font-bold text-foreground">
-                {t("superAdmin.doctors.verifications")}
-              </h2>
-
-              <DoctorVerificationTable title="Pending Verifications" status="pending" />
-              <DoctorVerificationTable title="Under Review" status="under_review" />
-              <DoctorVerificationTable title="Verified Doctors" status="verified" />
-              <DoctorVerificationTable title="Rejected Applications" status="rejected" />
-            </div>
+            <DoctorVerificationTable title="Pending Verifications" status="pending" />
+            <DoctorVerificationTable title="Under Review" status="under_review" />
+            <DoctorVerificationTable title="Verified Doctors" status="verified" />
+            <DoctorVerificationTable title="Rejected Applications" status="rejected" />
           </div>
         );
 
       case "practices":
         return (
           <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                {t("superAdmin.practices.title")}
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                {t("superAdmin.practices.subtitle")}
-              </p>
-            </div>
-
-            <ManagementTable
-              title={t("superAdmin.practices.allPractices")}
-              type="practices"
-            />
-
-            <div className="mt-8 space-y-6">
-              <h2 className="text-2xl font-bold text-foreground">
-                {t("superAdmin.practices.verifications")}
-              </h2>
-
-              <VerificationTable title="Pending Verifications" status="pending" />
-              <VerificationTable title="Under Review" status="under_review" />
-              <VerificationTable title="Verified Practices" status="verified" />
-              <VerificationTable title="Rejected Applications" status="rejected" />
-            </div>
-          </div>
-        );
-
-      case "patients":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                {t("superAdmin.patients.title")}
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                {t("superAdmin.patients.subtitle")}
-              </p>
-            </div>
-            <ManagementTable
-              title={t("superAdmin.patients.allPatients")}
-              type="patients"
-            />
-          </div>
-        );
-
-      case "appointments":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                {t("superAdmin.appointments.title")}
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                {t("superAdmin.appointments.subtitle")}
-              </p>
-            </div>
-            <ManagementTable
-              title={t("superAdmin.appointments.allAppointments")}
-              type="appointments"
-            />
-          </div>
-        );
-
-      case "payments":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                {t("superAdmin.payments.title")}
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                {t("superAdmin.payments.subtitle")}
-              </p>
-            </div>
-            <ManagementTable
-              title={t("superAdmin.payments.allTransactions")}
-              type="payments"
-            />
-          </div>
-        );
-
-      case "analytics":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                {t("superAdmin.analytics.title")}
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                {t("superAdmin.analytics.subtitle")}
-              </p>
-            </div>
-
-            <AnalyticsCharts showAll />
-
-            <div className="mt-8">
-              <AdvancedFinancialMetrics
-                metrics={advancedMetrics}
-                revenue={stats?.totalRevenue || 0}
-                onUpdateInputs={refreshAdvancedMetrics}
-              />
-            </div>
-          </div>
-        );
-
-      case "settings":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                {t("superAdmin.settings.title")}
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                {t("superAdmin.settings.subtitle")}
-              </p>
-            </div>
-            <SuperAdminSettingsPanel />
-          </div>
-        );
-
-      case "logs":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                {t("superAdmin.logs.title")}
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                {t("superAdmin.logs.subtitle")}
-              </p>
-            </div>
-            <ActivityFeed showAll />
-          </div>
-        );
-
-      case "translations":
-        return <TranslationManagement />;
-
-      case "help":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Help Center Management</h1>
-              <p className="text-muted-foreground mt-1">
-                Manage help articles and knowledge base content
-              </p>
-            </div>
-            <HelpArticlesManagement />
+            <VerificationTable title="Pending Verifications" status="pending" />
+            <VerificationTable title="Under Review" status="under_review" />
+            <VerificationTable title="Verified Practices" status="verified" />
+            <VerificationTable title="Rejected Applications" status="rejected" />
           </div>
         );
 
       case "ecosystem":
         return <EcosystemOverview />;
 
-      case "clinics":
-        return <EntityManagement entityType="clinic" />;
+      case "analytics":
+        return <AnalyticsCharts stats={stats} />;
+
+      case "payments":
+        return <AdvancedFinancialMetrics metrics={advancedMetrics} onRefresh={refreshAdvancedMetrics} />;
+
+      case "translations":
+        return <TranslationManagement />;
+
+      case "help":
+        return <HelpArticlesManagement />;
+
+      case "settings":
+        return <SuperAdminSettingsPanel />;
+
+      case "logs":
+        return <div className="text-muted-foreground">System logs coming soon.</div>;
+
+      case "feedback":
+        return <div className="space-y-6"><h1 className="text-3xl font-bold">Feedback Inbox</h1><p className="text-muted-foreground">Use the inbox link in the header.</p></div>;
 
       case "pharmacies":
         return <EntityManagement entityType="pharmacy" />;
@@ -488,7 +329,6 @@ const SuperAdminDashboard = () => {
         />
 
         <div className="flex-1 flex flex-col">
-          {/* Top header */}
           <header className="h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40">
             <div className="flex h-16 items-center justify-between px-4 sm:px-6">
               <div className="min-w-0">
@@ -498,9 +338,7 @@ const SuperAdminDashboard = () => {
               </div>
 
               <div className="flex items-center gap-2 sm:gap-4">
-                {/* ✅ Quick access to feedback */}
                 <FeedbackInboxLink onClick={() => setActiveSection("feedback")} />
-
                 <ThemeToggle />
                 <LanguageSwitcher />
                 <ProfileMenu />
