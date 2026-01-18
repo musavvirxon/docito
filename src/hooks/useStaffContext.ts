@@ -73,8 +73,8 @@ export const useStaffContext = () => {
 
     const base = {
       entity_id: scope.entity_id,
-      staff_role: scope.scope_role ?? null,
-      status: scope.entity_status ?? "active",
+      staff_role: (scope.scope_role ?? null) as string | null,
+      status: (scope.entity_status ?? "active") as string,
     };
 
     const p = scope.permissions || {};
