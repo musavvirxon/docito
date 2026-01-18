@@ -1,9 +1,10 @@
+// supabase/functions/imaging-analytics/index.ts
 // File: supabase/functions/imaging-analytics/index.ts
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
+const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -84,23 +85,24 @@ function isMissingSchemaError(err: unknown) {
   );
 }
 
-async function ensureCenterAccess(supabase: ReturnType<typeof createClient>, userId: string, centerId: string) {
-  const { data: adminRow } = await supabase
+async function ensureCenterAccess(service: ReturnType<typeof createClient>, userId: string, centerId: string) {
+  const { data: adminRow, error: aErr } = await service
     .from("imaging_centers")
     .select("id")
     .eq("id", centerId)
     .eq("admin_id", userId)
     .maybeSingle();
-
+  if (aErr) throw aErr;
   if (adminRow?.id) return true;
 
-  const { data: staffRow } = await supabase
+  const { data: staffRow, error: sErr } = await service
     .from("imaging_staff")
     .select("id")
     .eq("imaging_center_id", centerId)
     .eq("user_id", userId)
     .eq("status", "active")
     .maybeSingle();
+  if (sErr) throw sErr;
 
   return Boolean(staffRow?.id);
 }
@@ -143,16 +145,19 @@ serve(async (req) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
-  if (!supabaseUrl || !supabaseAnonKey) return json({ error: "Missing SUPABASE_URL or SUPABASE_ANON_KEY" }, 500);
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
+    return json({ error: "Missing SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY" }, 500);
+  }
 
-  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  const authed = createClient(supabaseUrl, supabaseAnonKey, {
     global: { headers: { Authorization: authHeader } },
   });
 
   const {
     data: { user },
     error: userErr,
-  } = await supabase.auth.getUser();
+  } = await authed.auth.getUser();
 
   if (userErr || !user) return json({ error: "Unauthorized" }, 401);
 
@@ -165,11 +170,17 @@ serve(async (req) => {
 
   const centerId = (body.centerId || "").trim();
   const days = Math.min(365, Math.max(1, safeInt(body.days ?? 30, 30)));
-
   if (!centerId) return json({ error: "Missing centerId" }, 400);
 
-  const allowed = await ensureCenterAccess(supabase, user.id, centerId);
-  if (!allowed) return json({ error: "Forbidden" }, 403);
+  const service = createClient(supabaseUrl, supabaseServiceKey);
+
+  try {
+    const allowed = await ensureCenterAccess(service, user.id, centerId);
+    if (!allowed) return json({ error: "Forbidden" }, 403);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return json({ error: msg }, 500);
+  }
 
   const warnings: string[] = [];
 
@@ -181,7 +192,6 @@ serve(async (req) => {
     const prevStartISO = prevStart.toISOString();
     const prevEndISO = start.toISOString();
 
-    // Buckets
     const dailyBuckets: Record<string, { date: string; scans: number; completed: number; revenue: number }> = {};
     for (let i = 0; i < days; i++) {
       const d = addDaysUTC(start, i);
@@ -189,10 +199,11 @@ serve(async (req) => {
       dailyBuckets[k] = { date: k, scans: 0, completed: 0, revenue: 0 };
     }
 
-    // Referrals (DO NOT select optional columns that might not exist yet)
-    const { data: refData, error: refErr } = await supabase
+    const { data: refData, error: refErr } = await service
       .from("referrals")
-      .select("id, status, priority, attachments, created_at, accepted_at, completed_at, patient_id, referrer_type, referrer_entity_id")
+      .select(
+        "id, status, priority, attachments, created_at, accepted_at, completed_at, patient_id, referrer_type, referrer_entity_id",
+      )
       .eq("receiver_type", "imaging_center")
       .eq("receiver_entity_id", centerId)
       .gte("created_at", startISO)
@@ -216,7 +227,7 @@ serve(async (req) => {
       referrer_entity_id: string | null;
     }>;
 
-    const { data: refPrevData, error: refPrevErr } = await supabase
+    const { data: refPrevData, error: refPrevErr } = await service
       .from("referrals")
       .select("id")
       .eq("receiver_type", "imaging_center")
@@ -232,7 +243,7 @@ serve(async (req) => {
     const totalScans = referrals.length;
 
     const statusMap = new Map<string, number>();
-    const wfMap = new Map<string, number>(); // derived from status
+    const wfMap = new Map<string, number>();
     const modMap = new Map<string, { count: number; revenue: number }>();
     let reportBacklog = 0;
 
@@ -259,15 +270,14 @@ serve(async (req) => {
       const status = (r.status || "unknown").toLowerCase();
       statusMap.set(status, (statusMap.get(status) || 0) + 1);
 
-      // Workflow fallback (no referrals.imaging_workflow_status dependency)
       const workflow =
         status === "completed"
           ? "completed"
           : status === "declined"
-          ? "cancelled"
-          : status === "accepted" || status === "in_progress"
-          ? "in_progress"
-          : "scheduled";
+            ? "cancelled"
+            : status === "accepted" || status === "in_progress"
+              ? "in_progress"
+              : "scheduled";
 
       wfMap.set(workflow, (wfMap.get(workflow) || 0) + 1);
 
@@ -295,12 +305,11 @@ serve(async (req) => {
       }
     }
 
-    // Billing (optional schema: if entity columns missing, just warn and proceed with zeros)
     let revenueCents = 0;
     let refundsCents = 0;
     let prevRevenueCents = 0;
 
-    const { data: txData, error: txErr } = await supabase
+    const { data: txData, error: txErr } = await service
       .from("billing_transactions")
       .select("amount, transaction_type, status, created_at, provider_data")
       .eq("entity_type", "imaging_center")
@@ -340,7 +349,7 @@ serve(async (req) => {
         }
       }
 
-      const { data: txPrevData, error: txPrevErr } = await supabase
+      const { data: txPrevData, error: txPrevErr } = await service
         .from("billing_transactions")
         .select("amount, transaction_type, status")
         .eq("entity_type", "imaging_center")
@@ -361,12 +370,11 @@ serve(async (req) => {
       }
     }
 
-    // Reports (optional: if table missing, compute fallback from referrals)
     let reportSumH = 0;
     let reportCnt = 0;
     const modTurnMap = new Map<string, { sumH: number; cnt: number }>();
 
-    const { data: repData, error: repErr } = await supabase
+    const { data: repData, error: repErr } = await service
       .from("imaging_reports")
       .select("modality, created_at, finalized_at")
       .eq("imaging_center_id", centerId)
@@ -392,7 +400,6 @@ serve(async (req) => {
       }
     }
 
-    // Fallback from referrals if no report timing
     if (reportCnt === 0) {
       for (const r of referrals) {
         if (!r.completed_at) continue;
@@ -413,9 +420,8 @@ serve(async (req) => {
     const avgReportHours = reportCnt ? Math.round((reportSumH / reportCnt) * 10) / 10 : 0;
     const avgAcceptHours = acceptCount ? Math.round((acceptSumHours / acceptCount) * 10) / 10 : 0;
 
-    // Previous report avg (optional)
     let prevAvgReportHours = avgReportHours;
-    const { data: repPrevData, error: repPrevErr } = await supabase
+    const { data: repPrevData, error: repPrevErr } = await service
       .from("imaging_reports")
       .select("created_at, finalized_at")
       .eq("imaging_center_id", centerId)
@@ -438,9 +444,8 @@ serve(async (req) => {
       if (prevReportCnt) prevAvgReportHours = prevReportSumH / prevReportCnt;
     }
 
-    // Equipment utilization (optional)
     let utilizationPct = 0;
-    const { data: eqData, error: eqErr } = await supabase
+    const { data: eqData, error: eqErr } = await service
       .from("imaging_equipment")
       .select("capacity_per_day, status")
       .eq("imaging_center_id", centerId);
@@ -454,16 +459,16 @@ serve(async (req) => {
         .reduce((sum, e) => sum + safeInt(e.capacity_per_day, 0), 0);
 
       const avgDailyScans = days ? totalScans / days : 0;
-      utilizationPct = activeCapacityPerDay > 0 ? Math.min(100, Math.round((avgDailyScans / activeCapacityPerDay) * 100)) : 0;
+      utilizationPct =
+        activeCapacityPerDay > 0 ? Math.min(100, Math.round((avgDailyScans / activeCapacityPerDay) * 100)) : 0;
     }
 
-    // Demographics (optional)
     let genderCounts = new Map<string, number>();
     const ageCounts: Record<string, number> = { "0-17": 0, "18-29": 0, "30-44": 0, "45-59": 0, "60+": 0, unknown: 0 };
 
     const patientIdArr = Array.from(patientIds);
     if (patientIdArr.length) {
-      const { data: profData, error: profErr } = await supabase
+      const { data: profData, error: profErr } = await service
         .from("profiles")
         .select("user_id, gender, date_of_birth")
         .in("user_id", patientIdArr);
@@ -471,7 +476,7 @@ serve(async (req) => {
       if (profErr) {
         if (isMissingSchemaError(profErr)) warnings.push("schema_not_ready:profiles");
       } else {
-        const now = new Date();
+        const now2 = new Date();
         for (const p of (profData || []) as Array<{ user_id: string; gender: string | null; date_of_birth: string | null }>) {
           const g = (p.gender || "unknown").toString();
           genderCounts.set(g, (genderCounts.get(g) || 0) + 1);
@@ -481,9 +486,9 @@ serve(async (req) => {
             continue;
           }
           const dob = new Date(p.date_of_birth);
-          let age = now.getUTCFullYear() - dob.getUTCFullYear();
-          const m = now.getUTCMonth() - dob.getUTCMonth();
-          if (m < 0 || (m === 0 && now.getUTCDate() < dob.getUTCDate())) age -= 1;
+          let age = now2.getUTCFullYear() - dob.getUTCFullYear();
+          const m = now2.getUTCMonth() - dob.getUTCMonth();
+          if (m < 0 || (m === 0 && now2.getUTCDate() < dob.getUTCDate())) age -= 1;
 
           if (age < 18) ageCounts["0-17"] += 1;
           else if (age < 30) ageCounts["18-29"] += 1;
@@ -495,20 +500,22 @@ serve(async (req) => {
       }
     }
 
-    // Referrer names (optional)
     const uniqueDoctorIds = Array.from(new Set(doctorIds)).filter(Boolean);
     const uniquePracticeIds = Array.from(new Set(practiceIds)).filter(Boolean);
 
     const doctorNameById = new Map<string, string>();
     if (uniqueDoctorIds.length) {
-      const { data: docs, error: docsErr } = await supabase.from("doctors").select("id, user_id").in("id", uniqueDoctorIds);
+      const { data: docs, error: docsErr } = await service.from("doctors").select("id, user_id").in("id", uniqueDoctorIds);
       if (!docsErr) {
         const docRows = (docs || []) as Array<{ id: string; user_id: string }>;
         const uids = Array.from(new Set(docRows.map((d) => d.user_id)));
 
         const profMap = new Map<string, string>();
         if (uids.length) {
-          const { data: p2, error: p2Err } = await supabase.from("profiles").select("user_id, full_name, first_name, last_name").in("user_id", uids);
+          const { data: p2, error: p2Err } = await service
+            .from("profiles")
+            .select("user_id, full_name, first_name, last_name")
+            .in("user_id", uids);
           if (!p2Err) {
             for (const r of (p2 || []) as Array<{ user_id: string; full_name: string | null; first_name: string | null; last_name: string | null }>) {
               const nm = r.full_name || [r.first_name, r.last_name].filter(Boolean).join(" ") || "Doctor";
@@ -522,7 +529,7 @@ serve(async (req) => {
 
     const practiceNameById = new Map<string, string>();
     if (uniquePracticeIds.length) {
-      const { data: prs, error: prsErr } = await supabase.from("practices").select("id, name").in("id", uniquePracticeIds);
+      const { data: prs, error: prsErr } = await service.from("practices").select("id, name").in("id", uniquePracticeIds);
       if (!prsErr) {
         for (const p of (prs || []) as Array<{ id: string; name: string }>) practiceNameById.set(p.id, p.name);
       }
