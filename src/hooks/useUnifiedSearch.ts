@@ -1,5 +1,5 @@
 // File: src/hooks/useUnifiedSearch.ts
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -101,15 +101,95 @@ const DEFAULT_FILTERS: SearchFilters = {
   imaging: true,
 };
 
-function cleanTerm(term: string) {
-  return (term || "").replace(/[,()]/g, " ").trim();
+function asString(v: unknown) {
+  return typeof v === "string" ? v : v == null ? "" : String(v);
 }
 
-function firstWord(term: string) {
-  const clean = cleanTerm(term);
-  if (!clean) return "";
-  const words = clean.split(/\s+/).filter((w) => w.length > 0);
-  return words[0] || "";
+function asNumber(v: unknown): number | null {
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+function asBool(v: unknown) {
+  if (typeof v === "boolean") return v;
+  const s = String(v || "").toLowerCase();
+  return s === "true" || s === "1" || s === "yes";
+}
+
+function asStringArray(v: unknown): string[] | null {
+  if (Array.isArray(v)) return v.map((x) => asString(x)).filter(Boolean);
+  return null;
+}
+
+function normalizeRpcResults(payload: any): UnifiedSearchResults {
+  const doctorsRaw = Array.isArray(payload?.doctors) ? payload.doctors : [];
+  const clinicsRaw = Array.isArray(payload?.clinics) ? payload.clinics : [];
+  const pharmaciesRaw = Array.isArray(payload?.pharmacies) ? payload.pharmacies : [];
+  const labsRaw = Array.isArray(payload?.labs) ? payload.labs : [];
+  const imagingRaw = Array.isArray(payload?.imaging) ? payload.imaging : [];
+
+  const doctors: DoctorResult[] = doctorsRaw.map((d: any) => ({
+    id: asString(d?.id),
+    type: "doctor" as const,
+    name: asString(d?.name) || "Unknown",
+    specialty: asString(d?.specialty),
+    specialties: asStringArray(d?.specialties) ?? (d?.specialty ? [asString(d.specialty)] : []),
+    rating: asNumber(d?.rating),
+    reviewCount: Number(asNumber(d?.reviewCount) ?? 0),
+    image: d?.image ? asString(d.image) : null,
+    clinicAffiliation: d?.clinicAffiliation ? asString(d.clinicAffiliation) : null,
+    location: d?.location ? asString(d.location) : null,
+    consultationFee: asNumber(d?.consultationFee),
+    acceptsNewPatients: asBool(d?.acceptsNewPatients ?? true),
+    languages: asStringArray(d?.languages),
+  }));
+
+  const clinics: ClinicResult[] = clinicsRaw.map((c: any) => ({
+    id: asString(c?.id),
+    type: "clinic" as const,
+    name: asString(c?.name) || "Unknown",
+    image: c?.image ? asString(c.image) : null,
+    location: c?.location ? asString(c.location) : null,
+    rating: asNumber(c?.rating),
+    reviewCount: Number(asNumber(c?.reviewCount) ?? 0),
+    specialties: asStringArray(c?.specialties),
+  }));
+
+  const pharmacies: PharmacyResult[] = pharmaciesRaw.map((p: any) => ({
+    id: asString(p?.id),
+    type: "pharmacy" as const,
+    name: asString(p?.name) || "Unknown",
+    image: p?.image ? asString(p.image) : null,
+    location: p?.location ? asString(p.location) : null,
+    deliveryAvailable: asBool(p?.deliveryAvailable),
+    acceptsInsurance: asBool(p?.acceptsInsurance),
+    rating: asNumber(p?.rating),
+    reviewCount: Number(asNumber(p?.reviewCount) ?? 0),
+  }));
+
+  const labs: LabResult[] = labsRaw.map((l: any) => ({
+    id: asString(l?.id),
+    type: "lab" as const,
+    name: asString(l?.name) || "Unknown",
+    image: l?.image ? asString(l.image) : null,
+    location: l?.location ? asString(l.location) : null,
+    servicesOffered: asStringArray(l?.servicesOffered),
+    turnaroundHours: asNumber(l?.turnaroundHours),
+    acceptsInsurance: asBool(l?.acceptsInsurance),
+  }));
+
+  const imaging: ImagingResult[] = imagingRaw.map((i: any) => ({
+    id: asString(i?.id),
+    type: "imaging" as const,
+    name: asString(i?.name) || "Unknown",
+    image: i?.image ? asString(i.image) : null,
+    location: i?.location ? asString(i.location) : null,
+    procedures: asStringArray(i?.procedures) ?? [],
+    accreditations: asStringArray(i?.accreditations),
+    acceptsInsurance: asBool(i?.acceptsInsurance),
+  }));
+
+  return { doctors, clinics, pharmacies, labs, imaging };
 }
 
 export function useUnifiedSearch() {
@@ -125,227 +205,29 @@ export function useUnifiedSearch() {
   const [filters, setFilters] = useState<SearchFilters>(DEFAULT_FILTERS);
   const [hasSearched, setHasSearched] = useState(false);
 
-  const searchDoctors = async (query: string, location?: string): Promise<DoctorResult[]> => {
-    try {
-      let dbQuery = supabase
-        .from("doctor_public_search_view")
-        .select(
-          "id, full_name, avatar_url, specialty, bio, languages, consultation_fee, accepts_new_patients, rating, num_reviews, appointment_count, practice_name, practice_city, practice_country"
-        );
-
-      const q = firstWord(query);
-      if (q) {
-        dbQuery = dbQuery.or(`full_name.ilike.%${q}%,specialty.ilike.%${q}%,bio.ilike.%${q}%`);
-      }
-
-      const loc = firstWord(location || "");
-      if (loc) {
-        dbQuery = dbQuery.or(`practice_city.ilike.%${loc}%,practice_country.ilike.%${loc}%`);
-      }
-
-      const { data, error } = await dbQuery
-        .order("rating", { ascending: false })
-        .order("appointment_count", { ascending: false })
-        .limit(50);
-
-      if (error) throw error;
-
-      return (data || []).map((d: any) => ({
-        id: String(d.id),
-        type: "doctor" as const,
-        name: d.full_name || "Unknown",
-        specialty: d.specialty || "",
-        specialties: d.specialty ? [d.specialty] : [],
-        rating: d.rating ?? null,
-        reviewCount: Number(d.num_reviews ?? 0),
-        image: d.avatar_url ?? null,
-        clinicAffiliation: d.practice_name ?? null,
-        location:
-          d.practice_city && d.practice_country ? `${d.practice_city}, ${d.practice_country}` : null,
-        consultationFee: d.consultation_fee ?? null,
-        acceptsNewPatients: Boolean(d.accepts_new_patients ?? true),
-        languages: Array.isArray(d.languages) ? d.languages : null,
-      }));
-    } catch (err) {
-      console.error("Error searching doctors:", err);
-      return [];
-    }
-  };
-
-  const searchClinics = async (query: string, location?: string): Promise<ClinicResult[]> => {
-    try {
-      let dbQuery = supabase
-        .from("practice_public_search_view")
-        .select("id, name, logo_url, specialties, city, country, rating, num_reviews, appointment_count, description");
-
-      const q = firstWord(query);
-      if (q) {
-        dbQuery = dbQuery.or(`name.ilike.%${q}%,description.ilike.%${q}%`);
-      }
-
-      const loc = firstWord(location || "");
-      if (loc) {
-        dbQuery = dbQuery.or(`city.ilike.%${loc}%,country.ilike.%${loc}%`);
-      }
-
-      const { data, error } = await dbQuery
-        .order("rating", { ascending: false })
-        .order("appointment_count", { ascending: false })
-        .limit(50);
-
-      if (error) throw error;
-
-      return (data || []).map((p: any) => ({
-        id: String(p.id),
-        type: "clinic" as const,
-        name: p.name || "Unknown",
-        image: p.logo_url ?? null,
-        location: p.city && p.country ? `${p.city}, ${p.country}` : null,
-        rating: p.rating ?? null,
-        reviewCount: Number(p.num_reviews ?? 0),
-        specialties: Array.isArray(p.specialties) ? p.specialties : null,
-      }));
-    } catch (err) {
-      console.error("Error searching clinics:", err);
-      return [];
-    }
-  };
-
-  const searchPharmacies = async (query: string, location?: string): Promise<PharmacyResult[]> => {
-    try {
-      let dbQuery = supabase
-        .from("pharmacy_public_search_view")
-        .select("id, name, logo_url, city, country, delivery_available, accepts_insurance, rating, num_reviews");
-
-      const q = firstWord(query);
-      if (q) {
-        dbQuery = dbQuery.ilike("name", `%${q}%`);
-      }
-
-      const loc = firstWord(location || "");
-      if (loc) {
-        dbQuery = dbQuery.or(`city.ilike.%${loc}%,country.ilike.%${loc}%`);
-      }
-
-      const { data, error } = await dbQuery
-        .order("rating", { ascending: false })
-        .order("num_reviews", { ascending: false })
-        .limit(50);
-
-      if (error) throw error;
-
-      return (data || []).map((ph: any) => ({
-        id: String(ph.id),
-        type: "pharmacy" as const,
-        name: ph.name || "Unknown",
-        image: ph.logo_url ?? null,
-        location: ph.city && ph.country ? `${ph.city}, ${ph.country}` : null,
-        deliveryAvailable: Boolean(ph.delivery_available ?? false),
-        acceptsInsurance: Boolean(ph.accepts_insurance ?? false),
-        rating: ph.rating ?? null,
-        reviewCount: Number(ph.num_reviews ?? 0),
-      }));
-    } catch (err) {
-      console.error("Error searching pharmacies:", err);
-      return [];
-    }
-  };
-
-  const searchLabsAndImaging = async (
-    query: string,
-    location?: string
-  ): Promise<{ labs: LabResult[]; imaging: ImagingResult[] }> => {
-    try {
-      let dbQuery = supabase
-        .from("lab_center_public_search_view")
-        .select(
-          "id, name, city, country, accepts_insurance, services_offered, accreditations, average_turnaround_hours, type"
-        );
-
-      const q = firstWord(query);
-      if (q) {
-        dbQuery = dbQuery.ilike("name", `%${q}%`);
-      }
-
-      const loc = firstWord(location || "");
-      if (loc) {
-        dbQuery = dbQuery.or(`city.ilike.%${loc}%,country.ilike.%${loc}%`);
-      }
-
-      const { data, error } = await dbQuery.limit(50);
-      if (error) throw error;
-
-      const labs: LabResult[] = [];
-      const imaging: ImagingResult[] = [];
-
-      (data || []).forEach((c: any) => {
-        const services: string[] = Array.isArray(c.services_offered) ? c.services_offered : [];
-        const type = String(c.type || "").toLowerCase();
-
-        const isImaging =
-          type.includes("imaging") ||
-          type.includes("radiology") ||
-          services.some((s) =>
-            ["mri", "ct", "x-ray", "xray", "ultrasound", "mammography"].some((k) =>
-              String(s || "").toLowerCase().includes(k)
-            )
-          );
-
-        const base = {
-          id: String(c.id),
-          name: c.name || "Unknown",
-          location: c.city && c.country ? `${c.city}, ${c.country}` : null,
-          acceptsInsurance: Boolean(c.accepts_insurance ?? false),
-        };
-
-        if (isImaging) {
-          imaging.push({
-            ...base,
-            type: "imaging",
-            procedures: services,
-            accreditations: Array.isArray(c.accreditations) ? c.accreditations : null,
-          });
-        } else {
-          labs.push({
-            ...base,
-            type: "lab",
-            servicesOffered: services.length ? services : null,
-            turnaroundHours: c.average_turnaround_hours ?? null,
-          });
-        }
-      });
-
-      return { labs, imaging };
-    } catch (err) {
-      console.error("Error searching labs/imaging:", err);
-      return { labs: [], imaging: [] };
-    }
-  };
-
   const search = useCallback(
     async (query: string, location?: string, activeFilters: SearchFilters = filters) => {
+      const q = String(query || "").trim();
+      const loc = String(location || "").trim();
+
       setLoading(true);
       setError(null);
       setHasSearched(true);
 
       try {
-        const tasks: Promise<any>[] = [
-          activeFilters.doctors ? searchDoctors(query, location) : Promise.resolve([]),
-          activeFilters.clinics ? searchClinics(query, location) : Promise.resolve([]),
-          activeFilters.pharmacies ? searchPharmacies(query, location) : Promise.resolve([]),
-          activeFilters.labs || activeFilters.imaging
-            ? searchLabsAndImaging(query, location)
-            : Promise.resolve({ labs: [], imaging: [] }),
-        ];
+        const { data, error: rpcErr } = await (supabase as any).rpc("homepage_unified_search", {
+          search_query: q,
+          search_location: loc,
+        });
+        if (rpcErr) throw rpcErr;
 
-        const [doctors, clinics, pharmacies, labsImaging] = await Promise.all(tasks);
-
+        const normalized = normalizeRpcResults(data);
         const newResults: UnifiedSearchResults = {
-          doctors: activeFilters.doctors ? doctors : [],
-          clinics: activeFilters.clinics ? clinics : [],
-          pharmacies: activeFilters.pharmacies ? pharmacies : [],
-          labs: activeFilters.labs ? labsImaging.labs : [],
-          imaging: activeFilters.imaging ? labsImaging.imaging : [],
+          doctors: activeFilters.doctors ? normalized.doctors : [],
+          clinics: activeFilters.clinics ? normalized.clinics : [],
+          pharmacies: activeFilters.pharmacies ? normalized.pharmacies : [],
+          labs: activeFilters.labs ? normalized.labs : [],
+          imaging: activeFilters.imaging ? normalized.imaging : [],
         };
 
         setResults(newResults);
@@ -358,13 +240,13 @@ export function useUnifiedSearch() {
           newResults.labs.length +
           newResults.imaging.length;
 
-        if (total === 0 && (query || location)) {
+        if (total === 0 && (q || loc)) {
           toast.info("No results found. Try adjusting your search.");
         }
 
         return newResults;
       } catch (err: any) {
-        console.error("Search error:", err);
+        console.error("Unified search error:", err);
         setError(err?.message || "Search failed");
         toast.error("Search failed. Please try again.");
         return null;
@@ -372,7 +254,7 @@ export function useUnifiedSearch() {
         setLoading(false);
       }
     },
-    [filters]
+    [filters],
   );
 
   const updateFilters = useCallback((newFilters: Partial<SearchFilters>) => {
@@ -380,13 +262,7 @@ export function useUnifiedSearch() {
   }, []);
 
   const resetSearch = useCallback(() => {
-    setResults({
-      doctors: [],
-      clinics: [],
-      pharmacies: [],
-      labs: [],
-      imaging: [],
-    });
+    setResults({ doctors: [], clinics: [], pharmacies: [], labs: [], imaging: [] });
     setHasSearched(false);
     setError(null);
     setFilters(DEFAULT_FILTERS);
