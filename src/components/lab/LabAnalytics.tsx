@@ -1,3 +1,4 @@
+// src/components/lab/LabAnalytics.tsx
 // File: src/components/lab/LabAnalytics.tsx
 
 import { useEffect, useState } from 'react';
@@ -150,7 +151,6 @@ export default function LabAnalytics({ labCenterId }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* Time Range Selector */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold flex items-center gap-2">
           <BarChart3 className="h-6 w-6" />
@@ -173,7 +173,6 @@ export default function LabAnalytics({ labCenterId }: Props) {
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
@@ -250,9 +249,7 @@ export default function LabAnalytics({ labCenterId }: Props) {
         </Card>
       </div>
 
-      {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Revenue Chart */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Revenue & Test Volume</CardTitle>
@@ -291,7 +288,6 @@ export default function LabAnalytics({ labCenterId }: Props) {
           </CardContent>
         </Card>
 
-        {/* Tests by Status Pie Chart */}
         <Card>
           <CardHeader>
             <CardTitle>Tests by Status</CardTitle>
@@ -333,7 +329,6 @@ export default function LabAnalytics({ labCenterId }: Props) {
         </Card>
       </div>
 
-      {/* Top Tests */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
