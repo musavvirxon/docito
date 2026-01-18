@@ -119,7 +119,11 @@ function normalizeDoctor(row: any): DoctorResult {
     type: "doctor",
     name: String(row?.name ?? "Unknown"),
     specialty: String(row?.specialty ?? ""),
-    specialties: Array.isArray(row?.specialties) ? row.specialties : row?.specialty ? [String(row.specialty)] : [],
+    specialties: Array.isArray(row?.specialties)
+      ? row.specialties
+      : row?.specialty
+        ? [String(row.specialty)]
+        : [],
     rating: row?.rating ?? null,
     reviewCount: Number(row?.reviewCount ?? 0),
     image: row?.image ?? null,
@@ -204,9 +208,10 @@ export function useUnifiedSearch() {
       setHasSearched(true);
 
       try {
+        // IMPORTANT: match function signature order: (search_location, search_query)
         const { data, error: rpcError } = await supabase.rpc("homepage_unified_search", {
-          search_query: query ?? "",
           search_location: location ?? "",
+          search_query: query ?? "",
         });
 
         if (rpcError) throw rpcError;
@@ -237,17 +242,12 @@ export function useUnifiedSearch() {
           newResults.labs.length +
           newResults.imaging.length;
 
-        if (totalCount === 0 && query) {
-          toast.info("No results found. Try adjusting your search.");
-        }
+        if (totalCount === 0 && query) toast.info("No results found. Try adjusting your search.");
 
         return newResults;
       } catch (err: any) {
         const msg =
-          err?.message ||
-          err?.details ||
-          err?.hint ||
-          "Search failed (homepage_unified_search RPC)";
+          err?.message || err?.details || err?.hint || "Search failed (homepage_unified_search RPC)";
         console.error("Unified search error:", err);
         setError(msg);
         toast.error("Search failed. Please try again.");
@@ -256,7 +256,7 @@ export function useUnifiedSearch() {
         setLoading(false);
       }
     },
-    [filters]
+    [filters],
   );
 
   const updateFilters = useCallback((newFilters: Partial<SearchFilters>) => {
