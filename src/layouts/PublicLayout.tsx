@@ -36,22 +36,16 @@ export default function PublicLayout() {
 
   const isDashboardRoute = DASHBOARD_PREFIXES.some((p) => path.startsWith(p));
 
-  // Lab public landing page: no footer per requirement.
-  const hideFooter = path === "/lab";
-
   if (isDashboardRoute) return <Outlet />;
 
   return (
-    <PublicChromeProvider value={{ headerProvided: true, footerProvided: !hideFooter }}>
+    <PublicChromeProvider value={{ headerProvided: true, footerProvided: true }}>
       <div className="min-h-screen flex flex-col bg-background">
         <PremiumTopNav />
-
-        {/* If /lab has any inline <footer> tags inside its page, hide them too */}
-        <main className={hideFooter ? "flex-1 [&_footer]:hidden" : "flex-1"}>
+        <main className="flex-1 [&_footer]:hidden">
           <Outlet />
         </main>
-
-        {!hideFooter ? <PremiumFooter /> : null}
+        <PremiumFooter />
       </div>
     </PublicChromeProvider>
   );
