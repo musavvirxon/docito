@@ -1,5 +1,4 @@
 // File: supabase/functions/dashboard-topbar/index.ts
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -10,38 +9,35 @@ const corsHeaders: Record<string, string> = {
 };
 
 type AppRole =
-  | "super_admin"
-  | "admin"
-  | "clinic_admin"
+  | "patient"
   | "doctor"
-  | "pharmacy_admin"
+  | "staff"
+  | "admin"
+  | "super_admin"
+  | "lab_staff"
   | "lab_admin"
+  | "imaging_staff"
   | "imaging_admin"
   | "pharmacy_staff"
-  | "pharmacist"
-  | "lab_staff"
-  | "lab_technician"
-  | "imaging_staff"
-  | "internal_imaging_tech"
-  | "clinic_staff"
-  | "staff"
-  | "receptionist"
-  | "nurse"
-  | "patient";
+  | "pharmacy_admin";
 
-type EntityStatus = "active" | "pending" | "verified" | "suspended";
 type FacilityType = "practice" | "lab" | "imaging" | "pharmacy" | "doctor" | "none";
+type EntityStatus = "active" | "pending" | "verified" | "suspended" | "unknown";
 
-type RequestBody =
-  | {
-      action?: "get";
-      role?: AppRole;
-    }
-  | {
-      action: "request_verification";
-      role?: AppRole;
-      comment?: string;
-    };
+type GetReq = { action: "get"; role: AppRole };
+type RequestVerificationReq = { action: "request_verification"; role: AppRole; comment?: string | null };
+
+type ReqBody = GetReq | RequestVerificationReq;
+
+type GetResp = {
+  ok: true;
+  role: AppRole;
+  facilityType: FacilityType;
+  entityId: string | null;
+  entityName: string | null;
+  entityStatus: EntityStatus;
+  unreadCount: number;
+};
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -50,345 +46,305 @@ function json(data: unknown, status = 200) {
   });
 }
 
-const ROLE_PRIORITY: Record<AppRole, number> = {
-  super_admin: 100,
-  doctor: 90,
-
-  pharmacy_admin: 88,
-  lab_admin: 88,
-  imaging_admin: 88,
-
-  admin: 80,
-  clinic_admin: 78,
-
-  pharmacist: 60,
-  lab_technician: 60,
-  internal_imaging_tech: 60,
-
-  pharmacy_staff: 55,
-  lab_staff: 55,
-  imaging_staff: 55,
-
-  nurse: 50,
-  receptionist: 45,
-  clinic_staff: 40,
-  staff: 35,
-
-  patient: 10,
-};
-
-function pickPrimaryRole(roles: AppRole[]): AppRole {
-  if (!roles.length) return "patient";
-  return roles.reduce((best, r) => (ROLE_PRIORITY[r] > ROLE_PRIORITY[best] ? r : best), "patient");
+function requireEnv(name: string) {
+  const v = Deno.env.get(name);
+  if (!v) throw new Error(`Missing env: ${name}`);
+  return v;
 }
 
-function normalizeStatus(input: unknown): EntityStatus {
-  const s = String(input ?? "").toLowerCase();
-  if (s === "verified") return "verified";
-  if (s === "suspended") return "suspended";
-  if (s === "active") return "active";
-  return "pending";
+function normRole(r: unknown): AppRole {
+  const v = String(r || "").toLowerCase().trim();
+  return v as AppRole;
 }
 
-async function getUnreadCount(service: ReturnType<typeof createClient>, userId: string) {
-  const { count, error } = await service
-    .from("notifications")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .eq("is_read", false);
-
-  if (error) return 0;
-  return count ?? 0;
+async function authedUserClient(url: string, anon: string, authHeader: string) {
+  const c = createClient(url, anon, { global: { headers: { Authorization: authHeader } } });
+  const { data, error } = await c.auth.getUser();
+  if (error || !data?.user) throw new Error("Unauthorized");
+  return { client: c, user: data.user };
 }
 
-async function getRoles(service: ReturnType<typeof createClient>, userId: string): Promise<AppRole[]> {
-  const { data, error } = await service.from("user_roles").select("role").eq("user_id", userId);
-  if (error || !data) return [];
-  return (data as Array<{ role: AppRole }>).map((r) => r.role);
-}
-
-async function resolveFacilityByRole(
+async function resolveEntity(
   service: ReturnType<typeof createClient>,
   userId: string,
-  role: AppRole
-): Promise<{
-  facilityType: FacilityType;
-  facilityId?: string;
-  entityName?: string;
-  entityStatus: EntityStatus;
-}> {
-  // Defaults
-  const base = { facilityType: "none" as FacilityType, entityStatus: "active" as EntityStatus };
-
-  // Practice / clinic
-  if (role === "admin" || role === "clinic_admin") {
-    const { data } = await service.from("practices").select("id,name,is_verified,status,verification_status").eq("admin_id", userId).maybeSingle();
-    if (!data) return { ...base, facilityType: "practice", entityStatus: "pending" };
-    const verified = Boolean((data as any).is_verified);
-    const status = normalizeStatus((data as any).status ?? (data as any).verification_status);
-    return {
-      facilityType: "practice",
-      facilityId: (data as any).id,
-      entityName: (data as any).name ?? undefined,
-      entityStatus: verified ? "verified" : status,
-    };
+  role: AppRole,
+): Promise<{ facilityType: FacilityType; entityId: string | null; entityName: string | null; entityStatus: EntityStatus }> {
+  // Super admin: no entity
+  if (role === "super_admin") {
+    return { facilityType: "none", entityId: null, entityName: "Super Admin", entityStatus: "active" };
   }
 
-  if (role === "clinic_staff" || role === "staff" || role === "receptionist" || role === "nurse") {
-    const { data: staffRow } = await service
-      .from("clinic_staff")
-      .select("practice_id, practices(id,name,is_verified,status,verification_status)")
-      .eq("user_id", userId)
-      .eq("status", "active")
+  // Admin (practice owner/admin_id on practices)
+  if (role === "admin") {
+    const { data, error } = await service
+      .from("practices")
+      .select("id,name,verification_status,status")
+      .eq("admin_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
+    if (error) throw error;
 
-    const pr = (staffRow as any)?.practices;
-    if (!pr) return { ...base, facilityType: "practice", entityStatus: "pending" };
+    if (!data?.id) return { facilityType: "practice", entityId: null, entityName: null, entityStatus: "unknown" };
 
-    const verified = Boolean(pr.is_verified);
-    const status = normalizeStatus(pr.status ?? pr.verification_status);
+    const status = (data.verification_status || data.status || "active") as string;
     return {
       facilityType: "practice",
-      facilityId: pr.id,
-      entityName: pr.name ?? undefined,
-      entityStatus: verified ? "verified" : status,
+      entityId: data.id,
+      entityName: (data.name || "Practice") as string,
+      entityStatus: normalizeEntityStatus(status),
     };
   }
 
-  // Lab
-  if (role === "lab_admin") {
-    const { data } = await service.from("lab_centers").select("id,name,is_verified,status").eq("admin_id", userId).maybeSingle();
-    if (!data) return { ...base, facilityType: "lab", entityStatus: "pending" };
-    const verified = Boolean((data as any).is_verified);
-    const status = normalizeStatus((data as any).status);
-    return {
-      facilityType: "lab",
-      facilityId: (data as any).id,
-      entityName: (data as any).name ?? undefined,
-      entityStatus: verified ? "verified" : status,
-    };
-  }
-
-  if (role === "lab_staff" || role === "lab_technician") {
-    const { data: staffRow } = await service
+  // Lab staff/admin
+  if (role === "lab_staff" || role === "lab_admin") {
+    const { data: row, error: sErr } = await service
       .from("lab_staff")
-      .select("lab_center_id, lab_centers(id,name,is_verified,status)")
+      .select("lab_id,status")
       .eq("user_id", userId)
       .eq("status", "active")
+      .order("created_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
 
-    const lc = (staffRow as any)?.lab_centers;
-    if (!lc) return { ...base, facilityType: "lab", entityStatus: "pending" };
+    if (sErr) throw sErr;
 
-    const verified = Boolean(lc.is_verified);
-    const status = normalizeStatus(lc.status);
+    const labId = (row as any)?.lab_id || null;
+    if (!labId) return { facilityType: "lab", entityId: null, entityName: null, entityStatus: "unknown" };
+
+    const { data: lab, error: lErr } = await service
+      .from("lab_centers")
+      .select("id,name,verification_status,status")
+      .eq("id", labId)
+      .maybeSingle();
+
+    if (lErr) throw lErr;
+
+    const status = (lab as any)?.verification_status || (lab as any)?.status || "active";
     return {
       facilityType: "lab",
-      facilityId: lc.id,
-      entityName: lc.name ?? undefined,
-      entityStatus: verified ? "verified" : status,
+      entityId: (lab as any)?.id ?? labId,
+      entityName: (lab as any)?.name ?? "Lab",
+      entityStatus: normalizeEntityStatus(status),
     };
   }
 
-  // Imaging
-  if (role === "imaging_admin") {
-    const { data } = await service.from("imaging_centers").select("id,name,is_verified,status").eq("admin_id", userId).maybeSingle();
-    if (!data) return { ...base, facilityType: "imaging", entityStatus: "pending" };
-    const verified = Boolean((data as any).is_verified);
-    const status = normalizeStatus((data as any).status);
-    return {
-      facilityType: "imaging",
-      facilityId: (data as any).id,
-      entityName: (data as any).name ?? undefined,
-      entityStatus: verified ? "verified" : status,
-    };
-  }
-
-  if (role === "imaging_staff" || role === "internal_imaging_tech") {
-    const { data: staffRow } = await service
+  // Imaging staff/admin
+  if (role === "imaging_staff" || role === "imaging_admin") {
+    const { data: row, error: sErr } = await service
       .from("imaging_staff")
-      .select("imaging_center_id, imaging_centers(id,name,is_verified,status)")
+      .select("imaging_center_id,status")
       .eq("user_id", userId)
       .eq("status", "active")
+      .order("created_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
 
-    const ic = (staffRow as any)?.imaging_centers;
-    if (!ic) return { ...base, facilityType: "imaging", entityStatus: "pending" };
+    if (sErr) throw sErr;
 
-    const verified = Boolean(ic.is_verified);
-    const status = normalizeStatus(ic.status);
+    const centerId = (row as any)?.imaging_center_id || null;
+    if (!centerId) return { facilityType: "imaging", entityId: null, entityName: null, entityStatus: "unknown" };
+
+    const { data: center, error: cErr } = await service
+      .from("imaging_centers")
+      .select("id,name,verification_status,status")
+      .eq("id", centerId)
+      .maybeSingle();
+
+    if (cErr) throw cErr;
+
+    const status = (center as any)?.verification_status || (center as any)?.status || "active";
     return {
       facilityType: "imaging",
-      facilityId: ic.id,
-      entityName: ic.name ?? undefined,
-      entityStatus: verified ? "verified" : status,
+      entityId: (center as any)?.id ?? centerId,
+      entityName: (center as any)?.name ?? "Imaging Center",
+      entityStatus: normalizeEntityStatus(status),
     };
   }
 
-  // Pharmacy
-  if (role === "pharmacy_admin") {
-    const { data } = await service.from("pharmacies").select("id,name,verified,verification_status").eq("admin_id", userId).maybeSingle();
-    if (!data) return { ...base, facilityType: "pharmacy", entityStatus: "pending" };
-    const verified = Boolean((data as any).verified);
-    const status = normalizeStatus((data as any).verification_status);
-    return {
-      facilityType: "pharmacy",
-      facilityId: (data as any).id,
-      entityName: (data as any).name ?? undefined,
-      entityStatus: verified ? "verified" : status,
-    };
-  }
-
-  if (role === "pharmacy_staff" || role === "pharmacist") {
-    const { data: staffRow } = await service
+  // Pharmacy staff/admin
+  if (role === "pharmacy_staff" || role === "pharmacy_admin") {
+    const { data: row, error: sErr } = await service
       .from("pharmacy_staff")
-      .select("pharmacy_id, pharmacies(id,name,verified,verification_status)")
+      .select("pharmacy_id,status")
       .eq("user_id", userId)
       .eq("status", "active")
+      .order("created_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
 
-    const ph = (staffRow as any)?.pharmacies;
-    if (!ph) return { ...base, facilityType: "pharmacy", entityStatus: "pending" };
+    if (sErr) throw sErr;
 
-    const verified = Boolean(ph.verified);
-    const status = normalizeStatus(ph.verification_status);
+    const pharmacyId = (row as any)?.pharmacy_id || null;
+    if (!pharmacyId) return { facilityType: "pharmacy", entityId: null, entityName: null, entityStatus: "unknown" };
+
+    const { data: ph, error: pErr } = await service
+      .from("pharmacies")
+      .select("id,name,verification_status,status")
+      .eq("id", pharmacyId)
+      .maybeSingle();
+
+    if (pErr) throw pErr;
+
+    const status = (ph as any)?.verification_status || (ph as any)?.status || "active";
     return {
       facilityType: "pharmacy",
-      facilityId: ph.id,
-      entityName: ph.name ?? undefined,
-      entityStatus: verified ? "verified" : status,
+      entityId: (ph as any)?.id ?? pharmacyId,
+      entityName: (ph as any)?.name ?? "Pharmacy",
+      entityStatus: normalizeEntityStatus(status),
     };
   }
 
-  // Doctors/patients/etc.
-  if (role === "doctor") return { ...base, facilityType: "doctor", entityStatus: "active" };
-  if (role === "patient") return { ...base, facilityType: "none", entityStatus: "active" };
-  if (role === "super_admin") return { ...base, facilityType: "none", entityStatus: "active" };
+  // Doctor
+  if (role === "doctor") {
+    const { data: prof, error } = await service
+      .from("profiles")
+      .select("user_id,full_name,first_name,last_name")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (error) throw error;
+    const name =
+      (prof as any)?.full_name ||
+      [(prof as any)?.first_name, (prof as any)?.last_name].filter(Boolean).join(" ") ||
+      "Doctor";
+    return { facilityType: "doctor", entityId: userId, entityName: name, entityStatus: "active" };
+  }
 
-  return base;
+  return { facilityType: "none", entityId: null, entityName: null, entityStatus: "unknown" };
 }
 
-async function ensureActiveRequest(
-  service: ReturnType<typeof createClient>,
-  facilityType: FacilityType,
-  facilityId: string,
-  userId: string,
-  comment?: string
-) {
-  const { data: existing } = await service
-    .from("facility_verification_requests")
-    .select("id,status,created_at")
-    .eq("facility_type", facilityType)
-    .eq("facility_id", facilityId)
-    .in("status", ["submitted", "in_review"])
-    .order("created_at", { ascending: false })
-    .limit(1);
+function normalizeEntityStatus(v: unknown): EntityStatus {
+  const s = String(v || "").toLowerCase().trim();
+  if (s.includes("verif") && s.includes("pend")) return "pending";
+  if (s === "pending") return "pending";
+  if (s === "verified" || s === "approved") return "verified";
+  if (s === "suspended" || s === "blocked") return "suspended";
+  if (s === "active") return "active";
+  return "unknown";
+}
 
-  if (existing && (existing as any[]).length > 0) {
-    return { created: false, request: (existing as any[])[0] };
-  }
+function verificationRouteForFacility(f: FacilityType) {
+  if (f === "practice") return "/dashboard/verify";
+  if (f === "lab") return "/lab/verification";
+  if (f === "imaging") return "/imaging/verification";
+  if (f === "pharmacy") return "/pharmacy/verification";
+  return "/dashboard/verify";
+}
 
-  const { data: inserted, error } = await service
-    .from("facility_verification_requests")
-    .insert({
-      facility_type: facilityType,
-      facility_id: facilityId,
-      requested_by: userId,
-      status: "submitted",
-      comment: comment ?? null,
-    })
-    .select("id,status,created_at")
-    .single();
-
-  if (error) throw error;
-  return { created: true, request: inserted };
+function entityTypeForFacility(f: FacilityType): "practice" | "lab" | "imaging" | "pharmacy" | null {
+  if (f === "practice") return "practice";
+  if (f === "lab") return "lab";
+  if (f === "imaging") return "imaging";
+  if (f === "pharmacy") return "pharmacy";
+  return null;
 }
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
+  if (req.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 405);
 
   try {
-    if (req.method !== "POST") return json({ error: "Method Not Allowed" }, 405);
-
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-    if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
-      return json({ error: "Missing SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY" }, 500);
-    }
+    const url = requireEnv("SUPABASE_URL");
+    const anon = requireEnv("SUPABASE_ANON_KEY");
+    const serviceKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
 
     const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
-    if (!authHeader) return json({ error: "Missing Authorization header" }, 401);
+    if (!authHeader) return json({ ok: false, error: "Missing Authorization" }, 401);
 
-    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+    const { user } = await authedUserClient(url, anon, authHeader);
+
+    const body = (await req.json().catch(() => null)) as ReqBody | null;
+    if (!body?.action) return json({ ok: false, error: "Missing action" }, 400);
+
+    const role = normRole((body as any).role);
+    const service = createClient(url, serviceKey, { auth: { persistSession: false } });
+
+    const entity = await resolveEntity(service, user.id, role);
+
+    const { data: unreadCount, error: unreadErr } = await createClient(url, anon, {
       global: { headers: { Authorization: authHeader } },
-    });
+    }).rpc("get_my_unread_notifications_count");
 
-    const service = createClient(supabaseUrl, supabaseServiceKey);
+    if (unreadErr) throw unreadErr;
 
-    const {
-      data: { user },
-      error: userErr,
-    } = await userClient.auth.getUser();
-
-    if (userErr || !user) return json({ error: "Unauthorized" }, 401);
-
-    let body: RequestBody;
-    try {
-      body = (await req.json()) as RequestBody;
-    } catch {
-      body = { action: "get" };
-    }
-
-    const roles = await getRoles(service, user.id);
-    const requestedRole = (body as any)?.role as AppRole | undefined;
-    const role = requestedRole && roles.includes(requestedRole) ? requestedRole : pickPrimaryRole(roles);
-
-    // Disallow spoofing a role they don't have
-    if (requestedRole && !roles.includes(requestedRole)) {
-      return json({ error: "Forbidden: role not assigned to user" }, 403);
-    }
-
-    const resolved = await resolveFacilityByRole(service, user.id, role);
-    const unreadCount = await getUnreadCount(service, user.id);
-
-    const action = (body as any)?.action ?? "get";
-
-    if (action === "request_verification") {
-      if (!resolved.facilityId || resolved.facilityType === "none" || resolved.facilityType === "doctor") {
-        return json({ error: "No facility to verify for this role" }, 400);
-      }
-
-      const ensured = await ensureActiveRequest(
-        service,
-        resolved.facilityType,
-        resolved.facilityId,
-        user.id,
-        (body as any)?.comment
-      );
-
-      return json({
+    if (body.action === "get") {
+      const resp: GetResp = {
         ok: true,
         role,
-        facilityType: resolved.facilityType,
-        facilityId: resolved.facilityId,
-        request: ensured.request,
-        created: ensured.created,
-      });
+        facilityType: entity.facilityType,
+        entityId: entity.entityId,
+        entityName: entity.entityName,
+        entityStatus: entity.entityStatus,
+        unreadCount: Number(unreadCount || 0),
+      };
+      return json(resp);
     }
 
-    // action === "get"
-    return json({
-      ok: true,
-      role,
-      facilityType: resolved.facilityType,
-      entityId: resolved.facilityId ?? null,
-      entityName: resolved.entityName ?? null,
-      entityStatus: resolved.entityStatus,
-      unreadCount,
-    });
-  } catch (e) {
-    return json({ error: String((e as any)?.message ?? e) }, 500);
+    if (body.action === "request_verification") {
+      if (!entity.entityId || entity.facilityType === "none" || entity.facilityType === "doctor") {
+        return json({ ok: false, error: "No entity available for verification" }, 400);
+      }
+
+      const entityType = entityTypeForFacility(entity.facilityType);
+      if (!entityType) return json({ ok: false, error: "Invalid entity for verification" }, 400);
+
+      // Create request (as authed user via RPC)
+      const authed = createClient(url, anon, { global: { headers: { Authorization: authHeader } } });
+      const { data: reqId, error: reqErr } = await authed.rpc("request_entity_verification", {
+        p_entity_type: entityType,
+        p_entity_id: entity.entityId,
+        p_comment: (body as RequestVerificationReq).comment ?? null,
+      });
+      if (reqErr) throw reqErr;
+
+      // Notify all super_admins
+      const { data: superAdmins, error: saErr } = await service
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "super_admin");
+
+      if (saErr) throw saErr;
+
+      const actionUrl = verificationRouteForFacility(entity.facilityType);
+      const title = `Verification request: ${entity.entityName || entity.facilityType}`;
+      const note =
+        ((body as RequestVerificationReq).comment || "").trim() ||
+        "A verification request was submitted. Review uploaded documents and approve/reject.";
+
+      const ids = (superAdmins || []).map((r: any) => r.user_id).filter(Boolean);
+
+      for (const adminUserId of ids) {
+        await service.rpc("create_notification", {
+          p_user_id: adminUserId,
+          p_entity_type: entityType,
+          p_entity_id: entity.entityId,
+          p_level: "info",
+          p_title: title,
+          p_body: note,
+          p_action_url: actionUrl,
+        });
+      }
+
+      // Audit log (service role)
+      await service.rpc("write_audit_log", {
+        p_entity_type: entityType,
+        p_entity_id: entity.entityId,
+        p_action: "verification_request_submitted",
+        p_actor_id: user.id,
+        p_old_values: null,
+        p_new_values: { request_id: reqId },
+        p_metadata: { comment: (body as RequestVerificationReq).comment ?? null, route: actionUrl },
+      });
+
+      return json({ ok: true, requestId: reqId });
+    }
+
+    return json({ ok: false, error: "Invalid action" }, 400);
+  } catch (e: any) {
+    const msg = e?.message || "Unknown error";
+    const lower = String(msg).toLowerCase();
+    if (lower.includes("unauthorized")) return json({ ok: false, error: "Unauthorized" }, 401);
+    if (lower.includes("forbidden")) return json({ ok: false, error: "Forbidden" }, 403);
+    return json({ ok: false, error: msg }, 500);
   }
 });
