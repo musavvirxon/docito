@@ -1,5 +1,5 @@
 // File: src/pages/pharmacy/PharmacyDashboardPage.tsx
-import PharmacyDashboardContent from "@/pages/pharmacy/PharmacyDashboardContent";
+import PharmacyDashboard from "@/pages/pharmacy/PharmacyDashboard";
 export default function PharmacyDashboardPage() {
-  return <PharmacyDashboardContent />;
+  return <PharmacyDashboard />;
 }

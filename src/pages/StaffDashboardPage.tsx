@@ -1,5 +1,5 @@
 // File: src/pages/StaffDashboardPage.tsx
-import StaffDashboardContent from "@/pages/StaffDashboardContent";
+import StaffDashboard from "@/pages/StaffDashboard";
 export default function StaffDashboardPage() {
-  return <StaffDashboardContent />;
+  return <StaffDashboard />;
 }

@@ -120,8 +120,7 @@ export default function ImagingOrdersManager({ centerId }: Props) {
     setLoading(true);
     try {
       // Orders from referrals (supports registered + walk-in via facility_patient_id)
-      const { data: refData, error: refErr } = await supabase
-        .from("referrals")
+      const { data: refData, error: refErr } = await (supabase.from as any)("referrals")
         .select(
           "id, referral_number, status, priority, preferred_date, preferred_time_slot, patient_id, facility_patient_id, patient_name, patient_phone, reason, clinical_notes, attachments, result_notes, created_at, accepted_at, completed_at"
         )
@@ -131,7 +130,7 @@ export default function ImagingOrdersManager({ centerId }: Props) {
         .limit(200);
 
       if (refErr) throw refErr;
-      const refRows = (refData || []) as ReferralRow[];
+      const refRows = (refData || []) as unknown as ReferralRow[];
       setOrders(refRows);
 
       const referralIds = refRows.map((r) => r.id);
@@ -140,8 +139,7 @@ export default function ImagingOrdersManager({ centerId }: Props) {
 
       // Order state (workflow + assigned staff)
       if (referralIds.length) {
-        const { data: stData, error: stErr } = await supabase
-          .from("imaging_order_state")
+        const { data: stData, error: stErr } = await (supabase.from as any)("imaging_order_state")
           .select("referral_id, imaging_center_id, workflow_status, priority, assigned_staff_id, updated_at")
           .eq("imaging_center_id", centerId)
           .in("referral_id", referralIds);
@@ -149,7 +147,8 @@ export default function ImagingOrdersManager({ centerId }: Props) {
         if (stErr) throw stErr;
 
         const map: Record<string, OrderStateRow> = {};
-        for (const s of (stData || []) as OrderStateRow[]) map[s.referral_id] = s;
+        for (const s of (stData || []) as unknown as OrderStateRow[]) map[s.referral_id] = s;
+        setOrderState(map);
         setOrderState(map);
       } else {
         setOrderState({});
@@ -157,15 +156,15 @@ export default function ImagingOrdersManager({ centerId }: Props) {
 
       // Patient profiles (registered)
       if (patientIds.length) {
-        const { data: pData, error: pErr } = await supabase
-          .from("profiles")
+        const { data: pData, error: pErr } = await (supabase.from as any)("profiles")
           .select("user_id, full_name, first_name, last_name")
           .in("user_id", patientIds);
 
         if (pErr) throw pErr;
 
         const pMap: Record<string, ProfileRow> = {};
-        for (const p of (pData || []) as ProfileRow[]) pMap[p.user_id] = p;
+        for (const p of (pData || []) as unknown as ProfileRow[]) pMap[p.user_id] = p;
+        setPatientProfiles(pMap);
         setPatientProfiles(pMap);
       } else {
         setPatientProfiles({});
@@ -173,15 +172,15 @@ export default function ImagingOrdersManager({ centerId }: Props) {
 
       // Facility patients (walk-in)
       if (facilityIds.length) {
-        const { data: fData, error: fErr } = await supabase
-          .from("facility_patients")
+        const { data: fData, error: fErr } = await (supabase.from as any)("facility_patients")
           .select("id, full_name, phone, email")
           .in("id", facilityIds);
 
         if (fErr) throw fErr;
 
         const fMap: Record<string, FacilityPatientRow> = {};
-        for (const fp of (fData || []) as FacilityPatientRow[]) fMap[fp.id] = fp;
+        for (const fp of (fData || []) as unknown as FacilityPatientRow[]) fMap[fp.id] = fp;
+        setFacilityPatients(fMap);
         setFacilityPatients(fMap);
       } else {
         setFacilityPatients({});
@@ -201,15 +200,15 @@ export default function ImagingOrdersManager({ centerId }: Props) {
 
       const staffUserIds = staffRows.map((s) => s.user_id);
       if (staffUserIds.length) {
-        const { data: spData, error: spErr } = await supabase
-          .from("profiles")
+        const { data: spData, error: spErr } = await (supabase.from as any)("profiles")
           .select("user_id, full_name, first_name, last_name")
           .in("user_id", staffUserIds);
 
         if (spErr) throw spErr;
 
         const spMap: Record<string, ProfileRow> = {};
-        for (const p of (spData || []) as ProfileRow[]) spMap[p.user_id] = p;
+        for (const p of (spData || []) as unknown as ProfileRow[]) spMap[p.user_id] = p;
+        setStaffProfiles(spMap);
         setStaffProfiles(spMap);
       } else {
         setStaffProfiles({});
@@ -268,7 +267,7 @@ export default function ImagingOrdersManager({ centerId }: Props) {
         updated_at: new Date().toISOString(),
       };
 
-      const { error } = await supabase.from("imaging_order_state").upsert(next, { onConflict: "referral_id" });
+      const { error } = await (supabase.from as any)("imaging_order_state").upsert(next, { onConflict: "referral_id" });
       if (error) throw error;
 
       setOrderState((prev) => ({ ...prev, [referralId]: next }));

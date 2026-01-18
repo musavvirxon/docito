@@ -16,15 +16,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { DASHBOARD_ROUTES } from "@/lib/rbac";
 
 export const NotificationDropdown = () => {
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const { items: notifications, unreadCount, markRead, markAllRead } = useNotifications({ limit: 50, unreadOnly: false });
   const { activeRole } = useAuth();
   const navigate = useNavigate();
 
   const handleNotificationClick = (notification: any) => {
-    markAsRead(notification.id);
+    markRead(notification.id);
 
     // If it's appointment-related, send user to THEIR active role dashboard
-    if (notification.related_type === "appointment" && notification.related_id) {
+    if (notification.entity_type === "appointment" && notification.entity_id) {
       navigate(DASHBOARD_ROUTES[activeRole] ?? "/dashboard");
     }
   };
@@ -52,7 +52,7 @@ export const NotificationDropdown = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => markAllAsRead()}
+              onClick={() => markAllRead()}
               className="h-8 text-xs"
             >
               <Check className="h-3 w-3 mr-1" />
@@ -73,7 +73,7 @@ export const NotificationDropdown = () => {
               <DropdownMenuItem
                 key={notification.id}
                 className={`flex flex-col items-start p-3 cursor-pointer ${
-                  !notification.is_read ? "bg-muted/50" : ""
+                  !notification.read_at ? "bg-muted/50" : ""
                 }`}
                 onClick={() => handleNotificationClick(notification)}
               >
@@ -81,14 +81,14 @@ export const NotificationDropdown = () => {
                   <div className="flex-1">
                     <p className="font-medium text-sm">{notification.title}</p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {notification.message}
+                      {notification.body}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                     </p>
                   </div>
 
-                  {!notification.is_read && (
+                  {!notification.read_at && (
                     <div className="w-2 h-2 bg-primary rounded-full ml-2 mt-1" />
                   )}
                 </div>

@@ -1,5 +1,5 @@
 // File: src/pages/AdminDashboardPage.tsx
-import AdminDashboardContent from "@/pages/AdminDashboardContent";
+import AdminDashboard from "@/pages/AdminDashboard";
 export default function AdminDashboardPage() {
-  return <AdminDashboardContent />;
+  return <AdminDashboard />;
 }

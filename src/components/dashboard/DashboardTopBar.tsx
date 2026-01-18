@@ -65,13 +65,13 @@ export function DashboardTopBar({ entityName, entityStatus = "active", role }: D
 
   // IMPORTANT: role is OPTIONAL now.
   // Passing a wrong role can break staff dashboards (403), so we only send it if provided.
-  const ctx = useDashboardTopBar(role);
+  const ctx = useDashboardTopBar(role ?? "staff");
 
   const finalEntityName = entityName ?? ctx.entityName;
   const finalStatus = (entityStatus ?? ctx.entityStatus) as EntityStatus;
   const unreadCount = ctx.unreadCount;
 
-  const effectiveRole = (ctx.role ?? role ?? "staff") as AppRole;
+  const effectiveRole = (role ?? "staff") as AppRole;
   const effectiveFacility = ctx.facilityType;
 
   const handleVerificationClick = () => {

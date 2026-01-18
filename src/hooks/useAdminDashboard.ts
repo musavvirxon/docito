@@ -63,21 +63,26 @@ export const useAdminDashboard = () => {
   const fetchDashboardStats = async (practiceData: any) => {
     if (!practiceData) return;
 
-    const { data: statsData, error: statsError } = await supabase.rpc(
-      "get_practice_stats",
-      { practice_id: practiceData.id }
-    );
+    try {
+      const { data: statsData, error: statsError } = await supabase.rpc(
+        "get_practice_stats" as any,
+        { p_practice_id: practiceData.id }
+      );
 
-    if (statsError) throw statsError;
+      if (statsError) throw statsError;
 
-    setStats({
-      totalBookings: statsData?.total_bookings || 0,
-      totalPatients: statsData?.total_patients || 0,
-      totalRevenue: statsData?.total_revenue || 0,
-      clinicRating: statsData?.clinic_rating || 0,
-      pendingInvites: statsData?.pending_invites || 0,
-      locations: statsData?.locations || 0,
-    });
+      const stats = statsData as any;
+      setStats({
+        totalBookings: stats?.total_bookings || 0,
+        totalPatients: stats?.total_patients || 0,
+        totalRevenue: stats?.total_revenue || 0,
+        clinicRating: stats?.clinic_rating || 0,
+        pendingInvites: stats?.pending_invites || 0,
+        locations: stats?.locations || 0,
+      });
+    } catch (e) {
+      console.warn("Failed to fetch practice stats:", e);
+    }
   };
 
   const fetchDoctors = async (practiceData: any) => {
@@ -99,35 +104,47 @@ export const useAdminDashboard = () => {
   const fetchAppointments = async (practiceData: any) => {
     if (!practiceData) return;
 
-    const { data, error } = await supabase.rpc("get_practice_appointments", {
-      practice_id: practiceData.id,
-      limit_count: 10,
-    });
+    try {
+      const { data, error } = await supabase.rpc("get_practice_appointments" as any, {
+        p_practice_id: practiceData.id,
+        p_limit_count: 10,
+      });
 
-    if (error) throw error;
-    setAppointments(data || []);
+      if (error) throw error;
+      setAppointments((data as any[]) || []);
+    } catch (e) {
+      console.warn("Failed to fetch appointments:", e);
+    }
   };
 
   const fetchServices = async (practiceData: any) => {
     if (!practiceData) return;
 
-    const { data, error } = await supabase.rpc("get_practice_services", {
-      practice_id: practiceData.id,
-    });
+    try {
+      const { data, error } = await supabase.rpc("get_practice_services" as any, {
+        p_practice_id: practiceData.id,
+      });
 
-    if (error) throw error;
-    setServices(data || []);
+      if (error) throw error;
+      setServices((data as any[]) || []);
+    } catch (e) {
+      console.warn("Failed to fetch services:", e);
+    }
   };
 
   const fetchStaff = async (practiceData: any) => {
     if (!practiceData) return;
 
-    const { data, error } = await supabase.rpc("get_practice_staff", {
-      practice_id: practiceData.id,
-    });
+    try {
+      const { data, error } = await supabase.rpc("get_practice_staff" as any, {
+        p_practice_id: practiceData.id,
+      });
 
-    if (error) throw error;
-    setStaff(data || []);
+      if (error) throw error;
+      setStaff((data as any[]) || []);
+    } catch (e) {
+      console.warn("Failed to fetch staff:", e);
+    }
   };
 
   const fetchLocations = async (practiceData: any) => {
@@ -146,37 +163,49 @@ export const useAdminDashboard = () => {
   const fetchPatients = async (practiceData: any) => {
     if (!practiceData) return;
 
-    const { data, error } = await supabase.rpc("get_practice_patients", {
-      practice_id: practiceData.id,
-      limit_count: 20,
-    });
+    try {
+      const { data, error } = await supabase.rpc("get_practice_patients" as any, {
+        p_practice_id: practiceData.id,
+        p_limit_count: 20,
+      });
 
-    if (error) throw error;
-    setPatients(data || []);
+      if (error) throw error;
+      setPatients((data as any[]) || []);
+    } catch (e) {
+      console.warn("Failed to fetch patients:", e);
+    }
   };
 
   const fetchPayments = async (practiceData: any) => {
     if (!practiceData) return;
 
-    const { data, error } = await supabase.rpc("get_practice_payments", {
-      practice_id: practiceData.id,
-      limit_count: 10,
-    });
+    try {
+      const { data, error } = await supabase.rpc("get_practice_payments" as any, {
+        p_practice_id: practiceData.id,
+        p_limit_count: 10,
+      });
 
-    if (error) throw error;
-    setPayments(data || []);
+      if (error) throw error;
+      setPayments((data as any[]) || []);
+    } catch (e) {
+      console.warn("Failed to fetch payments:", e);
+    }
   };
 
   const fetchMessages = async (practiceData: any) => {
     if (!practiceData) return;
 
-    const { data, error } = await supabase.rpc("get_practice_messages", {
-      practice_id: practiceData.id,
-      limit_count: 5,
-    });
+    try {
+      const { data, error } = await supabase.rpc("get_practice_messages" as any, {
+        p_practice_id: practiceData.id,
+        p_limit_count: 5,
+      });
 
-    if (error) throw error;
-    setMessages(data || []);
+      if (error) throw error;
+      setMessages((data as any[]) || []);
+    } catch (e) {
+      console.warn("Failed to fetch messages:", e);
+    }
   };
 
   const fetchPerformanceMetrics = async () => {

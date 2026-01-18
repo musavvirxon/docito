@@ -71,9 +71,9 @@ export function useBilling(params: { entityType: EntityType; entityId: string | 
 
     try {
       const [plansRes, subRes, invRes] = await Promise.all([
-        supabase.from("billing_plans").select("id,code,name,description,interval,amount_cents,currency,is_active").eq("is_active", true).order("amount_cents", { ascending: true }),
-        supabase.from("billing_subscriptions").select("id,entity_type,entity_id,plan_id,status,current_period_start,current_period_end,cancel_at_period_end").eq("entity_type", entityType).eq("entity_id", entityId).maybeSingle(),
-        supabase.from("billing_invoices").select("id,status,currency,amount_due_cents,amount_paid_cents,amount_remaining_cents,due_at,paid_at,hosted_invoice_url,invoice_pdf_url,created_at").eq("entity_type", entityType).eq("entity_id", entityId).order("created_at", { ascending: false }).limit(25),
+        (supabase.from as any)("billing_plans").select("id,code,name,description,interval,amount_cents,currency,is_active").eq("is_active", true).order("amount_cents", { ascending: true }),
+        (supabase.from as any)("billing_subscriptions").select("id,entity_type,entity_id,plan_id,status,current_period_start,current_period_end,cancel_at_period_end").eq("entity_type", entityType).eq("entity_id", entityId).maybeSingle(),
+        (supabase.from as any)("billing_invoices").select("id,status,currency,amount_due_cents,amount_paid_cents,amount_remaining_cents,due_at,paid_at,hosted_invoice_url,invoice_pdf_url,created_at").eq("entity_type", entityType).eq("entity_id", entityId).order("created_at", { ascending: false }).limit(25),
       ]);
 
       if (plansRes.error) throw plansRes.error;
