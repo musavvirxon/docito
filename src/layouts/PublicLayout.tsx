@@ -13,7 +13,7 @@ const DASHBOARD_PREFIXES = [
   "/patient",
   "/super-admin",
 
-  // Doctor dashboard routes (no footer)
+  // Doctor Dashboard Routes (No Footer)
   "/doctor-dashboard",
   "/doctor/dashboard",
 ];
@@ -24,8 +24,8 @@ export default function PublicLayout() {
 
   const isDashboardRoute = DASHBOARD_PREFIXES.some((p) => path.startsWith(p));
 
-  // NOTE: "/doctor" and "/doctor/:slug" are public routes and should keep PremiumFooter.
-  // Only "/doctor-dashboard" and "/doctor/dashboard" are treated as dashboard routes.
+  // NOTE: "/doctor" And "/doctor/:slug" Are Public Routes And Should Keep PremiumFooter.
+  // Only "/doctor-dashboard" And "/doctor/dashboard" Are Treated As Dashboard Routes.
   if (isDashboardRoute) return <Outlet />;
 
   return (
