@@ -1,61 +1,143 @@
-// src/pages/AdminDashboardPage.tsx
 // File: src/pages/AdminDashboardPage.tsx
 
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { EmptyState } from "@/components/dashboard/EmptyState";
-import { TransactionsTable } from "@/components/admin/TransactionsTable";
-
-import { Shield, CreditCard, Settings } from "lucide-react";
+import { useMemo } from "react";
+import { Loader2, Users, Calendar, DollarSign, Star, MapPin, Mail } from "lucide-react";
+import { useAdminDashboard } from "@/hooks/useAdminDashboard";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatsGrid, type StatItem } from "@/components/dashboard/StatsGrid";
+import PendingInvitationsSection from "@/components/dashboard/PendingInvitationsSection";
+import PracticeAnalyticsSection from "@/components/dashboard/PracticeAnalyticsSection";
 
 export default function AdminDashboardPage() {
-  const navigate = useNavigate();
-  const [tab, setTab] = useState("transactions");
+  const { practice, stats, loading, error, refreshData } = useAdminDashboard();
 
-  const tabs = useMemo(
-    () => [
-      { id: "transactions", label: "Transactions", icon: <CreditCard className="h-4 w-4" /> },
-      { id: "settings", label: "Settings", icon: <Settings className="h-4 w-4" /> },
-    ],
-    [],
-  );
+  const statItems = useMemo<StatItem[]>(() => {
+    return [
+      {
+        label: "Total Bookings",
+        value: stats.totalBookings,
+        icon: <Calendar className="h-5 w-5" />,
+        color: "info",
+      },
+      {
+        label: "Total Patients",
+        value: stats.totalPatients,
+        icon: <Users className="h-5 w-5" />,
+        color: "primary",
+      },
+      {
+        label: "Total Revenue",
+        value: new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "USD",
+        }).format(Number(stats.totalRevenue || 0) / 100),
+        icon: <DollarSign className="h-5 w-5" />,
+        color: "success",
+      },
+      {
+        label: "Clinic Rating",
+        value: stats.clinicRating ? Number(stats.clinicRating).toFixed(1) : "—",
+        icon: <Star className="h-5 w-5" />,
+        color: "warning",
+        description: "Average rating",
+      },
+    ];
+  }, [stats]);
 
-  return (
-    <div className="max-w-7xl mx-auto w-full p-4 sm:p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-          <Shield className="h-5 w-5 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Billing, verification, and platform operations</p>
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span>Loading dashboard…</span>
         </div>
       </div>
+    );
+  }
 
-      <Tabs value={tab} onValueChange={setTab} className="w-full">
-        <TabsList className="grid grid-cols-2 w-full max-w-md">
-          {tabs.map((t) => (
-            <TabsTrigger key={t.id} value={t.id} className="gap-2">
-              {t.icon}
-              {t.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+  if (error) {
+    return (
+      <div className="p-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Admin Dashboard</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="text-sm text-muted-foreground">{error}</div>
+            <button
+              type="button"
+              className="text-sm text-primary underline"
+              onClick={() => void refreshData()}
+            >
+              Retry
+            </button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
-        <TabsContent value="transactions" className="mt-6">
-          <TransactionsTable />
-        </TabsContent>
+  if (!practice) {
+    return (
+      <div className="p-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Admin Dashboard</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            No practice is linked to this account.
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
-        <TabsContent value="settings" className="mt-6">
-          <EmptyState
-            title="Admin settings"
-            description="Use the global Settings page for account + security settings."
-            action={{ label: "Open Settings", onClick: () => navigate("/settings") }}
-          />
-        </TabsContent>
-      </Tabs>
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold truncate">{practice.name}</h1>
+          <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+            {practice.city || practice.country ? (
+              <span className="inline-flex items-center gap-1">
+                <MapPin className="h-4 w-4" />
+                {[practice.city, practice.country].filter(Boolean).join(", ")}
+              </span>
+            ) : null}
+            {practice.email ? (
+              <span className="inline-flex items-center gap-1">
+                <Mail className="h-4 w-4" />
+                {practice.email}
+              </span>
+            ) : null}
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="text-sm text-primary underline"
+          onClick={() => void refreshData()}
+        >
+          Refresh
+        </button>
+      </div>
+
+      <StatsGrid stats={statItems} columns={4} />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <PendingInvitationsSection practiceId={practice.id} />
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Locations</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            {stats.locations || 0} location{(stats.locations || 0) === 1 ? "" : "s"} configured.
+          </CardContent>
+        </Card>
+      </div>
+
+      <PracticeAnalyticsSection practiceId={practice.id} />
     </div>
   );
 }
