@@ -1,37 +1,26 @@
 // File: src/pages/lab/LabVerification.tsx
-
 import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useLabCenter } from "@/hooks/useLabCenter";
-import FacilityVerificationForm from "@/components/verification/FacilityVerificationForm";
+import EntityFileManager from "@/components/files/EntityFileManager";
+import { useStaffContext } from "@/hooks/useStaffContext";
 
 export default function LabVerification() {
-  const navigate = useNavigate();
-  const { myLabCenter, loading } = useLabCenter();
+  const { staffType, permissions } = useStaffContext();
 
-  const entityName = useMemo(() => myLabCenter?.name ?? null, [myLabCenter?.id]);
-  const entityVerified = useMemo(() => Boolean(myLabCenter?.is_verified), [myLabCenter?.id]);
+  const entityId = useMemo(() => {
+    if (staffType !== "lab") return null;
+    return permissions?.entity_id || null;
+  }, [permissions?.entity_id, staffType]);
 
-  if (loading) {
+  if (!entityId) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
-  }
-
-  if (!myLabCenter) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <Card className="w-full max-w-lg">
+      <div className="p-6">
+        <Card>
           <CardHeader>
-            <CardTitle>Lab Verification</CardTitle>
+            <CardTitle>Verification</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-muted-foreground">No lab center is linked to your account yet.</p>
-            <Button onClick={() => navigate("/lab/register")}>Register Lab Center</Button>
+          <CardContent className="text-sm text-muted-foreground">
+            No lab center is linked to this account.
           </CardContent>
         </Card>
       </div>
@@ -39,14 +28,33 @@ export default function LabVerification() {
   }
 
   return (
-    <FacilityVerificationForm
-      title="Lab Verification"
-      facilityType="lab"
-      facilityId={myLabCenter.id}
-      entityName={entityName}
-      entityVerified={entityVerified}
-      onBack={() => navigate("/lab/dashboard")}
-      onUpdateDetails={() => navigate("/lab/register")}
-    />
+    <div className="p-6 space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Lab Verification</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground">
+          Upload verification documents for your lab. Draft is allowed.
+        </CardContent>
+      </Card>
+
+      <EntityFileManager
+        entityType="lab"
+        entityId={entityId}
+        category="verification"
+        title="Verification documents"
+        description="Upload trade license, registration certificate, and required lab accreditations."
+        accept=".pdf,.png,.jpg,.jpeg,.webp"
+      />
+
+      <EntityFileManager
+        entityType="lab"
+        entityId={entityId}
+        category="reports"
+        title="Reports & attachments"
+        description="Optional: sample reports, SOPs, or other supporting docs."
+        accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx,.txt"
+      />
+    </div>
   );
 }
