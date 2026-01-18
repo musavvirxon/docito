@@ -1,4 +1,4 @@
-// Path: src/hooks/useStaffDashboard.ts
+// File: src/hooks/useStaffDashboard.ts
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -41,7 +41,7 @@ export interface StaffPatient {
 
 export interface StaffPayment {
   id: string;
-  amount: number;
+  amount_cents: number;
   currency: string;
   status: string;
   payment_type: string;
@@ -143,7 +143,7 @@ export const useStaffDashboard = () => {
               full_name
             )
           )
-        `
+        `,
         )
         .eq("practice_id", pid)
         .eq("appointment_date", today)
@@ -197,7 +197,7 @@ export const useStaffDashboard = () => {
               full_name
             )
           )
-        `
+        `,
         )
         .eq("practice_id", pid)
         .gt("appointment_date", today)
@@ -240,7 +240,7 @@ export const useStaffDashboard = () => {
             email,
             phone
           )
-        `
+        `,
         )
         .eq("practice_id", pid)
         .order("appointment_date", { ascending: false })
@@ -275,30 +275,31 @@ export const useStaffDashboard = () => {
 
   const fetchRecentPayments = useCallback(async (pid: string) => {
     try {
-      // NOTE: payments are stored in billing_transactions (entity-scoped) in this project.
-      const { data, error } = await supabase
-        .from("billing_transactions")
-        .select(
-          `
-          id,
-          amount_cents,
-          currency,
-          status,
-          transaction_type,
-          created_at,
-          metadata
-        `
-        )
-        .eq("entity_type", "clinic")
-        .eq("entity_id", pid)
-        .order("created_at", { ascending: false })
-        .limit(10);
+      // Use Edge Function (service-role read + explicit authz) to avoid RLS pitfalls.
+      const { data, error } = await supabase.functions.invoke<
+        {
+          ok: boolean;
+          error?: string;
+          transactions?: Array<{
+            id: string;
+            amount_cents: number;
+            currency: string;
+            status: string;
+            transaction_type: string;
+            created_at: string;
+            metadata: Record<string, any>;
+          }>;
+        }
+      >("clinic-billing", {
+        body: { clinicId: pid, limit: 10 },
+      });
 
       if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || "Failed to load billing");
 
-      return (data || []).map((t: any) => ({
+      return (data.transactions || []).map((t) => ({
         id: t.id,
-        amount: Number(t.amount_cents || 0) / 100,
+        amount_cents: Number(t.amount_cents || 0),
         currency: t.currency || "usd",
         status: t.status,
         payment_type: t.transaction_type,
@@ -348,7 +349,16 @@ export const useStaffDashboard = () => {
     } finally {
       setLoading(false);
     }
-  }, [fetchPractice, fetchRecentPatients, fetchRecentPayments, fetchTodaysAppointments, fetchUpcomingAppointments, practiceId, resolvedPermissions, user]);
+  }, [
+    fetchPractice,
+    fetchRecentPatients,
+    fetchRecentPayments,
+    fetchTodaysAppointments,
+    fetchUpcomingAppointments,
+    practiceId,
+    resolvedPermissions,
+    user,
+  ]);
 
   useEffect(() => {
     if (scopeLoading) return;
