@@ -1,4 +1,5 @@
 // File: src/components/patient/PatientBilling.tsx
+// NOTE: FULL REPLACEMENT that fixes setup intent secret usage and finalizes SCA invoice payments.
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -56,6 +57,7 @@ type BillingSummaryResponse = {
     id: string;
     invoice_id: string | null;
     provider: string | null;
+    provider_payment_id: string | null;
     amount: number;
     currency: string;
     status: string;
@@ -67,7 +69,14 @@ type BillingSummaryResponse = {
 type CreateSetupIntentResponse = { ok: boolean; error?: string; client_secret?: string };
 type SetDefaultPmResponse = { ok: boolean; error?: string };
 type RemovePmResponse = { ok: boolean; error?: string };
-type PayInvoiceResponse = { ok: boolean; error?: string; requires_action?: boolean; client_secret?: string };
+type PayInvoiceResponse = {
+  ok: boolean;
+  error?: string;
+  requires_action?: boolean;
+  client_secret?: string;
+  payment_intent_id?: string;
+};
+type ConfirmPiResponse = { ok: boolean; error?: string; status?: string };
 
 function formatMoney(amount: number, currency: string) {
   const n = Number(amount || 0);
@@ -91,6 +100,7 @@ function statusBadge(status: string) {
     draft: { cls: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400", icon: Clock, label: "Draft" },
     void: { cls: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400", icon: AlertCircle, label: "Void" },
     cancelled: { cls: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400", icon: AlertCircle, label: "Cancelled" },
+    failed: { cls: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400", icon: AlertCircle, label: "Failed" },
   };
   return map[s] || { cls: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400", icon: AlertCircle, label: status };
 }
@@ -129,6 +139,8 @@ export const PatientBilling = () => {
   const stripeRef = useRef<any>(null);
   const elementsRef = useRef<any>(null);
   const cardElRef = useRef<any>(null);
+
+  const [setupClientSecret, setSetupClientSecret] = useState<string | null>(null);
 
   const publishableKey = (import.meta as any).env?.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined;
 
@@ -177,6 +189,25 @@ export const PatientBilling = () => {
     if (user) void fetchSummary();
   }, [user]);
 
+  const mountCardElement = async (clientSecret: string) => {
+    if (!publishableKey) throw new Error("Missing VITE_STRIPE_PUBLISHABLE_KEY");
+
+    await loadStripeJs();
+    if (!window.Stripe) throw new Error("Stripe.js not available");
+
+    stripeRef.current = window.Stripe(publishableKey);
+    elementsRef.current = stripeRef.current.elements({ clientSecret });
+
+    const cardMount = document.getElementById("stripe-card-mount");
+    if (!cardMount) throw new Error("Card mount not found");
+    cardMount.innerHTML = "";
+
+    cardElRef.current = elementsRef.current.create("card", { hidePostalCode: true });
+    cardElRef.current.mount(cardMount);
+
+    setStripeReady(true);
+  };
+
   const openCardDialog = async () => {
     if (!publishableKey) {
       toast.error("Missing VITE_STRIPE_PUBLISHABLE_KEY");
@@ -193,26 +224,14 @@ export const PatientBilling = () => {
       if (siErr) throw siErr;
       if (!si?.ok || !si.client_secret) throw new Error(si?.error || "Failed to create setup intent");
 
-      await loadStripeJs();
-      if (!window.Stripe) throw new Error("Stripe.js not available");
-      setStripeReady(true);
-
-      stripeRef.current = window.Stripe(publishableKey);
-
-      // Elements for setup intent
-      elementsRef.current = stripeRef.current.elements({ clientSecret: si.client_secret });
-
-      // Mount card element
-      const cardMount = document.getElementById("stripe-card-mount");
-      if (!cardMount) throw new Error("Card mount not found");
-
-      cardMount.innerHTML = "";
-      cardElRef.current = elementsRef.current.create("card", { hidePostalCode: true });
-      cardElRef.current.mount(cardMount);
+      setSetupClientSecret(si.client_secret);
+      await mountCardElement(si.client_secret);
     } catch (e: any) {
       console.error(e);
       toast.error(e?.message || "Failed to start card setup");
       setCardDialogOpen(false);
+      setStripeReady(false);
+      setSetupClientSecret(null);
     } finally {
       setCardDialogBusy(false);
     }
@@ -220,9 +239,7 @@ export const PatientBilling = () => {
 
   const closeCardDialog = () => {
     try {
-      if (cardElRef.current) {
-        cardElRef.current.unmount();
-      }
+      if (cardElRef.current) cardElRef.current.unmount();
     } catch {
       // ignore
     }
@@ -230,34 +247,27 @@ export const PatientBilling = () => {
     elementsRef.current = null;
     cardElRef.current = null;
     setStripeReady(false);
+    setSetupClientSecret(null);
     setCardDialogOpen(false);
   };
 
   const saveCard = async () => {
-    if (!stripeRef.current || !cardElRef.current) return;
-    if (!publishableKey) return;
+    if (!stripeRef.current || !cardElRef.current || !setupClientSecret) return;
 
     setCardDialogBusy(true);
 
     try {
       const email = user?.email || undefined;
 
-      const { setupIntent, error } = await stripeRef.current.confirmCardSetup(
-        // Elements client secret already bound; confirm uses Elements created with that secret
-        // Stripe v3 allows passing elements OR a client secret; we use elements instance.
-        // But confirmCardSetup signature can differ; use the simplest supported path:
-        // Provide payment_method with card element + billing details.
-        (elementsRef.current as any)._clientSecret,
-        {
-          payment_method: {
-            card: cardElRef.current,
-            billing_details: { email },
-          },
+      const res = await stripeRef.current.confirmCardSetup(setupClientSecret, {
+        payment_method: {
+          card: cardElRef.current,
+          billing_details: { email },
         },
-      );
+      });
 
-      if (error) throw new Error(error.message || "Card confirmation failed");
-      const pmId = setupIntent?.payment_method;
+      if (res?.error) throw new Error(res.error.message || "Card confirmation failed");
+      const pmId = res?.setupIntent?.payment_method;
       if (!pmId) throw new Error("No payment method returned");
 
       const { data: setRes, error: setErr } = await supabase.functions.invoke<SetDefaultPmResponse>("patient-billing", {
@@ -310,13 +320,20 @@ export const PatientBilling = () => {
       if (error) throw error;
       if (!r?.ok) throw new Error(r?.error || "Payment failed");
 
-      if (r.requires_action && r.client_secret) {
+      if (r.requires_action && r.client_secret && r.payment_intent_id) {
         await loadStripeJs();
         if (!window.Stripe) throw new Error("Stripe.js not available");
         const stripe = window.Stripe(publishableKey);
 
         const result = await stripe.confirmCardPayment(r.client_secret);
         if (result?.error) throw new Error(result.error.message || "Authentication failed");
+
+        // finalize on server (idempotent)
+        const { data: c, error: cErr } = await supabase.functions.invoke<ConfirmPiResponse>("patient-billing", {
+          body: { action: "confirm_payment_intent", invoiceId, paymentIntentId: r.payment_intent_id },
+        });
+        if (cErr) throw cErr;
+        if (!c?.ok) throw new Error(c?.error || "Failed to finalize payment");
 
         toast.success("Payment completed");
       } else {
@@ -560,7 +577,9 @@ export const PatientBilling = () => {
                         "text-xs",
                         String(p.status).toLowerCase() === "paid"
                           ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                          : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
+                          : String(p.status).toLowerCase() === "failed"
+                            ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                            : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
                       )}
                     >
                       {p.status}
@@ -604,7 +623,7 @@ export const PatientBilling = () => {
             <Button variant="outline" onClick={closeCardDialog} disabled={cardDialogBusy}>
               Cancel
             </Button>
-            <Button onClick={() => void saveCard()} disabled={cardDialogBusy || !publishableKey}>
+            <Button onClick={() => void saveCard()} disabled={cardDialogBusy || !publishableKey || !setupClientSecret}>
               {cardDialogBusy ? "Saving…" : "Save card"}
             </Button>
           </DialogFooter>
