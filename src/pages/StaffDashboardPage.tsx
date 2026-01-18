@@ -1,173 +1,189 @@
-// src/pages/StaffDashboardPage.tsx
 // File: src/pages/StaffDashboardPage.tsx
 
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useStaffDashboard } from "@/hooks/useStaffDashboard";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
 
-import { useAuth } from "@/contexts/AuthContext";
-import { useStaffContext } from "@/hooks/useStaffContext";
+import { StaffDashboardOverview } from "@/components/staff/StaffDashboardOverview";
+import { TodayScheduleSection } from "@/components/staff/TodayScheduleSection";
+import { PatientListSection } from "@/components/staff/PatientListSection";
+import BillingSection from "@/components/staff/BillingSection";
+import { InvitationsList } from "@/components/staff/InvitationsList";
 
-import { StaffSidebar } from "@/components/staff/StaffSidebar";
-
-import LabDashboardContent from "@/components/staff/LabDashboardContent";
-import ImagingDashboardContent from "@/components/staff/ImagingDashboardContent";
-import PharmacyDashboardContent from "@/components/staff/PharmacyDashboardContent";
-
-import LabOrderQueue from "@/components/lab/LabOrderQueue";
-import LabSampleManager from "@/components/lab/LabSampleManager";
-import LabHomeCollection from "@/components/lab/LabHomeCollection";
-
-import ImagingScanWorkflow from "@/components/imaging/ImagingScanWorkflow";
-import ImagingReportManager from "@/components/imaging/ImagingReportManager";
-import ImagingEquipmentManager from "@/components/imaging/ImagingEquipmentManager";
-import ImagingAnalytics from "@/components/imaging/ImagingAnalytics";
-import ImagingBillingSection from "@/components/imaging/ImagingBillingSection";
-
-import PharmacyPrescriptionInbox from "@/components/pharmacy/PharmacyPrescriptionInbox";
-import FulfillmentQueue from "@/components/pharmacy/FulfillmentQueue";
-import PharmacyInventoryManager from "@/components/pharmacy/PharmacyInventoryManager";
-import PharmacyDeliveryOrders from "@/components/pharmacy/PharmacyDeliveryOrders";
-import PharmacyAnalytics from "@/components/pharmacy/PharmacyAnalytics";
-import PharmacyInsuranceClaims from "@/components/pharmacy/PharmacyInsuranceClaims";
-
-import { EmptyState } from "@/components/dashboard/EmptyState";
+type SectionId = "dashboard" | "today" | "patients" | "billing" | "invites";
 
 export default function StaffDashboardPage() {
-  const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
-  const { staffType, entityInfo, permissions, loading: scopeLoading, error } = useStaffContext();
+  const {
+    permissions,
+    practice,
+    todaysAppointments,
+    upcomingAppointments,
+    recentPatients,
+    recentPayments,
+    loading,
+    error,
+    refresh,
+  } = useStaffDashboard();
 
-  const [activeSection, setActiveSection] = useState("dashboard");
+  const [section, setSection] = useState<SectionId>("dashboard");
 
-  const entityId = useMemo(() => {
-    const p: any = permissions as any;
-    return (p?.entity_id as string) || "";
-  }, [permissions]);
+  const isAdminLike = useMemo(() => {
+    const r = (permissions?.staff_role || "").toLowerCase();
+    return r.includes("admin") || r.includes("manager");
+  }, [permissions?.staff_role]);
 
-  useEffect(() => {
-    setActiveSection("dashboard");
-  }, [staffType, entityId]);
+  const availableSections = useMemo(() => {
+    const s: { id: SectionId; label: string; visible: boolean }[] = [
+      { id: "dashboard", label: "Dashboard", visible: true },
+      { id: "today", label: "Today", visible: Boolean(permissions?.can_view_schedule) },
+      { id: "patients", label: "Patients", visible: Boolean(permissions?.can_manage_patients) },
+      { id: "billing", label: "Billing", visible: Boolean(permissions?.can_manage_billing) },
+      { id: "invites", label: "Invites", visible: Boolean(isAdminLike && practice?.id) },
+    ];
 
-  if (authLoading || scopeLoading) {
+    return s.filter((x) => x.visible);
+  }, [
+    isAdminLike,
+    permissions?.can_manage_billing,
+    permissions?.can_manage_patients,
+    permissions?.can_view_schedule,
+    practice?.id,
+  ]);
+
+  const handleStatusUpdate = async (appointmentId: string, status: string) => {
+    if (!permissions?.practice_id) return false;
+
+    try {
+      const { error: upErr } = await supabase
+        .from("appointments")
+        .update({ status })
+        .eq("id", appointmentId)
+        .eq("practice_id", permissions.practice_id);
+
+      if (upErr) throw upErr;
+      toast.success("Appointment updated");
+      await refresh();
+      return true;
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to update appointment");
+      return false;
+    }
+  };
+
+  if (loading) {
     return (
-      <div className="min-h-[70vh] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-[70vh] flex items-center justify-center">
-        <EmptyState
-          title="Sign in required"
-          description="Please sign in to access the staff dashboard."
-          action={{ label: "Sign In", onClick: () => navigate("/auth") }}
-        />
+      <div className="p-6">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span>Loading dashboard…</span>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-[70vh] flex items-center justify-center">
-        <EmptyState
-          title="Unable to load staff scope"
-          description={String((error as any)?.message || error)}
-          action={{ label: "Reload", onClick: () => window.location.reload() }}
-        />
+      <div className="p-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Staff Dashboard</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="text-sm text-muted-foreground">{error}</div>
+            <button
+              type="button"
+              className="text-sm text-primary underline"
+              onClick={() => void refresh()}
+            >
+              Retry
+            </button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
-  if (!permissions || !entityId || staffType === "unknown") {
+  if (!practice || !permissions) {
     return (
-      <div className="min-h-[70vh] flex items-center justify-center">
-        <EmptyState
-          title="No staff access found"
-          description="This account is not currently assigned to a clinic/lab/imaging/pharmacy."
-          action={{ label: "Go Home", onClick: () => navigate("/") }}
-        />
+      <div className="p-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Staff Dashboard</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            No clinic practice is linked to this account.
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
-  const renderContent = () => {
-    if (activeSection === "dashboard") {
-      if (staffType === "lab") return <LabDashboardContent entityInfo={entityInfo} permissions={permissions} />;
-      if (staffType === "imaging") return <ImagingDashboardContent entityInfo={entityInfo} permissions={permissions} />;
-      if (staffType === "pharmacy") return <PharmacyDashboardContent entityInfo={entityInfo} permissions={permissions} />;
-      return <div />;
-    }
-
-    if (staffType === "lab") {
-      if (activeSection === "orders") return <LabOrderQueue labCenterId={entityId} />;
-      if (activeSection === "samples") return <LabSampleManager labCenterId={entityId} />;
-      if (activeSection === "processing") return <LabSampleManager labCenterId={entityId} />;
-      if (activeSection === "equipment") return <LabHomeCollection labCenterId={entityId} />;
-      return <LabDashboardContent entityInfo={entityInfo} permissions={permissions} />;
-    }
-
-    if (staffType === "imaging") {
-      if (activeSection === "orders") return <ImagingScanWorkflow imagingCenterId={entityId} />;
-      if (activeSection === "scans") return <ImagingScanWorkflow imagingCenterId={entityId} />;
-      if (activeSection === "processing") return <ImagingScanWorkflow imagingCenterId={entityId} />;
-      if (activeSection === "results") return <ImagingReportManager imagingCenterId={entityId} />;
-      if (activeSection === "verification") return <ImagingReportManager imagingCenterId={entityId} />;
-      if (activeSection === "equipment") return <ImagingEquipmentManager imagingCenterId={entityId} />;
-      return <ImagingDashboardContent entityInfo={entityInfo} permissions={permissions} />;
-    }
-
-    if (staffType === "pharmacy") {
-      if (activeSection === "prescriptions") return <PharmacyPrescriptionInbox pharmacyId={entityId} />;
-      if (activeSection === "dispensing") return <FulfillmentQueue pharmacyId={entityId} />;
-      if (activeSection === "inventory") return <PharmacyInventoryManager pharmacyId={entityId} />;
-      if (activeSection === "orders") return <PharmacyDeliveryOrders pharmacyId={entityId} />;
-      return <PharmacyDashboardContent entityInfo={entityInfo} permissions={permissions} />;
-    }
-
-    return <div />;
-  };
+  const active = availableSections.find((s) => s.id === section)
+    ? section
+    : availableSections[0]?.id || "dashboard";
 
   return (
-    <div className="flex min-h-[calc(100vh-64px)]">
-      <StaffSidebar
-        staffType={staffType}
-        entityInfo={entityInfo}
-        permissions={permissions}
-        activeSection={activeSection}
-        onSectionChange={setActiveSection}
-      />
+    <div className="p-6">
+      <Tabs value={active} onValueChange={(v) => setSection(v as SectionId)}>
+        <TabsList className="flex flex-wrap justify-start">
+          {availableSections.map((s) => (
+            <TabsTrigger key={s.id} value={s.id}>
+              {s.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
-      <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-background">
-        {renderContent()}
+        <TabsContent value="dashboard" className="mt-6">
+          <StaffDashboardOverview
+            practice={practice}
+            permissions={permissions}
+            todaysAppointments={todaysAppointments}
+            upcomingAppointments={upcomingAppointments}
+            recentPayments={recentPayments}
+            onNavigate={(next) => setSection(next as SectionId)}
+          />
+        </TabsContent>
 
-        {staffType === "imaging" && (activeSection === "dashboard" || activeSection === "orders") ? (
-          <div className="mt-8 grid gap-6 lg:grid-cols-2">
-            <div className="rounded-lg border bg-card text-card-foreground p-4">
-              <h3 className="font-semibold mb-2">Analytics</h3>
-              <ImagingAnalytics imagingCenterId={entityId} />
-            </div>
-            <div className="rounded-lg border bg-card text-card-foreground p-4">
-              <h3 className="font-semibold mb-2">Billing</h3>
-              <ImagingBillingSection imagingCenterId={entityId} />
-            </div>
-          </div>
-        ) : null}
+        <TabsContent value="today" className="mt-6">
+          <TodayScheduleSection
+            appointments={todaysAppointments}
+            onStatusUpdate={handleStatusUpdate}
+            onRefresh={() => void refresh()}
+            canUpdateAppointments={Boolean(permissions.can_view_schedule)}
+          />
+        </TabsContent>
 
-        {staffType === "pharmacy" && activeSection === "dashboard" ? (
-          <div className="mt-8 grid gap-6 lg:grid-cols-2">
-            <div className="rounded-lg border bg-card text-card-foreground p-4">
-              <h3 className="font-semibold mb-2">Analytics</h3>
-              <PharmacyAnalytics pharmacyId={entityId} />
-            </div>
-            <div className="rounded-lg border bg-card text-card-foreground p-4">
-              <h3 className="font-semibold mb-2">Billing / Claims</h3>
-              <PharmacyInsuranceClaims pharmacyId={entityId} />
-            </div>
-          </div>
-        ) : null}
-      </main>
+        <TabsContent value="patients" className="mt-6">
+          <PatientListSection
+            patients={recentPatients}
+            onRefresh={() => void refresh()}
+            canManagePatients={Boolean(permissions.can_manage_patients)}
+          />
+        </TabsContent>
+
+        <TabsContent value="billing" className="mt-6">
+          <BillingSection
+            payments={recentPayments}
+            onRefresh={() => void refresh()}
+            canManageBilling={Boolean(permissions.can_manage_billing)}
+          />
+        </TabsContent>
+
+        <TabsContent value="invites" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Invitations</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <InvitationsList practiceId={practice.id} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
