@@ -4,14 +4,14 @@ import PremiumFooter from "@/components/home/premium/PremiumFooter";
 
 const DASHBOARD_PREFIXES = [
   "/dashboard",
-  "/super-admin-dashboard",
-  "/admin-dashboard",
-  "/doctor-dashboard",
-  "/patient-dashboard",
-  "/staff-dashboard",
-  "/lab/dashboard",
-  "/pharmacy/dashboard",
-  "/imaging/dashboard",
+  "/admin",
+  "/staff",
+  "/lab",
+  "/pharmacy",
+  "/imaging",
+  "/doctor",
+  "/patient",
+  "/super-admin",
 ];
 
 export default function PublicLayout() {
