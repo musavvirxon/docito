@@ -1,3 +1,4 @@
+// supabase/functions/lab-analytics/index.ts
 // File: supabase/functions/lab-analytics/index.ts
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
@@ -71,6 +72,7 @@ async function assertLabAccess(serviceClient: ReturnType<typeof createClient>, u
     .eq("status", "active")
     .maybeSingle();
   if (sErr) throw sErr;
+
   return Boolean(staff?.id);
 }
 
@@ -110,7 +112,6 @@ serve(async (req) => {
   const prevStart = new Date(prevEnd.getTime() - days * 24 * 60 * 60 * 1000);
 
   try {
-    // 1) Orders in range + prev range
     const [{ data: orders, error: oErr }, { data: prevOrders, error: poErr }] = await Promise.all([
       service
         .from("test_orders")
@@ -134,7 +135,6 @@ serve(async (req) => {
     const orderRows = orders || [];
     const prevOrderRows = prevOrders || [];
 
-    // 2) Billing transactions in range + prev range (fallback to order totals if none)
     const [{ data: txs, error: tErr }, { data: prevTxs, error: ptErr }] = await Promise.all([
       service
         .from("billing_transactions")
@@ -154,7 +154,6 @@ serve(async (req) => {
         .limit(5000),
     ]);
 
-    // If the table/policy isn't present yet, treat as empty and use test_orders totals.
     const txRows = tErr ? [] : (txs || []);
     const prevTxRows = ptErr ? [] : (prevTxs || []);
 
@@ -163,7 +162,7 @@ serve(async (req) => {
       if (status !== "completed") return sum;
       const type = String((r as any).transaction_type || "").toLowerCase();
       const amt = toCents((r as any).amount);
-      if (type.includes("refund") || amt < 0) return sum + amt; // refunds reduce revenue
+      if (type.includes("refund") || amt < 0) return sum + amt;
       return sum + amt;
     }, 0);
 
@@ -190,7 +189,6 @@ serve(async (req) => {
 
     const testsChangePct = prevTotalTests > 0 ? ((totalTests - prevTotalTests) / prevTotalTests) * 100 : 0;
 
-    // Avg turnaround (hours)
     const completed = orderRows.filter((o) => (o as any).completed_at);
     const avgTurnaroundHours =
       completed.length === 0
@@ -201,11 +199,9 @@ serve(async (req) => {
             return sum + Math.max(0, (done.getTime() - created.getTime()) / (1000 * 60 * 60));
           }, 0) / completed.length;
 
-    // Recollection rate (no native signal in schema): report as % of cancelled orders (best available proxy)
     const cancelledCount = orderRows.filter((o) => String((o as any).status || "") === "cancelled").length;
     const recollectionRatePct = totalTests > 0 ? (cancelledCount / totalTests) * 100 : 0;
 
-    // Daily trend series
     const dayCount = days;
     const dayMap: Record<string, { date: string; revenueCents: number; tests: number }> = {};
     for (let i = 0; i < dayCount; i++) {
@@ -240,7 +236,6 @@ serve(async (req) => {
 
     const dailyTrend = Object.values(dayMap).sort((a, b) => a.date.localeCompare(b.date));
 
-    // Status breakdown
     const statusCounts: Record<string, number> = {};
     for (const o of orderRows) {
       const s = String((o as any).status || "unknown");
@@ -250,7 +245,6 @@ serve(async (req) => {
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value);
 
-    // Top tests: fetch order items + catalog names (for current range)
     const orderIds = orderRows.map((o) => (o as any).id);
     let topTests: Array<{ name: string; count: number; revenueCents: number }> = [];
     if (orderIds.length) {
