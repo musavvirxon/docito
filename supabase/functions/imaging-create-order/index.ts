@@ -1,3 +1,4 @@
+// supabase/functions/imaging-create-order/index.ts
 // File: supabase/functions/imaging-create-order/index.ts
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
@@ -45,6 +46,11 @@ async function requireEnv() {
   return { ok: true as const, url, anon, service };
 }
 
+function trimOrNull(v: unknown) {
+  const s = typeof v === "string" ? v.trim() : "";
+  return s.length ? s : null;
+}
+
 async function assertImagingManualOrderAccess(
   serviceClient: ReturnType<typeof createClient>,
   userId: string,
@@ -57,7 +63,7 @@ async function assertImagingManualOrderAccess(
     .maybeSingle();
 
   if (cErr) throw cErr;
-  if (center?.admin_id === userId) return { ok: true as const };
+  if (center?.admin_id === userId) return { ok: true as const, role: "admin" as const };
 
   const { data: staff, error: sErr } = await serviceClient
     .from("imaging_staff")
@@ -71,7 +77,7 @@ async function assertImagingManualOrderAccess(
   if (!staff?.id || staff.status !== "active") return { ok: false as const, reason: "Not assigned to this imaging center" };
   if (!staff.can_view_orders) return { ok: false as const, reason: "Missing permission: can_view_orders" };
 
-  return { ok: true as const };
+  return { ok: true as const, role: "staff" as const, staffId: staff.id as string };
 }
 
 serve(async (req) => {
@@ -95,14 +101,26 @@ serve(async (req) => {
     return json({ ok: false, error: "Invalid JSON body" }, 400);
   }
 
-  if (!body?.centerId) return json({ ok: false, error: "Missing centerId" }, 400);
-  if (!body?.patient?.full_name?.trim()) return json({ ok: false, error: "Patient full_name is required" }, 400);
-  if (!body?.patient?.phone?.trim()) return json({ ok: false, error: "Patient phone is required" }, 400);
-  if (!body?.study?.name?.trim()) return json({ ok: false, error: "Study name is required" }, 400);
+  const centerId = trimOrNull(body?.centerId);
+  if (!centerId) return json({ ok: false, error: "Missing centerId" }, 400);
+
+  const patientName = trimOrNull(body?.patient?.full_name);
+  const patientPhone = trimOrNull(body?.patient?.phone);
+  const patientEmail = trimOrNull(body?.patient?.email);
+  const patientDob = trimOrNull(body?.patient?.date_of_birth);
+
+  const studyName = trimOrNull(body?.study?.name);
+  const modality = (body?.study?.modality || "other") as ReqBody["study"]["modality"];
+
+  if (!patientName) return json({ ok: false, error: "Patient full_name is required" }, 400);
+  if (!patientPhone) return json({ ok: false, error: "Patient phone is required" }, 400);
+  if (!studyName) return json({ ok: false, error: "Study name is required" }, 400);
+
+  const priority = (body?.priority || "routine") as NonNullable<ReqBody["priority"]>;
 
   const service = createClient(env.url, env.service);
 
-  const allowed = await assertImagingManualOrderAccess(service, userRes.user.id, body.centerId);
+  const allowed = await assertImagingManualOrderAccess(service, userRes.user.id, centerId);
   if (!allowed.ok) return json({ ok: false, error: allowed.reason || "Forbidden" }, 403);
 
   try {
@@ -111,11 +129,11 @@ serve(async (req) => {
       .upsert(
         {
           facility_type: "imaging_center",
-          facility_id: body.centerId,
-          full_name: body.patient.full_name.trim(),
-          phone: body.patient.phone.trim(),
-          email: body.patient.email?.trim() || null,
-          date_of_birth: body.patient.date_of_birth || null,
+          facility_id: centerId,
+          full_name: patientName,
+          phone: patientPhone,
+          email: patientEmail,
+          date_of_birth: patientDob,
         },
         { onConflict: "facility_type,facility_id,phone" },
       )
@@ -124,30 +142,30 @@ serve(async (req) => {
 
     if (fpErr) throw fpErr;
 
-    const priority = body.priority || "routine";
-
     const attachments = {
-      modality: body.study.modality,
-      exam_name: body.study.name.trim(),
+      modality,
+      exam_name: studyName,
       source: "manual_imaging_dashboard",
     };
+
+    const nowIso = new Date().toISOString();
 
     const { data: referral, error: rErr } = await service
       .from("referrals")
       .insert({
         referrer_type: "imaging_center",
-        referrer_entity_id: body.centerId,
+        referrer_entity_id: centerId,
         referrer_user_id: userRes.user.id,
 
         receiver_type: "imaging_center",
-        receiver_entity_id: body.centerId,
+        receiver_entity_id: centerId,
 
         referral_type_enum: "imaging_study",
         priority,
-        reason: body.reason?.trim() || body.study.name.trim(),
-        clinical_notes: body.clinical_notes?.trim() || null,
-        preferred_date: body.preferred_date || null,
-        preferred_time_slot: body.preferred_time_slot || null,
+        reason: trimOrNull(body?.reason) || studyName,
+        clinical_notes: trimOrNull(body?.clinical_notes),
+        preferred_date: trimOrNull(body?.preferred_date),
+        preferred_time_slot: trimOrNull(body?.preferred_time_slot),
         attachments,
 
         patient_id: null,
@@ -157,7 +175,7 @@ serve(async (req) => {
         patient_email: fp.email ?? null,
 
         status: "pending",
-        sent_at: new Date().toISOString(),
+        sent_at: nowIso,
       })
       .select("id,referral_number")
       .single();
@@ -169,20 +187,32 @@ serve(async (req) => {
       .upsert(
         {
           referral_id: referral.id,
-          imaging_center_id: body.centerId,
+          imaging_center_id: centerId,
           workflow_status: "scheduled",
           priority,
           assigned_staff_id: null,
-          updated_at: new Date().toISOString(),
+          updated_by: userRes.user.id,
+          updated_at: nowIso,
         },
         { onConflict: "referral_id" },
       );
 
     if (stErr) {
-      return json({ ok: true, referralId: referral.id, referralNumber: referral.referral_number, warning: stErr.message });
+      return json({
+        ok: true,
+        referralId: referral.id,
+        referralNumber: referral.referral_number,
+        facilityPatientId: fp.id,
+        warning: stErr.message,
+      });
     }
 
-    return json({ ok: true, referralId: referral.id, referralNumber: referral.referral_number });
+    return json({
+      ok: true,
+      referralId: referral.id,
+      referralNumber: referral.referral_number,
+      facilityPatientId: fp.id,
+    });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     return json({ ok: false, error: msg }, 500);
