@@ -1,3 +1,5 @@
+// File: src/components/super-admin/SuperAdminSidebar.tsx
+
 import {
   Home,
   Stethoscope,
@@ -18,6 +20,7 @@ import {
   LayoutGrid,
   ArrowRightLeft,
   Inbox,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,8 +35,9 @@ interface SuperAdminSidebarProps {
 
 const navItems = [
   { id: "dashboard", label: "Dashboard", icon: Home },
-  { id: "feedback", label: "Feedback Inbox", icon: Inbox }, // ✅ added
+  { id: "feedback", label: "Feedback Inbox", icon: Inbox },
   { id: "ecosystem", label: "Ecosystem", icon: LayoutGrid },
+  { id: "verifications", label: "Verifications", icon: ShieldCheck },
   { id: "doctors", label: "Doctors", icon: Stethoscope },
   { id: "practices", label: "Clinics", icon: Building2 },
   { id: "pharmacies", label: "Pharmacies", icon: Pill },
@@ -79,11 +83,7 @@ const SuperAdminSidebar = ({
             onClick={onToggleCollapse}
             className="hover:bg-sidebar-accent"
           >
-            {collapsed ? (
-              <ChevronRight className="w-4 h-4" />
-            ) : (
-              <ChevronLeft className="w-4 h-4" />
-            )}
+            {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </Button>
         </div>
 
