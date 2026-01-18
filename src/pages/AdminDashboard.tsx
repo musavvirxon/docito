@@ -1,3 +1,4 @@
+// File: src/pages/AdminDashboard.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -41,6 +42,7 @@ import { useAdminDashboard } from "@/hooks/useAdminDashboard";
 import { useAdvancedFinancialMetrics } from "@/hooks/useAdvancedFinancialMetrics";
 import AdvancedFinancialMetrics from "@/components/financial/AdvancedFinancialMetrics";
 import { useVerificationStatus } from "@/hooks/useVerificationStatus";
+import PracticeAnalyticsSection from "@/components/dashboard/PracticeAnalyticsSection";
 
 // ✅ NEW: referrals UI
 import { FacilityReferralCreator, ReferralsSection } from "@/components/referrals";
@@ -962,71 +964,19 @@ const AdminDashboard = () => {
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <h2 className="text-xl font-semibold">Practice Analytics</h2>
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => guard(() => toast.info("Date range (coming soon)"))}
-                >
-                  Last 30 Days
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => guard(() => toast.info("Export report (coming soon)"))}
-                >
+                <Button variant="outline" onClick={() => guard(() => toast.info("Export report (coming soon)"))}>
                   Export Report
                 </Button>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-              <Card className="rounded-xl">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5" />
-                    Booking Trends
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-64 bg-muted/20 rounded-xl border border-border flex items-center justify-center">
-                    <p className="text-muted-foreground">
-                      Chart visualization would go here
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="rounded-xl">
-                <CardHeader>
-                  <CardTitle>Performance Metrics</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span>Average Rating</span>
-                      <div className="flex items-center gap-2">
-                        <Star className="h-4 w-4" />
-                        <span className="font-semibold">
-                          {metrics.averageRating.toFixed(1)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Patient Retention</span>
-                      <span className="font-semibold">
-                        {metrics.patientRetention}%
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Avg. Wait Time</span>
-                      <span className="font-semibold">{metrics.avgWaitTime} min</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>No-show Rate</span>
-                      <span className="font-semibold">{metrics.noShowRate}%</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            {practice?.id ? (
+              <div className="mt-6">
+                <PracticeAnalyticsSection practiceId={practice.id} />
+              </div>
+            ) : (
+              <div className="mt-6 text-sm text-muted-foreground">No practice is linked to this account.</div>
+            )}
 
             <div className="mt-6">
               <AdvancedFinancialMetrics
