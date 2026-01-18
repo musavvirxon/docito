@@ -1,246 +1,202 @@
 // src/components/home/premium/PremiumTopNav.tsx
 import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { Search, ChevronDown, Menu, X, User } from "lucide-react";
-import { Logo } from "@/components/Logo";
-import ThemeToggle from "@/components/home/ThemeToggle";
-import ProfileMenu from "@/components/dashboard/ProfileMenu";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import ProfileMenu from "@/components/dashboard/ProfileMenu";
 
-const navLinks = [
-  { key: "doctors", href: "/search?type=doctors", fallback: "Doctors" },
-  { key: "clinics", href: "/search?type=clinics", fallback: "Clinics" },
-  { key: "labs", href: "/search?type=labs", fallback: "Labs" },
-  { key: "pharmacies", href: "/search?type=pharmacies", fallback: "Pharmacies" },
-  { key: "imaging", href: "/search?type=imaging", fallback: "Imaging" },
-  { key: "insurance", href: "/search?type=insurance", fallback: "Insurance" },
-];
-
-const languages = [
-  { code: "en", name: "English", flag: "🇺🇸" },
-  { code: "ru", name: "Русский", flag: "🇷🇺" },
-  { code: "uz", name: "O'zbek", flag: "🇺🇿" },
-  { code: "ar", name: "العربية", flag: "🇸🇦" },
-  { code: "de", name: "Deutsch", flag: "🇩🇪" },
-  { code: "es", name: "Español", flag: "🇪🇸" },
-  { code: "tr", name: "Türkçe", flag: "🇹🇷" },
-  { code: "zh", name: "中文", flag: "🇨🇳" },
-];
-
-export default function PremiumTopNav() {
-  const { t, i18n } = useTranslation(["home", "common"]);
+const PremiumTopNav = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
   const { user } = useAuth();
 
-  const [scrolled, setScrolled] = useState(false);
-  const [searchFocused, setSearchFocused] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [langOpen, setLangOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useEffect(() => {
-    if (!mobileMenuOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMobileMenuOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [mobileMenuOpen]);
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
-  const currentLang = languages.find((l) => l.code === i18n.language) || languages[0];
+  const navLinks = [
+    { name: "Doctors", href: "/doctor" },
+    { name: "Clinics", href: "/practice" },
+    { name: "Labs", href: "/lab" },
+    { name: "Pharmacies", href: "/pharmacy" },
+    { name: "Imaging", href: "/imaging-center" },
+    { name: "Hospitals", href: "/practice" },
+    { name: "Pricing", href: "/pricing" },
+  ];
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    const q = searchQuery.trim();
-    if (!q) return;
-    navigate(`/search?q=${encodeURIComponent(q)}`);
-    setMobileMenuOpen(false);
-  };
+  const isActive = (href: string) => location.pathname === href;
 
   return (
-    <motion.header
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled
-          ? "bg-background/70 backdrop-blur-2xl shadow-lg shadow-black/5"
-          : "bg-background/30 backdrop-blur-xl"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 lg:h-20">
-          {/* Logo */}
-          <Link to="/" className="flex-shrink-0">
-            <Logo className="h-8 w-auto" />
-          </Link>
-
-          {/* Desktop Nav (Horizontal, Not Dropdown) */}
-          <nav className="hidden lg:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.key}
-                to={link.href}
-                className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-muted/50"
-              >
-                {t(`home:nav.${link.key}`, link.fallback)}
-              </Link>
-            ))}
-          </nav>
-
-          {/* Search */}
-          <form
-            onSubmit={handleSearch}
-            className={`hidden md:flex items-center transition-all duration-300 ${
-              searchFocused ? "flex-1 max-w-xl mx-4" : "w-64"
-            }`}
-          >
-            <div className={`relative w-full transition-all duration-300 ${searchFocused ? "scale-105" : ""}`}>
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => setSearchFocused(true)}
-                onBlur={() => setSearchFocused(false)}
-                placeholder={t("home:search.placeholder", "Search doctors, clinics, labs...")}
-                className="w-full pl-10 pr-4 py-2.5 bg-muted/50 border border-border/50 rounded-full text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all"
+    <>
+      <motion.nav
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+          isScrolled
+            ? "bg-background/80 backdrop-blur-2xl border-b border-border/40 shadow-sm"
+            : "bg-transparent"
+        }`}
+      >
+        <div className="max-w-[1400px] mx-auto px-4 lg:px-6">
+          <div className="flex items-center justify-between h-14">
+            {/* Logo */}
+            <Link
+              to="/"
+              className="flex items-center hover:opacity-70 transition-opacity duration-200 flex-shrink-0"
+            >
+              <img
+                src="/logos/horizontal/docito-horizontal-sm.png"
+                alt="Docito"
+                className="h-6"
               />
-              <AnimatePresence>
-                {searchFocused && searchQuery ? (
+            </Link>
+
+            {/* Desktop Navigation - Horizontal */}
+            <div className="hidden lg:flex items-center justify-center flex-1 mx-4">
+              <div className="flex items-center gap-1">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.name}
+                    to={link.href}
+                    className={`px-3 py-1.5 text-[13px] font-medium rounded-full transition-all duration-200 whitespace-nowrap ${
+                      isActive(link.href)
+                        ? "text-primary bg-primary/10"
+                        : "text-foreground/70 hover:text-foreground hover:bg-accent/50"
+                    }`}
+                  >
+                    {link.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Section (Desktop) */}
+            <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
+              {user ? (
+                <ProfileMenu />
+              ) : (
+                <>
+                  <Button
+                    onClick={() => navigate("/auth")}
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-4 text-xs font-medium"
+                  >
+                    Sign In
+                  </Button>
+                  <Button
+                    onClick={() => navigate("/auth?mode=register")}
+                    size="sm"
+                    className="h-8 px-4 text-xs font-medium rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
+                    Join as Provider
+                  </Button>
+                </>
+              )}
+            </div>
+
+            {/* Mobile Menu Button */}
+            <div className="flex lg:hidden items-center gap-2">
+              {user ? <ProfileMenu compact /> : null}
+              <button
+                onClick={() => setIsMobileMenuOpen((v) => !v)}
+                className="p-2 rounded-lg hover:bg-accent/50 transition-colors"
+                aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+              >
+                {isMobileMenuOpen ? (
+                  <X className="w-5 h-5" />
+                ) : (
+                  <Menu className="w-5 h-5" />
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="lg:hidden bg-background/95 backdrop-blur-2xl border-t border-border/40 overflow-hidden"
+            >
+              <div className="max-w-[1400px] mx-auto px-4 py-6">
+                <div className="grid grid-cols-2 gap-2">
+                  {navLinks.map((link, index) => (
+                    <motion.div
+                      key={link.name}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.03 }}
+                    >
+                      <Link
+                        to={link.href}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className={`block py-3 px-4 text-sm font-medium rounded-xl transition-colors ${
+                          isActive(link.href)
+                            ? "text-primary bg-primary/10"
+                            : "text-foreground/80 hover:text-foreground hover:bg-accent/50"
+                        }`}
+                      >
+                        {link.name}
+                      </Link>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {!user && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute top-full left-0 right-0 mt-2 bg-background/95 backdrop-blur-xl border border-border rounded-2xl shadow-xl overflow-hidden"
+                    transition={{ delay: 0.2 }}
+                    className="mt-6 pt-6 border-t border-border/40 flex gap-3"
                   >
-                    <div className="p-2 text-sm text-muted-foreground">
-                      {t("home:search.hint", 'Press Enter to search for "{{query}}"', { query: searchQuery })}
-                    </div>
+                    <Button
+                      onClick={() => {
+                        navigate("/auth");
+                        setIsMobileMenuOpen(false);
+                      }}
+                      variant="outline"
+                      className="flex-1 h-12 text-sm font-medium rounded-xl"
+                    >
+                      Sign In
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        navigate("/auth?mode=register");
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="flex-1 h-12 text-sm font-medium rounded-xl bg-primary text-primary-foreground"
+                    >
+                      Join as Provider
+                    </Button>
                   </motion.div>
-                ) : null}
-              </AnimatePresence>
-            </div>
-          </form>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.nav>
 
-          {/* Right */}
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-
-            {/* Language Selector */}
-            <div className="relative">
-              <button
-                onClick={() => setLangOpen((v) => !v)}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-muted/50"
-              >
-                <span className="text-lg">{currentLang.flag}</span>
-                <span className="hidden sm:inline">{currentLang.code.toUpperCase()}</span>
-                <ChevronDown className={`w-4 h-4 transition-transform ${langOpen ? "rotate-180" : ""}`} />
-              </button>
-
-              <AnimatePresence>
-                {langOpen ? (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute right-0 top-full mt-2 w-56 bg-background/95 backdrop-blur-xl border border-border rounded-2xl shadow-xl overflow-hidden z-50"
-                  >
-                    {languages.map((lang) => (
-                      <button
-                        key={lang.code}
-                        onClick={() => {
-                          i18n.changeLanguage(lang.code);
-                          setLangOpen(false);
-                        }}
-                        className={`w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted/50 transition-colors ${
-                          lang.code === i18n.language ? "bg-muted/30 text-primary" : "text-foreground"
-                        }`}
-                      >
-                        <span className="text-xl">{lang.flag}</span>
-                        <span>{lang.name}</span>
-                      </button>
-                    ))}
-                  </motion.div>
-                ) : null}
-              </AnimatePresence>
-            </div>
-
-            {/* Auth */}
-            {user ? (
-              <ProfileMenu />
-            ) : (
-              <Link
-                to="/auth"
-                className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium text-foreground bg-primary/10 hover:bg-primary/20 rounded-full transition-colors"
-              >
-                <User className="w-4 h-4" />
-                <span>{t("common:auth.signIn", "Sign In")}</span>
-              </Link>
-            )}
-
-            {/* Mobile menu toggle */}
-            <button onClick={() => setMobileMenuOpen((v) => !v)} className="lg:hidden p-2 text-foreground">
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile menu */}
-      <AnimatePresence>
-        {mobileMenuOpen ? (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden bg-background/95 backdrop-blur-xl border-t border-border"
-          >
-            <div className="px-4 py-4 space-y-2">
-              <form onSubmit={handleSearch} className="mb-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={t("home:search.placeholder", "Search...")}
-                    className="w-full pl-10 pr-4 py-3 bg-muted/50 border border-border/50 rounded-xl text-sm"
-                  />
-                </div>
-              </form>
-
-              {navLinks.map((link) => (
-                <Link
-                  key={link.key}
-                  to={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/50 rounded-xl transition-colors"
-                >
-                  {t(`home:nav.${link.key}`, link.fallback)}
-                </Link>
-              ))}
-
-              {!user ? (
-                <Link
-                  to="/auth"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-4 py-3 text-sm font-medium text-foreground bg-primary/10 hover:bg-primary/20 rounded-xl transition-colors"
-                >
-                  {t("common:auth.signIn", "Sign In")}
-                </Link>
-              ) : null}
-            </div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
-    </motion.header>
+      {/* Spacer to prevent content from hiding under fixed nav */}
+      <div className="h-14" />
+    </>
   );
-}
+};
+
+export default PremiumTopNav;
