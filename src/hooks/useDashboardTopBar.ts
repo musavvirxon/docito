@@ -18,7 +18,7 @@ type DashboardTopBarContext = {
   unreadCount: number;
 };
 
-export function useDashboardTopBar(role: AppRole) {
+export function useDashboardTopBar(role?: AppRole) {
   const { session } = useAuth();
   const [loading, setLoading] = useState(true);
   const [ctx, setCtx] = useState<DashboardTopBarContext | null>(null);
@@ -31,11 +31,12 @@ export function useDashboardTopBar(role: AppRole) {
     setError(null);
 
     try {
-      const { data, error: fnError } = await supabase.functions.invoke("dashboard-topbar", {
-        body: { action: "get", role },
-      });
+      const body: any = { action: "get" as const };
+      if (role) body.role = role;
 
+      const { data, error: fnError } = await supabase.functions.invoke("dashboard-topbar", { body });
       if (fnError) throw fnError;
+
       setCtx(data as DashboardTopBarContext);
     } catch (e: any) {
       setError(e?.message || "Failed to load topbar context");
@@ -51,13 +52,12 @@ export function useDashboardTopBar(role: AppRole) {
 
   const requestVerification = useCallback(
     async (comment?: string) => {
-      const { data, error: fnError } = await supabase.functions.invoke("dashboard-topbar", {
-        body: { action: "request_verification", role, comment },
-      });
+      const body: any = { action: "request_verification" as const, comment: comment ?? null };
+      if (role) body.role = role;
 
+      const { data, error: fnError } = await supabase.functions.invoke("dashboard-topbar", { body });
       if (fnError) throw fnError;
 
-      // Refresh context after requesting
       await fetchContext();
       return data as any;
     },
@@ -68,6 +68,7 @@ export function useDashboardTopBar(role: AppRole) {
     return {
       loading,
       error,
+      role: ctx?.role ?? role,
       entityName: ctx?.entityName ?? undefined,
       entityStatus: (ctx?.entityStatus ?? "active") as EntityStatus,
       unreadCount: ctx?.unreadCount ?? 0,
@@ -76,7 +77,7 @@ export function useDashboardTopBar(role: AppRole) {
       refetch: fetchContext,
       requestVerification,
     };
-  }, [ctx, error, fetchContext, loading, requestVerification]);
+  }, [ctx, error, fetchContext, loading, requestVerification, role]);
 
   return resolved;
 }
