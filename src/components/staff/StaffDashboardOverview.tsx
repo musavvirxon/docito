@@ -1,3 +1,5 @@
+// File: src/components/staff/StaffDashboardOverview.tsx
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -28,7 +30,23 @@ export const StaffDashboardOverview = ({
 }: StaffDashboardOverviewProps) => {
   const pendingAppointments = todaysAppointments.filter(a => a.status === 'pending' || a.status === 'confirmed');
   const completedToday = todaysAppointments.filter(a => a.status === 'completed').length;
-  const totalRevenue = recentPayments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0) / 100;
+  const currency = recentPayments.find((p) => p.currency)?.currency || 'usd';
+  const totalRevenueCents = recentPayments
+    .filter(p => p.status === 'completed')
+    .reduce((sum, p) => sum + p.amount_cents, 0);
+
+  const formatCurrency = (amountCents: number, currencyCode: string) => {
+    const value = Number(amountCents || 0) / 100;
+    try {
+      return new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency: String(currencyCode || 'usd').toUpperCase(),
+        maximumFractionDigits: 2,
+      }).format(value);
+    } catch {
+      return `$${value.toFixed(2)}`;
+    }
+  };
 
   const formatTime = (time: string) => {
     try {
@@ -112,7 +130,7 @@ export const StaffDashboardOverview = ({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Recent Collections</p>
-                  <p className="text-2xl font-bold text-foreground">${totalRevenue.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-foreground">{formatCurrency(totalRevenueCents, currency)}</p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {recentPayments.length} transactions
                   </p>
