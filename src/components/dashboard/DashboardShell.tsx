@@ -1,7 +1,7 @@
 import { ReactNode, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { DashboardSidebar } from './DashboardSidebar';
-import { DashboardTopBar } from './DashboardTopBar';
+import DashboardTopNav from './DashboardTopNav';
 import { DashboardFooter } from './DashboardFooter';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppRole } from '@/lib/rbac';
@@ -52,22 +52,18 @@ export function DashboardShell({
 
         {/* Main content area */}
         <div className="flex-1 flex flex-col min-h-screen">
-          {/* Top bar */}
-          <DashboardTopBar
-            entityName={entityName}
-            entityStatus={entityStatus}
-            role={role}
-          />
+          {/* Top navigation */}
+          <DashboardTopNav role={role} />
 
           {/* Content */}
-          <main className={cn(
-            "flex-1 overflow-auto",
-            "px-4 sm:px-6 lg:px-8 py-6",
-            className
-          )}>
-            <div className="max-w-7xl mx-auto">
-              {children}
-            </div>
+          <main
+            className={cn(
+              "flex-1 overflow-auto",
+              "px-4 sm:px-6 lg:px-8 py-6",
+              className
+            )}
+          >
+            <div className="max-w-7xl mx-auto">{children}</div>
           </main>
 
           {/* Footer */}
