@@ -1,47 +1,75 @@
-// File: src/hooks/useAccessScope.ts
-
-import { useCallback, useEffect, useState } from "react";
+// Path: src/hooks/useAccessScope.ts
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
-export type AccessEntityType = "clinic" | "lab" | "imaging" | "pharmacy" | "none";
+export type EntityType = "clinic" | "lab" | "imaging" | "pharmacy";
+export type EntityStatus = "active" | "pending" | "verified" | "suspended";
 
 export type AccessScope = {
-  entity_type: AccessEntityType;
-  entity_id: string | null;
-  staff_role: string | null;
-  status: string;
-  permissions: Record<string, boolean>;
+  entity_type: EntityType | string;
+  entity_id: string;
+  entity_name: string | null;
+  entity_status: EntityStatus | string;
+  scope_role: string | null;
+  is_admin: boolean;
+  permissions: Record<string, unknown> | null;
+};
+
+type AccessScopeResponse = {
+  ok: boolean;
+  userId: string;
+  scopes: AccessScope[];
+  primary: AccessScope | null;
 };
 
 export function useAccessScope() {
+  const { session } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [scope, setScope] = useState<AccessScope | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [scopes, setScopes] = useState<AccessScope[]>([]);
+  const [primary, setPrimary] = useState<AccessScope | null>(null);
 
-  const refetch = useCallback(async () => {
+  const fetchScope = useCallback(async () => {
+    if (!session?.access_token) return;
+
     setLoading(true);
     setError(null);
 
     try {
       const { data, error: fnError } = await supabase.functions.invoke("access-scope", {
-        body: {},
+        body: { action: "get" },
       });
 
       if (fnError) throw fnError;
 
-      const s = (data as any)?.scope as AccessScope | undefined;
-      setScope(s ?? null);
+      const res = data as AccessScopeResponse;
+      if (!res?.ok) throw new Error((data as any)?.error || "Failed to load access scope");
+
+      setScopes(res.scopes || []);
+      setPrimary(res.primary || null);
     } catch (e: any) {
       setError(e?.message || "Failed to load access scope");
-      setScope(null);
+      setScopes([]);
+      setPrimary(null);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [session?.access_token]);
 
   useEffect(() => {
-    refetch();
-  }, [refetch]);
+    fetchScope();
+  }, [fetchScope]);
 
-  return { loading, scope, error, refetch };
+  const resolved = useMemo(() => {
+    return {
+      loading,
+      error,
+      scopes,
+      primary,
+      refetch: fetchScope,
+    };
+  }, [error, fetchScope, loading, primary, scopes]);
+
+  return resolved;
 }
