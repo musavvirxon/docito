@@ -64,7 +64,7 @@ export default function StaffDashboardPage() {
     try {
       const { error: upErr } = await supabase
         .from("appointments")
-        .update({ status })
+        .update({ status: status as "canceled" | "completed" | "confirmed" | "no_show" | "pending" })
         .eq("id", appointmentId)
         .eq("practice_id", permissions.practice_id);
 

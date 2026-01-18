@@ -161,21 +161,21 @@ export default function PharmacyDashboardPage() {
         .lte("created_at", end.toISOString());
       if (rxErr) throw rxErr;
 
-      const { count: pendingFulfillment, error: pfErr } = await supabase
+      const { count: pendingFulfillment, error: pfErr } = await (supabase as any)
         .from("pharmacy_orders")
         .select("id", { count: "exact", head: true })
         .eq("pharmacy_id", pharmacyId)
         .in("status", ["pending", "processing"]);
       if (pfErr) throw pfErr;
 
-      const { count: deliveries, error: dErr } = await supabase
+      const { count: deliveries, error: dErr } = await (supabase as any)
         .from("pharmacy_orders")
         .select("id", { count: "exact", head: true })
         .eq("pharmacy_id", pharmacyId)
         .in("status", ["out_for_delivery", "delivering"]);
       if (dErr) throw dErr;
 
-      const { count: completedToday, error: cErr } = await supabase
+      const { count: completedToday, error: cErr } = await (supabase as any)
         .from("pharmacy_orders")
         .select("id", { count: "exact", head: true })
         .eq("pharmacy_id", pharmacyId)
@@ -234,7 +234,7 @@ export default function PharmacyDashboardPage() {
           icon={<Pill className="h-12 w-12" />}
           title="Sign in required"
           description="Please sign in to access the pharmacy dashboard."
-          action={{ label: "Sign In", onClick: () => navigate("/auth") }}
+          action={<button onClick={() => navigate("/auth")} className="text-primary underline">Sign In</button>}
         />
       </div>
     );
@@ -247,13 +247,13 @@ export default function PharmacyDashboardPage() {
           icon={<Pill className="h-12 w-12" />}
           title="No Pharmacy Found"
           description="You don't have a pharmacy associated with your account."
-          action={{ label: "Register Pharmacy", onClick: () => navigate("/pharmacy/register") }}
+          action={<button onClick={() => navigate("/pharmacy/register")} className="text-primary underline">Register Pharmacy</button>}
         />
       </div>
     );
   }
 
-  const statusLabel = pharmacy.verified ? "verified" : pharmacy.verification_status || "pending";
+  const statusLabel = (pharmacy.verified ? "verified" : pharmacy.verification_status || "pending") as "active" | "pending" | "suspended" | "verified";
 
   return (
     <DashboardShell

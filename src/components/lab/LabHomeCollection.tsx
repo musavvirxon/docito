@@ -79,7 +79,7 @@ export default function LabHomeCollection({ labCenterId }: Props) {
     try {
       setLoading(true);
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('lab_home_collections')
         .select('*')
         .eq('lab_center_id', labCenterId)
@@ -103,7 +103,7 @@ export default function LabHomeCollection({ labCenterId }: Props) {
     try {
       setCollections((p) => p.map((c) => (c.id === id ? { ...c, status: newStatus } : c)));
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('lab_home_collections')
         .update({ status: newStatus })
         .eq('id', id)

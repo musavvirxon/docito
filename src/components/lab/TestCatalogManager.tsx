@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,7 +39,7 @@ interface FormDataWithParams extends TestCatalogInput {
 }
 
 export function TestCatalogManager({ labCenterId }: TestCatalogManagerProps) {
-  const { testCatalog, fetchTestCatalog, addTest, updateTest, deleteTest, loading } = useLabCenter();
+  const { testCatalog, fetchTestCatalog, upsertTestCatalog, loading } = useLabCenter();
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -95,9 +96,9 @@ export function TestCatalogManager({ labCenterId }: TestCatalogManagerProps) {
     const payload: FormDataWithParams = { ...formData, lab_center_id: labCenterId };
 
     if (editingTest) {
-      await updateTest(editingTest.id, payload as any);
+      await upsertTestCatalog({ ...payload, id: editingTest.id } as any);
     } else {
-      await addTest(payload as any);
+      await upsertTestCatalog(payload as any);
     }
 
     setIsDialogOpen(false);
@@ -127,7 +128,8 @@ export function TestCatalogManager({ labCenterId }: TestCatalogManagerProps) {
 
   const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this test?')) {
-      await deleteTest(id);
+      // Since deleteTest doesn't exist, use supabase directly
+      await (supabase as any).from('test_catalog').delete().eq('id', id);
       fetchTestCatalog(labCenterId);
     }
   };
