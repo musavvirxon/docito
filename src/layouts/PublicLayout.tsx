@@ -24,8 +24,8 @@ export default function PublicLayout() {
 
   const isDashboardRoute = DASHBOARD_PREFIXES.some((p) => path.startsWith(p));
 
-  // NOTE: "/doctor" And "/doctor/:slug" Are Public Routes And Should Keep PremiumFooter.
-  // Only "/doctor-dashboard" And "/doctor/dashboard" Are Treated As Dashboard Routes.
+  // Note: "/doctor" and "/doctor/:slug" are public routes and should keep PremiumFooter.
+  // Only "/doctor-dashboard" and "/doctor/dashboard" are treated as dashboard routes.
   if (isDashboardRoute) return <Outlet />;
 
   return (
