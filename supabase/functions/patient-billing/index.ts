@@ -1,7 +1,4 @@
 // File: supabase/functions/patient-billing/index.ts
-// NOTE: FULL REPLACEMENT that fixes Stripe Elements clientSecret handling by persisting it in state,
-// and adds a safe "confirm_payment_intent" action for SCA flows (finalize invoice/payment after confirm).
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -37,6 +34,7 @@ function requireEnv() {
   const url = Deno.env.get("SUPABASE_URL");
   const anon = Deno.env.get("SUPABASE_ANON_KEY");
   const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
   const stripeSecret = Deno.env.get("STRIPE_SECRET_KEY");
   const stripeVersion = Deno.env.get("STRIPE_API_VERSION") || "2023-10-16";
 
@@ -47,10 +45,7 @@ function requireEnv() {
     };
   }
   if (!stripeSecret) {
-    return {
-      ok: false as const,
-      error: "Missing STRIPE_SECRET_KEY (set via Supabase secrets)",
-    };
+    return { ok: false as const, error: "Missing STRIPE_SECRET_KEY" };
   }
 
   return { ok: true as const, url, anon, service, stripeSecret, stripeVersion };
@@ -94,6 +89,16 @@ async function stripeRequest(
   return { ok: true as const, data };
 }
 
+function currencyToStripe(cur: string) {
+  const c = String(cur || "USD").trim();
+  return c ? c.toLowerCase() : "usd";
+}
+
+function toCentsFromMajorUnits(amount: number) {
+  const n = Number(amount || 0);
+  return Math.round(n * 100);
+}
+
 async function ensureStripeCustomer(
   service: ReturnType<typeof createClient>,
   stripeSecret: string,
@@ -109,7 +114,7 @@ async function ensureStripeCustomer(
 
   if (exErr) throw exErr;
 
-  if (existing?.stripe_customer_id) return existing.stripe_customer_id as string;
+  if (existing?.stripe_customer_id) return String(existing.stripe_customer_id);
 
   const form = new URLSearchParams();
   if (email) form.set("email", email);
@@ -129,7 +134,6 @@ async function ensureStripeCustomer(
         updated_at: new Date().toISOString(),
       })
       .eq("id", existing.id);
-
     if (upErr) throw upErr;
   } else {
     const { error: insErr } = await service.from("billing_customers").insert({
@@ -143,18 +147,11 @@ async function ensureStripeCustomer(
   return stripeCustomerId;
 }
 
-function currencyToStripe(cur: string) {
-  const c = String(cur || "USD").trim();
-  if (!c) return "usd";
-  return c.toLowerCase();
-}
-
-function toCents(amountNumeric: number) {
-  const n = Number(amountNumeric || 0);
-  return Math.round(n * 100);
-}
-
-async function isInvoicePaid(service: ReturnType<typeof createClient>, invoiceId: string, userId: string) {
+async function isInvoicePaid(
+  service: ReturnType<typeof createClient>,
+  invoiceId: string,
+  userId: string,
+) {
   const { data, error } = await service
     .from("invoices")
     .select("status")
@@ -170,7 +167,7 @@ async function upsertPaidRecords(
   invoiceId: string,
   userId: string,
   providerPaymentId: string,
-  amount: number,
+  amountMajor: number,
   currency: string,
 ) {
   const now = new Date().toISOString();
@@ -189,8 +186,8 @@ async function upsertPaidRecords(
       patient_id: userId,
       provider: "stripe",
       provider_payment_id: providerPaymentId,
-      amount,
-      currency,
+      amount: amountMajor,
+      currency: String(currency || "USD"),
       status: "paid",
       paid_at: now,
     });
@@ -236,44 +233,53 @@ serve(async (req) => {
     const email = userRes.user.email ?? null;
 
     if (action === "get_summary") {
-      const [{ data: customer }, { data: methods }, { data: balance }, { data: invoices }, { data: payments }] =
-        await Promise.all([
-          service
-            .from("billing_customers")
-            .select("user_id, email, stripe_customer_id")
-            .eq("user_id", userId)
-            .maybeSingle(),
-          service
-            .from("user_payment_methods")
-            .select("id, provider, provider_payment_method_id, brand, last4, exp_month, exp_year, is_default, created_at")
-            .eq("user_id", userId)
-            .order("is_default", { ascending: false })
-            .order("created_at", { ascending: false })
-            .limit(5),
-          service
-            .from("patient_balance")
-            .select("outstanding, paid_total, invoice_count")
-            .eq("patient_id", userId)
-            .maybeSingle(),
-          service
-            .from("invoices")
-            .select("id, practice_id, appointment_id, status, currency, total_amount, notes, issued_at, paid_at, created_at")
-            .eq("patient_id", userId)
-            .order("created_at", { ascending: false })
-            .limit(50),
-          service
-            .from("payments")
-            .select("id, invoice_id, provider, provider_payment_id, amount, currency, status, paid_at, created_at")
-            .eq("patient_id", userId)
-            .order("created_at", { ascending: false })
-            .limit(50),
-        ]);
+      const [{ data: customer }, { data: methods }, { data: invoices }, { data: payments }] = await Promise.all([
+        service
+          .from("billing_customers")
+          .select("user_id, email, stripe_customer_id")
+          .eq("user_id", userId)
+          .maybeSingle(),
+        service
+          .from("user_payment_methods")
+          .select("id, provider, provider_payment_method_id, brand, last4, exp_month, exp_year, is_default, created_at")
+          .eq("user_id", userId)
+          .order("is_default", { ascending: false })
+          .order("created_at", { ascending: false })
+          .limit(10),
+        service
+          .from("invoices")
+          .select("id, practice_id, appointment_id, status, currency, total_amount, notes, issued_at, paid_at, created_at")
+          .eq("patient_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(100),
+        service
+          .from("payments")
+          .select("id, invoice_id, provider, provider_payment_id, amount, currency, status, paid_at, created_at")
+          .eq("patient_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(100),
+      ]);
+
+      const invRows = (invoices || []) as Array<{ status: string; total_amount: number }>;
+      const payRows = (payments || []) as Array<{ status: string; amount: number }>;
+
+      const outstanding = invRows
+        .filter((i) => String(i.status).toLowerCase() === "issued")
+        .reduce((sum, i) => sum + Number(i.total_amount || 0), 0);
+
+      const paid_total = payRows
+        .filter((p) => String(p.status).toLowerCase() === "paid")
+        .reduce((sum, p) => sum + Number(p.amount || 0), 0);
 
       return json({
         ok: true,
         customer: customer || null,
         paymentMethods: methods || [],
-        balance: balance || { outstanding: 0, paid_total: 0, invoice_count: 0 },
+        balance: {
+          outstanding,
+          paid_total,
+          invoice_count: (invoices || []).length,
+        },
         invoices: invoices || [],
         payments: payments || [],
       });
@@ -306,9 +312,9 @@ serve(async (req) => {
         const attached = await stripeRequest(env.stripeSecret, env.stripeVersion, "POST", `payment_methods/${pmId}/attach`, form);
         if (!attached.ok) {
           const msg = String(attached.error || "");
-          const isAlreadyAttached =
+          const already =
             msg.toLowerCase().includes("already been attached") || msg.toLowerCase().includes("already attached");
-          if (!isAlreadyAttached) throw new Error(attached.error);
+          if (!already) throw new Error(attached.error);
         }
       }
 
@@ -327,7 +333,7 @@ serve(async (req) => {
       const exp_month = pm.data?.card?.exp_month ?? null;
       const exp_year = pm.data?.card?.exp_year ?? null;
 
-      await service.from("user_payment_methods").update({ is_default: false, updated_at: new Date().toISOString() }).eq("user_id", userId);
+      await service.from("user_payment_methods").update({ is_default: false }).eq("user_id", userId);
 
       const { error: upsertErr } = await service.from("user_payment_methods").upsert(
         {
@@ -343,7 +349,6 @@ serve(async (req) => {
         },
         { onConflict: "user_id,provider,provider_payment_method_id" },
       );
-
       if (upsertErr) throw upsertErr;
 
       return json({ ok: true });
@@ -353,19 +358,58 @@ serve(async (req) => {
       const pmId = String(body.paymentMethodId || "").trim();
       if (!pmId) return json({ ok: false, error: "Missing paymentMethodId" }, 400);
 
+      const { data: row, error: rowErr } = await service
+        .from("user_payment_methods")
+        .select("id, is_default")
+        .eq("user_id", userId)
+        .eq("provider", "stripe")
+        .eq("provider_payment_method_id", pmId)
+        .maybeSingle();
+      if (rowErr) throw rowErr;
+
       const { error: delErr } = await service
         .from("user_payment_methods")
         .delete()
         .eq("user_id", userId)
         .eq("provider", "stripe")
         .eq("provider_payment_method_id", pmId);
-
       if (delErr) throw delErr;
 
       try {
         await stripeRequest(env.stripeSecret, env.stripeVersion, "POST", `payment_methods/${pmId}/detach`, new URLSearchParams());
       } catch {
         // ignore
+      }
+
+      // If default removed, pick a new default in DB only (Stripe default is best-effort)
+      if (row?.is_default) {
+        const { data: next } = await service
+          .from("user_payment_methods")
+          .select("provider_payment_method_id")
+          .eq("user_id", userId)
+          .eq("provider", "stripe")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (next?.provider_payment_method_id) {
+          await service.from("user_payment_methods").update({ is_default: false }).eq("user_id", userId);
+          await service
+            .from("user_payment_methods")
+            .update({ is_default: true })
+            .eq("user_id", userId)
+            .eq("provider", "stripe")
+            .eq("provider_payment_method_id", next.provider_payment_method_id);
+
+          try {
+            const stripeCustomerId = await ensureStripeCustomer(service, env.stripeSecret, env.stripeVersion, userId, email);
+            const form = new URLSearchParams();
+            form.set("invoice_settings[default_payment_method]", String(next.provider_payment_method_id));
+            await stripeRequest(env.stripeSecret, env.stripeVersion, "POST", `customers/${stripeCustomerId}`, form);
+          } catch {
+            // ignore
+          }
+        }
       }
 
       return json({ ok: true });
@@ -380,12 +424,11 @@ serve(async (req) => {
         .select("id, patient_id, status, currency, total_amount")
         .eq("id", invoiceId)
         .maybeSingle();
-
       if (invErr) throw invErr;
       if (!invoice) return json({ ok: false, error: "Invoice not found" }, 404);
       if (invoice.patient_id !== userId) return json({ ok: false, error: "Forbidden" }, 403);
 
-      if (!["issued", "draft"].includes(String(invoice.status))) {
+      if (String(invoice.status).toLowerCase() !== "issued") {
         return json({ ok: false, error: "Invoice is not payable" }, 400);
       }
 
@@ -404,9 +447,9 @@ serve(async (req) => {
       const stripeCustomerId = await ensureStripeCustomer(service, env.stripeSecret, env.stripeVersion, userId, email);
 
       const currency = currencyToStripe(String(invoice.currency || "USD"));
-      const amountCents = toCents(Number(invoice.total_amount || 0));
+      const amountCents = toCentsFromMajorUnits(Number(invoice.total_amount || 0));
 
-      // Off-session attempt
+      // Off-session attempt (best UX)
       const form = new URLSearchParams();
       form.set("amount", String(amountCents));
       form.set("currency", currency);
@@ -414,7 +457,7 @@ serve(async (req) => {
       form.set("payment_method", String(defaultPm.provider_payment_method_id));
       form.set("confirm", "true");
       form.set("off_session", "true");
-      form.set("description", `Invoice ${invoice.id}`);
+      form.set("description", `Patient invoice ${invoice.id}`);
       form.set("metadata[invoice_id]", invoice.id);
       form.set("metadata[user_id]", userId);
 
@@ -428,13 +471,13 @@ serve(async (req) => {
 
         if (!needsAction) throw new Error(pi.error);
 
-        // Create PI without confirm so client can do confirmCardPayment and then call confirm_payment_intent
+        // Create PI (no confirm) so client can confirmCardPayment (SCA) then finalize server-side
         const form2 = new URLSearchParams();
         form2.set("amount", String(amountCents));
         form2.set("currency", currency);
         form2.set("customer", stripeCustomerId);
         form2.set("payment_method", String(defaultPm.provider_payment_method_id));
-        form2.set("description", `Invoice ${invoice.id}`);
+        form2.set("description", `Patient invoice ${invoice.id}`);
         form2.set("metadata[invoice_id]", invoice.id);
         form2.set("metadata[user_id]", userId);
 
@@ -450,13 +493,11 @@ serve(async (req) => {
       }
 
       // Succeeded immediately
-      const providerPaymentId = String(pi.data.id);
-
       await upsertPaidRecords(
         service,
         invoice.id,
         userId,
-        providerPaymentId,
+        String(pi.data.id),
         Number(invoice.total_amount || 0),
         String(invoice.currency || "USD"),
       );
@@ -471,22 +512,19 @@ serve(async (req) => {
         return json({ ok: false, error: "Missing paymentIntentId or invoiceId" }, 400);
       }
 
-      // Verify ownership: invoice belongs to user
       const { data: invoice, error: invErr } = await service
         .from("invoices")
-        .select("id, patient_id, currency, total_amount, status")
+        .select("id, patient_id, currency, total_amount")
         .eq("id", invoiceId)
         .maybeSingle();
       if (invErr) throw invErr;
       if (!invoice) return json({ ok: false, error: "Invoice not found" }, 404);
       if (invoice.patient_id !== userId) return json({ ok: false, error: "Forbidden" }, 403);
 
-      // If already paid, idempotent success
       if (await isInvoicePaid(service, invoiceId, userId)) {
         return json({ ok: true, status: "already_paid" });
       }
 
-      // Fetch PI from Stripe, ensure succeeded and metadata matches
       const pi = await stripeRequest(env.stripeSecret, env.stripeVersion, "GET", `payment_intents/${paymentIntentId}`);
       if (!pi.ok) throw new Error(pi.error);
 
