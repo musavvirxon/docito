@@ -1,7 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+// Path: src/hooks/useStaffDashboard.ts
+
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useActiveEntityScope } from "@/hooks/useActiveEntityScope";
 
 export interface StaffPermissions {
   practice_id: string | null;
@@ -58,8 +60,17 @@ export interface PracticeInfo {
   country?: string;
 }
 
+type PermRecord = Record<string, unknown> | null | undefined;
+
+const bool = (p: PermRecord, k: string, fallback = false) => {
+  const v = p?.[k];
+  return typeof v === "boolean" ? v : fallback;
+};
+
 export const useStaffDashboard = () => {
   const { user } = useAuth();
+  const { activeScope, activeEntityId: practiceId, loading: scopeLoading } = useActiveEntityScope("clinic");
+
   const [permissions, setPermissions] = useState<StaffPermissions | null>(null);
   const [practice, setPractice] = useState<PracticeInfo | null>(null);
   const [todaysAppointments, setTodaysAppointments] = useState<StaffAppointment[]>([]);
@@ -69,46 +80,50 @@ export const useStaffDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchPermissions = useCallback(async () => {
+  const resolvedPermissions = useMemo<StaffPermissions | null>(() => {
     if (!user) return null;
+    if (!practiceId) return null;
 
-    try {
-      const { data, error } = await supabase.rpc('get_staff_permissions', {
-        p_user_id: user.id
-      });
+    const isAdmin = Boolean(activeScope?.is_admin);
+    const role = (activeScope?.scope_role as string | null) ?? (isAdmin ? "admin" : null);
+    const p = activeScope?.permissions as PermRecord;
 
-      if (error) throw error;
-      if (!data || typeof data !== 'object') return null;
-      return data as unknown as StaffPermissions;
-    } catch (err: any) {
-      console.error('Error fetching permissions:', err);
-      return null;
-    }
-  }, [user]);
+    return {
+      practice_id: practiceId,
+      staff_role: role,
+      can_book_appointments: isAdmin ? true : bool(p, "can_book_appointments"),
+      can_view_medical_records: isAdmin ? true : bool(p, "can_view_medical_records"),
+      can_manage_billing: isAdmin ? true : bool(p, "can_manage_billing"),
+      can_manage_patients: isAdmin ? true : bool(p, "can_manage_patients"),
+      can_view_schedule: isAdmin ? true : bool(p, "can_view_schedule", true),
+      status: "active",
+    };
+  }, [activeScope?.is_admin, activeScope?.permissions, activeScope?.scope_role, practiceId, user]);
 
-  const fetchPractice = useCallback(async (practiceId: string) => {
+  const fetchPractice = useCallback(async (pid: string) => {
     try {
       const { data, error } = await supabase
-        .from('practices')
-        .select('id, name, phone, email, address, city, country')
-        .eq('id', practiceId)
+        .from("practices")
+        .select("id, name, phone, email, address, city, country")
+        .eq("id", pid)
         .single();
 
       if (error) throw error;
-      return data;
+      return data as PracticeInfo;
     } catch (err: any) {
-      console.error('Error fetching practice:', err);
+      console.error("Error fetching practice:", err);
       return null;
     }
   }, []);
 
-  const fetchTodaysAppointments = useCallback(async (practiceId: string) => {
+  const fetchTodaysAppointments = useCallback(async (pid: string) => {
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date().toISOString().split("T")[0];
 
       const { data, error } = await supabase
-        .from('appointments')
-        .select(`
+        .from("appointments")
+        .select(
+          `
           id,
           appointment_date,
           start_time,
@@ -128,10 +143,11 @@ export const useStaffDashboard = () => {
               full_name
             )
           )
-        `)
-        .eq('practice_id', practiceId)
-        .eq('appointment_date', today)
-        .order('start_time', { ascending: true });
+        `
+        )
+        .eq("practice_id", pid)
+        .eq("appointment_date", today)
+        .order("start_time", { ascending: true });
 
       if (error) throw error;
 
@@ -142,25 +158,26 @@ export const useStaffDashboard = () => {
         end_time: apt.end_time,
         status: apt.status,
         notes: apt.notes,
-        patient_name: apt.profiles?.full_name || 'Unknown',
+        patient_name: apt.profiles?.full_name || "Unknown",
         patient_email: apt.profiles?.email,
         patient_phone: apt.profiles?.phone,
-        doctor_name: apt.doctors?.profiles?.full_name || 'Unknown',
+        doctor_name: apt.doctors?.profiles?.full_name || "Unknown",
         doctor_id: apt.doctor_id,
-      }));
+      })) as StaffAppointment[];
     } catch (err: any) {
-      console.error('Error fetching today\'s appointments:', err);
+      console.error("Error fetching today's appointments:", err);
       return [];
     }
   }, []);
 
-  const fetchUpcomingAppointments = useCallback(async (practiceId: string) => {
+  const fetchUpcomingAppointments = useCallback(async (pid: string) => {
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date().toISOString().split("T")[0];
 
       const { data, error } = await supabase
-        .from('appointments')
-        .select(`
+        .from("appointments")
+        .select(
+          `
           id,
           appointment_date,
           start_time,
@@ -180,11 +197,12 @@ export const useStaffDashboard = () => {
               full_name
             )
           )
-        `)
-        .eq('practice_id', practiceId)
-        .gt('appointment_date', today)
-        .order('appointment_date', { ascending: true })
-        .order('start_time', { ascending: true })
+        `
+        )
+        .eq("practice_id", pid)
+        .gt("appointment_date", today)
+        .order("appointment_date", { ascending: true })
+        .order("start_time", { ascending: true })
         .limit(20);
 
       if (error) throw error;
@@ -196,160 +214,146 @@ export const useStaffDashboard = () => {
         end_time: apt.end_time,
         status: apt.status,
         notes: apt.notes,
-        patient_name: apt.profiles?.full_name || 'Unknown',
+        patient_name: apt.profiles?.full_name || "Unknown",
         patient_email: apt.profiles?.email,
         patient_phone: apt.profiles?.phone,
-        doctor_name: apt.doctors?.profiles?.full_name || 'Unknown',
+        doctor_name: apt.doctors?.profiles?.full_name || "Unknown",
         doctor_id: apt.doctor_id,
-      }));
+      })) as StaffAppointment[];
     } catch (err: any) {
-      console.error('Error fetching upcoming appointments:', err);
+      console.error("Error fetching upcoming appointments:", err);
       return [];
     }
   }, []);
 
-  const fetchRecentPatients = useCallback(async (practiceId: string) => {
+  const fetchRecentPatients = useCallback(async (pid: string) => {
     try {
       const { data, error } = await supabase
-        .from('appointments')
-        .select(`
+        .from("appointments")
+        .select(
+          `
           patient_id,
           appointment_date,
           profiles!appointments_patient_id_fkey (
+            user_id,
             full_name,
             email,
             phone
           )
-        `)
-        .eq('practice_id', practiceId)
-        .order('appointment_date', { ascending: false })
-        .limit(50);
+        `
+        )
+        .eq("practice_id", pid)
+        .order("appointment_date", { ascending: false })
+        .limit(20);
 
       if (error) throw error;
 
-      // Deduplicate by patient_id
-      const patientMap = new Map();
-      (data || []).forEach((apt: any) => {
-        if (apt.patient_id && !patientMap.has(apt.patient_id)) {
-          patientMap.set(apt.patient_id, {
-            id: apt.patient_id,
-            full_name: apt.profiles?.full_name || 'Unknown',
-            email: apt.profiles?.email,
-            phone: apt.profiles?.phone,
-            last_visit: apt.appointment_date,
-            status: 'active',
+      const map = new Map<string, StaffPatient>();
+      for (const row of data || []) {
+        const p = (row as any).profiles;
+        const userId = p?.user_id ?? (row as any).patient_id;
+        if (!userId) continue;
+
+        if (!map.has(userId)) {
+          map.set(userId, {
+            id: userId,
+            full_name: p?.full_name || "Unknown",
+            email: p?.email,
+            phone: p?.phone,
+            last_visit: (row as any).appointment_date,
+            status: "active",
           });
         }
-      });
+      }
 
-      return Array.from(patientMap.values()).slice(0, 20);
+      return Array.from(map.values());
     } catch (err: any) {
-      console.error('Error fetching patients:', err);
+      console.error("Error fetching recent patients:", err);
       return [];
     }
   }, []);
 
-  const fetchRecentPayments = useCallback(async (practiceId: string) => {
+  const fetchRecentPayments = useCallback(async (pid: string) => {
     try {
+      // NOTE: payments are stored in billing_transactions (entity-scoped) in this project.
       const { data, error } = await supabase
-        .from('payments')
-        .select(`
+        .from("billing_transactions")
+        .select(
+          `
           id,
-          amount,
+          amount_cents,
           currency,
           status,
-          payment_type,
+          transaction_type,
           created_at,
-          paid_at,
-          profiles!payments_patient_id_fkey (
-            full_name
-          )
-        `)
-        .eq('practice_id', practiceId)
-        .order('created_at', { ascending: false })
-        .limit(20);
+          metadata
+        `
+        )
+        .eq("entity_type", "clinic")
+        .eq("entity_id", pid)
+        .order("created_at", { ascending: false })
+        .limit(10);
 
       if (error) throw error;
 
-      return (data || []).map((payment: any) => ({
-        id: payment.id,
-        amount: payment.amount,
-        currency: payment.currency || 'USD',
-        status: payment.status,
-        payment_type: payment.payment_type,
-        patient_name: payment.profiles?.full_name || 'Unknown',
-        created_at: payment.created_at,
-        paid_at: payment.paid_at,
-      }));
+      return (data || []).map((t: any) => ({
+        id: t.id,
+        amount: Number(t.amount_cents || 0) / 100,
+        currency: t.currency || "usd",
+        status: t.status,
+        payment_type: t.transaction_type,
+        patient_name: (t.metadata?.patient_name as string) || "",
+        created_at: t.created_at,
+        paid_at: (t.metadata?.paid_at as string) || undefined,
+      })) as StaffPayment[];
     } catch (err: any) {
-      console.error('Error fetching payments:', err);
+      console.error("Error fetching recent payments:", err);
       return [];
     }
   }, []);
 
-  const refreshData = useCallback(async () => {
+  const refresh = useCallback(async () => {
     if (!user) return;
+    if (!practiceId) {
+      setPermissions(null);
+      setPractice(null);
+      setTodaysAppointments([]);
+      setUpcomingAppointments([]);
+      setRecentPatients([]);
+      setRecentPayments([]);
+      return;
+    }
 
     setLoading(true);
     setError(null);
 
     try {
-      const perms = await fetchPermissions();
-      if (!perms || !perms.practice_id) {
-        setError('No staff assignment found. Please contact your clinic administrator.');
-        setLoading(false);
-        return;
-      }
+      setPermissions(resolvedPermissions);
 
-      setPermissions(perms);
-
-      const [practiceData, todayAppts, upcomingAppts, patients, payments] = await Promise.all([
-        fetchPractice(perms.practice_id),
-        perms.can_view_schedule ? fetchTodaysAppointments(perms.practice_id) : Promise.resolve([]),
-        perms.can_view_schedule ? fetchUpcomingAppointments(perms.practice_id) : Promise.resolve([]),
-        perms.can_manage_patients ? fetchRecentPatients(perms.practice_id) : Promise.resolve([]),
-        perms.can_manage_billing ? fetchRecentPayments(perms.practice_id) : Promise.resolve([]),
+      const [p, todayApts, upcomingApts, patients, payments] = await Promise.all([
+        fetchPractice(practiceId),
+        fetchTodaysAppointments(practiceId),
+        fetchUpcomingAppointments(practiceId),
+        fetchRecentPatients(practiceId),
+        fetchRecentPayments(practiceId),
       ]);
 
-      setPractice(practiceData);
-      setTodaysAppointments(todayAppts);
-      setUpcomingAppointments(upcomingAppts);
+      setPractice(p);
+      setTodaysAppointments(todayApts);
+      setUpcomingAppointments(upcomingApts);
       setRecentPatients(patients);
       setRecentPayments(payments);
-    } catch (err: any) {
-      console.error('Error refreshing data:', err);
-      setError(err.message || 'Failed to load dashboard');
+    } catch (e: any) {
+      setError(e?.message || "Failed to load staff dashboard");
     } finally {
       setLoading(false);
     }
-  }, [user, fetchPermissions, fetchPractice, fetchTodaysAppointments, fetchUpcomingAppointments, fetchRecentPatients, fetchRecentPayments]);
-
-  // Appointment actions
-  const updateAppointmentStatus = async (appointmentId: string, newStatus: string) => {
-    if (!permissions?.can_book_appointments) {
-      toast.error('You do not have permission to update appointments');
-      return false;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('appointments')
-        .update({ status: newStatus as any })
-        .eq('id', appointmentId);
-
-      if (error) throw error;
-      toast.success('Appointment status updated');
-      await refreshData();
-      return true;
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to update appointment');
-      return false;
-    }
-  };
+  }, [fetchPractice, fetchRecentPatients, fetchRecentPayments, fetchTodaysAppointments, fetchUpcomingAppointments, practiceId, resolvedPermissions, user]);
 
   useEffect(() => {
-    refreshData();
-  }, [refreshData]);
+    if (scopeLoading) return;
+    refresh();
+  }, [refresh, scopeLoading]);
 
   return {
     permissions,
@@ -360,7 +364,6 @@ export const useStaffDashboard = () => {
     recentPayments,
     loading,
     error,
-    refreshData,
-    updateAppointmentStatus,
+    refresh,
   };
 };
