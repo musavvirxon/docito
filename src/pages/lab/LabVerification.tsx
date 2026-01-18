@@ -1,7 +1,9 @@
 // File: src/pages/lab/LabVerification.tsx
+
 import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import EntityFileManager from "@/components/files/EntityFileManager";
+import DashboardTopNav from "@/components/dashboard/DashboardTopNav";
+import type { AppRole } from "@/lib/rbac";
+import EntityFileManager from "@/components/verification/EntityFileManager";
 import { useStaffContext } from "@/hooks/useStaffContext";
 
 export default function LabVerification() {
@@ -14,47 +16,21 @@ export default function LabVerification() {
 
   if (!entityId) {
     return (
-      <div className="p-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Verification</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            No lab center is linked to this account.
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-background">
+        <DashboardTopNav role={"lab_staff" as AppRole} />
+        <div className="p-6 text-sm text-muted-foreground">
+          No lab center is linked to this account.
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Lab Verification</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">
-          Upload verification documents for your lab. Draft is allowed.
-        </CardContent>
-      </Card>
-
-      <EntityFileManager
-        entityType="lab"
-        entityId={entityId}
-        category="verification"
-        title="Verification documents"
-        description="Upload trade license, registration certificate, and required lab accreditations."
-        accept=".pdf,.png,.jpg,.jpeg,.webp"
-      />
-
-      <EntityFileManager
-        entityType="lab"
-        entityId={entityId}
-        category="reports"
-        title="Reports & attachments"
-        description="Optional: sample reports, SOPs, or other supporting docs."
-        accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx,.txt"
-      />
+    <div className="min-h-screen bg-background">
+      <DashboardTopNav role={"lab_staff" as AppRole} />
+      <div className="p-6">
+        <EntityFileManager entityType="lab" entityId={entityId} heading="Lab Verification" />
+      </div>
     </div>
   );
 }
