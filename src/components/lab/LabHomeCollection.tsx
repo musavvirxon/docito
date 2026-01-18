@@ -1,3 +1,4 @@
+// src/components/lab/LabHomeCollection.tsx
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,7 +15,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -26,29 +26,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { 
-  Truck, 
-  Search, 
-  Eye, 
-  MapPin, 
+import {
+  Truck,
+  Search,
+  Eye,
+  MapPin,
   Clock,
   CheckCircle,
   User,
   Phone,
   Calendar,
-  RefreshCw
+  RefreshCw,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface HomeCollection {
   id: string;
+  lab_center_id: string;
   order_id: string;
   patient_name: string;
-  patient_phone: string;
+  patient_phone: string | null;
   address: string;
   scheduled_date: string;
-  scheduled_time: string;
+  scheduled_time: string | null;
   collector_id: string | null;
   collector_name: string | null;
   status: string;
@@ -69,76 +71,51 @@ export default function LabHomeCollection({ labCenterId }: Props) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   useEffect(() => {
-    if (labCenterId) {
-      fetchCollections();
-    }
+    if (labCenterId) fetchCollections();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [labCenterId]);
 
   const fetchCollections = async () => {
     try {
       setLoading(true);
-      // Mock data - would be fetched from home_collections table
-      const mockCollections: HomeCollection[] = [
-        {
-          id: '1',
-          order_id: 'ORD-001',
-          patient_name: 'John Doe',
-          patient_phone: '+1 555-0123',
-          address: '123 Main St, Downtown, City 12345',
-          scheduled_date: new Date().toISOString(),
-          scheduled_time: '09:00 AM - 10:00 AM',
-          collector_id: 'col-1',
-          collector_name: 'Mike Wilson',
-          status: 'scheduled',
-          notes: 'Ring doorbell twice',
-          created_at: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          order_id: 'ORD-002',
-          patient_name: 'Jane Smith',
-          patient_phone: '+1 555-0124',
-          address: '456 Oak Ave, Suburb, City 12346',
-          scheduled_date: new Date().toISOString(),
-          scheduled_time: '10:00 AM - 11:00 AM',
-          collector_id: null,
-          collector_name: null,
-          status: 'pending',
-          notes: null,
-          created_at: new Date().toISOString(),
-        },
-        {
-          id: '3',
-          order_id: 'ORD-003',
-          patient_name: 'Robert Johnson',
-          patient_phone: '+1 555-0125',
-          address: '789 Pine Rd, Uptown, City 12347',
-          scheduled_date: new Date(Date.now() - 86400000).toISOString(),
-          scheduled_time: '02:00 PM - 03:00 PM',
-          collector_id: 'col-2',
-          collector_name: 'Sarah Lee',
-          status: 'completed',
-          notes: 'Fasting blood sample',
-          created_at: new Date().toISOString(),
-        },
-      ];
-      setCollections(mockCollections);
+
+      const { data, error } = await supabase
+        .from('lab_home_collections')
+        .select('*')
+        .eq('lab_center_id', labCenterId)
+        .order('scheduled_date', { ascending: false })
+        .limit(250);
+
+      if (error) throw error;
+
+      setCollections((data || []) as HomeCollection[]);
     } catch (error) {
       console.error('Error fetching collections:', error);
       toast.error('Failed to load home collections');
+      setCollections([]);
     } finally {
       setLoading(false);
     }
   };
 
   const updateCollectionStatus = async (id: string, newStatus: string) => {
+    const prev = collections;
     try {
-      setCollections(prev => prev.map(c => 
-        c.id === id ? { ...c, status: newStatus } : c
-      ));
-      toast.success(`Collection status updated to ${newStatus}`);
+      setCollections((p) => p.map((c) => (c.id === id ? { ...c, status: newStatus } : c)));
+
+      const { error } = await supabase
+        .from('lab_home_collections')
+        .update({ status: newStatus })
+        .eq('id', id)
+        .eq('lab_center_id', labCenterId);
+
+      if (error) throw error;
+
+      toast.success(`Collection status updated to ${newStatus.replace('_', ' ')}`);
       setIsDetailsOpen(false);
     } catch (error) {
+      console.error('Failed to update collection status:', error);
+      setCollections(prev);
       toast.error('Failed to update collection status');
     }
   };
@@ -159,15 +136,15 @@ export default function LabHomeCollection({ labCenterId }: Props) {
     );
   };
 
-  const filteredCollections = collections.filter(collection => {
-    const matchesSearch = 
+  const filteredCollections = collections.filter((collection) => {
+    const matchesSearch =
       collection.patient_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       collection.address.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || collection.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  const todayCollections = collections.filter(c => {
+  const todayCollections = collections.filter((c) => {
     const today = new Date().toDateString();
     return new Date(c.scheduled_date).toDateString() === today;
   });
@@ -206,7 +183,9 @@ export default function LabHomeCollection({ labCenterId }: Props) {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Pending Assignment</p>
-                  <p className="text-2xl font-bold">{collections.filter(c => c.status === 'pending').length}</p>
+                  <p className="text-2xl font-bold">
+                    {collections.filter((c) => c.status === 'pending').length}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -219,7 +198,9 @@ export default function LabHomeCollection({ labCenterId }: Props) {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">In Transit</p>
-                  <p className="text-2xl font-bold">{collections.filter(c => c.status === 'in_transit').length}</p>
+                  <p className="text-2xl font-bold">
+                    {collections.filter((c) => c.status === 'in_transit').length}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -233,7 +214,7 @@ export default function LabHomeCollection({ labCenterId }: Props) {
                 <div>
                   <p className="text-sm text-muted-foreground">Completed Today</p>
                   <p className="text-2xl font-bold">
-                    {todayCollections.filter(c => c.status === 'completed').length}
+                    {todayCollections.filter((c) => c.status === 'completed').length}
                   </p>
                 </div>
               </div>
@@ -311,7 +292,7 @@ export default function LabHomeCollection({ labCenterId }: Props) {
                             <p className="font-medium">{collection.patient_name}</p>
                             <p className="text-sm text-muted-foreground flex items-center gap-1">
                               <Phone className="h-3 w-3" />
-                              {collection.patient_phone}
+                              {collection.patient_phone || '—'}
                             </p>
                           </div>
                         </TableCell>
@@ -324,7 +305,7 @@ export default function LabHomeCollection({ labCenterId }: Props) {
                         <TableCell>
                           <div className="text-sm">
                             <p>{format(new Date(collection.scheduled_date), 'MMM d, yyyy')}</p>
-                            <p className="text-muted-foreground">{collection.scheduled_time}</p>
+                            <p className="text-muted-foreground">{collection.scheduled_time || '—'}</p>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -340,8 +321,8 @@ export default function LabHomeCollection({ labCenterId }: Props) {
                         <TableCell>{getStatusBadge(collection.status)}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            <Button 
-                              size="sm" 
+                            <Button
+                              size="sm"
                               variant="ghost"
                               onClick={() => {
                                 setSelectedCollection(collection);
@@ -351,18 +332,12 @@ export default function LabHomeCollection({ labCenterId }: Props) {
                               <Eye className="h-4 w-4" />
                             </Button>
                             {collection.status === 'scheduled' && (
-                              <Button 
-                                size="sm"
-                                onClick={() => updateCollectionStatus(collection.id, 'in_transit')}
-                              >
+                              <Button size="sm" onClick={() => updateCollectionStatus(collection.id, 'in_transit')}>
                                 Start
                               </Button>
                             )}
                             {collection.status === 'in_transit' && (
-                              <Button 
-                                size="sm"
-                                onClick={() => updateCollectionStatus(collection.id, 'completed')}
-                              >
+                              <Button size="sm" onClick={() => updateCollectionStatus(collection.id, 'completed')}>
                                 Complete
                               </Button>
                             )}
@@ -397,7 +372,7 @@ export default function LabHomeCollection({ labCenterId }: Props) {
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Phone</p>
-                  <p className="font-medium">{selectedCollection.patient_phone}</p>
+                  <p className="font-medium">{selectedCollection.patient_phone || '—'}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Status</p>
@@ -422,11 +397,13 @@ export default function LabHomeCollection({ labCenterId }: Props) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">Scheduled Date</p>
-                  <p className="font-medium">{format(new Date(selectedCollection.scheduled_date), 'MMMM d, yyyy')}</p>
+                  <p className="font-medium">
+                    {format(new Date(selectedCollection.scheduled_date), 'MMMM d, yyyy')}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">Time Slot</p>
-                  <p className="font-medium">{selectedCollection.scheduled_time}</p>
+                  <p className="font-medium">{selectedCollection.scheduled_time || '—'}</p>
                 </div>
               </div>
 
