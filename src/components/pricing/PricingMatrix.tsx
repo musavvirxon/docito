@@ -1,6 +1,6 @@
 // File: src/components/pricing/PricingMatrix.tsx
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -9,17 +9,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PricingMatrixIllustration } from "@/components/Visuals/illustrations";
 
-import { Check, Sparkles, Shield, Zap } from "lucide-react";
+import { Check, Sparkles, Shield, Zap, User } from "lucide-react";
 
 type Period = "monthly" | "yearly";
+type PlanKey = "starter" | "plus" | "pro";
+type RoleKey = "patient" | "doctor" | "clinic";
 
 type Props = {
   period: Period;
   onChangePeriod: (p: Period) => void;
 };
-
-type PlanKey = "starter" | "plus" | "pro";
-type RoleKey = "patient" | "doctor" | "clinic";
 
 const plans: Array<{
   key: PlanKey;
@@ -39,7 +38,7 @@ const roles: Array<{
   sublabel: string;
   icon: React.ComponentType<{ className?: string }>;
 }> = [
-  { key: "patient", label: "Patients", sublabel: "Appointments, records & payments.", icon: Sparkles },
+  { key: "patient", label: "Patients", sublabel: "Appointments, records & payments.", icon: User },
   { key: "doctor", label: "Doctors", sublabel: "Scheduling, notes & billing.", icon: Zap },
   { key: "clinic", label: "Clinics", sublabel: "Teams, operations & analytics.", icon: Shield },
 ];
@@ -82,7 +81,6 @@ const featureBullets: Record<RoleKey, Record<PlanKey, string[]>> = {
 
 function money(n: number, period: Period) {
   if (n === 0) return "Free";
-  if (period === "monthly") return `$${n}`;
   return `$${n}`;
 }
 
@@ -95,19 +93,20 @@ function yearlyAsMonthly(yearly: number) {
 }
 
 export const PricingMatrix = ({ period, onChangePeriod }: Props) => {
+  const [activeRole, setActiveRole] = useState<RoleKey>("patient");
+
   const savingsPct = useMemo(() => {
-    // simple “up to” savings vs 12x monthly
-    const sampleRole: RoleKey = "doctor";
-    const samplePlan: PlanKey = "plus";
-    const m = pricing[sampleRole][samplePlan].monthly * 12;
-    const y = pricing[sampleRole][samplePlan].yearly;
+    const m = pricing["doctor"]["plus"].monthly * 12;
+    const y = pricing["doctor"]["plus"].yearly;
     if (m <= 0) return 0;
     return Math.max(0, Math.round(((m - y) / m) * 100));
   }, []);
 
+  const activeRoleMeta = roles.find((r) => r.key === activeRole)!;
+  const RoleIcon = activeRoleMeta.icon;
+
   return (
     <section className="relative">
-      {/* Premium glass background + illustration */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute left-1/2 top-0 h-[420px] w-[820px] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
         <div className="absolute right-[-140px] bottom-[-140px] h-[420px] w-[420px] rounded-full bg-primary/10 blur-3xl" />
@@ -120,7 +119,8 @@ export const PricingMatrix = ({ period, onChangePeriod }: Props) => {
         </div>
 
         <div className="relative p-6 md:p-8">
-          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+          {/* Title + toggles */}
+          <div className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-6">
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -128,24 +128,29 @@ export const PricingMatrix = ({ period, onChangePeriod }: Props) => {
               transition={{ duration: 0.5, ease: "easeOut" }}
               className="space-y-2"
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <Badge variant="secondary" className="px-3 py-1">
                   <Sparkles className="mr-2 h-4 w-4" />
-                  Apple-style pricing
+                  Premium pricing
                 </Badge>
                 {period === "yearly" && savingsPct > 0 ? (
                   <Badge className="bg-primary/10 text-primary border border-primary/20">Save ~{savingsPct}%</Badge>
                 ) : null}
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Pick a plan. Choose your role.</h2>
+
+              <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Choose a role, then pick a plan.</h2>
               <p className="text-muted-foreground max-w-2xl">
-                Three premium tiers across patients, doctors, and clinics — presented as one clean comparison.
+                Apple-clean layout: focus on one audience at a time — patients, doctors, or clinics.
               </p>
             </motion.div>
 
-            <BillingPeriodSegment period={period} onChange={onChangePeriod} />
+            <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-end">
+              <RoleSegment activeRole={activeRole} onChange={setActiveRole} />
+              <BillingPeriodSegment period={period} onChange={onChangePeriod} />
+            </div>
           </div>
 
+          {/* Illustration + context */}
           <div className="mt-6 md:mt-8 grid lg:grid-cols-[1fr_360px] gap-6 items-start">
             <motion.div
               initial={{ opacity: 0, scale: 0.98 }}
@@ -165,9 +170,21 @@ export const PricingMatrix = ({ period, onChangePeriod }: Props) => {
               className="space-y-3"
             >
               <div className="rounded-2xl border border-border/60 bg-background/40 p-4 md:p-5">
-                <div className="text-sm font-medium">Billed {period === "monthly" ? "monthly" : "yearly"}</div>
-                <div className="text-sm text-muted-foreground mt-1">
-                  {period === "yearly" ? "Best value for teams and long-term use." : "Flexible month-to-month."}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <RoleIcon className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium">{activeRoleMeta.label}</div>
+                      <div className="text-xs text-muted-foreground">{activeRoleMeta.sublabel}</div>
+                    </div>
+                  </div>
+                  <Badge variant="secondary">{period === "monthly" ? "Monthly" : "Yearly"}</Badge>
+                </div>
+
+                <div className="text-sm text-muted-foreground mt-3">
+                  {period === "yearly" ? "Best value for long-term use." : "Flexible month-to-month billing."}
                 </div>
               </div>
 
@@ -177,174 +194,94 @@ export const PricingMatrix = ({ period, onChangePeriod }: Props) => {
                   <Badge variant="secondary">RLS + Auth</Badge>
                 </div>
                 <div className="text-sm text-muted-foreground mt-1">
-                  Data access is locked to accounts and roles. Payments are tokenized by Stripe.
+                  Payments are tokenized by Stripe. Your data stays private by role and account.
                 </div>
               </div>
             </motion.div>
           </div>
 
-          {/* Matrix */}
+          {/* Plans (ONLY for active role) */}
           <div className="mt-8">
-            <div className="overflow-x-auto">
-              <div className="min-w-[980px]">
-                {/* Header row: plans (3) on top */}
-                <div className="grid grid-cols-[280px_repeat(3,minmax(0,1fr))] gap-3">
-                  <div className="px-4 py-4">
-                    <div className="text-xs uppercase tracking-wide text-muted-foreground">Roles</div>
-                  </div>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeRole}
+                initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: -10, filter: "blur(6px)" }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+                className="grid gap-4 lg:grid-cols-3"
+              >
+                {plans.map((p) => {
+                  const price = pricing[activeRole][p.key][period];
+                  const bullets = featureBullets[activeRole][p.key];
+                  const isPopular = p.accent === "popular";
 
-                  {plans.map((p, i) => (
+                  return (
                     <motion.div
                       key={p.key}
-                      initial={{ opacity: 0, y: 10 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, margin: "-60px" }}
-                      transition={{ duration: 0.45, ease: "easeOut", delay: 0.06 * i }}
+                      whileHover={{ y: -3 }}
+                      transition={{ duration: 0.18 }}
                       className={cn(
-                        "rounded-2xl border bg-background/40 backdrop-blur p-4",
-                        "border-border/60",
-                        p.accent === "popular" && "border-primary/40 shadow-[0_0_0_1px_hsl(var(--primary)/0.25)]",
-                        p.accent === "pro" && "border-primary/30",
+                        "rounded-3xl border bg-background/45 backdrop-blur p-5 md:p-6",
+                        "border-border/60 hover:border-primary/30 hover:shadow-sm",
+                        isPopular && "border-primary/40 shadow-[0_0_0_1px_hsl(var(--primary)/0.25)]",
                       )}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
                             <div className="text-lg font-semibold">{p.name}</div>
-                            {p.accent === "popular" ? (
-                              <Badge className="bg-primary text-primary-foreground">Most Popular</Badge>
-                            ) : null}
+                            {isPopular ? <Badge className="bg-primary text-primary-foreground">Most Popular</Badge> : null}
                           </div>
                           <div className="text-sm text-muted-foreground">{p.tagline}</div>
                         </div>
-                        <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
-                          <Sparkles className="h-5 w-5 text-primary" />
+
+                        <div className={cn("h-10 w-10 rounded-2xl flex items-center justify-center", isPopular ? "bg-primary/10" : "bg-muted/40")}>
+                          <Sparkles className={cn("h-5 w-5", isPopular ? "text-primary" : "text-muted-foreground")} />
                         </div>
                       </div>
 
-                      <div className="mt-4">
-                        <Button asChild className={cn("w-full", p.accent === "popular" ? "" : "bg-foreground text-background hover:bg-foreground/90")}>
+                      <div className="mt-5">
+                        <div className="flex items-end gap-2">
+                          <div className="text-4xl font-bold tracking-tight">{money(price, period)}</div>
+                          <div className="pb-1 text-sm text-muted-foreground">{price === 0 ? "" : periodSuffix(period)}</div>
+                        </div>
+
+                        {period === "yearly" && price > 0 ? (
+                          <div className="mt-1 text-xs text-muted-foreground">
+                            ~${yearlyAsMonthly(price)}/mo billed yearly
+                          </div>
+                        ) : (
+                          <div className="mt-1 text-xs text-muted-foreground">&nbsp;</div>
+                        )}
+                      </div>
+
+                      <div className="mt-5 space-y-2">
+                        {bullets.map((b) => (
+                          <div key={b} className="flex items-start gap-2 text-sm">
+                            <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-primary/10">
+                              <Check className="h-3 w-3 text-primary" />
+                            </span>
+                            <span className="text-foreground/90">{b}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="mt-6">
+                        <Button asChild className={cn("w-full rounded-2xl", isPopular ? "" : "bg-foreground text-background hover:bg-foreground/90")}>
                           <Link to="/auth">{p.cta}</Link>
                         </Button>
-                        <div className="mt-2 text-xs text-muted-foreground text-center">
-                          {period === "yearly" ? "Cancel anytime · yearly billing" : "Cancel anytime · monthly billing"}
+
+                        <div className="mt-3 text-xs text-muted-foreground flex items-center justify-between">
+                          <span className="capitalize">{activeRole}</span>
+                          <span>{period === "monthly" ? "Cancel anytime" : "Cancel anytime"}</span>
                         </div>
                       </div>
                     </motion.div>
-                  ))}
-                </div>
-
-                {/* Rows: roles on left */}
-                <div className="mt-3 space-y-3">
-                  {roles.map((role, rIdx) => {
-                    const RoleIcon = role.icon;
-                    return (
-                      <motion.div
-                        key={role.key}
-                        initial={{ opacity: 0, y: 10 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, margin: "-60px" }}
-                        transition={{ duration: 0.45, ease: "easeOut", delay: 0.05 * rIdx }}
-                        className="grid grid-cols-[280px_repeat(3,minmax(0,1fr))] gap-3"
-                      >
-                        {/* Left column: role */}
-                        <div className="rounded-2xl border border-border/60 bg-background/40 backdrop-blur p-4">
-                          <div className="flex items-start gap-3">
-                            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                              <RoleIcon className="h-5 w-5 text-primary" />
-                            </div>
-                            <div className="space-y-1">
-                              <div className="font-semibold">{role.label}</div>
-                              <div className="text-sm text-muted-foreground">{role.sublabel}</div>
-                            </div>
-                          </div>
-                          <div className="mt-4 text-xs text-muted-foreground">
-                            Compare what each plan unlocks for this role.
-                          </div>
-                        </div>
-
-                        {plans.map((plan) => {
-                          const value = pricing[role.key][plan.key][period];
-                          const bullets = featureBullets[role.key][plan.key];
-                          const isPopular = plan.accent === "popular";
-
-                          return (
-                            <motion.div
-                              key={`${role.key}-${plan.key}`}
-                              whileHover={{ y: -2 }}
-                              transition={{ duration: 0.18 }}
-                              className={cn(
-                                "rounded-2xl border bg-background/40 backdrop-blur p-4",
-                                "border-border/60 hover:border-primary/30 hover:shadow-sm",
-                                isPopular && "border-primary/25",
-                              )}
-                            >
-                              <div className="flex items-start justify-between gap-3">
-                                <div className="space-y-1">
-                                  <div className="text-sm text-muted-foreground">Price</div>
-                                  <div className="flex items-baseline gap-2">
-                                    <AnimatePresence mode="popLayout">
-                                      <motion.div
-                                        key={`${role.key}-${plan.key}-${period}-${value}`}
-                                        initial={{ opacity: 0, y: 8 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -8 }}
-                                        transition={{ duration: 0.18 }}
-                                        className="text-2xl font-bold tracking-tight"
-                                      >
-                                        {money(value, period)}
-                                      </motion.div>
-                                    </AnimatePresence>
-                                    <div className="text-sm text-muted-foreground">{value === 0 ? "" : periodSuffix(period)}</div>
-                                  </div>
-
-                                  {period === "yearly" && value > 0 ? (
-                                    <div className="text-xs text-muted-foreground">
-                                      ~${yearlyAsMonthly(value)}/mo billed yearly
-                                    </div>
-                                  ) : null}
-                                </div>
-
-                                {isPopular ? (
-                                  <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
-                                    <Sparkles className="h-5 w-5 text-primary" />
-                                  </div>
-                                ) : (
-                                  <div className="h-9 w-9 rounded-xl bg-muted/40 flex items-center justify-center">
-                                    <Check className="h-5 w-5 text-muted-foreground" />
-                                  </div>
-                                )}
-                              </div>
-
-                              <div className="mt-3 space-y-2">
-                                {bullets.map((b) => (
-                                  <div key={b} className="flex items-start gap-2 text-sm">
-                                    <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-primary/10">
-                                      <Check className="h-3 w-3 text-primary" />
-                                    </span>
-                                    <span className="text-foreground/90">{b}</span>
-                                  </div>
-                                ))}
-                              </div>
-
-                              <div className="mt-4 flex items-center justify-between">
-                                <Badge variant="secondary" className="bg-background/40">
-                                  {plan.name}
-                                </Badge>
-
-                                <Button asChild size="sm" variant={isPopular ? "default" : "outline"} className="rounded-xl">
-                                  <Link to="/auth">Start</Link>
-                                </Button>
-                              </div>
-                            </motion.div>
-                          );
-                        })}
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
+                  );
+                })}
+              </motion.div>
+            </AnimatePresence>
 
             <div className="mt-4 text-xs text-muted-foreground">
               Prices shown are example tiers. You can later connect real billing rules (Stripe) per role/plan.
@@ -356,6 +293,65 @@ export const PricingMatrix = ({ period, onChangePeriod }: Props) => {
   );
 };
 
+function RoleSegment({
+  activeRole,
+  onChange,
+}: {
+  activeRole: RoleKey;
+  onChange: (r: RoleKey) => void;
+}) {
+  return (
+    <div className="flex items-center justify-center">
+      <div className="relative rounded-2xl border border-border/60 bg-background/40 backdrop-blur px-2 py-2">
+        <motion.div
+          layout
+          transition={{ type: "spring", stiffness: 420, damping: 34 }}
+          className={cn(
+            "absolute top-2 bottom-2 rounded-xl bg-foreground",
+            activeRole === "patient"
+              ? "left-2 w-[calc(33.333%-10px)]"
+              : activeRole === "doctor"
+                ? "left-[calc(33.333%+2px)] w-[calc(33.333%-4px)]"
+                : "left-[calc(66.666%+6px)] w-[calc(33.333%-10px)]",
+          )}
+        />
+        <div className="relative z-10 grid grid-cols-3 gap-2">
+          <button
+            type="button"
+            onClick={() => onChange("patient")}
+            className={cn(
+              "h-10 px-4 rounded-xl text-sm font-semibold transition-colors",
+              activeRole === "patient" ? "text-background" : "text-foreground/80 hover:text-foreground",
+            )}
+          >
+            Patient
+          </button>
+          <button
+            type="button"
+            onClick={() => onChange("doctor")}
+            className={cn(
+              "h-10 px-4 rounded-xl text-sm font-semibold transition-colors",
+              activeRole === "doctor" ? "text-background" : "text-foreground/80 hover:text-foreground",
+            )}
+          >
+            Doctor
+          </button>
+          <button
+            type="button"
+            onClick={() => onChange("clinic")}
+            className={cn(
+              "h-10 px-4 rounded-xl text-sm font-semibold transition-colors",
+              activeRole === "clinic" ? "text-background" : "text-foreground/80 hover:text-foreground",
+            )}
+          >
+            Clinic
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function BillingPeriodSegment({
   period,
   onChange,
@@ -364,7 +360,7 @@ function BillingPeriodSegment({
   onChange: (p: Period) => void;
 }) {
   return (
-    <div className="flex items-center justify-center lg:justify-end">
+    <div className="flex items-center justify-center">
       <div className="relative rounded-2xl border border-border/60 bg-background/40 backdrop-blur px-2 py-2">
         <motion.div
           layout
