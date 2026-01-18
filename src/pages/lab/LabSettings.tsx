@@ -1,5 +1,8 @@
 // File: src/pages/lab/LabSettings.tsx
+
 import { useMemo } from "react";
+import DashboardTopNav from "@/components/dashboard/DashboardTopNav";
+import type { AppRole } from "@/lib/rbac";
 import EntitySettingsPage from "@/components/settings/EntitySettingsPage";
 import { useStaffContext } from "@/hooks/useStaffContext";
 
@@ -13,11 +16,19 @@ export default function LabSettings() {
 
   if (!entityId) {
     return (
-      <div className="p-6 text-sm text-muted-foreground">
-        No lab center is linked to this account.
+      <div className="min-h-screen bg-background">
+        <DashboardTopNav role={"lab_staff" as AppRole} />
+        <div className="p-6 text-sm text-muted-foreground">
+          No lab center is linked to this account.
+        </div>
       </div>
     );
   }
 
-  return <EntitySettingsPage entityType="lab" entityId={entityId} heading="Lab Settings" />;
+  return (
+    <div className="min-h-screen bg-background">
+      <DashboardTopNav role={"lab_staff" as AppRole} />
+      <EntitySettingsPage entityType="lab" entityId={entityId} heading="Lab Settings" />
+    </div>
+  );
 }
