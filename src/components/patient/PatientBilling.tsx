@@ -1,96 +1,334 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Receipt,
-  Download,
-  CreditCard,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  Calendar,
-  FileText
-} from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+// File: src/components/patient/PatientBilling.tsx
 
-interface Invoice {
-  id: string;
-  invoice_number: string;
-  amount: number;
-  total_amount: number;
-  status: string;
-  created_at: string;
-  currency: string;
-  pdf_url: string | null;
-  paid_at: string | null;
+import { useEffect, useMemo, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+import { format } from "date-fns";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
+import {
+  CreditCard,
+  Receipt,
+  ShieldCheck,
+  RefreshCw,
+  Trash2,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+type BillingSummaryResponse = {
+  ok: boolean;
+  error?: string;
+  customer: { user_id: string; email: string | null; stripe_customer_id: string | null } | null;
+  paymentMethods: Array<{
+    id: string;
+    provider: string;
+    provider_payment_method_id: string;
+    brand: string | null;
+    last4: string | null;
+    exp_month: number | null;
+    exp_year: number | null;
+    is_default: boolean;
+    created_at: string;
+  }>;
+  balance: { outstanding: number; paid_total: number; invoice_count: number } | null;
+  invoices: Array<{
+    id: string;
+    practice_id: string | null;
+    appointment_id: string | null;
+    status: string;
+    currency: string;
+    total_amount: number;
+    notes: string | null;
+    issued_at: string | null;
+    paid_at: string | null;
+    created_at: string;
+  }>;
+  payments: Array<{
+    id: string;
+    invoice_id: string | null;
+    provider: string | null;
+    amount: number;
+    currency: string;
+    status: string;
+    paid_at: string | null;
+    created_at: string;
+  }>;
+};
+
+type CreateSetupIntentResponse = { ok: boolean; error?: string; client_secret?: string };
+type SetDefaultPmResponse = { ok: boolean; error?: string };
+type RemovePmResponse = { ok: boolean; error?: string };
+type PayInvoiceResponse = { ok: boolean; error?: string; requires_action?: boolean; client_secret?: string };
+
+function formatMoney(amount: number, currency: string) {
+  const n = Number(amount || 0);
+  const cur = String(currency || "USD").toUpperCase();
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency: cur,
+      maximumFractionDigits: 2,
+    }).format(n);
+  } catch {
+    return `${n.toFixed(2)} ${cur}`;
+  }
+}
+
+function statusBadge(status: string) {
+  const s = String(status || "").toLowerCase();
+  const map: Record<string, { cls: string; icon: any; label: string }> = {
+    paid: { cls: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400", icon: CheckCircle2, label: "Paid" },
+    issued: { cls: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400", icon: Clock, label: "Issued" },
+    draft: { cls: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400", icon: Clock, label: "Draft" },
+    void: { cls: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400", icon: AlertCircle, label: "Void" },
+    cancelled: { cls: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400", icon: AlertCircle, label: "Cancelled" },
+  };
+  return map[s] || { cls: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400", icon: AlertCircle, label: status };
+}
+
+async function loadStripeJs(): Promise<void> {
+  if (typeof window === "undefined") return;
+  if (window.Stripe) return;
+
+  await new Promise<void>((resolve, reject) => {
+    const existing = document.querySelector<HTMLScriptElement>('script[src="https://js.stripe.com/v3/"]');
+    if (existing) {
+      existing.addEventListener("load", () => resolve());
+      existing.addEventListener("error", () => reject(new Error("Failed to load Stripe.js")));
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://js.stripe.com/v3/";
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Failed to load Stripe.js"));
+    document.head.appendChild(script);
+  });
 }
 
 export const PatientBilling = () => {
   const { user } = useAuth();
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
+
   const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<BillingSummaryResponse | null>(null);
 
-  useEffect(() => {
-    if (user) {
-      fetchBillingData();
-    }
-  }, [user]);
+  const [cardDialogOpen, setCardDialogOpen] = useState(false);
+  const [cardDialogBusy, setCardDialogBusy] = useState(false);
+  const [stripeReady, setStripeReady] = useState(false);
 
-  const fetchBillingData = async () => {
+  const stripeRef = useRef<any>(null);
+  const elementsRef = useRef<any>(null);
+  const cardElRef = useRef<any>(null);
+
+  const publishableKey = (import.meta as any).env?.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined;
+
+  const defaultPm = useMemo(() => {
+    const pms = data?.paymentMethods || [];
+    return pms.find((m) => m.is_default) || pms[0] || null;
+  }, [data?.paymentMethods]);
+
+  const currency = useMemo(() => {
+    const invCur = data?.invoices?.[0]?.currency;
+    const payCur = data?.payments?.[0]?.currency;
+    return invCur || payCur || "USD";
+  }, [data?.invoices, data?.payments]);
+
+  const outstanding = Number(data?.balance?.outstanding || 0);
+  const paidTotal = Number(data?.balance?.paid_total || 0);
+  const invoiceCount = Number(data?.balance?.invoice_count || 0);
+
+  const issuedInvoices = useMemo(
+    () => (data?.invoices || []).filter((i) => String(i.status).toLowerCase() === "issued"),
+    [data?.invoices],
+  );
+
+  const fetchSummary = async () => {
+    if (!user) return;
+    setLoading(true);
     try {
-      setLoading(true);
-
-      const { data, error } = await supabase
-        .from('invoices')
-        .select('id, invoice_number, amount, total_amount, status, created_at, currency, pdf_url, paid_at')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false });
+      const { data: resp, error } = await supabase.functions.invoke<BillingSummaryResponse>("patient-billing", {
+        body: { action: "get_summary" },
+      });
 
       if (error) throw error;
-      setInvoices(data || []);
-    } catch (error) {
-      console.error('Error fetching billing data:', error);
-      setInvoices([]);
+      if (!resp?.ok) throw new Error(resp?.error || "Failed to load billing");
+
+      setData(resp);
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || "Failed to load billing");
+      setData(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const getStatusConfig = (status: string) => {
-    const configs: Record<string, { color: string; icon: React.ElementType }> = {
-      paid: { color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', icon: CheckCircle2 },
-      pending: { color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400', icon: Clock },
-      overdue: { color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', icon: AlertCircle },
-      cancelled: { color: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400', icon: AlertCircle },
-    };
-    return configs[status] || configs.pending;
-  };
+  useEffect(() => {
+    if (user) void fetchSummary();
+  }, [user]);
 
-  const formatMoney = (amount: number, currency: string) => {
+  const openCardDialog = async () => {
+    if (!publishableKey) {
+      toast.error("Missing VITE_STRIPE_PUBLISHABLE_KEY");
+      return;
+    }
+
+    setCardDialogOpen(true);
+    setCardDialogBusy(true);
+
     try {
-      return new Intl.NumberFormat(undefined, {
-        style: 'currency',
-        currency: currency || 'USD',
-        maximumFractionDigits: 2,
-      }).format(amount);
-    } catch {
-      return `${amount.toLocaleString()} ${currency || ''}`.trim();
+      const { data: si, error: siErr } = await supabase.functions.invoke<CreateSetupIntentResponse>("patient-billing", {
+        body: { action: "create_setup_intent" },
+      });
+      if (siErr) throw siErr;
+      if (!si?.ok || !si.client_secret) throw new Error(si?.error || "Failed to create setup intent");
+
+      await loadStripeJs();
+      if (!window.Stripe) throw new Error("Stripe.js not available");
+      setStripeReady(true);
+
+      stripeRef.current = window.Stripe(publishableKey);
+
+      // Elements for setup intent
+      elementsRef.current = stripeRef.current.elements({ clientSecret: si.client_secret });
+
+      // Mount card element
+      const cardMount = document.getElementById("stripe-card-mount");
+      if (!cardMount) throw new Error("Card mount not found");
+
+      cardMount.innerHTML = "";
+      cardElRef.current = elementsRef.current.create("card", { hidePostalCode: true });
+      cardElRef.current.mount(cardMount);
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || "Failed to start card setup");
+      setCardDialogOpen(false);
+    } finally {
+      setCardDialogBusy(false);
     }
   };
 
-  const summaryCurrency = invoices[0]?.currency || 'USD';
+  const closeCardDialog = () => {
+    try {
+      if (cardElRef.current) {
+        cardElRef.current.unmount();
+      }
+    } catch {
+      // ignore
+    }
+    stripeRef.current = null;
+    elementsRef.current = null;
+    cardElRef.current = null;
+    setStripeReady(false);
+    setCardDialogOpen(false);
+  };
 
-  const totalPaid = invoices
-    .filter(i => i.status === 'paid')
-    .reduce((sum, i) => sum + i.total_amount, 0);
-  const totalPending = invoices
-    .filter(i => i.status === 'pending')
-    .reduce((sum, i) => sum + i.total_amount, 0);
+  const saveCard = async () => {
+    if (!stripeRef.current || !cardElRef.current) return;
+    if (!publishableKey) return;
+
+    setCardDialogBusy(true);
+
+    try {
+      const email = user?.email || undefined;
+
+      const { setupIntent, error } = await stripeRef.current.confirmCardSetup(
+        // Elements client secret already bound; confirm uses Elements created with that secret
+        // Stripe v3 allows passing elements OR a client secret; we use elements instance.
+        // But confirmCardSetup signature can differ; use the simplest supported path:
+        // Provide payment_method with card element + billing details.
+        (elementsRef.current as any)._clientSecret,
+        {
+          payment_method: {
+            card: cardElRef.current,
+            billing_details: { email },
+          },
+        },
+      );
+
+      if (error) throw new Error(error.message || "Card confirmation failed");
+      const pmId = setupIntent?.payment_method;
+      if (!pmId) throw new Error("No payment method returned");
+
+      const { data: setRes, error: setErr } = await supabase.functions.invoke<SetDefaultPmResponse>("patient-billing", {
+        body: { action: "set_default_payment_method", paymentMethodId: pmId },
+      });
+
+      if (setErr) throw setErr;
+      if (!setRes?.ok) throw new Error(setRes?.error || "Failed to save payment method");
+
+      toast.success("Card saved");
+      closeCardDialog();
+      await fetchSummary();
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || "Failed to save card");
+    } finally {
+      setCardDialogBusy(false);
+    }
+  };
+
+  const removeCard = async () => {
+    if (!defaultPm) return;
+
+    try {
+      const { data: r, error } = await supabase.functions.invoke<RemovePmResponse>("patient-billing", {
+        body: { action: "remove_payment_method", paymentMethodId: defaultPm.provider_payment_method_id },
+      });
+      if (error) throw error;
+      if (!r?.ok) throw new Error(r?.error || "Failed to remove card");
+
+      toast.success("Card removed");
+      await fetchSummary();
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || "Failed to remove card");
+    }
+  };
+
+  const payInvoice = async (invoiceId: string) => {
+    if (!publishableKey) {
+      toast.error("Missing VITE_STRIPE_PUBLISHABLE_KEY");
+      return;
+    }
+
+    try {
+      const { data: r, error } = await supabase.functions.invoke<PayInvoiceResponse>("patient-billing", {
+        body: { action: "pay_invoice", invoiceId },
+      });
+
+      if (error) throw error;
+      if (!r?.ok) throw new Error(r?.error || "Payment failed");
+
+      if (r.requires_action && r.client_secret) {
+        await loadStripeJs();
+        if (!window.Stripe) throw new Error("Stripe.js not available");
+        const stripe = window.Stripe(publishableKey);
+
+        const result = await stripe.confirmCardPayment(r.client_secret);
+        if (result?.error) throw new Error(result.error.message || "Authentication failed");
+
+        toast.success("Payment completed");
+      } else {
+        toast.success("Payment completed");
+      }
+
+      await fetchSummary();
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || "Payment failed");
+    }
+  };
 
   if (loading) {
     return (
@@ -107,33 +345,32 @@ export const PatientBilling = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">Billing & Payments</h2>
-        <p className="text-muted-foreground">Manage your invoices and payment history</p>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h2 className="text-2xl font-bold">Wallet & Billing</h2>
+          <p className="text-muted-foreground">Save a card for faster checkout and track invoices & payments.</p>
+        </div>
+
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => void fetchSummary()}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+          <Button onClick={() => void openCardDialog()}>
+            <CreditCard className="h-4 w-4 mr-2" />
+            {defaultPm ? "Update card" : "Add card"}
+          </Button>
+        </div>
       </div>
 
-      {/* Summary Cards */}
+      {/* Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Paid</p>
-                <p className="text-2xl font-bold text-green-600">{formatMoney(totalPaid, summaryCurrency)}</p>
-              </div>
-              <div className="p-3 rounded-full bg-green-50 dark:bg-green-900/20">
-                <CheckCircle2 className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Pending</p>
-                <p className="text-2xl font-bold text-yellow-600">{formatMoney(totalPending, summaryCurrency)}</p>
+                <p className="text-sm text-muted-foreground">Outstanding</p>
+                <p className="text-2xl font-bold text-yellow-600">{formatMoney(outstanding, currency)}</p>
               </div>
               <div className="p-3 rounded-full bg-yellow-50 dark:bg-yellow-900/20">
                 <Clock className="h-6 w-6 text-yellow-600" />
@@ -146,8 +383,22 @@ export const PatientBilling = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Invoices</p>
-                <p className="text-2xl font-bold">{invoices.length}</p>
+                <p className="text-sm text-muted-foreground">Paid total</p>
+                <p className="text-2xl font-bold text-green-600">{formatMoney(paidTotal, currency)}</p>
+              </div>
+              <div className="p-3 rounded-full bg-green-50 dark:bg-green-900/20">
+                <CheckCircle2 className="h-6 w-6 text-green-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Invoices</p>
+                <p className="text-2xl font-bold">{invoiceCount}</p>
               </div>
               <div className="p-3 rounded-full bg-primary/10">
                 <Receipt className="h-6 w-6 text-primary" />
@@ -157,84 +408,120 @@ export const PatientBilling = () => {
         </Card>
       </div>
 
-      {/* Invoices List */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Receipt className="h-5 w-5" />
-          Invoices
-        </h3>
-        
-        {invoices.length === 0 ? (
+      {/* Card on file */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between gap-3">
+          <div className="space-y-1">
+            <CardTitle className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5" />
+              Payment method
+            </CardTitle>
+            <div className="text-sm text-muted-foreground">Your card details are tokenized by Stripe.</div>
+          </div>
+
+          {defaultPm ? (
+            <Button variant="outline" onClick={() => void removeCard()}>
+              <Trash2 className="h-4 w-4 mr-2" />
+              Remove
+            </Button>
+          ) : null}
+        </CardHeader>
+        <CardContent>
+          {defaultPm ? (
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <CreditCard className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <div className="font-medium capitalize">
+                    {defaultPm.brand || "Card"} •••• {defaultPm.last4 || "----"}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Expires {defaultPm.exp_month || "--"}/{defaultPm.exp_year || "----"}
+                  </div>
+                </div>
+              </div>
+
+              <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">Default</Badge>
+            </div>
+          ) : (
+            <div className="text-sm text-muted-foreground flex items-center justify-between gap-3 flex-wrap">
+              <div>No saved card yet.</div>
+              <Button onClick={() => void openCardDialog()}>
+                <CreditCard className="h-4 w-4 mr-2" />
+                Add card
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Invoices */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <Receipt className="h-5 w-5" />
+            Invoices
+          </h3>
+
+          {issuedInvoices.length > 0 ? (
+            <div className="text-sm text-muted-foreground">
+              {issuedInvoices.length} invoice{issuedInvoices.length === 1 ? "" : "s"} ready to pay
+            </div>
+          ) : null}
+        </div>
+
+        {(data?.invoices || []).length === 0 ? (
           <Card>
-            <CardContent className="py-12 text-center">
-              <Receipt className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <h3 className="font-semibold mb-2">No Invoices</h3>
-              <p className="text-muted-foreground text-sm">
-                Your invoices will appear here after your appointments
-              </p>
+            <CardContent className="py-12 text-center text-muted-foreground">
+              <Receipt className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <div className="font-semibold text-foreground mb-1">No invoices yet</div>
+              <div className="text-sm">When a clinic issues an invoice for your visit, it will appear here.</div>
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-3">
-            {invoices.map((invoice) => {
-              const statusConfig = getStatusConfig(invoice.status);
-              const StatusIcon = statusConfig.icon;
+            {(data?.invoices || []).map((inv) => {
+              const st = statusBadge(inv.status);
+              const Icon = st.icon;
+              const payable = String(inv.status).toLowerCase() === "issued";
 
               return (
-                <Card key={invoice.id}>
+                <Card key={inv.id}>
                   <CardContent className="p-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-4">
-                        <div className="p-2 rounded-lg bg-primary/10">
-                          <FileText className="h-5 w-5 text-primary" />
+                    <div className="flex items-center justify-between gap-4 flex-wrap">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium">Invoice</span>
+                          <span className="text-muted-foreground text-sm">#{inv.id.slice(0, 8)}</span>
+                          <Badge className={cn("text-xs", st.cls)}>
+                            <Icon className="h-3 w-3 mr-1" />
+                            {st.label}
+                          </Badge>
                         </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{invoice.invoice_number}</span>
-                            <Badge className={cn('text-xs', statusConfig.color)}>
-                              <StatusIcon className="h-3 w-3 mr-1" />
-                              {invoice.status}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              {format(new Date(invoice.created_at), 'MMM dd, yyyy')}
-                            </span>
-                            {invoice.paid_at && (
-                              <span className="text-green-600">
-                                Paid: {format(new Date(invoice.paid_at), 'MMM dd')}
-                              </span>
-                            )}
-                          </div>
+                        <div className="text-sm text-muted-foreground">
+                          Created {format(new Date(inv.created_at), "MMM dd, yyyy")}
+                          {inv.paid_at ? ` • Paid ${format(new Date(inv.paid_at), "MMM dd, yyyy")}` : ""}
                         </div>
+                        {inv.notes ? <div className="text-sm text-muted-foreground">{inv.notes}</div> : null}
                       </div>
 
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-3">
                         <div className="text-right">
-                          <p className="font-semibold text-lg">
-                            {formatMoney(invoice.total_amount, invoice.currency)}
-                          </p>
-                          <p className="text-xs text-muted-foreground uppercase">
-                            {invoice.currency}
-                          </p>
+                          <div className="font-semibold text-lg">{formatMoney(inv.total_amount, inv.currency)}</div>
+                          <div className="text-xs text-muted-foreground uppercase">{inv.currency}</div>
                         </div>
-                        <div className="flex gap-2">
-                          {invoice.status === 'pending' && (
-                            <Button size="sm" disabled title="Payment integration coming soon">
-                              Pay Now
-                            </Button>
-                          )}
-                          {invoice.pdf_url && (
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => window.open(invoice.pdf_url!, '_blank')}
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
+
+                        {payable ? (
+                          <Button
+                            disabled={!defaultPm}
+                            title={!defaultPm ? "Add a card first" : "Pay this invoice"}
+                            onClick={() => void payInvoice(inv.id)}
+                          >
+                            Pay now
+                          </Button>
+                        ) : null}
                       </div>
                     </div>
                   </CardContent>
@@ -244,6 +531,85 @@ export const PatientBilling = () => {
           </div>
         )}
       </div>
+
+      {/* Payments */}
+      <div className="space-y-3">
+        <h3 className="text-lg font-semibold">Payment history</h3>
+
+        {(data?.payments || []).length === 0 ? (
+          <Card>
+            <CardContent className="py-10 text-center text-muted-foreground">
+              <div className="text-sm">No payments recorded yet.</div>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-2">
+            {(data?.payments || []).slice(0, 20).map((p) => (
+              <Card key={p.id}>
+                <CardContent className="p-4 flex items-center justify-between gap-3 flex-wrap">
+                  <div className="space-y-0.5">
+                    <div className="font-medium capitalize">{p.provider || "payment"}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {format(new Date(p.created_at), "MMM dd, yyyy")}
+                      {p.invoice_id ? ` • Invoice #${p.invoice_id.slice(0, 8)}` : ""}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Badge
+                      className={cn(
+                        "text-xs",
+                        String(p.status).toLowerCase() === "paid"
+                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                          : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
+                      )}
+                    >
+                      {p.status}
+                    </Badge>
+                    <div className="font-semibold">{formatMoney(p.amount, p.currency)}</div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Add/Update Card Dialog */}
+      <Dialog open={cardDialogOpen} onOpenChange={(open) => (open ? void openCardDialog() : closeCardDialog())}>
+        <DialogContent className="sm:max-w-[520px]">
+          <DialogHeader>
+            <DialogTitle>{defaultPm ? "Update card" : "Add a card"}</DialogTitle>
+            <DialogDescription>
+              We use Stripe to securely save your card. Your full card number is never stored in our database.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            {!publishableKey ? (
+              <div className="text-sm text-destructive">
+                Missing <code>VITE_STRIPE_PUBLISHABLE_KEY</code> in your frontend env.
+              </div>
+            ) : null}
+
+            <div className="rounded-lg border p-3">
+              <div id="stripe-card-mount" className="min-h-[44px]" />
+            </div>
+
+            {!stripeReady ? (
+              <div className="text-xs text-muted-foreground">Loading payment form…</div>
+            ) : null}
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={closeCardDialog} disabled={cardDialogBusy}>
+              Cancel
+            </Button>
+            <Button onClick={() => void saveCard()} disabled={cardDialogBusy || !publishableKey}>
+              {cardDialogBusy ? "Saving…" : "Save card"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
