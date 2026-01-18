@@ -1,61 +1,78 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { 
-  DollarSign, TrendingUp, CreditCard, FileText, 
-  Download, RefreshCw, Clock, CheckCircle, XCircle 
-} from 'lucide-react';
-import { format, parseISO } from 'date-fns';
-import type { StaffPayment } from '@/hooks/useStaffDashboard';
+// File: src/components/staff/BillingSection.tsx
 
-interface BillingSectionProps {
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DollarSign,
+  CreditCard,
+  RefreshCw,
+  Clock,
+  CheckCircle,
+  XCircle,
+  FileText,
+} from "lucide-react";
+import { format, parseISO } from "date-fns";
+import type { StaffPayment } from "@/hooks/useStaffDashboard";
+
+type Props = {
   payments: StaffPayment[];
   onRefresh: () => void;
-}
-
-const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
-  pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-800', icon: Clock },
-  completed: { label: 'Paid', color: 'bg-green-100 text-green-800', icon: CheckCircle },
-  failed: { label: 'Failed', color: 'bg-red-100 text-red-800', icon: XCircle },
-  refunded: { label: 'Refunded', color: 'bg-gray-100 text-gray-800', icon: RefreshCw },
+  canManageBilling?: boolean;
 };
 
-export const BillingSection = ({ payments, onRefresh }: BillingSectionProps) => {
-  const totalRevenue = payments
-    .filter(p => p.status === 'completed')
-    .reduce((sum, p) => sum + p.amount, 0);
+const STATUS_CONFIG: Record<string, { label: string; className: string; icon: any }> = {
+  pending: { label: "Pending", className: "bg-yellow-100 text-yellow-800", icon: Clock },
+  completed: { label: "Paid", className: "bg-green-100 text-green-800", icon: CheckCircle },
+  failed: { label: "Failed", className: "bg-red-100 text-red-800", icon: XCircle },
+  refunded: { label: "Refunded", className: "bg-gray-100 text-gray-800", icon: RefreshCw },
+};
 
-  const pendingAmount = payments
-    .filter(p => p.status === 'pending')
-    .reduce((sum, p) => sum + p.amount, 0);
+function formatCurrency(amountCents: number, currency: string = "USD") {
+  const value = Number(amountCents || 0) / 100;
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency: String(currency || "USD").toUpperCase(),
+      maximumFractionDigits: 2,
+    }).format(value);
+  } catch {
+    return `$${value.toFixed(2)}`;
+  }
+}
 
-  const formatCurrency = (amount: number, currency: string = 'USD') => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency,
-    }).format(amount / 100);
-  };
+export default function BillingSection({ payments, onRefresh, canManageBilling = false }: Props) {
+  const totalRevenueCents = payments
+    .filter((p) => String(p.status || "").toLowerCase() === "completed")
+    .reduce((sum, p) => sum + Number(p.amount_cents || 0), 0);
+
+  const pendingCents = payments
+    .filter((p) => String(p.status || "").toLowerCase() === "pending")
+    .reduce((sum, p) => sum + Number(p.amount_cents || 0), 0);
+
+  const currency = payments.find((p) => p.currency)?.currency || "usd";
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h2 className="text-2xl font-bold text-foreground">Billing & Payments</h2>
-          <p className="text-muted-foreground">Manage patient payments and invoices</p>
+          <p className="text-muted-foreground">Real-time billing activity for this clinic.</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={onRefresh}>
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </Button>
-          <Button size="sm">
-            <FileText className="w-4 h-4 mr-2" />
-            Create Invoice
-          </Button>
+          {canManageBilling ? (
+            <Button size="sm" disabled title="Invoice creation is coming next">
+              <FileText className="w-4 h-4 mr-2" />
+              Create Invoice
+            </Button>
+          ) : null}
         </div>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4">
@@ -65,9 +82,7 @@ export const BillingSection = ({ payments, onRefresh }: BillingSectionProps) => 
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Collected</p>
-                <p className="text-2xl font-bold text-foreground">
-                  {formatCurrency(totalRevenue)}
-                </p>
+                <p className="text-2xl font-bold text-foreground">{formatCurrency(totalRevenueCents, currency)}</p>
               </div>
             </div>
           </CardContent>
@@ -81,9 +96,7 @@ export const BillingSection = ({ payments, onRefresh }: BillingSectionProps) => 
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Pending</p>
-                <p className="text-2xl font-bold text-foreground">
-                  {formatCurrency(pendingAmount)}
-                </p>
+                <p className="text-2xl font-bold text-foreground">{formatCurrency(pendingCents, currency)}</p>
               </div>
             </div>
           </CardContent>
@@ -104,7 +117,6 @@ export const BillingSection = ({ payments, onRefresh }: BillingSectionProps) => 
         </Card>
       </div>
 
-      {/* Recent Payments */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -116,36 +128,38 @@ export const BillingSection = ({ payments, onRefresh }: BillingSectionProps) => 
           {payments.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <DollarSign className="w-12 h-12 mx-auto mb-2 opacity-50" />
-              <p>No payments found</p>
+              <p>No transactions found</p>
             </div>
           ) : (
             <div className="space-y-3">
               {payments.map((payment) => {
-                const statusConfig = STATUS_CONFIG[payment.status] || STATUS_CONFIG.pending;
+                const statusKey = String(payment.status || "pending").toLowerCase();
+                const statusConfig = STATUS_CONFIG[statusKey] || STATUS_CONFIG.pending;
                 const StatusIcon = statusConfig.icon;
+                const displayName = payment.patient_name?.trim() ? payment.patient_name : "Patient";
 
                 return (
-                  <div 
-                    key={payment.id} 
-                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                  <div
+                    key={payment.id}
+                    className="flex items-center justify-between gap-4 p-3 bg-muted/50 rounded-lg flex-wrap"
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 min-w-[240px]">
                       <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
                         <CreditCard className="w-5 h-5 text-primary" />
                       </div>
                       <div>
-                        <p className="font-medium text-foreground">{payment.patient_name}</p>
+                        <p className="font-medium text-foreground">{displayName}</p>
                         <p className="text-sm text-muted-foreground">
-                          {format(parseISO(payment.created_at), 'MMM d, yyyy')} • {payment.payment_type}
+                          {format(parseISO(payment.created_at), "MMM d, yyyy")} • {payment.payment_type}
                         </p>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-4">
                       <p className="font-semibold text-foreground">
-                        {formatCurrency(payment.amount, payment.currency)}
+                        {formatCurrency(payment.amount_cents, payment.currency)}
                       </p>
-                      <Badge className={statusConfig.color}>
+                      <Badge className={statusConfig.className}>
                         <StatusIcon className="w-3 h-3 mr-1" />
                         {statusConfig.label}
                       </Badge>
@@ -159,4 +173,4 @@ export const BillingSection = ({ payments, onRefresh }: BillingSectionProps) => 
       </Card>
     </div>
   );
-};
+}
