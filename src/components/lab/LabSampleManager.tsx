@@ -1,3 +1,4 @@
+// src/components/lab/LabSampleManager.tsx
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -15,7 +16,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -27,30 +27,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { 
-  TestTube, 
-  Search, 
-  Eye, 
-  QrCode, 
+import {
+  TestTube,
+  Search,
+  Eye,
   Clock,
   CheckCircle,
-  AlertTriangle,
   RefreshCw,
-  Barcode
+  Barcode,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
 interface Sample {
   id: string;
+  lab_center_id: string;
   sample_id: string;
-  order_id: string;
-  patient_id: string;
+  order_id: string | null;
+  patient_name: string;
   sample_type: string;
   collection_time: string | null;
+  received_time: string | null;
   collector_id: string | null;
   status: string;
   barcode: string | null;
+  priority: string;
   notes: string | null;
   created_at: string;
 }
@@ -68,73 +69,51 @@ export default function LabSampleManager({ labCenterId }: Props) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   useEffect(() => {
-    if (labCenterId) {
-      fetchSamples();
-    }
+    if (labCenterId) fetchSamples();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [labCenterId]);
 
   const fetchSamples = async () => {
     try {
       setLoading(true);
-      // Mock data - would be fetched from lab_samples table
-      const mockSamples: Sample[] = [
-        {
-          id: '1',
-          sample_id: 'SMP-001',
-          order_id: 'ORD-001',
-          patient_id: 'patient-1',
-          sample_type: 'Blood',
-          collection_time: new Date().toISOString(),
-          collector_id: null,
-          status: 'collected',
-          barcode: 'BC001234567',
-          notes: null,
-          created_at: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          sample_id: 'SMP-002',
-          order_id: 'ORD-002',
-          patient_id: 'patient-2',
-          sample_type: 'Urine',
-          collection_time: null,
-          collector_id: null,
-          status: 'pending',
-          barcode: 'BC001234568',
-          notes: null,
-          created_at: new Date().toISOString(),
-        },
-        {
-          id: '3',
-          sample_id: 'SMP-003',
-          order_id: 'ORD-003',
-          patient_id: 'patient-3',
-          sample_type: 'Blood',
-          collection_time: new Date().toISOString(),
-          collector_id: 'collector-1',
-          status: 'processing',
-          barcode: 'BC001234569',
-          notes: 'Fasting sample',
-          created_at: new Date().toISOString(),
-        },
-      ];
-      setSamples(mockSamples);
+
+      const { data, error } = await supabase
+        .from('lab_samples')
+        .select('*')
+        .eq('lab_center_id', labCenterId)
+        .order('created_at', { ascending: false })
+        .limit(500);
+
+      if (error) throw error;
+
+      setSamples((data || []) as Sample[]);
     } catch (error) {
       console.error('Error fetching samples:', error);
       toast.error('Failed to load samples');
+      setSamples([]);
     } finally {
       setLoading(false);
     }
   };
 
   const updateSampleStatus = async (sampleId: string, newStatus: string) => {
+    const prev = samples;
     try {
-      setSamples(prev => prev.map(s => 
-        s.id === sampleId ? { ...s, status: newStatus } : s
-      ));
+      setSamples((p) => p.map((s) => (s.id === sampleId ? { ...s, status: newStatus } : s)));
+
+      const { error } = await supabase
+        .from('lab_samples')
+        .update({ status: newStatus })
+        .eq('id', sampleId)
+        .eq('lab_center_id', labCenterId);
+
+      if (error) throw error;
+
       toast.success(`Sample status updated to ${newStatus}`);
       setIsDetailsOpen(false);
     } catch (error) {
+      console.error('Failed to update sample status:', error);
+      setSamples(prev);
       toast.error('Failed to update sample status');
     }
   };
@@ -154,10 +133,12 @@ export default function LabSampleManager({ labCenterId }: Props) {
     );
   };
 
-  const filteredSamples = samples.filter(sample => {
-    const matchesSearch = 
-      sample.sample_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sample.barcode?.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredSamples = samples.filter((sample) => {
+    const q = searchTerm.toLowerCase();
+    const matchesSearch =
+      sample.sample_id.toLowerCase().includes(q) ||
+      (sample.barcode || '').toLowerCase().includes(q) ||
+      sample.patient_name.toLowerCase().includes(q);
     const matchesStatus = statusFilter === 'all' || sample.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -182,8 +163,8 @@ export default function LabSampleManager({ labCenterId }: Props) {
                   <Clock className="h-6 w-6 text-yellow-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Pending Collection</p>
-                  <p className="text-2xl font-bold">{samples.filter(s => s.status === 'pending').length}</p>
+                  <p className="text-sm text-muted-foreground">Pending</p>
+                  <p className="text-2xl font-bold">{samples.filter((s) => s.status === 'pending').length}</p>
                 </div>
               </div>
             </CardContent>
@@ -196,7 +177,7 @@ export default function LabSampleManager({ labCenterId }: Props) {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Collected</p>
-                  <p className="text-2xl font-bold">{samples.filter(s => s.status === 'collected').length}</p>
+                  <p className="text-2xl font-bold">{samples.filter((s) => s.status === 'collected').length}</p>
                 </div>
               </div>
             </CardContent>
@@ -209,7 +190,7 @@ export default function LabSampleManager({ labCenterId }: Props) {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Processing</p>
-                  <p className="text-2xl font-bold">{samples.filter(s => s.status === 'processing').length}</p>
+                  <p className="text-2xl font-bold">{samples.filter((s) => s.status === 'processing').length}</p>
                 </div>
               </div>
             </CardContent>
@@ -222,7 +203,7 @@ export default function LabSampleManager({ labCenterId }: Props) {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Completed</p>
-                  <p className="text-2xl font-bold">{samples.filter(s => s.status === 'completed').length}</p>
+                  <p className="text-2xl font-bold">{samples.filter((s) => s.status === 'completed').length}</p>
                 </div>
               </div>
             </CardContent>
@@ -251,7 +232,7 @@ export default function LabSampleManager({ labCenterId }: Props) {
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   className="pl-10"
-                  placeholder="Search by sample ID or barcode..."
+                  placeholder="Search by sample ID, barcode, or patient..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -275,10 +256,10 @@ export default function LabSampleManager({ labCenterId }: Props) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Sample ID</TableHead>
-                    <TableHead>Barcode</TableHead>
+                    <TableHead>Sample</TableHead>
+                    <TableHead>Patient</TableHead>
                     <TableHead>Type</TableHead>
-                    <TableHead>Collection Time</TableHead>
+                    <TableHead>Barcode</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -293,24 +274,25 @@ export default function LabSampleManager({ labCenterId }: Props) {
                   ) : (
                     filteredSamples.map((sample) => (
                       <TableRow key={sample.id}>
-                        <TableCell className="font-medium">{sample.sample_id}</TableCell>
+                        <TableCell>
+                          <div className="font-medium">{sample.sample_id}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {sample.collection_time ? format(new Date(sample.collection_time), 'PP p') : 'Not collected'}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm">{sample.patient_name}</TableCell>
+                        <TableCell className="text-sm">{sample.sample_type}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Barcode className="h-4 w-4 text-muted-foreground" />
-                            {sample.barcode || '-'}
+                            <span className="font-mono text-sm">{sample.barcode || '—'}</span>
                           </div>
-                        </TableCell>
-                        <TableCell>{sample.sample_type}</TableCell>
-                        <TableCell>
-                          {sample.collection_time 
-                            ? format(new Date(sample.collection_time), 'MMM d, h:mm a')
-                            : '-'}
                         </TableCell>
                         <TableCell>{getStatusBadge(sample.status)}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            <Button 
-                              size="sm" 
+                            <Button
+                              size="sm"
                               variant="ghost"
                               onClick={() => {
                                 setSelectedSample(sample);
@@ -320,19 +302,18 @@ export default function LabSampleManager({ labCenterId }: Props) {
                               <Eye className="h-4 w-4" />
                             </Button>
                             {sample.status === 'pending' && (
-                              <Button 
-                                size="sm"
-                                onClick={() => updateSampleStatus(sample.id, 'collected')}
-                              >
-                                Collect
+                              <Button size="sm" onClick={() => updateSampleStatus(sample.id, 'collected')}>
+                                Mark Collected
                               </Button>
                             )}
                             {sample.status === 'collected' && (
-                              <Button 
-                                size="sm"
-                                onClick={() => updateSampleStatus(sample.id, 'processing')}
-                              >
+                              <Button size="sm" onClick={() => updateSampleStatus(sample.id, 'processing')}>
                                 Process
+                              </Button>
+                            )}
+                            {sample.status === 'processing' && (
+                              <Button size="sm" onClick={() => updateSampleStatus(sample.id, 'completed')}>
+                                Complete
                               </Button>
                             )}
                           </div>
@@ -353,7 +334,7 @@ export default function LabSampleManager({ labCenterId }: Props) {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <TestTube className="h-5 w-5" />
-              Sample Details - {selectedSample?.sample_id}
+              Sample Details
             </DialogTitle>
           </DialogHeader>
 
@@ -365,28 +346,24 @@ export default function LabSampleManager({ labCenterId }: Props) {
                   <p className="font-medium">{selectedSample.sample_id}</p>
                 </div>
                 <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Barcode</p>
+                  <p className="font-mono">{selectedSample.barcode || '—'}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Patient</p>
+                  <p className="font-medium">{selectedSample.patient_name}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Type</p>
+                  <p className="font-medium">{selectedSample.sample_type}</p>
+                </div>
+                <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Status</p>
                   {getStatusBadge(selectedSample.status)}
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Sample Type</p>
-                  <p className="font-medium">{selectedSample.sample_type}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Barcode</p>
-                  <p className="font-medium font-mono">{selectedSample.barcode || '-'}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Collection Time</p>
-                  <p className="font-medium">
-                    {selectedSample.collection_time 
-                      ? format(new Date(selectedSample.collection_time), 'MMM d, yyyy h:mm a')
-                      : 'Not collected'}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Order ID</p>
-                  <p className="font-medium">{selectedSample.order_id}</p>
+                  <p className="text-sm text-muted-foreground">Priority</p>
+                  <p className="font-medium">{selectedSample.priority}</p>
                 </div>
               </div>
 
@@ -398,23 +375,6 @@ export default function LabSampleManager({ labCenterId }: Props) {
                   </Card>
                 </div>
               )}
-
-              <div className="border-t pt-4">
-                <h4 className="font-medium mb-3">Update Status</h4>
-                <div className="flex gap-2 flex-wrap">
-                  {['pending', 'collected', 'processing', 'completed', 'rejected'].map(status => (
-                    <Button
-                      key={status}
-                      size="sm"
-                      variant={selectedSample.status === status ? 'default' : 'outline'}
-                      onClick={() => updateSampleStatus(selectedSample.id, status)}
-                      disabled={selectedSample.status === status}
-                    >
-                      {status}
-                    </Button>
-                  ))}
-                </div>
-              </div>
             </div>
           )}
 
@@ -422,6 +382,15 @@ export default function LabSampleManager({ labCenterId }: Props) {
             <Button variant="outline" onClick={() => setIsDetailsOpen(false)}>
               Close
             </Button>
+            {selectedSample?.status === 'pending' && (
+              <Button onClick={() => updateSampleStatus(selectedSample.id, 'collected')}>Mark Collected</Button>
+            )}
+            {selectedSample?.status === 'collected' && (
+              <Button onClick={() => updateSampleStatus(selectedSample.id, 'processing')}>Move to Processing</Button>
+            )}
+            {selectedSample?.status === 'processing' && (
+              <Button onClick={() => updateSampleStatus(selectedSample.id, 'completed')}>Mark Complete</Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
