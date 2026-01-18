@@ -1,8 +1,11 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
-import { Json } from '@/integrations/supabase/types';
+// Path: src/hooks/usePharmacy.ts
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { Json } from "@/integrations/supabase/types";
+import { useActiveEntityScope } from "@/hooks/useActiveEntityScope";
 
 export interface Pharmacy {
   id: string;
@@ -43,6 +46,12 @@ export interface PharmacyStaff {
 
 export const usePharmacy = (pharmacyId?: string) => {
   const { user } = useAuth();
+  const { scopes: pharmacyScopes, activeEntityId, setActiveEntityId } = useActiveEntityScope("pharmacy");
+
+  const effectivePharmacyId = useMemo(() => {
+    return pharmacyId ?? activeEntityId ?? null;
+  }, [activeEntityId, pharmacyId]);
+
   const [pharmacy, setPharmacy] = useState<Pharmacy | null>(null);
   const [pharmacies, setPharmacies] = useState<Pharmacy[]>([]);
   const [staff, setStaff] = useState<PharmacyStaff[]>([]);
@@ -50,100 +59,89 @@ export const usePharmacy = (pharmacyId?: string) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [staffPermissions, setStaffPermissions] = useState<PharmacyStaff | null>(null);
 
-  useEffect(() => {
-    if (user) {
-      fetchUserPharmacies();
-    }
-  }, [user]);
+  const fetchAllowedPharmacies = useCallback(async () => {
+    if (!user) return;
 
-  useEffect(() => {
-    if (pharmacyId) {
-      fetchPharmacy(pharmacyId);
-      fetchStaff(pharmacyId);
-    }
-  }, [pharmacyId, user]);
-
-  const fetchUserPharmacies = async () => {
     try {
-      // Fetch pharmacies where user is admin
-      const { data: adminPharmacies, error: adminError } = await supabase
-        .from('pharmacies')
-        .select('*')
-        .eq('admin_id', user?.id);
-
-      if (adminError) throw adminError;
-
-      // Fetch pharmacies where user is staff
-      const { data: staffRecords, error: staffError } = await supabase
-        .from('pharmacy_staff')
-        .select('pharmacy_id, pharmacies(*)')
-        .eq('user_id', user?.id)
-        .eq('status', 'active');
-
-      if (staffError) throw staffError;
-
-      const staffPharmacies = staffRecords?.map((s: any) => s.pharmacies).filter(Boolean) || [];
-      const allPharmacies = [...(adminPharmacies || []), ...staffPharmacies];
-      
-      // Remove duplicates
-      const uniquePharmacies = allPharmacies.filter((p, index, self) => 
-        index === self.findIndex(t => t.id === p.id)
-      );
-
-      setPharmacies(uniquePharmacies as Pharmacy[]);
-    } catch (error) {
-      console.error('Error fetching pharmacies:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchPharmacy = async (id: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('pharmacies')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (error) throw error;
-      setPharmacy(data as Pharmacy);
-      setIsAdmin(data.admin_id === user?.id);
-
-      // Check staff permissions
-      const { data: staffData } = await supabase
-        .from('pharmacy_staff')
-        .select('*')
-        .eq('pharmacy_id', id)
-        .eq('user_id', user?.id)
-        .single();
-
-      if (staffData) {
-        setStaffPermissions(staffData as PharmacyStaff);
+      // Prefer access-scope because it is the single source of truth for staff/admin membership
+      const ids = (pharmacyScopes || []).map((s) => s.entity_id).filter(Boolean);
+      if (!ids.length) {
+        setPharmacies([]);
+        return;
       }
+
+      const { data, error } = await supabase.from("pharmacies").select("*").in("id", ids).order("name");
+      if (error) throw error;
+      setPharmacies((data || []) as Pharmacy[]);
     } catch (error) {
-      console.error('Error fetching pharmacy:', error);
+      console.error("Error fetching pharmacies:", error);
+      setPharmacies([]);
     }
-  };
+  }, [pharmacyScopes, user]);
 
-  const fetchStaff = async (id: string) => {
+  const fetchPharmacy = useCallback(
+    async (id: string) => {
+      try {
+        const { data, error } = await supabase.from("pharmacies").select("*").eq("id", id).single();
+        if (error) throw error;
+
+        setPharmacy(data as Pharmacy);
+        setIsAdmin((data as any)?.admin_id === user?.id);
+
+        // Check staff permissions (if staff row exists)
+        const { data: staffData } = await supabase
+          .from("pharmacy_staff")
+          .select("*")
+          .eq("pharmacy_id", id)
+          .eq("user_id", user?.id)
+          .maybeSingle();
+
+        if (staffData) setStaffPermissions(staffData as PharmacyStaff);
+        else setStaffPermissions(null);
+      } catch (error) {
+        console.error("Error fetching pharmacy:", error);
+        setPharmacy(null);
+        setIsAdmin(false);
+        setStaffPermissions(null);
+      }
+    },
+    [user?.id]
+  );
+
+  const fetchStaff = useCallback(async (id: string) => {
     try {
-      const { data, error } = await supabase
-        .from('pharmacy_staff')
-        .select('*')
-        .eq('pharmacy_id', id);
-
+      const { data, error } = await supabase.from("pharmacy_staff").select("*").eq("pharmacy_id", id);
       if (error) throw error;
       setStaff((data || []) as PharmacyStaff[]);
     } catch (error) {
-      console.error('Error fetching staff:', error);
+      console.error("Error fetching staff:", error);
+      setStaff([]);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    fetchAllowedPharmacies().finally(() => setLoading(false));
+  }, [fetchAllowedPharmacies, user]);
+
+  useEffect(() => {
+    if (!user) return;
+    if (!effectivePharmacyId) {
+      setPharmacy(null);
+      setStaff([]);
+      setIsAdmin(false);
+      setStaffPermissions(null);
+      return;
+    }
+
+    fetchPharmacy(effectivePharmacyId);
+    fetchStaff(effectivePharmacyId);
+  }, [effectivePharmacyId, fetchPharmacy, fetchStaff, user]);
 
   const createPharmacy = async (pharmacyData: Partial<Pharmacy>) => {
     try {
       const { data, error } = await supabase
-        .from('pharmacies')
+        .from("pharmacies")
         .insert({
           name: pharmacyData.name!,
           license_number: pharmacyData.license_number,
@@ -161,7 +159,7 @@ export const usePharmacy = (pharmacyId?: string) => {
           operating_hours: pharmacyData.operating_hours,
           accepts_insurance: pharmacyData.accepts_insurance,
           delivery_available: pharmacyData.delivery_available,
-          verification_status: 'pending'
+          verification_status: "pending",
         })
         .select()
         .single();
@@ -170,42 +168,30 @@ export const usePharmacy = (pharmacyId?: string) => {
 
       // Assign pharmacy_admin role to user
       const { error: roleError } = await supabase
-        .from('user_roles')
-        .upsert({ 
-          user_id: user?.id, 
-          role: 'pharmacy_admin' 
-        }, { 
-          onConflict: 'user_id,role' 
-        });
+        .from("user_roles")
+        .upsert({ user_id: user?.id, role: "pharmacy_admin" }, { onConflict: "user_id,role" });
 
-      if (roleError) {
-        console.error('Error assigning pharmacy_admin role:', roleError);
-      }
+      if (roleError) console.error("Error assigning pharmacy_admin role:", roleError);
 
-      toast.success('Pharmacy registered successfully');
-      setPharmacies(prev => [...prev, data as Pharmacy]);
+      toast.success("Pharmacy registered successfully");
+      setPharmacies((prev) => [...prev, data as Pharmacy]);
+      setActiveEntityId((data as any)?.id ?? null);
       return data;
     } catch (error: any) {
-      toast.error(error.message || 'Failed to register pharmacy');
+      toast.error(error.message || "Failed to register pharmacy");
       throw error;
     }
   };
 
   const updatePharmacy = async (id: string, updates: Partial<Pharmacy>) => {
     try {
-      const { data, error } = await supabase
-        .from('pharmacies')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-
+      const { data, error } = await supabase.from("pharmacies").update(updates).eq("id", id).select().single();
       if (error) throw error;
-      toast.success('Pharmacy updated successfully');
+      toast.success("Pharmacy updated successfully");
       setPharmacy(data as Pharmacy);
       return data;
     } catch (error: any) {
-      toast.error(error.message || 'Failed to update pharmacy');
+      toast.error(error.message || "Failed to update pharmacy");
       throw error;
     }
   };
@@ -213,26 +199,54 @@ export const usePharmacy = (pharmacyId?: string) => {
   const addStaff = async (staffData: Partial<PharmacyStaff>) => {
     try {
       const { data, error } = await supabase
-        .from('pharmacy_staff')
+        .from("pharmacy_staff")
         .insert({
           pharmacy_id: staffData.pharmacy_id!,
           user_id: staffData.user_id!,
-          staff_role: staffData.staff_role || 'technician',
+          staff_role: staffData.staff_role || "technician",
           license_number: staffData.license_number,
-          can_dispense: staffData.can_dispense ?? false,
-          can_manage_inventory: staffData.can_manage_inventory ?? true,
-          can_process_prescriptions: staffData.can_process_prescriptions ?? false,
-          status: staffData.status || 'active'
+          can_dispense: staffData.can_dispense ?? true,
+          can_manage_inventory: staffData.can_manage_inventory ?? false,
+          can_process_prescriptions: staffData.can_process_prescriptions ?? true,
+          status: staffData.status || "active",
         })
         .select()
         .single();
 
       if (error) throw error;
-      toast.success('Staff member added');
-      setStaff(prev => [...prev, data as PharmacyStaff]);
+
+      toast.success("Staff member added successfully");
+      setStaff((prev) => [...prev, data as PharmacyStaff]);
       return data;
     } catch (error: any) {
-      toast.error(error.message || 'Failed to add staff');
+      toast.error(error.message || "Failed to add staff member");
+      throw error;
+    }
+  };
+
+  const updateStaff = async (id: string, updates: Partial<PharmacyStaff>) => {
+    try {
+      const { data, error } = await supabase.from("pharmacy_staff").update(updates).eq("id", id).select().single();
+      if (error) throw error;
+
+      toast.success("Staff member updated successfully");
+      setStaff((prev) => prev.map((s) => (s.id === id ? (data as PharmacyStaff) : s)));
+      return data;
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update staff member");
+      throw error;
+    }
+  };
+
+  const removeStaff = async (id: string) => {
+    try {
+      const { error } = await supabase.from("pharmacy_staff").delete().eq("id", id);
+      if (error) throw error;
+
+      toast.success("Staff member removed successfully");
+      setStaff((prev) => prev.filter((s) => s.id !== id));
+    } catch (error: any) {
+      toast.error(error.message || "Failed to remove staff member");
       throw error;
     }
   };
@@ -244,11 +258,14 @@ export const usePharmacy = (pharmacyId?: string) => {
     loading,
     isAdmin,
     staffPermissions,
+    activePharmacyId: effectivePharmacyId,
+    setActivePharmacyId: setActiveEntityId,
+    fetchPharmacy,
+    fetchStaff,
     createPharmacy,
     updatePharmacy,
     addStaff,
-    fetchPharmacy,
-    fetchStaff,
-    fetchUserPharmacies
+    updateStaff,
+    removeStaff,
   };
 };
