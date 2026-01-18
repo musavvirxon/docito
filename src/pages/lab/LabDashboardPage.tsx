@@ -177,7 +177,7 @@ export default function LabDashboardPage() {
           icon={<FlaskConical className="h-12 w-12" />}
           title="Sign in required"
           description="Please sign in to access the lab dashboard."
-          action={{ label: "Sign In", onClick: () => navigate("/auth") }}
+          action={<button onClick={() => navigate("/auth")} className="text-primary underline">Sign In</button>}
         />
       </div>
     );
@@ -190,7 +190,7 @@ export default function LabDashboardPage() {
           icon={<FlaskConical className="h-12 w-12" />}
           title="No Lab Center Found"
           description="You don't have a lab center associated with your account."
-          action={{ label: "Register Lab", onClick: () => navigate("/lab/register") }}
+          action={<button onClick={() => navigate("/lab/register")} className="text-primary underline">Register Lab</button>}
         />
       </div>
     );

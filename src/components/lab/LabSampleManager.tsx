@@ -77,7 +77,7 @@ export default function LabSampleManager({ labCenterId }: Props) {
     try {
       setLoading(true);
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('lab_samples')
         .select('*')
         .eq('lab_center_id', labCenterId)
@@ -101,7 +101,7 @@ export default function LabSampleManager({ labCenterId }: Props) {
     try {
       setSamples((p) => p.map((s) => (s.id === sampleId ? { ...s, status: newStatus } : s)));
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('lab_samples')
         .update({ status: newStatus })
         .eq('id', sampleId)
