@@ -9,12 +9,12 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { useDashboardTopBar, type EntityStatus } from "@/hooks/useDashboardTopBar";
+import { useDashboardTopBar, type EntityStatus, type FacilityType } from "@/hooks/useDashboardTopBar";
 
 interface DashboardTopBarProps {
   entityName?: string;
   entityStatus?: EntityStatus;
-  role: AppRole;
+  role?: AppRole; // optional: backend will resolve primary role + facility
 }
 
 const statusColors: Record<EntityStatus, string> = {
@@ -52,27 +52,30 @@ const roleLabels: Record<string, string> = {
   nurse: "Nurse",
 };
 
-function getVerificationRouteByRole(role: AppRole) {
-  if (role === "lab_admin" || role === "lab_staff" || role === "lab_technician") return "/lab/verification";
-  if (role === "pharmacy_admin" || role === "pharmacy_staff" || role === "pharmacist") return "/pharmacy/verification";
-  if (role === "imaging_admin" || role === "imaging_staff" || role === "internal_imaging_tech") return "/imaging/verification";
-  if (role === "admin" || role === "clinic_admin") return "/dashboard/verify";
-  if (role === "clinic_staff" || role === "staff" || role === "receptionist" || role === "nurse") return "/dashboard/verify";
+function getVerificationRouteByFacility(facilityType: FacilityType) {
+  if (facilityType === "lab") return "/lab/verification";
+  if (facilityType === "pharmacy") return "/pharmacy/verification";
+  if (facilityType === "imaging") return "/imaging/verification";
+  if (facilityType === "practice") return "/dashboard/verify";
   return "/dashboard/verify";
 }
 
 export function DashboardTopBar({ entityName, entityStatus = "active", role }: DashboardTopBarProps) {
   const navigate = useNavigate();
 
-  // If caller doesn't pass entity info (e.g. StaffDashboard), fetch it from backend (Edge Function).
+  // IMPORTANT: role is OPTIONAL now.
+  // Passing a wrong role can break staff dashboards (403), so we only send it if provided.
   const ctx = useDashboardTopBar(role);
 
   const finalEntityName = entityName ?? ctx.entityName;
   const finalStatus = (entityStatus ?? ctx.entityStatus) as EntityStatus;
   const unreadCount = ctx.unreadCount;
 
+  const effectiveRole = (ctx.role ?? role ?? "staff") as AppRole;
+  const effectiveFacility = ctx.facilityType;
+
   const handleVerificationClick = () => {
-    navigate(getVerificationRouteByRole(role));
+    navigate(getVerificationRouteByFacility(effectiveFacility));
   };
 
   const badgeCount = Math.min(unreadCount, 99);
@@ -98,7 +101,7 @@ export function DashboardTopBar({ entityName, entityStatus = "active", role }: D
           </button>
 
           <Badge variant="secondary" className="shrink-0 hidden sm:flex">
-            {roleLabels[role] || role}
+            {roleLabels[effectiveRole] || effectiveRole}
           </Badge>
         </div>
 
@@ -106,7 +109,13 @@ export function DashboardTopBar({ entityName, entityStatus = "active", role }: D
           <ThemeToggle />
           <LanguageSwitcher />
 
-          <Button variant="ghost" size="icon" className="relative" onClick={() => navigate("/notifications")} aria-label="Notifications">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative"
+            onClick={() => navigate("/notifications")}
+            aria-label="Notifications"
+          >
             <Bell className="h-5 w-5" />
             {badgeCount > 0 ? (
               <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground flex items-center justify-center">
