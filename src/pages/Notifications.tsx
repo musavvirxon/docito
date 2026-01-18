@@ -10,6 +10,9 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+// File: src/pages/Notifications.tsx
+import NotificationsPage from "@/pages/NotificationsPage";
+export default NotificationsPage;
 
 const Notifications = () => {
   const { notifications, unreadCount, isLoading, markAsRead, markAllAsRead } = useNotifications();
