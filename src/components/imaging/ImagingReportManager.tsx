@@ -97,8 +97,7 @@ export default function ImagingReportManager({ centerId }: Props) {
       const referralIds = referrals.map((r) => r.id);
 
       // 2) Get imaging_reports for those referrals
-      const { data: repData, error: repErr } = await supabase
-        .from("imaging_reports")
+      const { data: repData, error: repErr } = await (supabase.from as any)("imaging_reports")
         .select("id, referral_id, status, radiologist_user_id, findings, impression, critical_findings, finalized_at, delivered_at, created_at")
         .eq("imaging_center_id", centerId)
         .in("referral_id", referralIds.length ? referralIds : ["00000000-0000-0000-0000-000000000000"]);
@@ -204,7 +203,7 @@ export default function ImagingReportManager({ centerId }: Props) {
       updated_at: new Date().toISOString(),
     };
 
-    const { error } = await supabase.from("imaging_reports").upsert(payload, { onConflict: "imaging_center_id,referral_id" });
+    const { error } = await (supabase.from as any)("imaging_reports").upsert(payload, { onConflict: "imaging_center_id,referral_id" });
     if (error) throw error;
   };
 

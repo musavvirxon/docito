@@ -90,12 +90,11 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
     if (!labCenterId) return;
     setTxLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('billing_transactions')
-        .select('id,created_at,amount,currency,status,transaction_type,description')
-        .eq('entity_type', 'lab_center')
-        .eq('entity_id', labCenterId)
-        .order('created_at', { ascending: false })
+      const { data, error } = await (supabase.from as any)("billing_transactions")
+        .select("id,created_at,amount,currency,status,transaction_type,description")
+        .eq("entity_type", "lab_center")
+        .eq("entity_id", labCenterId)
+        .order("created_at", { ascending: false })
         .limit(200);
 
       if (error) throw error;
@@ -134,7 +133,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
               .in('user_id', patientIds)
           : Promise.resolve({ data: [], error: null } as any),
         facilityIds.length
-          ? supabase.from('facility_patients').select('id,full_name,phone,email').in('id', facilityIds)
+          ? (supabase.from as any)('facility_patients').select('id,full_name,phone,email').in('id', facilityIds)
           : Promise.resolve({ data: [], error: null } as any),
         patientIds.length
           ? supabase

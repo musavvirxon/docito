@@ -64,7 +64,7 @@ function staffTypeFromScope(scope: AccessScope | null): StaffType {
 }
 
 export const useStaffContext = () => {
-  const { loading, scope, error, refetch } = useAccessScope();
+  const { loading, primary: scope, error, refetch } = useAccessScope();
 
   const staffType = useMemo(() => staffTypeFromScope(scope), [scope]);
 
@@ -73,8 +73,8 @@ export const useStaffContext = () => {
 
     const base = {
       entity_id: scope.entity_id,
-      staff_role: scope.staff_role,
-      status: scope.status,
+      staff_role: scope.scope_role ?? null,
+      status: scope.entity_status ?? "active",
     };
 
     const p = scope.permissions || {};
@@ -139,7 +139,7 @@ export const useStaffContext = () => {
     permissions,
     loading,
     error,
-    isAdmin: Boolean(scope?.staff_role?.includes("admin")),
+    isAdmin: Boolean(scope?.is_admin || scope?.scope_role?.includes("admin")),
     refetch,
   };
 };

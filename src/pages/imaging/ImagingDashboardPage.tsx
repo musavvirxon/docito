@@ -1,5 +1,5 @@
 // File: src/pages/imaging/ImagingDashboardPage.tsx
-import ImagingDashboardContent from "@/pages/imaging/ImagingDashboardContent";
+import ImagingDashboard from "@/pages/imaging/ImagingDashboard";
 export default function ImagingDashboardPage() {
-  return <ImagingDashboardContent />;
+  return <ImagingDashboard />;
 }

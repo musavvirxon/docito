@@ -12,15 +12,13 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { DashboardBranding } from "@/components/dashboard/DashboardBranding";
-import type { 
-  StaffType, 
-  EntityInfo, 
-  StaffPermissions,
-  ClinicPermissions,
-  PharmacyPermissions,
-  LabPermissions,
-  ImagingPermissions 
-} from "@/hooks/useStaffContext";
+import type { StaffType, EntityInfo, StaffPermissions } from "@/hooks/useStaffContext";
+
+// Define permission interfaces locally based on StaffPermissions union
+type ClinicPermissions = Extract<StaffPermissions, { staffType: "clinic" }>;
+type PharmacyPermissions = Extract<StaffPermissions, { staffType: "pharmacy" }>;
+type LabPermissions = Extract<StaffPermissions, { staffType: "lab" }>;
+type ImagingPermissions = Extract<StaffPermissions, { staffType: "imaging" }>;
 
 interface StaffSidebarProps {
   staffType: StaffType;

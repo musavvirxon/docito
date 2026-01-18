@@ -224,19 +224,20 @@ const SuperAdminDashboard = () => {
               </p>
             </div>
 
-            <KPICards stats={stats} />
+            <KPICards />
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-              <AnalyticsCharts stats={stats} />
+              <AnalyticsCharts showAll />
               <ActivityFeed />
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
               <AdvancedFinancialMetrics
                 metrics={advancedMetrics}
-                onRefresh={refreshAdvancedMetrics}
+                revenue={stats?.totalRevenue || 0}
+                onUpdateInputs={refreshAdvancedMetrics}
               />
-              <ManagementTable />
+              <ManagementTable title="Recent Activity" type="appointments" />
             </div>
           </div>
         );
@@ -278,10 +279,10 @@ const SuperAdminDashboard = () => {
         return <EcosystemOverview />;
 
       case "analytics":
-        return <AnalyticsCharts stats={stats} />;
+        return <AnalyticsCharts showAll />;
 
       case "payments":
-        return <AdvancedFinancialMetrics metrics={advancedMetrics} onRefresh={refreshAdvancedMetrics} />;
+        return <AdvancedFinancialMetrics metrics={advancedMetrics} revenue={stats?.totalRevenue || 0} onUpdateInputs={refreshAdvancedMetrics} />;
 
       case "translations":
         return <TranslationManagement />;

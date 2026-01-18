@@ -47,7 +47,7 @@ export const useBillingTransactions = (userId?: string, practiceId?: string, fil
   const { data: transactions, isLoading, refetch } = useQuery({
     queryKey: ["billing-transactions", userId ?? null, practiceId ?? null, filters?.startDate ?? null, filters?.endDate ?? null, filters?.entityType ?? null, filters?.entityId ?? null],
     queryFn: async () => {
-      let query = supabase.from("billing_transactions").select("*").order("created_at", { ascending: false });
+      let query = (supabase.from as any)("billing_transactions").select("*").order("created_at", { ascending: false });
 
       if (userId) query = query.eq("user_id", userId);
       if (practiceId) query = query.eq("practice_id", practiceId);

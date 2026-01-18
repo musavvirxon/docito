@@ -1,5 +1,5 @@
 // File: src/pages/lab/LabDashboardPage.tsx
-import LabDashboardContent from "@/pages/lab/LabDashboardContent";
+import LabDashboard from "@/pages/lab/LabDashboard";
 export default function LabDashboardPage() {
-  return <LabDashboardContent />;
+  return <LabDashboard />;
 }

@@ -43,8 +43,7 @@ export default function ImagingOrdersPage() {
 
     setLoading(true);
     setError(null);
-    const { data, error } = await supabase
-      .from("imaging_order_state")
+    const { data, error } = await (supabase.from as any)("imaging_order_state")
       .select("referral_id,imaging_center_id,workflow_status,priority,scheduled_time,assigned_staff_id,updated_at")
       .eq("imaging_center_id", imagingCenterId)
       .order("updated_at", { ascending: false })
