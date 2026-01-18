@@ -1,113 +1,14 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+// File: src/hooks/useAdminDashboard.ts
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
-interface AdminStats {
+interface DashboardStats {
   totalBookings: number;
   totalPatients: number;
   totalRevenue: number;
   clinicRating: number;
   pendingInvites: number;
   locations: number;
-}
-
-interface Practice {
-  id: string;
-  name: string;
-  description?: string;
-  phone?: string;
-  email?: string;
-  address?: string;
-  city?: string;
-  country?: string;
-  logo_url?: string;
-  verified: boolean;
-  verification_status?: string;
-  average_rating: number;
-  num_reviews: number;
-  admin_id?: string;
-}
-
-interface Doctor {
-  id: string;
-  user_id: string;
-  specialty: string;
-  verified: boolean;
-  average_rating: number;
-  num_reviews: number;
-  profiles?: {
-    full_name: string;
-    email: string;
-    avatar_url?: string;
-  };
-}
-
-interface Appointment {
-  id: string;
-  appointment_date: string;
-  start_time: string;
-  end_time: string;
-  status: string;
-  notes?: string;
-  patient_name?: string;
-  doctor_name?: string;
-}
-
-interface Service {
-  id: string;
-  name: string;
-  price?: number;
-  duration_minutes: number;
-  category: string;
-  dentist_id?: string;
-  doctor_name?: string;
-}
-
-interface StaffMember {
-  id: string;
-  full_name: string;
-  role: string;
-  department: string;
-  status: string;
-}
-
-interface Location {
-  id: string;
-  name: string;
-  address: string;
-  phone: string;
-  city: string;
-  photo_urls: string[];
-  is_primary: boolean;
-}
-
-interface Patient {
-  id: string;
-  full_name: string;
-  email: string;
-  phone: string;
-  last_visit: string;
-  doctor_name: string;
-  status: string;
-}
-
-interface Payment {
-  id: string;
-  amount: number;
-  status: string;
-  patient_name: string;
-  created_at: string;
-  paid_at?: string;
-}
-
-interface Message {
-  id: string;
-  title: string;
-  message: string;
-  sender_name: string;
-  created_at: string;
-  read_at?: string;
 }
 
 interface PerformanceMetrics {
@@ -118,9 +19,8 @@ interface PerformanceMetrics {
 }
 
 export const useAdminDashboard = () => {
-  const { user, profile } = useAuth();
-  const [practice, setPractice] = useState<Practice | null>(null);
-  const [stats, setStats] = useState<AdminStats>({
+  const [practice, setPractice] = useState<any>(null);
+  const [stats, setStats] = useState<DashboardStats>({
     totalBookings: 0,
     totalPatients: 0,
     totalRevenue: 0,
@@ -128,14 +28,14 @@ export const useAdminDashboard = () => {
     pendingInvites: 0,
     locations: 0,
   });
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
-  const [staff, setStaff] = useState<StaffMember[]>([]);
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [doctors, setDoctors] = useState<any[]>([]);
+  const [appointments, setAppointments] = useState<any[]>([]);
+  const [services, setServices] = useState<any[]>([]);
+  const [staff, setStaff] = useState<any[]>([]);
+  const [locations, setLocations] = useState<any[]>([]);
+  const [patients, setPatients] = useState<any[]>([]);
+  const [payments, setPayments] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [metrics, setMetrics] = useState<PerformanceMetrics>({
     averageRating: 0,
     patientRetention: 0,
@@ -145,499 +45,262 @@ export const useAdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchPractice = async () => {
-    if (!user || profile?.role !== 'admin') {
-      setLoading(false);
-      return;
-    }
+  const fetchPracticeData = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-    try {
-      setError(null);
-      console.log('Fetching practice for admin:', user.id);
+    const { data: practiceData, error: practiceError } = await supabase
+      .from("practices")
+      .select("*")
+      .eq("admin_id", user.id)
+      .maybeSingle();
 
-      const { data: practiceData, error: practiceError } = await supabase
-        .from('practices')
-        .select('*')
-        .eq('admin_id', user.id)
-        .maybeSingle();
-
-      if (practiceError) {
-        console.error('Error fetching practice:', practiceError);
-        throw practiceError;
-      }
-
-      if (practiceData) {
-        console.log('Found practice:', practiceData);
-        setPractice(practiceData);
-      } else {
-        console.log('No practice found for admin - setup required');
-        setPractice(null);
-      }
-    } catch (err: any) {
-      console.error('Error in fetchPractice:', err);
-      setError(err.message || 'Failed to load practice');
-    }
+    if (practiceError) throw practiceError;
+    setPractice(practiceData);
+    return practiceData;
   };
 
-  const fetchStats = async () => {
-    if (!practice) {
-      setStats({
-        totalBookings: 0,
-        totalPatients: 0,
-        totalRevenue: 0,
-        clinicRating: 0,
-        pendingInvites: 0,
-        locations: 0,
-      });
-      return;
-    }
+  const fetchDashboardStats = async (practiceData: any) => {
+    if (!practiceData) return;
 
-    try {
-      const { data: statsData, error: statsError } = await supabase
-        .rpc('get_practice_stats', { p_practice_id: practice.id });
+    const { data: statsData, error: statsError } = await supabase.rpc(
+      "get_practice_stats",
+      { practice_id: practiceData.id }
+    );
 
-      if (statsError) {
-        console.error('Error fetching stats:', statsError);
-        throw statsError;
-      }
+    if (statsError) throw statsError;
 
-      if (statsData) {
-        const stats = statsData as any;
-        setStats({
-          totalBookings: Number(stats.total_bookings) || 0,
-          totalPatients: Number(stats.total_patients) || 0,
-          totalRevenue: Number(stats.total_revenue) || 0,
-          clinicRating: Number(stats.clinic_rating) || 0,
-          pendingInvites: Number(stats.pending_invites) || 0,
-          locations: Number(stats.locations) || 0,
-        });
-      }
-    } catch (err: any) {
-      console.error('Error calculating stats:', err);
-      setStats({
-        totalBookings: 0,
-        totalPatients: 0,
-        totalRevenue: 0,
-        clinicRating: practice.average_rating || 0,
-        pendingInvites: 0,
-        locations: 0,
-      });
-    }
+    setStats({
+      totalBookings: statsData?.total_bookings || 0,
+      totalPatients: statsData?.total_patients || 0,
+      totalRevenue: statsData?.total_revenue || 0,
+      clinicRating: statsData?.clinic_rating || 0,
+      pendingInvites: statsData?.pending_invites || 0,
+      locations: statsData?.locations || 0,
+    });
   };
 
-  const fetchDoctors = async () => {
-    if (!practice) {
-      setDoctors([]);
-      return;
-    }
+  const fetchDoctors = async (practiceData: any) => {
+    if (!practiceData) return;
 
-    try {
-      const { data, error } = await supabase
-        .from('doctors')
-        .select(`
-          id,
-          user_id,
-          specialty,
-          verified,
-          average_rating,
-          num_reviews,
-          appointment_count,
-          profiles:user_id (
-            full_name,
-            email,
-            avatar_url
-          )
-        `)
-        .eq('practice_id', practice.id)
-        .order('created_at', { ascending: false });
+    const { data, error } = await supabase
+      .from("doctors")
+      .select(`
+        *,
+        profiles(full_name, email)
+      `)
+      .eq("practice_id", practiceData.id)
+      .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      setDoctors(data || []);
-    } catch (err: any) {
-      console.error('Error in fetchDoctors:', err);
-      setDoctors([]);
-    }
+    if (error) throw error;
+    setDoctors(data || []);
   };
 
-  const fetchAppointments = async () => {
-    if (!practice) {
-      setAppointments([]);
-      return;
-    }
+  const fetchAppointments = async (practiceData: any) => {
+    if (!practiceData) return;
 
-    try {
-      const today = new Date().toISOString().split('T')[0];
+    const { data, error } = await supabase.rpc("get_practice_appointments", {
+      practice_id: practiceData.id,
+      limit_count: 10,
+    });
 
-      // First fetch appointments with doctor info
-      const { data, error } = await supabase
-        .from('appointments')
-        .select(`
-          id,
-          appointment_date,
-          start_time,
-          end_time,
-          status,
-          notes,
-          patient_id,
-          doctors!inner (
-            user_id,
-            profiles:user_id (
-              full_name
-            )
-          )
-        `)
-        .eq('practice_id', practice.id)
-        .gte('appointment_date', today)
-        .order('appointment_date', { ascending: true })
-        .order('start_time', { ascending: true })
-        .limit(10);
-
-      if (error) throw error;
-
-      // Fetch patient profiles separately if we have appointments
-      const patientIds = (data || []).map(apt => apt.patient_id).filter(Boolean);
-      let patientProfiles: Record<string, string> = {};
-      
-      if (patientIds.length > 0) {
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('user_id, full_name')
-          .in('user_id', patientIds);
-        
-        if (profiles) {
-          patientProfiles = profiles.reduce((acc, p) => {
-            acc[p.user_id] = p.full_name || 'Unknown Patient';
-            return acc;
-          }, {} as Record<string, string>);
-        }
-      }
-
-      const formatted = (data || []).map((apt: any) => ({
-        id: apt.id,
-        appointment_date: apt.appointment_date,
-        start_time: apt.start_time,
-        end_time: apt.end_time,
-        status: apt.status,
-        notes: apt.notes,
-        patient_name: patientProfiles[apt.patient_id] || 'Unknown Patient',
-        doctor_name: apt.doctors?.profiles?.full_name || 'Unknown Doctor',
-      }));
-
-      setAppointments(formatted);
-    } catch (err: any) {
-      console.error('Error in fetchAppointments:', err);
-      setAppointments([]);
-    }
+    if (error) throw error;
+    setAppointments(data || []);
   };
 
-  const fetchServices = async () => {
-    if (!practice || doctors.length === 0) {
-      setServices([]);
-      return;
-    }
+  const fetchServices = async (practiceData: any) => {
+    if (!practiceData) return;
 
-    try {
-      const { data, error } = await supabase
-        .from('procedures')
-        .select(`
-          id,
-          name,
-          price,
-          duration_minutes,
-          category,
-          dentist_id,
-          doctors:dentist_id (
-            profiles:user_id (
-              full_name
-            )
-          )
-        `)
-        .eq('is_active', true)
-        .in('dentist_id', doctors.map(d => d.id))
-        .order('name', { ascending: true });
+    const { data, error } = await supabase.rpc("get_practice_services", {
+      practice_id: practiceData.id,
+    });
 
-      if (error) throw error;
-
-      const formatted = (data || []).map((service: any) => ({
-        id: service.id,
-        name: service.name,
-        price: service.price,
-        duration_minutes: service.duration_minutes,
-        category: service.category,
-        dentist_id: service.dentist_id,
-        doctor_name: service.doctors?.profiles?.full_name || 'All Providers',
-      }));
-
-      setServices(formatted);
-    } catch (err: any) {
-      console.error('Error in fetchServices:', err);
-      setServices([]);
-    }
+    if (error) throw error;
+    setServices(data || []);
   };
 
-  const fetchStaff = async () => {
-    if (!practice) {
-      setStaff([]);
-      return;
-    }
+  const fetchStaff = async (practiceData: any) => {
+    if (!practiceData) return;
 
-    try {
-      const { data, error } = await supabase
-        .from('practice_staff')
-        .select('*')
-        .eq('practice_id', practice.id)
-        .order('created_at', { ascending: false });
+    const { data, error } = await supabase.rpc("get_practice_staff", {
+      practice_id: practiceData.id,
+    });
 
-      if (error) throw error;
-      setStaff(data || []);
-    } catch (err: any) {
-      console.error('Error in fetchStaff:', err);
-      setStaff([]);
-    }
+    if (error) throw error;
+    setStaff(data || []);
   };
 
-  const fetchLocations = async () => {
-    if (!practice) {
-      setLocations([]);
-      return;
-    }
+  const fetchLocations = async (practiceData: any) => {
+    if (!practiceData) return;
 
-    try {
-      const { data, error } = await supabase
-        .from('practice_locations')
-        .select('*')
-        .eq('practice_id', practice.id)
-        .order('is_primary', { ascending: false });
+    const { data, error } = await supabase
+      .from("practice_locations")
+      .select("*")
+      .eq("practice_id", practiceData.id)
+      .order("is_primary", { ascending: false });
 
-      if (error) throw error;
-      setLocations(data || []);
-    } catch (err: any) {
-      console.error('Error in fetchLocations:', err);
-      setLocations([]);
-    }
+    if (error) throw error;
+    setLocations(data || []);
   };
 
-  const fetchPatients = async () => {
-    if (!practice) {
-      setPatients([]);
-      return;
-    }
+  const fetchPatients = async (practiceData: any) => {
+    if (!practiceData) return;
 
-    try {
-      const { data, error } = await supabase
-        .from('appointments')
-        .select(`
-          patient_id,
-          appointment_date,
-          profiles!appointments_patient_id_fkey(full_name, email, phone),
-          doctors!inner(id, profiles!doctors_user_id_fkey(full_name))
-        `)
-        .eq('practice_id', practice.id)
-        .order('appointment_date', { ascending: false });
+    const { data, error } = await supabase.rpc("get_practice_patients", {
+      practice_id: practiceData.id,
+      limit_count: 20,
+    });
 
-      if (error) throw error;
-
-      // Group by patient and get their latest appointment
-      const patientMap = new Map();
-      data?.forEach((apt: any) => {
-        if (!patientMap.has(apt.patient_id)) {
-          patientMap.set(apt.patient_id, {
-            id: apt.patient_id,
-            full_name: apt.profiles?.full_name || 'Unknown',
-            email: apt.profiles?.email || '',
-            phone: apt.profiles?.phone || '',
-            last_visit: apt.appointment_date,
-            doctor_name: apt.doctors?.profiles?.full_name || 'Unknown',
-            status: 'Active',
-          });
-        }
-      });
-
-      setPatients(Array.from(patientMap.values()).slice(0, 10));
-    } catch (err: any) {
-      console.error('Error in fetchPatients:', err);
-      setPatients([]);
-    }
+    if (error) throw error;
+    setPatients(data || []);
   };
 
-  const fetchPayments = async () => {
-    if (!practice) {
-      setPayments([]);
-      return;
-    }
+  const fetchPayments = async (practiceData: any) => {
+    if (!practiceData) return;
 
-    try {
-      const { data, error } = await supabase
-        .from('payments')
-        .select(`
-          *,
-          profiles!payments_patient_id_fkey(full_name)
-        `)
-        .eq('practice_id', practice.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
+    const { data, error } = await supabase.rpc("get_practice_payments", {
+      practice_id: practiceData.id,
+      limit_count: 10,
+    });
 
-      if (error) throw error;
-
-      const formatted = (data || []).map((payment: any) => ({
-        id: payment.id,
-        amount: payment.amount,
-        status: payment.status,
-        patient_name: payment.profiles?.full_name || 'Unknown',
-        created_at: payment.created_at,
-        paid_at: payment.paid_at,
-      }));
-
-      setPayments(formatted);
-    } catch (err: any) {
-      console.error('Error in fetchPayments:', err);
-      setPayments([]);
-    }
+    if (error) throw error;
+    setPayments(data || []);
   };
 
-  const fetchMessages = async () => {
-    if (!practice || !user) {
-      setMessages([]);
-      return;
-    }
+  const fetchMessages = async (practiceData: any) => {
+    if (!practiceData) return;
 
-    try {
-      // Only fetch notifications for the current admin user
-      const { data, error } = await supabase
-        .from('real_time_notifications')
-        .select(`
-          *,
-          sender:profiles!real_time_notifications_sender_user_id_fkey(full_name)
-        `)
-        .eq('recipient_user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(5);
+    const { data, error } = await supabase.rpc("get_practice_messages", {
+      practice_id: practiceData.id,
+      limit_count: 5,
+    });
 
-      if (error) throw error;
-
-      const formatted = (data || []).map((notif: any) => ({
-        id: notif.id,
-        title: notif.title,
-        message: notif.message,
-        sender_name: notif.sender?.full_name || 'System',
-        created_at: notif.created_at,
-        read_at: notif.read_at,
-      }));
-
-      setMessages(formatted);
-    } catch (err: any) {
-      console.error('Error in fetchMessages:', err);
-      setMessages([]);
-    }
+    if (error) throw error;
+    setMessages(data || []);
   };
 
   const fetchPerformanceMetrics = async () => {
-    if (!practice) {
-      setMetrics({
-        averageRating: 0,
-        patientRetention: 0,
-        avgWaitTime: 0,
-        noShowRate: 0,
-      });
-      return;
-    }
+    if (!practice) return;
 
     try {
-      // Calculate patient retention (patients with multiple visits)
-      const { data: allAppointments } = await supabase
-        .from('appointments')
-        .select('patient_id')
-        .eq('practice_id', practice.id)
-        .eq('status', 'completed');
+      // Average rating from practice table
+      const { data: practiceRating } = await supabase
+        .from("practices")
+        .select("average_rating")
+        .eq("id", practice.id)
+        .maybeSingle();
 
-      const patientVisitCounts = new Map<string, number>();
-      allAppointments?.forEach((apt: any) => {
-        patientVisitCounts.set(apt.patient_id, (patientVisitCounts.get(apt.patient_id) || 0) + 1);
+      const now = new Date();
+      const start30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const start180 = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
+
+      // Patient retention: completed patients with 2+ completed visits in last 180 days (by appointment_date)
+      const { data: completedVisits, error: cvErr } = await supabase
+        .from("appointments")
+        .select("patient_id")
+        .eq("practice_id", practice.id)
+        .eq("status", "completed")
+        .gte("appointment_date", start180.toISOString().slice(0, 10))
+        .limit(20000);
+      if (cvErr) throw cvErr;
+
+      const visitCounts = new Map<string, number>();
+      (completedVisits || []).forEach((r: any) => {
+        if (!r.patient_id) return;
+        visitCounts.set(r.patient_id, (visitCounts.get(r.patient_id) || 0) + 1);
       });
 
-      const returningPatients = Array.from(patientVisitCounts.values()).filter(count => count > 1).length;
-      const totalPatients = patientVisitCounts.size;
-      const patientRetention = totalPatients > 0 ? (returningPatients / totalPatients) * 100 : 0;
+      const returningPatients = Array.from(visitCounts.values()).filter((c) => c > 1).length;
+      const totalPatients = visitCounts.size;
+      const patientRetention = totalPatients > 0 ? Math.round((returningPatients / totalPatients) * 100) : 0;
 
-      // Calculate no-show rate
-      const { count: totalCount } = await supabase
-        .from('appointments')
-        .select('id', { count: 'exact', head: true })
-        .eq('practice_id', practice.id);
+      // No-show rate: canceled / total (last 30 days by created_at)
+      const { data: recentAppts, error: raErr } = await supabase
+        .from("appointments")
+        .select("status")
+        .eq("practice_id", practice.id)
+        .gte("created_at", start30.toISOString())
+        .lt("created_at", now.toISOString())
+        .limit(20000);
+      if (raErr) throw raErr;
 
-      const { count: noShowCount } = await supabase
-        .from('appointments')
-        .select('id', { count: 'exact', head: true })
-        .eq('practice_id', practice.id)
-        .eq('status', 'canceled');
+      const totalRecent = (recentAppts || []).length;
+      const cancelledRecent = (recentAppts || []).filter((a: any) => String(a.status || "") === "canceled").length;
+      const noShowRate = totalRecent > 0 ? Math.round((cancelledRecent / totalRecent) * 100) : 0;
 
-      const noShowRate = (totalCount || 0) > 0 ? ((noShowCount || 0) / (totalCount || 1)) * 100 : 0;
+      // Avg "wait time" (repurposed as booking lead time): (scheduled datetime - created_at) in minutes, completed only (last 30 days)
+      const { data: completedRecent, error: crErr } = await supabase
+        .from("appointments")
+        .select("appointment_date,start_time,created_at,status")
+        .eq("practice_id", practice.id)
+        .eq("status", "completed")
+        .gte("created_at", start30.toISOString())
+        .lt("created_at", now.toISOString())
+        .limit(20000);
+      if (crErr) throw crErr;
+
+      const leadMinutes = (completedRecent || [])
+        .map((a: any) => {
+          const created = new Date(a.created_at);
+          const date = String(a.appointment_date);
+          const time = String(a.start_time);
+          const scheduled = new Date(`${date}T${time}Z`);
+          const diff = (scheduled.getTime() - created.getTime()) / (1000 * 60);
+          return Number.isFinite(diff) ? Math.max(0, diff) : 0;
+        })
+        .filter((n: number) => n >= 0);
+
+      const avgLeadMinutes = leadMinutes.length ? Math.round(leadMinutes.reduce((s: number, v: number) => s + v, 0) / leadMinutes.length) : 0;
 
       setMetrics({
-        averageRating: practice.average_rating || 0,
-        patientRetention: Math.round(patientRetention),
-        avgWaitTime: 12, // This would require additional tracking
-        noShowRate: Math.round(noShowRate),
+        averageRating: practiceRating?.average_rating || 0,
+        patientRetention,
+        avgWaitTime: avgLeadMinutes,
+        noShowRate,
       });
-    } catch (err: any) {
-      console.error('Error in fetchPerformanceMetrics:', err);
-      setMetrics({
-        averageRating: practice.average_rating || 0,
-        patientRetention: 0,
-        avgWaitTime: 12,
-        noShowRate: 0,
-      });
+    } catch (err) {
+      console.error("Error fetching performance metrics:", err);
     }
   };
 
   const refreshData = async () => {
-    setLoading(true);
-    setError(null);
-    await fetchPractice();
+    try {
+      setLoading(true);
+      setError(null);
+
+      const practiceData = await fetchPracticeData();
+
+      if (practiceData) {
+        await Promise.all([
+          fetchDashboardStats(practiceData),
+          fetchDoctors(practiceData),
+          fetchAppointments(practiceData),
+          fetchServices(practiceData),
+          fetchStaff(practiceData),
+          fetchLocations(practiceData),
+          fetchPatients(practiceData),
+          fetchPayments(practiceData),
+          fetchMessages(practiceData),
+        ]);
+      }
+
+      setLoading(false);
+    } catch (err: any) {
+      console.error("Error fetching dashboard data:", err);
+      setError(err.message || "Failed to load dashboard data");
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    const loadData = async () => {
-      if (!user || profile?.role !== 'admin') {
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      await fetchPractice();
-    };
-
-    loadData();
-  }, [user, profile]);
+    refreshData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
-    const loadSecondaryData = async () => {
-      if (practice) {
-        await Promise.allSettled([
-          fetchStats(),
-          fetchDoctors(),
-          fetchAppointments(),
-          fetchStaff(),
-          fetchLocations(),
-        ]);
-      }
-      setLoading(false);
-    };
-
-    loadSecondaryData();
+    fetchPerformanceMetrics();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practice]);
-
-  useEffect(() => {
-    if (doctors.length > 0) {
-      Promise.allSettled([
-        fetchServices(),
-        fetchPatients(),
-        fetchPayments(),
-        fetchMessages(),
-        fetchPerformanceMetrics(),
-      ]);
-    }
-  }, [doctors]);
 
   return {
     practice,
