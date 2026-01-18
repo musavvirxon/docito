@@ -13,8 +13,10 @@ import { TodayScheduleSection } from "@/components/staff/TodayScheduleSection";
 import { PatientListSection } from "@/components/staff/PatientListSection";
 import BillingSection from "@/components/staff/BillingSection";
 import { InvitationsList } from "@/components/staff/InvitationsList";
+import AnalyticsSection from "@/components/staff/AnalyticsSection";
+import SettingsSection from "@/components/staff/SettingsSection";
 
-type SectionId = "dashboard" | "today" | "patients" | "billing" | "invites";
+type SectionId = "dashboard" | "today" | "patients" | "billing" | "analytics" | "settings" | "invites";
 
 export default function StaffDashboardPage() {
   const {
@@ -42,6 +44,8 @@ export default function StaffDashboardPage() {
       { id: "today", label: "Today", visible: Boolean(permissions?.can_view_schedule) },
       { id: "patients", label: "Patients", visible: Boolean(permissions?.can_manage_patients) },
       { id: "billing", label: "Billing", visible: Boolean(permissions?.can_manage_billing) },
+      { id: "analytics", label: "Analytics", visible: Boolean(practice?.id) },
+      { id: "settings", label: "Settings", visible: Boolean(isAdminLike && practice?.id) },
       { id: "invites", label: "Invites", visible: Boolean(isAdminLike && practice?.id) },
     ];
 
@@ -171,6 +175,14 @@ export default function StaffDashboardPage() {
             onRefresh={() => void refresh()}
             canManageBilling={Boolean(permissions.can_manage_billing)}
           />
+        </TabsContent>
+
+        <TabsContent value="analytics" className="mt-6">
+          <AnalyticsSection clinicId={practice.id} />
+        </TabsContent>
+
+        <TabsContent value="settings" className="mt-6">
+          <SettingsSection clinicId={practice.id} />
         </TabsContent>
 
         <TabsContent value="invites" className="mt-6">
