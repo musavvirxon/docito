@@ -1,16 +1,19 @@
-export { default as AboutIllustration } from './AboutIllustration';
-export { default as ImprovedAboutIllustration } from './ImprovedAboutIllustration';
-export { default as AuthIllustration } from './AuthIllustration';
-export { default as ContactIllustration } from './ContactIllustration';
-export { default as DoctorSearchIllustration } from './DoctorSearchIllustration';
-export { default as FAQsIllustration } from './FAQsIllustration';
-export { default as FeaturesIllustration } from './FeaturesIllustration';
-export { default as FindPracticesIllustration } from './FindPracticesIllustration';
-export { default as HelpCenterIllustration } from './HelpCenterIllustration';
-export { default as LegalIllustration } from './LegalIllustration';
-export { default as NotFoundIllustration } from './NotFoundIllustration';
-export { default as PracticesIllustration } from './PracticesIllustration';
-export { default as PricingIllustration } from './PricingIllustration';
-export { default as SearchIllustration } from './SearchIllustration';
-export { default as SpecialtiesIllustration } from './SpecialtiesIllustration';
-export { default as SupportIllustration } from './SupportIllustration';
+// File: src/components/Visuals/illustrations/index.ts
+
+export { default as AboutIllustration } from "./AboutIllustration";
+export { default as ImprovedAboutIllustration } from "./ImprovedAboutIllustration";
+export { default as AuthIllustration } from "./AuthIllustration";
+export { default as ContactIllustration } from "./ContactIllustration";
+export { default as DoctorSearchIllustration } from "./DoctorSearchIllustration";
+export { default as FAQsIllustration } from "./FAQsIllustration";
+export { default as FeaturesIllustration } from "./FeaturesIllustration";
+export { default as FindPracticesIllustration } from "./FindPracticesIllustration";
+export { default as HelpCenterIllustration } from "./HelpCenterIllustration";
+export { default as LegalIllustration } from "./LegalIllustration";
+export { default as NotFoundIllustration } from "./NotFoundIllustration";
+export { default as PracticesIllustration } from "./PracticesIllustration";
+export { default as PricingIllustration } from "./PricingIllustration";
+export { default as SearchIllustration } from "./SearchIllustration";
+export { default as SpecialtiesIllustration } from "./SpecialtiesIllustration";
+export { default as SupportIllustration } from "./SupportIllustration";
+export { default as PricingMatrixIllustration } from "./PricingMatrixIllustration";
