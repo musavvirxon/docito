@@ -1,5 +1,7 @@
 // File: src/pages/StaffDashboard.tsx
 
+// File: src/pages/StaffDashboard.tsx
+
 import { useState, useMemo } from 'react';
 import { Loader2, AlertCircle, Building2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,14 +18,12 @@ import PharmacyDashboardContent from '@/components/staff/PharmacyDashboardConten
 import LabDashboardContent from '@/components/staff/LabDashboardContent';
 import ImagingDashboardContent from '@/components/staff/ImagingDashboardContent';
 import { DashboardTopBar } from '@/components/dashboard/DashboardTopBar';
-import { useAuth } from '@/contexts/AuthContext';
 
 type EntityStatus = 'active' | 'pending' | 'verified' | 'suspended';
 
 const StaffDashboard = () => {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('dashboard');
-  const { activeRole } = useAuth();
 
   const {
     staffType,
@@ -201,9 +201,8 @@ const StaffDashboard = () => {
       />
 
       <div className="flex-1 flex flex-col">
-        {/* ✅ Top Bar with clickable verification badge (routes now exist in App.tsx) */}
+        {/* Top Bar: backend resolves correct role/facility -> verification routes always work */}
         <DashboardTopBar
-          role={activeRole}
           entityName={entityInfo?.name}
           entityStatus={entityStatus}
         />
