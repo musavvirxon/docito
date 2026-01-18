@@ -4,6 +4,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Bell, ShieldCheck, Settings, LayoutDashboard } from "lucide-react";
+import ThemeToggle from "@/components/home/ThemeToggle";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import ProfileMenu from "@/components/dashboard/ProfileMenu";
 import { useDashboardTopBar } from "@/hooks/useDashboardTopBar";
 import type { AppRole } from "@/lib/rbac";
 import { toast } from "sonner";
@@ -55,8 +58,10 @@ export default function DashboardTopNav(props: { role: AppRole; showSettings?: b
     return "Unknown";
   }, [entityStatus]);
 
+  const badgeCount = Math.min(Math.max(0, unreadCount || 0), 99);
+
   return (
-    <div className="w-full border-b bg-background">
+    <header className="sticky top-0 z-40 w-full border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="px-4 md:px-6 py-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <LayoutDashboard className="h-5 w-5 text-muted-foreground shrink-0" />
@@ -101,16 +106,17 @@ export default function DashboardTopNav(props: { role: AppRole; showSettings?: b
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <Button asChild variant="ghost" className="h-9 px-3" title="Notifications">
-            <Link to="/notifications">
-              <Bell className="h-4 w-4 mr-2" />
-              {unreadCount > 0 ? (
-                <Badge variant="default" className="ml-1">
-                  {unreadCount}
-                </Badge>
-              ) : (
-                <span className="text-sm">Notifications</span>
-              )}
+          <ThemeToggle />
+          <LanguageSwitcher />
+
+          <Button asChild variant="ghost" size="icon" className="relative" title="Notifications">
+            <Link to="/notifications" aria-label="Notifications">
+              <Bell className="h-5 w-5" />
+              {badgeCount > 0 ? (
+                <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground flex items-center justify-center">
+                  {badgeCount}
+                </span>
+              ) : null}
             </Link>
           </Button>
 
@@ -122,8 +128,10 @@ export default function DashboardTopNav(props: { role: AppRole; showSettings?: b
               </Link>
             </Button>
           ) : null}
+
+          <ProfileMenu />
         </div>
       </div>
-    </div>
+    </header>
   );
 }
