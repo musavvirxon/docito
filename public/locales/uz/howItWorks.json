@@ -1,0 +1,312 @@
+// File: public/locales/uz/howItWorks.json
+{
+  "howItWorks": {
+    "hero": {
+      "title": "Docito qanday ishlaydi",
+      "subtitle": "Bemorlar, shifokorlar va barcha xizmat ko‘rsatish jamoalari uchun yagona bog‘langan jarayon — avtomatlashtirilgan, ruxsatlar bilan va tez.",
+      "ctaPrimary": "Qidirishni boshlash",
+      "ctaSecondary": "Rol bo‘yicha ko‘rish"
+    },
+    "metrics": {
+      "labels": {
+        "verifiedDoctors": "Tasdiqlangan shifokorlar",
+        "verifiedFacilities": "Tasdiqlangan klinikalar",
+        "appointments7d": "Yozilishlar (7 kun)"
+      },
+      "unavailable": "Metrixlar mavjud emas (xavfsiz qiymatlar ko‘rsatiladi).",
+      "fallback": {
+        "verified_doctors": "1200",
+        "verified_facilities": "350",
+        "appointments_7d": "5400"
+      }
+    },
+    "flow": {
+      "title": "Har bir rol uchun universal oqim",
+      "step1Title": "Qidirish",
+      "step1Desc": "Joylashuv, yo‘nalish va mavjud vaqt bo‘yicha tasdiqlangan xizmatlarni toping.",
+      "step2Title": "Tanlash",
+      "step2Desc": "Profil, narx, jadval va klinika imkoniyatlarini bir joyda solishtiring.",
+      "step3Title": "Yozilish",
+      "step3Desc": "Qabul yoki xizmatni so‘rang va holatini kabinetingizda kuzating.",
+      "step4Title": "Qabul va kuzatuv",
+      "step4Desc": "Natijalar, retseptlar va follow-up jarayonlari kerakli odamga yetkaziladi.",
+      "opsLayerTitle": "Operatsion qatlam",
+      "opsItems": {
+        "scheduling": "Jadval",
+        "queues": "Ish navbatlari",
+        "documentation": "Hujjatlar",
+        "results": "Natijalarni yetkazish",
+        "fulfillment": "Bajarish/berish",
+        "followups": "Kuzatuv"
+      }
+    },
+    "roles": {
+      "careSeeker": "Bemor",
+      "doctor": "Shifokor",
+      "practice": "Klinika/Amaliyot",
+      "clinicStaff": "Klinika xodimlari",
+      "lab": "Laboratoriya",
+      "labStaff": "Laboratoriya xodimlari",
+      "imaging": "Diagnostika (UZI/KT/MRT)",
+      "imagingStaff": "Diagnostika xodimlari",
+      "pharmacy": "Dorixona",
+      "pharmacyStaff": "Dorixona xodimlari"
+    },
+    "rolePanel": {
+      "whatYouDoTitle": "Docito’da nimalar qilasiz",
+      "automatesTitle": "Docito nimalarni avtomatlashtiradi",
+      "featuresTitle": "Asosiy funksiyalar",
+      "dashboardPreviewTitle": "Dashboard ko‘rinishi",
+      "trustTitle": "Ishonch va ruxsatlar"
+    },
+    "roleContent": {
+      "careSeeker": {
+        "whatYouDo": [
+          "Joylashuv, yo‘nalish va mavjud vaqt bo‘yicha shifokor, lab, dorixona va diagnostikani qidiring.",
+          "Tasdiqlangan profil, baho va jadvalni solishtiring.",
+          "Yoziling, ko‘chiring va follow-up’ni bitta kabinetingizda bajaring."
+        ],
+        "automates": [
+          "Aqlli eslatmalar va tasdiqlar.",
+          "Hujjatlar, natijalar va retseptlar uchun yagona markaz.",
+          "Yo‘llanma va follow-up’ni kerakli provayderga yo‘naltirish."
+        ],
+        "features": [
+          { "title": "Yagona qidiruv", "desc": "Davolanish, tahlil, diagnostika va berish uchun bitta qidiruv." },
+          { "title": "Yozilish timeline", "desc": "So‘rovdan yakungacha bo‘lgan jarayonni kuzating." },
+          { "title": "Natijalar markazi", "desc": "Lab + diagnostika natijalari xavfsiz yetkaziladi." },
+          { "title": "Retsept oqimi", "desc": "Dorixonaga yuboring va berilganini tasdiqlang." }
+        ],
+        "trust": "Ma’lumotlaringiz ro‘lga asoslangan ruxsatlar va audit izlari bilan himoyalangan."
+      },
+      "doctor": {
+        "whatYouDo": [
+          "So‘rovlar va jadvalni ko‘rib chiqing.",
+          "Qabulni hujjatlashtiring va retsept/yo‘llanma yuboring.",
+          "Bemorni kuzatib boring va diagnostikani muvofiqlashtiring."
+        ],
+        "automates": [
+          "Jadval, eslatmalar va navbat yo‘naltirish.",
+          "Shablonlar va strukturalangan hujjatlashtirish.",
+          "Yo‘llanma va natijalarni ish oqimingizga yetkazish."
+        ],
+        "features": [
+          { "title": "Jadval boshqaruvi", "desc": "Mavjudlik, bufferlar va qabul turlari." },
+          { "title": "Shablonlar", "desc": "Diagnoz → davolash → retsept → fayl → eslatma." },
+          { "title": "Yo‘llanmalar", "desc": "Lab/diagnostikaga yuborish va kuzatish." },
+          { "title": "Xavfsiz ulashish", "desc": "Natija va reja kerakli ro‘lga ko‘rinadi." }
+        ],
+        "trust": "RBAC faqat ruxsatli xodimlarga kirishni beradi; hammasi auditda qayd etiladi."
+      },
+      "practice": {
+        "whatYouDo": [
+          "Xizmatlar, narxlar, jadval va xodim rollarini sozlang.",
+          "Shifokorlar va bo‘limlar bo‘yicha operatsiyalarni kuzating.",
+          "To‘lovlar va operatsion ko‘rsatkichlarni nazorat qiling."
+        ],
+        "automates": [
+          "Registratura va xodimlar uchun ish navbatlari.",
+          "Yagona yozilish va check-in oqimlari.",
+          "Operatsion hisobot va analitika."
+        ],
+        "features": [
+          { "title": "Admin konsol", "desc": "Shifokorlar, xizmatlar va siyosatlarni boshqarish." },
+          { "title": "Xodim rollari", "desc": "Minimal ruxsat bilan taklif qilish." },
+          { "title": "Navbat ko‘rinishi", "desc": "Bottleneck va yuklamani tez ko‘rish." },
+          { "title": "Analitika", "desc": "Yozilishlar va operatsion signallar." }
+        ],
+        "trust": "Muassasalar verifikatsiyadan o‘tadi; kirish ro‘l bo‘yicha cheklanadi va log qilinadi."
+      },
+      "clinicStaff": {
+        "whatYouDo": [
+          "Check-in va bemor oqimini boshqaring.",
+          "Jadval, kabinetlar va ish navbatlarini muvofiqlashtiring.",
+          "Hujjat qo‘shing va vazifalarni shifokorlarga yo‘naltiring."
+        ],
+        "automates": [
+          "Navbatni prioritetlash va yo‘naltirish.",
+          "Eslatmalar va qayta yozish oqimlari.",
+          "Hujjat yig‘ish va strukturalangan handoff."
+        ],
+        "features": [
+          { "title": "Check-in", "desc": "Tez kelish, statuslar va kabinetga yo‘naltirish." },
+          { "title": "Ish navbati", "desc": "Egalik va SLA bilan bitta vazifalar ro‘yxati." },
+          { "title": "Xabarlar", "desc": "Kontekstli yozuv va handoff." },
+          { "title": "Intake formalar", "desc": "Qabuldan oldin ma’lumot to‘plash." }
+        ],
+        "trust": "Xodim kirishi faqat tegishli muassasa va modul doirasida."
+      },
+      "lab": {
+        "whatYouDo": [
+          "Buyurtmalarni qabul qiling va namuna olishni rejalashtiring.",
+          "Qayta ishlang va natijalarni e’lon qiling.",
+          "Klinika va bemor bilan yetkazishni muvofiqlashtiring."
+        ],
+        "automates": [
+          "Buyurtma intake va status kuzatuvi.",
+          "Ruxsatli rollarga natijalarni yetkazish.",
+          "Yakun va follow-up uchun bildirishnomalar."
+        ],
+        "features": [
+          { "title": "Buyurtma intake", "desc": "Aniq worklist va statuslar." },
+          { "title": "Natija e’lon qilish", "desc": "Shifokor va bemorga xavfsiz yetkazish." },
+          { "title": "TAT kuzatuvi", "desc": "SLA bo‘yicha shaffoflik." },
+          { "title": "Fayl saqlash", "desc": "Hisobot va fayllarni xavfsiz biriktirish." }
+        ],
+        "trust": "Verifikatsiya, shifrlangan saqlash va natija kirishlari auditda qayd etiladi."
+      },
+      "labStaff": {
+        "whatYouDo": [
+          "Biriktirilgan buyurtmalarni bajaring va statuslarni yangilang.",
+          "Natijalar va hujjatlarni yuklang.",
+          "Istisnolarni klinikaga yetkazing."
+        ],
+        "automates": [
+          "Navbat va assignment.",
+          "Shablon asosida natija yuklash.",
+          "Status o‘zgarishi bildirishnomalari."
+        ],
+        "features": [
+          { "title": "Biriktirilgan ish", "desc": "Faqat o‘zingizning navbatingiz." },
+          { "title": "Yuklash", "desc": "Kam qadam bilan natija qo‘shish." },
+          { "title": "Status avtomatsiyasi", "desc": "Qo‘l mehnatini kamaytirish." },
+          { "title": "Eskalatsiya", "desc": "Muammolarni tez ko‘tarish." }
+        ],
+        "trust": "Ruxsatlar faqat zarur bo‘lgan buyurtma va ma’lumotlar doirasida."
+      },
+      "imaging": {
+        "whatYouDo": [
+          "Diagnostika buyurtmalarini qabul qiling va bemorni yozing.",
+          "Tekshiruvni bajaring va hisobot yuklang.",
+          "Natijani yo‘llagan shifokor va bemorga yetkazing."
+        ],
+        "automates": [
+          "Yozilish va eslatmalar.",
+          "Ruxsatlar bilan natijani yetkazish.",
+          "Status kuzatuvi va hisobotlar."
+        ],
+        "features": [
+          { "title": "Order board", "desc": "So‘rovdan yakungacha pipeline." },
+          { "title": "Fayllar", "desc": "Xavfsiz yuklash va yetkazish." },
+          { "title": "Hisobotlar", "desc": "Oqim va throughput bo‘yicha ko‘rsatkichlar." },
+          { "title": "Referrer loop", "desc": "Shifokorga qayta yopish." }
+        ],
+        "trust": "Faqat ruxsatli rollar fayllarni ko‘ra oladi; harakatlar auditda."
+      },
+      "imagingStaff": {
+        "whatYouDo": [
+          "Biriktirilgan tekshiruvlarni bajaring va statusni yangilang.",
+          "Hisobot va ilovalarni yuklang.",
+          "Ko‘chirish yoki istisnolarni muvofiqlashtiring."
+        ],
+        "automates": [
+          "Navbat assignment va routing.",
+          "Bildirishnomalar va handoff.",
+          "Natija e’lon qilish oqimi."
+        ],
+        "features": [
+          { "title": "Ish navbati", "desc": "Faqat biriktirilgan tekshiruvlar." },
+          { "title": "Tez yangilash", "desc": "Status va yozuvlar bitta joyda." },
+          { "title": "Yuklash", "desc": "Kerakli rollarga xavfsiz yetkazish." },
+          { "title": "Istisnolar", "desc": "Kontekst bilan eskalatsiya." }
+        ],
+        "trust": "Minimal ruxsat tamoyili asosida kirish cheklanadi."
+      },
+      "pharmacy": {
+        "whatYouDo": [
+          "Retseptlarni qabul qiling va mavjudlikni tekshiring.",
+          "Berish/Yetkazishni bajaring va tasdiqlang.",
+          "Kerak bo‘lsa shifokor bilan almashtirishni kelishib oling."
+        ],
+        "automates": [
+          "Retsept intake va status kuzatuvi.",
+          "Fulfillment tasdiqlari.",
+          "Bemor va klinikaga bildirishnomalar."
+        ],
+        "features": [
+          { "title": "Rx inbox", "desc": "Kiruvchi retseptlarni markazlashtirish." },
+          { "title": "Fulfillment bosqichlari", "desc": "Tayyorlandi → tayyor → yetkazildi." },
+          { "title": "Almashtirish", "desc": "Shifokor bilan muvofiqlashtirish." },
+          { "title": "Hisobot", "desc": "Talab bo‘yicha operatsion ko‘rsatkichlar." }
+        ],
+        "trust": "Verifikatsiya, shifrlash va audit loglar sezgir amallarni himoya qiladi."
+      },
+      "pharmacyStaff": {
+        "whatYouDo": [
+          "Biriktirilgan retseptlarni bajaring va bosqichlarni yangilang.",
+          "Olib ketish/yuborishni tasdiqlang.",
+          "Istisnolarni dorixona adminiga yuboring."
+        ],
+        "automates": [
+          "Navbat va bildirishnomalar.",
+          "Status yangilash va tasdiqlar.",
+          "Bemor kommunikatsiya triggerlari."
+        ],
+        "features": [
+          { "title": "Biriktirilgan navbat", "desc": "Harakatga tayyor ishlarga fokus." },
+          { "title": "Bir bosishda", "desc": "Bosqichlarni tez o‘tkazing." },
+          { "title": "Istisno", "desc": "Yetishmovchilik yoki savollarni belgilang." },
+          { "title": "Tasdiqlar", "desc": "Klinika va bemor uchun loop’ni yoping." }
+        ],
+        "trust": "Berish oqimi uchun zarur minimum ma’lumotlargina ko‘rinadi."
+      }
+    },
+    "automation": {
+      "title": "Qo‘lda ishni kamaytiradigan avtomatlashtirish",
+      "items": {
+        "scheduling": {
+          "title": "Aqlli jadval va eslatmalar",
+          "desc": "Tasdiqlar, eslatmalar va aqlli ko‘chirish bilan no-show’larni kamaytiring."
+        },
+        "checkin": {
+          "title": "Check-in va navbat boshqaruvi",
+          "desc": "Aniq status va egalik bilan oqimni boshqaring."
+        },
+        "documentation": {
+          "title": "Shablonlar va hujjatlashtirish",
+          "desc": "Diagnozdan retsept, fayl va klinik yozuvlargacha strukturalangan oqim."
+        },
+        "referrals": {
+          "title": "Yo‘llanmalar va koordinatsiya",
+          "desc": "Yo‘llanmalarni kerakli muassasaga kuzatuv bilan yo‘naltiring."
+        },
+        "results": {
+          "title": "Natijalarni yetkazish",
+          "desc": "Lab va diagnostika natijalarini kerakli rollarga xavfsiz yetkazing."
+        },
+        "fulfillment": {
+          "title": "Retseptni berish oqimi",
+          "desc": "Tayyorlash, berish, yetkazish va tasdiqlarni kuzating."
+        }
+      }
+    },
+    "security": {
+      "title": "Xavfsizlik va ishonch — ichida",
+      "items": {
+        "rbac": "Rolga asoslangan kirish (RBAC)",
+        "audit": "Audit loglari",
+        "verification": "Tasdiqlangan provayderlar/muassasalar",
+        "encryption": "Shifrlangan fayl saqlash",
+        "compliance": "HIPAA/GDPR-ready yondashuv"
+      }
+    },
+    "faq": {
+      "title": "FAQ",
+      "q1": { "question": "Xodimlar qanday kirish oladi?", "answer": "Adminlar xodimlarni taklif qiladi va minimal ruxsat bilan rollarni belgilaydi." },
+      "q2": { "question": "Xodim vs shifokor vs bemor nimalarni ko‘radi?", "answer": "RBAC ro‘l bo‘yicha ma’lumotlarni cheklaydi; kirishlar auditda ko‘rinadi." },
+      "q3": { "question": "Yo‘llanmalar jadvalga qanday ulanadi?", "answer": "Yo‘llanmalar buyurtma/so‘rov yaratib, navbat va jadvalga tushadi." },
+      "q4": { "question": "Natijalar qanday yetkaziladi?", "answer": "Natijalar ruxsatli rollarga kabinetingizda ko‘rinadi va bildirishnoma yuboriladi." },
+      "q5": { "question": "Dorixonalar berishni qanday tasdiqlaydi?", "answer": "Dorixonalar statusni yangilaydi (tayyorlandi/tayyor/yetkazildi) va yakunni tasdiqlaydi." },
+      "q6": { "question": "Ma’lumotlar xavfsizmi?", "answer": "Docito shifrlash, RBAC va audit orqali ma’lumotlarni himoya qiladi." },
+      "q7": { "question": "Sug‘urta ishlaydimi?", "answer": "Sug‘urta qo‘llab-quvvatlashi provayder va hududga bog‘liq; yozilishda ko‘rinishi mumkin." },
+      "q8": { "question": "Mobil ilova bormi?", "answer": "Mobil tajriba bor; native ilovalar tez orada." }
+    },
+    "cta": {
+      "title": "Docito’ni ishlatishga tayyormisiz?",
+      "subtitle": "Qidiruvdan boshlang — yoki tasdiqlangan provayder bo‘lib qo‘shiling va klinika jarayonlarini avtomatlashtiring.",
+      "findCare": "Xizmat topish",
+      "joinProvider": "Provayder bo‘lish",
+      "registerPractice": "Klinikani ro‘yxatdan o‘tkazish"
+    }
+  }
+}
