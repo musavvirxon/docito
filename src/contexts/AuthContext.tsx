@@ -13,7 +13,7 @@ interface Profile {
   full_name: string;
   email: string;
   role: "patient" | "doctor" | "admin" | "staff";
-  roles?: string[];
+  roles?: string[] | string;
   phone?: string;
   date_of_birth?: string;
   gender?: "male" | "female" | "other" | "prefer_not_to_say";
@@ -39,6 +39,7 @@ interface AuthContextType {
   allRoles: AppRole[];
   activeRole: AppRole;
   switchRole: (role: AppRole) => void;
+  setActiveRoleSilently: (role: AppRole) => void;
 
   roleStatus: Partial<Record<AppRole, RoleVerificationStatus>>;
 
@@ -65,23 +66,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const [activeRole, setActiveRole] = useState<AppRole>("patient");
+  const [activeRole, _setActiveRole] = useState<AppRole>("patient");
   const [roleStatus, setRoleStatus] = useState<Partial<Record<AppRole, RoleVerificationStatus>>>({});
 
-  // IMPORTANT: This must include legacy profile.role when user_roles is empty.
   const allRoles: AppRole[] = useMemo(() => {
     if (!profile) return [];
     const roles = getUserRolesFromProfile(profile);
-    // Dedupe, preserve order
     return Array.from(new Set(roles));
-  }, [profile?.role, profile?.roles, profile]);
+  }, [profile]);
+
+  const setActiveRoleSilently = (role: AppRole) => {
+    if (allRoles.length > 0 && !allRoles.includes(role)) return;
+    _setActiveRole(role);
+    localStorage.setItem(ACTIVE_ROLE_KEY, role);
+  };
 
   const switchRole = (role: AppRole) => {
-    if (!allRoles.includes(role)) {
+    if (allRoles.length > 0 && !allRoles.includes(role)) {
       toast.error("You don't have access to this role");
       return;
     }
-    setActiveRole(role);
+    _setActiveRole(role);
     localStorage.setItem(ACTIVE_ROLE_KEY, role);
     toast.success(`Switched to ${role.split("_").join(" ")}`);
   };
@@ -96,7 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       setProfile(null);
       setSession(null);
-      setActiveRole("patient");
+      _setActiveRole("patient");
       setRoleStatus({});
       localStorage.removeItem(ACTIVE_ROLE_KEY);
       localStorage.clear();
@@ -117,46 +122,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const fetchRoles = async (userId: string): Promise<AppRole[]> => {
+    // If user_roles table doesn't exist in a project, this should fail gracefully.
     const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", userId);
-
     if (error) {
-      console.error("Error fetching roles:", error);
+      console.warn("user_roles fetch failed (fallback to profile roles):", error.message);
       return [];
     }
-
     return (data?.map((r: any) => r.role).filter(Boolean) ?? []) as AppRole[];
   };
 
   const fetchRoleVerification = async (userId: string, roles: AppRole[]) => {
-    if (roles.includes("doctor")) {
-      try {
-        const { data: doctorData } = await supabase.from("doctors").select("id").eq("user_id", userId).maybeSingle();
+    if (!roles.includes("doctor")) return;
 
-        if (doctorData?.id) {
-          const { data } = await supabase
-            .from("doctor_verification")
-            .select("status")
-            .eq("doctor_id", doctorData.id)
-            .maybeSingle();
+    try {
+      const { data: doctorData } = await supabase.from("doctors").select("id").eq("user_id", userId).maybeSingle();
+      if (!doctorData?.id) return;
 
-          if (data?.status) {
-            setRoleStatus((prev) => ({ ...prev, doctor: data.status as RoleVerificationStatus }));
-          }
-        }
-      } catch {
-        // ignore
+      const { data } = await supabase
+        .from("doctor_verification")
+        .select("status")
+        .eq("doctor_id", doctorData.id)
+        .maybeSingle();
+
+      if (data?.status) {
+        setRoleStatus((prev) => ({ ...prev, doctor: data.status as RoleVerificationStatus }));
       }
+    } catch {
+      // ignore
     }
   };
 
   const pickInitialRole = (roles: AppRole[]) => {
     if (!roles?.length) return "patient";
-
     const saved = localStorage.getItem(ACTIVE_ROLE_KEY) as AppRole | null;
-
-    // Respect saved role if it exists for the user (even if lower priority).
     if (saved && roles.includes(saved)) return saved;
-
     return getPrimaryRole(roles);
   };
 
@@ -172,30 +171,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const rolesFromDb = await fetchRoles(userId);
 
-      const mergedRoles = getUserRolesFromProfile({ role: profileData?.role, roles: rolesFromDb });
+      // Merge: rolesFromDb (user_roles) + profileData.role + profileData.roles
+      const mergedRoles = Array.from(
+        new Set([
+          ...getUserRolesFromProfile(profileData),
+          ...((rolesFromDb || []).map((x) => x as any) as AppRole[]),
+        ]),
+      );
 
       const mergedProfile = { ...profileData, roles: mergedRoles } as Profile;
       setProfile(mergedProfile);
 
       const initial = pickInitialRole(mergedRoles);
-      setActiveRole(initial);
+      _setActiveRole(initial);
       localStorage.setItem(ACTIVE_ROLE_KEY, initial);
 
       fetchRoleVerification(userId, mergedRoles);
     } catch (e: any) {
       console.error("Error fetching profile:", e);
-      const fallbackRoles = getUserRolesFromProfile({ role: "patient", roles: [] });
-      setProfile({
-        id: "temp",
-        user_id: userId,
-        full_name: "User",
-        email: user?.email ?? "user@example.com",
-        role: "patient",
-        roles: fallbackRoles,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      });
-      setActiveRole("patient");
+      setProfile(null);
+      _setActiveRole("patient");
     }
   };
 
@@ -215,7 +210,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setTimeout(() => fetchProfile(s.user.id), 0);
       } else {
         setProfile(null);
-        setActiveRole("patient");
+        _setActiveRole("patient");
         setRoleStatus({});
       }
       setLoading(false);
@@ -292,6 +287,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     allRoles,
     activeRole,
     switchRole,
+    setActiveRoleSilently,
     roleStatus,
     signIn,
     signUp,
