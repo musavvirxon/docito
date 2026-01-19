@@ -1,4 +1,5 @@
-// File: src/components/howItWorks/useHowItWorksMetrics.ts
+// File: src/hooks/useHowItWorksMetrics.ts
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export type HowItWorksMetrics = {
@@ -7,37 +8,66 @@ export type HowItWorksMetrics = {
   appointments_7d: number;
 };
 
-type Cache = {
-  value: HowItWorksMetrics | null;
-  ts: number;
-};
+type State =
+  | { status: "idle" | "loading"; data: null; error: null }
+  | { status: "success"; data: HowItWorksMetrics; error: null }
+  | { status: "error"; data: null; error: string };
 
-const CACHE_TTL_MS = 5 * 60 * 1000;
-const cache: Cache = { value: null, ts: 0 };
+let memoryCache: { at: number; data: HowItWorksMetrics } | null = null;
 
-function nowMs() {
-  return Date.now();
+const TTL_MS = 5 * 60 * 1000;
+
+function safeNumber(v: unknown) {
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) ? n : 0;
 }
 
-export async function getHowItWorksMetrics(): Promise<HowItWorksMetrics> {
-  const fresh = cache.value && nowMs() - cache.ts < CACHE_TTL_MS;
-  if (fresh) return cache.value as HowItWorksMetrics;
+export function useHowItWorksMetrics() {
+  const [state, setState] = useState<State>({ status: "idle", data: null, error: null });
 
-  const { data, error } = await supabase.functions.invoke("get_public_metrics", {
-    body: {},
-  });
+  const cached = useMemo(() => {
+    if (!memoryCache) return null;
+    if (Date.now() - memoryCache.at > TTL_MS) return null;
+    return memoryCache.data;
+  }, []);
 
-  if (error) {
-    throw error;
-  }
+  useEffect(() => {
+    let cancelled = false;
 
-  const parsed: HowItWorksMetrics = {
-    verified_doctors: Number(data?.verified_doctors ?? 0),
-    verified_facilities: Number(data?.verified_facilities ?? 0),
-    appointments_7d: Number(data?.appointments_7d ?? 0),
-  };
+    const run = async () => {
+      if (cached) {
+        setState({ status: "success", data: cached, error: null });
+        return;
+      }
 
-  cache.value = parsed;
-  cache.ts = nowMs();
-  return parsed;
+      setState({ status: "loading", data: null, error: null });
+
+      try {
+        const { data, error } = await supabase.functions.invoke("get_public_metrics", { body: {} });
+        if (error) throw new Error(error.message || "Failed to load metrics");
+
+        const m = (data || {}) as Partial<HowItWorksMetrics>;
+        const normalized: HowItWorksMetrics = {
+          verified_doctors: safeNumber(m.verified_doctors),
+          verified_facilities: safeNumber(m.verified_facilities),
+          appointments_7d: safeNumber(m.appointments_7d),
+        };
+
+        memoryCache = { at: Date.now(), data: normalized };
+
+        if (!cancelled) setState({ status: "success", data: normalized, error: null });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Failed to load metrics";
+        if (!cancelled) setState({ status: "error", data: null, error: msg });
+      }
+    };
+
+    run();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [cached]);
+
+  return state;
 }
