@@ -3,16 +3,16 @@ import { Routes, Route } from "react-router-dom";
 import Header from "@/components/Header";
 import RoleRouteSync from "@/components/auth/RoleRouteSync";
 
-import Home from "@/pages/Home";
+import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
 import NotFound from "@/pages/NotFound";
 
-import PatientDashboard from "@/pages/dashboards/PatientDashboard";
-import DoctorDashboard from "@/pages/dashboards/DoctorDashboard";
-import AdminDashboard from "@/pages/dashboards/AdminDashboard";
-import StaffDashboard from "@/pages/dashboards/StaffDashboard";
+import PatientDashboard from "@/pages/PatientDashboard";
+import DoctorDashboard from "@/pages/DoctorDashboard";
+import AdminDashboard from "@/pages/AdminDashboard";
+import StaffDashboard from "@/pages/StaffDashboard";
 
-import Profile from "@/pages/Profile";
+import ProfilePage from "@/pages/ProfilePage";
 import Settings from "@/pages/Settings";
 import Notifications from "@/pages/Notifications";
 
@@ -24,10 +24,10 @@ export default function App() {
       <Header />
       <RoleRouteSync />
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
 
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/notifications" element={<Notifications />} />
 
