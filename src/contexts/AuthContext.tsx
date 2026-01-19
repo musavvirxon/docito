@@ -1,10 +1,11 @@
+// File: src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { Session, User } from "@supabase/supabase-js";
+import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useInactivityTimer } from "@/hooks/useInactivityTimer";
 import { InactivityWarningModal } from "@/components/InactivityWarningModal";
-import { getPrimaryRole, ROLE_PRIORITY, type AppRole } from "@/lib/rbac";
+import { getPrimaryRole, getUserRolesFromProfile, type AppRole } from "@/lib/rbac";
 
 interface Profile {
   id: string;
@@ -67,10 +68,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [activeRole, setActiveRole] = useState<AppRole>("patient");
   const [roleStatus, setRoleStatus] = useState<Partial<Record<AppRole, RoleVerificationStatus>>>({});
 
+  // IMPORTANT: This must include legacy profile.role when user_roles is empty.
   const allRoles: AppRole[] = useMemo(() => {
-    const rolesFromDb = profile?.roles ?? [];
-    return rolesFromDb.filter(Boolean) as AppRole[];
-  }, [profile?.roles]);
+    if (!profile) return [];
+    const roles = getUserRolesFromProfile(profile);
+    // Dedupe, preserve order
+    return Array.from(new Set(roles));
+  }, [profile?.role, profile?.roles, profile]);
 
   const switchRole = (role: AppRole) => {
     if (!allRoles.includes(role)) {
@@ -126,11 +130,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchRoleVerification = async (userId: string, roles: AppRole[]) => {
     if (roles.includes("doctor")) {
       try {
-        const { data: doctorData } = await supabase
-          .from("doctors")
-          .select("id")
-          .eq("user_id", userId)
-          .maybeSingle();
+        const { data: doctorData } = await supabase.from("doctors").select("id").eq("user_id", userId).maybeSingle();
 
         if (doctorData?.id) {
           const { data } = await supabase
@@ -150,16 +150,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const pickInitialRole = (roles: AppRole[]) => {
-    const computedPrimary = getPrimaryRole(roles);
+    if (!roles?.length) return "patient";
+
     const saved = localStorage.getItem(ACTIVE_ROLE_KEY) as AppRole | null;
 
-    // ✅ Only keep saved role if it exists AND isn't lower priority than computed primary
-    if (saved && roles.includes(saved)) {
-      const savedScore = ROLE_PRIORITY[saved] ?? 0;
-      const primaryScore = ROLE_PRIORITY[computedPrimary] ?? 0;
-      if (savedScore >= primaryScore) return saved;
-    }
-    return computedPrimary;
+    // Respect saved role if it exists for the user (even if lower priority).
+    if (saved && roles.includes(saved)) return saved;
+
+    return getPrimaryRole(roles);
   };
 
   const fetchProfile = async (userId: string) => {
@@ -172,25 +170,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (profileError) throw profileError;
 
-      const roles = await fetchRoles(userId);
+      const rolesFromDb = await fetchRoles(userId);
 
-      const mergedProfile = { ...profileData, roles };
+      const mergedRoles = getUserRolesFromProfile({ role: profileData?.role, roles: rolesFromDb });
+
+      const mergedProfile = { ...profileData, roles: mergedRoles } as Profile;
       setProfile(mergedProfile);
 
-      const initial = pickInitialRole(roles);
+      const initial = pickInitialRole(mergedRoles);
       setActiveRole(initial);
       localStorage.setItem(ACTIVE_ROLE_KEY, initial);
 
-      fetchRoleVerification(userId, roles);
+      fetchRoleVerification(userId, mergedRoles);
     } catch (e: any) {
       console.error("Error fetching profile:", e);
+      const fallbackRoles = getUserRolesFromProfile({ role: "patient", roles: [] });
       setProfile({
         id: "temp",
         user_id: userId,
         full_name: "User",
         email: user?.email ?? "user@example.com",
         role: "patient",
-        roles: [],
+        roles: fallbackRoles,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       });
