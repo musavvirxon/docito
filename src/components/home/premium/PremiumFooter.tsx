@@ -1,34 +1,25 @@
 // File: src/components/home/premium/PremiumFooter.tsx
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useEffect } from "react";
-import {
-  Twitter,
-  Facebook,
-  Instagram,
-  Linkedin,
-  Youtube,
-  Mail,
-  Phone,
-  MapPin,
-  Globe,
-} from "lucide-react";
+import { Twitter, Facebook, Instagram, Linkedin, Youtube, Mail, Phone, MapPin, Globe } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import ThemeToggle from "@/components/home/ThemeToggle";
+import { languages as allLanguages } from "@/i18n/config";
 
 const footerLinks = {
   platform: [
     { key: "about", href: "/about" },
     { key: "features", href: "/features" },
     { key: "findDoctors", href: "/find-doctors" },
+    { key: "searchDoctors", href: "/search-doctors" },
     { key: "specialties", href: "/specialties" },
     { key: "howItWorks", href: "/how-it-works" },
   ],
   support: [
     { key: "helpCenter", href: "/help" },
     { key: "contact", href: "/contact" },
-    { key: "faq", href: "/faqs" },
-    { key: "documentation", href: "/docs" },
+    { key: "faqs", href: "/faqs" },
+    { key: "support", href: "/support" },
   ],
   legal: [
     { key: "terms", href: "/terms" },
@@ -46,34 +37,22 @@ const socialLinks = [
   { icon: Youtube, href: "https://youtube.com/docito", label: "YouTube" },
 ] as const;
 
-const languages = [
-  { code: "en", name: "English", flag: "🇬🇧" }, // LTR
-  { code: "ru", name: "Русский", flag: "🇷🇺" }, // LTR
-  { code: "uz", name: "O'zbek", flag: "🇺🇿" }, // LTR
-  { code: "ar", name: "العربية", flag: "🇸🇦" }, // RTL
-  { code: "tr", name: "Türkçe", flag: "🇹🇷" },
-  { code: "es", name: "Español", flag: "🇪🇸" },
-  { code: "de", name: "Deutsch", flag: "🇩🇪" },
-  { code: "zh", name: "中文", flag: "🇨🇳" },
-  { code: "pt", name: "Português", flag: "🇧🇷" },
-  { code: "ja", name: "日本語", flag: "🇯🇵" },
-  { code: "ko", name: "한국어", flag: "🇰🇷" },
-] as const;
-
-const RTL_LANGS = new Set<string>(["ar"]);
-
 const fallbackLabels: Record<string, string> = {
+  // Platform
   about: "About",
   features: "Features",
-  findDoctors: "Find Doctors",
+  findDoctors: "Find doctors",
+  searchDoctors: "Search doctors",
   specialties: "Specialties",
-  howItWorks: "How It Works",
+  howItWorks: "How it works",
 
+  // Support
   helpCenter: "Help Center",
   contact: "Contact",
-  faq: "FAQs",
-  documentation: "Documentation",
+  faqs: "FAQs",
+  support: "Support",
 
+  // Legal
   terms: "Terms",
   privacy: "Privacy",
   cookies: "Cookies",
@@ -81,13 +60,8 @@ const fallbackLabels: Record<string, string> = {
 };
 
 function titleizeKey(key: string) {
-  const withSpaces = key
-    .replace(/_/g, " ")
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .trim();
-
+  const withSpaces = key.replace(/_/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").trim();
   if (!withSpaces) return key;
-
   return withSpaces
     .split(/\s+/)
     .map((w) => (w.length ? w[0].toUpperCase() + w.slice(1) : w))
@@ -98,20 +72,39 @@ function fallbackFor(key: string) {
   return fallbackLabels[key] || titleizeKey(key);
 }
 
-function safeString(v: unknown, fallback: string) {
-  return typeof v === "string" ? v : fallback;
+function languageLabel(code: string) {
+  // Exact labels requested
+  switch (code) {
+    case "en":
+      return "en — English 🇬🇧 (LTR)";
+    case "ru":
+      return "ru — Русский 🇷🇺 (LTR)";
+    case "uz":
+      return "uz — O'zbek 🇺🇿 (LTR)";
+    case "ar":
+      return "ar — العربية 🇸🇦 (RTL enabled)";
+    case "tr":
+      return "tr — Türkçe 🇹🇷";
+    case "es":
+      return "es — Español 🇪🇸";
+    case "de":
+      return "de — Deutsch 🇩🇪";
+    case "zh":
+      return "zh — 中文 🇨🇳";
+    case "pt":
+      return "pt — Português 🇧🇷";
+    case "ja":
+      return "ja — 日本語 🇯🇵";
+    case "ko":
+      return "ko — 한국어 🇰🇷";
+    default:
+      return code;
+  }
 }
 
 export default function PremiumFooter() {
   const { t, i18n } = useTranslation(["home", "common"]);
   const currentYear = new Date().getFullYear();
-
-  useEffect(() => {
-    const lang = (i18n.language || "en").split("-")[0];
-    const isRtl = RTL_LANGS.has(lang);
-    document.documentElement.dir = isRtl ? "rtl" : "ltr";
-    document.documentElement.lang = lang;
-  }, [i18n.language]);
 
   return (
     <footer className="relative bg-muted/30 border-t border-border/50">
@@ -123,13 +116,7 @@ export default function PremiumFooter() {
             </Link>
 
             <p className="text-sm text-muted-foreground mb-6 max-w-sm">
-              {safeString(
-                t(
-                  "home:footer.description",
-                  "The Complete Healthcare Operating System For Modern Medical Practices."
-                ),
-                "The Complete Healthcare Operating System For Modern Medical Practices."
-              )}
+              {t("home:footer.description", "The Complete Healthcare Operating System For Modern Medical Practices.")}
             </p>
 
             <div className="flex items-center gap-3">
@@ -150,70 +137,52 @@ export default function PremiumFooter() {
 
           <div>
             <p className="text-sm font-semibold text-foreground mb-4" role="heading" aria-level={2}>
-              {safeString(t("home:footer.platform.title", "Platform"), "Platform")}
+              {t("home:footer.platform.title", "Platform")}
             </p>
             <ul className="space-y-3">
-              {footerLinks.platform.map((link) => {
-                const fb = fallbackFor(link.key);
-                return (
-                  <li key={link.key}>
-                    <Link
-                      to={link.href}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {safeString(t(`home:footer.links.${link.key}`, fb), fb)}
-                    </Link>
-                  </li>
-                );
-              })}
+              {footerLinks.platform.map((link) => (
+                <li key={link.key}>
+                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    {t(`home:footer.links.${link.key}`, fallbackFor(link.key))}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           <div>
             <p className="text-sm font-semibold text-foreground mb-4" role="heading" aria-level={2}>
-              {safeString(t("home:footer.support.title", "Support"), "Support")}
+              {t("home:footer.support.title", "Support")}
             </p>
             <ul className="space-y-3">
-              {footerLinks.support.map((link) => {
-                const fb = fallbackFor(link.key);
-                return (
-                  <li key={link.key}>
-                    <Link
-                      to={link.href}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {safeString(t(`home:footer.links.${link.key}`, fb), fb)}
-                    </Link>
-                  </li>
-                );
-              })}
+              {footerLinks.support.map((link) => (
+                <li key={link.key}>
+                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    {t(`home:footer.links.${link.key}`, fallbackFor(link.key))}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           <div>
             <p className="text-sm font-semibold text-foreground mb-4" role="heading" aria-level={2}>
-              {safeString(t("home:footer.legal.title", "Legal"), "Legal")}
+              {t("home:footer.legal.title", "Legal")}
             </p>
             <ul className="space-y-3">
-              {footerLinks.legal.map((link) => {
-                const fb = fallbackFor(link.key);
-                return (
-                  <li key={link.key}>
-                    <Link
-                      to={link.href}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {safeString(t(`home:footer.links.${link.key}`, fb), fb)}
-                    </Link>
-                  </li>
-                );
-              })}
+              {footerLinks.legal.map((link) => (
+                <li key={link.key}>
+                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    {t(`home:footer.links.${link.key}`, fallbackFor(link.key))}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           <div>
             <p className="text-sm font-semibold text-foreground mb-4" role="heading" aria-level={2}>
-              {safeString(t("home:footer.contactTitle", "Contact"), "Contact")}
+              {t("home:footer.contactTitle", "Contact")}
             </p>
             <ul className="space-y-3">
               <li>
@@ -249,8 +218,7 @@ export default function PremiumFooter() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-muted-foreground text-center md:text-left">
-              © {currentYear} Docito®.{" "}
-              {safeString(t("home:footer.rights", "All Rights Reserved."), "All Rights Reserved.")}
+              © {currentYear} Docito®. {t("home:footer.rights", "All Rights Reserved.")}
             </p>
 
             <div className="flex items-center gap-4">
@@ -259,14 +227,14 @@ export default function PremiumFooter() {
               <div className="flex items-center gap-2">
                 <Globe className="w-4 h-4 text-muted-foreground" />
                 <select
-                  value={(i18n.language || "en").split("-")[0]}
+                  value={i18n.language}
                   onChange={(e) => i18n.changeLanguage(e.target.value)}
-                  aria-label={safeString(t("common:language.select", "Select Language"), "Select Language")}
+                  aria-label={t("common:language.select", "Select Language")}
                   className="bg-background text-sm text-muted-foreground hover:text-foreground cursor-pointer focus:outline-none border border-border/50 rounded-lg px-2 py-1"
                 >
-                  {languages.map((lang) => (
+                  {allLanguages.map((lang) => (
                     <option key={lang.code} value={lang.code}>
-                      {lang.name} {lang.flag}
+                      {languageLabel(lang.code)}
                     </option>
                   ))}
                 </select>
