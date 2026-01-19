@@ -4,49 +4,72 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Reveal from "./Reveal";
 import { ShieldCheck, Lock, ClipboardList, LayoutDashboard } from "lucide-react";
 
-export type RolePanelContent = {
+export type RolePanelData = {
   whatYouDo: string[];
   automates: string[];
   features: Array<{ title: string; desc: string }>;
   trust: string;
+  dashboard: {
+    title: string;
+    rows: Array<{ k: string; v: string; tag?: string }>;
+  };
 };
 
-function safeArray(v: unknown, fallback: string[]): string[] {
+function safeStringArray(v: unknown, fallback: string[]): string[] {
   if (Array.isArray(v) && v.every((x) => typeof x === "string")) return v as string[];
   return fallback;
 }
 
+function safeFeaturesArray(
+  v: unknown,
+  fallback: Array<{ title: string; desc: string }>
+): Array<{ title: string; desc: string }> {
+  if (
+    Array.isArray(v) &&
+    v.every(
+      (x) =>
+        x &&
+        typeof x === "object" &&
+        typeof (x as any).title === "string" &&
+        typeof (x as any).desc === "string"
+    )
+  ) {
+    return v as Array<{ title: string; desc: string }>;
+  }
+  return fallback;
+}
+
 export default function RolePanel({
-  title,
-  content,
-  whatYouDoTitle,
-  automatesTitle,
-  featuresTitle,
-  dashboardPreviewTitle,
-  trustTitle,
+  roleKey,
+  labels,
+  data,
   loading = false,
 }: {
-  title: string;
-  content: RolePanelContent;
-  whatYouDoTitle: string;
-  automatesTitle: string;
-  featuresTitle: string;
-  dashboardPreviewTitle: string;
-  trustTitle: string;
+  roleKey: string;
+  labels: {
+    whatYouDoTitle: string;
+    automatesTitle: string;
+    featuresTitle: string;
+    dashboardPreviewTitle: string;
+    trustTitle: string;
+  };
+  data: RolePanelData;
   loading?: boolean;
 }) {
-  const whatYouDo = safeArray(content.whatYouDo, []);
-  const automates = safeArray(content.automates, []);
+  const whatYouDo = safeStringArray(data.whatYouDo, []);
+  const automates = safeStringArray(data.automates, []);
+  const features = safeFeaturesArray(data.features, []);
+  const trust = typeof data.trust === "string" ? data.trust : "";
 
   return (
-    <div className="mt-6 grid gap-6 lg:grid-cols-12">
+    <div className="grid gap-6 lg:grid-cols-12">
       <div className="lg:col-span-7 space-y-6">
         <Reveal>
           <Card className="rounded-3xl border-border/50 bg-background/40 backdrop-blur p-6 sm:p-7">
             <div className="flex items-center justify-between gap-4">
-              <div className="text-base font-medium">{whatYouDoTitle}</div>
+              <div className="text-base font-medium">{labels.whatYouDoTitle}</div>
               <Badge variant="secondary" className="rounded-full">
-                {title}
+                {roleKey}
               </Badge>
             </div>
 
@@ -69,11 +92,11 @@ export default function RolePanel({
           </Card>
         </Reveal>
 
-        <Reveal delay={0.03}>
+        <Reveal delayMs={60}>
           <Card className="rounded-3xl border-border/50 bg-background/40 backdrop-blur p-6 sm:p-7">
             <div className="flex items-center gap-2 text-base font-medium">
               <ClipboardList className="h-4 w-4 text-primary" />
-              {automatesTitle}
+              {labels.automatesTitle}
             </div>
 
             {loading ? (
@@ -95,9 +118,9 @@ export default function RolePanel({
           </Card>
         </Reveal>
 
-        <Reveal delay={0.05}>
+        <Reveal delayMs={100}>
           <div>
-            <div className="mb-4 text-base font-medium">{featuresTitle}</div>
+            <div className="mb-4 text-base font-medium">{labels.featuresTitle}</div>
             <div className="grid gap-4 sm:grid-cols-2">
               {loading
                 ? Array.from({ length: 4 }).map((_, i) => (
@@ -110,7 +133,7 @@ export default function RolePanel({
                       <Skeleton className="mt-2 h-4 w-5/6" />
                     </Card>
                   ))
-                : content.features.map((f, i) => (
+                : features.map((f, i) => (
                     <Card
                       key={i}
                       className="rounded-3xl border-border/50 bg-background/40 backdrop-blur p-6 shadow-sm"
@@ -129,20 +152,20 @@ export default function RolePanel({
           <Card className="rounded-3xl border-border/50 bg-background/40 backdrop-blur p-6 sm:p-7 shadow-sm">
             <div className="flex items-center gap-2 text-base font-medium">
               <LayoutDashboard className="h-4 w-4 text-primary" />
-              {dashboardPreviewTitle}
+              {labels.dashboardPreviewTitle}
             </div>
 
             <div className="mt-5 rounded-2xl border border-border/50 bg-background/60 p-5">
-              <DashboardPreviewMock title={title} loading={loading} />
+              <DashboardPreviewMock title={data.dashboard.title} rows={data.dashboard.rows} loading={loading} />
             </div>
           </Card>
         </Reveal>
 
-        <Reveal delay={0.04}>
+        <Reveal delayMs={80}>
           <Card className="rounded-3xl border-border/50 bg-muted/20 p-6 sm:p-7">
             <div className="flex items-center gap-2 text-base font-medium">
               <ShieldCheck className="h-4 w-4 text-primary" />
-              {trustTitle}
+              {labels.trustTitle}
             </div>
 
             {loading ? (
@@ -151,7 +174,7 @@ export default function RolePanel({
                 <Skeleton className="h-4 w-4/6" />
               </div>
             ) : (
-              <p className="mt-4 text-sm text-muted-foreground leading-relaxed">{content.trust}</p>
+              <p className="mt-4 text-sm text-muted-foreground leading-relaxed">{trust}</p>
             )}
 
             <div className="mt-5 flex flex-wrap gap-2">
@@ -177,24 +200,17 @@ export default function RolePanel({
 
 function DashboardPreviewMock({
   title,
+  rows,
   loading,
 }: {
   title: string;
+  rows: Array<{ k: string; v: string; tag?: string }>;
   loading?: boolean;
 }) {
-  // Generate mock dashboard rows based on role
-  const rows = [
-    { k: "Today's appointments", v: "12", tag: "Active" },
-    { k: "Pending actions", v: "3" },
-    { k: "New messages", v: "5" },
-    { k: "Completed this week", v: "47" },
-    { k: "Overall rating", v: "4.9" },
-  ];
-
   return (
     <div className="select-none">
       <div className="flex items-center justify-between gap-3">
-        <div className="text-sm font-medium text-foreground">{title} Dashboard</div>
+        <div className="text-sm font-medium text-foreground">{title}</div>
         <span className="text-xs text-muted-foreground">Docito</span>
       </div>
 
