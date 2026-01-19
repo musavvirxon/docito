@@ -1,171 +1,240 @@
 // File: src/components/howItWorks/RolePanel.tsx
-import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import FadeIn from "./FadeIn";
-import { ShieldCheck, KeyRound } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import Reveal from "./Reveal";
+import { ShieldCheck, Lock, ClipboardList, LayoutDashboard } from "lucide-react";
 
 export type RolePanelData = {
-  roleId: string;
-  roleLabelKey: string;
-  roleLabelFallback: string;
-
-  whatYouDo: { key: string; fallback: string }[];
-  automates: { key: string; fallback: string }[];
-  features: { titleKey: string; titleFallback: string; descKey: string; descFallback: string }[];
-
+  whatYouDo: string[];
+  automates: string[];
+  features: Array<{ title: string; desc: string }>;
+  trust: string;
   dashboard: {
-    titleKey: string;
-    titleFallback: string;
-    widgets: { labelKey: string; labelFallback: string; lines?: number }[];
+    title: string;
+    rows: Array<{ k: string; v: string; tag?: string }>;
   };
-
-  trust: { key: string; fallback: string }[];
 };
 
-function safeString(v: unknown, fallback: string) {
-  return typeof v === "string" ? v : fallback;
+function safeArray(v: unknown, fallback: string[]): string[] {
+  if (Array.isArray(v) && v.every((x) => typeof x === "string")) return v as string[];
+  return fallback;
 }
 
-export default function RolePanel({ data }: { data: RolePanelData }) {
-  const { t } = useTranslation(["howItWorks"]);
-
-  const whatYouDoTitle = safeString(t("howItWorks.rolePanel.whatYouDoTitle", "What you do in Docito"), "What you do in Docito");
-  const automatesTitle = safeString(t("howItWorks.rolePanel.automatesTitle", "What Docito automates"), "What Docito automates");
-  const featuresTitle = safeString(t("howItWorks.rolePanel.featuresTitle", "Key features"), "Key features");
-  const dashboardTitle = safeString(
-    t("howItWorks.rolePanel.dashboardPreviewTitle", "Dashboard preview"),
-    "Dashboard preview"
-  );
-  const trustTitle = safeString(t("howItWorks.rolePanel.trustTitle", "Trust & permissions"), "Trust & permissions");
+export default function RolePanel({
+  roleKey,
+  labels,
+  data,
+  loading = false,
+}: {
+  roleKey: string;
+  labels: {
+    whatYouDoTitle: string;
+    automatesTitle: string;
+    featuresTitle: string;
+    dashboardPreviewTitle: string;
+    trustTitle: string;
+  };
+  data: RolePanelData;
+  loading?: boolean;
+}) {
+  const whatYouDo = safeArray(data.whatYouDo, []);
+  const automates = safeArray(data.automates, []);
 
   return (
-    <FadeIn rootMargin="100px">
-      <div className="space-y-8">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="secondary" className="rounded-full">
-            {safeString(t(data.roleLabelKey, data.roleLabelFallback), data.roleLabelFallback)}
-          </Badge>
-          <span className="text-xs text-muted-foreground">
-            {safeString(t("howItWorks.roles.subtitle", "What you see, what you do, and what Docito handles for you."), "What you see, what you do, and what Docito handles for you.")}
-          </span>
-        </div>
-
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Card className="rounded-3xl border-border/50 bg-background/40 backdrop-blur">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base font-medium">{whatYouDoTitle}</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                {data.whatYouDo.map((x) => (
-                  <li key={x.key} className="flex gap-3">
-                    <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary/60" />
-                    <span>{safeString(t(x.key, x.fallback), x.fallback)}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-3xl border-border/50 bg-background/40 backdrop-blur">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base font-medium">{automatesTitle}</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                {data.automates.map((x) => (
-                  <li key={x.key} className="flex gap-3">
-                    <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary/60" />
-                    <span>{safeString(t(x.key, x.fallback), x.fallback)}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="text-lg font-light">{featuresTitle}</h3>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {data.features.map((f) => (
-              <Card key={f.titleKey} className="rounded-3xl border-border/50 bg-muted/15">
-                <CardContent className="p-6">
-                  <p className="text-sm font-medium">
-                    {safeString(t(f.titleKey, f.titleFallback), f.titleFallback)}
-                  </p>
-                  <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                    {safeString(t(f.descKey, f.descFallback), f.descFallback)}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        <Card className="rounded-3xl border-border/50 bg-background/40 backdrop-blur">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-medium">{dashboardTitle}</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="grid gap-4 lg:grid-cols-3">
-              <div className="lg:col-span-2 rounded-2xl border border-border/50 bg-muted/10 p-5">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium">
-                    {safeString(t(data.dashboard.titleKey, data.dashboard.titleFallback), data.dashboard.titleFallback)}
-                  </p>
-                  <span className="text-xs text-muted-foreground">{safeString(t("howItWorks.dashboard.previewNote", "Vector UI mock"), "Vector UI mock")}</span>
-                </div>
-
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  {data.dashboard.widgets.map((w) => (
-                    <div key={w.labelKey} className="rounded-2xl border border-border/40 bg-background/40 p-4">
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs font-medium text-muted-foreground">
-                          {safeString(t(w.labelKey, w.labelFallback), w.labelFallback)}
-                        </p>
-                        <span className="h-2 w-2 rounded-full bg-primary/40" />
-                      </div>
-                      <div className="mt-3 space-y-2">
-                        {Array.from({ length: w.lines ?? 3 }).map((_, i) => (
-                          <div key={i} className="h-2 rounded bg-muted/40" style={{ width: `${86 - i * 12}%` }} />
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <span className="inline-flex items-center rounded-full border border-border/50 bg-background/60 px-3 py-1 text-xs text-muted-foreground">
-                    {safeString(t("howItWorks.dashboard.tag1", "Work queues"), "Work queues")}
-                  </span>
-                  <span className="inline-flex items-center rounded-full border border-border/50 bg-background/60 px-3 py-1 text-xs text-muted-foreground">
-                    {safeString(t("howItWorks.dashboard.tag2", "Tasks & approvals"), "Tasks & approvals")}
-                  </span>
-                  <span className="inline-flex items-center rounded-full border border-border/50 bg-background/60 px-3 py-1 text-xs text-muted-foreground">
-                    {safeString(t("howItWorks.dashboard.tag3", "Audit-ready"), "Audit-ready")}
-                  </span>
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-border/50 bg-muted/10 p-5">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-primary" />
-                  <p className="text-sm font-medium">{trustTitle}</p>
-                </div>
-                <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-                  {data.trust.map((x) => (
-                    <li key={x.key} className="flex gap-3">
-                      <KeyRound className="mt-0.5 h-4 w-4 text-primary/70" />
-                      <span>{safeString(t(x.key, x.fallback), x.fallback)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+    <div className="grid gap-6 lg:grid-cols-12">
+      <div className="lg:col-span-7 space-y-6">
+        <Reveal>
+          <Card className="rounded-3xl border-border/50 bg-background/40 backdrop-blur p-6 sm:p-7">
+            <div className="flex items-center justify-between gap-4">
+              <div className="text-base font-medium">{labels.whatYouDoTitle}</div>
+              <Badge variant="secondary" className="rounded-full">
+                {roleKey}
+              </Badge>
             </div>
-          </CardContent>
-        </Card>
+
+            {loading ? (
+              <div className="mt-4 space-y-3">
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-4 w-4/6" />
+                <Skeleton className="h-4 w-3/6" />
+              </div>
+            ) : (
+              <ul className="mt-4 space-y-3 text-sm text-muted-foreground leading-relaxed">
+                {whatYouDo.map((x, i) => (
+                  <li key={i} className="flex gap-3">
+                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary/70 flex-shrink-0" />
+                    <span>{x}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+        </Reveal>
+
+        <Reveal delay={0.03}>
+          <Card className="rounded-3xl border-border/50 bg-background/40 backdrop-blur p-6 sm:p-7">
+            <div className="flex items-center gap-2 text-base font-medium">
+              <ClipboardList className="h-4 w-4 text-primary" />
+              {labels.automatesTitle}
+            </div>
+
+            {loading ? (
+              <div className="mt-4 space-y-3">
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-4 w-4/6" />
+                <Skeleton className="h-4 w-3/6" />
+              </div>
+            ) : (
+              <ul className="mt-4 space-y-3 text-sm text-muted-foreground leading-relaxed">
+                {automates.map((x, i) => (
+                  <li key={i} className="flex gap-3">
+                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary/70 flex-shrink-0" />
+                    <span>{x}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+        </Reveal>
+
+        <Reveal delay={0.05}>
+          <div>
+            <div className="mb-4 text-base font-medium">{labels.featuresTitle}</div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {loading
+                ? Array.from({ length: 4 }).map((_, i) => (
+                    <Card
+                      key={i}
+                      className="rounded-3xl border-border/50 bg-background/40 backdrop-blur p-6"
+                    >
+                      <Skeleton className="h-4 w-2/3" />
+                      <Skeleton className="mt-3 h-4 w-full" />
+                      <Skeleton className="mt-2 h-4 w-5/6" />
+                    </Card>
+                  ))
+                : data.features.map((f, i) => (
+                    <Card
+                      key={i}
+                      className="rounded-3xl border-border/50 bg-background/40 backdrop-blur p-6 shadow-sm"
+                    >
+                      <div className="text-sm font-medium text-foreground">{f.title}</div>
+                      <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+                    </Card>
+                  ))}
+            </div>
+          </div>
+        </Reveal>
       </div>
-    </FadeIn>
+
+      <div className="lg:col-span-5 space-y-6">
+        <Reveal>
+          <Card className="rounded-3xl border-border/50 bg-background/40 backdrop-blur p-6 sm:p-7 shadow-sm">
+            <div className="flex items-center gap-2 text-base font-medium">
+              <LayoutDashboard className="h-4 w-4 text-primary" />
+              {labels.dashboardPreviewTitle}
+            </div>
+
+            <div className="mt-5 rounded-2xl border border-border/50 bg-background/60 p-5">
+              <DashboardPreviewMock title={data.dashboard.title} rows={data.dashboard.rows} loading={loading} />
+            </div>
+          </Card>
+        </Reveal>
+
+        <Reveal delay={0.04}>
+          <Card className="rounded-3xl border-border/50 bg-muted/20 p-6 sm:p-7">
+            <div className="flex items-center gap-2 text-base font-medium">
+              <ShieldCheck className="h-4 w-4 text-primary" />
+              {labels.trustTitle}
+            </div>
+
+            {loading ? (
+              <div className="mt-4 space-y-3">
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-4 w-4/6" />
+              </div>
+            ) : (
+              <p className="mt-4 text-sm text-muted-foreground leading-relaxed">{data.trust}</p>
+            )}
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              <span className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/50 px-3 py-1 text-xs text-muted-foreground">
+                <Lock className="h-3.5 w-3.5" />
+                RBAC
+              </span>
+              <span className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/50 px-3 py-1 text-xs text-muted-foreground">
+                <Lock className="h-3.5 w-3.5" />
+                Audit trails
+              </span>
+              <span className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/50 px-3 py-1 text-xs text-muted-foreground">
+                <Lock className="h-3.5 w-3.5" />
+                Scoped sharing
+              </span>
+            </div>
+          </Card>
+        </Reveal>
+      </div>
+    </div>
+  );
+}
+
+function DashboardPreviewMock({
+  title,
+  rows,
+  loading,
+}: {
+  title: string;
+  rows: Array<{ k: string; v: string; tag?: string }>;
+  loading?: boolean;
+}) {
+  return (
+    <div className="select-none">
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-sm font-medium text-foreground">{title}</div>
+        <span className="text-xs text-muted-foreground">Docito</span>
+      </div>
+
+      <div className="mt-4 grid gap-2">
+        {loading
+          ? Array.from({ length: 5 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between gap-3 rounded-xl border border-border/40 bg-muted/20 px-3 py-2"
+              >
+                <div className="w-1/2">
+                  <Skeleton className="h-3 w-32" />
+                </div>
+                <div className="w-1/3 flex justify-end">
+                  <Skeleton className="h-3 w-20" />
+                </div>
+              </div>
+            ))
+          : rows.map((r) => (
+              <div
+                key={r.k}
+                className="flex items-center justify-between gap-3 rounded-xl border border-border/40 bg-muted/20 px-3 py-2"
+              >
+                <div className="text-xs text-muted-foreground">{r.k}</div>
+                <div className="flex items-center gap-2">
+                  {r.tag ? (
+                    <span className="rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[11px] text-primary">
+                      {r.tag}
+                    </span>
+                  ) : null}
+                  <div className="text-xs text-foreground">{r.v}</div>
+                </div>
+              </div>
+            ))}
+      </div>
+
+      <div className="mt-4 rounded-xl border border-border/40 bg-background/50 p-3">
+        <svg viewBox="0 0 420 56" className="w-full h-auto" aria-hidden>
+          <rect x="0" y="0" width="420" height="56" rx="12" fill="hsl(var(--muted) / 0.25)" />
+          <rect x="16" y="16" width="140" height="8" rx="4" fill="hsl(var(--foreground) / 0.12)" />
+          <rect x="16" y="32" width="220" height="8" rx="4" fill="hsl(var(--foreground) / 0.08)" />
+          <rect x="320" y="18" width="84" height="20" rx="10" fill="hsl(var(--primary) / 0.18)" />
+        </svg>
+      </div>
+    </div>
   );
 }
