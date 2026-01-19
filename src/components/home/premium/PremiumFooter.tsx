@@ -1,23 +1,32 @@
-// src/components/home/premium/PremiumFooter.tsx
+// File: src/components/home/premium/PremiumFooter.tsx
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Twitter, Facebook, Instagram, Linkedin, Youtube, Mail, Phone, MapPin, Globe } from "lucide-react";
+import {
+  Twitter,
+  Facebook,
+  Instagram,
+  Linkedin,
+  Youtube,
+  Mail,
+  Phone,
+  MapPin,
+  Globe,
+} from "lucide-react";
 import { Logo } from "@/components/Logo";
 import ThemeToggle from "@/components/home/ThemeToggle";
 
 const footerLinks = {
   platform: [
-    { key: "doctors", href: "/search?type=doctors" },
-    { key: "clinics", href: "/search?type=clinics" },
-    { key: "labs", href: "/search?type=labs" },
-    { key: "pharmacies", href: "/search?type=pharmacies" },
-    { key: "imaging", href: "/search?type=imaging" },
-    { key: "hospitals", href: "/search?type=hospitals" },
+    { key: "about", href: "/about" },
+    { key: "features", href: "/features" },
+    { key: "findDoctors", href: "/find-doctors" },
+    { key: "specialties", href: "/specialties" },
+    { key: "howItWorks", href: "/how-it-works" },
   ],
   support: [
     { key: "helpCenter", href: "/help" },
     { key: "contact", href: "/contact" },
-    { key: "faq", href: "/faq" },
+    { key: "faq", href: "/faqs" },
     { key: "documentation", href: "/docs" },
   ],
   legal: [
@@ -47,17 +56,16 @@ const languages = [
 
 const fallbackLabels: Record<string, string> = {
   // Platform
-  doctors: "Doctors",
-  clinics: "Clinics",
-  labs: "Labs",
-  pharmacies: "Pharmacies",
-  imaging: "Imaging",
-  hospitals: "Hospitals",
+  about: "About",
+  features: "Features",
+  findDoctors: "Find Doctors",
+  specialties: "Specialties",
+  howItWorks: "How It Works",
 
   // Support
   helpCenter: "Help Center",
   contact: "Contact",
-  faq: "FAQ",
+  faq: "FAQs",
   documentation: "Documentation",
 
   // Legal
@@ -68,7 +76,6 @@ const fallbackLabels: Record<string, string> = {
 };
 
 function titleizeKey(key: string) {
-  // Fallback fallback: turn "helpCenter" -> "Help Center", "some_key" -> "Some Key"
   const withSpaces = key
     .replace(/_/g, " ")
     .replace(/([a-z])([A-Z])/g, "$1 $2")
@@ -133,7 +140,10 @@ export default function PremiumFooter() {
             <ul className="space-y-3">
               {footerLinks.platform.map((link) => (
                 <li key={link.key}>
-                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  <Link
+                    to={link.href}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     {t(`home:footer.links.${link.key}`, fallbackFor(link.key))}
                   </Link>
                 </li>
@@ -149,7 +159,10 @@ export default function PremiumFooter() {
             <ul className="space-y-3">
               {footerLinks.support.map((link) => (
                 <li key={link.key}>
-                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  <Link
+                    to={link.href}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     {t(`home:footer.links.${link.key}`, fallbackFor(link.key))}
                   </Link>
                 </li>
@@ -165,7 +178,10 @@ export default function PremiumFooter() {
             <ul className="space-y-3">
               {footerLinks.legal.map((link) => (
                 <li key={link.key}>
-                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  <Link
+                    to={link.href}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     {t(`home:footer.links.${link.key}`, fallbackFor(link.key))}
                   </Link>
                 </li>
