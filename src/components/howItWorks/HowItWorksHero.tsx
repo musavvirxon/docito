@@ -124,8 +124,6 @@ export default function HowItWorksHero() {
           </div>
         </div>
       </div>
-
-      <div id="roles" className="scroll-mt-24" />
     </section>
   );
 }
