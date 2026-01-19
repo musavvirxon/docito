@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+// File: src/components/Header.tsx
+import { useMemo, useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Menu, X, User, LogOut, Settings, Bell as BellIcon, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,13 +16,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
 import ThemeToggle from "@/components/home/ThemeToggle";
-import { getDashboardRoute, roleLabels, type AppRole } from "@/lib/rbac";
+import {
+  DASHBOARD_ROUTES,
+  getDashboardRoute,
+  getUserRolesFromProfile,
+  roleLabels,
+  type AppRole,
+} from "@/lib/rbac";
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // ✅ roles added
   const { user, profile, signOut, allRoles, activeRole, switchRole } = useAuth();
 
   const navigate = useNavigate();
@@ -49,9 +55,34 @@ const Header = () => {
 
   const isActive = (href: string) => location.pathname === href;
 
+  const roles: AppRole[] = useMemo(() => {
+    if (!user) return [];
+    const fromContext = Array.isArray(allRoles) ? allRoles : [];
+    const fallback = getUserRolesFromProfile(profile);
+    const merged = fromContext.length > 0 ? fromContext : fallback;
+    return Array.from(new Set((merged || []).filter(Boolean) as AppRole[]));
+  }, [allRoles, profile, user]);
+
+  const canSwitchRoles = roles.length > 1;
+
+  const effectiveActiveRole: AppRole = useMemo(() => {
+    if (roles.length === 0) return activeRole;
+    return roles.includes(activeRole) ? activeRole : roles[0];
+  }, [activeRole, roles]);
+
+  const dashboardRoute = useMemo(() => {
+    if (roles.length > 0) return getDashboardRoute([effectiveActiveRole]);
+    return "/dashboard";
+  }, [effectiveActiveRole, roles.length]);
+
+  const dashboardLabel = useMemo(() => {
+    if (roles.length === 1) return `${roleLabels[roles[0]] || roles[0]} Dashboard`;
+    return "Dashboard";
+  }, [roles]);
+
   const handleRoleClick = (role: AppRole) => {
     switchRole(role);
-    navigate(getDashboardRoute([role]));
+    navigate(DASHBOARD_ROUTES[role] ?? getDashboardRoute([role]));
   };
 
   return (
@@ -68,19 +99,10 @@ const Header = () => {
       >
         <div className="max-w-[1200px] mx-auto px-6">
           <div className="flex items-center justify-between h-12">
-            {/* Logo */}
-            <Link
-              to="/"
-              className="flex items-center hover:opacity-70 transition-opacity duration-200"
-            >
-              <img
-                src="/logos/horizontal/docito-horizontal-sm.png"
-                alt="Docito"
-                className="h-6"
-              />
+            <Link to="/" className="flex items-center hover:opacity-70 transition-opacity duration-200">
+              <img src="/logos/horizontal/docito-horizontal-sm.png" alt="Docito" className="h-6" />
             </Link>
 
-            {/* Desktop Navigation */}
             <div className="hidden xl:flex items-center justify-center flex-1 mx-8">
               <div className="flex items-center gap-6">
                 {navLinks.map((link) => (
@@ -88,9 +110,7 @@ const Header = () => {
                     key={link.name}
                     to={link.href}
                     className={`text-xs font-medium transition-all duration-200 whitespace-nowrap ${
-                      isActive(link.href)
-                        ? "text-foreground"
-                        : "text-foreground/70 hover:text-foreground"
+                      isActive(link.href) ? "text-foreground" : "text-foreground/70 hover:text-foreground"
                     }`}
                   >
                     {link.name}
@@ -99,7 +119,6 @@ const Header = () => {
               </div>
             </div>
 
-            {/* Right Section */}
             <div className="hidden xl:flex items-center gap-3">
               <ThemeToggle />
               {user ? (
@@ -118,27 +137,28 @@ const Header = () => {
                     </DropdownMenuTrigger>
 
                     <DropdownMenuContent className="w-56" align="end">
-                      <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                      <DropdownMenuItem onClick={() => navigate(dashboardRoute)}>
                         <User className="mr-2 h-4 w-4" />
-                        <span>Dashboard</span>
+                        <span>{dashboardLabel}</span>
                       </DropdownMenuItem>
 
-                      {/* ✅ Roles section */}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuLabel className="text-xs text-muted-foreground">
-                        Your roles
-                      </DropdownMenuLabel>
+                      {canSwitchRoles ? (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuLabel className="text-xs text-muted-foreground">Your roles</DropdownMenuLabel>
 
-                      {(allRoles ?? []).map((role) => (
-                        <DropdownMenuItem
-                          key={role}
-                          onClick={() => handleRoleClick(role)}
-                          className="flex items-center justify-between"
-                        >
-                          <span>{roleLabels[role] ?? role}</span>
-                          {role === activeRole ? <Check className="h-4 w-4 opacity-70" /> : null}
-                        </DropdownMenuItem>
-                      ))}
+                          {roles.map((role) => (
+                            <DropdownMenuItem
+                              key={role}
+                              onClick={() => handleRoleClick(role)}
+                              className="flex items-center justify-between"
+                            >
+                              <span>{roleLabels[role] ?? role}</span>
+                              {role === effectiveActiveRole ? <Check className="h-4 w-4 opacity-70" /> : null}
+                            </DropdownMenuItem>
+                          ))}
+                        </>
+                      ) : null}
 
                       <DropdownMenuSeparator />
 
@@ -172,7 +192,6 @@ const Header = () => {
               )}
             </div>
 
-            {/* Mobile Menu Button */}
             <div className="flex xl:hidden items-center gap-2">
               <ThemeToggle />
               {user && <NotificationDropdown />}
@@ -187,7 +206,6 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
         <AnimatePresence>
           {isMobileMenuOpen && (
             <motion.div
@@ -210,9 +228,7 @@ const Header = () => {
                         to={link.href}
                         onClick={() => setIsMobileMenuOpen(false)}
                         className={`block py-3 text-base font-medium transition-colors ${
-                          isActive(link.href)
-                            ? "text-primary"
-                            : "text-foreground/80 hover:text-foreground"
+                          isActive(link.href) ? "text-primary" : "text-foreground/80 hover:text-foreground"
                         }`}
                       >
                         {link.name}
@@ -232,13 +248,37 @@ const Header = () => {
                       <Button
                         variant="outline"
                         onClick={() => {
-                          navigate("/dashboard");
+                          navigate(dashboardRoute);
                           setIsMobileMenuOpen(false);
                         }}
                         className="w-full h-12 text-base font-medium rounded-xl"
                       >
-                        Dashboard
+                        {dashboardLabel}
                       </Button>
+
+                      {canSwitchRoles ? (
+                        <div className="rounded-xl border border-border/50 overflow-hidden">
+                          <div className="px-4 py-2 text-xs text-muted-foreground bg-muted/40">Switch role</div>
+                          <div className="flex flex-col">
+                            {roles.map((role) => (
+                              <button
+                                key={role}
+                                onClick={() => {
+                                  handleRoleClick(role);
+                                  setIsMobileMenuOpen(false);
+                                }}
+                                className={`flex items-center justify-between px-4 py-3 text-left text-sm hover:bg-accent/50 transition-colors ${
+                                  role === effectiveActiveRole ? "bg-accent/40" : ""
+                                }`}
+                              >
+                                <span>{roleLabels[role] ?? role}</span>
+                                {role === effectiveActiveRole ? <Check className="h-4 w-4 opacity-70" /> : null}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+
                       <Button
                         onClick={() => {
                           signOut();
@@ -267,7 +307,6 @@ const Header = () => {
         </AnimatePresence>
       </motion.header>
 
-      {/* Spacer */}
       <div className="h-12" />
     </>
   );
