@@ -1,4 +1,3 @@
-// File: src/components/howItWorks/RoleSwitcher.tsx
 import { useEffect, useMemo, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTranslation } from "react-i18next";

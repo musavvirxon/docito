@@ -1,4 +1,3 @@
-// File: src/components/howItWorks/useInViewOnce.ts
 import { useEffect, useMemo, useRef, useState } from "react";
 
 type Options = {
@@ -11,8 +10,13 @@ function prefersReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-export function useInViewOnce<T extends HTMLElement>(options: Options = {}) {
-  const { rootMargin = "0px 0px -10% 0px", threshold = 0.12 } = options;
+export function useInViewOnce<T extends HTMLElement>(rootMarginOrOptions?: string | Options) {
+  // Handle both string and object params for backward compatibility
+  const opts: Options = typeof rootMarginOrOptions === "string" 
+    ? { rootMargin: rootMarginOrOptions } 
+    : rootMarginOrOptions || {};
+  
+  const { rootMargin = "0px 0px -10% 0px", threshold = 0.12 } = opts;
 
   const ref = useRef<T | null>(null);
   const [inView, setInView] = useState(false);

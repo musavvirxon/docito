@@ -231,11 +231,10 @@ export default function SmartSearch() {
           {/* Results */}
           <div className="relative px-6 lg:px-8 pb-6 lg:pb-8">
             <SearchResultsContainer
-              results={results as DoctorResult[]}
+              results={results}
               loading={loading}
               error={error}
               hasSearched={hasSearched}
-              onReset={resetSearch}
               onFilterChange={handleFilterChange}
               filters={filters}
             />

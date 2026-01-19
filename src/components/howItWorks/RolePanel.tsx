@@ -1,19 +1,14 @@
-// File: src/components/howItWorks/RolePanel.tsx
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import Reveal from "./Reveal";
 import { ShieldCheck, Lock, ClipboardList, LayoutDashboard } from "lucide-react";
 
-export type RolePanelData = {
+export type RolePanelContent = {
   whatYouDo: string[];
   automates: string[];
   features: Array<{ title: string; desc: string }>;
   trust: string;
-  dashboard: {
-    title: string;
-    rows: Array<{ k: string; v: string; tag?: string }>;
-  };
 };
 
 function safeArray(v: unknown, fallback: string[]): string[] {
@@ -22,34 +17,36 @@ function safeArray(v: unknown, fallback: string[]): string[] {
 }
 
 export default function RolePanel({
-  roleKey,
-  labels,
-  data,
+  title,
+  content,
+  whatYouDoTitle,
+  automatesTitle,
+  featuresTitle,
+  dashboardPreviewTitle,
+  trustTitle,
   loading = false,
 }: {
-  roleKey: string;
-  labels: {
-    whatYouDoTitle: string;
-    automatesTitle: string;
-    featuresTitle: string;
-    dashboardPreviewTitle: string;
-    trustTitle: string;
-  };
-  data: RolePanelData;
+  title: string;
+  content: RolePanelContent;
+  whatYouDoTitle: string;
+  automatesTitle: string;
+  featuresTitle: string;
+  dashboardPreviewTitle: string;
+  trustTitle: string;
   loading?: boolean;
 }) {
-  const whatYouDo = safeArray(data.whatYouDo, []);
-  const automates = safeArray(data.automates, []);
+  const whatYouDo = safeArray(content.whatYouDo, []);
+  const automates = safeArray(content.automates, []);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-12">
+    <div className="mt-6 grid gap-6 lg:grid-cols-12">
       <div className="lg:col-span-7 space-y-6">
         <Reveal>
           <Card className="rounded-3xl border-border/50 bg-background/40 backdrop-blur p-6 sm:p-7">
             <div className="flex items-center justify-between gap-4">
-              <div className="text-base font-medium">{labels.whatYouDoTitle}</div>
+              <div className="text-base font-medium">{whatYouDoTitle}</div>
               <Badge variant="secondary" className="rounded-full">
-                {roleKey}
+                {title}
               </Badge>
             </div>
 
@@ -76,7 +73,7 @@ export default function RolePanel({
           <Card className="rounded-3xl border-border/50 bg-background/40 backdrop-blur p-6 sm:p-7">
             <div className="flex items-center gap-2 text-base font-medium">
               <ClipboardList className="h-4 w-4 text-primary" />
-              {labels.automatesTitle}
+              {automatesTitle}
             </div>
 
             {loading ? (
@@ -100,7 +97,7 @@ export default function RolePanel({
 
         <Reveal delay={0.05}>
           <div>
-            <div className="mb-4 text-base font-medium">{labels.featuresTitle}</div>
+            <div className="mb-4 text-base font-medium">{featuresTitle}</div>
             <div className="grid gap-4 sm:grid-cols-2">
               {loading
                 ? Array.from({ length: 4 }).map((_, i) => (
@@ -113,7 +110,7 @@ export default function RolePanel({
                       <Skeleton className="mt-2 h-4 w-5/6" />
                     </Card>
                   ))
-                : data.features.map((f, i) => (
+                : content.features.map((f, i) => (
                     <Card
                       key={i}
                       className="rounded-3xl border-border/50 bg-background/40 backdrop-blur p-6 shadow-sm"
@@ -132,11 +129,11 @@ export default function RolePanel({
           <Card className="rounded-3xl border-border/50 bg-background/40 backdrop-blur p-6 sm:p-7 shadow-sm">
             <div className="flex items-center gap-2 text-base font-medium">
               <LayoutDashboard className="h-4 w-4 text-primary" />
-              {labels.dashboardPreviewTitle}
+              {dashboardPreviewTitle}
             </div>
 
             <div className="mt-5 rounded-2xl border border-border/50 bg-background/60 p-5">
-              <DashboardPreviewMock title={data.dashboard.title} rows={data.dashboard.rows} loading={loading} />
+              <DashboardPreviewMock title={title} loading={loading} />
             </div>
           </Card>
         </Reveal>
@@ -145,7 +142,7 @@ export default function RolePanel({
           <Card className="rounded-3xl border-border/50 bg-muted/20 p-6 sm:p-7">
             <div className="flex items-center gap-2 text-base font-medium">
               <ShieldCheck className="h-4 w-4 text-primary" />
-              {labels.trustTitle}
+              {trustTitle}
             </div>
 
             {loading ? (
@@ -154,7 +151,7 @@ export default function RolePanel({
                 <Skeleton className="h-4 w-4/6" />
               </div>
             ) : (
-              <p className="mt-4 text-sm text-muted-foreground leading-relaxed">{data.trust}</p>
+              <p className="mt-4 text-sm text-muted-foreground leading-relaxed">{content.trust}</p>
             )}
 
             <div className="mt-5 flex flex-wrap gap-2">
@@ -180,17 +177,24 @@ export default function RolePanel({
 
 function DashboardPreviewMock({
   title,
-  rows,
   loading,
 }: {
   title: string;
-  rows: Array<{ k: string; v: string; tag?: string }>;
   loading?: boolean;
 }) {
+  // Generate mock dashboard rows based on role
+  const rows = [
+    { k: "Today's appointments", v: "12", tag: "Active" },
+    { k: "Pending actions", v: "3" },
+    { k: "New messages", v: "5" },
+    { k: "Completed this week", v: "47" },
+    { k: "Overall rating", v: "4.9" },
+  ];
+
   return (
     <div className="select-none">
       <div className="flex items-center justify-between gap-3">
-        <div className="text-sm font-medium text-foreground">{title}</div>
+        <div className="text-sm font-medium text-foreground">{title} Dashboard</div>
         <span className="text-xs text-muted-foreground">Docito</span>
       </div>
 
