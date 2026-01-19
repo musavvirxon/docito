@@ -38,7 +38,7 @@ export const rtlLanguages = ['ar', 'he', 'fa', 'ur'];
 export const isRTL = (langCode: string): boolean => rtlLanguages.includes(langCode);
 
 // Helper to get language direction
-export const getDirection = (langCode: string): 'ltr' | 'rtl' =>
+export const getDirection = (langCode: string): 'ltr' | 'rtl' => 
   isRTL(langCode) ? 'rtl' : 'ltr';
 
 // Apply RTL direction to document
@@ -56,7 +56,7 @@ i18n
     fallbackLng: 'en',
     debug: false,
     supportedLngs: languages.map(l => l.code),
-
+    
     detection: {
       order: ['localStorage', 'navigator', 'htmlTag'],
       caches: ['localStorage'],
@@ -76,30 +76,30 @@ i18n
     },
 
     ns: [
-      'common',
+      'common', 
       'home',
       'howItWorks',
-      'doctors',
-      'patients',
-      'auth',
-      'dashboard',
-      'support',
-      'about',
-      'contact',
-      'faqs',
-      'features',
-      'help',
-      'legal',
-      'practices',
-      'specialties',
-      'lab',
-      'pharmacy',
+      'doctors', 
+      'patients', 
+      'auth', 
+      'dashboard', 
+      'support', 
+      'about', 
+      'contact', 
+      'faqs', 
+      'features', 
+      'help', 
+      'legal', 
+      'practices', 
+      'specialties', 
+      'lab', 
+      'pharmacy', 
       'imaging',
       'admin',
       'popups'
     ],
     defaultNS: 'common',
-
+    
     partialBundledLanguages: true,
 
     react: {
