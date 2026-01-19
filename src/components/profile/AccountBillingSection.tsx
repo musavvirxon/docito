@@ -1,5 +1,4 @@
 // File: src/components/profile/AccountBillingSection.tsx
-
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,8 @@ import { toast } from "sonner";
 
 type PaymentMethod = {
   id: string;
+  provider: string;
+  provider_payment_method_id: string | null;
   brand: string | null;
   last4: string | null;
   exp_month: number | null;
@@ -30,6 +31,7 @@ type Invoice = {
   paid_at: string | null;
   practice_id: string | null;
   appointment_id: string | null;
+  notes?: string | null;
 };
 
 type BillingSummaryResponse = {
@@ -61,10 +63,11 @@ export default function AccountBillingSection() {
     if (!user) return;
     setRefreshing(true);
     try {
-      const { data, error } = await supabase.functions.invoke("patient-billing", {
-        body: { action: "get_summary" },
+      const { data, error } = await supabase.functions.invoke("account-dashboard", {
+        body: { action: "billing_summary" },
       });
       if (error) throw error;
+      if (data?.ok === false) throw new Error(data?.error || "Failed to load billing data");
       setData((data || {}) as BillingSummaryResponse);
     } catch (e: any) {
       console.error(e);
@@ -99,14 +102,14 @@ export default function AccountBillingSection() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="p-6">
-            <div className="h-24 animate-pulse bg-muted rounded" />
+            <div className="h-24 animate-pulse bg-muted rounded-xl" />
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="p-6">
-            <div className="h-48 animate-pulse bg-muted rounded" />
+            <div className="h-48 animate-pulse bg-muted rounded-xl" />
           </CardContent>
         </Card>
       </div>
@@ -127,7 +130,7 @@ export default function AccountBillingSection() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
+        <Card className="rounded-2xl">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Total Paid</CardTitle>
           </CardHeader>
@@ -135,7 +138,7 @@ export default function AccountBillingSection() {
             <div className="text-2xl font-bold">{formatMoney(totals.totalPaid, currency)}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-2xl">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Total Due</CardTitle>
           </CardHeader>
@@ -143,7 +146,7 @@ export default function AccountBillingSection() {
             <div className="text-2xl font-bold">{formatMoney(totals.totalDue, currency)}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-2xl">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Overdue</CardTitle>
           </CardHeader>
@@ -153,7 +156,7 @@ export default function AccountBillingSection() {
         </Card>
       </div>
 
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <CreditCard className="h-5 w-5" /> Payment methods
@@ -168,7 +171,7 @@ export default function AccountBillingSection() {
                 .slice()
                 .sort((a, b) => Number(Boolean(b.is_default)) - Number(Boolean(a.is_default)))
                 .map((pm) => (
-                  <div key={pm.id} className="flex items-center justify-between rounded-md border p-3">
+                  <div key={pm.id} className="flex items-center justify-between rounded-xl border p-3">
                     <div>
                       <div className="font-medium">
                         {String(pm.brand || "card").toUpperCase()} •••• {pm.last4 || "????"}
@@ -177,18 +180,20 @@ export default function AccountBillingSection() {
                         Expires {pm.exp_month ?? "??"}/{pm.exp_year ?? "????"}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">{pm.is_default ? <Badge variant="default">Default</Badge> : null}</div>
+                    <div className="flex items-center gap-2">{pm.is_default ? <Badge>Default</Badge> : null}</div>
                   </div>
                 ))}
             </div>
           )}
 
           <Separator />
-          <div className="text-xs text-muted-foreground">Add / update payment methods from the checkout flow when you pay an invoice.</div>
+          <div className="text-xs text-muted-foreground">
+            Payment method management is available during checkout/payment flows.
+          </div>
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Receipt className="h-5 w-5" /> Invoices
@@ -200,13 +205,15 @@ export default function AccountBillingSection() {
           ) : (
             <div className="space-y-2">
               {invoices.slice(0, 20).map((inv) => (
-                <div key={inv.id} className="flex items-center justify-between rounded-md border p-3">
+                <div key={inv.id} className="flex items-center justify-between rounded-xl border p-3">
                   <div>
                     <div className="font-medium">Invoice #{inv.id.slice(0, 8)}</div>
                     <div className="text-xs text-muted-foreground">{new Date(inv.created_at).toLocaleString()}</div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Badge variant={inv.status === "paid" ? "default" : inv.status === "issued" ? "secondary" : "outline"}>{inv.status}</Badge>
+                    <Badge variant={inv.status === "paid" ? "default" : inv.status === "issued" ? "secondary" : "outline"}>
+                      {inv.status}
+                    </Badge>
                     <div className="font-semibold">{formatMoney(inv.total_amount, inv.currency)}</div>
                   </div>
                 </div>
