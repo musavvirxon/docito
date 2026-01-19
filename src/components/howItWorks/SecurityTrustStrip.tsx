@@ -1,62 +1,58 @@
 // File: src/components/howItWorks/SecurityTrustStrip.tsx
 import { useTranslation } from "react-i18next";
-import FadeIn from "./FadeIn";
-import { Card, CardContent } from "@/components/ui/card";
-import { Shield, ListChecks, BadgeCheck, Lock, Scale } from "lucide-react";
-
-const items = [
-  { key: "rbac", icon: Shield, fallback: "Role-based access control (RBAC)" },
-  { key: "audit", icon: ListChecks, fallback: "Audit logs" },
-  { key: "verification", icon: BadgeCheck, fallback: "Verified providers/facilities" },
-  { key: "encryption", icon: Lock, fallback: "Encrypted file storage" },
-  { key: "compliance", icon: Scale, fallback: "HIPAA/GDPR-ready posture" },
-] as const;
-
-function safeString(v: unknown, fallback: string) {
-  return typeof v === "string" ? v : fallback;
-}
+import Reveal from "./Reveal";
+import {
+  Shield,
+  ClipboardCheck,
+  BadgeCheck,
+  LockKeyhole,
+  FileLock2,
+} from "lucide-react";
 
 export default function SecurityTrustStrip() {
   const { t } = useTranslation(["howItWorks"]);
 
+  const items = [
+    { icon: Shield, label: t("howItWorks.security.items.rbac", "Role-based access control (RBAC)") },
+    { icon: ClipboardCheck, label: t("howItWorks.security.items.audit", "Audit logs") },
+    { icon: BadgeCheck, label: t("howItWorks.security.items.verification", "Verified providers/facilities") },
+    { icon: LockKeyhole, label: t("howItWorks.security.items.encryption", "Encrypted file storage") },
+    { icon: FileLock2, label: t("howItWorks.security.items.compliance", "HIPAA/GDPR-ready posture") },
+  ];
+
   return (
-    <FadeIn rootMargin="120px">
-      <Card className="rounded-3xl border-border/50 bg-muted/15">
-        <CardContent className="p-8">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div className="space-y-2">
-              <h2 className="text-2xl sm:text-3xl font-light tracking-tight">
-                {t("howItWorks.security.title", "Security & trust by design")}
-              </h2>
-              <p className="text-sm sm:text-base text-muted-foreground max-w-3xl">
-                {t(
-                  "howItWorks.security.subtitle",
-                  "Docito is built with permissions, verification, and traceability — so teams can move fast without losing control."
-                )}
-              </p>
+    <section className="py-14 sm:py-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Reveal>
+          <div className="rounded-3xl border border-border/50 bg-muted/20 p-7 sm:p-9">
+            <div className="flex items-center justify-between gap-6">
+              <div>
+                <h3 className="text-xl sm:text-2xl font-light tracking-tight">
+                  {t("howItWorks.security.title", "Security & trust by design")}
+                </h3>
+                <p className="mt-2 text-sm text-muted-foreground max-w-2xl">
+                  {t(
+                    "howItWorks.security.subtitle",
+                    "Care workflows are permissioned, auditable, and scoped to the minimum necessary access."
+                  )}
+                </p>
+              </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 lg:min-w-[340px]">
-              {items.map((it) => (
+            <div className="mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+              {items.map((it, idx) => (
                 <div
-                  key={it.key}
-                  className="flex items-start gap-3 rounded-2xl border border-border/50 bg-background/40 p-4"
+                  key={idx}
+                  className="flex items-center gap-3 rounded-2xl border border-border/40 bg-background/40 px-4 py-3"
                 >
-                  <div className="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                    <it.icon className="h-4 w-4" />
-                  </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {safeString(
-                      t(`howItWorks.security.items.${it.key}`, it.fallback),
-                      it.fallback
-                    )}
-                  </p>
+                  <it.icon className="h-4 w-4 text-primary" />
+                  <div className="text-xs sm:text-sm text-muted-foreground leading-snug">{it.label}</div>
                 </div>
               ))}
             </div>
           </div>
-        </CardContent>
-      </Card>
-    </FadeIn>
+        </Reveal>
+      </div>
+    </section>
   );
 }
