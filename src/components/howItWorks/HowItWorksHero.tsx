@@ -35,11 +35,10 @@ export default function HowItWorksHero() {
   const loading = metrics.status === "loading" || metrics.status === "idle";
   const live = metrics.status === "success" ? metrics.data : null;
 
-  // Safe fallback numbers (do not break page)
   const fallback = {
-    verified_doctors: 1200,
-    verified_facilities: 350,
-    appointments_7d: 5400,
+    verified_doctors: Number(t("howItWorks.metrics.fallback.verified_doctors", { defaultValue: "1200" })),
+    verified_facilities: Number(t("howItWorks.metrics.fallback.verified_facilities", { defaultValue: "350" })),
+    appointments_7d: Number(t("howItWorks.metrics.fallback.appointments_7d", { defaultValue: "5400" })),
   };
 
   const m = live || fallback;
@@ -95,17 +94,17 @@ export default function HowItWorksHero() {
 
             <div className="flex flex-wrap gap-2">
               <MetricPill
-                label="Verified doctors"
+                label={t("howItWorks.metrics.labels.verifiedDoctors", "Verified doctors")}
                 value={Intl.NumberFormat().format(m.verified_doctors)}
                 loading={loading}
               />
               <MetricPill
-                label="Verified facilities"
+                label={t("howItWorks.metrics.labels.verifiedFacilities", "Verified facilities")}
                 value={Intl.NumberFormat().format(m.verified_facilities)}
                 loading={loading}
               />
               <MetricPill
-                label="Appointments (7d)"
+                label={t("howItWorks.metrics.labels.appointments7d", "Appointments (7d)")}
                 value={Intl.NumberFormat().format(m.appointments_7d)}
                 loading={loading}
               />
@@ -113,7 +112,7 @@ export default function HowItWorksHero() {
 
             {metrics.status === "error" ? (
               <p className="text-xs text-muted-foreground">
-                Metrics unavailable (showing safe defaults).
+                {t("howItWorks.metrics.unavailable", "Metrics unavailable (showing safe defaults).")}
               </p>
             ) : null}
           </div>
