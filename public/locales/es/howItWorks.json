@@ -1,0 +1,294 @@
+// File: public/locales/es/howItWorks.json
+{
+  "howItWorks": {
+    "hero": {
+      "title": "Cómo funciona Docito",
+      "subtitle": "Un flujo único y conectado para pacientes, médicos y todos los equipos que hacen posible la atención — automatizado, con permisos y rápido.",
+      "ctaPrimary": "Empezar búsqueda",
+      "ctaSecondary": "Explorar por rol"
+    },
+    "metrics": {
+      "labels": {
+        "verifiedDoctors": "Médicos verificados",
+        "verifiedFacilities": "Centros verificados",
+        "appointments7d": "Citas (7d)"
+      },
+      "unavailable": "Métricas no disponibles (mostrando valores seguros).",
+      "fallback": {
+        "verified_doctors": "1200",
+        "verified_facilities": "350",
+        "appointments_7d": "5400"
+      }
+    },
+    "flow": {
+      "title": "Un flujo universal para cada rol",
+      "step1Title": "Buscar",
+      "step1Desc": "Encuentra proveedores y servicios verificados por ubicación, especialidad y disponibilidad.",
+      "step2Title": "Elegir",
+      "step2Desc": "Compara perfiles, precios, horarios y capacidades del centro en un solo lugar.",
+      "step3Title": "Reservar",
+      "step3Desc": "Solicita una cita o servicio y sigue el estado desde tu panel.",
+      "step4Title": "Atención y seguimiento",
+      "step4Desc": "Recibe resultados, recetas y pasos de seguimiento entregados a las personas correctas.",
+      "opsLayerTitle": "Capa operativa",
+      "opsItems": {
+        "scheduling": "Programación",
+        "queues": "Colas de trabajo",
+        "documentation": "Documentación",
+        "results": "Entrega de resultados",
+        "fulfillment": "Dispensación/entrega",
+        "followups": "Seguimientos"
+      }
+    },
+    "roles": {
+      "careSeeker": "Paciente",
+      "doctor": "Médico",
+      "practice": "Clínica/Consulta",
+      "clinicStaff": "Personal de clínica",
+      "lab": "Laboratorio",
+      "labStaff": "Personal de laboratorio",
+      "imaging": "Imagenología",
+      "imagingStaff": "Personal de imagenología",
+      "pharmacy": "Farmacia",
+      "pharmacyStaff": "Personal de farmacia"
+    },
+    "rolePanel": {
+      "whatYouDoTitle": "Lo que haces en Docito",
+      "automatesTitle": "Lo que Docito automatiza",
+      "featuresTitle": "Funciones clave",
+      "dashboardPreviewTitle": "Vista previa del panel",
+      "trustTitle": "Confianza y permisos"
+    },
+    "roleContent": {
+      "careSeeker": {
+        "whatYouDo": [
+          "Busca médicos, laboratorios, farmacias e imagenología por ubicación, especialidad y disponibilidad.",
+          "Compara perfiles verificados, valoraciones y horarios.",
+          "Reserva, reprograma y da seguimiento desde un solo panel."
+        ],
+        "automates": [
+          "Recordatorios y confirmaciones inteligentes.",
+          "Centro único para documentos, resultados y recetas.",
+          "Derivaciones y seguimientos dirigidos al proveedor correcto."
+        ],
+        "features": [
+          { "title": "Búsqueda unificada", "desc": "Una búsqueda para atención, diagnósticos, imagenología y dispensación." },
+          { "title": "Línea de tiempo", "desc": "Sigue cada paso desde la solicitud hasta la finalización." },
+          { "title": "Centro de resultados", "desc": "Resultados de laboratorio + imagenología entregados de forma segura." },
+          { "title": "Flujo de recetas", "desc": "Envía a farmacia y confirma la dispensación." }
+        ],
+        "trust": "Tu información está protegida con acceso por roles y trazas de auditoría en cada paso."
+      },
+      "doctor": {
+        "whatYouDo": [
+          "Revisa solicitudes de cita y tu agenda.",
+          "Documenta visitas y envía recetas/derivaciones.",
+          "Da seguimiento a pacientes y coordina diagnósticos."
+        ],
+        "automates": [
+          "Programación, recordatorios y enrutamiento de colas.",
+          "Plantillas de visita y documentación estructurada.",
+          "Derivaciones y entrega de resultados dentro de tu flujo."
+        ],
+        "features": [
+          { "title": "Control de agenda", "desc": "Disponibilidad, buffers y tipos de visita." },
+          { "title": "Plantillas", "desc": "Diagnóstico → tratamiento → recetas → archivos → notas." },
+          { "title": "Derivaciones", "desc": "Envía a laboratorio/imagenología con seguimiento." },
+          { "title": "Compartición segura", "desc": "Comparte resultados y planes con el rol correcto." }
+        ],
+        "trust": "RBAC asegura que solo personas autorizadas accedan; todo acceso puede auditarse."
+      },
+      "practice": {
+        "whatYouDo": [
+          "Configura servicios, precios, horarios y roles del equipo.",
+          "Monitorea operaciones entre médicos y departamentos.",
+          "Sigue pagos, flujo y señales operativas."
+        ],
+        "automates": [
+          "Colas de trabajo para recepción y personal.",
+          "Flujos unificados de reserva y check-in.",
+          "Reportes operativos y analítica."
+        ],
+        "features": [
+          { "title": "Consola admin", "desc": "Gestiona médicos, servicios y políticas." },
+          { "title": "Roles del personal", "desc": "Invita con permisos de mínimo privilegio." },
+          { "title": "Visibilidad de colas", "desc": "Detecta cuellos de botella y carga rápidamente." },
+          { "title": "Analítica", "desc": "Reservas, finalizaciones y señales operativas." }
+        ],
+        "trust": "Las instalaciones pueden verificarse; el acceso se limita por rol y queda registrado."
+      },
+      "clinicStaff": {
+        "whatYouDo": [
+          "Gestiona check-in y flujo de pacientes.",
+          "Coordina agendas, salas y colas de trabajo.",
+          "Adjunta documentos y enruta tareas a clínicos."
+        ],
+        "automates": [
+          "Priorización y enrutamiento de colas.",
+          "Recordatorios y reprogramación.",
+          "Recolección de documentos y entregas estructuradas."
+        ],
+        "features": [
+          { "title": "Check-in", "desc": "Llegada rápida, cambios de estado y asignación de salas." },
+          { "title": "Cola de trabajo", "desc": "Una lista con responsables y SLA." },
+          { "title": "Mensajería", "desc": "Notas y handoffs con contexto." },
+          { "title": "Formularios", "desc": "Recopila datos antes de la visita." }
+        ],
+        "trust": "El acceso del personal está acotado a instalaciones asignadas y módulos permitidos."
+      },
+      "lab": {
+        "whatYouDo": [
+          "Acepta órdenes y programa la toma de muestras.",
+          "Procesa y publica resultados.",
+          "Coordina la entrega con clínicas y pacientes."
+        ],
+        "automates": [
+          "Recepción de órdenes y seguimiento de estado.",
+          "Entrega de resultados a roles autorizados.",
+          "Notificaciones de finalización y seguimiento."
+        ],
+        "features": [
+          { "title": "Bandeja de órdenes", "desc": "Listas claras y actualizaciones de estado." },
+          { "title": "Publicación de resultados", "desc": "Entrega segura a médicos y pacientes." },
+          { "title": "Seguimiento de tiempos", "desc": "Transparencia operativa de SLA." },
+          { "title": "Almacenamiento", "desc": "Adjunta reportes y archivos de forma segura." }
+        ],
+        "trust": "Perfiles verificados, almacenamiento cifrado y auditoría de acceso a resultados."
+      },
+      "labStaff": {
+        "whatYouDo": [
+          "Trabaja órdenes asignadas y mantén estados correctos.",
+          "Sube resultados y documentos de soporte.",
+          "Comunica excepciones a las clínicas."
+        ],
+        "automates": [
+          "Colas y asignación de trabajo.",
+          "Subidas con plantillas.",
+          "Notificaciones por cambios de estado."
+        ],
+        "features": [
+          { "title": "Trabajo asignado", "desc": "Enfócate solo en tu cola." },
+          { "title": "Subidas", "desc": "Agrega resultados en pocos pasos." },
+          { "title": "Automatización", "desc": "Reduce administración manual." },
+          { "title": "Escalaciones", "desc": "Eleva incidencias con contexto." }
+        ],
+        "trust": "Los permisos limitan la visibilidad a lo estrictamente necesario."
+      },
+      "imaging": {
+        "whatYouDo": [
+          "Recibe órdenes y programa estudios.",
+          "Realiza estudios y sube informes.",
+          "Entrega resultados a médicos remitentes y pacientes."
+        ],
+        "automates": [
+          "Programación y recordatorios.",
+          "Entrega de resultados con permisos.",
+          "Seguimiento de estado y reportes."
+        ],
+        "features": [
+          { "title": "Tablero de órdenes", "desc": "Pipeline claro de solicitud a finalización." },
+          { "title": "Archivos del estudio", "desc": "Subida segura y entrega." },
+          { "title": "Reportes", "desc": "Vistas operativas de capacidad y flujo." },
+          { "title": "Cierre de derivación", "desc": "Cierra el ciclo con el médico." }
+        ],
+        "trust": "Solo roles autorizados acceden a archivos; todas las acciones son auditables."
+      },
+      "imagingStaff": {
+        "whatYouDo": [
+          "Trabaja estudios asignados y actualiza estados.",
+          "Sube informes y adjuntos.",
+          "Coordina reprogramaciones o excepciones."
+        ],
+        "automates": [
+          "Asignación y enrutamiento de colas.",
+          "Notificaciones y handoffs de tareas.",
+          "Flujos de publicación de resultados."
+        ],
+        "features": [
+          { "title": "Cola de trabajo", "desc": "Solo tus estudios asignados." },
+          { "title": "Actualizaciones rápidas", "desc": "Estados y notas en un lugar." },
+          { "title": "Subidas seguras", "desc": "Entrega al rol correcto." },
+          { "title": "Excepciones", "desc": "Marca problemas con contexto completo." }
+        ],
+        "trust": "Principio de mínimo privilegio: acceso solo a lo necesario."
+      },
+      "pharmacy": {
+        "whatYouDo": [
+          "Recibe recetas y valida disponibilidad.",
+          "Dispensa y confirma retiro/entrega.",
+          "Coordina sustituciones con el prescriptor si es necesario."
+        ],
+        "automates": [
+          "Recepción de receta y seguimiento de estado.",
+          "Confirmaciones de dispensación.",
+          "Notificaciones a pacientes y clínicas."
+        ],
+        "features": [
+          { "title": "Bandeja de Rx", "desc": "Centraliza recetas entrantes." },
+          { "title": "Pasos de dispensación", "desc": "Preparado → listo → entregado." },
+          { "title": "Sustituciones", "desc": "Coordina cambios con médicos." },
+          { "title": "Reportes", "desc": "Métricas operativas de demanda." }
+        ],
+        "trust": "Farmacias verificadas, cifrado y auditoría para acciones sensibles."
+      },
+      "pharmacyStaff": {
+        "whatYouDo": [
+          "Trabaja recetas asignadas y actualiza pasos de dispensación.",
+          "Confirma retiro/entrega.",
+          "Envía excepciones al administrador de farmacia."
+        ],
+        "automates": [
+          "Asignación de cola y notificaciones.",
+          "Actualizaciones de estado y confirmaciones.",
+          "Disparadores de comunicación al paciente."
+        ],
+        "features": [
+          { "title": "Cola asignada", "desc": "Enfócate en items accionables." },
+          { "title": "Actualización con un toque", "desc": "Mueve rápido por las etapas." },
+          { "title": "Excepciones", "desc": "Marca faltantes o dudas con contexto." },
+          { "title": "Confirmaciones", "desc": "Cierra el ciclo para clínica y paciente." }
+        ],
+        "trust": "Acceso limitado a los datos mínimos para el flujo de dispensación."
+      }
+    },
+    "automation": {
+      "title": "Automatización que reduce trabajo manual",
+      "items": {
+        "scheduling": { "title": "Programación inteligente y recordatorios", "desc": "Reduce ausencias con confirmaciones, recordatorios y reprogramación inteligente." },
+        "checkin": { "title": "Check-in y gestión de colas", "desc": "Mueve pacientes con estados claros y responsables." },
+        "documentation": { "title": "Plantillas y documentación", "desc": "Flujo estructurado de diagnóstico a recetas, archivos y notas." },
+        "referrals": { "title": "Derivaciones y coordinación", "desc": "Enruta derivaciones al centro correcto con seguimiento." },
+        "results": { "title": "Entrega de resultados", "desc": "Entrega segura de resultados de laboratorio e imagenología al rol correcto." },
+        "fulfillment": { "title": "Flujo de dispensación", "desc": "Sigue preparación, retiro/entrega y confirmaciones." }
+      }
+    },
+    "security": {
+      "title": "Seguridad y confianza por diseño",
+      "items": {
+        "rbac": "Control de acceso por rol (RBAC)",
+        "audit": "Registros de auditoría",
+        "verification": "Proveedores/centros verificados",
+        "encryption": "Almacenamiento cifrado",
+        "compliance": "Postura preparada para HIPAA/GDPR"
+      }
+    },
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "q1": { "question": "¿Cómo obtiene acceso el personal?", "answer": "Los administradores invitan al personal y asignan roles con mínimo privilegio." },
+      "q2": { "question": "¿Qué ve el personal vs médicos vs pacientes?", "answer": "RBAC limita datos por rol; el acceso es auditable." },
+      "q3": { "question": "¿Cómo se conectan derivaciones con agenda?", "answer": "Las derivaciones pueden crear solicitudes que entran a colas y programación del centro." },
+      "q4": { "question": "¿Cómo se entregan resultados?", "answer": "Se comparten con roles autorizados y aparecen en paneles con notificaciones." },
+      "q5": { "question": "¿Cómo confirma la farmacia la dispensación?", "answer": "La farmacia actualiza el estado y confirma la finalización." },
+      "q6": { "question": "¿Los datos están seguros?", "answer": "Docito usa cifrado, RBAC y auditoría para proteger datos sensibles." },
+      "q7": { "question": "¿Puedo usar seguro?", "answer": "Depende del proveedor y la región; puede mostrarse durante la reserva." },
+      "q8": { "question": "¿Hay app móvil?", "answer": "La experiencia móvil ya está optimizada; apps nativas pronto." }
+    },
+    "cta": {
+      "title": "¿Listo para usar Docito?",
+      "subtitle": "Empieza con la búsqueda — o únete como proveedor verificado y potencia tus flujos clínicos.",
+      "findCare": "Encontrar atención",
+      "joinProvider": "Unirme como proveedor",
+      "registerPractice": "Registrar clínica"
+    }
+  }
+}
