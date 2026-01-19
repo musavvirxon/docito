@@ -1,3 +1,4 @@
+// File: src/components/home/premium/SmartSearch.tsx
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, MapPin, Shield, Mic, Sparkles, Clock, TrendingUp } from 'lucide-react';
@@ -26,7 +27,7 @@ export default function SmartSearch() {
   const [location, setLocation] = useState('');
   const [insurance, setInsurance] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   const {
     results,
     loading,
@@ -76,7 +77,7 @@ export default function SmartSearch() {
   };
 
   return (
-    <section className="relative py-20 -mt-20 z-20">
+    <section id="search" className="relative py-20 -mt-20 z-20 scroll-mt-24">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           ref={containerRef}
@@ -219,43 +220,27 @@ export default function SmartSearch() {
                   >
                     <Sparkles className="w-5 h-5 text-primary" />
                     <span className="text-sm text-foreground">
-                      {t('home:search.aiSuggestion', 'Try "Find a cardiologist near me"')}
+                      {t('home:search.aiHint', 'Try: cardiologist near me')}
                     </span>
                   </motion.div>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
-        </motion.div>
 
-        {/* Search Results Section */}
-        <AnimatePresence>
-          {hasSearched && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4 }}
-              className="mt-8"
-            >
-              <SearchResultsContainer
-                results={results}
-                loading={loading}
-                error={error}
-                filters={filters}
-                hasSearched={hasSearched}
-                onFilterChange={handleFilterChange}
-                onBookDoctor={(doctor: DoctorResult) => {
-                  if (!user) {
-                    navigate(`/auth?redirect=${encodeURIComponent(`/book-appointment/${doctor.id}`)}`);
-                  } else {
-                    navigate(`/book-appointment/${doctor.id}`);
-                  }
-                }}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+          {/* Results */}
+          <div className="relative px-6 lg:px-8 pb-6 lg:pb-8">
+            <SearchResultsContainer
+              results={results as DoctorResult[]}
+              loading={loading}
+              error={error}
+              hasSearched={hasSearched}
+              onReset={resetSearch}
+              onFilterChange={handleFilterChange}
+              filters={filters}
+            />
+          </div>
+        </motion.div>
       </div>
     </section>
   );
