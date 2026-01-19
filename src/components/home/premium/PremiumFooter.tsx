@@ -72,8 +72,11 @@ function fallbackFor(key: string) {
   return fallbackLabels[key] || titleizeKey(key);
 }
 
+function asString(v: unknown, fallback: string) {
+  return typeof v === "string" ? v : fallback;
+}
+
 function languageLabel(code: string) {
-  // Exact labels requested
   switch (code) {
     case "en":
       return "en — English 🇬🇧 (LTR)";
@@ -106,6 +109,11 @@ export default function PremiumFooter() {
   const { t, i18n } = useTranslation(["home", "common"]);
   const currentYear = new Date().getFullYear();
 
+  const platformTitle = asString(t("home:footer.platform.title", { defaultValue: "Platform" }), "Platform");
+  const supportTitle = asString(t("home:footer.support.title", { defaultValue: "Support" }), "Support");
+  const legalTitle = asString(t("home:footer.legal.title", { defaultValue: "Legal" }), "Legal");
+  const contactTitle = asString(t("home:footer.contactTitle", { defaultValue: "Contact" }), "Contact");
+
   return (
     <footer className="relative bg-muted/30 border-t border-border/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -116,7 +124,12 @@ export default function PremiumFooter() {
             </Link>
 
             <p className="text-sm text-muted-foreground mb-6 max-w-sm">
-              {t("home:footer.description", "The Complete Healthcare Operating System For Modern Medical Practices.")}
+              {asString(
+                t("home:footer.description", {
+                  defaultValue: "The Complete Healthcare Operating System For Modern Medical Practices.",
+                }),
+                "The Complete Healthcare Operating System For Modern Medical Practices."
+              )}
             </p>
 
             <div className="flex items-center gap-3">
@@ -137,52 +150,73 @@ export default function PremiumFooter() {
 
           <div>
             <p className="text-sm font-semibold text-foreground mb-4" role="heading" aria-level={2}>
-              {t("home:footer.platform.title", "Platform")}
+              {platformTitle}
             </p>
             <ul className="space-y-3">
-              {footerLinks.platform.map((link) => (
-                <li key={link.key}>
-                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    {t(`home:footer.links.${link.key}`, fallbackFor(link.key))}
-                  </Link>
-                </li>
-              ))}
+              {footerLinks.platform.map((link) => {
+                const fb = fallbackFor(link.key);
+                const label = asString(
+                  t(`home:footer.links.${link.key}`, { defaultValue: fb }),
+                  fb
+                );
+                return (
+                  <li key={link.key}>
+                    <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                      {label}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 
           <div>
             <p className="text-sm font-semibold text-foreground mb-4" role="heading" aria-level={2}>
-              {t("home:footer.support.title", "Support")}
+              {supportTitle}
             </p>
             <ul className="space-y-3">
-              {footerLinks.support.map((link) => (
-                <li key={link.key}>
-                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    {t(`home:footer.links.${link.key}`, fallbackFor(link.key))}
-                  </Link>
-                </li>
-              ))}
+              {footerLinks.support.map((link) => {
+                const fb = fallbackFor(link.key);
+                const label = asString(
+                  t(`home:footer.links.${link.key}`, { defaultValue: fb }),
+                  fb
+                );
+                return (
+                  <li key={link.key}>
+                    <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                      {label}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 
           <div>
             <p className="text-sm font-semibold text-foreground mb-4" role="heading" aria-level={2}>
-              {t("home:footer.legal.title", "Legal")}
+              {legalTitle}
             </p>
             <ul className="space-y-3">
-              {footerLinks.legal.map((link) => (
-                <li key={link.key}>
-                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    {t(`home:footer.links.${link.key}`, fallbackFor(link.key))}
-                  </Link>
-                </li>
-              ))}
+              {footerLinks.legal.map((link) => {
+                const fb = fallbackFor(link.key);
+                const label = asString(
+                  t(`home:footer.links.${link.key}`, { defaultValue: fb }),
+                  fb
+                );
+                return (
+                  <li key={link.key}>
+                    <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                      {label}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </div>
 
           <div>
             <p className="text-sm font-semibold text-foreground mb-4" role="heading" aria-level={2}>
-              {t("home:footer.contactTitle", "Contact")}
+              {contactTitle}
             </p>
             <ul className="space-y-3">
               <li>
@@ -218,7 +252,8 @@ export default function PremiumFooter() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-muted-foreground text-center md:text-left">
-              © {currentYear} Docito®. {t("home:footer.rights", "All Rights Reserved.")}
+              © {currentYear} Docito®.{" "}
+              {asString(t("home:footer.rights", { defaultValue: "All Rights Reserved." }), "All Rights Reserved.")}
             </p>
 
             <div className="flex items-center gap-4">
@@ -229,7 +264,7 @@ export default function PremiumFooter() {
                 <select
                   value={i18n.language}
                   onChange={(e) => i18n.changeLanguage(e.target.value)}
-                  aria-label={t("common:language.select", "Select Language")}
+                  aria-label={asString(t("common:language.select", { defaultValue: "Select Language" }), "Select Language")}
                   className="bg-background text-sm text-muted-foreground hover:text-foreground cursor-pointer focus:outline-none border border-border/50 rounded-lg px-2 py-1"
                 >
                   {allLanguages.map((lang) => (
