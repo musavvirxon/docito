@@ -11,7 +11,6 @@ export default function HowItWorksHero() {
 
   return (
     <section className="relative overflow-hidden pt-14">
-      {/* Ambient background */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute -top-24 -start-24 h-80 w-80 rounded-full bg-primary/10 blur-3xl" />
         <div className="absolute -bottom-24 -end-24 h-80 w-80 rounded-full bg-accent/10 blur-3xl" />
@@ -20,7 +19,6 @@ export default function HowItWorksHero() {
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
-          {/* Left copy */}
           <div className="space-y-7 text-start">
             <motion.div
               initial={{ opacity: 0, y: 14 }}
@@ -52,7 +50,7 @@ export default function HowItWorksHero() {
             >
               {t(
                 "howItWorks.hero.subtitle",
-                "One connected workflow for patients, doctors, and every team that makes care happen \u2014 automated, permissioned, and fast."
+                "One connected workflow for patients, doctors, and every team that makes care happen — automated, permissioned, and fast."
               )}
             </motion.p>
 
@@ -63,10 +61,7 @@ export default function HowItWorksHero() {
               className="flex flex-col sm:flex-row gap-3"
             >
               <Button asChild className="h-11 rounded-full px-6">
-                <Link
-                  to="/#search"
-                  aria-label={t("howItWorks.hero.ctaPrimary", "Start search")}
-                >
+                <Link to="/#search" aria-label={t("howItWorks.hero.ctaPrimary", "Start search")}>
                   <span className="flex items-center gap-2">
                     {t("howItWorks.hero.ctaPrimary", "Start search")}
                     <ArrowRight className="h-4 w-4" />
@@ -79,10 +74,7 @@ export default function HowItWorksHero() {
                 variant="outline"
                 className="h-11 rounded-full px-6 bg-background/60 backdrop-blur"
               >
-                <a
-                  href="#roles"
-                  aria-label={t("howItWorks.hero.ctaSecondary", "Explore by role")}
-                >
+                <a href="#roles" aria-label={t("howItWorks.hero.ctaSecondary", "Explore by role")}>
                   <span className="flex items-center gap-2">
                     {t("howItWorks.hero.ctaSecondary", "Explore by role")}
                     <ChevronDown className="h-4 w-4" />
@@ -112,7 +104,6 @@ export default function HowItWorksHero() {
             </motion.div>
           </div>
 
-          {/* Right illustration */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -126,7 +117,6 @@ export default function HowItWorksHero() {
         </div>
       </div>
 
-      {/* Anchor for role section */}
       <div id="roles" className="scroll-mt-24" />
     </section>
   );
