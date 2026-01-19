@@ -65,7 +65,7 @@ export default function VectorNetworkIllustration({ className }: Props) {
           />
           <path
             data-draw-path
-            d="M 330 160 C 400 210, 440 240, 500 230"
+            d="M 330 160 C 420 180, 450 210, 500 230"
             fill="none"
             stroke="url(#docitoLine)"
             strokeWidth="3"
@@ -73,7 +73,7 @@ export default function VectorNetworkIllustration({ className }: Props) {
           />
           <path
             data-draw-path
-            d="M 330 160 C 400 150, 460 120, 520 120"
+            d="M 330 160 C 410 145, 460 120, 520 120"
             fill="none"
             stroke="url(#docitoLine)"
             strokeWidth="3"
@@ -81,7 +81,15 @@ export default function VectorNetworkIllustration({ className }: Props) {
           />
           <path
             data-draw-path
-            d="M 330 160 C 400 300, 470 340, 560 340"
+            d="M 330 160 C 410 250, 470 320, 560 340"
+            fill="none"
+            stroke="url(#docitoLine)"
+            strokeWidth="3"
+            strokeLinecap="round"
+          />
+          <path
+            data-draw-path
+            d="M 520 120 C 560 130, 585 150, 600 180"
             fill="none"
             stroke="url(#docitoLine)"
             strokeWidth="3"
@@ -92,9 +100,10 @@ export default function VectorNetworkIllustration({ className }: Props) {
         {/* Floating dots (one-shot) */}
         <g>
           <circle data-float-dot cx="220" cy="140" r="4" fill="hsl(var(--primary))" opacity="0.35" />
-          <circle data-float-dot cx="430" cy="210" r="4" fill="hsl(var(--accent))" opacity="0.35" />
-          <circle data-float-dot cx="460" cy="120" r="4" fill="hsl(var(--primary))" opacity="0.35" />
-          <circle data-float-dot cx="470" cy="310" r="4" fill="hsl(var(--accent))" opacity="0.35" />
+          <circle data-float-dot cx="430" cy="200" r="4" fill="hsl(var(--accent))" opacity="0.35" />
+          <circle data-float-dot cx="470" cy="120" r="4" fill="hsl(var(--primary))" opacity="0.35" />
+          <circle data-float-dot cx="500" cy="305" r="4" fill="hsl(var(--accent))" opacity="0.35" />
+          <circle data-float-dot cx="585" cy="160" r="4" fill="hsl(var(--primary))" opacity="0.35" />
         </g>
 
         {/* Nodes */}
