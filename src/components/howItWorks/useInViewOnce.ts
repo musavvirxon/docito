@@ -1,30 +1,49 @@
 // File: src/components/howItWorks/useInViewOnce.ts
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-export function useInViewOnce<T extends HTMLElement>(rootMargin = "0px") {
+type Options = {
+  rootMargin?: string;
+  threshold?: number;
+};
+
+function prefersReducedMotion(): boolean {
+  if (typeof window === "undefined" || !window.matchMedia) return false;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+export function useInViewOnce<T extends HTMLElement>(options: Options = {}) {
+  const { rootMargin = "0px 0px -10% 0px", threshold = 0.12 } = options;
+
   const ref = useRef<T | null>(null);
   const [inView, setInView] = useState(false);
 
+  const disabled = useMemo(() => prefersReducedMotion(), []);
+
   useEffect(() => {
-    if (inView) return;
+    if (disabled) {
+      setInView(true);
+      return;
+    }
 
     const el = ref.current;
     if (!el) return;
 
+    if (inView) return;
+
     const io = new IntersectionObserver(
       (entries) => {
-        const first = entries[0];
-        if (first && first.isIntersecting) {
+        const e = entries[0];
+        if (e?.isIntersecting) {
           setInView(true);
           io.disconnect();
         }
       },
-      { root: null, rootMargin, threshold: 0.12 }
+      { rootMargin, threshold }
     );
 
     io.observe(el);
     return () => io.disconnect();
-  }, [inView, rootMargin]);
+  }, [disabled, inView, rootMargin, threshold]);
 
   return { ref, inView } as const;
 }
