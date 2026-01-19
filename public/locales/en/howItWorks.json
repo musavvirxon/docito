@@ -1,0 +1,312 @@
+// File: public/locales/en/howItWorks.json
+{
+  "howItWorks": {
+    "hero": {
+      "title": "How Docito works",
+      "subtitle": "One connected workflow for patients, doctors, and every team that makes care happen — automated, permissioned, and fast.",
+      "ctaPrimary": "Start search",
+      "ctaSecondary": "Explore by role"
+    },
+    "metrics": {
+      "labels": {
+        "verifiedDoctors": "Verified doctors",
+        "verifiedFacilities": "Verified facilities",
+        "appointments7d": "Appointments (7d)"
+      },
+      "unavailable": "Metrics unavailable (showing safe defaults).",
+      "fallback": {
+        "verified_doctors": "1200",
+        "verified_facilities": "350",
+        "appointments_7d": "5400"
+      }
+    },
+    "flow": {
+      "title": "A universal flow, for every role",
+      "step1Title": "Search",
+      "step1Desc": "Find verified providers and services by location, specialty, and availability.",
+      "step2Title": "Choose",
+      "step2Desc": "Compare profiles, prices, schedules, and clinic capabilities — in one place.",
+      "step3Title": "Book",
+      "step3Desc": "Request an appointment or order, then track status in your dashboard.",
+      "step4Title": "Care & Follow-up",
+      "step4Desc": "Get results, prescriptions, and follow-ups delivered to the right people.",
+      "opsLayerTitle": "Operational layer",
+      "opsItems": {
+        "scheduling": "Scheduling",
+        "queues": "Work queues",
+        "documentation": "Documentation",
+        "results": "Results delivery",
+        "fulfillment": "Fulfillment",
+        "followups": "Follow-ups"
+      }
+    },
+    "roles": {
+      "careSeeker": "Care Seeker",
+      "doctor": "Doctor",
+      "practice": "Practice",
+      "clinicStaff": "Clinic Staff",
+      "lab": "Lab",
+      "labStaff": "Lab Staff",
+      "imaging": "Imaging",
+      "imagingStaff": "Imaging Staff",
+      "pharmacy": "Pharmacy",
+      "pharmacyStaff": "Pharmacy Staff"
+    },
+    "rolePanel": {
+      "whatYouDoTitle": "What you do in Docito",
+      "automatesTitle": "What Docito automates",
+      "featuresTitle": "Key features",
+      "dashboardPreviewTitle": "Dashboard preview",
+      "trustTitle": "Trust & permissions"
+    },
+    "roleContent": {
+      "careSeeker": {
+        "whatYouDo": [
+          "Search doctors, labs, pharmacies, and imaging by location, specialty, and availability.",
+          "Compare verified profiles, ratings, and schedules.",
+          "Book, reschedule, and follow-up from one dashboard."
+        ],
+        "automates": [
+          "Smart reminders and confirmations.",
+          "Centralized documents, results, and prescriptions.",
+          "Referrals and follow-ups routed to the right provider."
+        ],
+        "features": [
+          { "title": "Unified search", "desc": "One search for care, diagnostics, imaging, and fulfillment." },
+          { "title": "Booking timeline", "desc": "Track each step from request to completion." },
+          { "title": "Results hub", "desc": "Lab + imaging results delivered securely." },
+          { "title": "Prescription flow", "desc": "Send to pharmacy and confirm fulfillment." }
+        ],
+        "trust": "Your information is protected with role-based access and audit trails across each step."
+      },
+      "doctor": {
+        "whatYouDo": [
+          "Review appointment requests and schedule.",
+          "Document visits and send prescriptions/referrals.",
+          "Follow up with patients and coordinate diagnostics."
+        ],
+        "automates": [
+          "Scheduling, reminders, and queue routing.",
+          "Visit templates and structured documentation.",
+          "Referrals and results delivery into your workflow."
+        ],
+        "features": [
+          { "title": "Schedule controls", "desc": "Availability, buffers, and visit types." },
+          { "title": "Templates", "desc": "Diagnosis → treatment → prescriptions → files → notes." },
+          { "title": "Referrals", "desc": "Send orders to labs/imaging with tracking." },
+          { "title": "Secure sharing", "desc": "Share results and plans to the right role." }
+        ],
+        "trust": "RBAC ensures only authorized staff can access data; all access can be audited."
+      },
+      "practice": {
+        "whatYouDo": [
+          "Configure services, pricing, schedules, and staff roles.",
+          "Monitor operations across doctors and departments.",
+          "Track payments, throughput, and care quality signals."
+        ],
+        "automates": [
+          "Work queues for front desk and staff.",
+          "Centralized scheduling and check-in workflows.",
+          "Operational reporting and analytics surfaces."
+        ],
+        "features": [
+          { "title": "Admin console", "desc": "Manage doctors, services, and policies." },
+          { "title": "Staff roles", "desc": "Invite staff with least-privilege permissions." },
+          { "title": "Queue visibility", "desc": "See bottlenecks and workload at a glance." },
+          { "title": "Analytics", "desc": "Bookings, completion, and operational signals." }
+        ],
+        "trust": "Facilities can be verified; access is limited per role and logged."
+      },
+      "clinicStaff": {
+        "whatYouDo": [
+          "Manage check-in and patient flow.",
+          "Coordinate schedules, rooms, and work queues.",
+          "Attach documents and route tasks to clinicians."
+        ],
+        "automates": [
+          "Queue prioritization and routing.",
+          "Reminders and rebooking flows.",
+          "Document collection and structured handoffs."
+        ],
+        "features": [
+          { "title": "Check-in", "desc": "Fast arrival, status changes, and room routing." },
+          { "title": "Work queue", "desc": "One list of tasks with ownership and SLAs." },
+          { "title": "Messaging", "desc": "Contextual notes and handoffs." },
+          { "title": "Intake forms", "desc": "Collect data before the visit." }
+        ],
+        "trust": "Staff access is scoped to assigned facilities and permitted modules only."
+      },
+      "lab": {
+        "whatYouDo": [
+          "Accept orders and schedule sample collection.",
+          "Accession, process, and publish results.",
+          "Coordinate with clinics and patients for delivery."
+        ],
+        "automates": [
+          "Order intake and status tracking.",
+          "Results delivery to authorized roles.",
+          "Notifications for completion and follow-ups."
+        ],
+        "features": [
+          { "title": "Order intake", "desc": "Clear worklists and status changes." },
+          { "title": "Results publishing", "desc": "Deliver securely to clinicians and patients." },
+          { "title": "Turnaround tracking", "desc": "Operational transparency for SLAs." },
+          { "title": "File storage", "desc": "Attach reports and supporting files securely." }
+        ],
+        "trust": "Verified lab profiles, encrypted storage, and audit trails across result access."
+      },
+      "labStaff": {
+        "whatYouDo": [
+          "Work assigned orders and keep statuses accurate.",
+          "Upload results and supporting documents.",
+          "Communicate exceptions back to clinics."
+        ],
+        "automates": [
+          "Work queues and assignment.",
+          "Template-based result uploads.",
+          "Notifications for status changes."
+        ],
+        "features": [
+          { "title": "Assigned work", "desc": "Focus on your queue; no noise." },
+          { "title": "Uploads", "desc": "Attach results with minimal steps." },
+          { "title": "Status automation", "desc": "Reduce manual admin work." },
+          { "title": "Escalations", "desc": "Surface issues quickly to managers." }
+        ],
+        "trust": "Staff permissions limit visibility to only required orders and patient data."
+      },
+      "imaging": {
+        "whatYouDo": [
+          "Receive imaging orders and schedule patients.",
+          "Perform studies and upload reports.",
+          "Deliver results to referring doctors and patients."
+        ],
+        "automates": [
+          "Scheduling and reminders.",
+          "Results delivery with permissions.",
+          "Order status tracking and reporting."
+        ],
+        "features": [
+          { "title": "Order board", "desc": "Clear pipeline from request to completion." },
+          { "title": "Study files", "desc": "Secure upload and delivery." },
+          { "title": "Reporting", "desc": "Operational snapshots for throughput." },
+          { "title": "Referrer loop", "desc": "Close the loop back to doctors." }
+        ],
+        "trust": "Only authorized roles can access imaging files; all actions can be audited."
+      },
+      "imagingStaff": {
+        "whatYouDo": [
+          "Work assigned studies and update statuses.",
+          "Upload reports and attachments.",
+          "Coordinate reschedules or exceptions."
+        ],
+        "automates": [
+          "Queue assignment and routing.",
+          "Notifications and task handoffs.",
+          "Result publishing flows."
+        ],
+        "features": [
+          { "title": "Work queue", "desc": "Only your assigned studies." },
+          { "title": "Fast updates", "desc": "Status changes and notes in one place." },
+          { "title": "Uploads", "desc": "Secure file delivery to the right roles." },
+          { "title": "Exceptions", "desc": "Escalate issues with full context." }
+        ],
+        "trust": "Least-privilege access to studies and patient info based on role."
+      },
+      "pharmacy": {
+        "whatYouDo": [
+          "Receive prescriptions and validate availability.",
+          "Fulfill orders and confirm pickup/delivery.",
+          "Coordinate substitutions with prescribers when needed."
+        ],
+        "automates": [
+          "Prescription intake and status tracking.",
+          "Fulfillment confirmations.",
+          "Notifications to patients and clinics."
+        ],
+        "features": [
+          { "title": "Rx inbox", "desc": "Centralize incoming prescriptions." },
+          { "title": "Fulfillment steps", "desc": "Track prepared → ready → delivered." },
+          { "title": "Substitutions", "desc": "Coordinate changes with doctors." },
+          { "title": "Reporting", "desc": "Operational metrics for demand." }
+        ],
+        "trust": "Verified pharmacies, encrypted files, and audit logs for sensitive actions."
+      },
+      "pharmacyStaff": {
+        "whatYouDo": [
+          "Work assigned prescriptions and update fulfillment steps.",
+          "Confirm pickup/delivery.",
+          "Message exceptions back to the pharmacy admin."
+        ],
+        "automates": [
+          "Queue assignment and notifications.",
+          "Fulfillment confirmations and status updates.",
+          "Patient communications triggers."
+        ],
+        "features": [
+          { "title": "Assigned queue", "desc": "Stay focused on actionable items." },
+          { "title": "One-tap updates", "desc": "Move prescriptions through stages quickly." },
+          { "title": "Exceptions", "desc": "Flag shortages or questions with context." },
+          { "title": "Confirmations", "desc": "Close the loop for clinics and patients." }
+        ],
+        "trust": "Access is limited to the minimum required data for dispensing workflow."
+      }
+    },
+    "automation": {
+      "title": "Automation that reduces manual work",
+      "items": {
+        "scheduling": {
+          "title": "Smart scheduling & reminders",
+          "desc": "Reduce no-shows with confirmations, reminders, and smart rescheduling."
+        },
+        "checkin": {
+          "title": "Check-in & queue management",
+          "desc": "Move patients through workflows with clear statuses and ownership."
+        },
+        "documentation": {
+          "title": "Visit templates & documentation",
+          "desc": "Structured flows from diagnosis to prescriptions, files, and clinical notes."
+        },
+        "referrals": {
+          "title": "Referrals & care coordination",
+          "desc": "Route referrals and orders to the right facility with tracking."
+        },
+        "results": {
+          "title": "Diagnostics results delivery",
+          "desc": "Deliver lab and imaging results securely to the right roles."
+        },
+        "fulfillment": {
+          "title": "Prescription fulfillment workflow",
+          "desc": "Track preparation, pickup, delivery, and confirmations."
+        }
+      }
+    },
+    "security": {
+      "title": "Security & trust built-in",
+      "items": {
+        "rbac": "Role-based access control (RBAC)",
+        "audit": "Audit logs",
+        "verification": "Verified providers/facilities",
+        "encryption": "Encrypted file storage",
+        "compliance": "HIPAA/GDPR-ready posture"
+      }
+    },
+    "faq": {
+      "title": "FAQ",
+      "q1": { "question": "How do staff get access?", "answer": "Admins invite staff and assign roles with least-privilege access." },
+      "q2": { "question": "What can staff see vs doctors vs patients?", "answer": "RBAC limits data per role; access can be audited." },
+      "q3": { "question": "How do referrals link to scheduling?", "answer": "Referrals can generate orders/requests that flow into facility queues and scheduling." },
+      "q4": { "question": "How are results delivered?", "answer": "Results are shared to authorized roles and surfaced in dashboards with notifications." },
+      "q5": { "question": "How do pharmacies confirm fulfillment?", "answer": "Pharmacies update fulfillment status (prepared/ready/delivered) and confirm completion." },
+      "q6": { "question": "Is data secure?", "answer": "Docito uses encrypted storage, RBAC, and audit trails to protect patient data." },
+      "q7": { "question": "Can I use insurance?", "answer": "Insurance support depends on providers and region; coverage options may appear during booking." },
+      "q8": { "question": "Is mobile app available?", "answer": "Mobile experiences are available today; native apps are coming soon." }
+    },
+    "cta": {
+      "title": "Ready to use Docito?",
+      "subtitle": "Start with search — or join Docito as a verified provider and power your clinic workflows.",
+      "findCare": "Find care",
+      "joinProvider": "Join as provider",
+      "registerPractice": "Register practice"
+    }
+  }
+}
