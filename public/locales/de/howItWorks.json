@@ -1,0 +1,294 @@
+// File: public/locales/de/howItWorks.json
+{
+  "howItWorks": {
+    "hero": {
+      "title": "So funktioniert Docito",
+      "subtitle": "Ein durchgängiger, vernetzter Ablauf für Patient:innen, Ärzt:innen und alle Teams, die Versorgung möglich machen — automatisiert, berechtigt und schnell.",
+      "ctaPrimary": "Suche starten",
+      "ctaSecondary": "Nach Rolle erkunden"
+    },
+    "metrics": {
+      "labels": {
+        "verifiedDoctors": "Verifizierte Ärzt:innen",
+        "verifiedFacilities": "Verifizierte Einrichtungen",
+        "appointments7d": "Termine (7T)"
+      },
+      "unavailable": "Metriken nicht verfügbar (sichere Standardwerte werden angezeigt).",
+      "fallback": {
+        "verified_doctors": "1200",
+        "verified_facilities": "350",
+        "appointments_7d": "5400"
+      }
+    },
+    "flow": {
+      "title": "Ein universeller Ablauf für jede Rolle",
+      "step1Title": "Suchen",
+      "step1Desc": "Finde verifizierte Anbieter und Services nach Ort, Fachgebiet und Verfügbarkeit.",
+      "step2Title": "Auswählen",
+      "step2Desc": "Vergleiche Profile, Preise, Zeiten und Klinik-Fähigkeiten an einem Ort.",
+      "step3Title": "Buchen",
+      "step3Desc": "Fordere einen Termin oder Service an und verfolge den Status in deinem Dashboard.",
+      "step4Title": "Versorgung & Nachsorge",
+      "step4Desc": "Erhalte Ergebnisse, Rezepte und Nachsorgeschritte für die richtigen Personen.",
+      "opsLayerTitle": "Operative Ebene",
+      "opsItems": {
+        "scheduling": "Terminplanung",
+        "queues": "Arbeitswarteschlangen",
+        "documentation": "Dokumentation",
+        "results": "Ergebniszustellung",
+        "fulfillment": "Ausgabe/Belieferung",
+        "followups": "Nachsorge"
+      }
+    },
+    "roles": {
+      "careSeeker": "Patient:in",
+      "doctor": "Ärzt:in",
+      "practice": "Praxis/Klinik",
+      "clinicStaff": "Klinikpersonal",
+      "lab": "Labor",
+      "labStaff": "Laborpersonal",
+      "imaging": "Bildgebung",
+      "imagingStaff": "Bildgebungs-Team",
+      "pharmacy": "Apotheke",
+      "pharmacyStaff": "Apotheken-Team"
+    },
+    "rolePanel": {
+      "whatYouDoTitle": "Was du in Docito machst",
+      "automatesTitle": "Was Docito automatisiert",
+      "featuresTitle": "Wichtige Funktionen",
+      "dashboardPreviewTitle": "Dashboard-Vorschau",
+      "trustTitle": "Vertrauen & Berechtigungen"
+    },
+    "roleContent": {
+      "careSeeker": {
+        "whatYouDo": [
+          "Suche Ärzt:innen, Labore, Apotheken und Bildgebung nach Ort, Fachgebiet und Verfügbarkeit.",
+          "Vergleiche verifizierte Profile, Bewertungen und Zeiten.",
+          "Buche, verschiebe und verfolge alles in einem Dashboard."
+        ],
+        "automates": [
+          "Intelligente Erinnerungen und Bestätigungen.",
+          "Ein zentraler Ort für Dokumente, Ergebnisse und Rezepte.",
+          "Überweisungen und Follow-ups werden an den richtigen Anbieter geroutet."
+        ],
+        "features": [
+          { "title": "Einheitliche Suche", "desc": "Eine Suche für Versorgung, Diagnostik, Bildgebung und Ausgabe." },
+          { "title": "Buchungs-Timeline", "desc": "Verfolge Schritte von Anfrage bis Abschluss." },
+          { "title": "Ergebnis-Hub", "desc": "Labor- und Bildgebungsresultate sicher zugestellt." },
+          { "title": "Rezept-Flow", "desc": "An die Apotheke senden und Ausgabe bestätigen." }
+        ],
+        "trust": "Deine Daten sind durch rollenbasierte Zugriffe und Audit-Trails in jedem Schritt geschützt."
+      },
+      "doctor": {
+        "whatYouDo": [
+          "Prüfe Terminanfragen und deinen Kalender.",
+          "Dokumentiere Besuche und sende Rezepte/Überweisungen.",
+          "Betreue Patient:innen nach und koordiniere Diagnostik."
+        ],
+        "automates": [
+          "Planung, Erinnerungen und Queue-Routing.",
+          "Besuchsvorlagen und strukturierte Dokumentation.",
+          "Überweisungen und Ergebniszustellung in deinen Workflow."
+        ],
+        "features": [
+          { "title": "Kalendersteuerung", "desc": "Verfügbarkeit, Puffer und Besuchstypen." },
+          { "title": "Vorlagen", "desc": "Diagnose → Behandlung → Rezepte → Dateien → Notizen." },
+          { "title": "Überweisungen", "desc": "An Labor/Bildgebung senden mit Tracking." },
+          { "title": "Sicheres Teilen", "desc": "Ergebnisse und Pläne an die richtige Rolle." }
+        ],
+        "trust": "RBAC stellt sicher, dass nur Berechtigte Zugriff haben; jeder Zugriff ist auditierbar."
+      },
+      "practice": {
+        "whatYouDo": [
+          "Konfiguriere Services, Preise, Zeiten und Teamrollen.",
+          "Überwache Abläufe über Ärzt:innen und Abteilungen hinweg.",
+          "Verfolge Zahlungen, Durchsatz und operative Signale."
+        ],
+        "automates": [
+          "Arbeitsqueues für Empfang und Personal.",
+          "Einheitliche Buchungs- und Check-in-Flows.",
+          "Operatives Reporting und Analytics."
+        ],
+        "features": [
+          { "title": "Admin-Konsole", "desc": "Ärzt:innen, Services und Richtlinien verwalten." },
+          { "title": "Teamrollen", "desc": "Einladen mit Minimalrechten (Least Privilege)." },
+          { "title": "Queue-Transparenz", "desc": "Engpässe und Last schnell erkennen." },
+          { "title": "Analytics", "desc": "Buchungen, Abschlüsse und operative Signale." }
+        ],
+        "trust": "Einrichtungen können verifiziert werden; Zugriff ist rollenbasiert begrenzt und protokolliert."
+      },
+      "clinicStaff": {
+        "whatYouDo": [
+          "Manage Check-in und Patient:innenfluss.",
+          "Koordiniere Zeiten, Räume und Arbeitsqueues.",
+          "Hänge Dokumente an und route Aufgaben an Kliniker:innen."
+        ],
+        "automates": [
+          "Priorisierung und Routing von Queues.",
+          "Erinnerungen und Umbuchungs-Flows.",
+          "Dokumentensammlung und strukturierte Übergaben."
+        ],
+        "features": [
+          { "title": "Check-in", "desc": "Schnelle Ankunft, Statuswechsel und Raumrouting." },
+          { "title": "Arbeitsqueue", "desc": "Eine Liste mit Verantwortlichen und SLA." },
+          { "title": "Messaging", "desc": "Kontextuelle Notizen und Übergaben." },
+          { "title": "Intake-Formulare", "desc": "Daten vor dem Besuch erfassen." }
+        ],
+        "trust": "Zugriff des Personals ist auf zugewiesene Einrichtungen und erlaubte Module begrenzt."
+      },
+      "lab": {
+        "whatYouDo": [
+          "Nimm Aufträge an und plane Probenentnahmen.",
+          "Verarbeite und veröffentliche Ergebnisse.",
+          "Koordiniere die Zustellung mit Praxen und Patient:innen."
+        ],
+        "automates": [
+          "Auftragseingang und Status-Tracking.",
+          "Ergebniszustellung an autorisierte Rollen.",
+          "Benachrichtigungen für Abschluss und Nachsorge."
+        ],
+        "features": [
+          { "title": "Auftrags-Postfach", "desc": "Klare Worklists und Statusupdates." },
+          { "title": "Ergebnisse veröffentlichen", "desc": "Sichere Zustellung an Ärzt:innen und Patient:innen." },
+          { "title": "Turnaround-Tracking", "desc": "Operative Transparenz für SLAs." },
+          { "title": "Dateispeicher", "desc": "Reports und Dateien sicher anhängen." }
+        ],
+        "trust": "Verifizierte Labore, verschlüsselte Speicherung und Audit-Trails für Ergebniszugriffe."
+      },
+      "labStaff": {
+        "whatYouDo": [
+          "Bearbeite zugewiesene Aufträge und halte Status korrekt.",
+          "Lade Ergebnisse und unterstützende Dokumente hoch.",
+          "Kommuniziere Ausnahmen zurück an die Praxis."
+        ],
+        "automates": [
+          "Work-Queues und Zuweisung.",
+          "Vorlagenbasierte Uploads.",
+          "Benachrichtigungen bei Statusänderungen."
+        ],
+        "features": [
+          { "title": "Zugewiesene Arbeit", "desc": "Fokus auf deine Queue — ohne Rauschen." },
+          { "title": "Uploads", "desc": "Ergebnisse in wenigen Schritten anhängen." },
+          { "title": "Status-Automation", "desc": "Weniger manuelle Administration." },
+          { "title": "Eskalationen", "desc": "Probleme schnell mit Kontext melden." }
+        ],
+        "trust": "Berechtigungen begrenzen Sichtbarkeit auf das unbedingt Notwendige."
+      },
+      "imaging": {
+        "whatYouDo": [
+          "Erhalte Bildgebungsaufträge und plane Untersuchungen.",
+          "Führe Studien durch und lade Berichte hoch.",
+          "Zustellung an überweisende Ärzt:innen und Patient:innen."
+        ],
+        "automates": [
+          "Planung und Erinnerungen.",
+          "Ergebniszustellung mit Berechtigungen.",
+          "Status-Tracking und Reporting."
+        ],
+        "features": [
+          { "title": "Auftragsboard", "desc": "Klarer Pipeline von Anfrage bis Abschluss." },
+          { "title": "Studien-Dateien", "desc": "Sicherer Upload und Zustellung." },
+          { "title": "Reporting", "desc": "Operative Einblicke in Durchsatz und Kapazität." },
+          { "title": "Referrer-Loop", "desc": "Schließe den Kreis zurück zur Überweisung." }
+        ],
+        "trust": "Nur autorisierte Rollen können Dateien einsehen; alle Aktionen sind auditierbar."
+      },
+      "imagingStaff": {
+        "whatYouDo": [
+          "Bearbeite zugewiesene Studien und aktualisiere Status.",
+          "Lade Berichte und Anhänge hoch.",
+          "Koordiniere Umbuchungen oder Ausnahmen."
+        ],
+        "automates": [
+          "Queue-Zuweisung und Routing.",
+          "Benachrichtigungen und Task-Handoffs.",
+          "Workflows für Ergebnisveröffentlichung."
+        ],
+        "features": [
+          { "title": "Arbeitsqueue", "desc": "Nur deine zugewiesenen Studien." },
+          { "title": "Schnelle Updates", "desc": "Status und Notizen an einem Ort." },
+          { "title": "Sichere Uploads", "desc": "Zustellung an die richtige Rolle." },
+          { "title": "Ausnahmen", "desc": "Probleme mit vollständigem Kontext markieren." }
+        ],
+        "trust": "Least-Privilege-Prinzip: Zugriff nur auf notwendige Daten."
+      },
+      "pharmacy": {
+        "whatYouDo": [
+          "Erhalte Rezepte und prüfe Verfügbarkeit.",
+          "Gib aus und bestätige Abholung/Lieferung.",
+          "Koordiniere Substitutionen bei Bedarf mit dem Verordner."
+        ],
+        "automates": [
+          "Rezept-Eingang und Status-Tracking.",
+          "Ausgabe-Bestätigungen.",
+          "Benachrichtigungen an Patient:innen und Praxen."
+        ],
+        "features": [
+          { "title": "Rx-Postfach", "desc": "Eingehende Rezepte zentralisieren." },
+          { "title": "Ausgabe-Schritte", "desc": "Vorbereitet → bereit → ausgeliefert." },
+          { "title": "Substitutionen", "desc": "Änderungen mit Ärzt:innen abstimmen." },
+          { "title": "Reporting", "desc": "Operative Kennzahlen zur Nachfrage." }
+        ],
+        "trust": "Verifizierte Apotheken, Verschlüsselung und Audit-Logs für sensible Aktionen."
+      },
+      "pharmacyStaff": {
+        "whatYouDo": [
+          "Bearbeite zugewiesene Rezepte und aktualisiere Ausgabeschritte.",
+          "Bestätige Abholung/Lieferung.",
+          "Melde Ausnahmen an die Apothekenleitung."
+        ],
+        "automates": [
+          "Queue-Zuweisung und Benachrichtigungen.",
+          "Statusupdates und Bestätigungen.",
+          "Auslöser für Patient:innenkommunikation."
+        ],
+        "features": [
+          { "title": "Zugewiesene Queue", "desc": "Fokus auf umsetzbare Items." },
+          { "title": "One-Tap-Updates", "desc": "Schnell durch die Stufen bewegen." },
+          { "title": "Ausnahmen", "desc": "Engpässe oder Fragen mit Kontext markieren." },
+          { "title": "Bestätigungen", "desc": "Den Loop für Praxis und Patient:in schließen." }
+        ],
+        "trust": "Zugriff ist auf die minimal notwendigen Daten für den Ausgabeflow begrenzt."
+      }
+    },
+    "automation": {
+      "title": "Automation, die manuelle Arbeit reduziert",
+      "items": {
+        "scheduling": { "title": "Smarte Terminplanung & Erinnerungen", "desc": "Reduziere No-Shows durch Bestätigungen, Erinnerungen und smarte Umbuchung." },
+        "checkin": { "title": "Check-in & Queue-Management", "desc": "Bewege Patient:innen mit klaren Status und Ownership durch den Prozess." },
+        "documentation": { "title": "Vorlagen & Dokumentation", "desc": "Strukturierter Ablauf von Diagnose bis Rezepte, Dateien und Notizen." },
+        "referrals": { "title": "Überweisungen & Koordination", "desc": "Routet Überweisungen an die richtige Einrichtung mit Tracking." },
+        "results": { "title": "Zustellung diagnostischer Ergebnisse", "desc": "Liefere Labor- und Bildgebungsergebnisse sicher an die richtigen Rollen." },
+        "fulfillment": { "title": "Rezept-Ausgabe-Workflow", "desc": "Verfolge Vorbereitung, Abholung/Lieferung und Bestätigungen." }
+      }
+    },
+    "security": {
+      "title": "Sicherheit & Vertrauen by design",
+      "items": {
+        "rbac": "Rollenbasierter Zugriff (RBAC)",
+        "audit": "Audit-Logs",
+        "verification": "Verifizierte Anbieter/Einrichtungen",
+        "encryption": "Verschlüsselte Dateispeicherung",
+        "compliance": "HIPAA/GDPR-ready Haltung"
+      }
+    },
+    "faq": {
+      "title": "FAQ",
+      "q1": { "question": "Wie erhält Personal Zugriff?", "answer": "Admins laden Personal ein und weisen Rollen mit Minimalrechten zu." },
+      "q2": { "question": "Was sieht Personal vs Ärzt:innen vs Patient:innen?", "answer": "RBAC begrenzt Daten je Rolle; Zugriffe sind auditierbar." },
+      "q3": { "question": "Wie verbinden sich Überweisungen mit Terminen?", "answer": "Überweisungen können Anfragen erzeugen, die in Queues und Planung der Einrichtung landen." },
+      "q4": { "question": "Wie werden Ergebnisse zugestellt?", "answer": "Ergebnisse werden autorisierten Rollen geteilt und erscheinen mit Benachrichtigungen im Dashboard." },
+      "q5": { "question": "Wie bestätigt die Apotheke die Ausgabe?", "answer": "Apotheken aktualisieren Status und bestätigen die Fertigstellung." },
+      "q6": { "question": "Sind Daten sicher?", "answer": "Docito nutzt Verschlüsselung, RBAC und Audit-Trails zum Schutz sensibler Daten." },
+      "q7": { "question": "Kann ich Versicherung nutzen?", "answer": "Das hängt von Anbieter und Region ab; Optionen können beim Buchen erscheinen." },
+      "q8": { "question": "Gibt es eine mobile App?", "answer": "Mobile Nutzung ist optimiert; native Apps kommen bald." }
+    },
+    "cta": {
+      "title": "Bereit für Docito?",
+      "subtitle": "Starte mit der Suche — oder tritt als verifizierter Anbieter bei und stärke deine Klinik-Workflows.",
+      "findCare": "Versorgung finden",
+      "joinProvider": "Als Anbieter beitreten",
+      "registerPractice": "Praxis registrieren"
+    }
+  }
+}
