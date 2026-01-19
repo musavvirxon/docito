@@ -1,112 +1,117 @@
 // File: src/components/howItWorks/AutomationWorkflowsGrid.tsx
 import { useTranslation } from "react-i18next";
-import { Card, CardContent } from "@/components/ui/card";
-import FadeIn from "./FadeIn";
+import { Card } from "@/components/ui/card";
+import Reveal from "./Reveal";
 import {
   CalendarClock,
-  ClipboardCheck,
-  FileText,
-  Share2,
-  Send,
+  ClipboardPenLine,
+  Stethoscope,
+  FileDown,
+  Network,
   Pill,
+  Users,
+  Workflow,
 } from "lucide-react";
 
-const items = [
-  {
-    key: "scheduling",
-    icon: CalendarClock,
-    titleKey: "howItWorks.automation.items.scheduling.title",
-    descKey: "howItWorks.automation.items.scheduling.desc",
-    fallbackTitle: "Smart scheduling & reminders",
-    fallbackDesc: "Reduce no-shows with automated confirmations and timing logic.",
-  },
-  {
-    key: "checkin",
-    icon: ClipboardCheck,
-    titleKey: "howItWorks.automation.items.checkin.title",
-    descKey: "howItWorks.automation.items.checkin.desc",
-    fallbackTitle: "Check-in & queue management",
-    fallbackDesc: "Move people through care with clear statuses and routing.",
-  },
-  {
-    key: "documentation",
-    icon: FileText,
-    titleKey: "howItWorks.automation.items.documentation.title",
-    descKey: "howItWorks.automation.items.documentation.desc",
-    fallbackTitle: "Visit templates & documentation",
-    fallbackDesc: "Structured workflow from diagnosis → treatment → prescriptions → files → notes.",
-  },
-  {
-    key: "referrals",
-    icon: Share2,
-    titleKey: "howItWorks.automation.items.referrals.title",
-    descKey: "howItWorks.automation.items.referrals.desc",
-    fallbackTitle: "Referrals & care coordination",
-    fallbackDesc: "Link referrals to scheduling and keep every handoff visible.",
-  },
-  {
-    key: "results",
-    icon: Send,
-    titleKey: "howItWorks.automation.items.results.title",
-    descKey: "howItWorks.automation.items.results.desc",
-    fallbackTitle: "Diagnostics results delivery",
-    fallbackDesc: "Deliver results securely with controlled access and notifications.",
-  },
-  {
-    key: "fulfillment",
-    icon: Pill,
-    titleKey: "howItWorks.automation.items.fulfillment.title",
-    descKey: "howItWorks.automation.items.fulfillment.desc",
-    fallbackTitle: "Prescription fulfillment workflow",
-    fallbackDesc: "Track received → prepared → fulfilled with confirmations.",
-  },
-] as const;
-
-function safeString(v: unknown, fallback: string) {
-  return typeof v === "string" ? v : fallback;
-}
+type Item = {
+  icon: any;
+  title: string;
+  desc: string;
+};
 
 export default function AutomationWorkflowsGrid() {
   const { t } = useTranslation(["howItWorks"]);
 
-  return (
-    <FadeIn rootMargin="120px">
-      <div className="space-y-6">
-        <div className="space-y-2">
-          <h2 className="text-2xl sm:text-3xl font-light tracking-tight">
-            {t("howItWorks.automation.title", "Automation that removes manual work")}
-          </h2>
-          <p className="text-sm sm:text-base text-muted-foreground max-w-3xl">
-            {t(
-              "howItWorks.automation.subtitle",
-              "Every team gets a clean queue and a clear next step — with fewer calls, fewer spreadsheets, and less friction."
-            )}
-          </p>
-        </div>
+  const items: Item[] = [
+    {
+      icon: CalendarClock,
+      title: t("howItWorks.automation.items.scheduling.title", "Smart scheduling & reminders"),
+      desc: t(
+        "howItWorks.automation.items.scheduling.desc",
+        "Reduce no-shows with confirmations, rescheduling, and automated follow-ups."
+      ),
+    },
+    {
+      icon: Workflow,
+      title: t("howItWorks.automation.items.checkin.title", "Check-in & queue management"),
+      desc: t(
+        "howItWorks.automation.items.checkin.desc",
+        "Real-time statuses and workload balancing across front desk and clinical teams."
+      ),
+    },
+    {
+      icon: ClipboardPenLine,
+      title: t("howItWorks.automation.items.documentation.title", "Visit templates & documentation"),
+      desc: t(
+        "howItWorks.automation.items.documentation.desc",
+        "Diagnosis → Treatment → Prescriptions → Files → Notes, structured and fast."
+      ),
+    },
+    {
+      icon: Network,
+      title: t("howItWorks.automation.items.referrals.title", "Referrals & care coordination"),
+      desc: t(
+        "howItWorks.automation.items.referrals.desc",
+        "Referrals connect directly to scheduling, orders, and downstream work queues."
+      ),
+    },
+    {
+      icon: FileDown,
+      title: t("howItWorks.automation.items.results.title", "Diagnostics results delivery"),
+      desc: t(
+        "howItWorks.automation.items.results.desc",
+        "Lab/imaging results delivered securely to the right role with audit trails."
+      ),
+    },
+    {
+      icon: Pill,
+      title: t("howItWorks.automation.items.fulfillment.title", "Prescription fulfillment workflow"),
+      desc: t(
+        "howItWorks.automation.items.fulfillment.desc",
+        "Track prepare → ready → dispensed → confirmed with permissioned visibility."
+      ),
+    },
+  ];
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((it) => (
-            <Card
-              key={it.key}
-              className="rounded-3xl border-border/50 bg-background/40 backdrop-blur hover:bg-background/60 transition-colors"
-            >
-              <CardContent className="p-6">
-                <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                  <it.icon className="h-5 w-5" />
+  return (
+    <section className="py-16 sm:py-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Reveal>
+          <div className="flex items-end justify-between gap-6">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-light tracking-tight">
+                {t("howItWorks.automation.title", "Automation that reduces manual work")}
+              </h2>
+              <p className="mt-2 text-sm sm:text-base text-muted-foreground max-w-2xl">
+                {t(
+                  "howItWorks.automation.subtitle",
+                  "Designed for staff-heavy workflows — fast, permissioned, and traceable."
+                )}
+              </p>
+            </div>
+          </div>
+        </Reveal>
+
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {items.map((it, idx) => (
+            <Reveal key={idx} delay={idx * 0.04}>
+              <Card className="h-full rounded-3xl border-border/50 bg-background/40 backdrop-blur p-6 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-2xl border border-primary/20 bg-primary/10 text-primary flex items-center justify-center">
+                    <it.icon className="h-5 w-5" />
+                  </div>
+                  <div className="text-sm font-medium">{it.title}</div>
                 </div>
-                <div className="mt-4 space-y-2">
-                  <p className="text-sm font-medium">
-                    {safeString(t(it.titleKey, it.fallbackTitle), it.fallbackTitle)}
-                  </p>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {safeString(t(it.descKey, it.fallbackDesc), it.fallbackDesc)}
-                  </p>
+                <p className="mt-4 text-sm text-muted-foreground leading-relaxed">{it.desc}</p>
+                <div className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">
+                  <Users className="h-3.5 w-3.5" />
+                  <span>{t("howItWorks.automation.tag", "Staff-ready operations")}</span>
                 </div>
-              </CardContent>
-            </Card>
+              </Card>
+            </Reveal>
           ))}
         </div>
       </div>
-    </FadeIn>
+    </section>
   );
 }
