@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { SEOHead } from "@/components/SEOHead";
 import HowItWorksHero from "@/components/howItWorks/HowItWorksHero";
 import LazyMount from "@/components/howItWorks/LazyMount";
+import PublicMetricsStrip from "@/components/howItWorks/PublicMetricsStrip";
 
 const UniversalFlowStepper = lazy(() => import("@/components/howItWorks/UniversalFlowStepper"));
 const RoleSwitcher = lazy(() => import("@/components/howItWorks/RoleSwitcher"));
@@ -49,6 +50,14 @@ export default function HowItWorks() {
 
       <main className="bg-background text-foreground antialiased">
         <HowItWorksHero />
+
+        <LazyMount rootMargin="200px">
+          <section className="pb-6 sm:pb-8">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <PublicMetricsStrip />
+            </div>
+          </section>
+        </LazyMount>
 
         <LazyMount rootMargin="200px">
           <section className="py-14 sm:py-16">
