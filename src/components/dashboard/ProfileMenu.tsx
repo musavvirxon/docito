@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+// File: src/components/dashboard/ProfileMenu.tsx
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -10,9 +11,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Settings, ArrowRightLeft, MessageSquareWarning, User } from "lucide-react";
-import { getUserRolesFromProfile, roleLabels, DASHBOARD_ROUTES, AppRole } from "@/lib/rbac";
-import { supabase } from "@/integrations/supabase/client";
+import { LogOut, Settings, ArrowRightLeft, MessageSquareWarning, User, LayoutDashboard } from "lucide-react";
+import { DASHBOARD_ROUTES, getDashboardRoute, getUserRolesFromProfile, roleLabels, type AppRole } from "@/lib/rbac";
 
 interface ProfileMenuProps {
   compact?: boolean;
@@ -20,30 +20,40 @@ interface ProfileMenuProps {
 
 const ProfileMenu = ({ compact = false }: ProfileMenuProps) => {
   const navigate = useNavigate();
-  const { profile, user } = useAuth();
-  const [roles, setRoles] = useState<AppRole[]>([]);
-  const [selectedRole, setSelectedRole] = useState<AppRole>("patient");
+  const { profile, user, allRoles, activeRole, switchRole, signOut } = useAuth();
 
-  useEffect(() => {
-    const userRoles = getUserRolesFromProfile(profile);
-    setRoles(userRoles);
-    if (userRoles.length > 0) {
-      setSelectedRole(userRoles[0]);
-    }
-  }, [profile]);
+  const roles: AppRole[] = useMemo(() => {
+    const fromContext = Array.isArray(allRoles) ? allRoles : [];
+    const fallback = getUserRolesFromProfile(profile);
+    const merged = fromContext.length > 0 ? fromContext : fallback;
+    return Array.from(new Set((merged || []).filter(Boolean) as AppRole[]));
+  }, [allRoles, profile]);
+
+  const canShowRoleSwitch = roles.length > 1;
+
+  const effectiveActiveRole: AppRole = useMemo(() => {
+    if (roles.length === 0) return activeRole;
+    return roles.includes(activeRole) ? activeRole : roles[0];
+  }, [activeRole, roles]);
+
+  const dashboardRoute = useMemo(() => {
+    if (roles.length > 0) return getDashboardRoute([effectiveActiveRole]);
+    return "/dashboard";
+  }, [effectiveActiveRole, roles.length]);
+
+  const dashboardLabel = useMemo(() => {
+    if (roles.length === 1) return `${roleLabels[roles[0]] || roles[0]} Dashboard`;
+    return "Dashboard";
+  }, [roles]);
 
   const handleRoleSwitch = (role: AppRole) => {
-    setSelectedRole(role);
-    const dashboardRoute = DASHBOARD_ROUTES[role] || "/dashboard";
-    navigate(dashboardRoute);
+    switchRole(role);
+    navigate(DASHBOARD_ROUTES[role] || getDashboardRoute([role]));
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
+    await signOut();
   };
-
-  const canShowRoleSwitch = roles.length > 1;
 
   return (
     <DropdownMenu>
@@ -62,6 +72,11 @@ const ProfileMenu = ({ compact = false }: ProfileMenuProps) => {
           Signed in as {profile?.full_name || user?.email}
         </DropdownMenuLabel>
 
+        <DropdownMenuItem onClick={() => navigate(dashboardRoute)}>
+          <LayoutDashboard className="mr-2 h-4 w-4" />
+          {dashboardLabel}
+        </DropdownMenuItem>
+
         <DropdownMenuItem onClick={() => navigate("/profile")}>
           <Settings className="mr-2 h-4 w-4" />
           Settings
@@ -72,25 +87,26 @@ const ProfileMenu = ({ compact = false }: ProfileMenuProps) => {
           Bug / Feature Request
         </DropdownMenuItem>
 
-        {canShowRoleSwitch && (
+        {canShowRoleSwitch ? (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-xs text-muted-foreground">
-              Switch Role
-            </DropdownMenuLabel>
+            <DropdownMenuLabel className="text-xs text-muted-foreground">Switch Role</DropdownMenuLabel>
 
             {roles.map((role) => (
               <DropdownMenuItem
                 key={role}
                 onClick={() => handleRoleSwitch(role)}
-                className={role === selectedRole ? "bg-accent/50" : ""}
+                className={`flex items-center justify-between ${role === effectiveActiveRole ? "bg-accent/50" : ""}`}
               >
-                <ArrowRightLeft className="mr-2 h-4 w-4" />
-                {roleLabels[role] || role}
+                <span className="flex items-center">
+                  <ArrowRightLeft className="mr-2 h-4 w-4" />
+                  {roleLabels[role] || role}
+                </span>
+                {role === effectiveActiveRole ? <span className="text-xs text-muted-foreground">Current</span> : null}
               </DropdownMenuItem>
             ))}
           </>
-        )}
+        ) : null}
 
         <DropdownMenuSeparator />
 
