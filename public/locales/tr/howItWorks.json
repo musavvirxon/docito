@@ -1,0 +1,294 @@
+// File: public/locales/tr/howItWorks.json
+{
+  "howItWorks": {
+    "hero": {
+      "title": "Docito nasıl çalışır",
+      "subtitle": "Hastalar, doktorlar ve bakımın gerçekleşmesini sağlayan tüm ekipler için tek, bağlantılı bir iş akışı — otomatik, izinli ve hızlı.",
+      "ctaPrimary": "Aramayı başlat",
+      "ctaSecondary": "Role göre keşfet"
+    },
+    "metrics": {
+      "labels": {
+        "verifiedDoctors": "Doğrulanmış doktorlar",
+        "verifiedFacilities": "Doğrulanmış kuruluşlar",
+        "appointments7d": "Randevular (7g)"
+      },
+      "unavailable": "Metrikler kullanılamıyor (güvenli varsayılanlar gösteriliyor).",
+      "fallback": {
+        "verified_doctors": "1200",
+        "verified_facilities": "350",
+        "appointments_7d": "5400"
+      }
+    },
+    "flow": {
+      "title": "Her rol için evrensel bir akış",
+      "step1Title": "Ara",
+      "step1Desc": "Konum, uzmanlık ve uygunluğa göre doğrulanmış sağlayıcıları ve hizmetleri bulun.",
+      "step2Title": "Seç",
+      "step2Desc": "Profilleri, fiyatları, takvimleri ve klinik yetkinliklerini tek yerde karşılaştırın.",
+      "step3Title": "Randevu al",
+      "step3Desc": "Bir randevu veya hizmet isteyin ve durumu panelinizden takip edin.",
+      "step4Title": "Bakım ve takip",
+      "step4Desc": "Sonuçlar, reçeteler ve takip adımları doğru kişilere teslim edilir.",
+      "opsLayerTitle": "Operasyon katmanı",
+      "opsItems": {
+        "scheduling": "Planlama",
+        "queues": "İş kuyrukları",
+        "documentation": "Dokümantasyon",
+        "results": "Sonuç teslimi",
+        "fulfillment": "Karşılama/teslim",
+        "followups": "Takipler"
+      }
+    },
+    "roles": {
+      "careSeeker": "Hasta",
+      "doctor": "Doktor",
+      "practice": "Klinik/Muayenehane",
+      "clinicStaff": "Klinik Personeli",
+      "lab": "Laboratuvar",
+      "labStaff": "Lab Personeli",
+      "imaging": "Görüntüleme",
+      "imagingStaff": "Görüntüleme Personeli",
+      "pharmacy": "Eczane",
+      "pharmacyStaff": "Eczane Personeli"
+    },
+    "rolePanel": {
+      "whatYouDoTitle": "Docito’da ne yaparsınız",
+      "automatesTitle": "Docito neyi otomatikleştirir",
+      "featuresTitle": "Öne çıkan özellikler",
+      "dashboardPreviewTitle": "Panel önizlemesi",
+      "trustTitle": "Güven ve izinler"
+    },
+    "roleContent": {
+      "careSeeker": {
+        "whatYouDo": [
+          "Konum, uzmanlık ve uygunluğa göre doktor, lab, eczane ve görüntülemeyi arayın.",
+          "Doğrulanmış profilleri, puanları ve takvimleri karşılaştırın.",
+          "Tek panelden randevu alın, değiştirin ve takip edin."
+        ],
+        "automates": [
+          "Akıllı hatırlatmalar ve onaylar.",
+          "Belgeler, sonuçlar ve reçeteler için tek merkez.",
+          "Sevk ve takiplerin doğru sağlayıcıya yönlendirilmesi."
+        ],
+        "features": [
+          { "title": "Birleşik arama", "desc": "Bakım, tetkik, görüntüleme ve karşılama için tek arama." },
+          { "title": "Randevu zaman çizelgesi", "desc": "İstekten tamamlanmaya kadar adımları takip edin." },
+          { "title": "Sonuç merkezi", "desc": "Lab + görüntüleme sonuçları güvenle teslim edilir." },
+          { "title": "Reçete akışı", "desc": "Eczaneye gönderin ve karşılama durumunu doğrulayın." }
+        ],
+        "trust": "Bilgileriniz rol tabanlı erişim ve denetim izleriyle her adımda korunur."
+      },
+      "doctor": {
+        "whatYouDo": [
+          "Randevu isteklerini ve takviminizi gözden geçirin.",
+          "Muayeneyi belgeleyin ve reçete/sevk gönderin.",
+          "Hastaları takip edin ve tanı süreçlerini koordine edin."
+        ],
+        "automates": [
+          "Planlama, hatırlatmalar ve kuyruk yönlendirme.",
+          "Ziyaret şablonları ve yapılandırılmış dokümantasyon.",
+          "Sevk ve sonuçların iş akışınıza teslimi."
+        ],
+        "features": [
+          { "title": "Takvim kontrolü", "desc": "Uygunluk, tamponlar ve ziyaret türleri." },
+          { "title": "Şablonlar", "desc": "Tanı → tedavi → reçeteler → dosyalar → notlar." },
+          { "title": "Sevkler", "desc": "Lab/görüntülemeye gönderin ve takip edin." },
+          { "title": "Güvenli paylaşım", "desc": "Sonuçları doğru role güvenle paylaşın." }
+        ],
+        "trust": "RBAC yalnızca yetkililerin erişmesini sağlar; tüm erişimler denetlenebilir."
+      },
+      "practice": {
+        "whatYouDo": [
+          "Hizmetleri, fiyatları, takvimleri ve ekip rollerini yapılandırın.",
+          "Doktorlar ve departmanlar genelinde operasyonları izleyin.",
+          "Ödemeleri, akışı ve operasyon sinyallerini takip edin."
+        ],
+        "automates": [
+          "Ön büro ve personel için iş kuyrukları.",
+          "Birleşik randevu ve check-in iş akışları.",
+          "Operasyon raporları ve analitik yüzeyler."
+        ],
+        "features": [
+          { "title": "Yönetim paneli", "desc": "Doktorları, hizmetleri ve politikaları yönetin." },
+          { "title": "Personel rolleri", "desc": "En az ayrıcalıkla davet ve yetkilendirme." },
+          { "title": "Kuyruk görünürlüğü", "desc": "Darboğaz ve yükü hızlıca görün." },
+          { "title": "Analitik", "desc": "Randevular, tamamlanma ve operasyon sinyalleri." }
+        ],
+        "trust": "Kuruluşlar doğrulanabilir; erişim rol bazında sınırlandırılır ve kayıt altına alınır."
+      },
+      "clinicStaff": {
+        "whatYouDo": [
+          "Check-in ve hasta akışını yönetin.",
+          "Takvimleri, odaları ve iş kuyruklarını koordine edin.",
+          "Belgeleri ekleyin ve görevleri klinisyenlere yönlendirin."
+        ],
+        "automates": [
+          "Kuyruk önceliklendirme ve yönlendirme.",
+          "Hatırlatmalar ve yeniden randevu akışları.",
+          "Belge toplama ve yapılandırılmış devirler."
+        ],
+        "features": [
+          { "title": "Check-in", "desc": "Hızlı geliş, durum güncellemeleri ve oda yönlendirme." },
+          { "title": "İş kuyruğu", "desc": "Sahiplik ve SLA ile tek görev listesi." },
+          { "title": "Mesajlaşma", "desc": "Bağlamlı notlar ve devirler." },
+          { "title": "Ön form", "desc": "Ziyaret öncesi veri toplama." }
+        ],
+        "trust": "Personel erişimi yalnızca atanmış tesisler ve izinli modüllerle sınırlıdır."
+      },
+      "lab": {
+        "whatYouDo": [
+          "İstekleri kabul edin ve örnek alımını planlayın.",
+          "İşleyin ve sonuçları yayınlayın.",
+          "Teslimatı klinikler ve hastalarla koordine edin."
+        ],
+        "automates": [
+          "İstek alımı ve durum takibi.",
+          "Yetkili rollere sonuç teslimi.",
+          "Tamamlama ve takip bildirimleri."
+        ],
+        "features": [
+          { "title": "İstek alımı", "desc": "Net iş listeleri ve durum güncellemeleri." },
+          { "title": "Sonuç yayınlama", "desc": "Klinisyen ve hastalara güvenli teslim." },
+          { "title": "Süre takibi", "desc": "SLA’lar için operasyonel şeffaflık." },
+          { "title": "Dosya depolama", "desc": "Raporları ve dosyaları güvenle ekleyin." }
+        ],
+        "trust": "Doğrulanmış lab profilleri, şifreli depolama ve sonuç erişimi için denetim izleri."
+      },
+      "labStaff": {
+        "whatYouDo": [
+          "Atanan işleri yürütün ve durumları doğru tutun.",
+          "Sonuçları ve ek belgeleri yükleyin.",
+          "İstisnaları kliniklere iletin."
+        ],
+        "automates": [
+          "İş kuyruğu ve atama.",
+          "Şablonlu sonuç yüklemeleri.",
+          "Durum değişimi bildirimleri."
+        ],
+        "features": [
+          { "title": "Atanmış işler", "desc": "Sadece kendi kuyruğunuza odaklanın." },
+          { "title": "Yüklemeler", "desc": "Az adımla sonuç ekleme." },
+          { "title": "Durum otomasyonu", "desc": "Manuel işi azaltın." },
+          { "title": "Eskalasyon", "desc": "Sorunları bağlamla hızlı yükseltin." }
+        ],
+        "trust": "Personel izinleri yalnızca gerekli isteklere ve hasta verisine görünürlük sağlar."
+      },
+      "imaging": {
+        "whatYouDo": [
+          "Görüntüleme isteklerini alın ve randevu planlayın.",
+          "Çalışmaları yürütün ve raporları yükleyin.",
+          "Sonuçları yönlendiren doktora ve hastaya teslim edin."
+        ],
+        "automates": [
+          "Planlama ve hatırlatmalar.",
+          "İzinlerle sonuç teslimi.",
+          "Durum takibi ve raporlama."
+        ],
+        "features": [
+          { "title": "İstek panosu", "desc": "İstekten tamamlanmaya net bir boru hattı." },
+          { "title": "Çalışma dosyaları", "desc": "Güvenli yükleme ve teslim." },
+          { "title": "Raporlama", "desc": "Kapasite ve akış için operasyonel anlık görüntüler." },
+          { "title": "Sevk döngüsü", "desc": "Doktora geri bildirimle döngüyü kapatın." }
+        ],
+        "trust": "Dosyalara yalnızca yetkili roller erişebilir; tüm işlemler denetlenebilir."
+      },
+      "imagingStaff": {
+        "whatYouDo": [
+          "Atanan çalışmaları yürütün ve durumları güncelleyin.",
+          "Raporları ve ekleri yükleyin.",
+          "Yeniden planlama veya istisnaları koordine edin."
+        ],
+        "automates": [
+          "Kuyruk atama ve yönlendirme.",
+          "Bildirimler ve görev devri.",
+          "Sonuç yayınlama akışları."
+        ],
+        "features": [
+          { "title": "İş kuyruğu", "desc": "Yalnızca atanmış çalışmalar." },
+          { "title": "Hızlı güncelleme", "desc": "Durumlar ve notlar tek yerde." },
+          { "title": "Yükleme", "desc": "Doğru rollere güvenli teslim." },
+          { "title": "İstisnalar", "desc": "Sorunları bağlamla işaretleyin." }
+        ],
+        "trust": "En az ayrıcalık: yalnızca gerekli veriye erişim."
+      },
+      "pharmacy": {
+        "whatYouDo": [
+          "Reçeteleri alın ve uygunluğu doğrulayın.",
+          "Karşılayın ve teslim/tesellüm onayı verin.",
+          "Gerekirse ikameyi doktorla koordine edin."
+        ],
+        "automates": [
+          "Reçete alımı ve durum takibi.",
+          "Karşılama onayları.",
+          "Hasta ve klinik bildirimleri."
+        ],
+        "features": [
+          { "title": "Rx gelen kutusu", "desc": "Gelen reçeteleri merkezileştirin." },
+          { "title": "Karşılama adımları", "desc": "Hazırla → hazır → teslim edildi." },
+          { "title": "İkameler", "desc": "Değişimleri doktorla koordine edin." },
+          { "title": "Raporlama", "desc": "Talep için operasyonel metrikler." }
+        ],
+        "trust": "Doğrulanmış eczaneler, şifreli dosyalar ve hassas eylemler için denetim kayıtları."
+      },
+      "pharmacyStaff": {
+        "whatYouDo": [
+          "Atanan reçeteleri yürütün ve adımları güncelleyin.",
+          "Tesellüm/teslimatı onaylayın.",
+          "İstisnaları eczane yöneticisine iletin."
+        ],
+        "automates": [
+          "Kuyruk atama ve bildirimler.",
+          "Durum güncellemeleri ve onaylar.",
+          "Hasta iletişim tetikleri."
+        ],
+        "features": [
+          { "title": "Atanmış kuyruk", "desc": "Eyleme dönük öğelere odaklanın." },
+          { "title": "Tek dokunuş", "desc": "Adımları hızlıca ilerletin." },
+          { "title": "İstisnalar", "desc": "Eksik stok veya soruları bağlamla işaretleyin." },
+          { "title": "Onaylar", "desc": "Klinik ve hasta için döngüyü kapatın." }
+        ],
+        "trust": "Erişim, karşılamaya gereken minimum veriyle sınırlıdır."
+      }
+    },
+    "automation": {
+      "title": "Manuel işi azaltan otomasyon",
+      "items": {
+        "scheduling": { "title": "Akıllı planlama ve hatırlatmalar", "desc": "Onaylar, hatırlatmalar ve akıllı yeniden planlama ile no-show’u azaltın." },
+        "checkin": { "title": "Check-in ve kuyruk yönetimi", "desc": "Net durumlar ve sahiplikle hasta akışını yönetin." },
+        "documentation": { "title": "Ziyaret şablonları ve dokümantasyon", "desc": "Tanıdan reçeteye, dosyalara ve notlara kadar yapılandırılmış akış." },
+        "referrals": { "title": "Sevk ve bakım koordinasyonu", "desc": "Sevkleri doğru tesise takip ile yönlendirin." },
+        "results": { "title": "Tanı sonuç teslimi", "desc": "Lab ve görüntüleme sonuçlarını doğru rollere güvenle teslim edin." },
+        "fulfillment": { "title": "Reçete karşılama akışı", "desc": "Hazırlama, teslim/tesellüm ve onayları takip edin." }
+      }
+    },
+    "security": {
+      "title": "Güvenlik ve güven tasarım gereği",
+      "items": {
+        "rbac": "Rol tabanlı erişim (RBAC)",
+        "audit": "Denetim kayıtları",
+        "verification": "Doğrulanmış sağlayıcılar/kuruluşlar",
+        "encryption": "Şifreli dosya depolama",
+        "compliance": "HIPAA/GDPR’ye hazır duruş"
+      }
+    },
+    "faq": {
+      "title": "SSS",
+      "q1": { "question": "Personel nasıl erişim alır?", "answer": "Yöneticiler personeli davet eder ve en az ayrıcalıkla rol atar." },
+      "q2": { "question": "Personel vs doktor vs hasta ne görebilir?", "answer": "RBAC, veriyi role göre sınırlar; erişimler denetlenebilir." },
+      "q3": { "question": "Sevkler planlamaya nasıl bağlanır?", "answer": "Sevkler, tesis kuyruklarına ve planlamaya düşen istekler oluşturabilir." },
+      "q4": { "question": "Sonuçlar nasıl iletilir?", "answer": "Sonuçlar yetkili rollere paylaşılır ve bildirimlerle panolarda görünür." },
+      "q5": { "question": "Eczaneler karşılama nasıl onaylar?", "answer": "Eczaneler adımları günceller ve tamamlandığını onaylar." },
+      "q6": { "question": "Veri güvenli mi?", "answer": "Docito, şifreleme, RBAC ve denetim izleriyle veriyi korur." },
+      "q7": { "question": "Sigorta kullanabilir miyim?", "answer": "Sigorta desteği sağlayıcıya ve bölgeye bağlıdır; seçenekler randevuda görünebilir." },
+      "q8": { "question": "Mobil uygulama var mı?", "answer": "Mobil web deneyimi hazır; yerel uygulamalar yakında." }
+    },
+    "cta": {
+      "title": "Docito’ya hazır mısınız?",
+      "subtitle": "Aramayla başlayın — ya da doğrulanmış sağlayıcı olarak katılın ve klinik iş akışlarını güçlendirin.",
+      "findCare": "Bakım bul",
+      "joinProvider": "Sağlayıcı olarak katıl",
+      "registerPractice": "Klinik kaydı"
+    }
+  }
+}
