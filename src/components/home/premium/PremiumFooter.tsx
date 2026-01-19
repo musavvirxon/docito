@@ -1,6 +1,6 @@
-// File: src/components/home/premium/PremiumFooter.tsx
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useEffect } from "react";
 import {
   Twitter,
   Facebook,
@@ -45,14 +45,25 @@ const socialLinks = [
   { icon: Youtube, href: "https://youtube.com/docito", label: "YouTube" },
 ] as const;
 
+/**
+ * Language selector options (exact set requested).
+ * - We also toggle HTML dir for RTL on Arabic.
+ */
 const languages = [
-  { code: "en", name: "English", flag: "🇺🇸" },
-  { code: "ru", name: "Русский", flag: "🇷🇺" },
-  { code: "uz", name: "O'zbek", flag: "🇺🇿" },
-  { code: "ar", name: "العربية", flag: "🇸🇦" },
-  { code: "de", name: "Deutsch", flag: "🇩🇪" },
-  { code: "es", name: "Español", flag: "🇪🇸" },
+  { code: "en", name: "English", flag: "🇬🇧" }, // LTR
+  { code: "ru", name: "Русский", flag: "🇷🇺" }, // LTR
+  { code: "uz", name: "O'zbek", flag: "🇺🇿" }, // LTR
+  { code: "ar", name: "العربية", flag: "🇸🇦" }, // RTL
+  { code: "tr", name: "Türkçe", flag: "🇹🇷" }, // LTR
+  { code: "es", name: "Español", flag: "🇪🇸" }, // LTR
+  { code: "de", name: "Deutsch", flag: "🇩🇪" }, // LTR
+  { code: "zh", name: "中文", flag: "🇨🇳" }, // LTR
+  { code: "pt", name: "Português", flag: "🇧🇷" }, // LTR
+  { code: "ja", name: "日本語", flag: "🇯🇵" }, // LTR
+  { code: "ko", name: "한국어", flag: "🇰🇷" }, // LTR
 ] as const;
+
+const RTL_LANGS = new Set<string>(["ar"]);
 
 const fallbackLabels: Record<string, string> = {
   // Platform
@@ -96,6 +107,15 @@ function fallbackFor(key: string) {
 export default function PremiumFooter() {
   const { t, i18n } = useTranslation(["home", "common"]);
   const currentYear = new Date().getFullYear();
+
+  useEffect(() => {
+    const lang = i18n.language || "en";
+    const base = lang.split("-")[0]; // normalize (e.g., ar-SA -> ar)
+    const isRtl = RTL_LANGS.has(base);
+
+    document.documentElement.dir = isRtl ? "rtl" : "ltr";
+    document.documentElement.lang = base;
+  }, [i18n.language]);
 
   return (
     <footer className="relative bg-muted/30 border-t border-border/50">
@@ -238,14 +258,14 @@ export default function PremiumFooter() {
               <div className="flex items-center gap-2">
                 <Globe className="w-4 h-4 text-muted-foreground" />
                 <select
-                  value={i18n.language}
+                  value={(i18n.language || "en").split("-")[0]}
                   onChange={(e) => i18n.changeLanguage(e.target.value)}
                   aria-label={t("common:language.select", "Select Language")}
                   className="bg-background text-sm text-muted-foreground hover:text-foreground cursor-pointer focus:outline-none border border-border/50 rounded-lg px-2 py-1"
                 >
                   {languages.map((lang) => (
                     <option key={lang.code} value={lang.code}>
-                      {lang.flag} {lang.name}
+                      {lang.name} {lang.flag}
                     </option>
                   ))}
                 </select>
