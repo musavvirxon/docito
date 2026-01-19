@@ -1,3 +1,4 @@
+// File: src/i18n/config.ts
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
@@ -37,7 +38,7 @@ export const rtlLanguages = ['ar', 'he', 'fa', 'ur'];
 export const isRTL = (langCode: string): boolean => rtlLanguages.includes(langCode);
 
 // Helper to get language direction
-export const getDirection = (langCode: string): 'ltr' | 'rtl' => 
+export const getDirection = (langCode: string): 'ltr' | 'rtl' =>
   isRTL(langCode) ? 'rtl' : 'ltr';
 
 // Apply RTL direction to document
@@ -55,7 +56,7 @@ i18n
     fallbackLng: 'en',
     debug: false,
     supportedLngs: languages.map(l => l.code),
-    
+
     detection: {
       order: ['localStorage', 'navigator', 'htmlTag'],
       caches: ['localStorage'],
@@ -75,29 +76,30 @@ i18n
     },
 
     ns: [
-      'common', 
-      'home', 
-      'doctors', 
-      'patients', 
-      'auth', 
-      'dashboard', 
-      'support', 
-      'about', 
-      'contact', 
-      'faqs', 
-      'features', 
-      'help', 
-      'legal', 
-      'practices', 
-      'specialties', 
-      'lab', 
-      'pharmacy', 
+      'common',
+      'home',
+      'howItWorks',
+      'doctors',
+      'patients',
+      'auth',
+      'dashboard',
+      'support',
+      'about',
+      'contact',
+      'faqs',
+      'features',
+      'help',
+      'legal',
+      'practices',
+      'specialties',
+      'lab',
+      'pharmacy',
       'imaging',
       'admin',
       'popups'
     ],
     defaultNS: 'common',
-    
+
     partialBundledLanguages: true,
 
     react: {
