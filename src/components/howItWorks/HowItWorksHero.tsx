@@ -1,13 +1,48 @@
 // File: src/components/howItWorks/HowItWorksHero.tsx
-import { motion } from "framer-motion";
-import { ArrowRight, ChevronDown } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { ArrowRight, ChevronDown, ShieldCheck } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import VectorNetworkIllustration from "./VectorNetworkIllustration";
+import { useHowItWorksMetrics } from "@/hooks/useHowItWorksMetrics";
+
+function MetricPill({
+  label,
+  value,
+  loading,
+}: {
+  label: string;
+  value: string;
+  loading: boolean;
+}) {
+  return (
+    <div className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/40 backdrop-blur px-3 py-1.5">
+      <ShieldCheck className="h-4 w-4 text-primary/80" />
+      <span className="text-xs text-muted-foreground">{label}</span>
+      {loading ? (
+        <span className="inline-block h-3 w-10 rounded bg-muted/50 animate-pulse" />
+      ) : (
+        <span className="text-xs font-medium text-foreground tabular-nums">{value}</span>
+      )}
+    </div>
+  );
+}
 
 export default function HowItWorksHero() {
   const { t } = useTranslation(["howItWorks"]);
+  const metrics = useHowItWorksMetrics();
+
+  const loading = metrics.status === "loading" || metrics.status === "idle";
+  const live = metrics.status === "success" ? metrics.data : null;
+
+  // Safe fallback numbers (do not break page)
+  const fallback = {
+    verified_doctors: 1200,
+    verified_facilities: 350,
+    appointments_7d: 5400,
+  };
+
+  const m = live || fallback;
 
   return (
     <section className="relative overflow-hidden pt-14">
@@ -20,46 +55,25 @@ export default function HowItWorksHero() {
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
           <div className="space-y-7 text-start">
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            >
+            <div>
               <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-xs font-medium text-primary">
                 <span className="h-2 w-2 rounded-full bg-primary" />
                 Docito
               </span>
-            </motion.div>
+            </div>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-              className="text-4xl sm:text-5xl lg:text-6xl font-light tracking-tight"
-            >
-              <span className="block text-foreground">
-                {t("howItWorks.hero.title", "How Docito works")}
-              </span>
-            </motion.h1>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-light tracking-tight text-foreground">
+              {t("howItWorks.hero.title", "How Docito works")}
+            </h1>
 
-            <motion.p
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.16, ease: [0.22, 1, 0.36, 1] }}
-              className="max-w-xl text-base sm:text-lg leading-relaxed text-muted-foreground font-light"
-            >
+            <p className="max-w-xl text-base sm:text-lg leading-relaxed text-muted-foreground font-light">
               {t(
                 "howItWorks.hero.subtitle",
                 "One connected workflow for patients, doctors, and every team that makes care happen — automated, permissioned, and fast."
               )}
-            </motion.p>
+            </p>
 
-            <motion.div
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.24, ease: [0.22, 1, 0.36, 1] }}
-              className="flex flex-col sm:flex-row gap-3"
-            >
+            <div className="flex flex-col sm:flex-row gap-3">
               <Button asChild className="h-11 rounded-full px-6">
                 <Link to="/#search" aria-label={t("howItWorks.hero.ctaPrimary", "Start search")}>
                   <span className="flex items-center gap-2">
@@ -69,11 +83,7 @@ export default function HowItWorksHero() {
                 </Link>
               </Button>
 
-              <Button
-                asChild
-                variant="outline"
-                className="h-11 rounded-full px-6 bg-background/60 backdrop-blur"
-              >
+              <Button asChild variant="outline" className="h-11 rounded-full px-6 bg-background/60 backdrop-blur">
                 <a href="#roles" aria-label={t("howItWorks.hero.ctaSecondary", "Explore by role")}>
                   <span className="flex items-center gap-2">
                     {t("howItWorks.hero.ctaSecondary", "Explore by role")}
@@ -81,39 +91,38 @@ export default function HowItWorksHero() {
                   </span>
                 </a>
               </Button>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.7, delay: 0.34 }}
-              className="flex items-center gap-3 text-xs text-muted-foreground"
-            >
-              <span className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-muted/30 px-3 py-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary/70" />
-                RBAC
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-muted/30 px-3 py-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary/70" />
-                Work queues
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-muted/30 px-3 py-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary/70" />
-                Audit trails
-              </span>
-            </motion.div>
+            <div className="flex flex-wrap gap-2">
+              <MetricPill
+                label="Verified doctors"
+                value={Intl.NumberFormat().format(m.verified_doctors)}
+                loading={loading}
+              />
+              <MetricPill
+                label="Verified facilities"
+                value={Intl.NumberFormat().format(m.verified_facilities)}
+                loading={loading}
+              />
+              <MetricPill
+                label="Appointments (7d)"
+                value={Intl.NumberFormat().format(m.appointments_7d)}
+                loading={loading}
+              />
+            </div>
+
+            {metrics.status === "error" ? (
+              <p className="text-xs text-muted-foreground">
+                Metrics unavailable (showing safe defaults).
+              </p>
+            ) : null}
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="relative"
-          >
+          <div className="relative">
             <div className="relative rounded-3xl border border-border/50 bg-background/40 backdrop-blur-2xl shadow-2xl shadow-black/5 p-6 sm:p-8">
               <VectorNetworkIllustration className="text-foreground" />
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
 
