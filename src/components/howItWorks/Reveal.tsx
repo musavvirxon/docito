@@ -1,11 +1,13 @@
-// File: src/components/howItWorks/Reveal.tsx
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 type Props = {
   children: ReactNode;
   className?: string;
+  /** Delay in milliseconds */
   delayMs?: number;
+  /** Delay as a number (converted to ms internally) - for backwards compatibility */
+  delay?: number;
 };
 
 const prefersReducedMotion = (): boolean => {
@@ -13,9 +15,12 @@ const prefersReducedMotion = (): boolean => {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 };
 
-export default function Reveal({ children, className, delayMs = 0 }: Props) {
+export default function Reveal({ children, className, delayMs = 0, delay }: Props) {
   const ref = useRef<HTMLDivElement | null>(null);
   const [shown, setShown] = useState(prefersReducedMotion());
+
+  // Support both delayMs and delay props (delay is in seconds, convert to ms)
+  const actualDelay = delayMs || (delay ? delay * 1000 : 0);
 
   useEffect(() => {
     if (shown) return;
@@ -46,7 +51,7 @@ export default function Reveal({ children, className, delayMs = 0 }: Props) {
         shown ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4",
         className
       )}
-      style={delayMs ? { transitionDelay: `${delayMs}ms` } : undefined}
+      style={actualDelay ? { transitionDelay: `${actualDelay}ms` } : undefined}
     >
       {children}
     </div>

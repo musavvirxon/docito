@@ -1,6 +1,5 @@
-// File: src/components/howItWorks/HowItWorksFAQ.tsx
 import { useTranslation } from "react-i18next";
-import FadeIn from "./FadeIn";
+import Reveal from "./Reveal";
 import {
   Accordion,
   AccordionContent,
@@ -56,7 +55,7 @@ export default function HowItWorksFAQ() {
       qKey: "howItWorks.faq.q7.question",
       aKey: "howItWorks.faq.q7.answer",
       qFallback: "Can I use insurance?",
-      aFallback: "Insurance support depends on provider configuration and region. You’ll see supported options where available.",
+      aFallback: "Insurance support depends on provider configuration and region. You'll see supported options where available.",
     },
     {
       qKey: "howItWorks.faq.q8.question",
@@ -67,35 +66,39 @@ export default function HowItWorksFAQ() {
   ] as const;
 
   return (
-    <FadeIn rootMargin="120px">
-      <div className="space-y-6">
-        <div className="space-y-2">
-          <h2 className="text-2xl sm:text-3xl font-light tracking-tight">
-            {t("howItWorks.faq.title", "FAQ")}
-          </h2>
-          <p className="text-sm sm:text-base text-muted-foreground max-w-3xl">
-            {t(
-              "howItWorks.faq.subtitle",
-              "Short answers to common questions from patients, providers, and operations teams."
-            )}
-          </p>
-        </div>
+    <section className="py-16 sm:py-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Reveal>
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <h2 className="text-2xl sm:text-3xl font-light tracking-tight">
+                {t("howItWorks.faq.title", "FAQ")}
+              </h2>
+              <p className="text-sm sm:text-base text-muted-foreground max-w-3xl">
+                {t(
+                  "howItWorks.faq.subtitle",
+                  "Short answers to common questions from patients, providers, and operations teams."
+                )}
+              </p>
+            </div>
 
-        <div className="rounded-3xl border border-border/50 bg-background/40 backdrop-blur">
-          <Accordion type="single" collapsible className="px-2 sm:px-4">
-            {faqs.map((f, idx) => (
-              <AccordionItem key={idx} value={`faq-${idx}`} className="border-border/40">
-                <AccordionTrigger className="text-left text-sm sm:text-base">
-                  {safeString(t(f.qKey, f.qFallback), f.qFallback)}
-                </AccordionTrigger>
-                <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
-                  {safeString(t(f.aKey, f.aFallback), f.aFallback)}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
+            <div className="rounded-3xl border border-border/50 bg-background/40 backdrop-blur">
+              <Accordion type="single" collapsible className="px-2 sm:px-4">
+                {faqs.map((f, idx) => (
+                  <AccordionItem key={idx} value={`faq-${idx}`} className="border-border/40">
+                    <AccordionTrigger className="text-left text-sm sm:text-base">
+                      {safeString(t(f.qKey, f.qFallback), f.qFallback)}
+                    </AccordionTrigger>
+                    <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
+                      {safeString(t(f.aKey, f.aFallback), f.aFallback)}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </div>
+          </div>
+        </Reveal>
       </div>
-    </FadeIn>
+    </section>
   );
 }

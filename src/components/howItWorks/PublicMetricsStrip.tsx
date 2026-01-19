@@ -1,15 +1,9 @@
-// File: src/components/howItWorks/PublicMetricsStrip.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getHowItWorksMetrics, type HowItWorksMetrics } from "./useHowItWorksMetrics";
+import { useHowItWorksMetrics, type HowItWorksMetrics } from "@/hooks/useHowItWorksMetrics";
 import { Users, Building2, CalendarCheck2 } from "lucide-react";
-
-type State =
-  | { status: "idle" | "loading"; data: null; error: null }
-  | { status: "success"; data: HowItWorksMetrics; error: null }
-  | { status: "error"; data: null; error: string };
 
 function safeString(v: unknown, fallback: string) {
   return typeof v === "string" ? v : fallback;
@@ -24,59 +18,42 @@ function formatCompact(n: number) {
 
 export default function PublicMetricsStrip() {
   const { t } = useTranslation(["howItWorks"]);
-  const [state, setState] = useState<State>({ status: "loading", data: null, error: null });
-
-  useEffect(() => {
-    let alive = true;
-
-    (async () => {
-      try {
-        const data = await getHowItWorksMetrics();
-        if (!alive) return;
-        setState({ status: "success", data, error: null });
-      } catch (e) {
-        if (!alive) return;
-        setState({ status: "error", data: null, error: String(e) });
-      }
-    })();
-
-    return () => {
-      alive = false;
-    };
-  }, []);
+  const state = useHowItWorksMetrics();
 
   const items = useMemo(
     () => [
       {
         key: "verified_doctors",
         icon: Users,
-        title: safeString(t("howItWorks.metrics.verifiedDoctors", "Verified doctors"), "Verified doctors"),
+        title: safeString(t("howItWorks.metrics.labels.verifiedDoctors", "Verified doctors"), "Verified doctors"),
         value:
           state.status === "success"
             ? formatCompact(state.data.verified_doctors)
-            : safeString(t("howItWorks.metrics.fallbackDoctors", "—"), "—"),
+            : safeString(t("howItWorks.metrics.fallback.verified_doctors", "—"), "—"),
       },
       {
         key: "verified_facilities",
         icon: Building2,
-        title: safeString(t("howItWorks.metrics.verifiedFacilities", "Verified facilities"), "Verified facilities"),
+        title: safeString(t("howItWorks.metrics.labels.verifiedFacilities", "Verified facilities"), "Verified facilities"),
         value:
           state.status === "success"
             ? formatCompact(state.data.verified_facilities)
-            : safeString(t("howItWorks.metrics.fallbackFacilities", "—"), "—"),
+            : safeString(t("howItWorks.metrics.fallback.verified_facilities", "—"), "—"),
       },
       {
         key: "appointments_7d",
         icon: CalendarCheck2,
-        title: safeString(t("howItWorks.metrics.appointments7d", "Bookings (7d)"), "Bookings (7d)"),
+        title: safeString(t("howItWorks.metrics.labels.appointments7d", "Bookings (7d)"), "Bookings (7d)"),
         value:
           state.status === "success"
             ? formatCompact(state.data.appointments_7d)
-            : safeString(t("howItWorks.metrics.fallbackBookings", "—"), "—"),
+            : safeString(t("howItWorks.metrics.fallback.appointments_7d", "—"), "—"),
       },
     ],
     [state, t]
   );
+
+  const isLoading = state.status === "idle" || state.status === "loading";
 
   return (
     <div className="grid gap-4 lg:grid-cols-12">
@@ -87,7 +64,7 @@ export default function PublicMetricsStrip() {
               {safeString(t("howItWorks.metrics.badge", "Live signals"), "Live signals")}
             </Badge>
             <span className="text-xs text-muted-foreground">
-              {state.status === "loading"
+              {isLoading
                 ? safeString(t("howItWorks.metrics.loading", "Loading…"), "Loading…")
                 : state.status === "error"
                 ? safeString(t("howItWorks.metrics.unavailable", "Unavailable"), "Unavailable")
@@ -122,7 +99,7 @@ export default function PublicMetricsStrip() {
                   <it.icon className="h-5 w-5" />
                 </div>
 
-                {state.status === "loading" ? (
+                {isLoading ? (
                   <div className="h-4 w-14 rounded bg-muted/30 animate-pulse" />
                 ) : (
                   <span className="text-2xl font-light tracking-tight">{it.value}</span>
