@@ -111,7 +111,7 @@ async function loadStripeJs(): Promise<void> {
     script.src = "https://js.stripe.com/v3/";
     script.async = true;
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Failed to load Stripe.js")));
+    script.onerror = () => reject(new Error("Failed to load Stripe.js"));
     document.head.appendChild(script);
   });
 }

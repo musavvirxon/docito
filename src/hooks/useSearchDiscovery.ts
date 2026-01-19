@@ -203,7 +203,7 @@ export const useSearchDiscovery = () => {
           });
 
         // Use public views so anon users get suggestions too
-        const { data: doctors } = await supabase
+        const { data: doctors } = await (supabase as any)
           .from("doctor_public_search_view")
           .select("full_name, specialty, practice_city")
           .or(`full_name.ilike.%${query}%,specialty.ilike.%${query}%`)
@@ -227,7 +227,7 @@ export const useSearchDiscovery = () => {
           });
         }
 
-        const { data: practices } = await supabase
+        const { data: practices } = await (supabase as any)
           .from("practice_public_search_view")
           .select("name, city, country")
           .or(`name.ilike.%${query}%,city.ilike.%${query}%`)
