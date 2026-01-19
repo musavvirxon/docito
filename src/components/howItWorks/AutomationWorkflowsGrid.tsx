@@ -2,16 +2,7 @@
 import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import Reveal from "./Reveal";
-import {
-  CalendarClock,
-  ClipboardPenLine,
-  Stethoscope,
-  FileDown,
-  Network,
-  Pill,
-  Users,
-  Workflow,
-} from "lucide-react";
+import { CalendarClock, ClipboardPenLine, FileDown, Network, Pill, Users, Workflow } from "lucide-react";
 
 type Item = {
   icon: any;
@@ -74,7 +65,7 @@ export default function AutomationWorkflowsGrid() {
   ];
 
   return (
-    <section className="py-16 sm:py-20">
+    <section className="py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <Reveal>
           <div className="flex items-end justify-between gap-6">
@@ -94,7 +85,7 @@ export default function AutomationWorkflowsGrid() {
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((it, idx) => (
-            <Reveal key={idx} delay={idx * 0.04}>
+            <Reveal key={idx} delayMs={idx * 60}>
               <Card className="h-full rounded-3xl border-border/50 bg-background/40 backdrop-blur p-6 shadow-sm">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-2xl border border-primary/20 bg-primary/10 text-primary flex items-center justify-center">
