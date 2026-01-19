@@ -1,77 +1,56 @@
-import { useTranslation } from "react-i18next";
+// File: src/pages/HowItWorks.tsx
+import { useEffect } from "react";
 import { SEOHead } from "@/components/SEOHead";
-import ModernNavbar from "@/components/home/ModernNavbar";
-import ModernFooter from "@/components/home/ModernFooter";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTranslation } from "react-i18next";
+import HowItWorksHero from "@/components/howItWorks/HowItWorksHero";
 
 export default function HowItWorks() {
-  const { t } = useTranslation();
+  const { t } = useTranslation(["howItWorks", "common"]);
+
+  useEffect(() => {
+    const prev = document.documentElement.style.scrollBehavior;
+    document.documentElement.style.scrollBehavior = "smooth";
+    return () => {
+      document.documentElement.style.scrollBehavior = prev || "auto";
+    };
+  }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <>
       <SEOHead
-        title={t("howItWorks.title", "How it works")}
+        title={t("howItWorks.hero.title", "How Docito works")}
         description={t(
-          "howItWorks.description",
-          "Learn how MedicalBook helps patients find doctors and book appointments."
+          "howItWorks.hero.subtitle",
+          "One connected workflow for patients, doctors, and every team that makes care happen \u2014 automated, permissioned, and fast."
+        )}
+        keywords={t(
+          "common:seo.keywords",
+          "healthcare, doctors, clinics, labs, pharmacy, imaging, appointments"
         )}
       />
 
-      <ModernNavbar />
+      <main className="bg-background text-foreground antialiased">
+        <HowItWorksHero />
 
-      <main className="flex-1">
-        <section className="container mx-auto px-4 py-12">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-            {t("howItWorks.heading", "How it works")}
-          </h1>
-          <p className="mt-3 text-muted-foreground max-w-2xl">
-            {t(
-              "howItWorks.subheading",
-              "A simple flow for patients, doctors, labs, pharmacies, and imaging centers."
-            )}
-          </p>
-
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle>{t("howItWorks.step1.title", "1. Search")}</CardTitle>
-              </CardHeader>
-              <CardContent className="text-muted-foreground">
-                {t(
-                  "howItWorks.step1.body",
-                  "Find doctors, clinics, labs, pharmacies, and services by specialty, location, and availability."
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle>{t("howItWorks.step2.title", "2. Book")}</CardTitle>
-              </CardHeader>
-              <CardContent className="text-muted-foreground">
-                {t(
-                  "howItWorks.step2.body",
-                  "Choose a time slot and submit your booking request. Get confirmations and reminders."
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle>{t("howItWorks.step3.title", "3. Manage")}</CardTitle>
-              </CardHeader>
-              <CardContent className="text-muted-foreground">
-                {t(
-                  "howItWorks.step3.body",
-                  "Manage appointments, results, and notifications from your dashboard."
-                )}
-              </CardContent>
-            </Card>
+        {/* Below-the-fold sections are added in later phases (lazy-loaded). */}
+        <section className="py-16">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="rounded-3xl border border-border/50 bg-muted/20 p-8">
+              <div className="h-4 w-44 rounded bg-muted/50" />
+              <div className="mt-4 h-4 w-full max-w-2xl rounded bg-muted/40" />
+              <div className="mt-2 h-4 w-full max-w-xl rounded bg-muted/30" />
+              <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-24 rounded-2xl border border-border/40 bg-background/40"
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         </section>
       </main>
-
-      <ModernFooter />
-    </div>
+    </>
   );
 }
