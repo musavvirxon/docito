@@ -1,4 +1,5 @@
 // PATH: src/App.tsx
+// File: src/App.tsx
 import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -6,9 +7,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { HelmetProvider } from "react-helmet-async";
-
-// Route sync (keeps activeRole aligned with the dashboard you're visiting)
-import RoleRouteSync from "@/components/auth/RoleRouteSync";
 
 // Layouts
 import PublicLayout from "@/layouts/PublicLayout";
@@ -119,7 +117,6 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <AuthProvider>
-            <RoleRouteSync />
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 {/* Public routes wrapped in PublicLayout */}
@@ -205,6 +202,7 @@ export default function App() {
                 <Route path="/register-practice" element={<RegisterPractice />} />
                 <Route path="/practice-settings" element={<PracticeSettings />} />
                 <Route path="/practice-verification" element={<PracticeVerification />} />
+                <Route path="/dashboard/verify" element={<PracticeVerification />} />
                 <Route path="/lab/register" element={<LabRegistration />} />
                 <Route path="/lab/verification" element={<LabVerification />} />
                 <Route path="/pharmacy/register" element={<PharmacyRegistration />} />
