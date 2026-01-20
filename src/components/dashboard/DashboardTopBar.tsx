@@ -1,5 +1,4 @@
 // File: src/components/dashboard/DashboardTopBar.tsx
-
 import { Badge } from "@/components/ui/badge";
 import ProfileMenu from "./ProfileMenu";
 import { AppRole } from "@/lib/rbac";
@@ -14,7 +13,7 @@ import { useDashboardTopBar, type EntityStatus, type FacilityType } from "@/hook
 interface DashboardTopBarProps {
   entityName?: string;
   entityStatus?: EntityStatus;
-  role?: AppRole; // optional: backend will resolve primary role + facility
+  role?: AppRole;
 }
 
 const statusColors: Record<EntityStatus, string> = {
@@ -56,16 +55,13 @@ function getVerificationRouteByFacility(facilityType: FacilityType) {
   if (facilityType === "lab") return "/lab/verification";
   if (facilityType === "pharmacy") return "/pharmacy/verification";
   if (facilityType === "imaging") return "/imaging/verification";
-  if (facilityType === "practice") return "/dashboard/verify";
-  return "/dashboard/verify";
+  if (facilityType === "practice") return "/practice-verification";
+  return "/practice-verification";
 }
 
 export function DashboardTopBar({ entityName, entityStatus = "active", role }: DashboardTopBarProps) {
   const navigate = useNavigate();
-
-  // IMPORTANT: role is OPTIONAL now.
-  // Passing a wrong role can break staff dashboards (403), so we only send it if provided.
-  const ctx = useDashboardTopBar(role ?? "staff");
+  const ctx = useDashboardTopBar((role ?? "staff") as any);
 
   const finalEntityName = entityName ?? ctx.entityName;
   const finalStatus = (entityStatus ?? ctx.entityStatus) as EntityStatus;
@@ -73,10 +69,6 @@ export function DashboardTopBar({ entityName, entityStatus = "active", role }: D
 
   const effectiveRole = (role ?? "staff") as AppRole;
   const effectiveFacility = ctx.facilityType;
-
-  const handleVerificationClick = () => {
-    navigate(getVerificationRouteByFacility(effectiveFacility));
-  };
 
   const badgeCount = Math.min(unreadCount, 99);
 
@@ -88,7 +80,7 @@ export function DashboardTopBar({ entityName, entityStatus = "active", role }: D
 
           <button
             type="button"
-            onClick={handleVerificationClick}
+            onClick={() => navigate(getVerificationRouteByFacility(effectiveFacility))}
             className="focus:outline-none"
             aria-label="Open verification page"
           >
@@ -101,7 +93,7 @@ export function DashboardTopBar({ entityName, entityStatus = "active", role }: D
           </button>
 
           <Badge variant="secondary" className="shrink-0 hidden sm:flex">
-            {roleLabels[effectiveRole] || effectiveRole}
+            {roleLabels[String(effectiveRole)] || String(effectiveRole)}
           </Badge>
         </div>
 
