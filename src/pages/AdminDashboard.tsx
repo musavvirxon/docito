@@ -2,28 +2,23 @@
 import { useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import DashboardTopNav from "@/components/dashboard/DashboardTopNav";
-import AdminDashboardPage from "@/pages/AdminDashboardPage";
+import type { AppRole } from "@/lib/rbac";
+import { inferRoleFromPathname } from "@/lib/rbac";
 import { useAuth } from "@/contexts/AuthContext";
-import { inferRoleFromPathname, type AppRole, getPrimaryRole } from "@/lib/rbac";
+import AdminDashboardPage from "@/pages/AdminDashboardPage";
 
 export default function AdminDashboard() {
-  const location = useLocation();
-  const { allRoles, activeRole } = useAuth();
+  const loc = useLocation();
+  const { activeRole } = useAuth();
 
-  const resolvedRole = useMemo<AppRole>(() => {
-    const inferred = inferRoleFromPathname(location.pathname);
-    if (inferred && allRoles.length > 0 && allRoles.includes(inferred)) return inferred;
-
-    if (activeRole) return activeRole as AppRole;
-
-    if (allRoles.length > 0) return getPrimaryRole(allRoles as AppRole[]);
-
-    return "admin";
-  }, [activeRole, allRoles, location.pathname]);
+  const role = useMemo<AppRole>(() => {
+    const inferred = inferRoleFromPathname(loc.pathname);
+    return (inferred ?? activeRole) as AppRole;
+  }, [activeRole, loc.pathname]);
 
   return (
     <div className="min-h-screen bg-background">
-      <DashboardTopNav role={resolvedRole} />
+      <DashboardTopNav role={role} />
       <AdminDashboardPage />
     </div>
   );
