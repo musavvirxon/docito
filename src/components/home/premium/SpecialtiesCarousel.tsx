@@ -1,3 +1,4 @@
+// File: src/components/home/premium/SpecialtiesCarousel.tsx
 import { useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -127,12 +128,14 @@ export default function SpecialtiesCarousel() {
               className="w-44 h-52 bg-card/80 backdrop-blur-sm rounded-3xl border border-border/50 p-6 flex flex-col items-center justify-center gap-4 cursor-pointer group transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 focus:outline-none focus:ring-2 focus:ring-primary/30"
               aria-label={`${specialty.name} - ${t('home:specialties.browse', 'Browse specialties')}`}
             >
-              {/* Larger icon container so bigger icons never clip */}
+              {/* Bigger container, keep icon size as before */}
               <div
-                className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${specialty.color} p-5 flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}
+                className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${specialty.color} p-6 flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}
               >
-                <specialty.icon className="w-10 h-10 text-white" />
+                {/* Icon kept at original size (was previously smaller than the last change) */}
+                <specialty.icon className="w-6 h-6 text-white" />
               </div>
+
               <span className="text-sm font-medium text-foreground text-center leading-tight">
                 {specialty.name}
               </span>
