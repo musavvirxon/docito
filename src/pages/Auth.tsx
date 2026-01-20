@@ -1,3 +1,4 @@
+// File: src/pages/Auth.tsx
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -106,6 +107,38 @@ const Auth = () => {
     }
   };
 
+  const getNameFieldCopy = (role: string) => {
+    switch (role) {
+      case "admin":
+        return {
+          label: t("auth.signUp.practiceName", "Clinic name"),
+          placeholder: t("auth.signUp.practiceNamePlaceholder", "Enter clinic name"),
+        };
+      case "lab_admin":
+        return {
+          label: t("auth.signUp.labName", "Lab name"),
+          placeholder: t("auth.signUp.labNamePlaceholder", "Enter lab name"),
+        };
+      case "pharmacy_admin":
+        return {
+          label: t("auth.signUp.pharmacyName", "Pharmacy name"),
+          placeholder: t("auth.signUp.pharmacyNamePlaceholder", "Enter pharmacy name"),
+        };
+      case "imaging_admin":
+        return {
+          label: t("auth.signUp.imagingName", "Imaging center name"),
+          placeholder: t("auth.signUp.imagingNamePlaceholder", "Enter imaging center name"),
+        };
+      default:
+        return {
+          label: t("auth.signUp.fullName"),
+          placeholder: t("auth.signUp.fullNamePlaceholder"),
+        };
+    }
+  };
+
+  const nameFieldCopy = getNameFieldCopy(signUpRole);
+
   const getRoleIcon = (role: string) => {
     switch (role) {
       case "doctor":
@@ -206,11 +239,11 @@ const Auth = () => {
               <form onSubmit={handleSignUp}>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signup-name">{t("auth.signUp.fullName")}</Label>
+                    <Label htmlFor="signup-name">{nameFieldCopy.label}</Label>
                     <Input
                       id="signup-name"
                       type="text"
-                      placeholder={t("auth.signUp.fullNamePlaceholder")}
+                      placeholder={nameFieldCopy.placeholder}
                       value={signUpFullName}
                       onChange={(e) => setSignUpFullName(e.target.value)}
                       required
@@ -243,7 +276,13 @@ const Auth = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="signup-role">{t("auth.signUp.accountType")}</Label>
-                    <Select value={signUpRole} onValueChange={setSignUpRole}>
+                    <Select
+                      value={signUpRole}
+                      onValueChange={(value) => {
+                        setSignUpRole(value);
+                        setSignUpFullName("");
+                      }}
+                    >
                       <SelectTrigger>
                         <div className="flex items-center gap-2">
                           {getRoleIcon(signUpRole)}
