@@ -7100,6 +7100,48 @@ export type Database = {
           },
         ]
       }
+      verification_requests: {
+        Row: {
+          comment: string | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          rejection_reason: string | null
+          requested_by: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          rejection_reason?: string | null
+          requested_by: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          rejection_reason?: string | null
+          requested_by?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       video_consultations: {
         Row: {
           actual_end: string | null
@@ -7676,6 +7718,10 @@ export type Database = {
       request_account_action: {
         Args: { p_notes?: string; p_request_type: string }
         Returns: Json
+      }
+      request_entity_verification: {
+        Args: { p_comment?: string; p_entity_id: string; p_entity_type: string }
+        Returns: string
       }
       search_chat_users: {
         Args: { p_query: string }
