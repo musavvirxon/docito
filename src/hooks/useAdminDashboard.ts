@@ -57,8 +57,28 @@ export const useAdminDashboard = () => {
       if (data?.id) return data;
     }
 
-    // 2) Staff-linked practice (fallback)
-    // practice_staff table exists in this project; use active membership
+    // 2) clinic_staff table (primary staff relationship)
+    {
+      const { data: clinicStaffRow, error: csErr } = await supabase
+        .from("clinic_staff")
+        .select("practice_id,status")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!csErr && clinicStaffRow?.practice_id) {
+        const { data: p1, error: p1Err } = await supabase
+          .from("practices")
+          .select("*")
+          .eq("id", clinicStaffRow.practice_id)
+          .maybeSingle();
+        if (!p1Err && p1?.id) return p1;
+      }
+    }
+
+    // 3) practice_staff table (legacy fallback)
     {
       const { data: staffRow, error: staffErr } = await supabase
         .from("practice_staff")
