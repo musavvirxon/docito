@@ -266,11 +266,18 @@ serve(async (req) => {
     const service = createClient(url, serviceKey, { auth: { persistSession: false } });
     const entity = await resolveEntity(service, user.id, role);
 
-    const { data: unreadCount, error: unreadErr } = await createClient(url, anon, {
-      global: { headers: { Authorization: authHeader } },
-    }).rpc("get_my_unread_notifications_count");
-
-    if (unreadErr) throw unreadErr;
+    // Fetch unread count with graceful fallback
+    let unreadCount = 0;
+    try {
+      const { data, error: unreadErr } = await createClient(url, anon, {
+        global: { headers: { Authorization: authHeader } },
+      }).rpc("get_my_unread_notifications_count");
+      if (!unreadErr && typeof data === "number") {
+        unreadCount = data;
+      }
+    } catch {
+      // Fallback to 0 if RPC fails
+    }
 
     if (body.action === "get") {
       const resp: GetResp = {
