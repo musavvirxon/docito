@@ -127,11 +127,11 @@ export default function SpecialtiesCarousel() {
               className="w-44 h-52 bg-card/80 backdrop-blur-sm rounded-3xl border border-border/50 p-6 flex flex-col items-center justify-center gap-4 cursor-pointer group transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 focus:outline-none focus:ring-2 focus:ring-primary/30"
               aria-label={`${specialty.name} - ${t('home:specialties.browse', 'Browse specialties')}`}
             >
-              {/* Bigger container, smaller icon */}
+              {/* Smaller rectangle + smaller icon */}
               <div
-                className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${specialty.color} p-6 flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}
+                className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${specialty.color} p-4 flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}
               >
-                <specialty.icon className="w-5 h-5 text-white" />
+                <specialty.icon className="w-4 h-4 text-white" />
               </div>
 
               <span className="text-sm font-medium text-foreground text-center leading-tight">
