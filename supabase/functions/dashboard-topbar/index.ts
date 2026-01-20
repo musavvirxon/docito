@@ -87,7 +87,7 @@ function statusFromFacilityRow(status: unknown, isVerified: unknown): EntityStat
 }
 
 async function resolveEntity(
-  service: ReturnType<typeof createClient>,
+  service: any,
   userId: string,
   role: AppRole,
 ): Promise<{ facilityType: FacilityType; entityId: string | null; entityName: string | null; entityStatus: EntityStatus }> {
@@ -106,12 +106,12 @@ async function resolveEntity(
       .maybeSingle();
     if (error) throw error;
 
-    if (!data?.id) return { facilityType: "practice", entityId: null, entityName: null, entityStatus: "unknown" };
+    if (!(data as any)?.id) return { facilityType: "practice", entityId: null, entityName: null, entityStatus: "unknown" };
 
     return {
       facilityType: "practice",
-      entityId: data.id,
-      entityName: (data.name || "Practice") as string,
+      entityId: (data as any).id,
+      entityName: ((data as any).name || "Practice") as string,
       entityStatus: statusFromBoolVerified((data as any).verified),
     };
   }

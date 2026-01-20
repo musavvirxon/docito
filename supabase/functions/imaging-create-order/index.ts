@@ -52,7 +52,7 @@ function trimOrNull(v: unknown) {
 }
 
 async function assertImagingManualOrderAccess(
-  serviceClient: ReturnType<typeof createClient>,
+  serviceClient: any,
   userId: string,
   centerId: string,
 ) {
@@ -63,7 +63,7 @@ async function assertImagingManualOrderAccess(
     .maybeSingle();
 
   if (cErr) throw cErr;
-  if (center?.admin_id === userId) return { ok: true as const, role: "admin" as const };
+  if ((center as any)?.admin_id === userId) return { ok: true as const, role: "admin" as const };
 
   const { data: staff, error: sErr } = await serviceClient
     .from("imaging_staff")
@@ -74,10 +74,10 @@ async function assertImagingManualOrderAccess(
 
   if (sErr) throw sErr;
 
-  if (!staff?.id || staff.status !== "active") return { ok: false as const, reason: "Not assigned to this imaging center" };
-  if (!staff.can_view_orders) return { ok: false as const, reason: "Missing permission: can_view_orders" };
+  if (!(staff as any)?.id || (staff as any).status !== "active") return { ok: false as const, reason: "Not assigned to this imaging center" };
+  if (!(staff as any).can_view_orders) return { ok: false as const, reason: "Missing permission: can_view_orders" };
 
-  return { ok: true as const, role: "staff" as const, staffId: staff.id as string };
+  return { ok: true as const, role: "staff" as const, staffId: (staff as any).id as string };
 }
 
 serve(async (req) => {

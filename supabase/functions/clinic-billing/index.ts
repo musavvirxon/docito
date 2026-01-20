@@ -54,7 +54,7 @@ function requireEnv() {
 }
 
 async function assertClinicAccess(
-  serviceClient: ReturnType<typeof createClient>,
+  serviceClient: any,
   userId: string,
   clinicId: string,
 ) {
@@ -66,7 +66,7 @@ async function assertClinicAccess(
     .maybeSingle();
 
   if (pErr) throw pErr;
-  if (practice?.admin_id === userId) return true;
+  if ((practice as any)?.admin_id === userId) return true;
 
   // Staff membership
   const { data: staff, error: sErr } = await serviceClient
@@ -77,7 +77,7 @@ async function assertClinicAccess(
     .maybeSingle();
 
   if (sErr) throw sErr;
-  if (staff?.id && String(staff.status || "active") === "active") return true;
+  if ((staff as any)?.id && String((staff as any).status || "active") === "active") return true;
 
   // Super admin fallback
   const { data: role, error: rErr } = await serviceClient
@@ -88,7 +88,7 @@ async function assertClinicAccess(
     .maybeSingle();
 
   if (rErr) return false;
-  return Boolean(role?.role);
+  return Boolean((role as any)?.role);
 }
 
 serve(async (req) => {

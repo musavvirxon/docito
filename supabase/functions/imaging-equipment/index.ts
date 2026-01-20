@@ -51,7 +51,7 @@ function isSchemaCacheMissing(err: unknown) {
   return msg.includes("Could not find the table") || m.includes("schema cache") || (m.includes("relation") && m.includes("does not exist"));
 }
 
-async function ensureCenterAccess(supabase: ReturnType<typeof createClient>, userId: string, centerId: string) {
+async function ensureCenterAccess(supabase: any, userId: string, centerId: string) {
   const { data: adminRow, error: adminErr } = await supabase
     .from("imaging_centers")
     .select("id")
@@ -60,7 +60,7 @@ async function ensureCenterAccess(supabase: ReturnType<typeof createClient>, use
     .maybeSingle();
 
   if (adminErr) return false;
-  if (adminRow?.id) return true;
+  if ((adminRow as any)?.id) return true;
 
   const { data: staffRow, error: staffErr } = await supabase
     .from("imaging_staff")
@@ -71,10 +71,10 @@ async function ensureCenterAccess(supabase: ReturnType<typeof createClient>, use
     .maybeSingle();
 
   if (staffErr) return false;
-  return Boolean(staffRow?.id);
+  return Boolean((staffRow as any)?.id);
 }
 
-async function ensureEquipmentWriteAccess(supabase: ReturnType<typeof createClient>, userId: string, centerId: string) {
+async function ensureEquipmentWriteAccess(supabase: any, userId: string, centerId: string) {
   const { data: adminRow, error: adminErr } = await supabase
     .from("imaging_centers")
     .select("id")
@@ -83,7 +83,7 @@ async function ensureEquipmentWriteAccess(supabase: ReturnType<typeof createClie
     .maybeSingle();
 
   if (adminErr) return false;
-  if (adminRow?.id) return true;
+  if ((adminRow as any)?.id) return true;
 
   const { data: staffRow, error: staffErr } = await supabase
     .from("imaging_staff")
@@ -94,7 +94,7 @@ async function ensureEquipmentWriteAccess(supabase: ReturnType<typeof createClie
     .maybeSingle();
 
   if (staffErr) return false;
-  return Boolean(staffRow?.id) && Boolean((staffRow as any)?.can_manage_equipment);
+  return Boolean((staffRow as any)?.id) && Boolean((staffRow as any)?.can_manage_equipment);
 }
 
 serve(async (req) => {

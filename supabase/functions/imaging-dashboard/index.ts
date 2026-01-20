@@ -113,7 +113,7 @@ async function getPatientNames(
 }
 
 async function ensureCenterAccess(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   userId: string,
   centerId: string,
 ) {
@@ -125,7 +125,7 @@ async function ensureCenterAccess(
     .maybeSingle();
 
   if (adminErr) return false;
-  if (adminRow?.id) return true;
+  if ((adminRow as any)?.id) return true;
 
   const { data: staffRow, error: staffErr } = await supabase
     .from("imaging_staff")
@@ -136,7 +136,7 @@ async function ensureCenterAccess(
     .maybeSingle();
 
   if (staffErr) return false;
-  return Boolean(staffRow?.id);
+  return Boolean((staffRow as any)?.id);
 }
 
 function emptyDashboard(warnings: string[] = []): DashboardResponse {
