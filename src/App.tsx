@@ -1,13 +1,17 @@
 // PATH: src/App.tsx
 import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
-
-// Layouts
-import PublicLayout from "@/layouts/PublicLayout";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { HelmetProvider } from "react-helmet-async";
 
 // Route sync (keeps activeRole aligned with the dashboard you're visiting)
 import RoleRouteSync from "@/components/auth/RoleRouteSync";
+
+// Layouts
+import PublicLayout from "@/layouts/PublicLayout";
 
 // Core pages loaded eagerly
 import PremiumHome from "@/pages/PremiumHome";
@@ -100,118 +104,132 @@ const AcceptInvite = lazy(() => import("@/pages/AcceptInvite"));
 // Billing
 const BillingPage = lazy(() => import("@/pages/BillingPage"));
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      retry: 1,
+    },
+  },
+});
+
 export default function App() {
   return (
-    <>
-      <RoleRouteSync />
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <AuthProvider>
+            <RoleRouteSync />
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                {/* Public routes wrapped in PublicLayout */}
+                <Route element={<PublicLayout />}>
+                  {/* Home */}
+                  <Route path="/" element={<PremiumHome />} />
 
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          {/* Public routes wrapped in PublicLayout */}
-          <Route element={<PublicLayout />}>
-            {/* Home */}
-            <Route path="/" element={<PremiumHome />} />
+                  {/* Auth */}
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/accept-invite" element={<AcceptInvite />} />
 
-            {/* Auth */}
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/accept-invite" element={<AcceptInvite />} />
+                  {/* Provider landing pages */}
+                  <Route path="/doctor" element={<DoctorLandingPage />} />
+                  <Route path="/doctors" element={<DoctorLandingPage />} />
+                  <Route path="/doctor/:slug" element={<DoctorPublicProfile />} />
+                  <Route path="/pharmacy" element={<PharmacyLandingPage />} />
+                  <Route path="/pharmacies" element={<PharmacyLandingPage />} />
+                  <Route path="/lab" element={<LabLandingPage />} />
+                  <Route path="/labs" element={<LabLandingPage />} />
+                  <Route path="/imaging" element={<ImagingLandingPage />} />
+                  <Route path="/imaging-center" element={<ImagingLandingPage />} />
+                  <Route path="/imaging-centers" element={<ImagingLandingPage />} />
+                  <Route path="/practice" element={<Practices />} />
+                  <Route path="/practices" element={<Practices />} />
+                  <Route path="/clinics" element={<Practices />} />
 
-            {/* Provider landing pages */}
-            <Route path="/doctor" element={<DoctorLandingPage />} />
-            <Route path="/doctors" element={<DoctorLandingPage />} />
-            <Route path="/doctor/:slug" element={<DoctorPublicProfile />} />
-            <Route path="/pharmacy" element={<PharmacyLandingPage />} />
-            <Route path="/pharmacies" element={<PharmacyLandingPage />} />
-            <Route path="/lab" element={<LabLandingPage />} />
-            <Route path="/labs" element={<LabLandingPage />} />
-            <Route path="/imaging" element={<ImagingLandingPage />} />
-            <Route path="/imaging-center" element={<ImagingLandingPage />} />
-            <Route path="/imaging-centers" element={<ImagingLandingPage />} />
-            <Route path="/practice" element={<Practices />} />
-            <Route path="/practices" element={<Practices />} />
-            <Route path="/clinics" element={<Practices />} />
+                  {/* Search & discovery */}
+                  <Route path="/find-doctors" element={<SearchDoctors />} />
+                  <Route path="/search-doctors" element={<SearchDoctors />} />
+                  <Route path="/find-practices" element={<FindPractices />} />
+                  <Route path="/specialties" element={<BrowseSpecialties />} />
+                  <Route path="/category/:category" element={<CategorySearch />} />
 
-            {/* Search & discovery */}
-            <Route path="/find-doctors" element={<SearchDoctors />} />
-            <Route path="/search-doctors" element={<SearchDoctors />} />
-            <Route path="/find-practices" element={<FindPractices />} />
-            <Route path="/specialties" element={<BrowseSpecialties />} />
-            <Route path="/category/:category" element={<CategorySearch />} />
+                  {/* Booking */}
+                  <Route path="/book/:doctorId" element={<AppointmentBooking />} />
+                  <Route path="/booking-confirmation/:appointmentId" element={<BookingConfirmation />} />
 
-            {/* Booking */}
-            <Route path="/book/:doctorId" element={<AppointmentBooking />} />
-            <Route path="/booking-confirmation/:appointmentId" element={<BookingConfirmation />} />
+                  {/* Info pages */}
+                  <Route path="/about" element={<About />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/features" element={<Features />} />
+                  <Route path="/pricing" element={<Pricing />} />
+                  <Route path="/how-it-works" element={<HowItWorks />} />
+                  <Route path="/faqs" element={<FAQs />} />
+                  <Route path="/help" element={<HelpCenter />} />
+                  <Route path="/help-center" element={<HelpCenter />} />
+                  <Route path="/support" element={<Support />} />
+                  <Route path="/legal" element={<Legal />} />
+                  <Route path="/legal/:slug" element={<LegalDetail />} />
+                  <Route path="/feedback" element={<FeedbackCenter />} />
+                </Route>
 
-            {/* Info pages */}
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/features" element={<Features />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/how-it-works" element={<HowItWorks />} />
-            <Route path="/faqs" element={<FAQs />} />
-            <Route path="/help" element={<HelpCenter />} />
-            <Route path="/help-center" element={<HelpCenter />} />
-            <Route path="/support" element={<Support />} />
-            <Route path="/legal" element={<Legal />} />
-            <Route path="/legal/:slug" element={<LegalDetail />} />
-            <Route path="/feedback" element={<FeedbackCenter />} />
-          </Route>
+                {/* Dashboard routes (no PublicLayout wrapper) */}
+                {/* Patient */}
+                <Route path="/patient-dashboard" element={<PatientDashboard />} />
+                <Route path="/patient/dashboard" element={<PatientDashboard />} />
 
-          {/* Dashboard routes (no PublicLayout wrapper) */}
-          {/* Patient */}
-          <Route path="/patient-dashboard" element={<PatientDashboard />} />
-          <Route path="/patient/dashboard" element={<PatientDashboard />} />
+                {/* Doctor */}
+                <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
+                <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
+                <Route path="/doctor/schedule" element={<DoctorScheduleSettings />} />
+                <Route path="/doctor/treatment-planning" element={<TreatmentPlanning />} />
+                <Route path="/doctor/procedures" element={<ProcedureLibrary />} />
 
-          {/* Doctor */}
-          <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
-          <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
-          <Route path="/doctor/schedule" element={<DoctorScheduleSettings />} />
-          <Route path="/doctor/treatment-planning" element={<TreatmentPlanning />} />
-          <Route path="/doctor/procedures" element={<ProcedureLibrary />} />
+                {/* Staff/Admin */}
+                <Route path="/staff-dashboard" element={<StaffDashboard />} />
+                <Route path="/staff/dashboard" element={<StaffDashboard />} />
+                <Route path="/admin-dashboard" element={<AdminDashboard />} />
+                <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                <Route path="/practices/dashboard" element={<AdminDashboard />} />
+                <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
+                <Route path="/super-admin/dashboard" element={<SuperAdminDashboard />} />
 
-          {/* Staff/Admin */}
-          <Route path="/staff-dashboard" element={<StaffDashboard />} />
-          <Route path="/staff/dashboard" element={<StaffDashboard />} />
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/practices/dashboard" element={<AdminDashboard />} />
-          <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
-          <Route path="/super-admin/dashboard" element={<SuperAdminDashboard />} />
+                {/* Facility dashboards */}
+                <Route path="/dashboard/labs" element={<LabDashboardPage />} />
+                <Route path="/lab/dashboard" element={<LabDashboardPage />} />
+                <Route path="/dashboard/pharmacies" element={<PharmacyDashboardPage />} />
+                <Route path="/pharmacy/dashboard" element={<PharmacyDashboardPage />} />
+                <Route path="/dashboard/imaging" element={<ImagingDashboardPage />} />
+                <Route path="/imaging/dashboard" element={<ImagingDashboardPage />} />
 
-          {/* Facility dashboards */}
-          <Route path="/dashboard/labs" element={<LabDashboardPage />} />
-          <Route path="/lab/dashboard" element={<LabDashboardPage />} />
-          <Route path="/dashboard/pharmacies" element={<PharmacyDashboardPage />} />
-          <Route path="/pharmacy/dashboard" element={<PharmacyDashboardPage />} />
-          <Route path="/dashboard/imaging" element={<ImagingDashboardPage />} />
-          <Route path="/imaging/dashboard" element={<ImagingDashboardPage />} />
+                {/* Registration & Verification */}
+                <Route path="/register-practice" element={<RegisterPractice />} />
+                <Route path="/practice-settings" element={<PracticeSettings />} />
+                <Route path="/practice-verification" element={<PracticeVerification />} />
+                <Route path="/lab/register" element={<LabRegistration />} />
+                <Route path="/lab/verification" element={<LabVerification />} />
+                <Route path="/pharmacy/register" element={<PharmacyRegistration />} />
+                <Route path="/pharmacy/verification" element={<PharmacyVerification />} />
+                <Route path="/imaging/register" element={<ImagingRegistration />} />
+                <Route path="/imaging/verification" element={<ImagingVerification />} />
 
-          {/* Registration & Verification */}
-          <Route path="/register-practice" element={<RegisterPractice />} />
-          <Route path="/practice-settings" element={<PracticeSettings />} />
-          <Route path="/practice-verification" element={<PracticeVerification />} />
-          <Route path="/lab/register" element={<LabRegistration />} />
-          <Route path="/lab/verification" element={<LabVerification />} />
-          <Route path="/pharmacy/register" element={<PharmacyRegistration />} />
-          <Route path="/pharmacy/verification" element={<PharmacyVerification />} />
-          <Route path="/imaging/register" element={<ImagingRegistration />} />
-          <Route path="/imaging/verification" element={<ImagingVerification />} />
+                {/* Common authenticated pages */}
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/notifications" element={<Notifications />} />
+                <Route path="/messages" element={<Messages />} />
+                <Route path="/billing" element={<BillingPage />} />
+                <Route path="/video-call" element={<VideoCall />} />
+                <Route path="/video/:roomId" element={<VideoCall />} />
 
-          {/* Common authenticated pages */}
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/messages" element={<Messages />} />
-          <Route path="/billing" element={<BillingPage />} />
-          <Route path="/video-call" element={<VideoCall />} />
-          <Route path="/video/:roomId" element={<VideoCall />} />
+                {/* Fallback */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
 
-          {/* Fallback */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Suspense>
-
-      <Toaster position="top-right" richColors />
-    </>
+            <Toaster position="top-right" richColors />
+          </AuthProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </HelmetProvider>
   );
 }
