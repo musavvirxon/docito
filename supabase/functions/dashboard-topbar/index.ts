@@ -1,4 +1,4 @@
-// File: supabase/functions/dashboard-topbar/index.ts
+// PATH: supabase/functions/dashboard-topbar/index.ts
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -12,22 +12,15 @@ type AppRole =
   | "patient"
   | "doctor"
   | "staff"
-  | "practice_staff"
   | "admin"
-  | "super_admin"
   | "clinic_admin"
-  | "clinic_staff"
-  | "receptionist"
-  | "nurse"
+  | "super_admin"
   | "lab_staff"
   | "lab_admin"
-  | "lab_technician"
   | "imaging_staff"
   | "imaging_admin"
-  | "internal_imaging_tech"
   | "pharmacy_staff"
-  | "pharmacy_admin"
-  | "pharmacist";
+  | "pharmacy_admin";
 
 type FacilityType = "practice" | "lab" | "imaging" | "pharmacy" | "doctor" | "none";
 type EntityStatus = "active" | "pending" | "verified" | "suspended" | "unknown";
@@ -63,32 +56,6 @@ function normRole(r: unknown): AppRole {
   return String(r || "").toLowerCase().trim() as AppRole;
 }
 
-function normalizeEntityStatus(v: unknown): EntityStatus {
-  const s = String(v || "").toLowerCase().trim();
-  if (s.includes("verif") && s.includes("pend")) return "pending";
-  if (s === "pending") return "pending";
-  if (s === "verified" || s === "approved") return "verified";
-  if (s === "suspended" || s === "blocked") return "suspended";
-  if (s === "active") return "active";
-  return "unknown";
-}
-
-function verificationRouteForFacility(f: FacilityType) {
-  if (f === "practice") return "/practice-verification";
-  if (f === "lab") return "/lab/verification";
-  if (f === "imaging") return "/imaging/verification";
-  if (f === "pharmacy") return "/pharmacy/verification";
-  return "/practice-verification";
-}
-
-function entityTypeForFacility(f: FacilityType): "practice" | "lab" | "imaging" | "pharmacy" | null {
-  if (f === "practice") return "practice";
-  if (f === "lab") return "lab";
-  if (f === "imaging") return "imaging";
-  if (f === "pharmacy") return "pharmacy";
-  return null;
-}
-
 async function authedUserClient(url: string, anon: string, authHeader: string) {
   const c = createClient(url, anon, { global: { headers: { Authorization: authHeader } } });
   const { data, error } = await c.auth.getUser();
@@ -96,84 +63,27 @@ async function authedUserClient(url: string, anon: string, authHeader: string) {
   return { client: c, user: data.user };
 }
 
-async function resolvePracticeEntity(
-  service: ReturnType<typeof createClient>,
-  userId: string,
-  preferOwner: boolean,
-): Promise<{ entityId: string | null; entityName: string | null; entityStatus: EntityStatus }> {
-  // 1) Owner/admin_id path (if preferred)
-  if (preferOwner) {
-    const { data, error } = await service
-      .from("practices")
-      .select("id,name,verification_status,status,created_at")
-      .eq("admin_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+function normalizeEntityStatus(v: unknown): EntityStatus {
+  const s = String(v || "").toLowerCase().trim();
+  if (s.includes("verif") && s.includes("pend")) return "pending";
+  if (s === "pending") return "pending";
+  if (s === "verified" || s === "approved" || s === "active_verified") return "verified";
+  if (s === "suspended" || s === "blocked" || s === "inactive") return "suspended";
+  if (s === "active") return "active";
+  return "unknown";
+}
 
-    if (error) throw error;
-    if (data?.id) {
-      const status = (data.verification_status || data.status || "active") as string;
-      return {
-        entityId: data.id,
-        entityName: (data.name || "Practice") as string,
-        entityStatus: normalizeEntityStatus(status),
-      };
-    }
-  }
+function statusFromBoolVerified(verified: unknown): EntityStatus {
+  return Boolean(verified) ? "verified" : "pending";
+}
 
-  // 2) Staff membership path (clinic_staff/clinic_admin/staff/practice_staff/receptionist/nurse)
-  const { data: staffRow, error: sErr } = await service
-    .from("practice_staff")
-    .select("practice_id,status,is_admin,created_at")
-    .eq("user_id", userId)
-    .eq("status", "active")
-    .order("is_admin", { ascending: false })
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (sErr) throw sErr;
-
-  const practiceId = (staffRow as any)?.practice_id || null;
-  if (!practiceId) {
-    // As a last resort, try owner lookup even if not preferred
-    if (!preferOwner) {
-      const { data, error } = await service
-        .from("practices")
-        .select("id,name,verification_status,status,created_at")
-        .eq("admin_id", userId)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (error) throw error;
-      if (data?.id) {
-        const status = (data.verification_status || data.status || "active") as string;
-        return {
-          entityId: data.id,
-          entityName: (data.name || "Practice") as string,
-          entityStatus: normalizeEntityStatus(status),
-        };
-      }
-    }
-    return { entityId: null, entityName: null, entityStatus: "unknown" };
-  }
-
-  const { data: practice, error: pErr } = await service
-    .from("practices")
-    .select("id,name,verification_status,status")
-    .eq("id", practiceId)
-    .maybeSingle();
-
-  if (pErr) throw pErr;
-
-  const status = (practice as any)?.verification_status || (practice as any)?.status || "active";
-  return {
-    entityId: (practice as any)?.id ?? practiceId,
-    entityName: (practice as any)?.name ?? "Practice",
-    entityStatus: normalizeEntityStatus(status),
-  };
+function statusFromFacilityRow(status: unknown, isVerified: unknown): EntityStatus {
+  const s = String(status || "").toLowerCase().trim();
+  if (s === "suspended" || s === "blocked" || s === "inactive") return "suspended";
+  if (Boolean(isVerified)) return "verified";
+  if (s === "active") return "active";
+  if (s === "pending" || s === "") return "pending";
+  return normalizeEntityStatus(s);
 }
 
 async function resolveEntity(
@@ -185,26 +95,32 @@ async function resolveEntity(
     return { facilityType: "none", entityId: null, entityName: "Super Admin", entityStatus: "active" };
   }
 
-  // Practice-related roles (FIX: clinic_admin/clinic_staff must resolve via practice_staff too)
-  if (
-    role === "admin" ||
-    role === "clinic_admin" ||
-    role === "clinic_staff" ||
-    role === "staff" ||
-    role === "practice_staff" ||
-    role === "receptionist" ||
-    role === "nurse"
-  ) {
-    const preferOwner = role === "admin";
-    const r = await resolvePracticeEntity(service, userId, preferOwner);
-    return { facilityType: "practice", entityId: r.entityId, entityName: r.entityName, entityStatus: r.entityStatus };
+  // Practice owner/admin (clinic_admin behaves like admin for entity context)
+  if (role === "admin" || role === "clinic_admin") {
+    const { data, error } = await service
+      .from("practices")
+      .select("id,name,verified")
+      .eq("admin_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+
+    if (!data?.id) return { facilityType: "practice", entityId: null, entityName: null, entityStatus: "unknown" };
+
+    return {
+      facilityType: "practice",
+      entityId: data.id,
+      entityName: (data.name || "Practice") as string,
+      entityStatus: statusFromBoolVerified((data as any).verified),
+    };
   }
 
   // Lab staff/admin
-  if (role === "lab_staff" || role === "lab_admin" || role === "lab_technician") {
+  if (role === "lab_staff" || role === "lab_admin") {
     const { data: row, error: sErr } = await service
       .from("lab_staff")
-      .select("lab_id,status,created_at")
+      .select("lab_center_id,status")
       .eq("user_id", userId)
       .eq("status", "active")
       .order("created_at", { ascending: false })
@@ -212,30 +128,29 @@ async function resolveEntity(
       .maybeSingle();
     if (sErr) throw sErr;
 
-    const labId = (row as any)?.lab_id || null;
+    const labId = (row as any)?.lab_center_id || (row as any)?.lab_id || null;
     if (!labId) return { facilityType: "lab", entityId: null, entityName: null, entityStatus: "unknown" };
 
     const { data: lab, error: lErr } = await service
       .from("lab_centers")
-      .select("id,name,verification_status,status")
+      .select("id,name,status,is_verified")
       .eq("id", labId)
       .maybeSingle();
     if (lErr) throw lErr;
 
-    const status = (lab as any)?.verification_status || (lab as any)?.status || "active";
     return {
       facilityType: "lab",
       entityId: (lab as any)?.id ?? labId,
       entityName: (lab as any)?.name ?? "Lab",
-      entityStatus: normalizeEntityStatus(status),
+      entityStatus: statusFromFacilityRow((lab as any)?.status, (lab as any)?.is_verified),
     };
   }
 
   // Imaging staff/admin
-  if (role === "imaging_staff" || role === "imaging_admin" || role === "internal_imaging_tech") {
+  if (role === "imaging_staff" || role === "imaging_admin") {
     const { data: row, error: sErr } = await service
       .from("imaging_staff")
-      .select("imaging_center_id,status,created_at")
+      .select("imaging_center_id,status")
       .eq("user_id", userId)
       .eq("status", "active")
       .order("created_at", { ascending: false })
@@ -248,25 +163,24 @@ async function resolveEntity(
 
     const { data: center, error: cErr } = await service
       .from("imaging_centers")
-      .select("id,name,verification_status,status")
+      .select("id,name,status,is_verified")
       .eq("id", centerId)
       .maybeSingle();
     if (cErr) throw cErr;
 
-    const status = (center as any)?.verification_status || (center as any)?.status || "active";
     return {
       facilityType: "imaging",
       entityId: (center as any)?.id ?? centerId,
       entityName: (center as any)?.name ?? "Imaging Center",
-      entityStatus: normalizeEntityStatus(status),
+      entityStatus: statusFromFacilityRow((center as any)?.status, (center as any)?.is_verified),
     };
   }
 
   // Pharmacy staff/admin
-  if (role === "pharmacy_staff" || role === "pharmacy_admin" || role === "pharmacist") {
+  if (role === "pharmacy_staff" || role === "pharmacy_admin") {
     const { data: row, error: sErr } = await service
       .from("pharmacy_staff")
-      .select("pharmacy_id,status,created_at")
+      .select("pharmacy_id,status")
       .eq("user_id", userId)
       .eq("status", "active")
       .order("created_at", { ascending: false })
@@ -279,12 +193,13 @@ async function resolveEntity(
 
     const { data: ph, error: pErr } = await service
       .from("pharmacies")
-      .select("id,name,verification_status,status")
+      .select("id,name,verification_status,verified")
       .eq("id", pharmacyId)
       .maybeSingle();
     if (pErr) throw pErr;
 
-    const status = (ph as any)?.verification_status || (ph as any)?.status || "active";
+    const status = (ph as any)?.verification_status ?? (Boolean((ph as any)?.verified) ? "verified" : "pending");
+
     return {
       facilityType: "pharmacy",
       entityId: (ph as any)?.id ?? pharmacyId,
@@ -293,7 +208,7 @@ async function resolveEntity(
     };
   }
 
-  // Doctor
+  // Doctor (topbar identity only)
   if (role === "doctor") {
     const { data: prof, error } = await service
       .from("profiles")
@@ -310,8 +225,23 @@ async function resolveEntity(
     return { facilityType: "doctor", entityId: userId, entityName: name, entityStatus: "active" };
   }
 
-  // Default
   return { facilityType: "none", entityId: null, entityName: null, entityStatus: "unknown" };
+}
+
+function verificationRouteForFacility(f: FacilityType) {
+  if (f === "practice") return "/dashboard/verify";
+  if (f === "lab") return "/lab/verification";
+  if (f === "imaging") return "/imaging/verification";
+  if (f === "pharmacy") return "/pharmacy/verification";
+  return "/dashboard/verify";
+}
+
+function entityTypeForFacility(f: FacilityType): "practice" | "lab" | "imaging" | "pharmacy" | null {
+  if (f === "practice") return "practice";
+  if (f === "lab") return "lab";
+  if (f === "imaging") return "imaging";
+  if (f === "pharmacy") return "pharmacy";
+  return null;
 }
 
 serve(async (req) => {
@@ -327,12 +257,13 @@ serve(async (req) => {
     if (!authHeader) return json({ ok: false, error: "Missing Authorization" }, 401);
 
     const { user } = await authedUserClient(url, anon, authHeader);
+
     const body = (await req.json().catch(() => null)) as ReqBody | null;
     if (!body?.action) return json({ ok: false, error: "Missing action" }, 400);
 
     const role = normRole((body as any).role);
-    const service = createClient(url, serviceKey, { auth: { persistSession: false } });
 
+    const service = createClient(url, serviceKey, { auth: { persistSession: false } });
     const entity = await resolveEntity(service, user.id, role);
 
     const { data: unreadCount, error: unreadErr } = await createClient(url, anon, {
@@ -363,7 +294,6 @@ serve(async (req) => {
       if (!entityType) return json({ ok: false, error: "Invalid entity for verification" }, 400);
 
       const authed = createClient(url, anon, { global: { headers: { Authorization: authHeader } } });
-
       const { data: reqId, error: reqErr } = await authed.rpc("request_entity_verification", {
         p_entity_type: entityType,
         p_entity_id: entity.entityId,
@@ -371,10 +301,7 @@ serve(async (req) => {
       });
       if (reqErr) throw reqErr;
 
-      const { data: superAdmins, error: saErr } = await service
-        .from("user_roles")
-        .select("user_id")
-        .eq("role", "super_admin");
+      const { data: superAdmins, error: saErr } = await service.from("user_roles").select("user_id").eq("role", "super_admin");
       if (saErr) throw saErr;
 
       const actionUrl = verificationRouteForFacility(entity.facilityType);
