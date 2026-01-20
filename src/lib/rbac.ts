@@ -1,113 +1,69 @@
-// File: src/lib/rbac.ts
+// PATH: src/lib/rbac.ts
 export type AppRole =
   | "patient"
   | "doctor"
-  | "staff"
-  | "practice_staff"
   | "admin"
+  | "staff"
   | "super_admin"
   | "clinic_admin"
-  | "clinic_staff"
-  | "receptionist"
-  | "nurse"
-  | "lab_admin"
-  | "lab_staff"
-  | "lab_technician"
-  | "imaging_admin"
-  | "imaging_staff"
-  | "internal_imaging_tech"
   | "pharmacy_admin"
-  | "pharmacy_staff"
-  | "pharmacist";
+  | "lab_admin"
+  | "imaging_admin";
 
-export const roleLabels: Partial<Record<AppRole, string>> = {
+export const roleLabels: Record<AppRole, string> = {
   patient: "Patient",
   doctor: "Doctor",
-  staff: "Staff",
-  practice_staff: "Practice Staff",
   admin: "Admin",
+  staff: "Staff",
   super_admin: "Super Admin",
   clinic_admin: "Clinic Admin",
-  clinic_staff: "Clinic Staff",
-  receptionist: "Receptionist",
-  nurse: "Nurse",
-  lab_admin: "Lab Admin",
-  lab_staff: "Lab Staff",
-  lab_technician: "Lab Technician",
-  imaging_admin: "Imaging Admin",
-  imaging_staff: "Imaging Staff",
-  internal_imaging_tech: "Imaging Tech",
   pharmacy_admin: "Pharmacy Admin",
-  pharmacy_staff: "Pharmacy Staff",
-  pharmacist: "Pharmacist",
+  lab_admin: "Lab Admin",
+  imaging_admin: "Imaging Admin",
 };
 
+/**
+ * Dashboard route per "primary" role.
+ * NOTE: facility admin roles must beat generic admin/clinic_admin so they land on the right dashboard.
+ */
 export const DASHBOARD_ROUTES: Record<AppRole, string> = {
   patient: "/patient-dashboard",
   doctor: "/doctor-dashboard",
-
-  // Global routes
-  admin: "/admin-dashboard",
-  super_admin: "/admin-dashboard",
-
-  // Clinic
-  clinic_admin: "/practices/dashboard",
-  clinic_staff: "/staff-dashboard",
-  receptionist: "/staff-dashboard",
-  nurse: "/staff-dashboard",
   staff: "/staff-dashboard",
-  practice_staff: "/staff-dashboard",
-
-  // Lab
-  lab_admin: "/dashboard/labs",
-  lab_staff: "/dashboard/labs",
-  lab_technician: "/dashboard/labs",
-
-  // Imaging
-  imaging_admin: "/dashboard/imaging",
-  imaging_staff: "/dashboard/imaging",
-  internal_imaging_tech: "/dashboard/imaging",
-
-  // Pharmacy
+  admin: "/admin-dashboard",
+  super_admin: "/super-admin-dashboard",
+  clinic_admin: "/practices/dashboard",
   pharmacy_admin: "/dashboard/pharmacies",
-  pharmacy_staff: "/dashboard/pharmacies",
-  pharmacist: "/dashboard/pharmacies",
+  lab_admin: "/dashboard/labs",
+  imaging_admin: "/dashboard/imaging",
 };
 
-const VALID_ROLES: Set<AppRole> = new Set<AppRole>([
+const VALID_ROLES: AppRole[] = [
   "patient",
   "doctor",
-  "staff",
-  "practice_staff",
   "admin",
+  "staff",
   "super_admin",
   "clinic_admin",
-  "clinic_staff",
-  "receptionist",
-  "nurse",
-  "lab_admin",
-  "lab_staff",
-  "lab_technician",
-  "imaging_admin",
-  "imaging_staff",
-  "internal_imaging_tech",
   "pharmacy_admin",
-  "pharmacy_staff",
-  "pharmacist",
-]);
+  "lab_admin",
+  "imaging_admin",
+];
 
 export function normalizeRole(input: unknown): AppRole | null {
   const s = String(input || "").trim().toLowerCase();
-  if (VALID_ROLES.has(s as AppRole)) return s as AppRole;
+  if (VALID_ROLES.includes(s as AppRole)) return s as AppRole;
   return null;
 }
 
 export function getUserRolesFromProfile(profile: any): AppRole[] {
   const out: AppRole[] = [];
 
+  // Legacy single role field
   const legacy = normalizeRole(profile?.role);
   if (legacy) out.push(legacy);
 
+  // profiles.roles could be string[] or CSV-like
   const rolesField = profile?.roles;
   if (Array.isArray(rolesField)) {
     for (const r of rolesField) {
@@ -115,49 +71,30 @@ export function getUserRolesFromProfile(profile: any): AppRole[] {
       if (nr) out.push(nr);
     }
   } else if (typeof rolesField === "string") {
-    for (const r of rolesField.split(",").map((x: string) => x.trim())) {
+    for (const r of rolesField.split(",").map((x) => x.trim())) {
       const nr = normalizeRole(r);
       if (nr) out.push(nr);
     }
   }
 
+  // Dedup preserve order
   return Array.from(new Set(out));
 }
 
-/**
- * IMPORTANT FIX:
- * Facility admins MUST win over clinic_admin when both exist.
- * This fixes imaging/lab/pharmacy admins being routed to clinic dashboard.
- */
 export function getPrimaryRole(roles: AppRole[]): AppRole {
+  // Priority order if multiple roles:
+  // Facility admins MUST win over generic admin/clinic_admin.
   const order: AppRole[] = [
     "super_admin",
-    "admin",
-
-    // Facility admins (prefer over clinic_admin)
     "lab_admin",
-    "imaging_admin",
     "pharmacy_admin",
+    "imaging_admin",
     "clinic_admin",
-
-    // Facility staff
-    "lab_staff",
-    "lab_technician",
-    "imaging_staff",
-    "internal_imaging_tech",
-    "pharmacy_staff",
-    "pharmacist",
-    "clinic_staff",
-    "receptionist",
-    "nurse",
-
-    // Global
+    "admin",
     "staff",
-    "practice_staff",
     "doctor",
     "patient",
   ];
-
   for (const r of order) if (roles.includes(r)) return r;
   return roles[0] ?? "patient";
 }
@@ -166,9 +103,8 @@ export function getDashboardRoute(rolesOrRole: AppRole[] | AppRole | string[] | 
   const roles = Array.isArray(rolesOrRole)
     ? (rolesOrRole.map((r) => normalizeRole(r)).filter(Boolean) as AppRole[])
     : ([normalizeRole(rolesOrRole)].filter(Boolean) as AppRole[]);
-
   const primary = getPrimaryRole(roles);
-  return DASHBOARD_ROUTES[primary] || "/";
+  return DASHBOARD_ROUTES[primary] || "/dashboard";
 }
 
 export function hasAnyRole(userRoles: string[] | null | undefined, requiredRoles: AppRole[]): boolean {
@@ -176,18 +112,40 @@ export function hasAnyRole(userRoles: string[] | null | undefined, requiredRoles
   return userRoles.some((role) => requiredRoles.includes(role as AppRole));
 }
 
+/**
+ * Used to sync the "active role" with the dashboard currently being visited.
+ * Keep rules explicit (dashboard/verification/settings pages only), so public landing pages do NOT flip roles.
+ */
 export function inferRoleFromPathname(pathname: string): AppRole | null {
   const p = (pathname || "").toLowerCase();
 
-  if (p.startsWith("/admin-dashboard") || p.startsWith("/admin")) return "admin";
-  if (p.startsWith("/staff-dashboard") || p.startsWith("/staff")) return "staff";
-  if (p.startsWith("/doctor-dashboard") || p.startsWith("/doctor")) return "doctor";
-  if (p.startsWith("/patient-dashboard") || p.startsWith("/patient")) return "patient";
+  // Super admin dashboard
+  if (p.startsWith("/super-admin-dashboard") || p.startsWith("/super-admin/dashboard")) return "super_admin";
 
-  if (p.startsWith("/practices/dashboard") || p.startsWith("/practice-")) return "clinic_admin";
-  if (p.startsWith("/dashboard/labs") || p.startsWith("/lab/")) return "lab_admin";
-  if (p.startsWith("/dashboard/imaging") || p.startsWith("/imaging/")) return "imaging_admin";
-  if (p.startsWith("/dashboard/pharmacies") || p.startsWith("/pharmacy/")) return "pharmacy_admin";
+  // Practice/clinic admin dashboard + admin tooling
+  if (
+    p.startsWith("/practices/dashboard") ||
+    p.startsWith("/register-practice") ||
+    p.startsWith("/practice-settings") ||
+    p.startsWith("/practice-verification")
+  ) {
+    return "clinic_admin";
+  }
+
+  // Facility dashboards
+  if (p.startsWith("/dashboard/labs") || p.startsWith("/lab/dashboard")) return "lab_admin";
+  if (p.startsWith("/dashboard/pharmacies") || p.startsWith("/pharmacy/dashboard")) return "pharmacy_admin";
+  if (p.startsWith("/dashboard/imaging") || p.startsWith("/imaging/dashboard")) return "imaging_admin";
+
+  // Staff dashboard
+  if (p.startsWith("/staff-dashboard") || p.startsWith("/staff/dashboard")) return "staff";
+
+  // Generic admin dashboard
+  if (p.startsWith("/admin-dashboard") || p.startsWith("/admin/dashboard")) return "admin";
+
+  // Provider + patient dashboards
+  if (p.startsWith("/doctor-dashboard") || p.startsWith("/doctor/dashboard")) return "doctor";
+  if (p.startsWith("/patient-dashboard") || p.startsWith("/patient/dashboard")) return "patient";
 
   return null;
 }
