@@ -1,3 +1,4 @@
+// src/pages/AdminDashboard.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -97,7 +98,8 @@ function LockedOverlay({
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Your clinic/practice/hospital dashboard is visible, but actions are disabled until your organization is verified.
+              Your clinic/practice/hospital dashboard is visible, but actions are disabled until your
+              organization is verified.
             </p>
             <div className="flex flex-col sm:flex-row gap-2">
               <Button
@@ -113,9 +115,7 @@ function LockedOverlay({
                 variant="outline"
                 onClick={(e) => {
                   e.stopPropagation();
-                  toast.info(
-                    "You can browse sections, but actions remain locked until verification."
-                  );
+                  toast.info("You can browse sections, but actions remain locked until verification.");
                 }}
               >
                 Okay
@@ -188,7 +188,11 @@ const AdminDashboard = () => {
     () => [
       { label: t("admin.metrics.totalBookings"), value: stats.totalBookings.toString(), icon: Calendar },
       { label: t("admin.metrics.totalPatients"), value: stats.totalPatients.toString(), icon: Users },
-      { label: t("admin.metrics.revenueThisMonth"), value: `$${stats.totalRevenue.toLocaleString()}`, icon: DollarSign },
+      {
+        label: t("admin.metrics.revenueThisMonth"),
+        value: `$${stats.totalRevenue.toLocaleString()}`,
+        icon: DollarSign,
+      },
       { label: t("admin.metrics.clinicRating"), value: stats.clinicRating.toFixed(1), icon: Star },
       { label: t("admin.metrics.pendingInvites"), value: stats.pendingInvites.toString(), icon: UserPlus },
       { label: t("admin.metrics.locations"), value: stats.locations.toString(), icon: MapPin },
@@ -317,12 +321,7 @@ const AdminDashboard = () => {
     return (
       <div className="relative">
         <div className={locked ? "opacity-70 select-none" : ""}>{children}</div>
-        {locked && (
-          <LockedOverlay
-            message={lockMessage}
-            onRequestVerify={() => setCreateClinicOpen(true)}
-          />
-        )}
+        {locked && <LockedOverlay message={lockMessage} onRequestVerify={() => setCreateClinicOpen(true)} />}
       </div>
     );
   };
@@ -339,8 +338,8 @@ const AdminDashboard = () => {
               <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900">
                 <div className="font-semibold">Verification required</div>
                 <div className="text-sm mt-1">
-                  Your clinic dashboard is visible, but actions are locked until verification.
-                  You can browse all sections now. Actions will unlock after approval.
+                  Your clinic dashboard is visible, but actions are locked until verification. You can browse all sections
+                  now. Actions will unlock after approval.
                 </div>
                 <div className="mt-3">
                   <Button size="sm" variant="outline" onClick={() => setRequirementsOpen(true)}>
@@ -519,39 +518,32 @@ const AdminDashboard = () => {
                 {locations.map((location: any) => (
                   <Card key={location.id} className="rounded-xl">
                     <CardContent className="p-6">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
+                      <div className="flex items-start justify-between gap-4 flex-wrap">
+                        <div className="flex-1 min-w-[240px]">
                           <div className="flex items-center gap-2 mb-2">
-                            <h3 className="font-semibold text-lg">{location.name}</h3>
-                            {location.is_primary && (
-                              <Badge variant="default" className="text-xs">
-                                Primary
-                              </Badge>
-                            )}
+                            <h3 className="text-lg font-semibold">{location.name}</h3>
+                            {location.is_primary && <Badge variant="outline">Primary</Badge>}
                           </div>
                           <p className="text-muted-foreground mb-2">{location.address}</p>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            {location.phone && (
-                              <div className="flex items-center gap-1">
-                                <Mail className="h-4 w-4" />
-                                {location.phone}
-                              </div>
-                            )}
-                            {location.email && (
-                              <div className="flex items-center gap-1">
-                                <Mail className="h-4 w-4" />
-                                {location.email}
-                              </div>
-                            )}
-                          </div>
+                          <p className="text-muted-foreground mb-4">{location.phone}</p>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => guard(() => toast.info("Edit location (coming soon)"))}
-                        >
-                          Edit
-                        </Button>
+
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => guard(() => toast.info("Edit location (coming soon)"))}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => guard(() => toast.info("Photos (coming soon)"))}
+                          >
+                            Upload Photos
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -565,23 +557,19 @@ const AdminDashboard = () => {
         return (
           <SectionWrapper locked={!isVerified}>
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">{t("admin.services.title")}</h2>
-              <Button onClick={() => guard(() => setAddServiceOpen(true))}>
-                <Building2 className="h-4 w-4 mr-2" />
-                {t("admin.services.addService")}
-              </Button>
+              <h2 className="text-xl font-semibold">Services & Treatments</h2>
+              <Button onClick={() => guard(() => setAddServiceOpen(true))}>Add New Service</Button>
             </div>
 
             {services.length === 0 ? (
               <Card className="mt-6 rounded-xl">
                 <CardContent className="p-12 text-center">
-                  <Building2 className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h3 className="text-lg font-semibold mb-2">{t("admin.services.noServices")}</h3>
-                  <p className="text-muted-foreground mb-4">{t("admin.services.noServicesDesc")}</p>
-                  <Button onClick={() => guard(() => setAddServiceOpen(true))}>
-                    <Building2 className="h-4 w-4 mr-2" />
-                    {t("admin.services.addFirst")}
-                  </Button>
+                  <Stethoscope className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <h3 className="text-lg font-semibold mb-2">No Services Yet</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Add services and treatments offered at your practice
+                  </p>
+                  <Button onClick={() => guard(() => setAddServiceOpen(true))}>Add First Service</Button>
                 </CardContent>
               </Card>
             ) : (
@@ -589,79 +577,16 @@ const AdminDashboard = () => {
                 {services.map((service: any) => (
                   <Card key={service.id} className="rounded-xl">
                     <CardContent className="p-4">
-                      <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center justify-between gap-4 flex-wrap">
                         <div>
                           <h3 className="font-semibold">{service.name}</h3>
-                          <p className="text-sm text-muted-foreground">{service.description}</p>
-                          <div className="flex items-center gap-4 mt-2 text-sm">
-                            <span className="font-medium">${service.price}</span>
-                            <span className="text-muted-foreground">{service.duration} mins</span>
-                          </div>
+                          <p className="text-sm text-muted-foreground">Available with: {service.doctor_name}</p>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => guard(() => toast.info("Edit service (coming soon)"))}
-                        >
-                          Edit
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </SectionWrapper>
-        );
-
-      case "staff":
-        return (
-          <SectionWrapper locked={!isVerified}>
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">{t("admin.staff.title")}</h2>
-              <Button onClick={() => guard(() => setInviteStaffOpen(true))}>
-                <UserPlus className="h-4 w-4 mr-2" />
-                {t("admin.staff.inviteStaff")}
-              </Button>
-            </div>
-
-            <PendingInvitationsSection practiceId={practice.id} />
-
-            {staff.length === 0 ? (
-              <Card className="mt-6 rounded-xl">
-                <CardContent className="p-12 text-center">
-                  <Users className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h3 className="text-lg font-semibold mb-2">{t("admin.staff.noStaff")}</h3>
-                  <p className="text-muted-foreground mb-4">{t("admin.staff.noStaffDesc")}</p>
-                  <Button onClick={() => guard(() => setInviteStaffOpen(true))}>
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    {t("admin.staff.inviteFirst")}
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid gap-4 mt-6">
-                {staff.map((member: any) => (
-                  <Card key={member.id} className="rounded-xl">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between gap-4 flex-wrap">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                            <Users className="h-6 w-6 text-primary" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold">{member.name}</h3>
-                            <p className="text-sm text-muted-foreground">{member.role}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4 flex-wrap justify-end">
-                          <Badge variant={member.status === "active" ? "default" : "secondary"}>
-                            {member.status}
-                          </Badge>
+                        <div className="flex items-center gap-2">
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => guard(() => toast.info("Edit staff (coming soon)"))}
+                            onClick={() => guard(() => toast.info("Edit service (coming soon)"))}
                           >
                             Edit
                           </Button>
@@ -675,42 +600,128 @@ const AdminDashboard = () => {
           </SectionWrapper>
         );
 
-      case "patients":
+      case "staff":
         return (
           <SectionWrapper locked={!isVerified}>
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">{t("admin.patients.title")}</h2>
-              <Button variant="outline" onClick={() => toast.info("Export (coming soon)")}>
-                Export
+              <h2 className="text-xl font-semibold">Staff Management</h2>
+              <Button onClick={() => guard(() => setInviteStaffOpen(true))}>
+                <Mail className="h-4 w-4 mr-2" />
+                Invite Staff Member
               </Button>
+            </div>
+
+            {practice && (
+              <div className="mt-6">
+                <PendingInvitationsSection practiceId={practice.id} />
+              </div>
+            )}
+
+            {staff.length === 0 ? (
+              <Card className="mt-6 rounded-xl">
+                <CardContent className="p-12 text-center">
+                  <Users className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <h3 className="text-lg font-semibold mb-2">No Staff Members Yet</h3>
+                  <p className="text-muted-foreground mb-4">Add staff members to help manage your practice</p>
+                  <Button onClick={() => guard(() => setInviteStaffOpen(true))}>
+                    <Mail className="h-4 w-4 mr-2" />
+                    Invite First Staff Member
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="mt-6 rounded-xl">
+                <CardHeader>
+                  <CardTitle>Active Staff Members ({staff.length})</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4">
+                    {staff.map((member: any) => (
+                      <div
+                        key={member.id}
+                        className="flex items-center justify-between p-4 border rounded-xl gap-4 flex-wrap"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 bg-muted/60 rounded-full flex items-center justify-center">
+                            <Users className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold">{member.full_name}</h3>
+                            <p className="text-sm text-muted-foreground">
+                              {member.role} • {member.department}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={member.status === "active" ? "default" : "secondary"}>
+                            {member.status}
+                          </Badge>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => guard(() => toast.info("Edit staff (coming soon)"))}
+                          >
+                            Edit
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </SectionWrapper>
+        );
+
+      case "patients":
+        return (
+          <SectionWrapper locked={!isVerified}>
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <h2 className="text-xl font-semibold">Patient Management</h2>
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Input placeholder="Search patients..." className="w-full sm:w-64" />
+                <Button variant="outline" onClick={() => guard(() => toast.info("Export (coming soon)"))}>
+                  Export
+                </Button>
+              </div>
             </div>
 
             {patients.length === 0 ? (
               <Card className="mt-6 rounded-xl">
                 <CardContent className="p-12 text-center">
                   <Users className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h3 className="text-lg font-semibold mb-2">{t("admin.patients.noPatients")}</h3>
-                  <p className="text-muted-foreground">{t("admin.patients.noPatientsDesc")}</p>
+                  <p className="text-muted-foreground">No patients yet</p>
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid gap-4 mt-6">
-                {patients.map((p: any) => (
-                  <Card key={p.id} className="rounded-xl">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between gap-4 flex-wrap">
-                        <div>
-                          <h3 className="font-semibold">{p.full_name}</h3>
-                          <p className="text-sm text-muted-foreground">{p.email}</p>
-                        </div>
-                        <Button variant="outline" size="sm" onClick={() => toast.info("View patient (coming soon)")}>
-                          View
-                        </Button>
+              <Card className="mt-6 rounded-xl">
+                <CardContent className="p-0">
+                  <div className="border-b p-4 bg-muted/40">
+                    <div className="grid grid-cols-4 gap-4 font-medium text-sm">
+                      <div>Patient Name</div>
+                      <div>Last Visit</div>
+                      <div>Provider</div>
+                      <div>Status</div>
+                    </div>
+                  </div>
+                  {patients.map((patient: any) => (
+                    <div
+                      key={patient.id}
+                      className="grid grid-cols-4 gap-4 p-4 border-b hover:bg-muted/30 cursor-pointer"
+                      onClick={() => guard(() => toast.info("Patient details (coming soon)"))}
+                    >
+                      <div className="font-medium">{patient.full_name}</div>
+                      <div className="text-muted-foreground">
+                        {format(new Date(patient.last_visit), "MMM dd, yyyy")}
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                      <div className="text-muted-foreground">{patient.doctor_name}</div>
+                      <div>
+                        <Badge variant="outline">{patient.status}</Badge>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
             )}
           </SectionWrapper>
         );
@@ -719,9 +730,9 @@ const AdminDashboard = () => {
         return (
           <SectionWrapper locked={!isVerified}>
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">{t("admin.billing.title")}</h2>
-              <Button variant="outline" onClick={() => refreshAdvancedMetrics()}>
-                Refresh
+              <h2 className="text-xl font-semibold">Billing & Payments</h2>
+              <Button onClick={() => guard(() => toast.info("Generate report (coming soon)"))}>
+                Generate Report
               </Button>
             </div>
 
@@ -730,31 +741,67 @@ const AdminDashboard = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <CreditCard className="h-5 w-5" />
-                    {t("admin.billing.recentPayments")}
+                    Payment Summary
                   </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between">
+                      <span>Total Revenue (This Month)</span>
+                      <span className="font-semibold">${stats.totalRevenue.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Pending Payments</span>
+                      <span className="font-semibold text-yellow-600">
+                        $
+                        {payments
+                          .filter((p: any) => p.status === "pending")
+                          .reduce((sum: number, p: any) => sum + p.amount, 0)
+                          .toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Completed Payments</span>
+                      <span className="font-semibold text-green-600">
+                        $
+                        {payments
+                          .filter((p: any) => p.status === "paid")
+                          .reduce((sum: number, p: any) => sum + p.amount, 0)
+                          .toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-xl">
+                <CardHeader>
+                  <CardTitle>Recent Transactions</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {payments.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
                       <CreditCard className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                      <p>{t("admin.billing.noPayments")}</p>
+                      <p>No transactions yet</p>
                     </div>
                   ) : (
-                    <div className="space-y-4">
-                      {payments.slice(0, 5).map((pay: any) => (
+                    <div className="space-y-3">
+                      {payments.slice(0, 3).map((payment: any) => (
                         <div
-                          key={pay.id}
+                          key={payment.id}
                           className="flex items-center justify-between p-3 bg-muted/40 rounded-xl border border-border"
                         >
                           <div>
-                            <p className="font-medium">{pay.patient_name}</p>
-                            <p className="text-sm text-muted-foreground">{pay.service_name}</p>
+                            <p className="font-medium">{payment.patient_name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {format(new Date(payment.created_at), "MMM dd, yyyy")}
+                            </p>
                           </div>
                           <div className="text-right">
-                            <p className="text-sm font-medium">${pay.amount}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {format(new Date(pay.created_at), "MMM dd")}
-                            </p>
+                            <p className="font-semibold">${payment.amount.toFixed(2)}</p>
+                            <Badge variant={payment.status === "paid" ? "default" : "outline"}>
+                              {payment.status}
+                            </Badge>
                           </div>
                         </div>
                       ))}
@@ -762,8 +809,6 @@ const AdminDashboard = () => {
                   )}
                 </CardContent>
               </Card>
-
-              <AdvancedFinancialMetrics metrics={advancedMetrics} />
             </div>
           </SectionWrapper>
         );
@@ -771,69 +816,74 @@ const AdminDashboard = () => {
       case "analytics":
         return (
           <SectionWrapper locked={!isVerified}>
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">{t("admin.analytics.title")}</h2>
-              <Button variant="outline" onClick={() => toast.info("Export analytics (coming soon)")}>
-                Export
-              </Button>
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <h2 className="text-xl font-semibold">Practice Analytics</h2>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => guard(() => toast.info("Date range (coming soon)"))}>
+                  Last 30 Days
+                </Button>
+                <Button variant="outline" onClick={() => guard(() => toast.info("Export report (coming soon)"))}>
+                  Export Report
+                </Button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
               <Card className="rounded-xl">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5" />
-                    {t("admin.analytics.performance")}
+                    <BarChart3 className="h-5 w-5" />
+                    Booking Trends
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">{t("admin.analytics.averageRating")}</span>
-                    <span className="font-semibold">{metrics.averageRating.toFixed(1)}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">{t("admin.analytics.patientRetention")}</span>
-                    <span className="font-semibold">{metrics.patientRetention}%</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">{t("admin.analytics.avgWaitTime")}</span>
-                    <span className="font-semibold">{metrics.avgWaitTime} mins</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">{t("admin.analytics.noShowRate")}</span>
-                    <span className="font-semibold">{metrics.noShowRate}%</span>
+                <CardContent>
+                  <div className="h-64 bg-muted/20 rounded-xl border border-border flex items-center justify-center">
+                    <p className="text-muted-foreground">Chart visualization would go here</p>
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="rounded-xl">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5" />
-                    {t("admin.analytics.insights")}
-                  </CardTitle>
+                  <CardTitle>Performance Metrics</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="p-4 bg-muted/40 rounded-xl border border-border">
-                    <p className="font-medium mb-1">{t("admin.analytics.topService")}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {metrics.topService || t("admin.analytics.noData")}
-                    </p>
-                  </div>
-                  <div className="p-4 bg-muted/40 rounded-xl border border-border">
-                    <p className="font-medium mb-1">{t("admin.analytics.peakHours")}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {metrics.peakHours || t("admin.analytics.noData")}
-                    </p>
-                  </div>
-                  <div className="p-4 bg-muted/40 rounded-xl border border-border">
-                    <p className="font-medium mb-1">{t("admin.analytics.recommendation")}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {metrics.recommendation || t("admin.analytics.noData")}
-                    </p>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span>Average Rating</span>
+                      <div className="flex items-center gap-2">
+                        <Star className="h-4 w-4" />
+                        <span className="font-semibold">{metrics.averageRating.toFixed(1)}</span>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Patient Retention</span>
+                      <span className="font-semibold">{metrics.patientRetention}%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Avg. Wait Time</span>
+                      <span className="font-semibold">{metrics.avgWaitTime} min</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>No-show Rate</span>
+                      <span className="font-semibold">{metrics.noShowRate}%</span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
+            </div>
+
+            <div className="mt-6">
+              <AdvancedFinancialMetrics
+                metrics={advancedMetrics}
+                revenue={stats.totalRevenue}
+                onUpdateInputs={() => {
+                  guard(() => {
+                    refreshData();
+                    refreshAdvancedMetrics();
+                  });
+                }}
+              />
             </div>
           </SectionWrapper>
         );
@@ -845,27 +895,21 @@ const AdminDashboard = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-background flex w-full">
-        <Sidebar>
+      <div className="flex min-h-screen w-full bg-background">
+        {/* Left Sidebar (Imaging-like layout) */}
+        <Sidebar className="border-r">
           <SidebarContent>
             <SidebarGroup>
-              <SidebarGroupLabel className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4" />
-                  <span className="truncate max-w-[160px]">{practice?.name || "Practice"}</span>
-                </div>
-                <SidebarTrigger />
+              <SidebarGroupLabel className="flex items-center gap-2">
+                <Building2 className="h-4 w-4" />
+                {t("admin.title")}
               </SidebarGroupLabel>
-
               <SidebarGroupContent>
                 <SidebarMenu>
                   {menuItems.map((item) => (
                     <SidebarMenuItem key={item.id}>
-                      <SidebarMenuButton
-                        onClick={() => setActiveSection(item.id)}
-                        isActive={activeSection === item.id}
-                      >
-                        <item.icon className="h-4 w-4" />
+                      <SidebarMenuButton onClick={() => setActiveSection(item.id)} isActive={activeSection === item.id}>
+                        <item.icon className="w-4 h-4" />
                         <span>{item.label}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -873,129 +917,125 @@ const AdminDashboard = () => {
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
-
-            <SidebarGroup>
-              <SidebarGroupLabel>{t("admin.sidebar.account")}</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => setSettingsOpen(true)}>
-                      <Eye className="h-4 w-4" />
-                      <span>{t("admin.sidebar.settings")}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
           </SidebarContent>
         </Sidebar>
 
-        <div className="flex-1">
-          {/* Top bar */}
-          <div className="border-b border-border bg-background">
-            <div className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-4">
+        {/* Main */}
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <header className="h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40">
+            <div className="flex h-16 items-center justify-between px-4 sm:px-6">
+              <div className="flex items-center gap-4 min-w-0">
                 <SidebarTrigger />
-                <div>
-                  <h1 className="text-lg font-semibold">{t("admin.title")}</h1>
-                  <p className="text-sm text-muted-foreground">
-                    {t("admin.subtitle")}
+                <div className="min-w-0">
+                  <h1 className="text-lg font-semibold truncate">{practice?.name || t("admin.unverifiedPractice")}</h1>
+                  <p className="text-sm text-muted-foreground truncate">
+                    Status:{" "}
+                    <span className="font-medium">{t(`admin.verification.statuses.${verificationStatus}`)}</span>
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <Badge className={`border ${getVerificationStatusColor(verificationStatus)}`}>
-                  {getVerificationMessage(verificationStatus)}
-                </Badge>
-
-                {!isVerified && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setRequirementsOpen(true)}
-                  >
-                    <Eye className="h-4 w-4 mr-2" />
-                    Requirements
-                  </Button>
-                )}
-
-                <LanguageSwitcher />
+              <div className="flex items-center gap-2 sm:gap-4">
                 <ThemeToggle />
+                <LanguageSwitcher />
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => guard(() => toast.info("Profile preview (coming soon)"))}
+                  className="hidden sm:inline-flex"
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  {t("admin.header.previewProfile")}
+                </Button>
+
                 <ProfileMenu />
               </div>
             </div>
-          </div>
+          </header>
 
-          {/* Main */}
-          <div className="p-6 space-y-6">
+          <main className="flex-1 p-4 sm:p-6 space-y-6">
+            {/* Verification banner */}
+            <Card className={`border-2 ${getVerificationStatusColor(verificationStatus)}`}>
+              <CardContent className="p-4">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 mt-0.5">
+                    {verificationStatus === "verified" ? (
+                      <CheckCircle className="h-6 w-6 text-green-600" />
+                    ) : verificationStatus === "rejected" ? (
+                      <X className="h-6 w-6 text-red-600" />
+                    ) : (
+                      <AlertCircle className="h-6 w-6 text-yellow-600" />
+                    )}
+                  </div>
+
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      <h3 className="font-semibold">{t("admin.verification.status")}</h3>
+                      <Badge variant="outline" className={getVerificationStatusColor(verificationStatus)}>
+                        {t(`admin.verification.statuses.${verificationStatus}`)}
+                      </Badge>
+                    </div>
+
+                    <p className="text-sm mb-3">{getVerificationMessage(verificationStatus)}</p>
+
+                    {!isVerified && (
+                      <div className="flex gap-2 flex-wrap">
+                        <Button size="sm" onClick={() => setCreateClinicOpen(true)}>
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          {verificationStatus === "rejected"
+                            ? t("admin.verification.resubmit")
+                            : t("admin.verification.verifyPractice")}
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => setRequirementsOpen(true)}>
+                          {t("admin.verification.viewRequirements")}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Metrics */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {dashboardMetrics.map((m) => (
-                <Card key={m.label} className="rounded-xl">
-                  <CardContent className="p-6 flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">{m.label}</p>
-                      <p className="text-2xl font-bold">{m.value}</p>
-                    </div>
-                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
-                      <m.icon className="h-6 w-6 text-primary" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+              {dashboardMetrics.map((m, idx) => {
+                const Icon = m.icon;
+                return (
+                  <Card key={idx} className="rounded-xl">
+                    <CardContent className="p-5">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">{m.label}</p>
+                          <p className="text-2xl font-bold">{m.value}</p>
+                        </div>
+                        <Icon className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
 
-            {/* Content */}
             {renderSection()}
-          </div>
+          </main>
         </div>
 
-        {/* Modals */}
-        {allowModals && (
+        {/* Modals: safety-net prevents opening when unverified */}
+        <InviteProviderModal open={allowModals && inviteProviderOpen} onOpenChange={setInviteProviderOpen} />
+        <AddServiceModal open={allowModals && addServiceOpen} onOpenChange={setAddServiceOpen} />
+        <InviteStaffModal
+          open={allowModals && inviteStaffOpen}
+          onOpenChange={setInviteStaffOpen}
+          practiceId={practice?.id || ""}
+        />
+        <AddLocationModal open={allowModals && addLocationOpen} onOpenChange={setAddLocationOpen} />
+        <SettingsPanel open={settingsOpen} onOpenChange={setSettingsOpen} />
+
+        {practice && (
           <>
-            <InviteProviderModal
-              open={inviteProviderOpen}
-              onOpenChange={setInviteProviderOpen}
-              practiceId={practice.id}
-              onSuccess={refreshData}
-            />
-
-            <AddServiceModal
-              open={addServiceOpen}
-              onOpenChange={setAddServiceOpen}
-              practiceId={practice.id}
-              onSuccess={refreshData}
-            />
-
-            <InviteStaffModal
-              open={inviteStaffOpen}
-              onOpenChange={setInviteStaffOpen}
-              practiceId={practice.id}
-              onSuccess={refreshData}
-            />
-
-            <AddLocationModal
-              open={addLocationOpen}
-              onOpenChange={setAddLocationOpen}
-              practiceId={practice.id}
-              onSuccess={refreshData}
-            />
-
-            <SettingsPanel
-              open={settingsOpen}
-              onOpenChange={setSettingsOpen}
-              practiceId={practice.id}
-              onSuccess={refreshData}
-            />
-
-            <ViewRequirementsModal
-              open={requirementsOpen}
-              onOpenChange={setRequirementsOpen}
-              entityType="practice"
-              onStartVerification={() => setCreateClinicOpen(true)}
-            />
-
+            <ViewRequirementsModal open={requirementsOpen} onOpenChange={setRequirementsOpen} />
             <ComprehensiveRegistrationModal
               open={createClinicOpen}
               onOpenChange={setCreateClinicOpen}
