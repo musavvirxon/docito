@@ -7817,6 +7817,19 @@ export type Database = {
         }
         Returns: boolean
       }
+      homepage_unified_search: {
+        Args: { search_location?: string; search_query?: string }
+        Returns: {
+          id: string
+          image_url: string
+          location: string
+          name: string
+          rating: number
+          specialty: string
+          type: string
+          verified: boolean
+        }[]
+      }
       inherit_clinic_insurance_to_doctor: {
         Args: { p_clinic_id: string; p_doctor_id: string }
         Returns: undefined
