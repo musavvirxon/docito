@@ -1,5 +1,5 @@
 // PATH: src/hooks/useAdminDashboard.ts
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface DashboardStats {
@@ -45,57 +45,46 @@ export const useAdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchPracticeData = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  const resolvePracticeForUser = useCallback(async () => {
+    const { data: auth } = await supabase.auth.getUser();
+    const user = auth?.user;
     if (!user) return null;
 
-    // 1) Primary: practice.admin_id
-    const { data: practiceData, error: practiceError } = await supabase
-      .from("practices")
-      .select("*")
-      .eq("admin_id", user.id)
-      .maybeSingle();
-
-    if (practiceError) throw practiceError;
-    if (practiceData) {
-      setPractice(practiceData);
-      return practiceData;
+    // 1) Owner/admin practice
+    {
+      const { data, error } = await supabase.from("practices").select("*").eq("admin_id", user.id).maybeSingle();
+      if (error) throw error;
+      if (data?.id) return data;
     }
 
-    // 2) Fallback: clinic admin accounts sometimes exist as active practice_staff
-    const { data: staffRow, error: staffErr } = await supabase
-      .from("practice_staff")
-      .select("practice_id, status")
-      .eq("user_id", user.id)
-      .eq("status", "active")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    // 2) Staff-linked practice (fallback)
+    // practice_staff table exists in this project; use active membership
+    {
+      const { data: staffRow, error: staffErr } = await supabase
+        .from("practice_staff")
+        .select("practice_id,status")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-    if (staffErr) throw staffErr;
+      if (staffErr) {
+        // If table doesn't exist or RLS blocks, just return null (dashboard will show guidance)
+        return null;
+      }
 
-    const staffPracticeId = staffRow?.practice_id ? String(staffRow.practice_id) : "";
-    if (!staffPracticeId) {
-      setPractice(null);
-      return null;
+      const practiceId = (staffRow as any)?.practice_id;
+      if (!practiceId) return null;
+
+      const { data: p2, error: p2Err } = await supabase.from("practices").select("*").eq("id", practiceId).maybeSingle();
+      if (p2Err) throw p2Err;
+      return p2 ?? null;
     }
+  }, []);
 
-    const { data: practiceViaStaff, error: practiceViaStaffErr } = await supabase
-      .from("practices")
-      .select("*")
-      .eq("id", staffPracticeId)
-      .maybeSingle();
-
-    if (practiceViaStaffErr) throw practiceViaStaffErr;
-
-    setPractice(practiceViaStaff || null);
-    return practiceViaStaff || null;
-  };
-
-  const fetchDashboardStats = async (practiceData: any) => {
-    if (!practiceData) return;
+  const fetchDashboardStats = useCallback(async (practiceData: any) => {
+    if (!practiceData?.id) return;
 
     try {
       const { data: statsData, error: statsError } = await supabase.rpc("get_practice_stats" as any, {
@@ -113,20 +102,22 @@ export const useAdminDashboard = () => {
         pendingInvites: s?.pending_invites || 0,
         locations: s?.locations || 0,
       });
-    } catch (e) {
-      console.warn("Failed to fetch practice stats:", e);
+    } catch {
+      // keep defaults
     }
-  };
+  }, []);
 
-  const fetchDoctors = async (practiceData: any) => {
-    if (!practiceData) return;
+  const fetchDoctors = useCallback(async (practiceData: any) => {
+    if (!practiceData?.id) return;
 
+    // IMPORTANT: there are multiple relationships between doctors <-> profiles (doctors_user_id_fkey and profiles.doctor_id),
+    // so we must pin the FK explicitly.
     const { data, error } = await supabase
       .from("doctors")
       .select(
         `
         *,
-        profiles(full_name, email)
+        profiles!doctors_user_id_fkey(full_name,email,avatar_url)
       `,
       )
       .eq("practice_id", practiceData.id)
@@ -134,10 +125,10 @@ export const useAdminDashboard = () => {
 
     if (error) throw error;
     setDoctors(data || []);
-  };
+  }, []);
 
-  const fetchAppointments = async (practiceData: any) => {
-    if (!practiceData) return;
+  const fetchAppointments = useCallback(async (practiceData: any) => {
+    if (!practiceData?.id) return;
 
     try {
       const { data, error } = await supabase.rpc("get_practice_appointments" as any, {
@@ -147,13 +138,13 @@ export const useAdminDashboard = () => {
 
       if (error) throw error;
       setAppointments((data as any[]) || []);
-    } catch (e) {
-      console.warn("Failed to fetch appointments:", e);
+    } catch {
+      setAppointments([]);
     }
-  };
+  }, []);
 
-  const fetchServices = async (practiceData: any) => {
-    if (!practiceData) return;
+  const fetchServices = useCallback(async (practiceData: any) => {
+    if (!practiceData?.id) return;
 
     try {
       const { data, error } = await supabase.rpc("get_practice_services" as any, {
@@ -162,13 +153,13 @@ export const useAdminDashboard = () => {
 
       if (error) throw error;
       setServices((data as any[]) || []);
-    } catch (e) {
-      console.warn("Failed to fetch services:", e);
+    } catch {
+      setServices([]);
     }
-  };
+  }, []);
 
-  const fetchStaff = async (practiceData: any) => {
-    if (!practiceData) return;
+  const fetchStaff = useCallback(async (practiceData: any) => {
+    if (!practiceData?.id) return;
 
     try {
       const { data, error } = await supabase.rpc("get_practice_staff" as any, {
@@ -177,13 +168,13 @@ export const useAdminDashboard = () => {
 
       if (error) throw error;
       setStaff((data as any[]) || []);
-    } catch (e) {
-      console.warn("Failed to fetch staff:", e);
+    } catch {
+      setStaff([]);
     }
-  };
+  }, []);
 
-  const fetchLocations = async (practiceData: any) => {
-    if (!practiceData) return;
+  const fetchLocations = useCallback(async (practiceData: any) => {
+    if (!practiceData?.id) return;
 
     const { data, error } = await supabase
       .from("practice_locations")
@@ -193,10 +184,10 @@ export const useAdminDashboard = () => {
 
     if (error) throw error;
     setLocations(data || []);
-  };
+  }, []);
 
-  const fetchPatients = async (practiceData: any) => {
-    if (!practiceData) return;
+  const fetchPatients = useCallback(async (practiceData: any) => {
+    if (!practiceData?.id) return;
 
     try {
       const { data, error } = await supabase.rpc("get_practice_patients" as any, {
@@ -206,13 +197,13 @@ export const useAdminDashboard = () => {
 
       if (error) throw error;
       setPatients((data as any[]) || []);
-    } catch (e) {
-      console.warn("Failed to fetch patients:", e);
+    } catch {
+      setPatients([]);
     }
-  };
+  }, []);
 
-  const fetchPayments = async (practiceData: any) => {
-    if (!practiceData) return;
+  const fetchPayments = useCallback(async (practiceData: any) => {
+    if (!practiceData?.id) return;
 
     try {
       const { data, error } = await supabase.rpc("get_practice_payments" as any, {
@@ -222,13 +213,13 @@ export const useAdminDashboard = () => {
 
       if (error) throw error;
       setPayments((data as any[]) || []);
-    } catch (e) {
-      console.warn("Failed to fetch payments:", e);
+    } catch {
+      setPayments([]);
     }
-  };
+  }, []);
 
-  const fetchMessages = async (practiceData: any) => {
-    if (!practiceData) return;
+  const fetchMessages = useCallback(async (practiceData: any) => {
+    if (!practiceData?.id) return;
 
     try {
       const { data, error } = await supabase.rpc("get_practice_messages" as any, {
@@ -238,32 +229,32 @@ export const useAdminDashboard = () => {
 
       if (error) throw error;
       setMessages((data as any[]) || []);
-    } catch (e) {
-      console.warn("Failed to fetch messages:", e);
+    } catch {
+      setMessages([]);
     }
-  };
+  }, []);
 
-  const fetchPerformanceMetrics = async () => {
-    if (!practice) return;
+  const fetchPerformanceMetrics = useCallback(async (practiceData: any) => {
+    if (!practiceData?.id) return;
 
     try {
       const { data: practiceRating } = await supabase
         .from("practices")
         .select("average_rating")
-        .eq("id", practice.id)
+        .eq("id", practiceData.id)
         .maybeSingle();
 
       const now = new Date();
-      const start30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
       const start180 = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
 
       const { data: completedVisits, error: cvErr } = await supabase
         .from("appointments")
         .select("patient_id")
-        .eq("practice_id", practice.id)
+        .eq("practice_id", practiceData.id)
         .eq("status", "completed")
         .gte("appointment_date", start180.toISOString().slice(0, 10))
         .limit(20000);
+
       if (cvErr) throw cvErr;
 
       const visitCounts = new Map<string, number>();
@@ -272,97 +263,78 @@ export const useAdminDashboard = () => {
         visitCounts.set(r.patient_id, (visitCounts.get(r.patient_id) || 0) + 1);
       });
 
-      const returningPatients = Array.from(visitCounts.values()).filter((c) => c > 1).length;
-      const totalPatients = visitCounts.size;
-      const patientRetention = totalPatients > 0 ? Math.round((returningPatients / totalPatients) * 100) : 0;
+      const totalCompletedPatients = visitCounts.size;
+      const retained = Array.from(visitCounts.values()).filter((n) => n >= 2).length;
+      const retentionPct = totalCompletedPatients > 0 ? Math.round((retained / totalCompletedPatients) * 100) : 0;
 
-      const { data: recentAppts, error: raErr } = await supabase
+      // No-show / cancel rate in last 30 days (approx via appointments table)
+      const start30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const { data: last30, error: last30Err } = await supabase
         .from("appointments")
         .select("status")
-        .eq("practice_id", practice.id)
-        .gte("created_at", start30.toISOString())
-        .lt("created_at", now.toISOString())
+        .eq("practice_id", practiceData.id)
+        .gte("appointment_date", start30.toISOString().slice(0, 10))
         .limit(20000);
-      if (raErr) throw raErr;
 
-      const totalRecent = (recentAppts || []).length;
-      const cancelledRecent = (recentAppts || []).filter((a: any) => String(a.status || "") === "canceled").length;
-      const noShowRate = totalRecent > 0 ? Math.round((cancelledRecent / totalRecent) * 100) : 0;
+      if (last30Err) throw last30Err;
 
-      const { data: completedRecent, error: crErr } = await supabase
-        .from("appointments")
-        .select("appointment_date,start_time,created_at,status")
-        .eq("practice_id", practice.id)
-        .eq("status", "completed")
-        .gte("created_at", start30.toISOString())
-        .lt("created_at", now.toISOString())
-        .limit(20000);
-      if (crErr) throw crErr;
-
-      const leadMinutes = (completedRecent || [])
-        .map((a: any) => {
-          const created = new Date(a.created_at);
-          const date = String(a.appointment_date);
-          const time = String(a.start_time);
-          const scheduled = new Date(`${date}T${time}Z`);
-          const diff = (scheduled.getTime() - created.getTime()) / (1000 * 60);
-          return Number.isFinite(diff) ? Math.max(0, diff) : 0;
-        })
-        .filter((n: number) => n >= 0);
-
-      const avgLeadMinutes = leadMinutes.length
-        ? Math.round(leadMinutes.reduce((s: number, v: number) => s + v, 0) / leadMinutes.length)
-        : 0;
+      const total = (last30 || []).length;
+      const bad = (last30 || []).filter((a: any) => ["no_show", "canceled"].includes(String(a.status || "").toLowerCase())).length;
+      const noShowRate = total > 0 ? Math.round((bad / total) * 100) : 0;
 
       setMetrics({
-        averageRating: practiceRating?.average_rating || 0,
-        patientRetention,
-        avgWaitTime: avgLeadMinutes,
+        averageRating: Number((practiceRating as any)?.average_rating || 0),
+        patientRetention: retentionPct,
+        avgWaitTime: 0,
         noShowRate,
       });
-    } catch (err) {
-      console.error("Error fetching performance metrics:", err);
+    } catch {
+      setMetrics({ averageRating: 0, patientRetention: 0, avgWaitTime: 0, noShowRate: 0 });
     }
-  };
+  }, []);
 
-  const refreshData = async () => {
+  const refreshData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
     try {
-      setLoading(true);
-      setError(null);
+      const practiceData = await resolvePracticeForUser();
+      setPractice(practiceData);
 
-      const practiceData = await fetchPracticeData();
-
-      if (practiceData) {
-        await Promise.all([
-          fetchDashboardStats(practiceData),
-          fetchDoctors(practiceData),
-          fetchAppointments(practiceData),
-          fetchServices(practiceData),
-          fetchStaff(practiceData),
-          fetchLocations(practiceData),
-          fetchPatients(practiceData),
-          fetchPayments(practiceData),
-          fetchMessages(practiceData),
-        ]);
-      }
-
-      setLoading(false);
-    } catch (err: any) {
-      console.error("Error fetching dashboard data:", err);
-      setError(err.message || "Failed to load dashboard data");
+      await Promise.all([
+        fetchDashboardStats(practiceData),
+        fetchDoctors(practiceData),
+        fetchAppointments(practiceData),
+        fetchServices(practiceData),
+        fetchStaff(practiceData),
+        fetchLocations(practiceData),
+        fetchPatients(practiceData),
+        fetchPayments(practiceData),
+        fetchMessages(practiceData),
+        fetchPerformanceMetrics(practiceData),
+      ]);
+    } catch (e: any) {
+      setError(e?.message || "Failed to load dashboard data");
+    } finally {
       setLoading(false);
     }
-  };
+  }, [
+    fetchAppointments,
+    fetchDashboardStats,
+    fetchDoctors,
+    fetchLocations,
+    fetchMessages,
+    fetchPatients,
+    fetchPayments,
+    fetchPerformanceMetrics,
+    fetchServices,
+    fetchStaff,
+    resolvePracticeForUser,
+  ]);
 
   useEffect(() => {
     refreshData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    fetchPerformanceMetrics();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [practice]);
+  }, [refreshData]);
 
   return {
     practice,
