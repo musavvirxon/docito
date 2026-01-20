@@ -1,11 +1,10 @@
-// File: src/components/home/premium/SmartSearch.tsx
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, MapPin, Shield, Mic, Sparkles, Clock, TrendingUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
-import { useUnifiedSearch, type DoctorResult } from '@/hooks/useUnifiedSearch';
+import { useUnifiedSearch } from '@/hooks/useUnifiedSearch';
 import { useAuth } from '@/contexts/AuthContext';
 import { SearchResultsContainer } from '@/components/search';
 
@@ -86,9 +85,11 @@ export default function SmartSearch() {
           }`}
         >
           {/* Glow effect */}
-          <div className={`absolute inset-0 rounded-3xl transition-opacity duration-500 ${
-            focused ? 'opacity-100' : 'opacity-0'
-          }`}>
+          <div
+            className={`absolute inset-0 rounded-3xl transition-opacity duration-500 ${
+              focused ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
             <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 blur-xl" />
           </div>
 
@@ -111,7 +112,7 @@ export default function SmartSearch() {
                     placeholder={t('home:search.specialty', 'Search doctors, labs, services...')}
                     className="w-full pl-12 pr-12 py-4 bg-muted/30 rounded-2xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
                   />
-                  <button 
+                  <button
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors min-w-[24px] min-h-[24px] flex items-center justify-center"
                     aria-label={t('home:search.voiceSearch', 'Voice search')}
                   >
@@ -228,17 +229,19 @@ export default function SmartSearch() {
             </AnimatePresence>
           </div>
 
-          {/* Results */}
-          <div className="relative px-6 lg:px-8 pb-6 lg:pb-8">
-            <SearchResultsContainer
-              results={results}
-              loading={loading}
-              error={error}
-              hasSearched={hasSearched}
-              onFilterChange={handleFilterChange}
-              filters={filters}
-            />
-          </div>
+          {/* Results (HIDDEN until user searches) */}
+          {hasSearched && (
+            <div className="relative px-6 lg:px-8 pb-6 lg:pb-8">
+              <SearchResultsContainer
+                results={results}
+                loading={loading}
+                error={error}
+                hasSearched={hasSearched}
+                onFilterChange={handleFilterChange}
+                filters={filters}
+              />
+            </div>
+          )}
         </motion.div>
       </div>
     </section>
