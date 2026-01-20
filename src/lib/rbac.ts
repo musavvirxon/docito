@@ -113,7 +113,8 @@ export function hasAnyRole(userRoles: string[] | null | undefined, requiredRoles
 }
 
 /**
- * Used to sync UI/nav with the dashboard currently being visited.
+ * Used to sync the "active role" with the dashboard currently being visited.
+ * Keep rules explicit (dashboard/verification/settings pages only), so public landing pages do NOT flip roles.
  */
 export function inferRoleFromPathname(pathname: string): AppRole | null {
   const p = (pathname || "").toLowerCase();
@@ -121,7 +122,7 @@ export function inferRoleFromPathname(pathname: string): AppRole | null {
   // Super admin dashboard
   if (p.startsWith("/super-admin-dashboard") || p.startsWith("/super-admin/dashboard")) return "super_admin";
 
-  // Clinic admin routes
+  // Practice/clinic admin dashboard + admin tooling
   if (
     p.startsWith("/practices/dashboard") ||
     p.startsWith("/register-practice") ||
