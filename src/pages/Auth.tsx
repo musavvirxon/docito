@@ -1,5 +1,16 @@
-// File: src/pages/Auth.tsx
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import {
+  Loader2,
+  User,
+  Stethoscope,
+  Building2,
+  Pill,
+  FlaskConical,
+  Scan,
+} from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,20 +30,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Loader2,
-  User,
-  Stethoscope,
-  Building2,
-  Pill,
-  FlaskConical,
-  Scan,
-} from "lucide-react";
+
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { useTranslation } from "react-i18next";
 import { AuthIllustration } from "@/components/Visuals/illustrations";
-import { DASHBOARD_ROUTES, getDashboardRoute, type AppRole, normalizeRole } from "@/lib/rbac";
+import {
+  DASHBOARD_ROUTES,
+  getDashboardRoute,
+  normalizeRole,
+  type AppRole,
+} from "@/lib/rbac";
 
 type NameFieldCopy = {
   label: string;
@@ -70,8 +76,26 @@ const getNameFieldCopy = (t: any, role: AppRole | null): NameFieldCopy => {
   }
 };
 
+const isBlockedReturnTo = (returnTo: string | null) => {
+  if (!returnTo || !returnTo.startsWith("/")) return true;
+
+  try {
+    const u = new URL(returnTo, "http://local");
+    const p = u.pathname;
+
+    // Never bounce users back into registration flows after login
+    const blockedPrefixes = ["/register-practice", "/lab/register", "/pharmacy/register", "/imaging/register", "/auth"];
+    return blockedPrefixes.some((bp) => p === bp || p.startsWith(`${bp}/`));
+  } catch {
+    return true;
+  }
+};
+
 const Auth = () => {
   const { t } = useTranslation("auth");
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("signin");
 
@@ -86,8 +110,6 @@ const Auth = () => {
   const [signUpRole, setSignUpRole] = useState<string>("patient");
 
   const { signIn, signUp, user, profile, activeRole } = useAuth();
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
 
   const returnToParam = searchParams.get("returnTo");
   const safeReturnTo = returnToParam && returnToParam.startsWith("/") ? returnToParam : null;
@@ -96,13 +118,11 @@ const Auth = () => {
   const nameFieldCopy = useMemo(() => getNameFieldCopy(t, normalizedSignupRole), [t, normalizedSignupRole]);
 
   const getDashboardPath = () => {
-    // Prefer activeRole picked by AuthContext (it already resolves priority correctly)
     const byActive = DASHBOARD_ROUTES[activeRole];
     if (byActive) return byActive;
 
-    // Fallback based on roles array
     const roles = profile?.roles || [];
-    return getDashboardRoute(roles);
+    return getDashboardRoute(roles as any);
   };
 
   useEffect(() => {
@@ -110,12 +130,12 @@ const Auth = () => {
       const pendingInviteToken = sessionStorage.getItem("pending_staff_invite_token");
       if (pendingInviteToken) {
         sessionStorage.removeItem("pending_staff_invite_token");
-        navigate(`/accept-invite/${pendingInviteToken}`);
+        navigate(`/accept-invite/${pendingInviteToken}`, { replace: true });
         return;
       }
 
-      // Use returnTo if provided, otherwise go to correct role dashboard
-      navigate(safeReturnTo || getDashboardPath());
+      const target = !isBlockedReturnTo(safeReturnTo) && safeReturnTo ? safeReturnTo : getDashboardPath();
+      navigate(target, { replace: true });
     }
   }, [user, profile, activeRole, navigate, safeReturnTo]);
 
@@ -136,8 +156,7 @@ const Auth = () => {
     setLoading(true);
     try {
       await signUp(signUpEmail, signUpPassword, {
-        // This value is stored into profiles.full_name via signup trigger/meta.
-        // For facility/practice admins, it represents the facility name and should display in Profile.
+        // For facility/practice admins this is the facility name shown in Profile.
         fullName: signUpFullName,
         role: signUpRole,
       });
@@ -249,7 +268,6 @@ const Auth = () => {
                       value={signUpRole}
                       onValueChange={(value) => {
                         setSignUpRole(value);
-                        // Role change can change meaning of the name field; clear it to prevent accidental wrong value.
                         setSignUpFullName("");
                       }}
                     >
