@@ -68,7 +68,7 @@ async function requireAuthedUser(
 }
 
 async function ensurePharmacyAccess(
-  service: ReturnType<typeof createClient>,
+  service: any,
   userId: string,
   pharmacyId: string,
 ) {

@@ -106,7 +106,7 @@ function getServiceClient() {
   });
 }
 
-async function ensurePharmacyAccess(supabase: ReturnType<typeof createClient>, userId: string, pharmacyId: string) {
+async function ensurePharmacyAccess(supabase: any, userId: string, pharmacyId: string) {
   // Admin
   const admin = await supabase
     .from("pharmacies")
@@ -114,7 +114,7 @@ async function ensurePharmacyAccess(supabase: ReturnType<typeof createClient>, u
     .eq("id", pharmacyId)
     .eq("admin_id", userId)
     .maybeSingle();
-  if (admin.data?.id) return true;
+  if ((admin.data as any)?.id) return true;
 
   // Staff
   const staff = await supabase
@@ -125,10 +125,10 @@ async function ensurePharmacyAccess(supabase: ReturnType<typeof createClient>, u
     .eq("status", "active")
     .maybeSingle();
 
-  return Boolean(staff.data?.id);
+  return Boolean((staff.data as any)?.id);
 }
 
-async function readPharmacy(supabase: ReturnType<typeof createClient>, pharmacyId: string) {
+async function readPharmacy(supabase: any, pharmacyId: string) {
   const { data, error } = await supabase
     .from("pharmacies")
     .select(
@@ -140,7 +140,7 @@ async function readPharmacy(supabase: ReturnType<typeof createClient>, pharmacyI
   return data;
 }
 
-async function readSettings(supabase: ReturnType<typeof createClient>, pharmacyId: string) {
+async function readSettings(supabase: any, pharmacyId: string) {
   const { data, error } = await supabase
     .from("pharmacy_settings")
     .select(
@@ -210,7 +210,7 @@ async function readSettings(supabase: ReturnType<typeof createClient>, pharmacyI
   };
 }
 
-async function savePharmacy(supabase: ReturnType<typeof createClient>, pharmacyId: string, patch: any) {
+async function savePharmacy(supabase: any, pharmacyId: string, patch: any) {
   const updates: any = {};
   for (const k of [
     "name",
@@ -237,7 +237,7 @@ async function savePharmacy(supabase: ReturnType<typeof createClient>, pharmacyI
   if (error) throw error;
 }
 
-async function saveSettings(supabase: ReturnType<typeof createClient>, pharmacyId: string, patch: any) {
+async function saveSettings(supabase: any, pharmacyId: string, patch: any) {
   const upsertRow: any = {
     pharmacy_id: pharmacyId,
   };

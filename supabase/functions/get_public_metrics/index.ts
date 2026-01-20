@@ -21,7 +21,7 @@ function asInt(v: unknown): number {
 }
 
 async function countExact(
-  admin: ReturnType<typeof createClient>,
+  admin: any,
   table: string,
   filters: Array<{ col: string; op: "eq" | "gte"; value: string | boolean }>
 ): Promise<number> {

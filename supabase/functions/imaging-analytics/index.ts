@@ -85,7 +85,7 @@ function isMissingSchemaError(err: unknown) {
   );
 }
 
-async function ensureCenterAccess(service: ReturnType<typeof createClient>, userId: string, centerId: string) {
+async function ensureCenterAccess(service: any, userId: string, centerId: string) {
   const { data: adminRow, error: aErr } = await service
     .from("imaging_centers")
     .select("id")
@@ -93,7 +93,7 @@ async function ensureCenterAccess(service: ReturnType<typeof createClient>, user
     .eq("admin_id", userId)
     .maybeSingle();
   if (aErr) throw aErr;
-  if (adminRow?.id) return true;
+  if ((adminRow as any)?.id) return true;
 
   const { data: staffRow, error: sErr } = await service
     .from("imaging_staff")
@@ -104,7 +104,7 @@ async function ensureCenterAccess(service: ReturnType<typeof createClient>, user
     .maybeSingle();
   if (sErr) throw sErr;
 
-  return Boolean(staffRow?.id);
+  return Boolean((staffRow as any)?.id);
 }
 
 function emptyResponse(warnings: string[] = []): AnalyticsResponse {

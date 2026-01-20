@@ -68,7 +68,7 @@ async function requireEnv() {
   return { ok: true as const, url, anon, service };
 }
 
-async function assertLabAccess(serviceClient: ReturnType<typeof createClient>, userId: string, labCenterId: string) {
+async function assertLabAccess(serviceClient: any, userId: string, labCenterId: string) {
   const { data: adminRow, error: adminErr } = await serviceClient
     .from("lab_centers")
     .select("id, admin_id")
@@ -76,7 +76,7 @@ async function assertLabAccess(serviceClient: ReturnType<typeof createClient>, u
     .maybeSingle();
 
   if (adminErr) throw adminErr;
-  if (adminRow?.admin_id === userId) return true;
+  if ((adminRow as any)?.admin_id === userId) return true;
 
   const { data: staffRow, error: staffErr } = await serviceClient
     .from("lab_staff")
@@ -87,7 +87,7 @@ async function assertLabAccess(serviceClient: ReturnType<typeof createClient>, u
     .maybeSingle();
 
   if (staffErr) throw staffErr;
-  return Boolean(staffRow?.id);
+  return Boolean((staffRow as any)?.id);
 }
 
 serve(async (req) => {

@@ -251,10 +251,29 @@ const AdminDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex items-center gap-2">
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
-          <span className="text-muted-foreground">{t("admin.loading")}</span>
+      <div className="min-h-screen bg-background flex flex-col">
+        {/* Top Navbar */}
+        <header className="sticky top-0 z-40 w-full border-b border-border/50 bg-background/80 backdrop-blur-md">
+          <div className="container mx-auto flex h-16 items-center justify-between px-4">
+            <a href="/" className="flex items-center gap-2 font-bold text-lg">
+              <img
+                src="/logos/horizontal/docito-horizontal-sm.png"
+                alt="Docito"
+                className="h-7"
+              />
+            </a>
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              <LanguageSwitcher />
+              <ProfileMenu />
+            </div>
+          </div>
+        </header>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="flex items-center gap-2">
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            <span className="text-muted-foreground">{t("admin.loading")}</span>
+          </div>
         </div>
       </div>
     );
@@ -262,15 +281,34 @@ const AdminDashboard = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <Card className="max-w-md w-full">
-          <CardContent className="p-6 text-center">
-            <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">{t("admin.error.failed")}</h3>
-            <p className="text-muted-foreground mb-4">{error}</p>
-            <Button onClick={refreshData}>{t("admin.error.tryAgain")}</Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-background flex flex-col">
+        {/* Top Navbar */}
+        <header className="sticky top-0 z-40 w-full border-b border-border/50 bg-background/80 backdrop-blur-md">
+          <div className="container mx-auto flex h-16 items-center justify-between px-4">
+            <a href="/" className="flex items-center gap-2 font-bold text-lg">
+              <img
+                src="/logos/horizontal/docito-horizontal-sm.png"
+                alt="Docito"
+                className="h-7"
+              />
+            </a>
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              <LanguageSwitcher />
+              <ProfileMenu />
+            </div>
+          </div>
+        </header>
+        <div className="flex-1 flex items-center justify-center p-6">
+          <Card className="max-w-md w-full">
+            <CardContent className="p-6 text-center">
+              <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">{t("admin.error.failed")}</h3>
+              <p className="text-muted-foreground mb-4">{error}</p>
+              <Button onClick={refreshData}>{t("admin.error.tryAgain")}</Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -278,39 +316,59 @@ const AdminDashboard = () => {
   // If practice not created yet
   if (!practice) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <Card className="max-w-2xl w-full">
-          <CardContent className="p-8 text-center">
-            <div className="mx-auto w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6">
-              <Building2 className="w-8 h-8 text-primary" />
+      <div className="min-h-screen bg-background flex flex-col">
+        {/* Top Navbar */}
+        <header className="sticky top-0 z-40 w-full border-b border-border/50 bg-background/80 backdrop-blur-md">
+          <div className="container mx-auto flex h-16 items-center justify-between px-4">
+            <a href="/" className="flex items-center gap-2 font-bold text-lg">
+              <img
+                src="/logos/horizontal/docito-horizontal-sm.png"
+                alt="Docito"
+                className="h-7"
+              />
+            </a>
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              <LanguageSwitcher />
+              <ProfileMenu />
             </div>
-            <h3 className="text-2xl font-bold mb-3">{t("admin.welcome.title")}</h3>
-            <p className="text-muted-foreground mb-6 text-base">{t("admin.welcome.description")}</p>
+          </div>
+        </header>
 
-            <div className="bg-muted/40 rounded-xl p-6 mb-6 text-left border border-border">
-              <p className="text-sm font-medium mb-4">{t("admin.welcome.needProvide")}</p>
-              <ul className="space-y-3">
-                <li className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
-                  {t("admin.welcome.requirements.clinicName")}
-                </li>
-                <li className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
-                  {t("admin.welcome.requirements.location")}
-                </li>
-                <li className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
-                  {t("admin.welcome.requirements.operating")}
-                </li>
-              </ul>
-            </div>
+        <div className="flex-1 flex items-center justify-center p-6">
+          <Card className="max-w-2xl w-full">
+            <CardContent className="p-8 text-center">
+              <div className="mx-auto w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6">
+                <Building2 className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold mb-3">{t("admin.welcome.title")}</h3>
+              <p className="text-muted-foreground mb-6 text-base">{t("admin.welcome.description")}</p>
 
-            <Button size="lg" onClick={() => setCreateClinicOpen(true)} className="w-full sm:w-auto">
-              <Building2 className="w-4 h-4 mr-2" />
-              {t("admin.welcome.createProfile")}
-            </Button>
-          </CardContent>
-        </Card>
+              <div className="bg-muted/40 rounded-xl p-6 mb-6 text-left border border-border">
+                <p className="text-sm font-medium mb-4">{t("admin.welcome.needProvide")}</p>
+                <ul className="space-y-3">
+                  <li className="flex items-center gap-2 text-sm">
+                    <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
+                    {t("admin.welcome.requirements.clinicName")}
+                  </li>
+                  <li className="flex items-center gap-2 text-sm">
+                    <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
+                    {t("admin.welcome.requirements.location")}
+                  </li>
+                  <li className="flex items-center gap-2 text-sm">
+                    <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
+                    {t("admin.welcome.requirements.operating")}
+                  </li>
+                </ul>
+              </div>
+
+              <Button size="lg" onClick={() => navigate("/auth")} className="w-full sm:w-auto">
+                <Building2 className="w-4 h-4 mr-2" />
+                {t("admin.welcome.createProfile")}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
 
         <CreateClinicModal open={createClinicOpen} onOpenChange={setCreateClinicOpen} onSuccess={refreshData} />
       </div>

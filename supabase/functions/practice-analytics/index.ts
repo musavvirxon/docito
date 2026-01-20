@@ -54,14 +54,14 @@ async function requireEnv() {
   return { ok: true as const, url, anon, service };
 }
 
-async function assertPracticeAccess(serviceClient: ReturnType<typeof createClient>, userId: string, practiceId: string) {
+async function assertPracticeAccess(serviceClient: any, userId: string, practiceId: string) {
   const { data: practice, error: pErr } = await serviceClient
     .from("practices")
     .select("id,admin_id")
     .eq("id", practiceId)
     .maybeSingle();
   if (pErr) throw pErr;
-  if (practice?.admin_id === userId) return true;
+  if ((practice as any)?.admin_id === userId) return true;
 
   const { data: staff, error: sErr } = await serviceClient
     .from("practice_staff")
@@ -70,7 +70,7 @@ async function assertPracticeAccess(serviceClient: ReturnType<typeof createClien
     .eq("user_id", userId)
     .maybeSingle();
   if (sErr) throw sErr;
-  if (staff?.id && String(staff.status || "active") === "active") return true;
+  if ((staff as any)?.id && String((staff as any).status || "active") === "active") return true;
 
   // Super admin fallback (roles table)
   const { data: role, error: rErr } = await serviceClient
@@ -84,7 +84,7 @@ async function assertPracticeAccess(serviceClient: ReturnType<typeof createClien
     return false;
   }
 
-  return Boolean(role?.role);
+  return Boolean((role as any)?.role);
 }
 
 serve(async (req) => {

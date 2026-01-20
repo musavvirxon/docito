@@ -87,7 +87,7 @@ function normalizeCategory(c: string) {
   return v.replace(/[^a-z0-9._-]+/g, "_").slice(0, 50) || "general";
 }
 
-async function assertAccessAuthed(authed: ReturnType<typeof createClient>, entityType: EntityType, entityId: string) {
+async function assertAccessAuthed(authed: any, entityType: EntityType, entityId: string) {
   // Prefer existing access RPC. This MUST exist from earlier phases.
   const accessType = entityType === "clinic" ? "practice" : entityType;
 

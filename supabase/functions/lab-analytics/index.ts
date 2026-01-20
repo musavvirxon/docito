@@ -55,14 +55,14 @@ async function requireEnv() {
   return { ok: true as const, url, anon, service };
 }
 
-async function assertLabAccess(serviceClient: ReturnType<typeof createClient>, userId: string, labCenterId: string) {
+async function assertLabAccess(serviceClient: any, userId: string, labCenterId: string) {
   const { data: center, error: cErr } = await serviceClient
     .from("lab_centers")
     .select("id,admin_id")
     .eq("id", labCenterId)
     .maybeSingle();
   if (cErr) throw cErr;
-  if (center?.admin_id === userId) return true;
+  if ((center as any)?.admin_id === userId) return true;
 
   const { data: staff, error: sErr } = await serviceClient
     .from("lab_staff")
@@ -73,7 +73,7 @@ async function assertLabAccess(serviceClient: ReturnType<typeof createClient>, u
     .maybeSingle();
   if (sErr) throw sErr;
 
-  return Boolean(staff?.id);
+  return Boolean((staff as any)?.id);
 }
 
 serve(async (req) => {

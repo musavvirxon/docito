@@ -80,7 +80,7 @@ serve(async (req) => {
     if (userErr || !user) return json({ error: "Unauthorized" }, 401);
 
     // Use service role for admin operations
-    const service = createClient(supabaseUrl, serviceKey);
+    const service = createClient(supabaseUrl, serviceKey) as any;
 
     const ok = await isSuperAdmin(service, user.id);
     if (!ok) return json({ error: "Forbidden: super_admin required" }, 403);
