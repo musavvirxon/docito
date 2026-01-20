@@ -51,7 +51,7 @@ export const useAdminDashboard = () => {
     } = await supabase.auth.getUser();
     if (!user) return null;
 
-    // 1) Primary: practice admin_id
+    // 1) Primary: practice.admin_id
     const { data: practiceData, error: practiceError } = await supabase
       .from("practices")
       .select("*")
@@ -64,7 +64,7 @@ export const useAdminDashboard = () => {
       return practiceData;
     }
 
-    // 2) Fallback: staff record (clinic admin accounts are sometimes provisioned as staff-manager)
+    // 2) Fallback: clinic admin accounts sometimes exist as active practice_staff
     const { data: staffRow, error: staffErr } = await supabase
       .from("practice_staff")
       .select("practice_id, status")
