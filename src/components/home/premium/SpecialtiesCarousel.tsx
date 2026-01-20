@@ -1,4 +1,3 @@
-// File: src/components/home/premium/SpecialtiesCarousel.tsx
 import { useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -43,12 +42,11 @@ export default function SpecialtiesCarousel() {
 
     let animationId: number;
     let scrollPos = scrollContainer.scrollLeft;
-    const speed = 0.15; // Slower, smoother speed
+    const speed = 0.15;
 
     const smoothAutoScroll = () => {
       if (scrollContainer && !isPausedRef.current) {
         scrollPos += speed;
-        // Reset when reaching half (since we duplicate items)
         if (scrollPos >= scrollContainer.scrollWidth / 2) {
           scrollPos = 0;
         }
@@ -66,7 +64,6 @@ export default function SpecialtiesCarousel() {
       isPausedRef.current = false;
     };
 
-    // Handle mouse wheel for horizontal scrolling
     const handleWheel = (e: WheelEvent) => {
       if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
         e.preventDefault();
@@ -88,7 +85,6 @@ export default function SpecialtiesCarousel() {
     };
   }, []);
 
-  // Duplicate for infinite scroll
   const allSpecialties = [...specialties, ...specialties];
 
   return (
