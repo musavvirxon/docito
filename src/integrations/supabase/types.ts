@@ -7725,6 +7725,18 @@ export type Database = {
           doctor_id: string
         }[]
       }
+      get_my_entity_scopes: {
+        Args: never
+        Returns: {
+          entity_id: string
+          entity_name: string
+          entity_status: string
+          entity_type: string
+          is_admin: boolean
+          permissions: Json
+          scope_role: string
+        }[]
+      }
       get_my_unread_notifications_count: { Args: never; Returns: number }
       get_practice_appointments: {
         Args: { p_limit_count?: number; p_practice_id: string }
