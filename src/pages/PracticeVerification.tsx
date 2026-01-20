@@ -129,7 +129,7 @@ export default function PracticeVerification() {
 
       // Fetch existing verification
       const { data: verificationData, error: verificationError } = await supabase
-        .from("practice_verification" as any)
+        .from("practice_verification")
         .select("*")
         .eq("practice_id", practiceData.id)
         .maybeSingle();
@@ -160,11 +160,11 @@ export default function PracticeVerification() {
           practice_description: vData.practice_description || "",
         });
 
-        // Fetch uploaded documents
-        const { data: docsData } = await supabase
-          .from("verification_documents" as any)
+        // Fetch uploaded documents for this practice
+        const { data: docsData } = await (supabase as any)
+          .from("verification_documents")
           .select("*")
-          .eq("verification_id", vData.id);
+          .eq("practice_id", practiceData.id);
 
         if (docsData) {
           setDocuments((prev) =>
@@ -276,7 +276,7 @@ export default function PracticeVerification() {
 
       if (!verificationId) {
         const { data: newVerification, error: verificationError } = await supabase
-          .from("practice_verification" as any)
+          .from("practice_verification")
           .insert({
             practice_id: practiceId,
             ...formData,
@@ -291,7 +291,7 @@ export default function PracticeVerification() {
         setVerificationId((newVerification as any).id);
       } else {
         const { error: updateError } = await supabase
-          .from("practice_verification" as any)
+          .from("practice_verification")
           .update({
             ...formData,
             status: "under_review",
@@ -308,14 +308,14 @@ export default function PracticeVerification() {
           const result = await uploadFile(doc.file, "verification-documents", `${practiceId}/${doc.type}-${Date.now()}`);
 
           if (result) {
-            await supabase.from("verification_documents" as any).insert({
-              verification_id: currentVerificationId,
+            await (supabase as any).from("verification_documents").insert({
+              practice_id: practiceId,
               document_type: doc.type,
-              document_category: doc.category,
               file_name: doc.file.name,
               file_path: result.path,
               file_size: doc.file.size,
               status: "pending",
+              uploaded_by: user?.id,
             });
           }
         }

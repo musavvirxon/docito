@@ -4165,6 +4165,95 @@ export type Database = {
           },
         ]
       }
+      practice_verification: {
+        Row: {
+          business_email: string | null
+          business_name: string | null
+          business_type: string | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          full_address: string | null
+          id: string
+          operating_hours: Json | null
+          phone: string | null
+          practice_description: string | null
+          practice_id: string
+          practice_size: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          services_offered: string[] | null
+          specialties: string[] | null
+          state: string | null
+          status: string | null
+          submitted_at: string | null
+          updated_at: string | null
+          website_url: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          business_email?: string | null
+          business_name?: string | null
+          business_type?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          full_address?: string | null
+          id?: string
+          operating_hours?: Json | null
+          phone?: string | null
+          practice_description?: string | null
+          practice_id: string
+          practice_size?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          services_offered?: string[] | null
+          specialties?: string[] | null
+          state?: string | null
+          status?: string | null
+          submitted_at?: string | null
+          updated_at?: string | null
+          website_url?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          business_email?: string | null
+          business_name?: string | null
+          business_type?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          full_address?: string | null
+          id?: string
+          operating_hours?: Json | null
+          phone?: string | null
+          practice_description?: string | null
+          practice_id?: string
+          practice_size?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          services_offered?: string[] | null
+          specialties?: string[] | null
+          state?: string | null
+          status?: string | null
+          submitted_at?: string | null
+          updated_at?: string | null
+          website_url?: string | null
+          zip_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_verification_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: true
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       practice_verification_payments: {
         Row: {
           amount: number
@@ -7637,6 +7726,75 @@ export type Database = {
         }[]
       }
       get_my_unread_notifications_count: { Args: never; Returns: number }
+      get_practice_appointments: {
+        Args: { p_limit_count?: number; p_practice_id: string }
+        Returns: {
+          appointment_date: string
+          doctor_name: string
+          end_time: string
+          id: string
+          notes: string
+          patient_name: string
+          start_time: string
+          status: string
+        }[]
+      }
+      get_practice_messages: {
+        Args: { p_limit_count?: number; p_practice_id: string }
+        Returns: {
+          created_at: string
+          id: string
+          message: string
+          sender_name: string
+        }[]
+      }
+      get_practice_patients: {
+        Args: { p_limit_count?: number; p_practice_id: string }
+        Returns: {
+          doctor_name: string
+          email: string
+          full_name: string
+          id: string
+          last_visit: string
+          phone: string
+          status: string
+        }[]
+      }
+      get_practice_payments: {
+        Args: { p_limit_count?: number; p_practice_id: string }
+        Returns: {
+          amount: number
+          created_at: string
+          description: string
+          id: string
+          patient_name: string
+          status: string
+        }[]
+      }
+      get_practice_services: {
+        Args: { p_practice_id: string }
+        Returns: {
+          category: string
+          doctor_name: string
+          duration_minutes: number
+          id: string
+          name: string
+          price: number
+        }[]
+      }
+      get_practice_staff: {
+        Args: { p_practice_id: string }
+        Returns: {
+          department: string
+          email: string
+          full_name: string
+          hire_date: string
+          id: string
+          role: string
+          status: string
+          user_id: string
+        }[]
+      }
       get_practice_stats: { Args: { p_practice_id: string }; Returns: Json }
       get_staff_permissions: { Args: { p_user_id: string }; Returns: Json }
       get_user_primary_role: {
