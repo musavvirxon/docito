@@ -1,5 +1,5 @@
 // File: src/pages/Auth.tsx
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -32,7 +32,43 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { AuthIllustration } from "@/components/Visuals/illustrations";
-import { DASHBOARD_ROUTES, getDashboardRoute } from "@/lib/rbac";
+import { DASHBOARD_ROUTES, getDashboardRoute, type AppRole, normalizeRole } from "@/lib/rbac";
+
+type NameFieldCopy = {
+  label: string;
+  placeholder: string;
+};
+
+const getNameFieldCopy = (t: any, role: AppRole | null): NameFieldCopy => {
+  switch (role) {
+    case "clinic_admin":
+    case "admin":
+      return {
+        label: t("auth.signUp.practiceName", "Clinic name"),
+        placeholder: t("auth.signUp.practiceNamePlaceholder", "Enter clinic name"),
+      };
+    case "lab_admin":
+      return {
+        label: t("auth.signUp.labName", "Lab name"),
+        placeholder: t("auth.signUp.labNamePlaceholder", "Enter lab name"),
+      };
+    case "pharmacy_admin":
+      return {
+        label: t("auth.signUp.pharmacyName", "Pharmacy name"),
+        placeholder: t("auth.signUp.pharmacyNamePlaceholder", "Enter pharmacy name"),
+      };
+    case "imaging_admin":
+      return {
+        label: t("auth.signUp.imagingName", "Imaging center name"),
+        placeholder: t("auth.signUp.imagingNamePlaceholder", "Enter imaging center name"),
+      };
+    default:
+      return {
+        label: t("auth.signUp.fullName", "Full Name"),
+        placeholder: t("auth.signUp.fullNamePlaceholder", "Enter your full name"),
+      };
+  }
+};
 
 const Auth = () => {
   const { t } = useTranslation("auth");
@@ -55,6 +91,9 @@ const Auth = () => {
 
   const returnToParam = searchParams.get("returnTo");
   const safeReturnTo = returnToParam && returnToParam.startsWith("/") ? returnToParam : null;
+
+  const normalizedSignupRole = useMemo(() => normalizeRole(signUpRole), [signUpRole]);
+  const nameFieldCopy = useMemo(() => getNameFieldCopy(t, normalizedSignupRole), [t, normalizedSignupRole]);
 
   const getDashboardPath = () => {
     // Prefer activeRole picked by AuthContext (it already resolves priority correctly)
@@ -97,6 +136,8 @@ const Auth = () => {
     setLoading(true);
     try {
       await signUp(signUpEmail, signUpPassword, {
+        // This value is stored into profiles.full_name via signup trigger/meta.
+        // For facility/practice admins, it represents the facility name and should display in Profile.
         fullName: signUpFullName,
         role: signUpRole,
       });
@@ -107,43 +148,12 @@ const Auth = () => {
     }
   };
 
-  const getNameFieldCopy = (role: string) => {
-    switch (role) {
-      case "admin":
-        return {
-          label: t("auth.signUp.practiceName", "Clinic name"),
-          placeholder: t("auth.signUp.practiceNamePlaceholder", "Enter clinic name"),
-        };
-      case "lab_admin":
-        return {
-          label: t("auth.signUp.labName", "Lab name"),
-          placeholder: t("auth.signUp.labNamePlaceholder", "Enter lab name"),
-        };
-      case "pharmacy_admin":
-        return {
-          label: t("auth.signUp.pharmacyName", "Pharmacy name"),
-          placeholder: t("auth.signUp.pharmacyNamePlaceholder", "Enter pharmacy name"),
-        };
-      case "imaging_admin":
-        return {
-          label: t("auth.signUp.imagingName", "Imaging center name"),
-          placeholder: t("auth.signUp.imagingNamePlaceholder", "Enter imaging center name"),
-        };
-      default:
-        return {
-          label: t("auth.signUp.fullName"),
-          placeholder: t("auth.signUp.fullNamePlaceholder"),
-        };
-    }
-  };
-
-  const nameFieldCopy = getNameFieldCopy(signUpRole);
-
   const getRoleIcon = (role: string) => {
     switch (role) {
       case "doctor":
         return <Stethoscope className="w-5 h-5" />;
       case "admin":
+      case "clinic_admin":
         return <Building2 className="w-5 h-5" />;
       case "pharmacy_admin":
         return <Pill className="w-5 h-5" />;
@@ -160,16 +170,11 @@ const Auth = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="flex justify-center mb-6">
-          <AuthIllustration
-            variant={activeTab === "signin" ? "signin" : "signup"}
-            className="w-40 h-40"
-          />
+          <AuthIllustration variant={activeTab === "signin" ? "signin" : "signup"} className="w-40 h-40" />
         </div>
 
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-primary mb-2">
-            {t("auth.appTitle")}
-          </h1>
+          <h1 className="text-3xl font-bold text-primary mb-2">{t("auth.appTitle")}</h1>
           <p className="text-muted-foreground">{t("auth.appSubtitle")}</p>
         </div>
 
@@ -239,6 +244,63 @@ const Auth = () => {
               <form onSubmit={handleSignUp}>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
+                    <Label htmlFor="signup-role">{t("auth.signUp.accountType")}</Label>
+                    <Select
+                      value={signUpRole}
+                      onValueChange={(value) => {
+                        setSignUpRole(value);
+                        // Role change can change meaning of the name field; clear it to prevent accidental wrong value.
+                        setSignUpFullName("");
+                      }}
+                    >
+                      <SelectTrigger>
+                        <div className="flex items-center gap-2">
+                          {getRoleIcon(signUpRole)}
+                          <SelectValue placeholder={t("auth.signUp.accountTypePlaceholder")} />
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="patient">
+                          <div className="flex items-center gap-2">
+                            <User className="w-4 h-4" />
+                            {t("auth.signUp.roles.patient", "Patient")}
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="doctor">
+                          <div className="flex items-center gap-2">
+                            <Stethoscope className="w-4 h-4" />
+                            {t("auth.signUp.roles.doctor", "Doctor")}
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="admin">
+                          <div className="flex items-center gap-2">
+                            <Building2 className="w-4 h-4" />
+                            {t("auth.signUp.roles.admin", "Practice Administrator")}
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="pharmacy_admin">
+                          <div className="flex items-center gap-2">
+                            <Pill className="w-4 h-4" />
+                            {t("auth.signUp.roles.pharmacyAdmin", "Pharmacy Admin")}
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="lab_admin">
+                          <div className="flex items-center gap-2">
+                            <FlaskConical className="w-4 h-4" />
+                            {t("auth.signUp.roles.labAdmin", "Lab Admin")}
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="imaging_admin">
+                          <div className="flex items-center gap-2">
+                            <Scan className="w-4 h-4" />
+                            {t("auth.signUp.roles.imagingAdmin", "Imaging Center Admin")}
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
                     <Label htmlFor="signup-name">{nameFieldCopy.label}</Label>
                     <Input
                       id="signup-name"
@@ -272,62 +334,6 @@ const Auth = () => {
                       onChange={(e) => setSignUpPassword(e.target.value)}
                       required
                     />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-role">{t("auth.signUp.accountType")}</Label>
-                    <Select
-                      value={signUpRole}
-                      onValueChange={(value) => {
-                        setSignUpRole(value);
-                        setSignUpFullName("");
-                      }}
-                    >
-                      <SelectTrigger>
-                        <div className="flex items-center gap-2">
-                          {getRoleIcon(signUpRole)}
-                          <SelectValue placeholder={t("auth.signUp.accountTypePlaceholder")} />
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="patient">
-                          <div className="flex items-center gap-2">
-                            <User className="w-4 h-4" />
-                            {t("auth.signUp.roles.patient", "Patient")}
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="doctor">
-                          <div className="flex items-center gap-2">
-                            <Stethoscope className="w-4 h-4" />
-                            {t("auth.signUp.roles.doctor", "Doctor")}
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="admin">
-                          <div className="flex items-center gap-2">
-                            <Building2 className="w-4 h-4" />
-                            {t("auth.signUp.roles.admin", "Clinic Admin")}
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="pharmacy_admin">
-                          <div className="flex items-center gap-2">
-                            <Pill className="w-4 h-4" />
-                            {t("auth.signUp.roles.pharmacyAdmin", "Pharmacy Admin")}
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="lab_admin">
-                          <div className="flex items-center gap-2">
-                            <FlaskConical className="w-4 h-4" />
-                            {t("auth.signUp.roles.labAdmin", "Lab Admin")}
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="imaging_admin">
-                          <div className="flex items-center gap-2">
-                            <Scan className="w-4 h-4" />
-                            {t("auth.signUp.roles.imagingAdmin", "Imaging Center Admin")}
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
                   </div>
                 </CardContent>
 
