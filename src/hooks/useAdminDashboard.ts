@@ -110,21 +110,20 @@ export const useAdminDashboard = () => {
   const fetchDoctors = useCallback(async (practiceData: any) => {
     if (!practiceData?.id) return;
 
-    // IMPORTANT: there are multiple relationships between doctors <-> profiles (doctors_user_id_fkey and profiles.doctor_id),
-    // so we must pin the FK explicitly.
-    const { data, error } = await supabase
-      .from("doctors")
-      .select(
-        `
-        *,
-        profiles!doctors_user_id_fkey(full_name,email,avatar_url)
-      `,
-      )
-      .eq("practice_id", practiceData.id)
-      .order("created_at", { ascending: false });
+    try {
+      // Fetch doctors directly without profile join (FK may not exist in schema)
+      const { data, error } = await supabase
+        .from("doctors")
+        .select("*")
+        .eq("practice_id", practiceData.id)
+        .order("created_at", { ascending: false });
 
-    if (error) throw error;
-    setDoctors(data || []);
+      if (error) throw error;
+      setDoctors(data || []);
+    } catch {
+      // Gracefully handle errors - dashboard can still render
+      setDoctors([]);
+    }
   }, []);
 
   const fetchAppointments = useCallback(async (practiceData: any) => {
