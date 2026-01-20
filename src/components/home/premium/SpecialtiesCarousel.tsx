@@ -1,12 +1,14 @@
+// File: src/components/home/premium/SpecialtiesCarousel.tsx
 import { useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Heart, Brain, Eye, Bone, Baby, Smile, 
+import {
+  Heart, Brain, Eye, Bone, Baby, Smile,
   Stethoscope, Activity, Pill, Syringe,
   Microscope, Wind, Ear, Hand, Scissors,
   Shield, Users, Sparkles
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 const specialties = [
   { icon: Heart, name: 'Cardiology', color: 'from-rose-500 to-pink-500' },
@@ -31,6 +33,7 @@ const specialties = [
 
 export default function SpecialtiesCarousel() {
   const { t } = useTranslation(['home']);
+  const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
   const isPausedRef = useRef(false);
 
@@ -122,14 +125,22 @@ export default function SpecialtiesCarousel() {
             whileHover={{ scale: 1.05, y: -5 }}
             className="flex-shrink-0 snap-center"
           >
-            <div className="w-40 h-48 bg-card/80 backdrop-blur-sm rounded-3xl border border-border/50 p-6 flex flex-col items-center justify-center gap-4 cursor-pointer group transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5">
-              <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${specialty.color} p-4 flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}>
-                <specialty.icon className="w-8 h-8 text-white" />
+            <button
+              type="button"
+              onClick={() => navigate('/specialties')}
+              className="w-44 h-52 bg-card/80 backdrop-blur-sm rounded-3xl border border-border/50 p-6 flex flex-col items-center justify-center gap-4 cursor-pointer group transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 focus:outline-none focus:ring-2 focus:ring-primary/30"
+              aria-label={`${specialty.name} - ${t('home:specialties.browse', 'Browse specialties')}`}
+            >
+              {/* Larger icon container so bigger icons never clip */}
+              <div
+                className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${specialty.color} p-5 flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}
+              >
+                <specialty.icon className="w-10 h-10 text-white" />
               </div>
               <span className="text-sm font-medium text-foreground text-center leading-tight">
                 {specialty.name}
               </span>
-            </div>
+            </button>
           </motion.div>
         ))}
       </div>
