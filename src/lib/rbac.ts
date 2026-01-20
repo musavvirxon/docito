@@ -24,7 +24,7 @@ export const roleLabels: Record<AppRole, string> = {
 
 /**
  * Dashboard route per "primary" role.
- * NOTE: facility admin roles must beat generic admin/clinic_admin so they land on the right dashboard.
+ * Facility admin roles MUST beat clinic_admin/admin so they land on their own dashboards.
  */
 export const DASHBOARD_ROUTES: Record<AppRole, string> = {
   patient: "/patient-dashboard",
@@ -71,7 +71,7 @@ export function getUserRolesFromProfile(profile: any): AppRole[] {
       if (nr) out.push(nr);
     }
   } else if (typeof rolesField === "string") {
-    for (const r of rolesField.split(",").map((x) => x.trim())) {
+    for (const r of rolesField.split(",").map((x: string) => x.trim())) {
       const nr = normalizeRole(r);
       if (nr) out.push(nr);
     }
@@ -83,7 +83,7 @@ export function getUserRolesFromProfile(profile: any): AppRole[] {
 
 export function getPrimaryRole(roles: AppRole[]): AppRole {
   // Priority order if multiple roles:
-  // Facility admins MUST win over generic admin/clinic_admin.
+  // Facility admins MUST win over clinic_admin/admin.
   const order: AppRole[] = [
     "super_admin",
     "lab_admin",
@@ -113,8 +113,7 @@ export function hasAnyRole(userRoles: string[] | null | undefined, requiredRoles
 }
 
 /**
- * Used to sync the "active role" with the dashboard currently being visited.
- * Keep rules explicit (dashboard/verification/settings pages only), so public landing pages do NOT flip roles.
+ * Used to sync UI/nav with the dashboard currently being visited.
  */
 export function inferRoleFromPathname(pathname: string): AppRole | null {
   const p = (pathname || "").toLowerCase();
@@ -122,7 +121,7 @@ export function inferRoleFromPathname(pathname: string): AppRole | null {
   // Super admin dashboard
   if (p.startsWith("/super-admin-dashboard") || p.startsWith("/super-admin/dashboard")) return "super_admin";
 
-  // Practice/clinic admin dashboard + admin tooling
+  // Clinic admin routes
   if (
     p.startsWith("/practices/dashboard") ||
     p.startsWith("/register-practice") ||
@@ -137,10 +136,8 @@ export function inferRoleFromPathname(pathname: string): AppRole | null {
   if (p.startsWith("/dashboard/pharmacies") || p.startsWith("/pharmacy/dashboard")) return "pharmacy_admin";
   if (p.startsWith("/dashboard/imaging") || p.startsWith("/imaging/dashboard")) return "imaging_admin";
 
-  // Staff dashboard
+  // Staff/Admin dashboards
   if (p.startsWith("/staff-dashboard") || p.startsWith("/staff/dashboard")) return "staff";
-
-  // Generic admin dashboard
   if (p.startsWith("/admin-dashboard") || p.startsWith("/admin/dashboard")) return "admin";
 
   // Provider + patient dashboards
