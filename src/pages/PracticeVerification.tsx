@@ -1,4 +1,4 @@
-// PATH: src/pages/PracticeVerification.tsx
+// src/pages/PracticeVerification.tsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -105,7 +105,6 @@ export default function PracticeVerification() {
 
   useEffect(() => {
     fetchPracticeAndVerification();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const fetchPracticeAndVerification = async () => {
@@ -168,22 +167,24 @@ export default function PracticeVerification() {
           .eq("verification_id", vData.id);
 
         if (docsData) {
-          setDocuments(prev => prev.map(doc => {
-            const uploaded = (docsData as any[]).find((d: any) => d.document_type === doc.type);
-            if (uploaded) {
-              return {
-                ...doc,
-                uploaded: true,
-                file_path: uploaded.file_path,
-                status: uploaded.status,
-              };
-            }
-            return doc;
-          }));
+          setDocuments((prev) =>
+            prev.map((doc) => {
+              const uploaded = (docsData as any[]).find((d: any) => d.document_type === doc.type);
+              if (uploaded) {
+                return {
+                  ...doc,
+                  uploaded: true,
+                  file_path: uploaded.file_path,
+                  status: uploaded.status,
+                };
+              }
+              return doc;
+            })
+          );
         }
       } else {
         // Pre-fill from practice data
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           business_name: practiceData.name || "",
           business_type: practiceData.practice_type || "",
@@ -208,13 +209,15 @@ export default function PracticeVerification() {
   };
 
   const handleFileSelect = async (docType: string, file: File) => {
-    setDocuments(prev => prev.map(doc =>
-      doc.type === docType ? { ...doc, file } : doc
-    ));
+    setDocuments((prev) => prev.map((doc) => (doc.type === docType ? { ...doc, file } : doc)));
   };
 
-  const handleOperatingHoursChange = (day: string, field: "open" | "close" | "closed", value: string | boolean) => {
-    setFormData(prev => ({
+  const handleOperatingHoursChange = (
+    day: string,
+    field: "open" | "close" | "closed",
+    value: string | boolean
+  ) => {
+    setFormData((prev) => ({
       ...prev,
       operating_hours: {
         ...prev.operating_hours,
@@ -230,11 +233,11 @@ export default function PracticeVerification() {
     const value = type === "service" ? customService : customSpecialty;
     if (!value.trim()) return;
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [type === "service" ? "services_offered" : "specialties"]: [
         ...prev[type === "service" ? "services_offered" : "specialties"],
-        value.trim()
+        value.trim(),
       ],
     }));
 
@@ -243,10 +246,11 @@ export default function PracticeVerification() {
   };
 
   const removeItem = (type: "service" | "specialty", index: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [type === "service" ? "services_offered" : "specialties"]:
-        prev[type === "service" ? "services_offered" : "specialties"].filter((_, i) => i !== index),
+      [type === "service" ? "services_offered" : "specialties"]: prev[
+        type === "service" ? "services_offered" : "specialties"
+      ].filter((_, i) => i !== index),
     }));
   };
 
@@ -258,358 +262,435 @@ export default function PracticeVerification() {
     }
 
     // Check required documents
-    const missingDocs = documents.filter(doc => doc.required && !doc.file && !doc.uploaded);
+    const missingDocs = documents.filter((doc) => doc.required && !doc.file && !doc.uploaded);
     if (missingDocs.length > 0) {
-      toast.error(`Please upload all required documents: ${missingDocs.map(d => d.label).join(", ")}`);
+      toast.error(`Please upload required documents: ${missingDocs.map((d) => d.label).join(", ")}`);
       return;
     }
-
-    if (!practiceId) return;
 
     setSaving(true);
 
     try {
-      let vId = verificationId;
-
       // Create or update verification record
-      const verificationPayload = {
-        practice_id: practiceId,
-        ...formData,
-        status: "under_review",
-        submitted_at: new Date().toISOString(),
-      };
+      let currentVerificationId = verificationId;
 
-      if (vId) {
-        const { error: updateError } = await supabase
+      if (!verificationId) {
+        const { data: newVerification, error: verificationError } = await supabase
           .from("practice_verification" as any)
-          .update(verificationPayload)
-          .eq("id", vId);
-
-        if (updateError) throw updateError;
-      } else {
-        const { data: newVerification, error: createError } = await supabase
-          .from("practice_verification" as any)
-          .insert(verificationPayload)
+          .insert({
+            practice_id: practiceId,
+            ...formData,
+            status: "under_review",
+            submitted_at: new Date().toISOString(),
+          })
           .select()
           .single();
 
-        if (createError) throw createError;
-        vId = (newVerification as any).id;
-        setVerificationId(vId);
+        if (verificationError) throw verificationError;
+        currentVerificationId = (newVerification as any).id;
+        setVerificationId((newVerification as any).id);
+      } else {
+        const { error: updateError } = await supabase
+          .from("practice_verification" as any)
+          .update({
+            ...formData,
+            status: "under_review",
+            submitted_at: new Date().toISOString(),
+          })
+          .eq("id", verificationId);
+
+        if (updateError) throw updateError;
       }
 
-      // Upload documents
+      // Upload new documents
       for (const doc of documents) {
         if (doc.file && !doc.uploaded) {
-          const filePath = await uploadFile(doc.file, `verification/${practiceId}/${doc.type}`);
-          if (!filePath) continue;
+          const result = await uploadFile(doc.file, "verification-documents", `${practiceId}/${doc.type}-${Date.now()}`);
 
-          await supabase
-            .from("verification_documents" as any)
-            .insert({
-              verification_id: vId,
+          if (result) {
+            await supabase.from("verification_documents" as any).insert({
+              verification_id: currentVerificationId,
               document_type: doc.type,
-              file_path: filePath,
-              status: "submitted",
+              document_category: doc.category,
+              file_name: doc.file.name,
+              file_path: result.path,
+              file_size: doc.file.size,
+              status: "pending",
             });
+          }
         }
       }
 
-      setCurrentStatus("under_review");
-      toast.success("Verification submitted successfully!");
+      toast.success(
+        "Verification request submitted successfully! We'll review your application within 2-3 business days."
+      );
+      navigate("/dashboard");
     } catch (error: any) {
       console.error("Error submitting verification:", error);
-      toast.error("Failed to submit verification");
+      toast.error("Failed to submit verification request");
     } finally {
       setSaving(false);
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "verified":
-        return <CheckCircle className="w-5 h-5 text-green-600" />;
-      case "rejected":
-        return <XCircle className="w-5 h-5 text-red-600" />;
-      case "under_review":
-        return <Clock className="w-5 h-5 text-blue-600" />;
-      default:
-        return <Clock className="w-5 h-5 text-yellow-600" />;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "verified":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "rejected":
-        return "bg-red-100 text-red-800 border-red-200";
-      case "under_review":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      default:
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-    }
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex items-center gap-2">
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
-          <span className="text-muted-foreground">Loading verification...</span>
-        </div>
+      <div className="min-h-screen bg-muted/20 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
+  const getStatusBadge = (status?: string) => {
+    if (!status) return null;
+
+    const variants: Record<string, { color: string; icon: any }> = {
+      pending: { color: "bg-yellow-100 text-yellow-800", icon: Clock },
+      under_review: { color: "bg-blue-100 text-blue-800", icon: Clock },
+      verified: { color: "bg-green-100 text-green-800", icon: CheckCircle },
+      rejected: { color: "bg-red-100 text-red-800", icon: XCircle },
+    };
+
+    const variant = variants[status] || variants.pending;
+    const Icon = variant.icon;
+
+    return (
+      <Badge className={variant.color}>
+        <Icon className="w-3 h-3 mr-1" />
+        {status.replace("_", " ").toUpperCase()}
+      </Badge>
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-5xl mx-auto p-6 space-y-6">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" onClick={() => navigate("/practice-dashboard")}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
+    <div className="min-h-screen bg-muted/20">
+      <div className="border-b bg-background">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Dashboard
             </Button>
-            <div>
+            <div className="flex-1">
               <h1 className="text-2xl font-bold">Practice Verification</h1>
-              <p className="text-muted-foreground text-sm">
-                Complete verification to unlock full platform access
-              </p>
+              <p className="text-muted-foreground">Complete all sections to verify your practice</p>
             </div>
+            {currentStatus !== "pending" && getStatusBadge(currentStatus)}
           </div>
-
-          <Badge className={`border ${getStatusColor(currentStatus)}`}>
-            <span className="flex items-center gap-2">
-              {getStatusIcon(currentStatus)}
-              {currentStatus.replace("_", " ").toUpperCase()}
-            </span>
-          </Badge>
         </div>
+      </div>
 
-        <Card className="rounded-xl">
-          <CardHeader>
-            <CardTitle>Business Information</CardTitle>
-            <CardDescription>Provide accurate information about your practice</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Business Name *</Label>
-              <Input value={formData.business_name} onChange={(e) => setFormData(prev => ({ ...prev, business_name: e.target.value }))} />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Business Type *</Label>
-              <Input value={formData.business_type} onChange={(e) => setFormData(prev => ({ ...prev, business_type: e.target.value }))} />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Practice Size</Label>
-              <Select value={formData.practice_size} onValueChange={(v) => setFormData(prev => ({ ...prev, practice_size: v }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select size" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="solo">Solo Practitioner</SelectItem>
-                  <SelectItem value="small">Small (2-5 providers)</SelectItem>
-                  <SelectItem value="medium">Medium (6-20 providers)</SelectItem>
-                  <SelectItem value="large">Large (20+ providers)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Phone *</Label>
-              <Input value={formData.phone} onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))} />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Business Email *</Label>
-              <Input value={formData.business_email} onChange={(e) => setFormData(prev => ({ ...prev, business_email: e.target.value }))} />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Website</Label>
-              <Input value={formData.website_url} onChange={(e) => setFormData(prev => ({ ...prev, website_url: e.target.value }))} />
-            </div>
-
-            <div className="space-y-2 md:col-span-2">
-              <Label>Full Address</Label>
-              <Textarea value={formData.full_address} onChange={(e) => setFormData(prev => ({ ...prev, full_address: e.target.value }))} />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-xl">
-          <CardHeader>
-            <CardTitle>Operating Hours</CardTitle>
-            <CardDescription>Set your practice hours for each day</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {DAYS_OF_WEEK.map((day) => (
-              <div key={day} className="flex items-center justify-between gap-4 flex-wrap border rounded-xl p-4">
-                <div className="font-medium w-28">{day}</div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Label className="text-xs text-muted-foreground">Open</Label>
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="space-y-8">
+          {/* Business Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>1. Business Information</CardTitle>
+              <CardDescription>Basic details about your practice</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="business_name">Practice/Clinic Name *</Label>
                   <Input
-                    type="time"
-                    value={formData.operating_hours[day].open}
-                    disabled={formData.operating_hours[day].closed}
-                    onChange={(e) => handleOperatingHoursChange(day, "open", e.target.value)}
-                    className="w-32"
-                  />
-                  <Label className="text-xs text-muted-foreground">Close</Label>
-                  <Input
-                    type="time"
-                    value={formData.operating_hours[day].close}
-                    disabled={formData.operating_hours[day].closed}
-                    onChange={(e) => handleOperatingHoursChange(day, "close", e.target.value)}
-                    className="w-32"
+                    id="business_name"
+                    value={formData.business_name}
+                    onChange={(e) => setFormData({ ...formData, business_name: e.target.value })}
+                    placeholder="Enter practice name"
                   />
                 </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={formData.operating_hours[day].closed}
-                    onChange={(e) => handleOperatingHoursChange(day, "closed", e.target.checked)}
+                <div>
+                  <Label htmlFor="business_type">Business Type *</Label>
+                  <Select
+                    value={formData.business_type}
+                    onValueChange={(value) => setFormData({ ...formData, business_type: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Dental">Dental</SelectItem>
+                      <SelectItem value="Medical">Medical</SelectItem>
+                      <SelectItem value="Multispecialty">Multispecialty</SelectItem>
+                      <SelectItem value="Clinic">Clinic</SelectItem>
+                      <SelectItem value="Hospital">Hospital</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="practice_size">Practice Size</Label>
+                  <Input
+                    id="practice_size"
+                    value={formData.practice_size}
+                    onChange={(e) => setFormData({ ...formData, practice_size: e.target.value })}
+                    placeholder="Number of providers"
                   />
-                  <span className="text-sm text-muted-foreground">Closed</span>
+                </div>
+                <div>
+                  <Label htmlFor="country">Country *</Label>
+                  <Input id="country" value={formData.country} onChange={(e) => setFormData({ ...formData, country: e.target.value })} />
+                </div>
+                <div>
+                  <Label htmlFor="state">State / Region *</Label>
+                  <Input
+                    id="state"
+                    value={formData.state}
+                    onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                    placeholder="Enter state"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="city">City *</Label>
+                  <Input
+                    id="city"
+                    value={formData.city}
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                    placeholder="Enter city"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="zip_code">ZIP / Postal Code *</Label>
+                  <Input
+                    id="zip_code"
+                    value={formData.zip_code}
+                    onChange={(e) => setFormData({ ...formData, zip_code: e.target.value })}
+                    placeholder="Enter ZIP code"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label htmlFor="full_address">Full Address *</Label>
+                  <Input
+                    id="full_address"
+                    value={formData.full_address}
+                    onChange={(e) => setFormData({ ...formData, full_address: e.target.value })}
+                    placeholder="Enter complete address"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="phone">Phone Number *</Label>
+                  <Input
+                    id="phone"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    placeholder="Enter phone number"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="business_email">Business Email *</Label>
+                  <Input
+                    id="business_email"
+                    type="email"
+                    value={formData.business_email}
+                    onChange={(e) => setFormData({ ...formData, business_email: e.target.value })}
+                    placeholder="Enter email"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label htmlFor="website_url">Website URL</Label>
+                  <Input
+                    id="website_url"
+                    value={formData.website_url}
+                    onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
+                    placeholder="https://..."
+                  />
                 </div>
               </div>
-            ))}
-          </CardContent>
-        </Card>
 
-        <Card className="rounded-xl">
-          <CardHeader>
-            <CardTitle>Services & Specialties</CardTitle>
-            <CardDescription>Tell us what you offer</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-3">
-              <Label>Services Offered</Label>
-              <div className="flex gap-2">
-                <Input value={customService} onChange={(e) => setCustomService(e.target.value)} placeholder="Add a service..." />
-                <Button type="button" onClick={() => addCustomItem("service")} variant="outline">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add
-                </Button>
-              </div>
+              <Separator className="my-6" />
 
-              <div className="flex flex-wrap gap-2">
-                {formData.services_offered.map((s, idx) => (
-                  <Badge key={`${s}-${idx}`} variant="secondary" className="gap-2">
-                    {s}
-                    <button type="button" onClick={() => removeItem("service", idx)} className="opacity-70 hover:opacity-100">
-                      <X className="w-3 h-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-3">
-              <Label>Specialties</Label>
-              <div className="flex gap-2">
-                <Input value={customSpecialty} onChange={(e) => setCustomSpecialty(e.target.value)} placeholder="Add a specialty..." />
-                <Button type="button" onClick={() => addCustomItem("specialty")} variant="outline">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add
-                </Button>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {formData.specialties.map((s, idx) => (
-                  <Badge key={`${s}-${idx}`} variant="secondary" className="gap-2">
-                    {s}
-                    <button type="button" onClick={() => removeItem("specialty", idx)} className="opacity-70 hover:opacity-100">
-                      <X className="w-3 h-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-2">
-              <Label>Practice Description</Label>
-              <Textarea
-                value={formData.practice_description}
-                onChange={(e) => setFormData(prev => ({ ...prev, practice_description: e.target.value }))}
-                placeholder="Tell us about your practice..."
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-xl">
-          <CardHeader>
-            <CardTitle>Required Documents</CardTitle>
-            <CardDescription>Upload required documentation to verify your practice</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {documents.map((doc) => (
-              <div key={doc.type} className="border rounded-xl p-4">
-                <div className="flex items-start justify-between gap-4 flex-wrap">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4" />
-                      <div className="font-medium">{doc.label}</div>
-                      {doc.required && <Badge variant="default">Required</Badge>}
-                      {doc.uploaded && <Badge variant="secondary">Uploaded</Badge>}
+              <div>
+                <Label className="mb-4 block">Operating Hours</Label>
+                <div className="space-y-3">
+                  {DAYS_OF_WEEK.map((day) => (
+                    <div key={day} className="flex items-center gap-4">
+                      <div className="w-28 font-medium text-sm">{day}</div>
+                      <Input
+                        type="time"
+                        value={formData.operating_hours[day]?.open || "09:00"}
+                        onChange={(e) => handleOperatingHoursChange(day, "open", e.target.value)}
+                        disabled={formData.operating_hours[day]?.closed}
+                        className="w-32"
+                      />
+                      <span className="text-muted-foreground">to</span>
+                      <Input
+                        type="time"
+                        value={formData.operating_hours[day]?.close || "17:00"}
+                        onChange={(e) => handleOperatingHoursChange(day, "close", e.target.value)}
+                        disabled={formData.operating_hours[day]?.closed}
+                        className="w-32"
+                      />
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={formData.operating_hours[day]?.closed || false}
+                          onChange={(e) => handleOperatingHoursChange(day, "closed", e.target.checked)}
+                          className="rounded"
+                        />
+                        <span className="text-sm">Closed</span>
+                      </label>
                     </div>
-                    <div className="text-sm text-muted-foreground">{doc.description}</div>
-                  </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="file"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleFileSelect(doc.type, file);
-                      }}
-                      className="hidden"
-                      id={`file-${doc.type}`}
-                    />
-                    <Label htmlFor={`file-${doc.type}`} className="cursor-pointer">
-                      <Button type="button" variant="outline" disabled={uploading}>
-                        <Upload className="w-4 h-4 mr-2" />
-                        {doc.uploaded ? "Replace" : "Upload"}
-                      </Button>
-                    </Label>
+          {/* Documents Upload */}
+          <Card>
+            <CardHeader>
+              <CardTitle>2. Upload Business Documents</CardTitle>
+              <CardDescription>Upload all required verification documents</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {["business", "professional", "compliance"].map((category) => (
+                <div key={category}>
+                  <h3 className="font-semibold text-lg mb-4 capitalize">{category} Documents</h3>
+                  <div className="space-y-4">
+                    {documents
+                      .filter((doc) => doc.category === category)
+                      .map((doc) => (
+                        <div key={doc.type} className="border rounded-lg p-4">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <Label className="font-medium">{doc.label}</Label>
+                                {doc.required && (
+                                  <Badge variant="destructive" className="text-xs">
+                                    Required
+                                  </Badge>
+                                )}
+                                {doc.uploaded && getStatusBadge(doc.status)}
+                              </div>
+                              <p className="text-sm text-muted-foreground mt-1">{doc.description}</p>
+                            </div>
+                          </div>
+
+                          {doc.uploaded ? (
+                            <div className="flex items-center gap-2 mt-3">
+                              <FileText className="w-4 h-4 text-muted-foreground" />
+                              <span className="text-sm text-muted-foreground">Document uploaded</span>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setDocuments((prev) =>
+                                    prev.map((d) => (d.type === doc.type ? { ...d, uploaded: false, file_path: undefined } : d))
+                                  );
+                                }}
+                              >
+                                Replace
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="mt-3">
+                              <Input
+                                type="file"
+                                accept=".pdf,.jpg,.jpeg,.png"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) handleFileSelect(doc.type, file);
+                                }}
+                                className="cursor-pointer"
+                              />
+                              {doc.file && (
+                                <p className="text-sm text-muted-foreground mt-2">Selected: {doc.file.name}</p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
                   </div>
                 </div>
+              ))}
+            </CardContent>
+          </Card>
 
-                {doc.file && (
-                  <div className="mt-3 text-sm text-muted-foreground">
-                    Selected: <span className="font-medium">{doc.file.name}</span>
-                  </div>
-                )}
+          {/* Practice Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>3. Practice Information</CardTitle>
+              <CardDescription>Services and specialties offered</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <Label>Services Offered</Label>
+                <div className="flex gap-2 mt-2 mb-3 flex-wrap">
+                  {formData.services_offered.map((service, index) => (
+                    <Badge key={index} variant="secondary" className="gap-1">
+                      {service}
+                      <X className="w-3 h-3 cursor-pointer hover:text-destructive" onClick={() => removeItem("service", index)} />
+                    </Badge>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    value={customService}
+                    onChange={(e) => setCustomService(e.target.value)}
+                    placeholder="Add custom service"
+                    onKeyPress={(e) => e.key === "Enter" && addCustomItem("service")}
+                  />
+                  <Button type="button" onClick={() => addCustomItem("service")}>
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
-            ))}
-          </CardContent>
-        </Card>
 
-        <div className="flex items-center justify-end gap-3 pb-10">
-          <Button variant="outline" onClick={() => navigate("/practice-dashboard")}>
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit} disabled={saving || uploading}>
-            {saving || uploading ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Submitting...
-              </>
-            ) : (
-              <>
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Submit for Verification
-              </>
-            )}
-          </Button>
+              <div>
+                <Label>Specialties</Label>
+                <div className="flex gap-2 mt-2 mb-3 flex-wrap">
+                  {formData.specialties.map((specialty, index) => (
+                    <Badge key={index} variant="secondary" className="gap-1">
+                      {specialty}
+                      <X className="w-3 h-3 cursor-pointer hover:text-destructive" onClick={() => removeItem("specialty", index)} />
+                    </Badge>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    value={customSpecialty}
+                    onChange={(e) => setCustomSpecialty(e.target.value)}
+                    placeholder="Add custom specialty"
+                    onKeyPress={(e) => e.key === "Enter" && addCustomItem("specialty")}
+                  />
+                  <Button type="button" onClick={() => addCustomItem("specialty")}>
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="practice_description">Practice Description</Label>
+                <Textarea
+                  id="practice_description"
+                  value={formData.practice_description}
+                  onChange={(e) => setFormData({ ...formData, practice_description: e.target.value })}
+                  placeholder="Describe your practice..."
+                  rows={5}
+                  className="mt-2"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Submit Button */}
+          <div className="flex justify-end gap-4">
+            <Button variant="outline" onClick={() => navigate("/dashboard")}>
+              Cancel
+            </Button>
+            <Button onClick={handleSubmit} disabled={saving || uploading}>
+              {saving || uploading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Submit for Verification
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
