@@ -1,7 +1,3 @@
-// File: src/pages/lab/LabDashboardPage.tsx
-// Phase 7 fix: wire real-data LabHomeCollection + LabSampleManager into the Lab dashboard UI,
-// removing any remaining "not-mounted" real-data pages.
-
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -11,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 import { DashboardShell, type SidebarItem } from "@/components/dashboard/DashboardShell";
 import { EmptyState } from "@/components/dashboard/EmptyState";
+import Header from "@/components/Header";
 
 import LabDashboardContent from "@/components/staff/LabDashboardContent";
 import { LabOrderQueue } from "@/components/lab/LabOrderQueue";
@@ -172,26 +169,40 @@ export default function LabDashboardPage() {
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-64px)] bg-background">
-        <EmptyState
-          icon={<FlaskConical className="h-12 w-12" />}
-          title="Sign in required"
-          description="Please sign in to access the lab dashboard."
-          action={<button onClick={() => navigate("/auth")} className="text-primary underline">Sign In</button>}
-        />
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="pt-16 flex items-center justify-center min-h-[calc(100vh-64px)] bg-background">
+          <EmptyState
+            icon={<FlaskConical className="h-12 w-12" />}
+            title="Sign in required"
+            description="Please sign in to access the lab dashboard."
+            action={
+              <button onClick={() => navigate("/auth")} className="text-primary underline">
+                Sign In
+              </button>
+            }
+          />
+        </div>
       </div>
     );
   }
 
   if (!center) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-64px)] bg-background">
-        <EmptyState
-          icon={<FlaskConical className="h-12 w-12" />}
-          title="No Lab Center Found"
-          description="You don't have a lab center associated with your account."
-          action={<button onClick={() => navigate("/lab/register")} className="text-primary underline">Register Lab</button>}
-        />
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="pt-16 flex items-center justify-center min-h-[calc(100vh-64px)] bg-background">
+          <EmptyState
+            icon={<FlaskConical className="h-12 w-12" />}
+            title="No Lab Center Found"
+            description="You don't have a lab center associated with your account."
+            action={
+              <button onClick={() => navigate("/lab/register")} className="text-primary underline">
+                Register Lab
+              </button>
+            }
+          />
+        </div>
       </div>
     );
   }
