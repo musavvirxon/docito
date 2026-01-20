@@ -1,5 +1,3 @@
-// File: src/pages/imaging/ImagingDashboard.tsx
-
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
@@ -36,6 +34,7 @@ import { ImagingReferralsSection } from "@/components/imaging/ImagingReferralsSe
 import ImagingBillingSection from "@/components/imaging/ImagingBillingSection";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import Header from "@/components/Header";
 
 type DashboardData = {
   stats: {
@@ -137,30 +136,36 @@ export default function ImagingDashboard() {
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <Card className="max-w-md">
-          <CardContent className="pt-6 text-center">
-            <ScanLine className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <CardTitle className="mb-2">Sign In Required</CardTitle>
-            <CardDescription className="mb-4">Please sign in to access the imaging center dashboard.</CardDescription>
-            <Button onClick={() => navigate("/auth")}>Sign In</Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="pt-16 flex items-center justify-center min-h-[calc(100vh-64px)] bg-background">
+          <Card className="max-w-md">
+            <CardContent className="pt-6 text-center">
+              <ScanLine className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <CardTitle className="mb-2">Sign In Required</CardTitle>
+              <CardDescription className="mb-4">Please sign in to access the imaging center dashboard.</CardDescription>
+              <Button onClick={() => navigate("/auth")}>Sign In</Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
 
   if (!myImagingCenter) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <Card className="max-w-md">
-          <CardContent className="pt-6 text-center">
-            <ScanLine className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <CardTitle className="mb-2">No Imaging Center Found</CardTitle>
-            <CardDescription className="mb-4">You don't have an imaging center associated with your account.</CardDescription>
-            <Button onClick={() => navigate("/imaging/register")}>Register Imaging Center</Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="pt-16 flex items-center justify-center min-h-[calc(100vh-64px)] bg-background">
+          <Card className="max-w-md">
+            <CardContent className="pt-6 text-center">
+              <ScanLine className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <CardTitle className="mb-2">No Imaging Center Found</CardTitle>
+              <CardDescription className="mb-4">You don't have an imaging center associated with your account.</CardDescription>
+              <Button onClick={() => navigate("/imaging/register")}>Register Imaging Center</Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -183,7 +188,10 @@ export default function ImagingDashboard() {
             title="Dashboard Overview"
             description="Monitor your imaging center's performance"
             badges={[
-              { label: myImagingCenter.is_verified ? "Verified" : "Pending Verification", variant: myImagingCenter.is_verified ? "default" : "secondary" },
+              {
+                label: myImagingCenter.is_verified ? "Verified" : "Pending Verification",
+                variant: myImagingCenter.is_verified ? "default" : "secondary",
+              },
             ]}
             actions={
               <Button variant="outline" onClick={fetchOverview} disabled={overviewLoading}>
@@ -204,7 +212,11 @@ export default function ImagingDashboard() {
                   ))}
                 </div>
               ) : (overview?.queue?.length || 0) === 0 ? (
-                <EmptyState icon={<Calendar className="h-12 w-12" />} title="No scans scheduled today" description="New referrals scheduled for today will appear here." />
+                <EmptyState
+                  icon={<Calendar className="h-12 w-12" />}
+                  title="No scans scheduled today"
+                  description="New referrals scheduled for today will appear here."
+                />
               ) : (
                 <div className="space-y-3">
                   {overview!.queue.map((item) => (
@@ -215,7 +227,9 @@ export default function ImagingDashboard() {
                           {item.examName} • {item.modality} • {item.preferredDate || "—"} • {item.orderNumber}
                         </p>
                       </div>
-                      <Badge variant={item.status === "in_progress" ? "default" : "outline"}>{item.status.split("_").join(" ")}</Badge>
+                      <Badge variant={item.status === "in_progress" ? "default" : "outline"}>
+                        {item.status.split("_").join(" ")}
+                      </Badge>
                     </div>
                   ))}
                 </div>
@@ -241,11 +255,24 @@ export default function ImagingDashboard() {
                     <div key={eq.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                       <div>
                         <p className="font-medium">{eq.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {eq.modality} • {eq.utilization}% utilized
-                        </p>
+                        <p className="text-sm text-muted-foreground">{eq.modality}</p>
                       </div>
-                      <Badge variant={eq.status === "active" ? "default" : "secondary"}>{eq.status}</Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant={
+                            eq.status === "active"
+                              ? "default"
+                              : eq.status === "maintenance"
+                              ? "secondary"
+                              : eq.status === "offline"
+                              ? "destructive"
+                              : "outline"
+                          }
+                        >
+                          {eq.status}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">{eq.utilization}% util</span>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -255,56 +282,13 @@ export default function ImagingDashboard() {
         </>
       )}
 
-      {activeTab === "workflow" && (
-        <>
-          <PageHeader title="Scan Workflow" description="Manage imaging procedures and patient flow" />
-          <ImagingScanWorkflow centerId={centerId} />
-        </>
-      )}
-
-      {activeTab === "reports" && (
-        <>
-          <PageHeader title="Reports" description="View and manage imaging reports" />
-          <ImagingReportManager centerId={centerId} />
-        </>
-      )}
-
-      {activeTab === "equipment" && (
-        <>
-          <PageHeader title="Equipment Management" description="Monitor and manage imaging equipment" />
-          <ImagingEquipmentManager centerId={centerId} />
-        </>
-      )}
-
-      {activeTab === "analytics" && (
-        <>
-          <PageHeader title="Analytics" description="Performance metrics and insights" />
-          <ImagingAnalytics centerId={centerId} />
-        </>
-      )}
-
-      {activeTab === "billing" && (
-        <>
-          <PageHeader title="Billing" description="Revenue and transaction history for this imaging center" />
-          <ImagingBillingSection centerId={centerId} />
-        </>
-      )}
-
-      {activeTab === "staff" && (
-        <>
-          <PageHeader title="Staff Management" description="Manage radiologists and technicians" />
-          <ContentCard title="Staff Directory" icon={<Users className="h-5 w-5" />}>
-            <EmptyState icon={<Users className="h-12 w-12" />} title="Staff Management" description="Staff management module coming soon" />
-          </ContentCard>
-        </>
-      )}
-
-      {activeTab === "referrals" && (
-        <>
-          <PageHeader title="Referrals" description="Manage incoming referrals for imaging procedures" />
-          <ImagingReferralsSection centerId={centerId} />
-        </>
-      )}
+      {activeTab === "workflow" && <ImagingScanWorkflow centerId={centerId} />}
+      {activeTab === "reports" && <ImagingReportManager centerId={centerId} />}
+      {activeTab === "equipment" && <ImagingEquipmentManager centerId={centerId} />}
+      {activeTab === "analytics" && <ImagingAnalytics centerId={centerId} />}
+      {activeTab === "billing" && <ImagingBillingSection centerId={centerId} />}
+      {activeTab === "staff" && <div className="p-4 text-sm text-muted-foreground">Staff management is available in Settings.</div>}
+      {activeTab === "referrals" && <ImagingReferralsSection centerId={centerId} />}
     </DashboardShell>
   );
 }
