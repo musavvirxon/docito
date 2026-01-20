@@ -1,4 +1,4 @@
-// File: src/contexts/AuthContext.tsx
+// PATH: src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -59,6 +59,16 @@ export const useAuth = () => {
 };
 
 const ACTIVE_ROLE_KEY = "docito.activeRole";
+
+const FACILITY_ADMIN_ROLES: AppRole[] = ["lab_admin", "pharmacy_admin", "imaging_admin"];
+
+function isFacilityAdmin(role: AppRole) {
+  return FACILITY_ADMIN_ROLES.includes(role);
+}
+
+function isGenericRole(role: AppRole) {
+  return role === "patient" || role === "doctor" || role === "staff" || role === "admin" || role === "clinic_admin";
+}
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -154,9 +164,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const pickInitialRole = (roles: AppRole[]) => {
     if (!roles?.length) return "patient";
+
+    const primary = getPrimaryRole(roles);
     const saved = localStorage.getItem(ACTIVE_ROLE_KEY) as AppRole | null;
-    if (saved && roles.includes(saved)) return saved;
-    return getPrimaryRole(roles);
+
+    // If saved role is valid, we usually respect it,
+    // but we MUST not force facility admins into clinic_admin/admin just because that was saved previously.
+    if (saved && roles.includes(saved)) {
+      if (saved === primary) return saved;
+
+      // If user has a facility admin primary role and saved is a generic role, override to primary.
+      if (isFacilityAdmin(primary) && isGenericRole(saved)) return primary;
+
+      // If user is super admin, always honor super_admin priority
+      if (primary === "super_admin") return primary;
+
+      return saved;
+    }
+
+    return primary;
   };
 
   const fetchProfile = async (userId: string) => {
