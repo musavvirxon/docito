@@ -1,4 +1,3 @@
-// File: src/pages/ProfilePage.tsx
 import { useMemo, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,15 +11,57 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 
-import { Loader2, LogOut, Shield, User as UserIcon, CreditCard, BarChart3, Settings as SettingsIcon, ArrowLeft } from "lucide-react";
+import {
+  Loader2,
+  LogOut,
+  Shield,
+  User as UserIcon,
+  CreditCard,
+  BarChart3,
+  Settings as SettingsIcon,
+  ArrowLeft,
+} from "lucide-react";
 
 import AccountBillingSection from "@/components/profile/AccountBillingSection";
 import AccountAnalyticsSection from "@/components/profile/AccountAnalyticsSection";
 import AccountSettingsSection from "@/components/profile/AccountSettingsSection";
+import { getPrimaryRole, getUserRolesFromProfile, type AppRole } from "@/lib/rbac";
+
+const getNameLabel = (role: AppRole): string => {
+  switch (role) {
+    case "clinic_admin":
+    case "admin":
+      return "Clinic name";
+    case "lab_admin":
+      return "Lab name";
+    case "pharmacy_admin":
+      return "Pharmacy name";
+    case "imaging_admin":
+      return "Imaging center name";
+    default:
+      return "Full name";
+  }
+};
+
+const getNamePlaceholder = (role: AppRole): string => {
+  switch (role) {
+    case "clinic_admin":
+    case "admin":
+      return "Enter clinic name";
+    case "lab_admin":
+      return "Enter lab name";
+    case "pharmacy_admin":
+      return "Enter pharmacy name";
+    case "imaging_admin":
+      return "Enter imaging center name";
+    default:
+      return "Enter your full name";
+  }
+};
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const { user, profile, loading, updateProfile, signOut } = useAuth();
+  const { user, profile, loading, updateProfile, signOut, activeRole } = useAuth();
 
   const [tab, setTab] = useState<"settings" | "billing" | "analytics">("settings");
 
@@ -34,6 +75,16 @@ export default function ProfilePage() {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const email = useMemo(() => profile?.email || user?.email || "", [profile?.email, user?.email]);
+
+  const primaryRole = useMemo(() => {
+    if (!profile) return activeRole;
+    const roles = getUserRolesFromProfile(profile);
+    if (roles.length === 0) return activeRole;
+    return getPrimaryRole(roles);
+  }, [profile, activeRole]);
+
+  const nameLabel = useMemo(() => getNameLabel(primaryRole), [primaryRole]);
+  const namePlaceholder = useMemo(() => getNamePlaceholder(primaryRole), [primaryRole]);
 
   if (loading) {
     return (
@@ -52,6 +103,8 @@ export default function ProfilePage() {
     setSavingProfile(true);
     try {
       const { error } = await updateProfile({
+        // This field is used across the app as the display name.
+        // For practice/facility admins, it represents the facility name.
         full_name: fullName.trim(),
         phone: phone.trim() || null,
       } as any);
@@ -138,8 +191,13 @@ export default function ProfilePage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Full name</Label>
-                  <Input className="rounded-xl" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+                  <Label>{nameLabel}</Label>
+                  <Input
+                    className="rounded-xl"
+                    value={fullName}
+                    placeholder={namePlaceholder}
+                    onChange={(e) => setFullName(e.target.value)}
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -199,9 +257,7 @@ export default function ProfilePage() {
                 </div>
 
                 <Separator />
-                <div className="text-xs text-muted-foreground">
-                  Tip: use a password manager and avoid reusing passwords.
-                </div>
+                <div className="text-xs text-muted-foreground">Tip: use a password manager and avoid reusing passwords.</div>
               </CardContent>
             </Card>
           </div>
