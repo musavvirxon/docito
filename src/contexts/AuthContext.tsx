@@ -61,14 +61,10 @@ export const useAuth = () => {
 const ACTIVE_ROLE_KEY = "docito.activeRole";
 
 const FACILITY_ADMIN_ROLES: AppRole[] = ["lab_admin", "pharmacy_admin", "imaging_admin"];
+const GENERIC_ROLES: AppRole[] = ["patient", "doctor", "staff", "admin", "clinic_admin"];
 
-function isFacilityAdmin(role: AppRole) {
-  return FACILITY_ADMIN_ROLES.includes(role);
-}
-
-function isGenericRole(role: AppRole) {
-  return role === "patient" || role === "doctor" || role === "staff" || role === "admin" || role === "clinic_admin";
-}
+const isFacilityAdmin = (role: AppRole) => FACILITY_ADMIN_ROLES.includes(role);
+const isGenericRole = (role: AppRole) => GENERIC_ROLES.includes(role);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -132,7 +128,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const fetchRoles = async (userId: string): Promise<AppRole[]> => {
-    // If user_roles table doesn't exist in a project, this should fail gracefully.
     const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", userId);
     if (error) {
       console.warn("user_roles fetch failed (fallback to profile roles):", error.message);
@@ -168,17 +163,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const primary = getPrimaryRole(roles);
     const saved = localStorage.getItem(ACTIVE_ROLE_KEY) as AppRole | null;
 
-    // If saved role is valid, we usually respect it,
-    // but we MUST not force facility admins into clinic_admin/admin just because that was saved previously.
+    // If saved role is valid, usually respect it.
+    // BUT: don't let a facility admin account get stuck in clinic_admin/admin because of a previously saved role.
     if (saved && roles.includes(saved)) {
-      if (saved === primary) return saved;
-
-      // If user has a facility admin primary role and saved is a generic role, override to primary.
+      if (primary === "super_admin") return "super_admin";
       if (isFacilityAdmin(primary) && isGenericRole(saved)) return primary;
-
-      // If user is super admin, always honor super_admin priority
-      if (primary === "super_admin") return primary;
-
       return saved;
     }
 
@@ -197,7 +186,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const rolesFromDb = await fetchRoles(userId);
 
-      // Merge: rolesFromDb (user_roles) + profileData.role + profileData.roles
       const mergedRoles = Array.from(
         new Set([
           ...getUserRolesFromProfile(profileData),
