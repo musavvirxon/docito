@@ -12,19 +12,19 @@ import type { AppRole } from "@/lib/rbac";
 import { toast } from "sonner";
 
 function verificationRouteForFacility(facilityType: string) {
-  if (facilityType === "practice") return "/dashboard/verify";
+  if (facilityType === "practice") return "/practice-verification";
   if (facilityType === "lab") return "/lab/verification";
   if (facilityType === "imaging") return "/imaging/verification";
   if (facilityType === "pharmacy") return "/pharmacy/verification";
-  return "/dashboard/verify";
+  return "/practice-verification";
 }
 
 function settingsRouteForFacility(facilityType: string) {
-  if (facilityType === "practice") return "/dashboard/settings";
+  if (facilityType === "practice") return "/practice-settings";
   if (facilityType === "lab") return "/lab/settings";
   if (facilityType === "imaging") return "/imaging/settings";
   if (facilityType === "pharmacy") return "/pharmacy/settings";
-  return "/dashboard/settings";
+  return "/";
 }
 
 function statusBadgeVariant(status: string) {
@@ -72,12 +72,7 @@ export default function DashboardTopNav(props: { role: AppRole; showSettings?: b
             </div>
           </div>
 
-          <Button
-            variant="ghost"
-            className="h-9 px-3"
-            onClick={() => nav(verificationRoute)}
-            title="Open verification page"
-          >
+          <Button variant="ghost" className="h-9 px-3" onClick={() => nav(verificationRoute)} title="Open verification page">
             <ShieldCheck className="h-4 w-4 mr-2" />
             Verification
             <Badge className="ml-2" variant={statusBadgeVariant(entityStatus)}>
