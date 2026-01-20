@@ -1,11 +1,17 @@
-import { SettingsPanel } from "@/components/dashboard/SettingsPanel";
+// Path: src/pages/Settings.tsx
 
-export default function SettingsPage() {
+import { SettingsPanel } from "@/components/dashboard/SettingsPanel";
+import Header from "@/components/Header";
+
+const Settings = () => {
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-6">
-      <div className="max-w-5xl mx-auto">
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="pt-16">
         <SettingsPanel open={true} onOpenChange={() => {}} />
       </div>
     </div>
   );
-}
+};
+
+export default Settings;
