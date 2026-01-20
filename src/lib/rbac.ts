@@ -24,13 +24,13 @@ export const roleLabels: Record<AppRole, string> = {
 
 /**
  * Dashboard route per "primary" role.
- * Facility admin roles MUST beat clinic_admin/admin so they land on their own dashboards.
+ * Facility admin roles MUST win over clinic_admin/admin so they land on their own dashboards.
  */
 export const DASHBOARD_ROUTES: Record<AppRole, string> = {
   patient: "/patient-dashboard",
   doctor: "/doctor-dashboard",
-  staff: "/staff-dashboard",
   admin: "/admin-dashboard",
+  staff: "/staff-dashboard",
   super_admin: "/super-admin-dashboard",
   clinic_admin: "/practices/dashboard",
   pharmacy_admin: "/dashboard/pharmacies",
@@ -113,16 +113,15 @@ export function hasAnyRole(userRoles: string[] | null | undefined, requiredRoles
 }
 
 /**
- * Used to sync the "active role" with the dashboard currently being visited.
- * Keep rules explicit (dashboard/verification/settings pages only), so public landing pages do NOT flip roles.
+ * Used to infer role from current route (for nav + role syncing).
  */
 export function inferRoleFromPathname(pathname: string): AppRole | null {
   const p = (pathname || "").toLowerCase();
 
-  // Super admin dashboard
+  // Super admin
   if (p.startsWith("/super-admin-dashboard") || p.startsWith("/super-admin/dashboard")) return "super_admin";
 
-  // Practice/clinic admin dashboard + admin tooling
+  // Clinic admin
   if (
     p.startsWith("/practices/dashboard") ||
     p.startsWith("/register-practice") ||
