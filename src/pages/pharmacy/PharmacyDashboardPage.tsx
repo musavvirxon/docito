@@ -1,6 +1,3 @@
-// src/pages/pharmacy/PharmacyDashboardPage.tsx
-// File: src/pages/pharmacy/PharmacyDashboardPage.tsx
-
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -12,6 +9,7 @@ import { DashboardShell, type SidebarItem } from "@/components/dashboard/Dashboa
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatsGrid, type StatCardProps } from "@/components/dashboard/StatsGrid";
 import { EmptyState } from "@/components/dashboard/EmptyState";
+import Header from "@/components/Header";
 
 import PharmacyPrescriptionInbox from "@/components/pharmacy/PharmacyPrescriptionInbox";
 import FulfillmentQueue from "@/components/pharmacy/FulfillmentQueue";
@@ -229,31 +227,49 @@ export default function PharmacyDashboardPage() {
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <EmptyState
-          icon={<Pill className="h-12 w-12" />}
-          title="Sign in required"
-          description="Please sign in to access the pharmacy dashboard."
-          action={<button onClick={() => navigate("/auth")} className="text-primary underline">Sign In</button>}
-        />
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="pt-16 flex items-center justify-center min-h-[calc(100vh-64px)] bg-background">
+          <EmptyState
+            icon={<Pill className="h-12 w-12" />}
+            title="Sign in required"
+            description="Please sign in to access the pharmacy dashboard."
+            action={
+              <button onClick={() => navigate("/auth")} className="text-primary underline">
+                Sign In
+              </button>
+            }
+          />
+        </div>
       </div>
     );
   }
 
   if (!pharmacy) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <EmptyState
-          icon={<Pill className="h-12 w-12" />}
-          title="No Pharmacy Found"
-          description="You don't have a pharmacy associated with your account."
-          action={<button onClick={() => navigate("/pharmacy/register")} className="text-primary underline">Register Pharmacy</button>}
-        />
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="pt-16 flex items-center justify-center min-h-[calc(100vh-64px)] bg-background">
+          <EmptyState
+            icon={<Pill className="h-12 w-12" />}
+            title="No Pharmacy Found"
+            description="You don't have a pharmacy associated with your account."
+            action={
+              <button onClick={() => navigate("/pharmacy/register")} className="text-primary underline">
+                Register Pharmacy
+              </button>
+            }
+          />
+        </div>
       </div>
     );
   }
 
-  const statusLabel = (pharmacy.verified ? "verified" : pharmacy.verification_status || "pending") as "active" | "pending" | "suspended" | "verified";
+  const statusLabel = (pharmacy.verified ? "verified" : pharmacy.verification_status || "pending") as
+    | "active"
+    | "pending"
+    | "suspended"
+    | "verified";
 
   return (
     <DashboardShell
