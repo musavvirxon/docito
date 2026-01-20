@@ -1,6 +1,7 @@
 // File: src/hooks/useAdminDashboard.ts
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useActiveEntityScope } from "@/hooks/useActiveEntityScope";
 
 interface DashboardStats {
   totalBookings: number;
@@ -19,6 +20,8 @@ interface PerformanceMetrics {
 }
 
 export const useAdminDashboard = () => {
+  const { activeEntityId: practiceId, loading: scopeLoading } = useActiveEntityScope("clinic");
+
   const [practice, setPractice] = useState<any>(null);
   const [stats, setStats] = useState<DashboardStats>({
     totalBookings: 0,
@@ -45,10 +48,20 @@ export const useAdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchPracticeData = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+  const fetchPracticeData = useCallback(async () => {
+    const { data: authRes } = await supabase.auth.getUser();
+    const user = authRes?.user;
+    if (!user) return null;
 
+    // Prefer scoped practiceId (works for clinic_admin + clinic_staff + owner)
+    if (practiceId) {
+      const { data, error } = await supabase.from("practices").select("*").eq("id", practiceId).maybeSingle();
+      if (error) throw error;
+      setPractice(data);
+      return data;
+    }
+
+    // Fallback: practice owner
     const { data: practiceData, error: practiceError } = await supabase
       .from("practices")
       .select("*")
@@ -58,27 +71,26 @@ export const useAdminDashboard = () => {
     if (practiceError) throw practiceError;
     setPractice(practiceData);
     return practiceData;
-  };
+  }, [practiceId]);
 
   const fetchDashboardStats = async (practiceData: any) => {
     if (!practiceData) return;
 
     try {
-      const { data: statsData, error: statsError } = await supabase.rpc(
-        "get_practice_stats" as any,
-        { p_practice_id: practiceData.id }
-      );
+      const { data: statsData, error: statsError } = await supabase.rpc("get_practice_stats" as any, {
+        p_practice_id: practiceData.id,
+      });
 
       if (statsError) throw statsError;
 
-      const stats = statsData as any;
+      const s = statsData as any;
       setStats({
-        totalBookings: stats?.total_bookings || 0,
-        totalPatients: stats?.total_patients || 0,
-        totalRevenue: stats?.total_revenue || 0,
-        clinicRating: stats?.clinic_rating || 0,
-        pendingInvites: stats?.pending_invites || 0,
-        locations: stats?.locations || 0,
+        totalBookings: s?.total_bookings || 0,
+        totalPatients: s?.total_patients || 0,
+        totalRevenue: s?.total_revenue || 0,
+        clinicRating: s?.clinic_rating || 0,
+        pendingInvites: s?.pending_invites || 0,
+        locations: s?.locations || 0,
       });
     } catch (e) {
       console.warn("Failed to fetch practice stats:", e);
@@ -90,10 +102,12 @@ export const useAdminDashboard = () => {
 
     const { data, error } = await supabase
       .from("doctors")
-      .select(`
+      .select(
+        `
         *,
         profiles(full_name, email)
-      `)
+      `,
+      )
       .eq("practice_id", practiceData.id)
       .order("created_at", { ascending: false });
 
@@ -166,7 +180,7 @@ export const useAdminDashboard = () => {
     try {
       const { data, error } = await supabase.rpc("get_practice_patients" as any, {
         p_practice_id: practiceData.id,
-        p_limit_count: 20,
+        p_limit_count: 10,
       });
 
       if (error) throw error;
@@ -198,7 +212,7 @@ export const useAdminDashboard = () => {
     try {
       const { data, error } = await supabase.rpc("get_practice_messages" as any, {
         p_practice_id: practiceData.id,
-        p_limit_count: 5,
+        p_limit_count: 10,
       });
 
       if (error) throw error;
@@ -212,53 +226,17 @@ export const useAdminDashboard = () => {
     if (!practice) return;
 
     try {
-      // Average rating from practice table
+      const now = new Date();
+      const start30 = new Date(now);
+      start30.setDate(start30.getDate() - 30);
+
       const { data: practiceRating } = await supabase
-        .from("practices")
+        .from("practice_ratings")
         .select("average_rating")
-        .eq("id", practice.id)
+        .eq("practice_id", practice.id)
         .maybeSingle();
 
-      const now = new Date();
-      const start30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      const start180 = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
-
-      // Patient retention: completed patients with 2+ completed visits in last 180 days (by appointment_date)
-      const { data: completedVisits, error: cvErr } = await supabase
-        .from("appointments")
-        .select("patient_id")
-        .eq("practice_id", practice.id)
-        .eq("status", "completed")
-        .gte("appointment_date", start180.toISOString().slice(0, 10))
-        .limit(20000);
-      if (cvErr) throw cvErr;
-
-      const visitCounts = new Map<string, number>();
-      (completedVisits || []).forEach((r: any) => {
-        if (!r.patient_id) return;
-        visitCounts.set(r.patient_id, (visitCounts.get(r.patient_id) || 0) + 1);
-      });
-
-      const returningPatients = Array.from(visitCounts.values()).filter((c) => c > 1).length;
-      const totalPatients = visitCounts.size;
-      const patientRetention = totalPatients > 0 ? Math.round((returningPatients / totalPatients) * 100) : 0;
-
-      // No-show rate: canceled / total (last 30 days by created_at)
-      const { data: recentAppts, error: raErr } = await supabase
-        .from("appointments")
-        .select("status")
-        .eq("practice_id", practice.id)
-        .gte("created_at", start30.toISOString())
-        .lt("created_at", now.toISOString())
-        .limit(20000);
-      if (raErr) throw raErr;
-
-      const totalRecent = (recentAppts || []).length;
-      const cancelledRecent = (recentAppts || []).filter((a: any) => String(a.status || "") === "canceled").length;
-      const noShowRate = totalRecent > 0 ? Math.round((cancelledRecent / totalRecent) * 100) : 0;
-
-      // Avg "wait time" (repurposed as booking lead time): (scheduled datetime - created_at) in minutes, completed only (last 30 days)
-      const { data: completedRecent, error: crErr } = await supabase
+      const { data: completedRecent } = await supabase
         .from("appointments")
         .select("appointment_date,start_time,created_at,status")
         .eq("practice_id", practice.id)
@@ -266,7 +244,6 @@ export const useAdminDashboard = () => {
         .gte("created_at", start30.toISOString())
         .lt("created_at", now.toISOString())
         .limit(20000);
-      if (crErr) throw crErr;
 
       const leadMinutes = (completedRecent || [])
         .map((a: any) => {
@@ -279,20 +256,24 @@ export const useAdminDashboard = () => {
         })
         .filter((n: number) => n >= 0);
 
-      const avgLeadMinutes = leadMinutes.length ? Math.round(leadMinutes.reduce((s: number, v: number) => s + v, 0) / leadMinutes.length) : 0;
+      const avgLeadMinutes = leadMinutes.length
+        ? Math.round(leadMinutes.reduce((s: number, v: number) => s + v, 0) / leadMinutes.length)
+        : 0;
 
       setMetrics({
         averageRating: practiceRating?.average_rating || 0,
-        patientRetention,
+        patientRetention: 0,
         avgWaitTime: avgLeadMinutes,
-        noShowRate,
+        noShowRate: 0,
       });
     } catch (err) {
       console.error("Error fetching performance metrics:", err);
     }
   };
 
-  const refreshData = async () => {
+  const refreshData = useCallback(async () => {
+    if (scopeLoading) return;
+
     try {
       setLoading(true);
       setError(null);
@@ -319,16 +300,14 @@ export const useAdminDashboard = () => {
       setError(err.message || "Failed to load dashboard data");
       setLoading(false);
     }
-  };
+  }, [fetchPracticeData, scopeLoading]);
 
   useEffect(() => {
-    refreshData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    void refreshData();
+  }, [refreshData]);
 
   useEffect(() => {
-    fetchPerformanceMetrics();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    void fetchPerformanceMetrics();
   }, [practice]);
 
   return {
