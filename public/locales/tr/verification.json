@@ -1,0 +1,63 @@
+{
+  "ui": {
+    "title": "Yetkinliklerinizi doğrulayın",
+    "subtitle": "Uygulama yaptığınız ülke için gerekli belgeleri yükleyin.",
+    "loading": "Doğrulama gereksinimleri yükleniyor…",
+    "required": "Zorunlu belgeler",
+    "optional": "İsteğe bağlı belgeler",
+    "upload": "Yükle",
+    "uploadSuccess": "Başarıyla yüklendi.",
+    "submit": "İncelemeye gönder",
+    "submittedForReview": "İncelemeye gönderildi. Ekibimiz belgelerinizi doğrulayacaktır.",
+    "validWithinDays": "{{days}} gün içinde düzenlenmiş olmalı",
+    "sourceVerificationRequired": "Düzenleyici kurum veya işveren aracılığıyla kaynak doğrulaması gerekebilir"
+  },
+  "ruleSets": {
+    "GLOBAL_BASE": { "name": "Küresel temel doğrulama" },
+    "REGULATOR_GOOD_STANDING_REQUIRED": { "name": "Düzenleyici kurumdan iyi hâl belgesi" },
+    "TRANSLATION_REQUIRED": { "name": "Onaylı tercüme" },
+    "BACKGROUND_CHECK_REQUIRED": { "name": "Arka plan kontrolü" },
+    "LANGUAGE_PROFICIENCY_REQUIRED": { "name": "Dil yeterliliği" },
+    "US_CONTROLLED_SUBSTANCES_OPTIONAL": { "name": "Kontrollü maddeler (ABD)" }
+  },
+  "notes": {
+    "ID_PRIMARY": "Geçerli pasaport veya ulusal kimlik belgesi sağlayın.",
+    "SELFIE": "Selfie/canlılık kontrolü kimlik dolandırıcılığına karşı yardımcı olur.",
+    "ADDRESS": "İkamet veya uygulama bölgesini doğrulamak için kullanılır.",
+    "LICENSE": "Lisans adınızla eşleşmeli ve geçerli olmalıdır.",
+    "DEGREE": "Birincil diploma/mezuniyet belgenizi yükleyin.",
+    "CV": "Güncel bir özgeçmiş eğitim ve deneyimi doğrulamaya yardımcı olur.",
+    "EMPLOYMENT_OPTIONAL": "Belirli bir kurumda çalışıyorsanız gerekebilir.",
+    "GOOD_STANDING": "Düzenleyici kurum tarafından verilir; sınır ötesi uygulamalar için sıkça gerekir.",
+    "TRANSLATION": "Yerel dilde olmayan belgeler için onaylı tercüme sağlayın.",
+    "APOSTILLE_OPTIONAL": "Düzenleyiciye bağlı olarak apostil/ tasdik gerekebilir.",
+    "BACKGROUND": "Adli sicil/arka plan kontrolü gerekebilir.",
+    "LANGUAGE": "Yerel lisanslama için dil belgesi gerekebilir.",
+    "DEA": "Kontrollü madde reçetelemek için gereklidir (ABD).",
+    "EPCS_OPTIONAL": "Bazı eyaletlerde kontrollü maddeler için elektronik reçete (EPCS) gerekebilir."
+  },
+  "docTypes": {
+    "ID_NATIONAL": { "title": "Ulusal Kimlik", "desc": "Devlet tarafından verilen kimlik (gerekiyorsa ön/arka)." },
+    "PASSPORT": { "title": "Pasaport", "desc": "Pasaport fotoğraf sayfası." },
+    "SELFIE_LIVENESS": { "title": "Selfie / Canlılık", "desc": "Kimliğinizle eşleştirmek için net bir selfie." },
+    "PROOF_ADDRESS": { "title": "Adres kanıtı", "desc": "Fatura, banka ekstresi veya resmi yazı." },
+    "MED_LICENSE": { "title": "Tıbbi lisans", "desc": "Geçerli lisans/kayıt belgeniz." },
+    "LICENSE_VERIFICATION": { "title": "Lisans doğrulaması", "desc": "Varsa lisans doğrulama kanıtı veya bağlantısı." },
+    "DEGREE_DIPLOMA": { "title": "Diploma", "desc": "Birincil tıp/diş hekimliği diploma belgesi." },
+    "INTERNSHIP_CERT": { "title": "Staj sertifikası", "desc": "Ülkenizde geçerliyse." },
+    "RESIDENCY_CERT": { "title": "Asistanlık/Uzmanlık eğitimi belgesi", "desc": "Uzmanlığınız için geçerliyse." },
+    "SPECIALIST_CERT": { "title": "Uzmanlık sertifikası", "desc": "Varsa uzmanlık/kurul sertifikası." },
+    "GOOD_STANDING": { "title": "İyi hâl belgesi", "desc": "Düzenleyici kurumdan; genellikle süre sınırlıdır." },
+    "CV": { "title": "CV / Özgeçmiş", "desc": "Güncel profesyonel özgeçmiş." },
+    "EMPLOYMENT_LETTER": { "title": "İstihdam/kurum yazısı", "desc": "Klinik/hastane ile bağlantınızı gösterir (varsa)." },
+    "MALPRACTICE_INSURANCE": { "title": "Malpraktis sigortası", "desc": "Mesleki sorumluluk sigorta belgesi (gerekiyorsa)." },
+    "CRIMINAL_RECORD_CHECK": { "title": "Adli sicil kaydı", "desc": "Adli sicil/arka plan kontrolü (gerekiyorsa)." },
+    "LANGUAGE_CERT": { "title": "Dil sertifikası", "desc": "Dil yeterlilik kanıtı (gerekiyorsa)." },
+    "LICENSE_TRANSLATION": { "title": "Onaylı tercüme", "desc": "Lisans/diploma belgelerinin onaylı tercümesi." },
+    "LEGALIZATION_APOSTILLE": { "title": "Apostil / tasdik", "desc": "Gerektiğinde apostil veya tasdik." },
+    "WORK_PERMIT": { "title": "Çalışma izni / ikamet izni", "desc": "Yerelde çalışan yabancı doktorlar için." },
+    "DEA_REGISTRATION": { "title": "DEA kaydı", "desc": "ABD: Kontrollü maddeler için DEA kaydı." },
+    "EPCS_ENABLEMENT": { "title": "EPCS etkinleştirme", "desc": "ABD: Kontrollü maddeler için elektronik reçete." },
+    "PDMP_CHECK": { "title": "PDMP entegrasyonu", "desc": "ABD: Reçete izleme programı (sistem düzeyi)." }
+  }
+}
