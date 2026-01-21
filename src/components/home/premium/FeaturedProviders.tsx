@@ -72,7 +72,9 @@ export default function FeaturedProviders() {
       try {
         const { data, error } = await (supabase as any)
           .from('doctor_public_search_view')
-          .select('id, full_name, avatar_url, specialty, rating, num_reviews, accepts_new_patients, practice_city, practice_country, appointment_count, practice_id')
+          .select(
+            'id, full_name, avatar_url, specialty, rating, num_reviews, accepts_new_patients, practice_city, practice_country, appointment_count, practice_id'
+          )
           .order('num_reviews', { ascending: false })
           .order('rating', { ascending: false })
           .order('appointment_count', { ascending: false })
@@ -207,10 +209,10 @@ export default function FeaturedProviders() {
   }, [loadingPractices, practices]);
 
   const doctorEmptyTitle = 'This spot could be yours';
-  const doctorEmptySubtitle = 'Get verified and start collecting reviews — we’ll feature top-rated specialists here.';
+  const doctorEmptySubtitle = 'Get verified, earn patient reviews, and you could be featured here next.';
 
   const clinicEmptyTitle = 'This spot could be yours';
-  const clinicEmptySubtitle = 'Verify your clinic and earn patient reviews to appear on the homepage.';
+  const clinicEmptySubtitle = 'Verify your clinic and grow your reputation — we feature the best by reviews.';
 
   return (
     <section className="py-24 bg-background">
@@ -292,6 +294,7 @@ export default function FeaturedProviders() {
                             </div>
                           </div>
                         </div>
+
                         <div className="p-5">
                           <h3 className={`font-semibold text-foreground mb-1 ${isSkeleton ? 'bg-muted animate-pulse rounded h-5 w-3/4' : ''}`}>
                             {isSkeleton ? '\u00A0' : name}
@@ -397,6 +400,7 @@ export default function FeaturedProviders() {
                             </div>
                           </div>
                         </div>
+
                         <div className="p-5">
                           <div className="flex items-start gap-3">
                             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
