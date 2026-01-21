@@ -1,3 +1,4 @@
+// supabase/functions/imaging-create-order/index.ts
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -33,9 +34,7 @@ function json(data: unknown, status = 200) {
   });
 }
 
-// IMPORTANT:
-// Supabase client throws "Edge Function returned a non-2xx status code" for any non-2xx.
-// To avoid losing the real error message on the client, we return 200 for all handled failures.
+// Always return 200 so supabase.functions.invoke doesn't collapse the real message into "non-2xx".
 function okFalse(error: string, meta?: Record<string, unknown>) {
   return json({ ok: false, error, ...(meta ? { meta } : {}) }, 200);
 }
@@ -101,7 +100,6 @@ serve(async (req) => {
   const anon = Deno.env.get("SUPABASE_ANON_KEY");
   if (!url || !anon) return okFalse("Missing SUPABASE_URL / SUPABASE_ANON_KEY");
 
-  // Use service role if configured; otherwise fall back to RLS-only via user JWT.
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || null;
 
   const authed = createClient(url, anon, {
@@ -109,7 +107,7 @@ serve(async (req) => {
   });
 
   const { data: userRes, error: userErr } = await authed.auth.getUser();
-  if (userErr || !userRes?.user) return okFalse("Unauthorized", { ...errMeta(userErr) });
+  if (userErr || !userRes?.user) return okFalse("Unauthorized", errMeta(userErr));
 
   let body: ReqBody;
   try {
@@ -128,13 +126,11 @@ serve(async (req) => {
 
   const studyName = trimOrNull(body?.study?.name);
   const modality = (body?.study?.modality || "other") as ReqBody["study"]["modality"];
+  const priority = (body?.priority || "routine") as NonNullable<ReqBody["priority"]>;
 
   if (!patientName) return okFalse("Patient full_name is required");
   if (!patientPhone) return okFalse("Patient phone is required");
   if (!studyName) return okFalse("Study name is required");
-
-  const priority = (body?.priority || "routine") as NonNullable<ReqBody["priority"]>;
-  const nowIso = new Date().toISOString();
 
   const db = serviceKey ? createClient(url, serviceKey) : authed;
 
@@ -142,23 +138,36 @@ serve(async (req) => {
     const allowed = await assertImagingManualOrderAccess(db, userRes.user.id, centerId);
     if (!allowed.ok) return okFalse(allowed.reason || "Forbidden");
 
-    const { data: fp, error: fpErr } = await db
-      .from("facility_patients")
-      .upsert(
-        {
-          facility_type: "imaging_center",
-          facility_id: centerId,
-          full_name: patientName,
-          phone: patientPhone,
-          email: patientEmail,
-          date_of_birth: patientDob,
-        },
-        { onConflict: "facility_type,facility_id,phone" },
-      )
-      .select("id,full_name,phone,email")
-      .single();
+    const nowIso = new Date().toISOString();
 
-    if (fpErr) return okFalse("Failed to upsert facility patient", errMeta(fpErr));
+    // Try to upsert walk-in patient. If it fails (schema/RLS/enum issues), we still create the order
+    // using inline patient fields on referrals, so workflow doesn't break.
+    let facilityPatientId: string | null = null;
+    let fpWarning: Record<string, unknown> | null = null;
+
+    {
+      const { data: fp, error: fpErr } = await db
+        .from("facility_patients")
+        .upsert(
+          {
+            facility_type: "imaging_center",
+            facility_id: centerId,
+            full_name: patientName,
+            phone: patientPhone,
+            email: patientEmail,
+            date_of_birth: patientDob,
+          },
+          { onConflict: "facility_type,facility_id,phone" },
+        )
+        .select("id,full_name,phone,email")
+        .maybeSingle();
+
+      if (fpErr) {
+        fpWarning = { where: "facility_patients.upsert", ...errMeta(fpErr) };
+      } else if (fp?.id) {
+        facilityPatientId = fp.id as string;
+      }
+    }
 
     const attachments = {
       modality,
@@ -185,10 +194,10 @@ serve(async (req) => {
         attachments,
 
         patient_id: null,
-        facility_patient_id: fp.id,
-        patient_name: fp.full_name,
-        patient_phone: fp.phone,
-        patient_email: fp.email ?? null,
+        facility_patient_id: facilityPatientId,
+        patient_name: patientName,
+        patient_phone: patientPhone,
+        patient_email: patientEmail ?? null,
 
         status: "pending",
         sent_at: nowIso,
@@ -213,28 +222,17 @@ serve(async (req) => {
         { onConflict: "referral_id" },
       );
 
-    if (stErr) {
-      return json(
-        {
-          ok: true,
-          referralId: referral.id,
-          referralNumber: referral.referral_number,
-          facilityPatientId: fp.id,
-          warning: stErr.message || "Failed to create imaging_order_state",
-        },
-        200,
-      );
-    }
+    const out: Record<string, unknown> = {
+      ok: true,
+      referralId: referral.id,
+      referralNumber: referral.referral_number,
+      facilityPatientId,
+    };
 
-    return json(
-      {
-        ok: true,
-        referralId: referral.id,
-        referralNumber: referral.referral_number,
-        facilityPatientId: fp.id,
-      },
-      200,
-    );
+    if (fpWarning) out.warning = fpWarning;
+    if (stErr) out.stateWarning = errMeta(stErr);
+
+    return json(out, 200);
   } catch (e) {
     return okFalse("Unhandled error", errMeta(e));
   }
