@@ -1,191 +1,233 @@
-import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/hooks/use-toast';
+// src/hooks/useImagingOrders.ts
+
+import { useState, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+
+export type ImagingWorkflowStatus =
+  | "scheduled"
+  | "checked_in"
+  | "in_progress"
+  | "images_ready"
+  | "awaiting_report"
+  | "completed"
+  | "delivered"
+  | "cancelled";
 
 export interface ImagingOrder {
-  id: string;
+  id: string; // referral_id
   order_number: string;
   imaging_center_id: string;
-  patient_id: string;
+
+  patient_id: string | null;
+  facility_patient_id: string | null;
   patient_name?: string;
-  doctor_id?: string;
-  doctor_name?: string;
+
+  doctor_id?: string | null;
+  doctor_name?: string | null;
+
   modality: string;
   exam_name: string;
-  body_part?: string;
-  priority: 'routine' | 'urgent' | 'stat';
-  clinical_notes?: string;
-  diagnosis_codes?: string[];
-  status: 'scheduled' | 'checked_in' | 'in_progress' | 'image_uploaded' | 'pending_review' | 'finalized' | 'delivered';
-  scheduled_at?: string;
-  performed_at?: string;
-  performed_by?: string;
-  radiologist_id?: string;
-  completed_at?: string;
-  result_images?: string[];
-  result_report?: string;
-  result_url?: string;
-  impression?: string;
-  findings?: string;
-  contrast: boolean;
-  notes?: string;
+  body_part?: string | null;
+
+  priority: "routine" | "urgent" | "stat";
+  clinical_notes?: string | null;
+
+  status: ImagingWorkflowStatus;
+
+  preferred_date?: string | null;
+  preferred_time_slot?: string | null;
+
+  notes?: string | null;
   created_at: string;
   updated_at: string;
+
+  attachments?: any;
+  result_attachments?: any;
 }
 
-// Map referral status to imaging-specific status
-const mapReferralStatusToImagingStatus = (status: string): ImagingOrder['status'] => {
-  const mapping: Record<string, ImagingOrder['status']> = {
-    pending: 'scheduled',
-    accepted: 'checked_in',
-    in_progress: 'in_progress',
-    completed: 'finalized',
-    cancelled: 'scheduled',
-  };
-  return mapping[status] || 'scheduled';
+type ReferralRow = {
+  id: string;
+  referral_number: string | null;
+  receiver_entity_id: string | null;
+
+  patient_id: string | null;
+  facility_patient_id: string | null;
+  patient_name: string | null;
+
+  reason: string | null;
+  clinical_notes: string | null;
+  notes: string | null;
+
+  attachments: any;
+  result_attachments: any;
+
+  priority: "routine" | "urgent" | "stat" | null;
+  preferred_date: string | null;
+  preferred_time_slot: string | null;
+
+  created_at: string;
+  updated_at: string;
 };
 
-// Map imaging status back to referral status
-const mapImagingStatusToReferralStatus = (status: ImagingOrder['status']): string => {
-  const mapping: Record<ImagingOrder['status'], string> = {
-    scheduled: 'pending',
-    checked_in: 'accepted',
-    in_progress: 'in_progress',
-    image_uploaded: 'in_progress',
-    pending_review: 'in_progress',
-    finalized: 'completed',
-    delivered: 'completed',
-  };
-  return mapping[status] || 'pending';
+type OrderStateRow = {
+  referral_id: string;
+  imaging_center_id: string;
+  workflow_status: ImagingWorkflowStatus;
+  priority: "routine" | "urgent" | "stat";
+  updated_at: string;
 };
+
+function safeObj(v: unknown): Record<string, unknown> {
+  if (v && typeof v === "object" && !Array.isArray(v)) return v as Record<string, unknown>;
+  return {};
+}
+
+function pickExam(attachments: any, fallbackReason: string | null) {
+  const a = safeObj(attachments);
+  const examName = String((a.exam_name as string) || fallbackReason || "Imaging Exam");
+  const modality = String((a.modality as string) || "X-ray");
+  const bodyPart = a.body_part ? String(a.body_part) : null;
+  const contrast = typeof a.contrast === "boolean" ? a.contrast : false;
+  return { examName, modality, bodyPart, contrast };
+}
 
 export function useImagingOrders() {
-  const { user } = useAuth();
   const [orders, setOrders] = useState<ImagingOrder[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Fetch orders for an imaging center
-  const fetchCenterOrders = useCallback(async (centerId: string, filterStatus?: string) => {
+  const fetchCenterOrders = useCallback(async (centerId: string) => {
     setLoading(true);
     try {
-      // Fetch from referrals where receiver is imaging_center
-      const { data, error } = await supabase
-        .from('referrals')
-        .select('*')
-        .eq('receiver_type', 'imaging_center')
-        .eq('receiver_entity_id', centerId)
-        .order('created_at', { ascending: false });
+      const { data: refData, error: refErr } = await (supabase.from as any)("referrals")
+        .select(
+          "id, referral_number, receiver_entity_id, patient_id, facility_patient_id, patient_name, reason, clinical_notes, notes, attachments, result_attachments, priority, preferred_date, preferred_time_slot, created_at, updated_at",
+        )
+        .eq("receiver_type", "imaging_center")
+        .eq("receiver_entity_id", centerId)
+        .order("created_at", { ascending: false })
+        .limit(250);
 
-      if (error) throw error;
+      if (refErr) throw refErr;
 
-      const referrals = data || [];
-      
-      // Filter by status if provided
-      const filteredData = filterStatus 
-        ? referrals.filter((r) => r.status === filterStatus)
-        : referrals;
+      const referrals = (refData || []) as ReferralRow[];
+      const referralIds = referrals.map((r) => r.id);
 
-      // Transform referrals to imaging order format
-      const transformedOrders: ImagingOrder[] = filteredData.map((r) => {
-        const attachments = r.attachments as Record<string, unknown> | null;
+      const stateMap: Record<string, OrderStateRow> = {};
+      if (referralIds.length) {
+        const { data: stData, error: stErr } = await (supabase.from as any)("imaging_order_state")
+          .select("referral_id, imaging_center_id, workflow_status, priority, updated_at")
+          .eq("imaging_center_id", centerId)
+          .in("referral_id", referralIds);
+
+        if (stErr) throw stErr;
+
+        for (const s of (stData || []) as OrderStateRow[]) {
+          stateMap[s.referral_id] = s;
+        }
+      }
+
+      const transformed: ImagingOrder[] = referrals.map((r) => {
+        const st = stateMap[r.id];
+        const { examName, modality, bodyPart } = pickExam(r.attachments, r.reason);
+        const orderNumber = r.referral_number || `IMG-${r.id.slice(0, 8).toUpperCase()}`;
+
+        const workflowStatus: ImagingWorkflowStatus = (st?.workflow_status as ImagingWorkflowStatus) || "scheduled";
+
         return {
           id: r.id,
-          order_number: r.referral_number || `IMG-${r.id.slice(0, 8).toUpperCase()}`,
-          imaging_center_id: r.receiver_entity_id || '',
+          order_number: orderNumber,
+          imaging_center_id: centerId,
           patient_id: r.patient_id,
-          patient_name: 'Patient',
-          doctor_id: r.referrer_user_id || r.referring_doctor_id || undefined,
-          doctor_name: 'Referring Doctor',
-          modality: (attachments?.modality as string) || 'X-ray',
-          exam_name: (attachments?.exam_name as string) || r.reason || 'Imaging Exam',
-          body_part: (attachments?.body_part as string) || undefined,
-          priority: (r.priority as 'routine' | 'urgent' | 'stat') || 'routine',
-          clinical_notes: r.clinical_notes || undefined,
-          diagnosis_codes: r.diagnosis_codes || undefined,
-          status: mapReferralStatusToImagingStatus(r.status),
-          scheduled_at: r.preferred_date || undefined,
-          completed_at: r.completed_at || undefined,
-          contrast: (attachments?.contrast as boolean) || false,
-          notes: r.notes || undefined,
+          facility_patient_id: r.facility_patient_id,
+          patient_name: r.patient_name || "Patient",
+          doctor_id: null,
+          doctor_name: null,
+          modality,
+          exam_name: examName,
+          body_part: bodyPart,
+          priority: (st?.priority as any) || (r.priority as any) || "routine",
+          clinical_notes: r.clinical_notes || null,
+          status: workflowStatus,
+          preferred_date: r.preferred_date || null,
+          preferred_time_slot: r.preferred_time_slot || null,
+          notes: r.notes || null,
           created_at: r.created_at,
           updated_at: r.updated_at,
+          attachments: r.attachments,
+          result_attachments: r.result_attachments,
         };
       });
 
-      setOrders(transformedOrders);
+      setOrders(transformed);
     } catch (error: unknown) {
-      console.error('Error fetching imaging orders:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      toast({ title: 'Error', description: errorMessage, variant: 'destructive' });
+      console.error("Error fetching imaging orders:", error);
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      toast({ title: "Error", description: errorMessage, variant: "destructive" });
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Update order status
-  const updateOrderStatus = useCallback(async (orderId: string, newStatus: ImagingOrder['status']) => {
+  const updateOrderStatus = useCallback(async (referralId: string, centerId: string, newStatus: ImagingWorkflowStatus) => {
     setLoading(true);
     try {
-      const referralStatus = mapImagingStatusToReferralStatus(newStatus);
-      const updateData: Record<string, unknown> = { status: referralStatus };
+      const nowIso = new Date().toISOString();
 
-      if (newStatus === 'finalized') {
-        updateData.completed_at = new Date().toISOString();
-      }
-
-      const { error } = await supabase
-        .from('referrals')
-        .update(updateData)
-        .eq('id', orderId);
+      const { error } = await (supabase.from as any)("imaging_order_state").upsert(
+        {
+          referral_id: referralId,
+          imaging_center_id: centerId,
+          workflow_status: newStatus,
+          updated_at: nowIso,
+        },
+        { onConflict: "referral_id" },
+      );
 
       if (error) throw error;
 
-      setOrders(prev => prev.map(o => 
-        o.id === orderId ? { ...o, status: newStatus } : o
-      ));
-      
-      toast({ title: 'Success', description: 'Order status updated' });
+      setOrders((prev) => prev.map((o) => (o.id === referralId ? { ...o, status: newStatus } : o)));
+      toast({ title: "Success", description: "Workflow updated" });
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      toast({ title: 'Error', description: errorMessage, variant: 'destructive' });
+      console.error(error);
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      toast({ title: "Error", description: errorMessage, variant: "destructive" });
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Upload results
-  const uploadResults = useCallback(async (orderId: string, results: {
-    result_images?: string[];
-    result_report?: string;
-    impression?: string;
-    findings?: string;
-  }) => {
+  const mergeResultAttachments = useCallback(async (referralId: string, patch: Record<string, unknown>) => {
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('referrals')
-        .update({
-          result_attachments: results,
-          status: 'completed',
-          completed_at: new Date().toISOString(),
-        })
-        .eq('id', orderId);
+      const { data: cur, error: curErr } = await supabase
+        .from("referrals")
+        .select("result_attachments")
+        .eq("id", referralId)
+        .maybeSingle();
 
-      if (error) throw error;
+      if (curErr) throw curErr;
 
-      setOrders(prev => prev.map(o => 
-        o.id === orderId ? { 
-          ...o, 
-          status: 'finalized' as const,
-          ...results 
-        } : o
-      ));
+      const existing = (cur as any)?.result_attachments ?? {};
+      const existingObj = Array.isArray(existing) ? {} : safeObj(existing);
+      const merged = { ...existingObj, ...patch };
 
-      toast({ title: 'Success', description: 'Results uploaded successfully' });
+      const { error: updErr } = await supabase
+        .from("referrals")
+        .update({ result_attachments: merged })
+        .eq("id", referralId);
+
+      if (updErr) throw updErr;
+
+      setOrders((prev) =>
+        prev.map((o) => (o.id === referralId ? { ...o, result_attachments: merged } : o)),
+      );
+
+      toast({ title: "Success", description: "Order updated" });
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      toast({ title: 'Error', description: errorMessage, variant: 'destructive' });
+      console.error(error);
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      toast({ title: "Error", description: errorMessage, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -196,6 +238,6 @@ export function useImagingOrders() {
     loading,
     fetchCenterOrders,
     updateOrderStatus,
-    uploadResults,
+    mergeResultAttachments,
   };
 }
