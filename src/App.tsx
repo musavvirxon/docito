@@ -1,5 +1,3 @@
-// PATH: src/App.tsx
-// File: src/App.tsx
 import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -103,6 +101,9 @@ const AcceptInvite = lazy(() => import("@/pages/AcceptInvite"));
 // Billing
 const BillingPage = lazy(() => import("@/pages/BillingPage"));
 
+// ✅ Admin verification review (new)
+const DoctorVerificationReview = lazy(() => import("@/pages/admin/DoctorVerificationReview"));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -191,6 +192,10 @@ export default function App() {
                 <Route path="/practices/dashboard" element={<AdminDashboard />} />
                 <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
                 <Route path="/super-admin/dashboard" element={<SuperAdminDashboard />} />
+
+                {/* ✅ Doctor verification review routes (new) */}
+                <Route path="/admin/doctor-verifications" element={<DoctorVerificationReview />} />
+                <Route path="/super-admin/doctor-verifications" element={<DoctorVerificationReview />} />
 
                 {/* Facility dashboards */}
                 <Route path="/dashboard/labs" element={<LabDashboardPage />} />
