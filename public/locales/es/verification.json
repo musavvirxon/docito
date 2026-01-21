@@ -1,0 +1,63 @@
+{
+  "ui": {
+    "title": "Verifica tus credenciales",
+    "subtitle": "Sube los documentos requeridos para tu país de práctica.",
+    "loading": "Cargando requisitos de verificación…",
+    "required": "Documentos obligatorios",
+    "optional": "Documentos opcionales",
+    "upload": "Subir",
+    "uploadSuccess": "Subido correctamente.",
+    "submit": "Enviar para revisión",
+    "submittedForReview": "Enviado para revisión. Nuestro equipo verificará tus documentos.",
+    "validWithinDays": "Debe haberse emitido dentro de {{days}} días",
+    "sourceVerificationRequired": "Puede requerir verificación de origen por el regulador o el empleador"
+  },
+  "ruleSets": {
+    "GLOBAL_BASE": { "name": "Verificación básica global" },
+    "REGULATOR_GOOD_STANDING_REQUIRED": { "name": "Certificado de buena reputación del regulador" },
+    "TRANSLATION_REQUIRED": { "name": "Traducción certificada" },
+    "BACKGROUND_CHECK_REQUIRED": { "name": "Verificación de antecedentes" },
+    "LANGUAGE_PROFICIENCY_REQUIRED": { "name": "Competencia lingüística" },
+    "US_CONTROLLED_SUBSTANCES_OPTIONAL": { "name": "Sustancias controladas (EE. UU.)" }
+  },
+  "notes": {
+    "ID_PRIMARY": "Proporciona un pasaporte válido o una identificación nacional.",
+    "SELFIE": "La selfie/verificación de vida ayuda a prevenir el fraude de identidad.",
+    "ADDRESS": "Se usa para confirmar la residencia o la región de práctica.",
+    "LICENSE": "La licencia debe coincidir con tu nombre y estar vigente.",
+    "DEGREE": "Sube tu certificado de título principal.",
+    "CV": "Un CV reciente ayuda a validar formación y experiencia.",
+    "EMPLOYMENT_OPTIONAL": "Se requiere si trabajas bajo una institución específica.",
+    "GOOD_STANDING": "Emitido por el regulador; a menudo se requiere para práctica transfronteriza.",
+    "TRANSLATION": "Proporciona traducción certificada para documentos en otro idioma.",
+    "APOSTILLE_OPTIONAL": "La legalización/apostilla puede ser necesaria según el regulador.",
+    "BACKGROUND": "Puede requerirse un certificado de antecedentes/penales.",
+    "LANGUAGE": "Puede requerirse prueba de idioma para la licencia local.",
+    "DEA": "Requerido si prescribes sustancias controladas (EE. UU.).",
+    "EPCS_OPTIONAL": "Requerido para recetas electrónicas de sustancias controladas en algunos estados."
+  },
+  "docTypes": {
+    "ID_NATIONAL": { "title": "Identificación nacional", "desc": "Documento de identidad oficial (anverso/reverso si aplica)." },
+    "PASSPORT": { "title": "Pasaporte", "desc": "Página del pasaporte con foto." },
+    "SELFIE_LIVENESS": { "title": "Selfie / prueba de vida", "desc": "Una selfie clara para coincidir con tu ID." },
+    "PROOF_ADDRESS": { "title": "Comprobante de domicilio", "desc": "Factura de servicios, extracto bancario o carta oficial." },
+    "MED_LICENSE": { "title": "Licencia médica", "desc": "Tu licencia/registro vigente." },
+    "LICENSE_VERIFICATION": { "title": "Verificación de licencia", "desc": "Evidencia o enlace de verificación si está disponible." },
+    "DEGREE_DIPLOMA": { "title": "Título / diploma", "desc": "Certificado principal de medicina/odontología." },
+    "INTERNSHIP_CERT": { "title": "Certificado de internado", "desc": "Si aplica en tu jurisdicción." },
+    "RESIDENCY_CERT": { "title": "Certificado de residencia", "desc": "Si aplica para tu especialidad." },
+    "SPECIALIST_CERT": { "title": "Certificado de especialista", "desc": "Certificado/registro de especialidad si aplica." },
+    "GOOD_STANDING": { "title": "Certificado de buena reputación", "desc": "Emitido por el regulador; normalmente con vigencia limitada." },
+    "CV": { "title": "CV / Currículum", "desc": "Tu CV profesional reciente." },
+    "EMPLOYMENT_LETTER": { "title": "Carta de empleo / afiliación", "desc": "Prueba de vínculo con clínica/hospital (si aplica)." },
+    "MALPRACTICE_INSURANCE": { "title": "Seguro de mala praxis", "desc": "Certificado de seguro de responsabilidad profesional (si se requiere)." },
+    "CRIMINAL_RECORD_CHECK": { "title": "Certificado de antecedentes penales", "desc": "Antecedentes/policía (si se requiere)." },
+    "LANGUAGE_CERT": { "title": "Certificado de idioma", "desc": "Prueba de competencia lingüística (si se requiere)." },
+    "LICENSE_TRANSLATION": { "title": "Traducción certificada", "desc": "Traducción certificada de licencia/títulos." },
+    "LEGALIZATION_APOSTILLE": { "title": "Apostilla / legalización", "desc": "Legalización o apostilla si se requiere." },
+    "WORK_PERMIT": { "title": "Permiso de trabajo / residencia", "desc": "Si eres médico extranjero practicando localmente." },
+    "DEA_REGISTRATION": { "title": "Registro DEA", "desc": "EE. UU.: registro DEA para sustancias controladas." },
+    "EPCS_ENABLEMENT": { "title": "Habilitación EPCS", "desc": "EE. UU.: prescripción electrónica de sustancias controladas." },
+    "PDMP_CHECK": { "title": "Integración PDMP", "desc": "EE. UU.: programa de monitoreo de recetas (a nivel de sistema)." }
+  }
+}
