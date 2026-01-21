@@ -1,4 +1,3 @@
-// src/components/home/premium/NearbyPharmacies.tsx
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Navigation, Star, ShieldCheck, Truck, BadgeCheck } from 'lucide-react';
@@ -38,8 +37,10 @@ function formatLocation(city?: string | null, country?: string | null) {
 function EmptyCard() {
   return (
     <div className="h-full p-5 rounded-2xl bg-card border border-border/50 flex flex-col items-center justify-center text-center min-h-[220px]">
-      <div className="text-base font-semibold text-foreground">No verified pharmacies yet</div>
-      <div className="text-sm text-muted-foreground mt-1">Verify pharmacies to show them here.</div>
+      <div className="text-base font-semibold text-foreground">This spot could be yours</div>
+      <div className="text-sm text-muted-foreground mt-1">
+        Become a verified pharmacy and earn great reviews — we’ll feature you here.
+      </div>
     </div>
   );
 }
@@ -117,11 +118,7 @@ export default function NearbyPharmacies() {
             <h2 className="text-4xl md:text-5xl font-extralight tracking-tight text-foreground mb-2">Top Pharmacies</h2>
             <p className="text-muted-foreground font-light">Best by reviews (verified only)</p>
           </div>
-          <Button
-            variant="outline"
-            className="rounded-full gap-2 self-start md:self-auto"
-            onClick={() => navigate('/pharmacy')}
-          >
+          <Button variant="outline" className="rounded-full gap-2 self-start md:self-auto" onClick={() => navigate('/pharmacy')}>
             <Navigation className="w-4 h-4" />
             Browse Pharmacies
           </Button>
@@ -180,10 +177,18 @@ export default function NearbyPharmacies() {
                       </div>
 
                       <div className="min-w-0">
-                        <h3 className={`font-semibold text-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate ${isSkeleton ? 'bg-muted animate-pulse rounded h-5 w-36' : ''}`}>
+                        <h3
+                          className={`font-semibold text-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate ${
+                            isSkeleton ? 'bg-muted animate-pulse rounded h-5 w-36' : ''
+                          }`}
+                        >
                           {isSkeleton ? '\u00A0' : name}
                         </h3>
-                        <p className={`text-sm text-muted-foreground truncate ${isSkeleton ? 'bg-muted animate-pulse rounded h-4 w-28 mt-2' : ''}`}>
+                        <p
+                          className={`text-sm text-muted-foreground truncate ${
+                            isSkeleton ? 'bg-muted animate-pulse rounded h-4 w-28 mt-2' : ''
+                          }`}
+                        >
                           {isSkeleton ? '\u00A0' : loc}
                         </p>
                       </div>
