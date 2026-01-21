@@ -206,6 +206,12 @@ export default function FeaturedProviders() {
     return practices.map((p) => ({ ...p, _skeleton: false as const }));
   }, [loadingPractices, practices]);
 
+  const doctorEmptyTitle = 'This spot could be yours';
+  const doctorEmptySubtitle = 'Get verified and start collecting reviews — we’ll feature top-rated specialists here.';
+
+  const clinicEmptyTitle = 'This spot could be yours';
+  const clinicEmptySubtitle = 'Verify your clinic and earn patient reviews to appear on the homepage.';
+
   return (
     <section className="py-24 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -230,10 +236,10 @@ export default function FeaturedProviders() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {!loadingDoctors && doctorsToRender.length === 0 ? (
               <>
-                <EmptyCard title="No verified specialists yet" subtitle="Verify doctors to show them here." />
-                <EmptyCard title="No verified specialists yet" subtitle="Verify doctors to show them here." />
-                <EmptyCard title="No verified specialists yet" subtitle="Verify doctors to show them here." />
-                <EmptyCard title="No verified specialists yet" subtitle="Verify doctors to show them here." />
+                <EmptyCard title={doctorEmptyTitle} subtitle={doctorEmptySubtitle} />
+                <EmptyCard title={doctorEmptyTitle} subtitle={doctorEmptySubtitle} />
+                <EmptyCard title={doctorEmptyTitle} subtitle={doctorEmptySubtitle} />
+                <EmptyCard title={doctorEmptyTitle} subtitle={doctorEmptySubtitle} />
               </>
             ) : (
               doctorsToRender.map((doctor, index) => {
@@ -333,9 +339,9 @@ export default function FeaturedProviders() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {!loadingPractices && practicesToRender.length === 0 ? (
               <>
-                <EmptyCard title="No verified clinics yet" subtitle="Verify clinics to show them here." />
-                <EmptyCard title="No verified clinics yet" subtitle="Verify clinics to show them here." />
-                <EmptyCard title="No verified clinics yet" subtitle="Verify clinics to show them here." />
+                <EmptyCard title={clinicEmptyTitle} subtitle={clinicEmptySubtitle} />
+                <EmptyCard title={clinicEmptyTitle} subtitle={clinicEmptySubtitle} />
+                <EmptyCard title={clinicEmptyTitle} subtitle={clinicEmptySubtitle} />
               </>
             ) : (
               practicesToRender.map((clinic, index) => {
