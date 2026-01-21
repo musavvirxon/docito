@@ -1,5 +1,3 @@
-// File: src/pages/SuperAdminDashboard.tsx
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
@@ -261,7 +259,7 @@ const SuperAdminDashboard = () => {
             <DoctorVerificationTable title="Pending Verifications" status="pending" />
             <DoctorVerificationTable title="Under Review" status="under_review" />
             <DoctorVerificationTable title="Verified Doctors" status="verified" />
-            <DoctorVerificationTable title="Rejected Applications" status="rejected" />
+            <DoctorVerificationTable title="Rejected Applications" status="declined" />
           </div>
         );
 
@@ -282,7 +280,13 @@ const SuperAdminDashboard = () => {
         return <AnalyticsCharts showAll />;
 
       case "payments":
-        return <AdvancedFinancialMetrics metrics={advancedMetrics} revenue={stats?.totalRevenue || 0} onUpdateInputs={refreshAdvancedMetrics} />;
+        return (
+          <AdvancedFinancialMetrics
+            metrics={advancedMetrics}
+            revenue={stats?.totalRevenue || 0}
+            onUpdateInputs={refreshAdvancedMetrics}
+          />
+        );
 
       case "translations":
         return <TranslationManagement />;
@@ -297,7 +301,12 @@ const SuperAdminDashboard = () => {
         return <div className="text-muted-foreground">System logs coming soon.</div>;
 
       case "feedback":
-        return <div className="space-y-6"><h1 className="text-3xl font-bold">Feedback Inbox</h1><p className="text-muted-foreground">Use the inbox link in the header.</p></div>;
+        return (
+          <div className="space-y-6">
+            <h1 className="text-3xl font-bold">Feedback Inbox</h1>
+            <p className="text-muted-foreground">Use the inbox link in the header.</p>
+          </div>
+        );
 
       case "pharmacies":
         return <EntityManagement entityType="pharmacy" />;
