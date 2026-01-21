@@ -1,4 +1,3 @@
-// supabase/functions/imaging-create-order/index.ts
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -19,6 +18,8 @@ type ReqBody = {
   study: {
     modality: "xray" | "ct" | "mri" | "ultrasound" | "mammography" | "other";
     name: string;
+    body_part?: string | null;
+    contrast?: boolean | null;
   };
   priority?: "routine" | "urgent" | "stat";
   preferred_date?: string | null; // YYYY-MM-DD
@@ -68,7 +69,7 @@ async function assertImagingManualOrderAccess(
     .maybeSingle();
 
   if (cErr) throw cErr;
-  if (center?.admin_id === userId) return { ok: true as const, role: "admin" as const };
+  if (center?.admin_id === userId) return { ok: true as const };
 
   const { data: staff, error: sErr } = await client
     .from("imaging_staff")
@@ -86,7 +87,7 @@ async function assertImagingManualOrderAccess(
     return { ok: false as const, reason: "Missing permission: can_view_orders" };
   }
 
-  return { ok: true as const, role: "staff" as const, staffId: staff.id as string };
+  return { ok: true as const };
 }
 
 serve(async (req) => {
@@ -122,10 +123,11 @@ serve(async (req) => {
   const patientName = trimOrNull(body?.patient?.full_name);
   const patientPhone = trimOrNull(body?.patient?.phone);
   const patientEmail = trimOrNull(body?.patient?.email);
-  const patientDob = trimOrNull(body?.patient?.date_of_birth);
-
   const studyName = trimOrNull(body?.study?.name);
   const modality = (body?.study?.modality || "other") as ReqBody["study"]["modality"];
+  const bodyPart = trimOrNull(body?.study?.body_part);
+  const contrast = typeof body?.study?.contrast === "boolean" ? body.study.contrast : null;
+
   const priority = (body?.priority || "routine") as NonNullable<ReqBody["priority"]>;
 
   if (!patientName) return okFalse("Patient full_name is required");
@@ -140,41 +142,17 @@ serve(async (req) => {
 
     const nowIso = new Date().toISOString();
 
-    // Try to upsert walk-in patient. If it fails (schema/RLS/enum issues), we still create the order
-    // using inline patient fields on referrals, so workflow doesn't break.
-    let facilityPatientId: string | null = null;
-    let fpWarning: Record<string, unknown> | null = null;
-
-    {
-      const { data: fp, error: fpErr } = await db
-        .from("facility_patients")
-        .upsert(
-          {
-            facility_type: "imaging_center",
-            facility_id: centerId,
-            full_name: patientName,
-            phone: patientPhone,
-            email: patientEmail,
-            date_of_birth: patientDob,
-          },
-          { onConflict: "facility_type,facility_id,phone" },
-        )
-        .select("id,full_name,phone,email")
-        .maybeSingle();
-
-      if (fpErr) {
-        fpWarning = { where: "facility_patients.upsert", ...errMeta(fpErr) };
-      } else if (fp?.id) {
-        facilityPatientId = fp.id as string;
-      }
-    }
-
     const attachments = {
       modality,
       exam_name: studyName,
+      body_part: bodyPart,
+      contrast: contrast ?? false,
       source: "manual_imaging_dashboard",
     };
 
+    // IMPORTANT FIX:
+    // Your "referrals" table does NOT have facility_patient_id.
+    // So we DO NOT send that field at all (otherwise PostgREST throws PGRST204).
     const { data: referral, error: rErr } = await db
       .from("referrals")
       .insert({
@@ -193,8 +171,8 @@ serve(async (req) => {
         preferred_time_slot: trimOrNull(body?.preferred_time_slot),
         attachments,
 
+        // Walk-in details stored directly on referral (no facility_patient_id column)
         patient_id: null,
-        facility_patient_id: facilityPatientId,
         patient_name: patientName,
         patient_phone: patientPhone,
         patient_email: patientEmail ?? null,
@@ -226,10 +204,8 @@ serve(async (req) => {
       ok: true,
       referralId: referral.id,
       referralNumber: referral.referral_number,
-      facilityPatientId,
     };
 
-    if (fpWarning) out.warning = fpWarning;
     if (stErr) out.stateWarning = errMeta(stErr);
 
     return json(out, 200);
