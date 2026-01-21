@@ -1,659 +1,562 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
   TableCell,
   TableHead,
-  TableHeader,
+  TableHeader as UITableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Eye, CheckCircle, XCircle, Clock, FileText, Trash2 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 
-interface DoctorVerificationTableProps {
-  title: string;
-  status?: "pending" | "under_review" | "verified" | "rejected" | "all";
+import { CheckCircle, Clock, XCircle, RefreshCw, Eye } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+type VerificationRow = {
+  id: string;
+  doctor_id: string | null;
+  status: string | null;
+  created_at: string;
+  updated_at: string | null;
+  submitted_at: string | null;
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+  rejection_reason: string | null;
+  verification_data: any;
+};
+
+type DoctorRow = {
+  id: string;
+  user_id: string | null;
+  specialty: string | null;
+  license_number: string | null;
+  verified: boolean | null;
+};
+
+type ProfileRow = {
+  user_id: string;
+  full_name: string | null;
+  email: string | null;
+  phone: string | null;
+};
+
+type JoinedRow = {
+  verification: VerificationRow;
+  doctor: DoctorRow | null;
+  profile: ProfileRow | null;
+};
+
+function normalizeStatus(s: string | null | undefined) {
+  const v = String(s || "pending").toLowerCase();
+  if (v === "declined") return "rejected";
+  if (v === "resubmitted") return "pending";
+  return v;
 }
 
-const DoctorVerificationTable = ({ title, status = "all" }: DoctorVerificationTableProps) => {
-  const [data, setData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedVerification, setSelectedVerification] = useState<any>(null);
-  const [documents, setDocuments] = useState<any[]>([]);
-  const [viewModalOpen, setViewModalOpen] = useState(false);
+function statusBadge(status: string | null | undefined) {
+  const v = normalizeStatus(status);
 
-  useEffect(() => {
-    fetchData();
-  }, [status]);
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      let query = supabase
-        .from("doctor_verification")
-        .select(`
-          *,
-          doctors(
-            id,
-            specialty,
-            user_id,
-            verified
-          )
-        `)
-        .order("submitted_at", { ascending: false })
-        .limit(50);
-
-      if (status !== "all") {
-        query = query.eq("status", status);
-      }
-
-      const { data: result, error } = await query;
-      
-      if (error) {
-        console.error("Error fetching doctor verifications:", error);
-        throw error;
-      }
-
-      // Fetch profile data for each doctor
-      if (result && result.length > 0) {
-        const userIds = result.map((r: any) => r.doctors?.user_id).filter(Boolean);
-        
-        if (userIds.length > 0) {
-          const { data: profiles } = await supabase
-            .from("profiles")
-            .select("user_id, full_name, email, phone")
-            .in("user_id", userIds);
-
-          // Merge profile data
-          const enrichedData = result.map((item: any) => ({
-            ...item,
-            profile: profiles?.find((p: any) => p.user_id === item.doctors?.user_id)
-          }));
-          
-          setData(enrichedData);
-        } else {
-          setData(result || []);
-        }
-      } else {
-        setData([]);
-      }
-    } catch (error) {
-      console.error("Error fetching doctor verifications:", error);
-      setData([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchDocuments = async (verificationId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("doctor_verification_documents" as any)
-        .select("*")
-        .eq("doctor_verification_id", verificationId);
-
-      if (error) throw error;
-      setDocuments(data || []);
-    } catch (error) {
-      console.error("Error fetching documents:", error);
-    }
-  };
-
-  const handleView = async (verification: any) => {
-    setSelectedVerification(verification);
-    await fetchDocuments(verification.id);
-    setViewModalOpen(true);
-  };
-
-  const handleUpdateStatus = async (verificationId: string, newStatus: string, doctorId: string, rejectionReason?: string) => {
-    try {
-      // Update verification status
-      const updateData: any = { 
-        status: newStatus,
-        reviewed_at: new Date().toISOString(),
-        reviewed_by: (await supabase.auth.getUser()).data.user?.id
-      };
-
-      // Add rejection reason if declining
-      if (newStatus === "declined" && rejectionReason) {
-        updateData.rejection_reason = rejectionReason;
-      }
-
-      const { error: verificationError } = await supabase
-        .from("doctor_verification" as any)
-        .update(updateData)
-        .eq("id", verificationId);
-
-      if (verificationError) throw verificationError;
-
-      // Update doctor verified status - set to true only if verified
-      const { error: doctorError } = await supabase
-        .from("doctors")
-        .update({ verified: newStatus === "verified" })
-        .eq("id", doctorId);
-
-      if (doctorError) throw doctorError;
-
-      // If declining, delete all documents to allow fresh resubmission
-      if (newStatus === "declined") {
-        // Get all documents for this verification
-        const { data: docsToDelete } = await supabase
-          .from("doctor_verification_documents" as any)
-          .select("file_path")
-          .eq("doctor_verification_id", verificationId);
-
-        if (docsToDelete && docsToDelete.length > 0) {
-          // Delete from storage
-          const filePaths = docsToDelete.map((doc: any) => doc.file_path.replace(/^\/+/, ''));
-          await supabase.storage
-            .from('verification-documents')
-            .remove(filePaths);
-          
-          // Delete from database
-          await supabase
-            .from("doctor_verification_documents" as any)
-            .delete()
-            .eq("doctor_verification_id", verificationId);
-        }
-      }
-
-      toast.success(`Doctor verification ${newStatus}`);
-      fetchData();
-      setViewModalOpen(false);
-    } catch (error: any) {
-      console.error("Error updating verification:", error);
-      toast.error("Failed to update verification status");
-    }
-  };
-
-  const handleDelete = async (verificationId: string, doctorId: string) => {
-    if (!confirm("Are you sure you want to delete this verification request? This action cannot be undone.")) {
-      return;
-    }
-
-    try {
-      // Delete the verification (documents will be cascade deleted)
-      const { error: deleteError } = await supabase
-        .from("doctor_verification" as any)
-        .delete()
-        .eq("id", verificationId);
-
-      if (deleteError) throw deleteError;
-
-      // Optionally delete the doctor profile as well
-      if (confirm("Do you also want to delete the doctor profile?")) {
-        const { error: doctorError } = await supabase
-          .from("doctors")
-          .delete()
-          .eq("id", doctorId);
-
-        if (doctorError) throw doctorError;
-      }
-
-      toast.success("Verification deleted successfully");
-      fetchData();
-      setViewModalOpen(false);
-    } catch (error: any) {
-      console.error("Error deleting verification:", error);
-      toast.error("Failed to delete verification");
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, { color: string; icon: any }> = {
-      pending: { color: "bg-yellow-100 text-yellow-800", icon: Clock },
-      under_review: { color: "bg-blue-100 text-blue-800", icon: Clock },
-      verified: { color: "bg-green-100 text-green-800", icon: CheckCircle },
-      declined: { color: "bg-red-100 text-red-800", icon: XCircle },
-      resubmitted: { color: "bg-purple-100 text-purple-800", icon: Clock },
-    };
-
-    const variant = variants[status] || variants.pending;
-    const Icon = variant.icon;
-
+  if (v === "verified") {
     return (
-      <Badge className={variant.color}>
-        <Icon className="w-3 h-3 mr-1" />
-        {status.replace("_", " ").toUpperCase()}
+      <Badge className="bg-green-100 text-green-800">
+        <CheckCircle className="w-3 h-3 mr-1" />
+        Verified
       </Badge>
     );
-  };
+  }
+  if (v === "rejected") {
+    return (
+      <Badge className="bg-red-100 text-red-800">
+        <XCircle className="w-3 h-3 mr-1" />
+        Rejected
+      </Badge>
+    );
+  }
+  if (v === "under_review") {
+    return (
+      <Badge className="bg-blue-100 text-blue-800">
+        <Clock className="w-3 h-3 mr-1" />
+        Under review
+      </Badge>
+    );
+  }
 
-  const downloadDocument = async (filePath: string, fileName: string) => {
-    try {
-      const { data, error } = await supabase.storage
-        .from("verification-documents")
-        .download(filePath);
+  return (
+    <Badge className="bg-yellow-100 text-yellow-800">
+      <Clock className="w-3 h-3 mr-1" />
+      Pending
+    </Badge>
+  );
+}
 
+function safeDate(d?: string | null) {
+  if (!d) return "—";
+  const dt = new Date(d);
+  if (Number.isNaN(dt.getTime())) return "—";
+  return dt.toLocaleString();
+}
+
+export default function DoctorVerificationTable() {
+  const { toast } = useToast();
+  const qc = useQueryClient();
+
+  const [statusFilter, setStatusFilter] = useState<string>("pending");
+  const [search, setSearch] = useState<string>("");
+
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState<JoinedRow | null>(null);
+
+  const [rejectReason, setRejectReason] = useState<string>("");
+
+  const {
+    data,
+    isLoading,
+    isFetching,
+    refetch,
+  } = useQuery({
+    queryKey: ["super-admin-doctor-verifications", statusFilter],
+    queryFn: async (): Promise<JoinedRow[]> => {
+      let q = supabase
+        .from("doctor_verification")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(200);
+
+      if (statusFilter !== "all") {
+        if (statusFilter === "pending") {
+          q = q.in("status", ["pending", "resubmitted"] as any);
+        } else if (statusFilter === "rejected") {
+          q = q.in("status", ["rejected", "declined"] as any);
+        } else {
+          q = q.eq("status", statusFilter);
+        }
+      }
+
+      const { data: verifications, error } = await q;
       if (error) throw error;
 
-      const url = window.URL.createObjectURL(data);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      a.click();
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Error downloading document:", error);
-      toast.error("Failed to download document");
-    }
+      const rows: VerificationRow[] = (verifications as any) || [];
+      const doctorIds = rows.map((r) => r.doctor_id).filter(Boolean) as string[];
+
+      if (!doctorIds.length) {
+        return rows.map((v) => ({ verification: v, doctor: null, profile: null }));
+      }
+
+      const { data: doctors, error: dErr } = await supabase
+        .from("doctors")
+        .select("id,user_id,specialty,license_number,verified")
+        .in("id", doctorIds);
+      if (dErr) throw dErr;
+
+      const doctorById = new Map<string, DoctorRow>();
+      const userIds: string[] = [];
+      (doctors as any[] | null)?.forEach((d) => {
+        doctorById.set(d.id, d as DoctorRow);
+        if (d.user_id) userIds.push(d.user_id);
+      });
+
+      const profileByUserId = new Map<string, ProfileRow>();
+      if (userIds.length) {
+        const { data: profiles, error: pErr } = await supabase
+          .from("profiles")
+          .select("user_id,full_name,email,phone")
+          .in("user_id", userIds);
+        if (pErr) throw pErr;
+        (profiles as any[] | null)?.forEach((p) => profileByUserId.set(p.user_id, p as ProfileRow));
+      }
+
+      return rows.map((v) => {
+        const doctor = v.doctor_id ? doctorById.get(v.doctor_id) ?? null : null;
+        const profile = doctor?.user_id ? profileByUserId.get(doctor.user_id) ?? null : null;
+        return { verification: v, doctor, profile };
+      });
+    },
+  });
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return data || [];
+
+    return (data || []).filter((r) => {
+      const name = String(r.profile?.full_name || "").toLowerCase();
+      const email = String(r.profile?.email || "").toLowerCase();
+      const phone = String(r.profile?.phone || "").toLowerCase();
+      const specialty = String(r.doctor?.specialty || "").toLowerCase();
+      const license = String(r.doctor?.license_number || "").toLowerCase();
+      return (
+        name.includes(q) ||
+        email.includes(q) ||
+        phone.includes(q) ||
+        specialty.includes(q) ||
+        license.includes(q)
+      );
+    });
+  }, [data, search]);
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async (payload: {
+      verificationId: string;
+      doctorId: string | null;
+      status: "pending" | "under_review" | "verified" | "rejected";
+      rejectionReason?: string | null;
+    }) => {
+      const { data: auth } = await supabase.auth.getUser();
+      const reviewerId = auth?.user?.id || null;
+
+      const { error: vErr } = await supabase
+        .from("doctor_verification")
+        .update({
+          status: payload.status,
+          reviewed_at: payload.status === "pending" ? null : new Date().toISOString(),
+          reviewed_by: payload.status === "pending" ? null : reviewerId,
+          rejection_reason: payload.status === "rejected" ? payload.rejectionReason || null : null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", payload.verificationId);
+
+      if (vErr) throw vErr;
+
+      if (payload.doctorId) {
+        const { error: dErr } = await supabase
+          .from("doctors")
+          .update({
+            verified: payload.status === "verified",
+          })
+          .eq("id", payload.doctorId);
+
+        if (dErr) throw dErr;
+      }
+
+      return true;
+    },
+    onSuccess: () => {
+      toast({ title: "Updated", description: "Verification status updated." });
+      qc.invalidateQueries({ queryKey: ["super-admin-doctor-verifications"] });
+      setOpen(false);
+      setSelected(null);
+      setRejectReason("");
+    },
+    onError: (e: any) => {
+      toast({
+        variant: "destructive",
+        title: "Update failed",
+        description: e?.message || "Unknown error",
+      });
+    },
+  });
+
+  const onOpenRow = (row: JoinedRow) => {
+    setSelected(row);
+    setRejectReason(row.verification.rejection_reason || "");
+    setOpen(true);
   };
 
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <CardTitle>{title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Doctor Name</TableHead>
-                <TableHead>Specialty</TableHead>
-                <TableHead>License Number</TableHead>
-                <TableHead>Submitted</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
+    <Card>
+      <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-1">
+          <CardTitle>Doctor Verification Requests</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Review doctor submissions and approve/reject them.
+          </p>
+        </div>
+
+        <div className="flex flex-col md:flex-row gap-2 md:items-center">
+          <div className="w-full md:w-44">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Filter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="under_review">Under review</SelectItem>
+                <SelectItem value="verified">Verified</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+                <SelectItem value="all">All</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Input
+            className="w-full md:w-72"
+            placeholder="Search by name/email/phone/specialty/license..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+
+          <Button
+            variant="outline"
+            onClick={() => refetch()}
+            disabled={isFetching}
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${isFetching ? "animate-spin" : ""}`} />
+            Refresh
+          </Button>
+        </div>
+      </CardHeader>
+
+      <CardContent>
+        {isLoading ? (
+          <div className="space-y-2">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-12 w-full" />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-md border overflow-hidden">
+            <Table>
+              <UITableHeader>
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    Loading...
-                  </TableCell>
+                  <TableHead>Doctor</TableHead>
+                  <TableHead>Specialty</TableHead>
+                  <TableHead>License</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Submitted</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ) : data.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    No doctor verification submissions found
-                  </TableCell>
-                </TableRow>
-              ) : (
-                data.map((item: any) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-medium">
-                      {item.profile?.full_name || item.verification_data?.additional_info?.first_name || "N/A"}
-                    </TableCell>
-                    <TableCell>{item.specialty || item.doctors?.specialty}</TableCell>
-                    <TableCell>{item.license_number || "N/A"}</TableCell>
-                    <TableCell>
-                      {item.submitted_at ? new Date(item.submitted_at).toLocaleDateString() : "N/A"}
-                    </TableCell>
-                    <TableCell>{getStatusBadge(item.status)}</TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleView(item)}
-                      >
-                        <Eye className="w-4 h-4 mr-2" />
-                        Review
-                      </Button>
+              </UITableHeader>
+              <TableBody>
+                {filtered.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
+                      No verification requests found.
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                ) : (
+                  filtered.map((row) => {
+                    const v = row.verification;
+                    const doctor = row.doctor;
+                    const profile = row.profile;
 
-      {/* View Details Modal */}
-      <Dialog open={viewModalOpen} onOpenChange={setViewModalOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                    return (
+                      <TableRow key={v.id}>
+                        <TableCell>
+                          <div className="space-y-0.5">
+                            <div className="font-medium">
+                              {profile?.full_name || "Unknown doctor"}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {profile?.email || "—"}{" "}
+                              {profile?.phone ? `• ${profile.phone}` : ""}
+                            </div>
+                          </div>
+                        </TableCell>
+
+                        <TableCell>{doctor?.specialty || "—"}</TableCell>
+                        <TableCell className="font-mono text-xs">
+                          {doctor?.license_number || "—"}
+                        </TableCell>
+                        <TableCell>{statusBadge(v.status)}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {safeDate(v.submitted_at || v.created_at)}
+                        </TableCell>
+
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => onOpenRow(row)}
+                            >
+                              <Eye className="w-4 h-4 mr-2" />
+                              View
+                            </Button>
+
+                            <Button
+                              size="sm"
+                              onClick={() =>
+                                updateStatusMutation.mutate({
+                                  verificationId: v.id,
+                                  doctorId: v.doctor_id,
+                                  status: "verified",
+                                })
+                              }
+                              disabled={updateStatusMutation.isPending}
+                            >
+                              <CheckCircle className="w-4 h-4 mr-2" />
+                              Approve
+                            </Button>
+
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => {
+                                setSelected(row);
+                                setRejectReason("");
+                                setOpen(true);
+                              }}
+                              disabled={updateStatusMutation.isPending}
+                            >
+                              <XCircle className="w-4 h-4 mr-2" />
+                              Reject
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </CardContent>
+
+      <Dialog open={open} onOpenChange={(v) => setOpen(v)}>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Doctor Verification Details</DialogTitle>
-            <DialogDescription>
-              Review doctor verification information and documents
-            </DialogDescription>
+            <DialogTitle>Verification Details</DialogTitle>
           </DialogHeader>
 
-          {selectedVerification && (
-            <div className="space-y-6">
-              {/* Personal Information */}
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Personal Information</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-muted-foreground">First Name</p>
-                    <p className="font-medium">{selectedVerification.verification_data?.additional_info?.first_name || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Last Name</p>
-                    <p className="font-medium">{selectedVerification.verification_data?.additional_info?.last_name || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Gender</p>
-                    <p className="font-medium">{selectedVerification.verification_data?.additional_info?.gender || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Phone</p>
-                    <p className="font-medium">{selectedVerification.verification_data?.additional_info?.phone || selectedVerification.phone || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Email</p>
-                    <p className="font-medium">{selectedVerification.verification_data?.additional_info?.email || selectedVerification.email || "N/A"}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-muted-foreground">Profile Photo</p>
-                    {selectedVerification.verification_data?.additional_info?.avatar_url ? (
-                      <img 
-                        src={selectedVerification.verification_data.additional_info.avatar_url} 
-                        alt="Profile" 
-                        className="w-24 h-24 rounded-full object-cover mt-2 border-2 border-border"
-                      />
-                    ) : (
-                      <p className="font-medium text-muted-foreground">Not uploaded</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Professional Information */}
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Professional Information</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-muted-foreground">Primary Specialty</p>
-                    <p className="font-medium">{selectedVerification.specialty}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-muted-foreground">All Selected Specialties (up to 5)</p>
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {selectedVerification.verification_data?.additional_info?.all_specialties?.length > 0 ? (
-                        selectedVerification.verification_data.additional_info.all_specialties.map((spec: string, idx: number) => (
-                          <Badge key={idx} variant="secondary">{spec}</Badge>
-                        ))
-                      ) : (
-                        <p className="font-medium text-muted-foreground">N/A</p>
-                      )}
+          {!selected ? (
+            <div className="text-sm text-muted-foreground">No selection.</div>
+          ) : (
+            <div className="space-y-4">
+              <div className="rounded-lg border p-4 space-y-2">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="font-medium truncate">
+                      {selected.profile?.full_name || "Unknown doctor"}
+                    </div>
+                    <div className="text-xs text-muted-foreground truncate">
+                      {selected.profile?.email || "—"}{" "}
+                      {selected.profile?.phone ? `• ${selected.profile.phone}` : ""}
                     </div>
                   </div>
+                  {statusBadge(selected.verification.status)}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                   <div>
-                    <p className="text-muted-foreground">Degrees & Certifications</p>
-                    <p className="font-medium">{selectedVerification.verification_data?.additional_info?.degrees || "N/A"}</p>
+                    <span className="text-muted-foreground">Specialty: </span>
+                    <span>{selected.doctor?.specialty || "—"}</span>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Years of Experience</p>
-                    <p className="font-medium">{selectedVerification.years_of_experience || "N/A"}</p>
+                    <span className="text-muted-foreground">License #: </span>
+                    <span className="font-mono">{selected.doctor?.license_number || "—"}</span>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Medical License Number</p>
-                    <p className="font-medium">{selectedVerification.license_number || "N/A"}</p>
+                    <span className="text-muted-foreground">Submitted: </span>
+                    <span>{safeDate(selected.verification.submitted_at || selected.verification.created_at)}</span>
                   </div>
-                  <div className="col-span-2">
-                    <p className="text-muted-foreground">Languages Spoken</p>
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {selectedVerification.verification_data?.languages?.length > 0 ? (
-                        selectedVerification.verification_data.languages.map((lang: string, idx: number) => (
-                          <Badge key={idx} variant="outline">{lang}</Badge>
-                        ))
-                      ) : (
-                        <p className="font-medium text-muted-foreground">N/A</p>
-                      )}
-                    </div>
+                  <div>
+                    <span className="text-muted-foreground">Updated: </span>
+                    <span>{safeDate(selected.verification.updated_at)}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Location & Clinic Information */}
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Location & Clinic Information</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-muted-foreground">Country (Selected)</p>
-                    <p className="font-medium">{selectedVerification.verification_data?.additional_info?.country || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Region/State</p>
-                    <p className="font-medium">{selectedVerification.verification_data?.additional_info?.region || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Submission Country (Live IP)</p>
-                    <p className="font-medium">{selectedVerification.verification_data?.additional_info?.submission_country || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">IP Address</p>
-                    <p className="font-medium font-mono text-xs">{selectedVerification.verification_data?.additional_info?.submission_ip || "N/A"}</p>
-                  </div>
-                  
-                  {selectedVerification.verification_data?.additional_info?.selected_clinic && (
-                    <>
-                      <div className="col-span-2">
-                        <p className="text-muted-foreground">Linked Clinic (from database)</p>
-                        <p className="font-medium">{selectedVerification.verification_data.additional_info.selected_clinic}</p>
-                        {selectedVerification.verification_data?.additional_info?.linked_clinic_id && (
-                          <p className="text-xs text-muted-foreground">ID: {selectedVerification.verification_data.additional_info.linked_clinic_id}</p>
-                        )}
-                      </div>
-                    </>
-                  )}
-
-                  {selectedVerification.verification_data?.additional_info?.manual_clinic && (
-                    <>
-                      <div className="col-span-2">
-                        <p className="text-muted-foreground font-semibold">Manual Clinic Entry (⚠️ Requires Verification)</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Clinic Name</p>
-                        <p className="font-medium">{selectedVerification.verification_data.additional_info.manual_clinic.name || "N/A"}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Clinic Phone</p>
-                        <p className="font-medium">{selectedVerification.verification_data.additional_info.manual_clinic.phone || "N/A"}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Clinic Email</p>
-                        <p className="font-medium">{selectedVerification.verification_data.additional_info.manual_clinic.email || "N/A"}</p>
-                      </div>
-                      <div className="col-span-2">
-                        <p className="text-muted-foreground">Clinic Address</p>
-                        <p className="font-medium">{selectedVerification.verification_data.additional_info.manual_clinic.address || "N/A"}</p>
-                      </div>
-                    </>
-                  )}
-                </div>
+              <div className="rounded-lg border p-4 space-y-2">
+                <Label className="font-medium">Rejection reason (required for Reject)</Label>
+                <Textarea
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  placeholder="Explain why this was rejected (missing license, unclear ID, etc.)"
+                />
               </div>
 
-              {/* Bio */}
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Bio</h3>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {selectedVerification.doctors?.bio || "No bio provided"}
-                </p>
-              </div>
-
-              {/* Availability & Preferences */}
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Availability & Preferences</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="col-span-2">
-                    <p className="text-muted-foreground">Preferred Appointment Types</p>
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {selectedVerification.verification_data?.additional_info?.preferred_appointment_types?.length > 0 ? (
-                        selectedVerification.verification_data.additional_info.preferred_appointment_types.map((type: string, idx: number) => (
-                          <Badge key={idx} variant="secondary">{type}</Badge>
-                        ))
-                      ) : (
-                        <p className="font-medium text-muted-foreground">N/A</p>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Consultation Fee Range</p>
-                    <p className="font-medium">
-                      {selectedVerification.verification_data?.additional_info?.consultation_fee_from && selectedVerification.verification_data?.additional_info?.consultation_fee_to
-                        ? `$${selectedVerification.verification_data.additional_info.consultation_fee_from} - $${selectedVerification.verification_data.additional_info.consultation_fee_to}`
-                        : "N/A"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Documents */}
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Uploaded Documents ({documents.length})</h3>
-                <div className="space-y-4">
-                  {documents.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No documents uploaded</p>
-                  ) : (
-                    <>
-                      {/* Identity Documents */}
-                      {documents.filter((doc: any) => ['medical_license', 'professional_id', 'primary_id'].includes(doc.document_type)).length > 0 && (
-                        <div>
-                          <h4 className="text-sm font-semibold text-muted-foreground mb-2">Identity & Basic Credentials</h4>
-                          <div className="space-y-2">
-                            {documents.filter((doc: any) => ['medical_license', 'professional_id', 'primary_id'].includes(doc.document_type)).map((doc: any) => (
-                              <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
-                                <div className="flex items-center gap-3">
-                                  <FileText className="w-5 h-5 text-blue-600" />
-                                  <div>
-                                    <p className="font-medium text-sm">
-                                      {doc.document_type === 'medical_license' ? 'Medical License' :
-                                       doc.document_type === 'professional_id' ? 'Professional ID / Government ID' :
-                                       doc.document_type === 'primary_id' ? 'Primary ID (Passport/National ID)' :
-                                       doc.document_type}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">{doc.file_name}</p>
-                                  </div>
-                                </div>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => downloadDocument(doc.file_path, doc.file_name)}
-                                >
-                                  Download
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Specialty Documents */}
-                      {documents.filter((doc: any) => doc.document_type === 'specialty_document').length > 0 && (
-                        <div>
-                          <h4 className="text-sm font-semibold text-muted-foreground mb-2">Specialty Certificates & Training</h4>
-                          <div className="space-y-2">
-                            {documents.filter((doc: any) => doc.document_type === 'specialty_document').map((doc: any) => (
-                              <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
-                                <div className="flex items-center gap-3">
-                                  <FileText className="w-5 h-5 text-purple-600" />
-                                  <div>
-                                    <p className="font-medium text-sm">Specialty Certificate/Training</p>
-                                    <p className="text-xs text-muted-foreground">{doc.file_name}</p>
-                                  </div>
-                                </div>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => downloadDocument(doc.file_path, doc.file_name)}
-                                >
-                                  Download
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Country-Specific Documents */}
-                      {documents.filter((doc: any) => !['medical_license', 'professional_id', 'specialty_document', 'primary_id'].includes(doc.document_type)).length > 0 && (
-                        <div>
-                          <h4 className="text-sm font-semibold text-muted-foreground mb-2">Country-Specific Documents</h4>
-                          <div className="space-y-2">
-                            {documents.filter((doc: any) => !['medical_license', 'professional_id', 'specialty_document', 'primary_id'].includes(doc.document_type)).map((doc: any) => (
-                              <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
-                                <div className="flex items-center gap-3">
-                                  <FileText className="w-5 h-5 text-green-600" />
-                                  <div>
-                                    <p className="font-medium text-sm capitalize">
-                                      {doc.document_type.replace(/_/g, ' ')}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">{doc.file_name}</p>
-                                  </div>
-                                </div>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => downloadDocument(doc.file_path, doc.file_name)}
-                                >
-                                   Download
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Rejection Reason (if declined) */}
-              {selectedVerification.status === 'declined' && selectedVerification.rejection_reason && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">Rejection Reason</h3>
-                  <p className="text-sm text-muted-foreground p-3 bg-destructive/10 rounded-lg">
-                    {selectedVerification.rejection_reason}
-                  </p>
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex gap-3 pt-4 border-t">
-                {selectedVerification.status !== 'verified' && (
-                  <Button
-                    onClick={() => handleUpdateStatus(selectedVerification.id, "verified", selectedVerification.doctors.id)}
-                    className="flex-1"
-                    variant="default"
-                  >
-                    <Eye className="w-4 h-4 mr-2" />
-                    Approve & Make Public
-                  </Button>
-                )}
-                {selectedVerification.status !== 'declined' && (
-                  <Button
-                    onClick={() => {
-                      const reason = prompt("Enter rejection reason (doctor can resubmit after this):");
-                      if (reason) {
-                        handleUpdateStatus(selectedVerification.id, "declined", selectedVerification.doctors.id, reason);
-                      }
-                    }}
-                    className="flex-1"
-                    variant="destructive"
-                  >
-                    <XCircle className="w-4 h-4 mr-2" />
-                    Reject Application
-                  </Button>
-                )}
-                <Button
-                  onClick={() => handleDelete(selectedVerification.id, selectedVerification.doctors.id)}
-                  variant="outline"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete Permanently
-                </Button>
+              <div className="rounded-lg border p-4 space-y-2">
+                <Label className="font-medium">Raw verification payload</Label>
+                <pre className="text-xs bg-muted/50 rounded-md p-3 overflow-auto max-h-64">
+                  {JSON.stringify(selected.verification.verification_data ?? {}, null, 2)}
+                </pre>
               </div>
             </div>
           )}
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setOpen(false);
+                setSelected(null);
+                setRejectReason("");
+              }}
+            >
+              Close
+            </Button>
+
+            {selected ? (
+              <>
+                <Button
+                  variant="secondary"
+                  onClick={() =>
+                    updateStatusMutation.mutate({
+                      verificationId: selected.verification.id,
+                      doctorId: selected.verification.doctor_id,
+                      status: "under_review",
+                    })
+                  }
+                  disabled={updateStatusMutation.isPending}
+                >
+                  <Clock className="w-4 h-4 mr-2" />
+                  Mark under review
+                </Button>
+
+                <Button
+                  onClick={() =>
+                    updateStatusMutation.mutate({
+                      verificationId: selected.verification.id,
+                      doctorId: selected.verification.doctor_id,
+                      status: "verified",
+                    })
+                  }
+                  disabled={updateStatusMutation.isPending}
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Approve
+                </Button>
+
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    if (!rejectReason.trim()) {
+                      toast({
+                        variant: "destructive",
+                        title: "Rejection reason required",
+                        description: "Please provide a reason before rejecting.",
+                      });
+                      return;
+                    }
+                    updateStatusMutation.mutate({
+                      verificationId: selected.verification.id,
+                      doctorId: selected.verification.doctor_id,
+                      status: "rejected",
+                      rejectionReason: rejectReason.trim(),
+                    });
+                  }}
+                  disabled={updateStatusMutation.isPending}
+                >
+                  <XCircle className="w-4 h-4 mr-2" />
+                  Reject
+                </Button>
+              </>
+            ) : null}
+          </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </Card>
   );
-};
-
-export default DoctorVerificationTable;
+}
