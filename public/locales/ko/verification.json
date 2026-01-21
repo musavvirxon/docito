@@ -1,0 +1,64 @@
+// Path: public/locales/ko/verification.json
+{
+  "ui": {
+    "title": "자격을 인증하세요",
+    "subtitle": "진료/근무 국가에 필요한 서류를 업로드하세요.",
+    "loading": "인증 요건을 불러오는 중…",
+    "required": "필수 서류",
+    "optional": "선택 서류",
+    "upload": "업로드",
+    "uploadSuccess": "업로드 완료.",
+    "submit": "검토 요청",
+    "submittedForReview": "검토를 요청했습니다. 팀이 서류를 확인합니다.",
+    "validWithinDays": "{{days}}일 이내 발급된 서류여야 합니다",
+    "sourceVerificationRequired": "규제기관 또는 고용주를 통한 원천 확인이 필요할 수 있습니다"
+  },
+  "ruleSets": {
+    "GLOBAL_BASE": { "name": "글로벌 기본 인증" },
+    "REGULATOR_GOOD_STANDING_REQUIRED": { "name": "규제기관 Good Standing 증명" },
+    "TRANSLATION_REQUIRED": { "name": "공인 번역" },
+    "BACKGROUND_CHECK_REQUIRED": { "name": "신원/범죄경력 조회" },
+    "LANGUAGE_PROFICIENCY_REQUIRED": { "name": "언어 능력 증명" },
+    "US_CONTROLLED_SUBSTANCES_OPTIONAL": { "name": "규제 약물(미국)" }
+  },
+  "notes": {
+    "ID_PRIMARY": "유효한 여권 또는 국가 신분증을 제출하세요.",
+    "SELFIE": "셀카/생체 확인은 신분 도용 방지에 도움이 됩니다.",
+    "ADDRESS": "거주지 또는 진료 지역 확인에 사용됩니다.",
+    "LICENSE": "면허는 이름과 일치하고 유효해야 합니다.",
+    "DEGREE": "주요 학위/졸업 증명서를 업로드하세요.",
+    "CV": "최신 CV는 교육 및 경력 확인에 도움이 됩니다.",
+    "EMPLOYMENT_OPTIONAL": "특정 기관 소속으로 진료하는 경우 필요할 수 있습니다.",
+    "GOOD_STANDING": "규제기관 발급. 타 지역/해외 진료에 필요할 수 있습니다.",
+    "TRANSLATION": "현지 언어가 아닌 문서는 공인 번역본을 제출하세요.",
+    "APOSTILLE_OPTIONAL": "규제기관 요구에 따라 아포스티유/공증이 필요할 수 있습니다.",
+    "BACKGROUND": "범죄경력/신원조회 서류가 필요할 수 있습니다.",
+    "LANGUAGE": "현지 면허를 위해 언어 증명이 필요할 수 있습니다.",
+    "DEA": "규제 약물 처방 시 필요(미국).",
+    "EPCS_OPTIONAL": "일부 주에서는 규제 약물 전자처방(EPCS)이 필요합니다(미국)."
+  },
+  "docTypes": {
+    "ID_NATIONAL": { "title": "국가 신분증", "desc": "정부 발급 신분증(해당 시 앞/뒤)." },
+    "PASSPORT": { "title": "여권", "desc": "여권 사진면." },
+    "SELFIE_LIVENESS": { "title": "셀카 / 생체 확인", "desc": "신분증과 대조할 수 있는 선명한 셀카." },
+    "PROOF_ADDRESS": { "title": "주소 증명", "desc": "공과금 고지서, 은행 명세서 또는 공문." },
+    "MED_LICENSE": { "title": "의료 면허", "desc": "유효한 면허/등록 증명서." },
+    "LICENSE_VERIFICATION": { "title": "면허 확인", "desc": "가능한 경우 면허 확인 증빙 또는 링크." },
+    "DEGREE_DIPLOMA": { "title": "학위 / 졸업장", "desc": "의학/치의학 주요 학위 증명." },
+    "INTERNSHIP_CERT": { "title": "인턴 수료증", "desc": "해당되는 경우에만." },
+    "RESIDENCY_CERT": { "title": "레지던시 수료증", "desc": "전공에 따라 해당되는 경우." },
+    "SPECIALIST_CERT": { "title": "전문의 자격증", "desc": "해당 시 전문의/보드 인증." },
+    "GOOD_STANDING": { "title": "Good Standing 증명서", "desc": "규제기관 발급. 보통 유효기간이 있습니다." },
+    "CV": { "title": "CV / 이력서", "desc": "최신 전문 이력서(CV)." },
+    "EMPLOYMENT_LETTER": { "title": "재직/소속 확인서", "desc": "병원/클리닉 소속 증명(해당 시)." },
+    "MALPRACTICE_INSURANCE": { "title": "의료 배상책임 보험", "desc": "필요 시 전문직 배상책임 보험 증명." },
+    "CRIMINAL_RECORD_CHECK": { "title": "범죄경력 조회서", "desc": "필요 시 무범죄/신원조회 서류." },
+    "LANGUAGE_CERT": { "title": "언어 인증서", "desc": "필요 시 언어 능력 증빙." },
+    "LICENSE_TRANSLATION": { "title": "공인 번역", "desc": "면허/학위 서류의 공인 번역본." },
+    "LEGALIZATION_APOSTILLE": { "title": "아포스티유 / 공증", "desc": "필요 시 공증 또는 아포스티유." },
+    "WORK_PERMIT": { "title": "취업허가/거주허가", "desc": "외국인 의사가 현지에서 진료하는 경우." },
+    "DEA_REGISTRATION": { "title": "DEA 등록", "desc": "미국: 규제 약물 처방을 위한 DEA 등록." },
+    "EPCS_ENABLEMENT": { "title": "EPCS 활성화", "desc": "미국: 규제 약물 전자처방." },
+    "PDMP_CHECK": { "title": "PDMP 연동", "desc": "미국: 처방 모니터링 프로그램(시스템 수준)." }
+  }
+}
