@@ -1,5 +1,3 @@
-// File: src/components/imaging/ImagingManualOrderDialog.tsx
-
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -101,8 +99,16 @@ export function ImagingManualOrderDialog({
         },
       });
 
-      if (error) throw error;
-      if (!data?.ok) throw new Error(data?.error || 'Failed to create order');
+      // If the function ever returns non-2xx (network/deploy issue), show the actual edge error message.
+      if (error) {
+        const ctx = (error as any)?.context ? JSON.stringify((error as any).context) : '';
+        throw new Error(`${error.message}${ctx ? ` | ${ctx}` : ''}`);
+      }
+
+      if (!data?.ok) {
+        const meta = data?.meta ? ` | ${JSON.stringify(data.meta)}` : '';
+        throw new Error(`${data?.error || 'Failed to create order'}${meta}`);
+      }
 
       toast.success(`Manual imaging order created (${data.referralNumber || 'REF'})`);
       onOpenChange(false);
@@ -173,7 +179,11 @@ export function ImagingManualOrderDialog({
 
               <div className="space-y-1">
                 <Label>Study name *</Label>
-                <Input value={studyName} onChange={(e) => setStudyName(e.target.value)} placeholder="Chest X-Ray, Brain MRI..." />
+                <Input
+                  value={studyName}
+                  onChange={(e) => setStudyName(e.target.value)}
+                  placeholder="Chest X-Ray, Brain MRI..."
+                />
               </div>
             </div>
           </div>
@@ -203,18 +213,31 @@ export function ImagingManualOrderDialog({
 
               <div className="space-y-1 md:col-span-2">
                 <Label>Preferred time slot (optional)</Label>
-                <Input value={preferredSlot} onChange={(e) => setPreferredSlot(e.target.value)} placeholder="e.g. 09:00-11:00" />
+                <Input
+                  value={preferredSlot}
+                  onChange={(e) => setPreferredSlot(e.target.value)}
+                  placeholder="e.g. 09:00-11:00"
+                />
               </div>
             </div>
 
             <div className="space-y-1">
               <Label>Reason (optional)</Label>
-              <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Reason for study (defaults to study name)" />
+              <Input
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="Reason for study (defaults to study name)"
+              />
             </div>
 
             <div className="space-y-1">
               <Label>Clinical notes (optional)</Label>
-              <Textarea value={clinicalNotes} onChange={(e) => setClinicalNotes(e.target.value)} rows={3} placeholder="Symptoms, suspected diagnosis, instructions..." />
+              <Textarea
+                value={clinicalNotes}
+                onChange={(e) => setClinicalNotes(e.target.value)}
+                rows={3}
+                placeholder="Symptoms, suspected diagnosis, instructions..."
+              />
             </div>
           </div>
 
