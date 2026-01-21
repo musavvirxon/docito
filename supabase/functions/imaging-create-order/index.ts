@@ -10,6 +10,7 @@ const corsHeaders: Record<string, string> = {
 type ReqBody = {
   centerId: string;
   patient: {
+    patient_id?: string | null; // registered patient auth.users.id (optional)
     full_name: string;
     phone: string;
     email?: string | null;
@@ -35,7 +36,7 @@ function json(data: unknown, status = 200) {
   });
 }
 
-// Always return 200 so supabase.functions.invoke doesn't collapse the real message into "non-2xx".
+// Always return 200 so invoke() surfaces details.
 function okFalse(error: string, meta?: Record<string, unknown>) {
   return json({ ok: false, error, ...(meta ? { meta } : {}) }, 200);
 }
@@ -57,37 +58,26 @@ function errMeta(e: unknown) {
   };
 }
 
-async function assertImagingManualOrderAccess(
-  client: ReturnType<typeof createClient>,
-  userId: string,
-  centerId: string,
-) {
-  const { data: center, error: cErr } = await client
+async function assertImagingAccess(service: ReturnType<typeof createClient>, userId: string, centerId: string) {
+  const { data: center, error: cErr } = await service
     .from("imaging_centers")
     .select("id,admin_id")
     .eq("id", centerId)
     .maybeSingle();
-
   if (cErr) throw cErr;
-  if (center?.admin_id === userId) return { ok: true as const };
+  if (center?.admin_id === userId) return { ok: true as const, role: "admin" as const };
 
-  const { data: staff, error: sErr } = await client
+  const { data: staff, error: sErr } = await service
     .from("imaging_staff")
     .select("id,status,can_view_orders")
     .eq("imaging_center_id", centerId)
     .eq("user_id", userId)
     .maybeSingle();
-
   if (sErr) throw sErr;
 
-  if (!staff?.id || staff.status !== "active") {
-    return { ok: false as const, reason: "Not assigned to this imaging center" };
-  }
-  if (!staff.can_view_orders) {
-    return { ok: false as const, reason: "Missing permission: can_view_orders" };
-  }
-
-  return { ok: true as const };
+  if (!staff?.id || staff.status !== "active") return { ok: false as const, reason: "Not assigned to this imaging center" };
+  if (!staff.can_view_orders) return { ok: false as const, reason: "Missing permission: can_view_orders" };
+  return { ok: true as const, role: "staff" as const };
 }
 
 serve(async (req) => {
@@ -99,14 +89,10 @@ serve(async (req) => {
 
   const url = Deno.env.get("SUPABASE_URL");
   const anon = Deno.env.get("SUPABASE_ANON_KEY");
-  if (!url || !anon) return okFalse("Missing SUPABASE_URL / SUPABASE_ANON_KEY");
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!url || !anon || !serviceKey) return okFalse("Missing SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY");
 
-  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || null;
-
-  const authed = createClient(url, anon, {
-    global: { headers: { Authorization: authHeader } },
-  });
-
+  const authed = createClient(url, anon, { global: { headers: { Authorization: authHeader } } });
   const { data: userRes, error: userErr } = await authed.auth.getUser();
   if (userErr || !userRes?.user) return okFalse("Unauthorized", errMeta(userErr));
 
@@ -120,28 +106,50 @@ serve(async (req) => {
   const centerId = trimOrNull(body?.centerId);
   if (!centerId) return okFalse("Missing centerId");
 
+  const patientId = trimOrNull(body?.patient?.patient_id);
   const patientName = trimOrNull(body?.patient?.full_name);
   const patientPhone = trimOrNull(body?.patient?.phone);
   const patientEmail = trimOrNull(body?.patient?.email);
+  const patientDob = trimOrNull(body?.patient?.date_of_birth);
 
   const studyName = trimOrNull(body?.study?.name);
   const modality = (body?.study?.modality || "other") as ReqBody["study"]["modality"];
   const bodyPart = trimOrNull(body?.study?.body_part);
   const contrast = typeof body?.study?.contrast === "boolean" ? body.study.contrast : null;
 
-  const priority = (body?.priority || "routine") as NonNullable<ReqBody["priority"]>;
-
   if (!patientName) return okFalse("Patient full_name is required");
   if (!patientPhone) return okFalse("Patient phone is required");
   if (!studyName) return okFalse("Study name is required");
 
-  const db = serviceKey ? createClient(url, serviceKey) : authed;
+  const priority = (body?.priority || "routine") as NonNullable<ReqBody["priority"]>;
+
+  const service = createClient(url, serviceKey);
 
   try {
-    const allowed = await assertImagingManualOrderAccess(db, userRes.user.id, centerId);
+    const allowed = await assertImagingAccess(service, userRes.user.id, centerId);
     if (!allowed.ok) return okFalse(allowed.reason || "Forbidden");
 
-    const nowIso = new Date().toISOString();
+    let facilityPatientId: string | null = null;
+    if (!patientId) {
+      const { data: fp, error: fpErr } = await service
+        .from("facility_patients")
+        .upsert(
+          {
+            facility_type: "imaging_center",
+            facility_id: centerId,
+            full_name: patientName,
+            phone: patientPhone,
+            email: patientEmail,
+            date_of_birth: patientDob,
+          },
+          { onConflict: "facility_type,facility_id,phone" },
+        )
+        .select("id")
+        .single();
+
+      if (fpErr) return okFalse("Failed to upsert facility patient", errMeta(fpErr));
+      facilityPatientId = fp.id as string;
+    }
 
     const attachments = {
       modality,
@@ -151,8 +159,9 @@ serve(async (req) => {
       source: "manual_imaging_dashboard",
     };
 
-    // In this platform: Imaging "Order" == a row in public.referrals + public.imaging_order_state.
-    const { data: referral, error: rErr } = await db
+    const nowIso = new Date().toISOString();
+
+    const { data: referral, error: rErr } = await service
       .from("referrals")
       .insert({
         referrer_type: "imaging_center",
@@ -170,20 +179,22 @@ serve(async (req) => {
         preferred_time_slot: trimOrNull(body?.preferred_time_slot),
         attachments,
 
-        patient_id: null,
+        patient_id: patientId,
+        facility_patient_id: patientId ? null : facilityPatientId,
+
         patient_name: patientName,
         patient_phone: patientPhone,
         patient_email: patientEmail ?? null,
 
         status: "pending",
         sent_at: nowIso,
-      })
+      } as any)
       .select("id,referral_number")
       .single();
 
     if (rErr) return okFalse("Failed to create referral", errMeta(rErr));
 
-    const { error: stErr } = await db
+    const { error: stErr } = await service
       .from("imaging_order_state")
       .upsert(
         {
@@ -198,15 +209,20 @@ serve(async (req) => {
         { onConflict: "referral_id" },
       );
 
-    const out: Record<string, unknown> = {
+    if (stErr) {
+      return json({
+        ok: true,
+        orderId: referral.id,
+        orderNumber: referral.referral_number,
+        stateWarning: errMeta(stErr),
+      });
+    }
+
+    return json({
       ok: true,
       orderId: referral.id,
       orderNumber: referral.referral_number,
-    };
-
-    if (stErr) out.stateWarning = errMeta(stErr);
-
-    return json(out, 200);
+    });
   } catch (e) {
     return okFalse("Unhandled error", errMeta(e));
   }
