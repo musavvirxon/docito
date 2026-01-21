@@ -1,0 +1,63 @@
+{
+  "ui": {
+    "title": "Bestätige deine Qualifikationen",
+    "subtitle": "Lade die für dein Einsatzland erforderlichen Dokumente hoch.",
+    "loading": "Verifikationsanforderungen werden geladen…",
+    "required": "Erforderliche Dokumente",
+    "optional": "Optionale Dokumente",
+    "upload": "Hochladen",
+    "uploadSuccess": "Erfolgreich hochgeladen.",
+    "submit": "Zur Prüfung einreichen",
+    "submittedForReview": "Zur Prüfung eingereicht. Unser Team wird deine Dokumente verifizieren.",
+    "validWithinDays": "Muss innerhalb von {{days}} Tagen ausgestellt worden sein",
+    "sourceVerificationRequired": "Kann eine Quellenprüfung durch Behörde oder Arbeitgeber erfordern"
+  },
+  "ruleSets": {
+    "GLOBAL_BASE": { "name": "Globale Basisverifizierung" },
+    "REGULATOR_GOOD_STANDING_REQUIRED": { "name": "Unbedenklichkeits-/Good-Standing-Nachweis" },
+    "TRANSLATION_REQUIRED": { "name": "Beglaubigte Übersetzung" },
+    "BACKGROUND_CHECK_REQUIRED": { "name": "Hintergrundprüfung" },
+    "LANGUAGE_PROFICIENCY_REQUIRED": { "name": "Sprachnachweis" },
+    "US_CONTROLLED_SUBSTANCES_OPTIONAL": { "name": "Kontrollierte Substanzen (USA)" }
+  },
+  "notes": {
+    "ID_PRIMARY": "Reiche einen gültigen Reisepass oder Personalausweis ein.",
+    "SELFIE": "Selfie/Liveness hilft, Identitätsbetrug zu verhindern.",
+    "ADDRESS": "Zur Bestätigung von Wohnsitz oder Einsatzregion.",
+    "LICENSE": "Die Lizenz muss deinem Namen entsprechen und gültig sein.",
+    "DEGREE": "Lade dein primäres Abschlusszeugnis hoch.",
+    "CV": "Ein aktueller Lebenslauf hilft, Ausbildung und Erfahrung zu validieren.",
+    "EMPLOYMENT_OPTIONAL": "Erforderlich, wenn du an eine bestimmte Einrichtung gebunden bist.",
+    "GOOD_STANDING": "Von der Behörde ausgestellt; oft für grenzüberschreitende Tätigkeit erforderlich.",
+    "TRANSLATION": "Für nicht-lokale Dokumente beglaubigte Übersetzungen bereitstellen.",
+    "APOSTILLE_OPTIONAL": "Je nach Behörde kann Apostille/Legalisation nötig sein.",
+    "BACKGROUND": "Polizeiliches Führungszeugnis/Hintergrundcheck kann erforderlich sein.",
+    "LANGUAGE": "Für lokale Zulassung kann ein Sprachnachweis erforderlich sein.",
+    "DEA": "Erforderlich für die Verschreibung kontrollierter Substanzen (USA).",
+    "EPCS_OPTIONAL": "In einigen US-Bundesstaaten für elektronische Verschreibungen kontrollierter Substanzen erforderlich."
+  },
+  "docTypes": {
+    "ID_NATIONAL": { "title": "Personalausweis", "desc": "Amtlicher Ausweis (ggf. Vorder-/Rückseite)." },
+    "PASSPORT": { "title": "Reisepass", "desc": "Fotoseite des Reisepasses." },
+    "SELFIE_LIVENESS": { "title": "Selfie / Liveness", "desc": "Klares Selfie zum Abgleich mit dem Ausweis." },
+    "PROOF_ADDRESS": { "title": "Adressnachweis", "desc": "Versorgerrechnung, Kontoauszug oder offizielles Schreiben." },
+    "MED_LICENSE": { "title": "Berufszulassung", "desc": "Deine gültige Lizenz/Registrierung." },
+    "LICENSE_VERIFICATION": { "title": "Lizenzverifikation", "desc": "Nachweis oder Link zur Lizenzprüfung (falls verfügbar)." },
+    "DEGREE_DIPLOMA": { "title": "Abschluss / Diplom", "desc": "Primärer Abschluss in Medizin/Zahnmedizin." },
+    "INTERNSHIP_CERT": { "title": "Internats-/Praktikumsnachweis", "desc": "Falls in deiner Jurisdiktion relevant." },
+    "RESIDENCY_CERT": { "title": "Weiterbildungsnachweis (Residency)", "desc": "Falls für deine Fachrichtung relevant." },
+    "SPECIALIST_CERT": { "title": "Facharzt-/Spezialistennachweis", "desc": "Facharzt-/Board-Zertifikat, falls vorhanden." },
+    "GOOD_STANDING": { "title": "Good-Standing-Bescheinigung", "desc": "Von der Behörde ausgestellt; meist zeitlich begrenzt." },
+    "CV": { "title": "Lebenslauf (CV)", "desc": "Dein aktueller beruflicher Lebenslauf." },
+    "EMPLOYMENT_LETTER": { "title": "Arbeits-/Affiliationsschreiben", "desc": "Nachweis der Anstellung bei Klinik/Spital (falls zutreffend)." },
+    "MALPRACTICE_INSURANCE": { "title": "Berufshaftpflicht", "desc": "Nachweis der Berufshaftpflichtversicherung (falls erforderlich)." },
+    "CRIMINAL_RECORD_CHECK": { "title": "Führungszeugnis", "desc": "Polizeiliches Führungszeugnis/Hintergrundcheck (falls erforderlich)." },
+    "LANGUAGE_CERT": { "title": "Sprachzertifikat", "desc": "Nachweis der Sprachkenntnisse (falls erforderlich)." },
+    "LICENSE_TRANSLATION": { "title": "Beglaubigte Übersetzung", "desc": "Beglaubigte Übersetzung von Lizenz/Abschlüssen." },
+    "LEGALIZATION_APOSTILLE": { "title": "Apostille / Legalisation", "desc": "Apostille oder Legalisation, falls erforderlich." },
+    "WORK_PERMIT": { "title": "Arbeits-/Aufenthaltserlaubnis", "desc": "Für ausländische Ärztinnen/Ärzte im Einsatzland." },
+    "DEA_REGISTRATION": { "title": "DEA-Registrierung", "desc": "USA: DEA-Registrierung für kontrollierte Substanzen." },
+    "EPCS_ENABLEMENT": { "title": "EPCS-Aktivierung", "desc": "USA: Elektronische Verschreibung kontrollierter Substanzen." },
+    "PDMP_CHECK": { "title": "PDMP-Integration", "desc": "USA: Rezeptmonitoring-Programm (Systemebene)." }
+  }
+}
