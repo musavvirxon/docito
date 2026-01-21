@@ -1,0 +1,64 @@
+// Path: public/locales/zh/verification.json
+{
+  "ui": {
+    "title": "验证你的资质",
+    "subtitle": "上传你执业国家/地区所需的文件。",
+    "loading": "正在加载验证要求…",
+    "required": "必需文件",
+    "optional": "可选文件",
+    "upload": "上传",
+    "uploadSuccess": "上传成功。",
+    "submit": "提交审核",
+    "submittedForReview": "已提交审核。我们的团队将核验你的文件。",
+    "validWithinDays": "需在 {{days}} 天内签发",
+    "sourceVerificationRequired": "可能需要由监管机构或雇主进行来源核验"
+  },
+  "ruleSets": {
+    "GLOBAL_BASE": { "name": "全球基础验证" },
+    "REGULATOR_GOOD_STANDING_REQUIRED": { "name": "监管机构良好执业证明" },
+    "TRANSLATION_REQUIRED": { "name": "认证翻译" },
+    "BACKGROUND_CHECK_REQUIRED": { "name": "背景审查" },
+    "LANGUAGE_PROFICIENCY_REQUIRED": { "name": "语言能力证明" },
+    "US_CONTROLLED_SUBSTANCES_OPTIONAL": { "name": "受控物质（美国）" }
+  },
+  "notes": {
+    "ID_PRIMARY": "提供有效护照或国家身份证件。",
+    "SELFIE": "自拍/活体检测有助于防止身份欺诈。",
+    "ADDRESS": "用于确认居住地址或执业地区。",
+    "LICENSE": "执业证需与姓名一致且在有效期内。",
+    "DEGREE": "上传你的主要学历/学位证书。",
+    "CV": "近期简历有助于核验培训与经验。",
+    "EMPLOYMENT_OPTIONAL": "若你隶属于特定机构执业，可能需要提供。",
+    "GOOD_STANDING": "由监管机构签发；跨地区执业通常需要。",
+    "TRANSLATION": "非本地语言文件请提供认证翻译。",
+    "APOSTILLE_OPTIONAL": "是否需要公证/海牙认证取决于监管要求。",
+    "BACKGROUND": "可能需要无犯罪记录/背景审查。",
+    "LANGUAGE": "本地执照可能需要语言证明。",
+    "DEA": "若开具受控药物处方则需要（美国）。",
+    "EPCS_OPTIONAL": "部分州对受控药物电子处方有要求（美国）。"
+  },
+  "docTypes": {
+    "ID_NATIONAL": { "title": "国家身份证件", "desc": "政府签发身份证（如适用请提供正反面）。" },
+    "PASSPORT": { "title": "护照", "desc": "护照照片页。" },
+    "SELFIE_LIVENESS": { "title": "自拍 / 活体检测", "desc": "清晰自拍用于与身份证件匹配。" },
+    "PROOF_ADDRESS": { "title": "地址证明", "desc": "水电煤账单、银行对账单或官方信函。" },
+    "MED_LICENSE": { "title": "执业许可证", "desc": "你的有效执业证/注册证明。" },
+    "LICENSE_VERIFICATION": { "title": "执业证验证", "desc": "如有可提供验证凭证或查询链接。" },
+    "DEGREE_DIPLOMA": { "title": "学位 / 文凭", "desc": "主要医学/牙医学位证书。" },
+    "INTERNSHIP_CERT": { "title": "实习证明", "desc": "如在你所在地区适用。" },
+    "RESIDENCY_CERT": { "title": "住院医培训证明", "desc": "如对你的专科适用。" },
+    "SPECIALIST_CERT": { "title": "专科证书", "desc": "专科/委员会认证证书（如适用）。" },
+    "GOOD_STANDING": { "title": "良好执业证明", "desc": "由监管机构签发，通常有有效期。" },
+    "CV": { "title": "简历（CV）", "desc": "近期专业简历。" },
+    "EMPLOYMENT_LETTER": { "title": "雇佣/机构证明信", "desc": "证明你与诊所/医院关系（如适用）。" },
+    "MALPRACTICE_INSURANCE": { "title": "医疗责任保险", "desc": "职业责任保险证明（如要求）。" },
+    "CRIMINAL_RECORD_CHECK": { "title": "无犯罪记录证明", "desc": "警方/背景审查证明（如要求）。" },
+    "LANGUAGE_CERT": { "title": "语言证书", "desc": "语言能力证明（如要求）。" },
+    "LICENSE_TRANSLATION": { "title": "认证翻译", "desc": "执业证/学位证的认证翻译件。" },
+    "LEGALIZATION_APOSTILLE": { "title": "公证 / 海牙认证", "desc": "如要求，提供公证或海牙认证。" },
+    "WORK_PERMIT": { "title": "工作许可 / 居留许可", "desc": "外籍医生在当地执业时可能需要。" },
+    "DEA_REGISTRATION": { "title": "DEA 注册", "desc": "美国：受控物质处方所需 DEA 注册。" },
+    "EPCS_ENABLEMENT": { "title": "EPCS 启用", "desc": "美国：受控物质电子处方。" },
+    "PDMP_CHECK": { "title": "PDMP 集成", "desc": "美国：处方监测计划（系统级）。" }
+  }
+}
