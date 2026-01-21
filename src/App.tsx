@@ -87,6 +87,7 @@ const PracticeSettings = lazy(() => import("@/pages/PracticeSettings"));
 const PracticeVerification = lazy(() => import("@/pages/PracticeVerification"));
 
 // Verification pages
+const DoctorVerification = lazy(() => import("@/pages/doctor/DoctorVerification"));
 const LabVerification = lazy(() => import("@/pages/lab/LabVerification"));
 const PharmacyVerification = lazy(() => import("@/pages/pharmacy/PharmacyVerification"));
 const ImagingVerification = lazy(() => import("@/pages/imaging/ImagingVerification"));
@@ -177,6 +178,7 @@ export default function App() {
                 {/* Doctor */}
                 <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
                 <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
+                <Route path="/doctor/dashboard/verification" element={<DoctorVerification />} />
                 <Route path="/doctor/schedule" element={<DoctorScheduleSettings />} />
                 <Route path="/doctor/treatment-planning" element={<TreatmentPlanning />} />
                 <Route path="/doctor/procedures" element={<ProcedureLibrary />} />
