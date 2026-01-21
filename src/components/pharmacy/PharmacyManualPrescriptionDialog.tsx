@@ -1,28 +1,21 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { Plus, Trash2 } from 'lucide-react';
 import { PhoneInput } from '@/components/shared/PhoneInput';
 import { validatePhone } from '@/lib/phone/phone';
 import { logSession } from '@/lib/debug/authDebug';
-
-function makeRxNumber() {
-  return `RX-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
-}
 
 type RxItemDraft = {
   medication_name: string;
   medication_code: string;
   dosage: string;
   frequency: string;
-  quantity: number;
+  quantity: number | string;
   unit: string;
   instructions: string;
   substitutions_allowed: boolean;
@@ -41,23 +34,22 @@ export function PharmacyManualPrescriptionDialog({
 }) {
   const [loading, setLoading] = useState(false);
 
-  // ✅ WALK-IN ONLY (manual booking)
   const [patientName, setPatientName] = useState('');
   const [patientPhone, setPatientPhone] = useState('');
   const [patientEmail, setPatientEmail] = useState('');
 
   const [doctorId, setDoctorId] = useState('');
   const [notes, setNotes] = useState('');
-  const [refillsTotal, setRefillsTotal] = useState(0);
+  const [refillsTotal, setRefillsTotal] = useState<number>(0);
 
   const [items, setItems] = useState<RxItemDraft[]>([
     {
       medication_name: '',
       medication_code: '',
-      dosage: 'as directed',
-      frequency: 'as directed',
+      dosage: '',
+      frequency: '',
       quantity: 1,
-      unit: 'box',
+      unit: '',
       instructions: '',
       substitutions_allowed: true,
     },
@@ -66,6 +58,7 @@ export function PharmacyManualPrescriptionDialog({
   useEffect(() => {
     if (!open) return;
 
+    setLoading(false);
     setPatientName('');
     setPatientPhone('');
     setPatientEmail('');
@@ -76,10 +69,10 @@ export function PharmacyManualPrescriptionDialog({
       {
         medication_name: '',
         medication_code: '',
-        dosage: 'as directed',
-        frequency: 'as directed',
+        dosage: '',
+        frequency: '',
         quantity: 1,
-        unit: 'box',
+        unit: '',
         instructions: '',
         substitutions_allowed: true,
       },
@@ -88,21 +81,20 @@ export function PharmacyManualPrescriptionDialog({
 
   const validate = () => {
     if (!pharmacyId) return 'Missing pharmacy';
+    if (!patientName.trim()) return 'Walk-in name is required';
 
-    // ✅ walk-in only
-    if (!patientName.trim()) return 'Walk-in patient name is required';
-
-    // ✅ phone required
     const phoneCheck = validatePhone(patientPhone);
     if (!phoneCheck.ok) return phoneCheck.reason || 'Invalid phone';
 
-    if (items.length === 0) return 'Add at least 1 medication';
+    if (!items.length) return 'Add at least one medication item';
     for (const it of items) {
       if (!it.medication_name.trim()) return 'Medication name is required';
       if (!it.dosage.trim()) return 'Dosage is required';
       if (!it.frequency.trim()) return 'Frequency is required';
-      if (!it.quantity || it.quantity < 1) return 'Quantity must be >= 1';
+      const q = Number(it.quantity);
+      if (!Number.isFinite(q) || q <= 0) return 'Quantity must be > 0';
     }
+
     return null;
   };
 
@@ -112,10 +104,10 @@ export function PharmacyManualPrescriptionDialog({
       {
         medication_name: '',
         medication_code: '',
-        dosage: 'as directed',
-        frequency: 'as directed',
+        dosage: '',
+        frequency: '',
         quantity: 1,
-        unit: 'box',
+        unit: '',
         instructions: '',
         substitutions_allowed: true,
       },
@@ -130,6 +122,8 @@ export function PharmacyManualPrescriptionDialog({
     setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
   };
 
+  const canSubmit = useMemo(() => !loading && !!pharmacyId, [loading, pharmacyId]);
+
   const handleCreate = async () => {
     const err = validate();
     if (err) return toast.error(err);
@@ -138,54 +132,46 @@ export function PharmacyManualPrescriptionDialog({
     try {
       await logSession('PHARMACY_MANUAL_PRESCRIPTION_CREATE');
 
-      const prescription_number = makeRxNumber();
       const phone = validatePhone(patientPhone).normalized;
+      const email = patientEmail.trim().toLowerCase() || null;
 
-      const rxPayload: any = {
-        prescription_number,
-        pharmacy_id: pharmacyId,
-        status: 'pending',
-        notes: notes?.trim() || null,
-        refills_total: refillsTotal,
-        refills_remaining: refillsTotal,
+      const { data, error } = await supabase.functions.invoke('pharmacy-create-prescription', {
+        body: {
+          pharmacyId,
+          patient: {
+            patient_id: null,
+            full_name: patientName.trim(),
+            phone,
+            email,
+            date_of_birth: null,
+          },
+          doctor_id: doctorId.trim() ? doctorId.trim() : null,
+          notes: notes?.trim() || null,
+          refills_total: refillsTotal || 0,
+          items: items.map((it) => ({
+            medication_name: it.medication_name.trim(),
+            medication_code: it.medication_code.trim() || null,
+            dosage: it.dosage.trim(),
+            frequency: it.frequency.trim(),
+            quantity: Number(it.quantity),
+            unit: it.unit.trim() || null,
+            instructions: it.instructions.trim() || null,
+            substitutions_allowed: !!it.substitutions_allowed,
+          })),
+        },
+      });
 
-        doctor_id: doctorId.trim() ? doctorId.trim() : null,
+      if (error) {
+        const ctx = (error as any)?.context ? JSON.stringify((error as any).context) : '';
+        throw new Error(`${error.message}${ctx ? ` | ${ctx}` : ''}`);
+      }
 
-        // ✅ walk-in only
-        patient_id: null,
-        patient_name: patientName.trim(),
-        patient_phone: phone,
-        patient_email: patientEmail.trim() || null,
-      };
+      if (!data?.ok) {
+        const meta = data?.meta ? ` | ${JSON.stringify(data.meta)}` : '';
+        throw new Error(`${data?.error || 'Failed to create prescription'}${meta}`);
+      }
 
-      console.log('[PHARMACY_MANUAL] prescriptions payload:', rxPayload);
-
-      const { data: createdRx, error: rxErr } = await supabase
-        .from('prescriptions')
-        .insert(rxPayload)
-        .select()
-        .single();
-
-      if (rxErr) throw rxErr;
-
-      const itemsPayload: any[] = items.map((it) => ({
-        prescription_id: createdRx.id,
-        medication_name: it.medication_name.trim(),
-        medication_code: it.medication_code.trim() || null,
-        dosage: it.dosage.trim(),
-        frequency: it.frequency.trim(),
-        quantity: Number(it.quantity),
-        unit: it.unit.trim() || null,
-        instructions: it.instructions.trim() || null,
-        substitutions_allowed: !!it.substitutions_allowed,
-      }));
-
-      console.log('[PHARMACY_MANUAL] prescription_items payload:', itemsPayload);
-
-      const { error: itemsErr } = await supabase.from('prescription_items').insert(itemsPayload);
-      if (itemsErr) throw itemsErr;
-
-      toast.success('Manual prescription created');
+      toast.success(`Manual prescription created (${data.prescriptionNumber || 'RX'})`);
       onOpenChange(false);
       onCreated?.();
     } catch (e: any) {
@@ -204,9 +190,8 @@ export function PharmacyManualPrescriptionDialog({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Patient */}
           <div className="space-y-3 border rounded-lg p-4">
-            <div className="text-sm font-semibold">Patient (Walk-in only)</div>
+            <div className="text-sm font-semibold">Patient (Walk-in)</div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1">
@@ -214,7 +199,6 @@ export function PharmacyManualPrescriptionDialog({
                 <Input value={patientName} onChange={(e) => setPatientName(e.target.value)} placeholder="Full name" />
               </div>
 
-              {/* ✅ required phone */}
               <PhoneInput value={patientPhone} onChange={setPatientPhone} />
 
               <div className="space-y-1 md:col-span-2">
@@ -224,44 +208,46 @@ export function PharmacyManualPrescriptionDialog({
             </div>
           </div>
 
-          {/* Doctor / Notes */}
           <div className="space-y-3 border rounded-lg p-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label>Doctor ID (optional)</Label>
-                <Input value={doctorId} onChange={(e) => setDoctorId(e.target.value)} placeholder="doctor_id (optional)" />
+                <Input value={doctorId} onChange={(e) => setDoctorId(e.target.value)} placeholder="doctor UUID (optional)" />
               </div>
 
               <div className="space-y-1">
                 <Label>Refills total</Label>
-                <Input type="number" min={0} value={refillsTotal} onChange={(e) => setRefillsTotal(Number(e.target.value || 0))} />
+                <Input
+                  type="number"
+                  value={refillsTotal}
+                  min={0}
+                  onChange={(e) => setRefillsTotal(Math.max(0, Number(e.target.value || 0)))}
+                />
               </div>
-            </div>
 
-            <div className="space-y-1">
-              <Label>Notes (optional)</Label>
-              <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Diagnosis, instructions, etc." />
+              <div className="space-y-1 md:col-span-2">
+                <Label>Notes (optional)</Label>
+                <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
+              </div>
             </div>
           </div>
 
-          {/* Items */}
           <div className="space-y-3 border rounded-lg p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <div className="text-sm font-semibold">Medications</div>
-              <Button type="button" variant="outline" onClick={addItem}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add medication
+              <Button variant="outline" onClick={addItem} type="button">
+                Add item
               </Button>
             </div>
 
             <div className="space-y-3">
               {items.map((it, idx) => (
-                <Card key={idx} className="p-4 space-y-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="font-medium">Item #{idx + 1}</div>
+                <div key={idx} className="border rounded-lg p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-sm font-semibold">Item #{idx + 1}</div>
                     {items.length > 1 && (
-                      <Button type="button" variant="ghost" onClick={() => removeItem(idx)}>
-                        <Trash2 className="h-4 w-4" />
+                      <Button variant="destructive" onClick={() => removeItem(idx)} type="button">
+                        Remove
                       </Button>
                     )}
                   </div>
@@ -269,49 +255,62 @@ export function PharmacyManualPrescriptionDialog({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <Label>Medication name *</Label>
-                      <Input value={it.medication_name} onChange={(e) => updateItem(idx, { medication_name: e.target.value })} placeholder="Amoxicillin" />
+                      <Input value={it.medication_name} onChange={(e) => updateItem(idx, { medication_name: e.target.value })} />
                     </div>
+
                     <div className="space-y-1">
                       <Label>Medication code (optional)</Label>
-                      <Input value={it.medication_code} onChange={(e) => updateItem(idx, { medication_code: e.target.value })} placeholder="CODE123" />
+                      <Input value={it.medication_code} onChange={(e) => updateItem(idx, { medication_code: e.target.value })} />
                     </div>
 
                     <div className="space-y-1">
                       <Label>Dosage *</Label>
-                      <Input value={it.dosage} onChange={(e) => updateItem(idx, { dosage: e.target.value })} placeholder="500mg" />
+                      <Input value={it.dosage} onChange={(e) => updateItem(idx, { dosage: e.target.value })} placeholder="e.g. 500mg" />
                     </div>
+
                     <div className="space-y-1">
                       <Label>Frequency *</Label>
-                      <Input value={it.frequency} onChange={(e) => updateItem(idx, { frequency: e.target.value })} placeholder="2x daily" />
+                      <Input
+                        value={it.frequency}
+                        onChange={(e) => updateItem(idx, { frequency: e.target.value })}
+                        placeholder="e.g. 2x/day"
+                      />
                     </div>
 
                     <div className="space-y-1">
                       <Label>Quantity *</Label>
-                      <Input type="number" min={1} value={it.quantity} onChange={(e) => updateItem(idx, { quantity: Number(e.target.value || 1) })} />
+                      <Input
+                        type="number"
+                        min={1}
+                        value={it.quantity}
+                        onChange={(e) => updateItem(idx, { quantity: e.target.value })}
+                      />
                     </div>
+
                     <div className="space-y-1">
-                      <Label>Unit</Label>
-                      <Input value={it.unit} onChange={(e) => updateItem(idx, { unit: e.target.value })} placeholder="tabs/box/ml" />
+                      <Label>Unit (optional)</Label>
+                      <Input value={it.unit} onChange={(e) => updateItem(idx, { unit: e.target.value })} placeholder="tablets, ml..." />
+                    </div>
+
+                    <div className="space-y-1 md:col-span-2">
+                      <Label>Instructions (optional)</Label>
+                      <Input
+                        value={it.instructions}
+                        onChange={(e) => updateItem(idx, { instructions: e.target.value })}
+                        placeholder="Take after meals..."
+                      />
                     </div>
                   </div>
-
-                  <div className="space-y-1">
-                    <Label>Instructions (optional)</Label>
-                    <Textarea value={it.instructions} onChange={(e) => updateItem(idx, { instructions: e.target.value })} rows={2} placeholder="Take after meals..." />
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Checkbox checked={it.substitutions_allowed} onCheckedChange={(v) => updateItem(idx, { substitutions_allowed: Boolean(v) })} />
-                    <span className="text-sm">Allow generic substitution</span>
-                  </div>
-                </Card>
+                </div>
               ))}
             </div>
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={loading}>
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreate} disabled={!canSubmit}>
               {loading ? 'Creating...' : 'Create Prescription'}
             </Button>
           </div>
