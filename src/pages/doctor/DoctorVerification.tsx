@@ -1372,7 +1372,7 @@ export default function DoctorSignUp() {
                   </div>
 
                   <p className="text-sm text-muted-foreground">
-                    After submission, your profile will be reviewed by a super admin. You’ll be notified once verified.
+                    After submission, your profile will be reviewed by admins of the platform. You’ll be notified once verified.
                   </p>
                 </CardContent>
               </Card>
