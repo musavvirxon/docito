@@ -1,4 +1,3 @@
-// src/components/imaging/ImagingManualOrderDialog.tsx
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -32,6 +31,8 @@ export function ImagingManualOrderDialog({
 
   const [modality, setModality] = useState<"xray" | "ct" | "mri" | "ultrasound" | "mammography" | "other">("xray");
   const [studyName, setStudyName] = useState("");
+  const [bodyPart, setBodyPart] = useState("");
+  const [contrast, setContrast] = useState<"no" | "yes">("no");
 
   const [priority, setPriority] = useState<"routine" | "urgent" | "stat">("routine");
   const [preferredDate, setPreferredDate] = useState("");
@@ -48,6 +49,8 @@ export function ImagingManualOrderDialog({
     setPatientDob("");
     setModality("xray");
     setStudyName("");
+    setBodyPart("");
+    setContrast("no");
     setPriority("routine");
     setPreferredDate("");
     setPreferredSlot("");
@@ -88,6 +91,8 @@ export function ImagingManualOrderDialog({
           study: {
             modality,
             name: studyName.trim(),
+            body_part: bodyPart.trim() || null,
+            contrast: contrast === "yes",
           },
           priority,
           preferred_date: preferredDate || null,
@@ -105,10 +110,6 @@ export function ImagingManualOrderDialog({
       if (!data?.ok) {
         const meta = data?.meta ? ` | ${JSON.stringify(data.meta)}` : "";
         throw new Error(`${data?.error || "Failed to create imaging order"}${meta}`);
-      }
-
-      if (data?.warning) {
-        toast.warning(`Order created, but patient registry failed: ${JSON.stringify(data.warning)}`);
       }
 
       if (data?.stateWarning) {
@@ -189,6 +190,24 @@ export function ImagingManualOrderDialog({
                   onChange={(e) => setStudyName(e.target.value)}
                   placeholder="Chest X-Ray, Brain MRI..."
                 />
+              </div>
+
+              <div className="space-y-1">
+                <Label>Body part (optional)</Label>
+                <Input value={bodyPart} onChange={(e) => setBodyPart(e.target.value)} placeholder="Chest, Brain, Knee..." />
+              </div>
+
+              <div className="space-y-1">
+                <Label>Contrast</Label>
+                <Select value={contrast} onValueChange={(v) => setContrast(v as any)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Contrast" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="no">No</SelectItem>
+                    <SelectItem value="yes">Yes</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
