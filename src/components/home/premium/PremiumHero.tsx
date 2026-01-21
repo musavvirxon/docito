@@ -1,8 +1,8 @@
-import { useEffect, useRef, Suspense } from 'react';
+import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import gsap from 'gsap';
-import HeroOrb3D from './HeroOrb3D';
+import LazyHeroOrb3D from './LazyHeroOrb3D';
 export default function PremiumHero() {
   const {
     t
@@ -106,11 +106,9 @@ export default function PremiumHero() {
           </div>
         </div>
 
-        {/* Right side - 3D Globe */}
+        {/* Right side - 3D Globe (lazy loaded) */}
         <div className="w-full lg:w-1/2 h-[500px] lg:h-[700px] relative">
-          <Suspense fallback={null}>
-            <HeroOrb3D />
-          </Suspense>
+          <LazyHeroOrb3D />
         </div>
       </div>
 
