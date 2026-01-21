@@ -1,77 +1,201 @@
-import { motion } from 'framer-motion';
-import { Star, MapPin, Clock, ChevronRight, Building2, Users } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
+import { Star, MapPin, Clock, ChevronRight, Building2, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
-const featuredDoctors = [
-  {
-    name: 'Dr. Sarah Mitchell',
-    specialty: 'Cardiologist',
-    rating: 4.9,
-    reviews: 328,
-    location: 'New York, NY',
-    available: 'Today',
-    image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=300&h=300&fit=crop&crop=face'
-  },
-  {
-    name: 'Dr. James Chen',
-    specialty: 'Neurologist',
-    rating: 4.8,
-    reviews: 256,
-    location: 'Los Angeles, CA',
-    available: 'Tomorrow',
-    image: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=300&h=300&fit=crop&crop=face'
-  },
-  {
-    name: 'Dr. Emily Rodriguez',
-    specialty: 'Pediatrician',
-    rating: 5.0,
-    reviews: 412,
-    location: 'Chicago, IL',
-    available: 'Today',
-    image: 'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=300&h=300&fit=crop&crop=face'
-  },
-  {
-    name: 'Dr. Michael Park',
-    specialty: 'Orthopedic Surgeon',
-    rating: 4.9,
-    reviews: 189,
-    location: 'Houston, TX',
-    available: 'Wed, Dec 13',
-    image: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=300&h=300&fit=crop&crop=face'
-  },
-];
+type DoctorRow = {
+  id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  specialty: string | null;
+  rating: number | null;
+  num_reviews: number | null;
+  accepts_new_patients: boolean | null;
+  practice_city: string | null;
+  practice_country: string | null;
+};
 
-const featuredClinics = [
-  {
-    name: 'Manhattan Medical Center',
-    type: 'Multi-specialty Clinic',
-    rating: 4.8,
-    reviews: 1247,
-    location: 'New York, NY',
-    doctors: 45,
-    image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=400&h=300&fit=crop'
-  },
-  {
-    name: 'Pacific Health Institute',
-    type: 'Research Hospital',
-    rating: 4.9,
-    reviews: 2156,
-    location: 'San Francisco, CA',
-    doctors: 120,
-    image: 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?w=400&h=300&fit=crop'
-  },
-  {
-    name: 'Sunrise Family Practice',
-    type: 'Family Medicine',
-    rating: 4.7,
-    reviews: 856,
-    location: 'Phoenix, AZ',
-    doctors: 12,
-    image: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=400&h=300&fit=crop'
-  },
-];
+type PracticeRow = {
+  id: string;
+  name: string;
+  logo_url: string | null;
+  practice_type: string | null;
+  rating: number | null;
+  num_reviews: number | null;
+  city: string | null;
+  country: string | null;
+};
+
+function formatLocation(city?: string | null, country?: string | null) {
+  const c = (city || "").trim();
+  const k = (country || "").trim();
+  if (c && k) return `${c}, ${k}`;
+  return c || k || "—";
+}
+
+function safeNum(n: unknown, fallback = 0) {
+  const x = Number(n);
+  return Number.isFinite(x) ? x : fallback;
+}
+
+function safeRating(n: unknown) {
+  const x = Number(n);
+  return Number.isFinite(x) ? x : null;
+}
 
 export default function FeaturedProviders() {
+  const navigate = useNavigate();
+
+  const [loadingDoctors, setLoadingDoctors] = useState(true);
+  const [loadingPractices, setLoadingPractices] = useState(true);
+
+  const [doctors, setDoctors] = useState<DoctorRow[]>([]);
+  const [practices, setPractices] = useState<PracticeRow[]>([]);
+  const [practiceDoctorCounts, setPracticeDoctorCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadDoctors = async () => {
+      setLoadingDoctors(true);
+      try {
+        const { data, error } = await (supabase as any)
+          .from("doctor_public_search_view")
+          .select("id, full_name, avatar_url, specialty, rating, num_reviews, accepts_new_patients, practice_city, practice_country")
+          .order("rating", { ascending: false, nullsFirst: false })
+          .order("num_reviews", { ascending: false, nullsFirst: false })
+          .order("appointment_count", { ascending: false, nullsFirst: false })
+          .limit(4);
+
+        if (error) throw error;
+        if (cancelled) return;
+
+        const normalized: DoctorRow[] = (data || []).map((d: any) => ({
+          id: String(d.id),
+          full_name: d.full_name ?? null,
+          avatar_url: d.avatar_url ?? null,
+          specialty: d.specialty ?? null,
+          rating: safeRating(d.rating),
+          num_reviews: safeNum(d.num_reviews, 0),
+          accepts_new_patients: typeof d.accepts_new_patients === "boolean" ? d.accepts_new_patients : null,
+          practice_city: d.practice_city ?? null,
+          practice_country: d.practice_country ?? null,
+        }));
+
+        setDoctors(normalized);
+      } catch (e) {
+        if (!cancelled) setDoctors([]);
+      } finally {
+        if (!cancelled) setLoadingDoctors(false);
+      }
+    };
+
+    const loadPractices = async () => {
+      setLoadingPractices(true);
+      try {
+        const { data, error } = await (supabase as any)
+          .from("practice_public_search_view")
+          .select("id, name, logo_url, practice_type, rating, num_reviews, city, country")
+          .order("rating", { ascending: false, nullsFirst: false })
+          .order("num_reviews", { ascending: false, nullsFirst: false })
+          .order("appointment_count", { ascending: false, nullsFirst: false })
+          .limit(3);
+
+        if (error) throw error;
+        if (cancelled) return;
+
+        const normalized: PracticeRow[] = (data || []).map((p: any) => ({
+          id: String(p.id),
+          name: String(p.name || ""),
+          logo_url: p.logo_url ?? null,
+          practice_type: p.practice_type ?? null,
+          rating: safeRating(p.rating),
+          num_reviews: safeNum(p.num_reviews, 0),
+          city: p.city ?? null,
+          country: p.country ?? null,
+        }));
+
+        setPractices(normalized);
+
+        const ids = normalized.map((p) => p.id).filter(Boolean);
+        if (!ids.length) {
+          setPracticeDoctorCounts({});
+          return;
+        }
+
+        // Count doctors per practice using the public view (works for anon users)
+        const { data: docRows } = await (supabase as any)
+          .from("doctor_public_search_view")
+          .select("practice_id")
+          .in("practice_id", ids)
+          .limit(5000);
+
+        if (cancelled) return;
+
+        const counts: Record<string, number> = {};
+        for (const id of ids) counts[id] = 0;
+
+        (docRows || []).forEach((r: any) => {
+          const pid = r?.practice_id ? String(r.practice_id) : "";
+          if (pid && pid in counts) counts[pid] += 1;
+        });
+
+        setPracticeDoctorCounts(counts);
+      } catch (e) {
+        if (!cancelled) {
+          setPractices([]);
+          setPracticeDoctorCounts({});
+        }
+      } finally {
+        if (!cancelled) setLoadingPractices(false);
+      }
+    };
+
+    loadDoctors();
+    loadPractices();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const doctorsToRender = useMemo(() => {
+    if (loadingDoctors) {
+      return Array.from({ length: 4 }).map((_, i) => ({
+        id: `skeleton-doctor-${i}`,
+        full_name: null,
+        avatar_url: null,
+        specialty: null,
+        rating: null,
+        num_reviews: 0,
+        accepts_new_patients: null,
+        practice_city: null,
+        practice_country: null,
+        _skeleton: true as const,
+      }));
+    }
+    return doctors.map((d) => ({ ...d, _skeleton: false as const }));
+  }, [loadingDoctors, doctors]);
+
+  const practicesToRender = useMemo(() => {
+    if (loadingPractices) {
+      return Array.from({ length: 3 }).map((_, i) => ({
+        id: `skeleton-practice-${i}`,
+        name: "",
+        logo_url: null,
+        practice_type: null,
+        rating: null,
+        num_reviews: 0,
+        city: null,
+        country: null,
+        _skeleton: true as const,
+      }));
+    }
+    return practices.map((p) => ({ ...p, _skeleton: false as const }));
+  }, [loadingPractices, practices]);
+
   return (
     <section className="py-24 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -88,59 +212,91 @@ export default function FeaturedProviders() {
               <h2 className="text-4xl md:text-5xl font-extralight tracking-tight text-foreground mb-2">
                 Top Specialists
               </h2>
-              <p className="text-muted-foreground font-light">
-                Highly rated doctors ready to help
-              </p>
+              <p className="text-muted-foreground font-light">Best by rating & reviews</p>
             </div>
-            <Button variant="ghost" className="hidden md:flex items-center gap-2 text-primary">
+            <Button
+              variant="ghost"
+              className="hidden md:flex items-center gap-2 text-primary"
+              onClick={() => navigate("/find-doctors")}
+            >
               View All <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredDoctors.map((doctor, index) => (
-              <motion.div
-                key={doctor.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ y: -8 }}
-                className="group"
-              >
-                <div className="bg-card rounded-3xl border border-border/50 overflow-hidden transition-all duration-300 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/5">
-                  <div className="relative h-48 overflow-hidden">
-                    <img
-                      src={doctor.image}
-                      alt={doctor.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <div className="flex items-center gap-1 text-white mb-1">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="font-medium">{doctor.rating}</span>
-                        <span className="text-white/70 text-sm">({doctor.reviews})</span>
+            {doctorsToRender.map((doctor, index) => {
+              const isSkeleton = (doctor as any)._skeleton === true;
+              const rating = doctor.rating ?? 0;
+              const reviews = doctor.num_reviews ?? 0;
+              const name = doctor.full_name || "—";
+              const specialty = doctor.specialty || "Specialist";
+              const location = formatLocation(doctor.practice_city, doctor.practice_country);
+              const availableLabel =
+                doctor.accepts_new_patients === null ? "—" : doctor.accepts_new_patients ? "Accepting" : "Not accepting";
+              const image = doctor.avatar_url || "/placeholder.svg";
+
+              return (
+                <motion.div
+                  key={doctor.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  whileHover={{ y: -8 }}
+                  className="group"
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!isSkeleton) navigate(`/doctor/${doctor.id}`);
+                    }}
+                    className="w-full text-left"
+                    disabled={isSkeleton}
+                  >
+                    <div className="bg-card rounded-3xl border border-border/50 overflow-hidden transition-all duration-300 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/5">
+                      <div className="relative h-48 overflow-hidden">
+                        {isSkeleton ? (
+                          <div className="w-full h-full bg-muted animate-pulse" />
+                        ) : (
+                          <img
+                            src={image}
+                            alt={name}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            loading="lazy"
+                          />
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                        <div className="absolute bottom-4 left-4 right-4">
+                          <div className="flex items-center gap-1 text-white mb-1">
+                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                            <span className="font-medium">{isSkeleton ? "—" : rating.toFixed(1)}</span>
+                            <span className="text-white/70 text-sm">({isSkeleton ? "—" : reviews})</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-5">
+                        <h3 className={`font-semibold text-foreground mb-1 ${isSkeleton ? "bg-muted animate-pulse rounded h-5 w-3/4" : ""}`}>
+                          {isSkeleton ? "\u00A0" : name}
+                        </h3>
+                        <p className={`text-sm text-primary mb-3 ${isSkeleton ? "bg-muted animate-pulse rounded h-4 w-1/2" : ""}`}>
+                          {isSkeleton ? "\u00A0" : specialty}
+                        </p>
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            {isSkeleton ? "—" : location}
+                          </span>
+                          <span className={`flex items-center gap-1 ${doctor.accepts_new_patients ? "text-emerald-500" : "text-muted-foreground"}`}>
+                            <Clock className="w-3 h-3" />
+                            {isSkeleton ? "—" : availableLabel}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="p-5">
-                    <h3 className="font-semibold text-foreground mb-1">{doctor.name}</h3>
-                    <p className="text-sm text-primary mb-3">{doctor.specialty}</p>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
-                        {doctor.location}
-                      </span>
-                      <span className="flex items-center gap-1 text-emerald-500">
-                        <Clock className="w-3 h-3" />
-                        {doctor.available}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+                  </button>
+                </motion.div>
+              );
+            })}
           </div>
         </motion.div>
 
@@ -156,66 +312,95 @@ export default function FeaturedProviders() {
               <h2 className="text-4xl md:text-5xl font-extralight tracking-tight text-foreground mb-2">
                 Leading Clinics
               </h2>
-              <p className="text-muted-foreground font-light">
-                Trusted healthcare facilities near you
-              </p>
+              <p className="text-muted-foreground font-light">Best by rating & reviews</p>
             </div>
-            <Button variant="ghost" className="hidden md:flex items-center gap-2 text-primary">
+            <Button
+              variant="ghost"
+              className="hidden md:flex items-center gap-2 text-primary"
+              onClick={() => navigate("/find-practices")}
+            >
               View All <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {featuredClinics.map((clinic, index) => (
-              <motion.div
-                key={clinic.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ y: -8 }}
-                className="group"
-              >
-                <div className="bg-card rounded-3xl border border-border/50 overflow-hidden transition-all duration-300 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/5">
-                  <div className="relative h-52 overflow-hidden">
-                    <img
-                      src={clinic.image}
-                      alt={clinic.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <div className="flex items-center justify-between text-white">
-                        <div className="flex items-center gap-1">
-                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                          <span className="font-medium">{clinic.rating}</span>
-                          <span className="text-white/70 text-sm">({clinic.reviews})</span>
+            {practicesToRender.map((clinic, index) => {
+              const isSkeleton = (clinic as any)._skeleton === true;
+              const rating = clinic.rating ?? 0;
+              const reviews = clinic.num_reviews ?? 0;
+              const location = formatLocation(clinic.city, clinic.country);
+              const doctorsCount = practiceDoctorCounts[clinic.id] ?? 0;
+              const image = clinic.logo_url || "/placeholder.svg";
+
+              return (
+                <motion.div
+                  key={clinic.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  whileHover={{ y: -8 }}
+                  className="group"
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!isSkeleton) navigate("/find-practices");
+                    }}
+                    className="w-full text-left"
+                    disabled={isSkeleton}
+                  >
+                    <div className="bg-card rounded-3xl border border-border/50 overflow-hidden transition-all duration-300 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/5">
+                      <div className="relative h-52 overflow-hidden">
+                        {isSkeleton ? (
+                          <div className="w-full h-full bg-muted animate-pulse" />
+                        ) : (
+                          <img
+                            src={image}
+                            alt={clinic.name}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            loading="lazy"
+                          />
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                        <div className="absolute bottom-4 left-4 right-4">
+                          <div className="flex items-center justify-between text-white">
+                            <div className="flex items-center gap-1">
+                              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                              <span className="font-medium">{isSkeleton ? "—" : rating.toFixed(1)}</span>
+                              <span className="text-white/70 text-sm">({isSkeleton ? "—" : reviews})</span>
+                            </div>
+                            <div className="flex items-center gap-1 text-sm">
+                              <Users className="w-4 h-4" />
+                              {isSkeleton ? "—" : `${doctorsCount} doctors`}
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1 text-sm">
-                          <Users className="w-4 h-4" />
-                          {clinic.doctors} doctors
+                      </div>
+                      <div className="p-5">
+                        <div className="flex items-start gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <Building2 className="w-5 h-5 text-primary" />
+                          </div>
+                          <div>
+                            <h3 className={`font-semibold text-foreground mb-1 ${isSkeleton ? "bg-muted animate-pulse rounded h-5 w-3/4" : ""}`}>
+                              {isSkeleton ? "\u00A0" : clinic.name}
+                            </h3>
+                            <p className={`text-sm text-primary mb-2 ${isSkeleton ? "bg-muted animate-pulse rounded h-4 w-1/2" : ""}`}>
+                              {isSkeleton ? "\u00A0" : clinic.practice_type || "Clinic"}
+                            </p>
+                            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <MapPin className="w-3 h-3" />
+                              {isSkeleton ? "—" : location}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="p-5">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Building2 className="w-5 h-5 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-foreground mb-1">{clinic.name}</h3>
-                        <p className="text-sm text-primary mb-2">{clinic.type}</p>
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <MapPin className="w-3 h-3" />
-                          {clinic.location}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+                  </button>
+                </motion.div>
+              );
+            })}
           </div>
         </motion.div>
       </div>
