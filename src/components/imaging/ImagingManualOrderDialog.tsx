@@ -1,15 +1,16 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from 'sonner';
-import { PhoneInput } from '@/components/shared/PhoneInput';
-import { validatePhone } from '@/lib/phone/phone';
-import { logSession } from '@/lib/debug/authDebug';
+// src/components/imaging/ImagingManualOrderDialog.tsx
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
+import { PhoneInput } from "@/components/shared/PhoneInput";
+import { validatePhone } from "@/lib/phone/phone";
+import { logSession } from "@/lib/debug/authDebug";
 
 export function ImagingManualOrderDialog({
   open,
@@ -24,47 +25,44 @@ export function ImagingManualOrderDialog({
 }) {
   const [loading, setLoading] = useState(false);
 
-  // Walk-in patient
-  const [patientName, setPatientName] = useState('');
-  const [patientPhone, setPatientPhone] = useState('');
-  const [patientEmail, setPatientEmail] = useState('');
-  const [patientDob, setPatientDob] = useState('');
+  const [patientName, setPatientName] = useState("");
+  const [patientPhone, setPatientPhone] = useState("");
+  const [patientEmail, setPatientEmail] = useState("");
+  const [patientDob, setPatientDob] = useState("");
 
-  // Study
-  const [modality, setModality] = useState<'xray' | 'ct' | 'mri' | 'ultrasound' | 'mammography' | 'other'>('xray');
-  const [studyName, setStudyName] = useState('');
+  const [modality, setModality] = useState<"xray" | "ct" | "mri" | "ultrasound" | "mammography" | "other">("xray");
+  const [studyName, setStudyName] = useState("");
 
-  // Referral fields
-  const [priority, setPriority] = useState<'routine' | 'urgent' | 'stat'>('routine');
-  const [preferredDate, setPreferredDate] = useState('');
-  const [preferredSlot, setPreferredSlot] = useState('');
-  const [reason, setReason] = useState('');
-  const [clinicalNotes, setClinicalNotes] = useState('');
+  const [priority, setPriority] = useState<"routine" | "urgent" | "stat">("routine");
+  const [preferredDate, setPreferredDate] = useState("");
+  const [preferredSlot, setPreferredSlot] = useState("");
+  const [reason, setReason] = useState("");
+  const [clinicalNotes, setClinicalNotes] = useState("");
 
   useEffect(() => {
     if (!open) return;
     setLoading(false);
-    setPatientName('');
-    setPatientPhone('');
-    setPatientEmail('');
-    setPatientDob('');
-    setModality('xray');
-    setStudyName('');
-    setPriority('routine');
-    setPreferredDate('');
-    setPreferredSlot('');
-    setReason('');
-    setClinicalNotes('');
+    setPatientName("");
+    setPatientPhone("");
+    setPatientEmail("");
+    setPatientDob("");
+    setModality("xray");
+    setStudyName("");
+    setPriority("routine");
+    setPreferredDate("");
+    setPreferredSlot("");
+    setReason("");
+    setClinicalNotes("");
   }, [open]);
 
   const validate = () => {
-    if (!imagingCenterId) return 'Missing imaging center';
-    if (!patientName.trim()) return 'Walk-in patient name is required';
+    if (!imagingCenterId) return "Missing imaging center";
+    if (!patientName.trim()) return "Walk-in patient name is required";
 
     const phoneCheck = validatePhone(patientPhone);
-    if (!phoneCheck.ok) return phoneCheck.reason || 'Invalid phone';
+    if (!phoneCheck.ok) return phoneCheck.reason || "Invalid phone";
 
-    if (!studyName.trim()) return 'Study name is required (e.g. Chest X-Ray)';
+    if (!studyName.trim()) return "Study name is required (e.g. Chest X-Ray)";
     return null;
   };
 
@@ -74,11 +72,11 @@ export function ImagingManualOrderDialog({
 
     setLoading(true);
     try {
-      await logSession('IMAGING_DASHBOARD_MANUAL_ORDER_CREATE');
+      await logSession("IMAGING_DASHBOARD_MANUAL_ORDER_CREATE");
 
       const phone = validatePhone(patientPhone).normalized;
 
-      const { data, error } = await supabase.functions.invoke('imaging-create-order', {
+      const { data, error } = await supabase.functions.invoke("imaging-create-order", {
         body: {
           centerId: imagingCenterId,
           patient: {
@@ -99,23 +97,30 @@ export function ImagingManualOrderDialog({
         },
       });
 
-      // If the function ever returns non-2xx (network/deploy issue), show the actual edge error message.
       if (error) {
-        const ctx = (error as any)?.context ? JSON.stringify((error as any).context) : '';
-        throw new Error(`${error.message}${ctx ? ` | ${ctx}` : ''}`);
+        const ctx = (error as any)?.context ? JSON.stringify((error as any).context) : "";
+        throw new Error(`${error.message}${ctx ? ` | ${ctx}` : ""}`);
       }
 
       if (!data?.ok) {
-        const meta = data?.meta ? ` | ${JSON.stringify(data.meta)}` : '';
-        throw new Error(`${data?.error || 'Failed to create order'}${meta}`);
+        const meta = data?.meta ? ` | ${JSON.stringify(data.meta)}` : "";
+        throw new Error(`${data?.error || "Failed to create imaging order"}${meta}`);
       }
 
-      toast.success(`Manual imaging order created (${data.referralNumber || 'REF'})`);
+      if (data?.warning) {
+        toast.warning(`Order created, but patient registry failed: ${JSON.stringify(data.warning)}`);
+      }
+
+      if (data?.stateWarning) {
+        toast.warning(`Order created, but state tracking failed: ${JSON.stringify(data.stateWarning)}`);
+      }
+
+      toast.success(`Manual imaging order created (${data.referralNumber || "REF"})`);
       onOpenChange(false);
       onCreated?.();
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || 'Failed to create imaging order');
+      toast.error(e?.message || "Failed to create imaging order");
     } finally {
       setLoading(false);
     }
@@ -246,7 +251,7 @@ export function ImagingManualOrderDialog({
               Cancel
             </Button>
             <Button onClick={handleCreate} disabled={loading}>
-              {loading ? 'Creating...' : 'Create Imaging Order'}
+              {loading ? "Creating..." : "Create Imaging Order"}
             </Button>
           </div>
         </div>
