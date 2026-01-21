@@ -1,0 +1,64 @@
+// Path: public/locales/uz/verification.json
+{
+  "ui": {
+    "title": "Malakangizni tasdiqlang",
+    "subtitle": "Amaliyot qilayotgan mamlakatingiz uchun talab qilinadigan hujjatlarni yuklang.",
+    "loading": "Tasdiqlash talablari yuklanmoqda…",
+    "required": "Majburiy hujjatlar",
+    "optional": "Ixtiyoriy hujjatlar",
+    "upload": "Yuklash",
+    "uploadSuccess": "Muvaffaqiyatli yuklandi.",
+    "submit": "Ko‘rib chiqish uchun yuborish",
+    "submittedForReview": "Ko‘rib chiqish uchun yuborildi. Jamoamiz hujjatlaringizni tekshiradi.",
+    "validWithinDays": "{{days}} kun ichida berilgan bo‘lishi kerak",
+    "sourceVerificationRequired": "Regulyator yoki ish beruvchi orqali manba tekshiruvi talab qilinishi mumkin"
+  },
+  "ruleSets": {
+    "GLOBAL_BASE": { "name": "Global asosiy tekshiruv" },
+    "REGULATOR_GOOD_STANDING_REQUIRED": { "name": "Regulyatordan “good standing” talabi" },
+    "TRANSLATION_REQUIRED": { "name": "Tasdiqlangan tarjima" },
+    "BACKGROUND_CHECK_REQUIRED": { "name": "Background tekshiruv" },
+    "LANGUAGE_PROFICIENCY_REQUIRED": { "name": "Til bilimini tasdiqlash" },
+    "US_CONTROLLED_SUBSTANCES_OPTIONAL": { "name": "Nazorat qilinadigan dori vositalari (AQSh)" }
+  },
+  "notes": {
+    "ID_PRIMARY": "Amaldagi pasport yoki milliy ID taqdim eting.",
+    "SELFIE": "Selfi/liveness tekshiruvi shaxsni soxtalashtirishdan himoya qiladi.",
+    "ADDRESS": "Yashash yoki amaliyot hududini tasdiqlash uchun ishlatiladi.",
+    "LICENSE": "Litsenziya ismingizga mos va amalda bo‘lishi kerak.",
+    "DEGREE": "Asosiy tibbiy/stomatologik diplomingizni yuklang.",
+    "CV": "So‘nggi CV tajriba va ta’limni tasdiqlashga yordam beradi.",
+    "EMPLOYMENT_OPTIONAL": "Agar ma’lum muassasa bilan ishlasangiz, talab qilinadi.",
+    "GOOD_STANDING": "Regulyator beradi; ko‘pincha boshqa hududda ishlash uchun kerak bo‘ladi.",
+    "TRANSLATION": "Mahalliy bo‘lmagan hujjatlar uchun tasdiqlangan tarjima taqdim eting.",
+    "APOSTILLE_OPTIONAL": "Regulyator talabiga qarab apostil/legallash talab qilinishi mumkin.",
+    "BACKGROUND": "Sudlanmaganlik/Background tekshiruv talab qilinishi mumkin.",
+    "LANGUAGE": "Mahalliy litsenziya uchun til sertifikati talab qilinishi mumkin.",
+    "DEA": "Nazorat qilinadigan dori yozish uchun talab qilinadi (AQSh).",
+    "EPCS_OPTIONAL": "Ba’zi shtatlarda nazorat qilinadigan dorilarni elektron yozish uchun kerak."
+  },
+  "docTypes": {
+    "ID_NATIONAL": { "title": "Milliy ID", "desc": "Davlat ID (zarur bo‘lsa oldi-orti)." },
+    "PASSPORT": { "title": "Pasport", "desc": "Pasportning foto sahifasi." },
+    "SELFIE_LIVENESS": { "title": "Selfi / Liveness", "desc": "ID bilan mos kelishi uchun aniq selfi." },
+    "PROOF_ADDRESS": { "title": "Manzilni tasdiqlash", "desc": "Kommunal to‘lov, bank ko‘chirmasi yoki rasmiy xat." },
+    "MED_LICENSE": { "title": "Tibbiy litsenziya", "desc": "Amaldagi litsenziya/ro‘yxatdan o‘tganlik hujjati." },
+    "LICENSE_VERIFICATION": { "title": "Litsenziyani tekshirish", "desc": "Agar mavjud bo‘lsa, tekshiruv dalili yoki havola." },
+    "DEGREE_DIPLOMA": { "title": "Diplom", "desc": "Asosiy tibbiy/stomatologik diplom." },
+    "INTERNSHIP_CERT": { "title": "Internatura sertifikati", "desc": "Agar yurisdiksiyada qo‘llanilsa." },
+    "RESIDENCY_CERT": { "title": "Rezidentura sertifikati", "desc": "Agar mutaxassislik uchun qo‘llanilsa." },
+    "SPECIALIST_CERT": { "title": "Mutaxassis sertifikati", "desc": "Mutaxassislik bo‘yicha sertifikat/ro‘yxat (agar bo‘lsa)." },
+    "GOOD_STANDING": { "title": "Good standing sertifikati", "desc": "Regulyator beradi; odatda muddatli bo‘ladi." },
+    "CV": { "title": "CV / Resume", "desc": "So‘nggi professional CV." },
+    "EMPLOYMENT_LETTER": { "title": "Ish joyi / affiliasiya xati", "desc": "Klinika/shifoxona bilan ishlashingizni tasdiqlaydi (agar bo‘lsa)." },
+    "MALPRACTICE_INSURANCE": { "title": "Malpraktika sug‘urtasi", "desc": "Professional javobgarlik sug‘urtasi (talab qilinsa)." },
+    "CRIMINAL_RECORD_CHECK": { "title": "Sudlanmaganlik ma’lumotnomasi", "desc": "Politsiya tekshiruvi / background (talab qilinsa)." },
+    "LANGUAGE_CERT": { "title": "Til sertifikati", "desc": "Til bilimini tasdiqlash (talab qilinsa)." },
+    "LICENSE_TRANSLATION": { "title": "Tasdiqlangan tarjima", "desc": "Litsenziya/diplom hujjatlarining tasdiqlangan tarjimasi." },
+    "LEGALIZATION_APOSTILLE": { "title": "Apostil / legallash", "desc": "Apostil yoki legallash (talab qilinsa)." },
+    "WORK_PERMIT": { "title": "Ish ruxsatnomasi / rezidentlik", "desc": "Agar siz chet el shifokori bo‘lsangiz." },
+    "DEA_REGISTRATION": { "title": "DEA ro‘yxati", "desc": "AQSh: nazorat qilinadigan dorilar uchun DEA." },
+    "EPCS_ENABLEMENT": { "title": "EPCS yoqish", "desc": "AQSh: nazorat qilinadigan dorilarni elektron yozish." },
+    "PDMP_CHECK": { "title": "PDMP integratsiyasi", "desc": "AQSh: retsept monitoring dasturi (tizim darajasi)." }
+  }
+}
