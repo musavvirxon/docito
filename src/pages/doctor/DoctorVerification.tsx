@@ -1,3 +1,5 @@
+// Path: src/pages/doctor/DoctorVerification.tsx
+
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -79,14 +81,17 @@ const formSchema = z.object({
   username: z.string().optional(),
   profileVisibility: z.enum(["public", "private"]).default("public"),
 
-  accuracyConfirmed: z.boolean().refine((v) => v === true, "You must confirm accuracy"),
-  termsAccepted: z.boolean().refine((v) => v === true, "You must accept Terms"),
+  accuracyConfirmed: z
+    .boolean()
+    .refine((v) => v === true, "You must confirm accuracy"),
+  termsAccepted: z
+    .boolean()
+    .refine((v) => v === true, "You must accept Terms"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
 function acceptToInputAccept(accept: string) {
-  // configs use ".pdf,.jpg,.jpeg,.png" etc; HTML accept wants the same string
   return accept;
 }
 
@@ -103,9 +108,7 @@ function prettyBytes(bytes: number) {
 
 function validateFile(file: File, kind: UploadKind, accept?: string) {
   const maxMb =
-    kind === "avatar" ? 5 :
-    kind === "additional_certificate" ? 10 :
-    10;
+    kind === "avatar" ? 5 : kind === "additional_certificate" ? 10 : 10;
 
   const max = maxMb * 1024 * 1024;
 
@@ -113,14 +116,12 @@ function validateFile(file: File, kind: UploadKind, accept?: string) {
     return `File too large. Max ${maxMb}MB. Selected: ${prettyBytes(file.size)}`;
   }
 
-  // Optional accept enforcement (best-effort)
   if (accept) {
     const allowed = accept
       .split(",")
       .map((s) => s.trim().toLowerCase())
       .filter(Boolean);
 
-    // allowed entries like ".pdf" ".jpg"
     const ext = "." + (file.name.split(".").pop() || "").toLowerCase();
     if (allowed.length > 0 && !allowed.includes(ext)) {
       return `Invalid file type. Allowed: ${allowed.join(", ")}`;
@@ -211,7 +212,7 @@ function FilePick({
   );
 }
 
-export default function DoctorSignUp() {
+export default function DoctorVerification() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -226,22 +227,27 @@ export default function DoctorSignUp() {
   const [languageSearch, setLanguageSearch] = useState("");
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
 
-  const [selectedConsultationTypes, setSelectedConsultationTypes] = useState<string[]>([]);
+  const [selectedConsultationTypes, setSelectedConsultationTypes] = useState<
+    string[]
+  >([]);
 
   // Files
   const [avatar, setAvatar] = useState<File | null>(null);
   const [medicalLicense, setMedicalLicense] = useState<File | null>(null);
   const [professionalId, setProfessionalId] = useState<File | null>(null);
   const [specialtyDocuments, setSpecialtyDocuments] = useState<File[]>([]);
-  const [additionalCertificates, setAdditionalCertificates] = useState<File[]>([]);
+  const [additionalCertificates, setAdditionalCertificates] = useState<File[]>(
+    []
+  );
   const [countryDocs, setCountryDocs] = useState<Record<string, File>>({});
 
   // Country requirements
   const availableCountries = useMemo(() => getAllCountries(), []);
   const [countryCode, setCountryCode] = useState<string>("");
-  const [requiredDocuments, setRequiredDocuments] = useState<DocumentRequirement[]>([]);
+  const [requiredDocuments, setRequiredDocuments] = useState<
+    DocumentRequirement[]
+  >([]);
 
-  const regions = useMemo(() => getRegionsForCountry(form.watch("country") || ""), []); // placeholder
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -301,7 +307,9 @@ export default function DoctorSignUp() {
 
       const { data: doctor } = await supabase
         .from("doctors")
-        .select("id, specialty, bio, license_number, languages, consultation_types, years_experience")
+        .select(
+          "id, specialty, bio, license_number, languages, consultation_types, years_experience"
+        )
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -314,18 +322,24 @@ export default function DoctorSignUp() {
       if (profile?.gender) form.setValue("gender", profile.gender);
       if (profile?.username) form.setValue("username", profile.username);
       if (profile?.profile_visibility) {
-        form.setValue("profileVisibility", (profile.profile_visibility as any) || "public");
+        form.setValue(
+          "profileVisibility",
+          (profile.profile_visibility as any) || "public"
+        );
       }
 
       if (doctor?.specialty) setSelectedSpecialties([doctor.specialty]);
       if (doctor?.bio) form.setValue("bio", doctor.bio);
-      if (doctor?.license_number) form.setValue("licenseNumber", doctor.license_number);
+      if (doctor?.license_number)
+        form.setValue("licenseNumber", doctor.license_number);
       if (doctor?.languages?.length) setSelectedLanguages(doctor.languages);
-      if (doctor?.consultation_types?.length) setSelectedConsultationTypes(doctor.consultation_types);
+      if (doctor?.consultation_types?.length)
+        setSelectedConsultationTypes(doctor.consultation_types);
 
       if (doctor?.years_experience != null) {
-        // best-effort map to your experienceOptions labels
-        const match = experienceOptions.find((opt) => opt.value.startsWith(String(doctor.years_experience)));
+        const match = experienceOptions.find((opt) =>
+          opt.value.startsWith(String(doctor.years_experience))
+        );
         if (match) form.setValue("experience", match.value);
       }
     };
@@ -385,18 +399,23 @@ export default function DoctorSignUp() {
   const handleSaveDraft = async () => {
     if (!user) return;
     try {
-      // avatar upload (optional)
       let avatarUrl: string | undefined = undefined;
       if (avatar) {
         const ext = avatar.name.split(".").pop() || "jpg";
-        const res = await uploadFile(avatar, "avatars", `${user.id}/avatar-${Date.now()}.${ext}`);
+        const res = await uploadFile(
+          avatar,
+          "avatars",
+          `${user.id}/avatar-${Date.now()}.${ext}`
+        );
         avatarUrl = res?.url;
       }
 
       await supabase
         .from("profiles")
         .update({
-          full_name: `${form.getValues("firstName")} ${form.getValues("lastName")}`.trim() || undefined,
+          full_name:
+            `${form.getValues("firstName")} ${form.getValues("lastName")}`.trim() ||
+            undefined,
           phone: form.getValues("phone") || undefined,
           gender: (form.getValues("gender") as any) || undefined,
           username: form.getValues("username") || null,
@@ -420,7 +439,9 @@ export default function DoctorSignUp() {
         bio: form.getValues("bio") || null,
         license_number: form.getValues("licenseNumber") || null,
         languages: selectedLanguages.length ? selectedLanguages : null,
-        consultation_types: selectedConsultationTypes.length ? selectedConsultationTypes : null,
+        consultation_types: selectedConsultationTypes.length
+          ? selectedConsultationTypes
+          : null,
         years_experience: Number.isFinite(parsedYears as any) ? parsedYears : null,
         verified: false,
       };
@@ -459,7 +480,6 @@ export default function DoctorSignUp() {
         if (!professionalId) missing.push(d.label);
         continue;
       }
-      // everything else -> country docs map
       if (!countryDocs[d.key]) missing.push(d.label);
     }
 
@@ -489,15 +509,17 @@ export default function DoctorSignUp() {
     if (!validateDocumentsBeforeSubmit()) return;
 
     try {
-      // 1) Upload avatar (optional)
       let avatarUrl: string | undefined = undefined;
       if (avatar) {
         const ext = avatar.name.split(".").pop() || "jpg";
-        const res = await uploadFile(avatar, "avatars", `${user.id}/avatar-${Date.now()}.${ext}`);
+        const res = await uploadFile(
+          avatar,
+          "avatars",
+          `${user.id}/avatar-${Date.now()}.${ext}`
+        );
         avatarUrl = res?.url;
       }
 
-      // 2) Update profile
       const fullName = `${values.firstName} ${values.lastName}`.trim();
       const profileVisibility = values.profileVisibility;
 
@@ -515,7 +537,6 @@ export default function DoctorSignUp() {
         })
         .eq("user_id", user.id);
 
-      // 3) Upsert doctor row (unverified)
       const { data: existingDoctor } = await supabase
         .from("doctors")
         .select("id")
@@ -525,7 +546,7 @@ export default function DoctorSignUp() {
       const generatedLink =
         profileVisibility === "private"
           ? `doctor-${user.id.substring(0, 8)}-${Date.now()}`
-          : (values.username || null);
+          : values.username || null;
 
       let doctorId: string;
 
@@ -562,7 +583,6 @@ export default function DoctorSignUp() {
         doctorId = inserted.id;
       }
 
-      // 4) Submit verification package (uploads docs + writes verification records)
       const result = await submitForVerification(doctorId, {
         specialty: selectedSpecialties[0] || "General Practice",
         bio: values.bio,
@@ -570,12 +590,18 @@ export default function DoctorSignUp() {
         consultation_fee: 0,
         years_experience: values.experience,
         languages: selectedLanguages,
-        consultation_types: selectedConsultationTypes.length ? selectedConsultationTypes : ["In-person", "Video"],
+        consultation_types: selectedConsultationTypes.length
+          ? selectedConsultationTypes
+          : ["In-person", "Video"],
         documents: {
           medical_license: medicalLicense,
           professional_id: professionalId,
-          specialty_documents: specialtyDocuments.length ? specialtyDocuments : undefined,
-          additional_certificates: additionalCertificates.length ? additionalCertificates : undefined,
+          specialty_documents: specialtyDocuments.length
+            ? specialtyDocuments
+            : undefined,
+          additional_certificates: additionalCertificates.length
+            ? additionalCertificates
+            : undefined,
           country_specific_documents: countryDocs,
         },
         additional_data: {
@@ -596,7 +622,9 @@ export default function DoctorSignUp() {
 
       if (result?.success) {
         toast.success("Profile submitted for verification!");
-        toast.info("A super admin will review your application. You'll be notified once reviewed.");
+        toast.info(
+          "A super admin will review your application. You'll be notified once reviewed."
+        );
         navigate("/doctor-dashboard");
       } else {
         toast.error("Submission failed");
@@ -607,7 +635,6 @@ export default function DoctorSignUp() {
     }
   };
 
-  // Loading gate
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -704,7 +731,9 @@ export default function DoctorSignUp() {
                               <SelectItem value="male">Male</SelectItem>
                               <SelectItem value="female">Female</SelectItem>
                               <SelectItem value="other">Other</SelectItem>
-                              <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                              <SelectItem value="prefer_not_to_say">
+                                Prefer not to say
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -775,7 +804,9 @@ export default function DoctorSignUp() {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="public">Public (after verification)</SelectItem>
+                              <SelectItem value="public">
+                                Public (after verification)
+                              </SelectItem>
                               <SelectItem value="private">Private link only</SelectItem>
                             </SelectContent>
                           </Select>
@@ -838,7 +869,10 @@ export default function DoctorSignUp() {
                         <FormItem>
                           <FormLabel>License number *</FormLabel>
                           <FormControl>
-                            <Input placeholder="License / registration number" {...field} />
+                            <Input
+                              placeholder="License / registration number"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -883,11 +917,11 @@ export default function DoctorSignUp() {
                             value={field.value}
                             onValueChange={(name) => {
                               field.onChange(name);
-                              const found = availableCountries.find((c) => c.name === name);
+                              const found = availableCountries.find(
+                                (c) => c.name === name
+                              );
                               setCountryCode(found?.code || "");
-                              // Clear region when country changes
                               form.setValue("region", "");
-                              // Reset country docs
                               setCountryDocs({});
                             }}
                           >
@@ -918,7 +952,11 @@ export default function DoctorSignUp() {
                           <FormLabel>Region/State *</FormLabel>
                           <Select value={field.value} onValueChange={field.onChange}>
                             <SelectTrigger>
-                              <SelectValue placeholder={watchedCountry ? "Select region" : "Select country first"} />
+                              <SelectValue
+                                placeholder={
+                                  watchedCountry ? "Select region" : "Select country first"
+                                }
+                              />
                             </SelectTrigger>
                             <SelectContent>
                               {availableRegions.length ? (
@@ -957,7 +995,11 @@ export default function DoctorSignUp() {
                             key={s}
                             className="cursor-pointer"
                             variant="secondary"
-                            onClick={() => setSelectedSpecialties((prev) => prev.filter((x) => x !== s))}
+                            onClick={() =>
+                              setSelectedSpecialties((prev) =>
+                                prev.filter((x) => x !== s)
+                              )
+                            }
                             title="Click to remove"
                           >
                             {s}
@@ -965,7 +1007,9 @@ export default function DoctorSignUp() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground">No specialties selected</p>
+                      <p className="text-sm text-muted-foreground">
+                        No specialties selected
+                      </p>
                     )}
                   </div>
 
@@ -988,7 +1032,9 @@ export default function DoctorSignUp() {
                           <button
                             type="button"
                             className="w-full px-4 py-3 flex items-center justify-between"
-                            onClick={() => setExpandedCategory((p) => (p === cat ? null : cat))}
+                            onClick={() =>
+                              setExpandedCategory((p) => (p === cat ? null : cat))
+                            }
                           >
                             <span className="font-medium">{cat}</span>
                             <span className="text-sm text-muted-foreground">
@@ -1012,7 +1058,9 @@ export default function DoctorSignUp() {
                                     <div className="text-sm">{sub}</div>
                                     <Checkbox
                                       checked={checked}
-                                      onCheckedChange={() => toggleSpecialty(cat, sub)}
+                                      onCheckedChange={() =>
+                                        toggleSpecialty(cat, sub)
+                                      }
                                     />
                                   </label>
                                 );
@@ -1041,7 +1089,11 @@ export default function DoctorSignUp() {
                             key={l}
                             className="cursor-pointer"
                             variant="secondary"
-                            onClick={() => setSelectedLanguages((prev) => prev.filter((x) => x !== l))}
+                            onClick={() =>
+                              setSelectedLanguages((prev) =>
+                                prev.filter((x) => x !== l)
+                              )
+                            }
                             title="Click to remove"
                           >
                             {l}
@@ -1049,7 +1101,9 @@ export default function DoctorSignUp() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground">No languages selected</p>
+                      <p className="text-sm text-muted-foreground">
+                        No languages selected
+                      </p>
                     )}
                   </div>
 
@@ -1139,7 +1193,10 @@ export default function DoctorSignUp() {
                     ) : (
                       <div className="space-y-6">
                         {requiredDocuments
-                          .filter((d) => !["medical_license", "professional_id"].includes(d.key))
+                          .filter(
+                            (d) =>
+                              !["medical_license", "professional_id"].includes(d.key)
+                          )
                           .map((doc) => {
                             const current = countryDocs[doc.key] || null;
 
@@ -1186,14 +1243,17 @@ export default function DoctorSignUp() {
                         type="button"
                         variant="outline"
                         onClick={() => {
-                          // quick file input (multiple=false per click)
                           const input = document.createElement("input");
                           input.type = "file";
                           input.accept = ".pdf,.jpg,.jpeg,.png";
                           input.onchange = () => {
                             const f = input.files?.[0];
                             if (!f) return;
-                            const err = validateFile(f, "specialty_document", ".pdf,.jpg,.jpeg,.png");
+                            const err = validateFile(
+                              f,
+                              "specialty_document",
+                              ".pdf,.jpg,.jpeg,.png"
+                            );
                             if (err) return toast.error(err);
                             setSpecialtyDocuments((prev) => [...prev, f]);
                           };
@@ -1216,17 +1276,26 @@ export default function DoctorSignUp() {
                     {specialtyDocuments.length ? (
                       <div className="space-y-2">
                         {specialtyDocuments.map((f, idx) => (
-                          <div key={`${f.name}-${idx}`} className="flex items-center justify-between gap-3 rounded-md border p-3">
+                          <div
+                            key={`${f.name}-${idx}`}
+                            className="flex items-center justify-between gap-3 rounded-md border p-3"
+                          >
                             <div className="min-w-0">
-                              <div className="text-sm font-medium truncate">{f.name}</div>
-                              <div className="text-xs text-muted-foreground">{prettyBytes(f.size)}</div>
+                              <div className="text-sm font-medium truncate">
+                                {f.name}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {prettyBytes(f.size)}
+                              </div>
                             </div>
                             <Button
                               type="button"
                               variant="outline"
                               size="sm"
                               onClick={() =>
-                                setSpecialtyDocuments((prev) => prev.filter((_, i) => i !== idx))
+                                setSpecialtyDocuments((prev) =>
+                                  prev.filter((_, i) => i !== idx)
+                                )
                               }
                             >
                               Remove
@@ -1235,7 +1304,9 @@ export default function DoctorSignUp() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground">No specialty documents added</p>
+                      <p className="text-sm text-muted-foreground">
+                        No specialty documents added
+                      </p>
                     )}
                   </div>
 
@@ -1259,7 +1330,11 @@ export default function DoctorSignUp() {
                           input.onchange = () => {
                             const f = input.files?.[0];
                             if (!f) return;
-                            const err = validateFile(f, "additional_certificate", ".pdf,.jpg,.jpeg,.png");
+                            const err = validateFile(
+                              f,
+                              "additional_certificate",
+                              ".pdf,.jpg,.jpeg,.png"
+                            );
                             if (err) return toast.error(err);
                             setAdditionalCertificates((prev) => [...prev, f]);
                           };
@@ -1282,17 +1357,26 @@ export default function DoctorSignUp() {
                     {additionalCertificates.length ? (
                       <div className="space-y-2">
                         {additionalCertificates.map((f, idx) => (
-                          <div key={`${f.name}-${idx}`} className="flex items-center justify-between gap-3 rounded-md border p-3">
+                          <div
+                            key={`${f.name}-${idx}`}
+                            className="flex items-center justify-between gap-3 rounded-md border p-3"
+                          >
                             <div className="min-w-0">
-                              <div className="text-sm font-medium truncate">{f.name}</div>
-                              <div className="text-xs text-muted-foreground">{prettyBytes(f.size)}</div>
+                              <div className="text-sm font-medium truncate">
+                                {f.name}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {prettyBytes(f.size)}
+                              </div>
                             </div>
                             <Button
                               type="button"
                               variant="outline"
                               size="sm"
                               onClick={() =>
-                                setAdditionalCertificates((prev) => prev.filter((_, i) => i !== idx))
+                                setAdditionalCertificates((prev) =>
+                                  prev.filter((_, i) => i !== idx)
+                                )
                               }
                             >
                               Remove
@@ -1301,7 +1385,9 @@ export default function DoctorSignUp() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground">No certificates added</p>
+                      <p className="text-sm text-muted-foreground">
+                        No certificates added
+                      </p>
                     )}
                   </div>
                 </CardContent>
@@ -1319,7 +1405,10 @@ export default function DoctorSignUp() {
                     render={({ field }) => (
                       <FormItem>
                         <div className="flex items-start gap-3">
-                          <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
                           <div className="space-y-1">
                             <FormLabel className="cursor-pointer">
                               I confirm all information provided is accurate
@@ -1340,7 +1429,10 @@ export default function DoctorSignUp() {
                     render={({ field }) => (
                       <FormItem>
                         <div className="flex items-start gap-3">
-                          <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
                           <div className="space-y-1">
                             <FormLabel className="cursor-pointer">
                               I accept the Terms of Service and Privacy Policy
@@ -1372,7 +1464,7 @@ export default function DoctorSignUp() {
                   </div>
 
                   <p className="text-sm text-muted-foreground">
-                    After submission, your profile will be reviewed by admins of the platform. You’ll be notified once verified.
+                    After submission, your profile will be reviewed by a super admin. You’ll be notified once verified.
                   </p>
                 </CardContent>
               </Card>
