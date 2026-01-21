@@ -212,15 +212,12 @@ async function resolveEntity(
   if (role === "doctor") {
     const { data: prof, error } = await service
       .from("profiles")
-      .select("user_id,full_name,first_name,last_name")
+      .select("user_id,full_name")
       .eq("user_id", userId)
       .maybeSingle();
     if (error) throw error;
 
-    const name =
-      (prof as any)?.full_name ||
-      [(prof as any)?.first_name, (prof as any)?.last_name].filter(Boolean).join(" ") ||
-      "Doctor";
+    const name = (prof as any)?.full_name || "Doctor";
 
     return { facilityType: "doctor", entityId: userId, entityName: name, entityStatus: "active" };
   }

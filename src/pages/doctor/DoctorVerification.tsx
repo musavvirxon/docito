@@ -325,8 +325,8 @@ export default function DoctorSignUp() {
 
       if (doctor?.years_experience != null) {
         // best-effort map to your experienceOptions labels
-        const match = experienceOptions.find((opt) => opt.startsWith(String(doctor.years_experience)));
-        if (match) form.setValue("experience", match);
+        const match = experienceOptions.find((opt) => opt.value.startsWith(String(doctor.years_experience)));
+        if (match) form.setValue("experience", match.value);
       }
     };
 
@@ -820,8 +820,8 @@ export default function DoctorSignUp() {
                             </SelectTrigger>
                             <SelectContent>
                               {experienceOptions.map((opt) => (
-                                <SelectItem key={opt} value={opt}>
-                                  {opt}
+                                <SelectItem key={opt.value} value={opt.value}>
+                                  {opt.label}
                                 </SelectItem>
                               ))}
                             </SelectContent>
