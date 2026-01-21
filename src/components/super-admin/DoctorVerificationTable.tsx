@@ -1,16 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -18,21 +13,29 @@ import {
   DialogHeader as UIDialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader as UITableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+import {
+  Eye,
+  CheckCircle,
+  XCircle,
+  Clock,
+  FileText,
+  Trash2,
+  RefreshCcw,
+} from "lucide-react";
 import { toast } from "sonner";
-import { Eye, CheckCircle, XCircle, Clock, FileText, Trash2, RefreshCcw } from "lucide-react";
 
 interface DoctorVerificationTableProps {
   title: string;
-  status?:
-    | "pending"
-    | "under_review"
-    | "verified"
-    | "declined"
-    | "rejected"
-    | "resubmitted"
-    | "all";
+  status?: "pending" | "under_review" | "verified" | "declined" | "resubmitted" | "all";
 }
 
 type VerificationRow = {
@@ -53,6 +56,7 @@ type VerificationRow = {
     user_id: string | null;
     verified: boolean | null;
     license_number?: string | null;
+    bio?: string | null;
   } | null;
   profile?: {
     user_id: string;
@@ -73,16 +77,36 @@ type DocRow = {
 
 function normalizeStatus(s: string | null | undefined) {
   const v = String(s || "pending").toLowerCase();
-  if (v === "rejected") return "declined"; // treat rejected as declined (legacy mismatch)
+  if (v === "rejected") return "declined";
+  if (v === "denied") return "declined";
+  if (v === "approved") return "verified";
+  if (v === "submitted") return "pending";
   return v;
+}
+
+function safeDate(d?: string | null) {
+  if (!d) return "—";
+  const dt = new Date(d);
+  if (Number.isNaN(dt.getTime())) return "—";
+  return dt.toLocaleString();
+}
+
+function extractStoragePath(filePath: string) {
+  let cleanPath = filePath || "";
+  if (cleanPath.includes("verification-documents/")) {
+    const match = cleanPath.match(/verification-documents\/(.+?)(?:\?|$)/);
+    if (match?.[1]) cleanPath = match[1];
+  }
+  cleanPath = cleanPath.replace(/^\/+/, "");
+  return cleanPath;
 }
 
 function getStatusBadge(statusRaw: string) {
   const status = normalizeStatus(statusRaw);
 
-  const map: Record<
+  const variants: Record<
     string,
-    { label: string; className: string; icon: React.ReactNode }
+    { label: string; className: string; icon: JSX.Element }
   > = {
     pending: {
       label: "Pending",
@@ -111,7 +135,8 @@ function getStatusBadge(statusRaw: string) {
     },
   };
 
-  const v = map[status] || map.pending;
+  const v = variants[status] || variants.pending;
+
   return (
     <Badge className={v.className}>
       {v.icon}
@@ -120,29 +145,10 @@ function getStatusBadge(statusRaw: string) {
   );
 }
 
-function safeDate(d?: string | null) {
-  if (!d) return "—";
-  const dt = new Date(d);
-  if (Number.isNaN(dt.getTime())) return "—";
-  return dt.toLocaleString();
-}
-
-function extractStoragePath(filePath: string) {
-  let cleanPath = filePath || "";
-  // If it's a full URL containing "verification-documents/<path>"
-  if (cleanPath.includes("verification-documents/")) {
-    const match = cleanPath.match(/verification-documents\/(.+?)(?:\?|$)/);
-    if (match?.[1]) cleanPath = match[1];
-  }
-  // remove leading slashes
-  cleanPath = cleanPath.replace(/^\/+/, "");
-  return cleanPath;
-}
-
-const DoctorVerificationTable = ({
+export default function DoctorVerificationTable({
   title,
   status = "all",
-}: DoctorVerificationTableProps) => {
+}: DoctorVerificationTableProps) {
   const [data, setData] = useState<VerificationRow[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -166,7 +172,6 @@ const DoctorVerificationTable = ({
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Base query
       let query = supabase
         .from("doctor_verification")
         .select(
@@ -177,21 +182,17 @@ const DoctorVerificationTable = ({
             specialty,
             user_id,
             verified,
-            license_number
+            license_number,
+            bio
           )
         `
         )
         .order("submitted_at", { ascending: false })
         .limit(100);
 
-      // Status filter with compatibility
       if (effectiveFilter !== "all") {
         if (effectiveFilter === "pending") {
           query = query.in("status", ["pending", "resubmitted"] as any);
-        } else if (effectiveFilter === "declined") {
-          query = query.in("status", ["declined", "rejected"] as any);
-        } else if (effectiveFilter === "resubmitted") {
-          query = query.eq("status", "resubmitted" as any);
         } else {
           query = query.eq("status", effectiveFilter as any);
         }
@@ -207,7 +208,6 @@ const DoctorVerificationTable = ({
         return;
       }
 
-      // Fetch profiles
       const userIds = rows
         .map((r) => r?.doctors?.user_id)
         .filter(Boolean) as string[];
@@ -218,6 +218,7 @@ const DoctorVerificationTable = ({
           .from("profiles")
           .select("user_id, full_name, email, phone")
           .in("user_id", userIds);
+
         if (pErr) throw pErr;
         profiles = (p || []) as any[];
       }
@@ -242,7 +243,6 @@ const DoctorVerificationTable = ({
 
     if (error) throw error;
 
-    // Keep only latest document per type
     const latest = (data || []).reduce((acc: DocRow[], doc: DocRow) => {
       const exists = acc.find((d) => d.document_type === doc.document_type);
       if (!exists) acc.push(doc);
@@ -271,8 +271,10 @@ const DoctorVerificationTable = ({
       const { data, error } = await supabase.storage
         .from("verification-documents")
         .createSignedUrl(clean, 60 * 60);
+
       if (error) throw error;
       if (!data?.signedUrl) throw new Error("No signed URL returned");
+
       window.open(data.signedUrl, "_blank");
     } catch (e: any) {
       console.error(e);
@@ -286,6 +288,7 @@ const DoctorVerificationTable = ({
       const { data, error } = await supabase.storage
         .from("verification-documents")
         .download(clean);
+
       if (error) throw error;
 
       const ext = (clean.split("/").pop() || "").split(".").pop() || "pdf";
@@ -306,8 +309,7 @@ const DoctorVerificationTable = ({
   const handleUpdateStatus = async (
     verificationId: string,
     doctorId: string,
-    newStatusRaw: string,
-    reason?: string
+    newStatusRaw: "pending" | "under_review" | "verified" | "declined" | "resubmitted"
   ) => {
     const newStatus = normalizeStatus(newStatusRaw);
 
@@ -317,9 +319,13 @@ const DoctorVerificationTable = ({
 
       const updatePayload: any = {
         status: newStatus,
-        reviewed_at: newStatus === "pending" || newStatus === "resubmitted" ? null : new Date().toISOString(),
-        reviewed_by: newStatus === "pending" || newStatus === "resubmitted" ? null : reviewerId,
-        rejection_reason: newStatus === "declined" ? (reason || rejectionReason || null) : null,
+        reviewed_at:
+          newStatus === "pending" || newStatus === "resubmitted"
+            ? null
+            : new Date().toISOString(),
+        reviewed_by:
+          newStatus === "pending" || newStatus === "resubmitted" ? null : reviewerId,
+        rejection_reason: newStatus === "declined" ? (rejectionReason.trim() || null) : null,
         updated_at: new Date().toISOString(),
       };
 
@@ -330,7 +336,6 @@ const DoctorVerificationTable = ({
 
       if (vErr) throw vErr;
 
-      // Keep doctors.verified in sync
       const { error: dErr } = await supabase
         .from("doctors")
         .update({ verified: newStatus === "verified" })
@@ -354,7 +359,6 @@ const DoctorVerificationTable = ({
     if (!confirm("Delete this verification request and its documents? This cannot be undone.")) return;
 
     try {
-      // load all docs for this verification
       const { data: allDocs, error: docsErr } = await supabase
         .from("doctor_verification_documents" as any)
         .select("file_path")
@@ -417,30 +421,28 @@ const DoctorVerificationTable = ({
   }, [data, search]);
 
   return (
-    <Card>
-      <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <CardTitle>{title}</CardTitle>
-        <div className="flex flex-col md:flex-row gap-2 md:items-center">
-          <Input
-            className="w-full md:w-72"
-            placeholder="Search name/email/phone/specialty/license/status..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <Button variant="outline" onClick={() => fetchData()} disabled={loading}>
-            <RefreshCcw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
-        </div>
-      </CardHeader>
+    <>
+      <Card>
+        <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <CardTitle>{title}</CardTitle>
+          <div className="flex flex-col md:flex-row gap-2 md:items-center">
+            <Input
+              className="w-full md:w-72"
+              placeholder="Search name/email/phone/specialty/license/status..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <Button variant="outline" onClick={() => fetchData()} disabled={loading}>
+              <RefreshCcw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+          </div>
+        </CardHeader>
 
-      <CardContent>
-        {loading ? (
-          <div className="text-muted-foreground">Loading...</div>
-        ) : (
+        <CardContent>
           <div className="rounded-md border overflow-hidden">
             <Table>
-              <TableHeader>
+              <UITableHeader>
                 <TableRow>
                   <TableHead>Doctor</TableHead>
                   <TableHead>Specialty</TableHead>
@@ -449,10 +451,16 @@ const DoctorVerificationTable = ({
                   <TableHead>Submitted</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              </TableHeader>
+              </UITableHeader>
 
               <TableBody>
-                {filtered.length === 0 ? (
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
+                      Loading...
+                    </TableCell>
+                  </TableRow>
+                ) : filtered.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
                       No verification requests.
@@ -492,7 +500,11 @@ const DoctorVerificationTable = ({
                           <Button
                             size="sm"
                             onClick={() =>
-                              handleUpdateStatus(row.id, row.doctors?.id || row.doctor_id, "verified")
+                              handleUpdateStatus(
+                                row.id,
+                                row.doctors?.id || row.doctor_id,
+                                "verified"
+                              )
                             }
                             disabled={normalizeStatus(row.status) === "verified"}
                           >
@@ -521,8 +533,8 @@ const DoctorVerificationTable = ({
               </TableBody>
             </Table>
           </div>
-        )}
-      </CardContent>
+        </CardContent>
+      </Card>
 
       <Dialog open={viewOpen} onOpenChange={setViewOpen}>
         <DialogContent className="max-w-3xl">
@@ -574,9 +586,7 @@ const DoctorVerificationTable = ({
               <div className="rounded-lg border p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="font-medium">Documents</div>
-                  <div className="text-xs text-muted-foreground">
-                    Showing latest per document type
-                  </div>
+                  <div className="text-xs text-muted-foreground">Latest per document type</div>
                 </div>
 
                 {docs.length === 0 ? (
@@ -589,19 +599,11 @@ const DoctorVerificationTable = ({
                         className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 rounded-md border p-3"
                       >
                         <div className="min-w-0">
-                          <div className="text-sm font-medium truncate">
-                            {d.document_type}
-                          </div>
-                          <div className="text-xs text-muted-foreground truncate">
-                            {d.file_name}
-                          </div>
+                          <div className="text-sm font-medium truncate">{d.document_type}</div>
+                          <div className="text-xs text-muted-foreground truncate">{d.file_name}</div>
                         </div>
                         <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => viewDocument(d.file_path)}
-                          >
+                          <Button size="sm" variant="outline" onClick={() => viewDocument(d.file_path)}>
                             <FileText className="w-4 h-4 mr-2" />
                             View
                           </Button>
@@ -649,10 +651,7 @@ const DoctorVerificationTable = ({
               </Button>
 
               {selected ? (
-                <Button
-                  variant="destructive"
-                  onClick={() => handleDeleteVerification(selected)}
-                >
+                <Button variant="destructive" onClick={() => handleDeleteVerification(selected)}>
                   <Trash2 className="w-4 h-4 mr-2" />
                   Delete request
                 </Button>
@@ -700,8 +699,7 @@ const DoctorVerificationTable = ({
                     handleUpdateStatus(
                       selected.id,
                       selected.doctors?.id || selected.doctor_id,
-                      "declined",
-                      rejectionReason.trim()
+                      "declined"
                     );
                   }}
                   disabled={normalizeStatus(selected.status) === "declined"}
@@ -714,8 +712,6 @@ const DoctorVerificationTable = ({
           </div>
         </DialogContent>
       </Dialog>
-    </Card>
+    </>
   );
-};
-
-export default DoctorVerificationTable;
+}
