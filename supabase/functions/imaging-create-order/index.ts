@@ -1,6 +1,3 @@
-// supabase/functions/imaging-create-order/index.ts
-// File: supabase/functions/imaging-create-order/index.ts
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -36,14 +33,11 @@ function json(data: unknown, status = 200) {
   });
 }
 
-async function requireEnv() {
-  const url = Deno.env.get("SUPABASE_URL");
-  const anon = Deno.env.get("SUPABASE_ANON_KEY");
-  const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!url || !anon || !service) {
-    return { ok: false as const, error: "Missing SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY" };
-  }
-  return { ok: true as const, url, anon, service };
+// IMPORTANT:
+// Supabase client throws "Edge Function returned a non-2xx status code" for any non-2xx.
+// To avoid losing the real error message on the client, we return 200 for all handled failures.
+function okFalse(error: string, meta?: Record<string, unknown>) {
+  return json({ ok: false, error, ...(meta ? { meta } : {}) }, 200);
 }
 
 function trimOrNull(v: unknown) {
@@ -51,21 +45,33 @@ function trimOrNull(v: unknown) {
   return s.length ? s : null;
 }
 
+function errMeta(e: unknown) {
+  if (!e || typeof e !== "object") return { message: String(e) };
+  const anyE = e as any;
+  return {
+    message: anyE?.message ? String(anyE.message) : "Unknown error",
+    code: anyE?.code ? String(anyE.code) : undefined,
+    details: anyE?.details ? String(anyE.details) : undefined,
+    hint: anyE?.hint ? String(anyE.hint) : undefined,
+    status: typeof anyE?.status === "number" ? anyE.status : undefined,
+  };
+}
+
 async function assertImagingManualOrderAccess(
-  serviceClient: any,
+  client: ReturnType<typeof createClient>,
   userId: string,
   centerId: string,
 ) {
-  const { data: center, error: cErr } = await serviceClient
+  const { data: center, error: cErr } = await client
     .from("imaging_centers")
     .select("id,admin_id")
     .eq("id", centerId)
     .maybeSingle();
 
   if (cErr) throw cErr;
-  if ((center as any)?.admin_id === userId) return { ok: true as const, role: "admin" as const };
+  if (center?.admin_id === userId) return { ok: true as const, role: "admin" as const };
 
-  const { data: staff, error: sErr } = await serviceClient
+  const { data: staff, error: sErr } = await client
     .from("imaging_staff")
     .select("id,status,can_view_orders")
     .eq("imaging_center_id", centerId)
@@ -74,35 +80,46 @@ async function assertImagingManualOrderAccess(
 
   if (sErr) throw sErr;
 
-  if (!(staff as any)?.id || (staff as any).status !== "active") return { ok: false as const, reason: "Not assigned to this imaging center" };
-  if (!(staff as any).can_view_orders) return { ok: false as const, reason: "Missing permission: can_view_orders" };
+  if (!staff?.id || staff.status !== "active") {
+    return { ok: false as const, reason: "Not assigned to this imaging center" };
+  }
+  if (!staff.can_view_orders) {
+    return { ok: false as const, reason: "Missing permission: can_view_orders" };
+  }
 
-  return { ok: true as const, role: "staff" as const, staffId: (staff as any).id as string };
+  return { ok: true as const, role: "staff" as const, staffId: staff.id as string };
 }
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
-  if (req.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 405);
+  if (req.method !== "POST") return okFalse("Method not allowed");
 
   const authHeader = req.headers.get("authorization") || req.headers.get("Authorization") || "";
-  if (!authHeader) return json({ ok: false, error: "Missing Authorization" }, 401);
+  if (!authHeader) return okFalse("Missing Authorization");
 
-  const env = await requireEnv();
-  if (!env.ok) return json({ ok: false, error: env.error }, 500);
+  const url = Deno.env.get("SUPABASE_URL");
+  const anon = Deno.env.get("SUPABASE_ANON_KEY");
+  if (!url || !anon) return okFalse("Missing SUPABASE_URL / SUPABASE_ANON_KEY");
 
-  const authed = createClient(env.url, env.anon, { global: { headers: { Authorization: authHeader } } });
+  // Use service role if configured; otherwise fall back to RLS-only via user JWT.
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || null;
+
+  const authed = createClient(url, anon, {
+    global: { headers: { Authorization: authHeader } },
+  });
+
   const { data: userRes, error: userErr } = await authed.auth.getUser();
-  if (userErr || !userRes?.user) return json({ ok: false, error: "Unauthorized" }, 401);
+  if (userErr || !userRes?.user) return okFalse("Unauthorized", { ...errMeta(userErr) });
 
   let body: ReqBody;
   try {
     body = (await req.json()) as ReqBody;
   } catch {
-    return json({ ok: false, error: "Invalid JSON body" }, 400);
+    return okFalse("Invalid JSON body");
   }
 
   const centerId = trimOrNull(body?.centerId);
-  if (!centerId) return json({ ok: false, error: "Missing centerId" }, 400);
+  if (!centerId) return okFalse("Missing centerId");
 
   const patientName = trimOrNull(body?.patient?.full_name);
   const patientPhone = trimOrNull(body?.patient?.phone);
@@ -112,19 +129,20 @@ serve(async (req) => {
   const studyName = trimOrNull(body?.study?.name);
   const modality = (body?.study?.modality || "other") as ReqBody["study"]["modality"];
 
-  if (!patientName) return json({ ok: false, error: "Patient full_name is required" }, 400);
-  if (!patientPhone) return json({ ok: false, error: "Patient phone is required" }, 400);
-  if (!studyName) return json({ ok: false, error: "Study name is required" }, 400);
+  if (!patientName) return okFalse("Patient full_name is required");
+  if (!patientPhone) return okFalse("Patient phone is required");
+  if (!studyName) return okFalse("Study name is required");
 
   const priority = (body?.priority || "routine") as NonNullable<ReqBody["priority"]>;
+  const nowIso = new Date().toISOString();
 
-  const service = createClient(env.url, env.service);
-
-  const allowed = await assertImagingManualOrderAccess(service, userRes.user.id, centerId);
-  if (!allowed.ok) return json({ ok: false, error: allowed.reason || "Forbidden" }, 403);
+  const db = serviceKey ? createClient(url, serviceKey) : authed;
 
   try {
-    const { data: fp, error: fpErr } = await service
+    const allowed = await assertImagingManualOrderAccess(db, userRes.user.id, centerId);
+    if (!allowed.ok) return okFalse(allowed.reason || "Forbidden");
+
+    const { data: fp, error: fpErr } = await db
       .from("facility_patients")
       .upsert(
         {
@@ -140,7 +158,7 @@ serve(async (req) => {
       .select("id,full_name,phone,email")
       .single();
 
-    if (fpErr) throw fpErr;
+    if (fpErr) return okFalse("Failed to upsert facility patient", errMeta(fpErr));
 
     const attachments = {
       modality,
@@ -148,9 +166,7 @@ serve(async (req) => {
       source: "manual_imaging_dashboard",
     };
 
-    const nowIso = new Date().toISOString();
-
-    const { data: referral, error: rErr } = await service
+    const { data: referral, error: rErr } = await db
       .from("referrals")
       .insert({
         referrer_type: "imaging_center",
@@ -180,9 +196,9 @@ serve(async (req) => {
       .select("id,referral_number")
       .single();
 
-    if (rErr) throw rErr;
+    if (rErr) return okFalse("Failed to create referral", errMeta(rErr));
 
-    const { error: stErr } = await service
+    const { error: stErr } = await db
       .from("imaging_order_state")
       .upsert(
         {
@@ -198,23 +214,28 @@ serve(async (req) => {
       );
 
     if (stErr) {
-      return json({
+      return json(
+        {
+          ok: true,
+          referralId: referral.id,
+          referralNumber: referral.referral_number,
+          facilityPatientId: fp.id,
+          warning: stErr.message || "Failed to create imaging_order_state",
+        },
+        200,
+      );
+    }
+
+    return json(
+      {
         ok: true,
         referralId: referral.id,
         referralNumber: referral.referral_number,
         facilityPatientId: fp.id,
-        warning: stErr.message,
-      });
-    }
-
-    return json({
-      ok: true,
-      referralId: referral.id,
-      referralNumber: referral.referral_number,
-      facilityPatientId: fp.id,
-    });
+      },
+      200,
+    );
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    return json({ ok: false, error: msg }, 500);
+    return okFalse("Unhandled error", errMeta(e));
   }
 });
