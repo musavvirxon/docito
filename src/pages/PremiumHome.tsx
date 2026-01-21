@@ -3,7 +3,6 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { SEOHead } from "@/components/SEOHead";
 import { useTranslation } from "react-i18next";
 
-// Premium sections (CONTENT ONLY)
 import PremiumHero from "@/components/home/premium/PremiumHero";
 import SmartSearch from "@/components/home/premium/SmartSearch";
 import ProviderCards from "@/components/home/premium/ProviderCards";
@@ -11,6 +10,7 @@ import PlatformPillars from "@/components/home/premium/PlatformPillars";
 import LiveMetrics from "@/components/home/premium/LiveMetrics";
 import SpecialtiesCarousel from "@/components/home/premium/SpecialtiesCarousel";
 import FeaturedProviders from "@/components/home/premium/FeaturedProviders";
+import TopLabs from "@/components/home/premium/TopLabs";
 import DiagnosticsSection from "@/components/home/premium/DiagnosticsSection";
 import BookingSteps from "@/components/home/premium/BookingSteps";
 import CapabilitiesGrid from "@/components/home/premium/CapabilitiesGrid";
@@ -59,6 +59,7 @@ export default function PremiumHome() {
         <LiveMetrics />
         <SpecialtiesCarousel />
         <FeaturedProviders />
+        <TopLabs />
         <DiagnosticsSection />
         <TrendingServices />
         <NearbyPharmacies />
