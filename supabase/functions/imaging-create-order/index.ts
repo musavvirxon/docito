@@ -123,6 +123,7 @@ serve(async (req) => {
   const patientName = trimOrNull(body?.patient?.full_name);
   const patientPhone = trimOrNull(body?.patient?.phone);
   const patientEmail = trimOrNull(body?.patient?.email);
+
   const studyName = trimOrNull(body?.study?.name);
   const modality = (body?.study?.modality || "other") as ReqBody["study"]["modality"];
   const bodyPart = trimOrNull(body?.study?.body_part);
@@ -150,9 +151,7 @@ serve(async (req) => {
       source: "manual_imaging_dashboard",
     };
 
-    // IMPORTANT FIX:
-    // Your "referrals" table does NOT have facility_patient_id.
-    // So we DO NOT send that field at all (otherwise PostgREST throws PGRST204).
+    // In this platform: Imaging "Order" == a row in public.referrals + public.imaging_order_state.
     const { data: referral, error: rErr } = await db
       .from("referrals")
       .insert({
@@ -171,7 +170,6 @@ serve(async (req) => {
         preferred_time_slot: trimOrNull(body?.preferred_time_slot),
         attachments,
 
-        // Walk-in details stored directly on referral (no facility_patient_id column)
         patient_id: null,
         patient_name: patientName,
         patient_phone: patientPhone,
@@ -202,8 +200,8 @@ serve(async (req) => {
 
     const out: Record<string, unknown> = {
       ok: true,
-      referralId: referral.id,
-      referralNumber: referral.referral_number,
+      orderId: referral.id,
+      orderNumber: referral.referral_number,
     };
 
     if (stErr) out.stateWarning = errMeta(stErr);
