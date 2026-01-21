@@ -1,0 +1,63 @@
+{
+  "ui": {
+    "title": "Verify your credentials",
+    "subtitle": "Upload documents required for your country of practice.",
+    "loading": "Loading verification requirements…",
+    "required": "Required documents",
+    "optional": "Optional documents",
+    "upload": "Upload",
+    "uploadSuccess": "Uploaded successfully.",
+    "submit": "Submit for review",
+    "submittedForReview": "Submitted for review. Our team will verify your documents.",
+    "validWithinDays": "Must be issued within {{days}} days",
+    "sourceVerificationRequired": "May require source verification by regulator or employer"
+  },
+  "ruleSets": {
+    "GLOBAL_BASE": { "name": "Global core verification" },
+    "REGULATOR_GOOD_STANDING_REQUIRED": { "name": "Regulator good standing" },
+    "TRANSLATION_REQUIRED": { "name": "Certified translation" },
+    "BACKGROUND_CHECK_REQUIRED": { "name": "Background check" },
+    "LANGUAGE_PROFICIENCY_REQUIRED": { "name": "Language proficiency" },
+    "US_CONTROLLED_SUBSTANCES_OPTIONAL": { "name": "Controlled substances (US)" }
+  },
+  "notes": {
+    "ID_PRIMARY": "Provide a valid passport or national ID.",
+    "SELFIE": "Selfie/liveness helps protect against identity fraud.",
+    "ADDRESS": "Used to confirm residence or practice region.",
+    "LICENSE": "License should match your name and be currently valid.",
+    "DEGREE": "Upload your primary degree certificate.",
+    "CV": "A recent CV helps validate training and experience.",
+    "EMPLOYMENT_OPTIONAL": "Required if you practice under a specific facility.",
+    "GOOD_STANDING": "Issued by the regulator; often needed for cross-border practice.",
+    "TRANSLATION": "Provide certified translation for non-local documents.",
+    "APOSTILLE_OPTIONAL": "Legalization may be required depending on regulator.",
+    "BACKGROUND": "Police/Criminal record check may be required.",
+    "LANGUAGE": "Language proof may be required by local licensing.",
+    "DEA": "Required if prescribing controlled substances.",
+    "EPCS_OPTIONAL": "Required for electronic controlled prescriptions in some states."
+  },
+  "docTypes": {
+    "ID_NATIONAL": { "title": "National ID", "desc": "Government-issued ID (front/back if applicable)." },
+    "PASSPORT": { "title": "Passport", "desc": "Passport photo page." },
+    "SELFIE_LIVENESS": { "title": "Selfie / Liveness", "desc": "A clear selfie to match your ID." },
+    "PROOF_ADDRESS": { "title": "Proof of address", "desc": "Utility bill, bank statement, or official letter." },
+    "MED_LICENSE": { "title": "Medical license", "desc": "Your active license/registration certificate." },
+    "LICENSE_VERIFICATION": { "title": "License verification", "desc": "Evidence or link to license verification if available." },
+    "DEGREE_DIPLOMA": { "title": "Degree / diploma", "desc": "Primary medical/dental degree certificate." },
+    "INTERNSHIP_CERT": { "title": "Internship certificate", "desc": "If applicable in your jurisdiction." },
+    "RESIDENCY_CERT": { "title": "Residency certificate", "desc": "If applicable for your specialty." },
+    "SPECIALIST_CERT": { "title": "Specialist certificate", "desc": "Board/specialty registration certificate if applicable." },
+    "GOOD_STANDING": { "title": "Certificate of good standing", "desc": "Issued by the medical regulator, typically time-limited." },
+    "CV": { "title": "CV / Resume", "desc": "Your recent professional CV." },
+    "EMPLOYMENT_LETTER": { "title": "Employment / affiliation letter", "desc": "Proof you work with a clinic/hospital (if applicable)." },
+    "MALPRACTICE_INSURANCE": { "title": "Malpractice insurance", "desc": "Professional liability insurance certificate (if required)." },
+    "CRIMINAL_RECORD_CHECK": { "title": "Criminal record check", "desc": "Police clearance / background check (if required)." },
+    "LANGUAGE_CERT": { "title": "Language certificate", "desc": "Proof of language proficiency (if required)." },
+    "LICENSE_TRANSLATION": { "title": "Certified translation", "desc": "Certified translation of license/degree documents." },
+    "LEGALIZATION_APOSTILLE": { "title": "Apostille / legalization", "desc": "Legalization or apostille if required." },
+    "WORK_PERMIT": { "title": "Work permit / residency permit", "desc": "If you are a foreign doctor practicing locally." },
+    "DEA_REGISTRATION": { "title": "DEA registration", "desc": "US: DEA registration for controlled substances." },
+    "EPCS_ENABLEMENT": { "title": "EPCS enablement", "desc": "US: Electronic prescribing of controlled substances." },
+    "PDMP_CHECK": { "title": "PDMP integration", "desc": "US: Prescription monitoring program (system-level)." }
+  }
+}
