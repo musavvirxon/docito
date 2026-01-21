@@ -1,5 +1,5 @@
 import { useRef, useMemo, useEffect, useState, useCallback } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Sphere, OrbitControls, Html, Line } from '@react-three/drei';
 import * as THREE from 'three';
 import { 
@@ -47,11 +47,39 @@ function useScrollOpacity() {
       const newOpacity = Math.max(0.3, 1 - scrollY / 600);
       setOpacity(newOpacity);
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
   
   return opacity;
+}
+
+// Tab visibility hook - pause rendering when tab is hidden
+function useTabVisibility() {
+  const [isVisible, setIsVisible] = useState(true);
+  
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsVisible(document.visibilityState === 'visible');
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+  
+  return isVisible;
+}
+
+// Component to invalidate frame on demand
+function FrameInvalidator({ isTabVisible }: { isTabVisible: boolean }) {
+  const { invalidate } = useThree();
+  
+  useFrame(() => {
+    if (isTabVisible) {
+      invalidate();
+    }
+  });
+  
+  return null;
 }
 
 // Earth-like Globe
@@ -705,6 +733,7 @@ function NodeModal({
 // Main component
 export default function HeroOrb3D() {
   const opacity = useScrollOpacity();
+  const isTabVisible = useTabVisibility();
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [selectedNode, setSelectedNode] = useState<NodeData | null>(null);
 
@@ -717,9 +746,17 @@ export default function HeroOrb3D() {
       <Canvas
         camera={{ position: [0, 0, 6.5], fov: 45 }}
         style={{ background: 'transparent' }}
-        gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
-        dpr={[1, 1.5]}
+        frameloop="demand"
+        gl={{ 
+          alpha: true, 
+          antialias: false, // Disable for perf
+          powerPreference: 'high-performance',
+          stencil: false,
+          depth: true,
+        }}
+        dpr={[1, 1.2]} // Lower max DPR for better performance
       >
+        <FrameInvalidator isTabVisible={isTabVisible} />
         <Scene 
           opacity={opacity}
           hoveredNode={hoveredNode}

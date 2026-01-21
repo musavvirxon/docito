@@ -27,8 +27,13 @@ export default defineConfig(({ command }) => ({
   build: {
     rollupOptions: {
       output: {
-        inlineDynamicImports: true,
-        manualChunks: undefined as any,
+        manualChunks: {
+          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          "vendor-ui": ["@radix-ui/react-dialog", "@radix-ui/react-dropdown-menu", "@radix-ui/react-tabs", "@radix-ui/react-tooltip"],
+          "vendor-query": ["@tanstack/react-query"],
+          "vendor-motion": ["framer-motion", "gsap"],
+          "vendor-supabase": ["@supabase/supabase-js"],
+        },
       },
     },
   },

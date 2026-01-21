@@ -210,11 +210,11 @@ export function useImagingOrders() {
 
       const existing = (cur as any)?.result_attachments ?? {};
       const existingObj = Array.isArray(existing) ? {} : safeObj(existing);
-      const merged = { ...existingObj, ...patch };
+      const merged = { ...existingObj, ...patch } as Record<string, unknown>;
 
       const { error: updErr } = await supabase
         .from("referrals")
-        .update({ result_attachments: merged })
+        .update({ result_attachments: merged as import("@/integrations/supabase/types").Json })
         .eq("id", referralId);
 
       if (updErr) throw updErr;

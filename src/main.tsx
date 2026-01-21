@@ -8,9 +8,6 @@ import App from "./App";
 import "./index.css";
 import "./i18n/config";
 
-import { AuthProvider } from "@/contexts/AuthContext";
-import { ThemeProvider } from "@/contexts/ThemeContext";
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -79,11 +76,7 @@ createRoot(document.getElementById("root")!).render(
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-          <ThemeProvider>
-            <AuthProvider>
-              <App />
-            </AuthProvider>
-          </ThemeProvider>
+          <App />
         </BrowserRouter>
       </QueryClientProvider>
     </HelmetProvider>
