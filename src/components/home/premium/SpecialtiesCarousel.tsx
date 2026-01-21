@@ -1,10 +1,25 @@
+// src/components/home/premium/SpecialtiesCarousel.tsx
 import { useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Heart, Brain, Eye, Bone, Baby, Smile,
-  Stethoscope, Activity, Pill, Syringe,
-  Microscope, Wind, Ear, Hand, Scissors,
-  Shield, Users, Sparkles
+  Heart,
+  Brain,
+  Eye,
+  Bone,
+  Baby,
+  Smile,
+  Stethoscope,
+  Activity,
+  Pill,
+  Syringe,
+  Microscope,
+  Wind,
+  Ear,
+  Hand,
+  Scissors,
+  Shield,
+  Users,
+  Sparkles,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -33,6 +48,7 @@ const specialties = [
 export default function SpecialtiesCarousel() {
   const { t } = useTranslation(['home']);
   const navigate = useNavigate();
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const isPausedRef = useRef(false);
 
@@ -47,9 +63,7 @@ export default function SpecialtiesCarousel() {
     const smoothAutoScroll = () => {
       if (scrollContainer && !isPausedRef.current) {
         scrollPos += speed;
-        if (scrollPos >= scrollContainer.scrollWidth / 2) {
-          scrollPos = 0;
-        }
+        if (scrollPos >= scrollContainer.scrollWidth / 2) scrollPos = 0;
         scrollContainer.scrollLeft = scrollPos;
       }
       animationId = requestAnimationFrame(smoothAutoScroll);
@@ -97,11 +111,9 @@ export default function SpecialtiesCarousel() {
           transition={{ duration: 0.6 }}
           className="text-center"
         >
-          <h2 className="text-4xl md:text-5xl font-extralight tracking-tight text-foreground mb-4">
-            Medical Specialties
-          </h2>
+          <h2 className="text-4xl md:text-5xl font-extralight tracking-tight text-foreground mb-4">Medical Specialties</h2>
           <p className="text-lg text-muted-foreground font-light max-w-2xl mx-auto">
-            Find specialists across all medical disciplines
+            {t('home:specialtiesSubtitle', 'Find specialists across all medical disciplines')}
           </p>
         </motion.div>
       </div>
@@ -124,19 +136,17 @@ export default function SpecialtiesCarousel() {
             <button
               type="button"
               onClick={() => navigate('/specialties')}
-              className="w-44 h-52 bg-card/80 backdrop-blur-sm rounded-3xl border border-border/50 p-6 flex flex-col items-center justify-center gap-4 cursor-pointer group transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 focus:outline-none focus:ring-2 focus:ring-primary/30"
-              aria-label={`${specialty.name} - ${t('home:specialties.browse', 'Browse specialties')}`}
+              className="text-left"
+              aria-label={`Browse ${specialty.name} specialists`}
             >
-              {/* Smaller rectangle + smaller icon */}
-              <div
-                className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${specialty.color} p-4 flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}
-              >
-                <specialty.icon className="w-4 h-4 text-white" />
+              <div className="w-44 h-52 bg-card/80 backdrop-blur-sm rounded-3xl border border-border/50 p-6 flex flex-col items-center justify-center gap-4 cursor-pointer group transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5">
+                <div
+                  className={`w-18 h-18 rounded-2xl bg-gradient-to-br ${specialty.color} p-4 flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}
+                >
+                  <specialty.icon className="w-9 h-9 text-white" />
+                </div>
+                <span className="text-sm font-medium text-foreground text-center leading-tight">{specialty.name}</span>
               </div>
-
-              <span className="text-sm font-medium text-foreground text-center leading-tight">
-                {specialty.name}
-              </span>
             </button>
           </motion.div>
         ))}
