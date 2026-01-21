@@ -1,0 +1,64 @@
+// Path: public/locales/ja/verification.json
+{
+  "ui": {
+    "title": "資格情報を確認してください",
+    "subtitle": "勤務・診療国で必要な書類をアップロードしてください。",
+    "loading": "確認要件を読み込み中…",
+    "required": "必須書類",
+    "optional": "任意書類",
+    "upload": "アップロード",
+    "uploadSuccess": "アップロードしました。",
+    "submit": "審査に提出",
+    "submittedForReview": "審査に提出しました。チームが書類を確認します。",
+    "validWithinDays": "{{days}}日以内に発行されたものが必要です",
+    "sourceVerificationRequired": "規制当局または勤務先による原本/発行元確認が必要な場合があります"
+  },
+  "ruleSets": {
+    "GLOBAL_BASE": { "name": "グローバル基本確認" },
+    "REGULATOR_GOOD_STANDING_REQUIRED": { "name": "規制当局のGood Standing（適格証明）" },
+    "TRANSLATION_REQUIRED": { "name": "認証翻訳" },
+    "BACKGROUND_CHECK_REQUIRED": { "name": "身元/背景確認" },
+    "LANGUAGE_PROFICIENCY_REQUIRED": { "name": "語学能力証明" },
+    "US_CONTROLLED_SUBSTANCES_OPTIONAL": { "name": "規制薬物（米国）" }
+  },
+  "notes": {
+    "ID_PRIMARY": "有効なパスポートまたは国民IDを提出してください。",
+    "SELFIE": "セルフィー/生体確認はなりすまし防止に役立ちます。",
+    "ADDRESS": "居住地または診療地域の確認に使用します。",
+    "LICENSE": "免許は氏名と一致し、有効である必要があります。",
+    "DEGREE": "主要な学位/卒業証明をアップロードしてください。",
+    "CV": "最新のCVは学歴・職歴の確認に役立ちます。",
+    "EMPLOYMENT_OPTIONAL": "特定施設に所属している場合に必要となることがあります。",
+    "GOOD_STANDING": "規制当局が発行。越境/他地域での活動に必要な場合があります。",
+    "TRANSLATION": "現地語以外の書類は認証翻訳を提出してください。",
+    "APOSTILLE_OPTIONAL": "当局要件によりアポスティーユ/認証が必要な場合があります。",
+    "BACKGROUND": "無犯罪証明/背景確認が必要な場合があります。",
+    "LANGUAGE": "現地免許のため語学証明が必要な場合があります。",
+    "DEA": "規制薬物の処方には必要（米国）。",
+    "EPCS_OPTIONAL": "一部州では規制薬物の電子処方に必要（米国）。"
+  },
+  "docTypes": {
+    "ID_NATIONAL": { "title": "国民ID", "desc": "政府発行のID（必要に応じて表裏）。" },
+    "PASSPORT": { "title": "パスポート", "desc": "顔写真ページ。" },
+    "SELFIE_LIVENESS": { "title": "セルフィー / 生体確認", "desc": "身分証と照合できる鮮明なセルフィー。" },
+    "PROOF_ADDRESS": { "title": "住所証明", "desc": "公共料金明細、銀行明細、または公的書簡。" },
+    "MED_LICENSE": { "title": "医療免許", "desc": "有効な免許/登録証明。" },
+    "LICENSE_VERIFICATION": { "title": "免許確認", "desc": "可能であれば確認証跡または照会リンク。" },
+    "DEGREE_DIPLOMA": { "title": "学位/卒業証明", "desc": "医学/歯学の主要学位証明。" },
+    "INTERNSHIP_CERT": { "title": "インターン証明", "desc": "該当する場合のみ。" },
+    "RESIDENCY_CERT": { "title": "レジデンシー証明", "desc": "専門により該当する場合のみ。" },
+    "SPECIALIST_CERT": { "title": "専門医証明", "desc": "該当する場合、専門医/認定証。" },
+    "GOOD_STANDING": { "title": "Good Standing証明", "desc": "規制当局発行。通常は有効期限があります。" },
+    "CV": { "title": "CV / 履歴書", "desc": "最新の職務経歴書（CV）。" },
+    "EMPLOYMENT_LETTER": { "title": "在籍/所属証明書", "desc": "病院/クリニックとの関係を示す書類（該当する場合）。" },
+    "MALPRACTICE_INSURANCE": { "title": "医療賠償責任保険", "desc": "必要な場合、保険証明書。" },
+    "CRIMINAL_RECORD_CHECK": { "title": "犯罪経歴証明", "desc": "必要な場合、無犯罪証明/背景確認。" },
+    "LANGUAGE_CERT": { "title": "語学証明", "desc": "必要な場合、語学能力証明。" },
+    "LICENSE_TRANSLATION": { "title": "認証翻訳", "desc": "免許/学位書類の認証翻訳。" },
+    "LEGALIZATION_APOSTILLE": { "title": "アポスティーユ/認証", "desc": "必要に応じて認証またはアポスティーユ。" },
+    "WORK_PERMIT": { "title": "就労許可/滞在許可", "desc": "外国籍で現地勤務する場合に必要となることがあります。" },
+    "DEA_REGISTRATION": { "title": "DEA登録", "desc": "米国：規制薬物のためのDEA登録。" },
+    "EPCS_ENABLEMENT": { "title": "EPCS有効化", "desc": "米国：規制薬物の電子処方。" },
+    "PDMP_CHECK": { "title": "PDMP連携", "desc": "米国：処方監視プログラム（システム側）。" }
+  }
+}
