@@ -17,6 +17,9 @@ interface GetAvailabilityRequest {
   procedure_duration_minutes?: number; // allows correct slot length checks
   include_breaks?: boolean; // show break times as unavailable reasons
   return_meta?: boolean; // include day meta (day off/holiday/blocked/breaks)
+
+  // ✅ Back-compat (older clients)
+  duration_minutes?: number;
 }
 
 type Interval = { start: number; end: number };
@@ -92,10 +95,12 @@ serve(async (req) => {
     const appointment_type = body.appointment_type;
     const entity_id = body.entity_id;
 
+    const rawDuration =
+      (typeof body.procedure_duration_minutes === "number" ? body.procedure_duration_minutes : undefined) ??
+      (typeof body.duration_minutes === "number" ? body.duration_minutes : undefined);
+
     const procedureDuration =
-      typeof body.procedure_duration_minutes === "number" && body.procedure_duration_minutes > 0
-        ? Math.floor(body.procedure_duration_minutes)
-        : 30;
+      typeof rawDuration === "number" && rawDuration > 0 ? Math.floor(rawDuration) : 30;
 
     const includeBreaks = Boolean(body.include_breaks);
     const returnMeta = Boolean(body.return_meta);
@@ -113,7 +118,6 @@ serve(async (req) => {
       });
     }
 
-    // ✅ schedule_settings
     const { data: sched, error: schedErr } = await supabase
       .from("schedule_settings")
       .select("working_days,buffer_time,holidays")
@@ -121,7 +125,6 @@ serve(async (req) => {
       .maybeSingle();
     if (schedErr) throw schedErr;
 
-    // Defaults (match UI defaults)
     const scheduleSettings = {
       working_days:
         (sched?.working_days as Record<
@@ -172,7 +175,6 @@ serve(async (req) => {
 
     const bufferTime = scheduleSettings.buffer_time ?? 0;
 
-    // ✅ existing appointments
     const { data: existingAppointments, error: apptErr } = await supabase
       .from("appointments")
       .select("appointment_date,start_time,end_time")
@@ -181,7 +183,6 @@ serve(async (req) => {
       .lte("appointment_date", to);
     if (apptErr) throw apptErr;
 
-    // ✅ blocked_times
     const { data: bt, error: btErr } = await supabase
       .from("blocked_times")
       .select("blocked_date,start_time,end_time,reason,block_type")
@@ -191,7 +192,6 @@ serve(async (req) => {
     if (btErr) throw btErr;
     const blockedTimes = bt || [];
 
-    // ✅ availability_overrides (doctor overrides)
     const { data: ov, error: ovErr } = await supabase
       .from("availability_overrides")
       .select("override_date,start_time,end_time,is_available")
@@ -206,7 +206,6 @@ serve(async (req) => {
 
     const slots: Array<{ start_at: string; end_at: string; available: boolean; reason?: string }> = [];
 
-    // ✅ NEW: meta per day
     const meta: Record<
       string,
       {
@@ -219,6 +218,10 @@ serve(async (req) => {
       }
     > = {};
 
+    const now = new Date();
+    const todayUtc = now.toISOString().split("T")[0];
+    const nowUtcMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
+
     const current = new Date(fromDate);
 
     while (current <= toDate) {
@@ -229,10 +232,8 @@ serve(async (req) => {
       const isHoliday = (scheduleSettings.holidays || []).includes(dateStr);
       const isWorkingDay = Boolean(daySchedule?.enabled);
 
-      // breaks for the day (from schedule_settings)
       const dayBreaks = Array.isArray(daySchedule?.breaks) ? daySchedule!.breaks! : [];
 
-      // blocks for the day (from blocked_times table)
       const dayBlocked = blockedTimes
         .filter((b) => b.blocked_date === dateStr)
         .map((b) => ({
@@ -254,52 +255,40 @@ serve(async (req) => {
         };
       }
 
-      // If holiday OR not working day → no slots, but meta tells frontend why
       if (isHoliday || !isWorkingDay) {
         current.setUTCDate(current.getUTCDate() + 1);
         continue;
       }
 
-      // Base intervals from working hours
-      let baseIntervals: Interval[] = [];
-      const workStart = timeToMinutes(daySchedule!.start_time);
-      const workEnd = timeToMinutes(daySchedule!.end_time);
-      if (workEnd > workStart) baseIntervals.push({ start: workStart, end: workEnd });
+      const workStart = timeToMinutes(daySchedule.start_time);
+      const workEnd = timeToMinutes(daySchedule.end_time);
 
-      // Overrides:
-      // - is_available=false => remove time
-      // - is_available=true  => add time
+      let baseIntervals: Interval[] = [{ start: workStart, end: workEnd }];
+
       const dayOverrides = overrides.filter((o) => o.override_date === dateStr);
-      const addIntervals: Interval[] = [];
-      const removeIntervals: Interval[] = [];
+      if (dayOverrides.length > 0) {
+        const availableIntervals: Interval[] = [];
+        const unavailableIntervals: Interval[] = [];
 
-      for (const o of dayOverrides) {
-        const oStart = timeToMinutes(o.start_time);
-        const oEnd = timeToMinutes(o.end_time);
-        if (oEnd <= oStart) continue;
-        if (o.is_available) addIntervals.push({ start: oStart, end: oEnd });
-        else removeIntervals.push({ start: oStart, end: oEnd });
+        for (const o of dayOverrides) {
+          const s = timeToMinutes(o.start_time);
+          const e = timeToMinutes(o.end_time);
+          if (o.is_available) availableIntervals.push({ start: s, end: e });
+          else unavailableIntervals.push({ start: s, end: e });
+        }
+
+        baseIntervals = availableIntervals.length ? mergeIntervals(availableIntervals) : baseIntervals;
+        baseIntervals = subtractIntervals(baseIntervals, unavailableIntervals);
       }
 
-      // Apply adds/removes
-      const combined = mergeIntervals([...baseIntervals, ...addIntervals]);
-      baseIntervals = subtractIntervals(combined, removeIntervals);
-
-      // ✅ IMPORTANT CHANGE:
-      // If includeBreaks=true, DO NOT subtract breaks from baseIntervals.
-      // We will keep the time range and mark those slots as unavailable with "Break" reason.
-      if (!includeBreaks && dayBreaks.length) {
-        const breakCuts: Interval[] = dayBreaks
-          .map((b) => {
-            const bStart = timeToMinutes(b.start_time);
-            const bEnd = timeToMinutes(b.end_time);
-            return bEnd > bStart ? ({ start: bStart, end: bEnd } as Interval) : null;
-          })
-          .filter(Boolean) as Interval[];
-        baseIntervals = subtractIntervals(baseIntervals, breakCuts);
+      if (includeBreaks && dayBreaks.length) {
+        const breakIntervals: Interval[] = dayBreaks.map((b) => ({
+          start: timeToMinutes(b.start_time),
+          end: timeToMinutes(b.end_time),
+        }));
+        baseIntervals = subtractIntervals(baseIntervals, breakIntervals);
       }
 
-      // Iterate available intervals, produce slots every "procedureDuration" minutes
       for (const interval of baseIntervals) {
         let t = interval.start;
 
@@ -313,7 +302,8 @@ serve(async (req) => {
           const startTime = minutesToTime(slotStart);
           const endTime = minutesToTime(procedureEnd);
 
-          // Break conflict (only if includeBreaks)
+          const isPastUtc = dateStr === todayUtc && slotStart <= nowUtcMinutes;
+
           let breakReason: string | undefined = undefined;
           if (includeBreaks && dayBreaks.length) {
             for (const br of dayBreaks) {
@@ -326,7 +316,6 @@ serve(async (req) => {
             }
           }
 
-          // Appointment conflict
           const hasConflict = (existingAppointments || []).some((apt) => {
             if (apt.appointment_date !== dateStr) return false;
             const aptStart = timeToMinutes(apt.start_time);
@@ -334,7 +323,6 @@ serve(async (req) => {
             return overlaps(slotStart, procedureEnd, aptStart, aptEnd);
           });
 
-          // Blocked time conflict (uses bufferEnd)
           const overlappingBlock = blockedTimes.find((bt) => {
             if (bt.blocked_date !== dateStr) return false;
             const bStart = timeToMinutes(bt.start_time);
@@ -344,8 +332,10 @@ serve(async (req) => {
 
           const isBlocked = Boolean(overlappingBlock);
 
-          const available = !hasConflict && !isBlocked && !breakReason;
-          const reason = hasConflict
+          const available = !isPastUtc && !hasConflict && !isBlocked && !breakReason;
+          const reason = isPastUtc
+            ? "Past time"
+            : hasConflict
             ? "Already booked"
             : isBlocked
             ? (overlappingBlock?.reason || overlappingBlock?.block_type || "Blocked")
