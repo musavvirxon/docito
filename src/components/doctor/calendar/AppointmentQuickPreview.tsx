@@ -1,35 +1,46 @@
-import { memo, useState, useCallback } from 'react';
-import { format } from 'date-fns';
-import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { memo, useState, useCallback, useMemo } from "react";
+import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
-  Calendar, Clock, Phone, Mail, Video, MessageSquare, User,
-  Play, FileText, MapPin, Home, ArrowRight, Stethoscope, Activity
-} from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import type { CalendarAppointment } from './types';
+  Calendar,
+  Clock,
+  Phone,
+  Mail,
+  Video,
+  MessageSquare,
+  User,
+  Play,
+  MapPin,
+  Home,
+  ArrowRight,
+  Stethoscope,
+  Activity,
+} from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import type { CalendarAppointment } from "./types";
 
 interface AppointmentQuickPreviewProps {
   appointment: CalendarAppointment | null;
   isOpen: boolean;
   onClose: () => void;
   onStartSession: (appointment: CalendarAppointment) => void;
-  onViewPatient: (patientId: string, patientType: 'registered' | 'direct') => void;
+  onViewPatient: (patientId: string, patientType: "registered" | "direct") => void;
   onOpenFullModal: () => void;
   doctorSpecialty?: string;
 }
 
 const typeIcons = {
   in_person: MapPin,
-  'in-person': MapPin,
+  "in-person": MapPin,
   video: Video,
   home_visit: Home,
   home: Home,
@@ -39,23 +50,23 @@ const typeIcons = {
 };
 
 const typeLabels = {
-  in_person: 'In-Person',
-  'in-person': 'In-Person',
-  video: 'Video Call',
-  home_visit: 'Home Visit',
-  home: 'Home Visit',
-  messaging: 'Messaging',
-  chat: 'Messaging',
-  follow_up: 'Follow-up',
+  in_person: "In-Person",
+  "in-person": "In-Person",
+  video: "Video Call",
+  home_visit: "Home Visit",
+  home: "Home Visit",
+  messaging: "Messaging",
+  chat: "Messaging",
+  follow_up: "Follow-up",
 };
 
 const statusColors: Record<string, string> = {
-  confirmed: 'bg-emerald-500/10 text-emerald-600 border-emerald-200',
-  pending: 'bg-amber-500/10 text-amber-600 border-amber-200',
-  completed: 'bg-muted text-muted-foreground border-border',
-  canceled: 'bg-destructive/10 text-destructive border-destructive/20',
-  'no-show': 'bg-amber-500/10 text-amber-600 border-amber-200',
-  in_progress: 'bg-green-500/10 text-green-600 border-green-200',
+  confirmed: "bg-emerald-500/10 text-emerald-600 border-emerald-200",
+  pending: "bg-amber-500/10 text-amber-600 border-amber-200",
+  completed: "bg-muted text-muted-foreground border-border",
+  canceled: "bg-destructive/10 text-destructive border-destructive/20",
+  "no-show": "bg-amber-500/10 text-amber-600 border-amber-200",
+  in_progress: "bg-green-500/10 text-green-600 border-green-200",
 };
 
 const AppointmentQuickPreview = memo(
@@ -66,82 +77,153 @@ const AppointmentQuickPreview = memo(
     onStartSession,
     onViewPatient,
     onOpenFullModal,
-    doctorSpecialty = '',
+    doctorSpecialty = "",
   }: AppointmentQuickPreviewProps) => {
-    const { i18n } = useTranslation('dashboard');
+    const { i18n } = useTranslation("dashboard");
     const navigate = useNavigate();
     const [isStarting, setIsStarting] = useState(false);
-    const isRTL = i18n.language === 'ar';
+    const isRTL = i18n.language === "ar";
 
-    const handleStartSession = useCallback(async () => {
-      if (!appointment) return;
+    const patientId = useMemo(() => {
+      if (!appointment) return "";
+      return (appointment.patient_id || (appointment as any).doctor_patient_id || "") as string;
+    }, [appointment]);
 
-      // HARD RULE: doctor can only start after patient accepts (confirmed)
-      if (appointment.status !== 'confirmed') {
-        toast.error('Waiting for patient acceptance.');
-        return;
+    const patientType = useMemo<"registered" | "direct">(() => {
+      if (!appointment) return "registered";
+      return appointment.patient_id ? "registered" : "direct";
+    }, [appointment]);
+
+    const appointmentType = (appointment?.appointment_type || "in_person") as any;
+    const TypeIcon = typeIcons[appointmentType as keyof typeof typeIcons] || MapPin;
+    const typeLabel = typeLabels[appointmentType as keyof typeof typeLabels] || "In-Person";
+
+    const startState = useMemo(() => {
+      const doctorRequested = Boolean(appointment?.start_requested_by_doctor);
+      const patientRequested = Boolean(appointment?.start_requested_by_patient);
+
+      // registered patient must accept; direct patients treated as accepted
+      const patientAccepted = appointment?.patient_id
+        ? appointment?.patient_confirmation_status === "confirmed" || appointment?.status === "confirmed"
+        : true;
+
+      // for registered patients: need both; for direct patients: doctor request is enough
+      const bothRequested = appointment?.patient_id ? doctorRequested && patientRequested : doctorRequested;
+
+      return {
+        doctorRequested,
+        patientRequested,
+        patientAccepted,
+        bothRequested,
+        canStart: patientAccepted && bothRequested,
+      };
+    }, [
+      appointment?.patient_confirmation_status,
+      appointment?.patient_id,
+      appointment?.status,
+      appointment?.start_requested_by_doctor,
+      appointment?.start_requested_by_patient,
+    ]);
+
+    const isToday = useMemo(() => {
+      if (!appointment) return false;
+      return new Date(appointment.appointment_date).toDateString() === new Date().toDateString();
+    }, [appointment]);
+
+    const appointmentTime = useMemo(() => {
+      if (!appointment) return null;
+      const [h, m] = String(appointment.start_time).split(":").map(Number);
+      const dt = new Date(appointment.appointment_date);
+      dt.setHours(h, m, 0, 0);
+      if (Number.isNaN(dt.getTime())) return null;
+      return dt;
+    }, [appointment]);
+
+    // Interactions allowed: appointment day, starting 15 minutes before start
+    const canInteractNow = useMemo(() => {
+      if (!appointment || !appointmentTime) return false;
+      const now = new Date();
+      return isToday && now >= new Date(appointmentTime.getTime() - 15 * 60 * 1000);
+    }, [appointment, appointmentTime, isToday]);
+
+    const startButtonLabel = startState.canStart
+      ? appointmentType === "video"
+        ? "Start Video Appointment"
+        : "Start Appointment"
+      : "Request to Start";
+
+    const startButtonHint = useMemo(() => {
+      if (!appointment) return "";
+      if (!appointment.patient_id) {
+        return startState.doctorRequested
+          ? "Ready to start (direct patient)."
+          : "Send request to start. Direct patients can begin after doctor request.";
       }
+      if (!startState.patientAccepted) return "Patient must accept appointment first.";
+      if (!startState.doctorRequested || !startState.patientRequested) return "Both doctor and patient must request start.";
+      return "Ready to start.";
+    }, [appointment, startState]);
+
+    const handleRequestOrStart = useCallback(async () => {
+      if (!appointment) return;
 
       setIsStarting(true);
       try {
-        // Create/activate appointment session
-        const { error: sessionError } = await supabase
-          .from('appointment_sessions')
-          .upsert(
-            {
-              appointment_id: appointment.id,
-              doctor_id: appointment.doctor_id,
-              patient_id: appointment.patient_id || null,
-              doctor_patient_id: (appointment as any).doctor_patient_id || null,
-              session_type: (appointment.appointment_type || 'in_person') as any,
-              session_status: 'active',
-              started_at: new Date().toISOString(),
-            },
-            { onConflict: 'appointment_id' }
-          )
-          .select()
-          .single();
+        const { data, error } = await supabase.functions.invoke("request-start-appointment", {
+          body: { appointment_id: appointment.id },
+        });
 
-        if (sessionError) throw sessionError;
+        if (error) throw error;
 
-        // Move appointment to in_progress (doctor started)
-        const { error: apptErr } = await supabase
-          .from('appointments')
-          .update({ status: 'in_progress' as any, started_at: new Date().toISOString() })
-          .eq('id', appointment.id);
+        if (data?.can_start) {
+          // If video consultation, auto-route to video room if available
+          if ((appointment.appointment_type || "in_person") === "video") {
+            const room = data?.consultation?.room_id || data?.consultation?.room_url;
+            if (room) {
+              toast.success("Starting video consultation…");
+              onStartSession(appointment);
+              onClose();
+              navigate(`/video/${room}`);
+              return;
+            }
+          }
 
-        if (apptErr) throw apptErr;
+          toast.success("Appointment started.");
+          onStartSession(appointment);
+          onClose();
+          return;
+        }
 
-        onStartSession(appointment);
-        onClose();
-      } catch (error) {
-        console.error('Error starting session:', error);
-        toast.error('Failed to start appointment session');
+        toast.success("Start request sent.");
+      } catch (err: any) {
+        console.error("Error requesting/starting appointment:", err);
+        toast.error(err?.message ?? "Failed to request/start appointment");
       } finally {
         setIsStarting(false);
       }
-    }, [appointment, onClose, onStartSession]);
+    }, [appointment, navigate, onClose, onStartSession]);
 
     const handleViewPatient = useCallback(() => {
       if (!appointment) return;
 
-      const patientId = appointment.patient_id || (appointment as any).doctor_patient_id || '';
-      const patientType: 'registered' | 'direct' = appointment.patient_id ? 'registered' : 'direct';
+      if (!patientId) {
+        toast.error("Patient information not available");
+        return;
+      }
 
       onViewPatient(patientId, patientType);
       onClose();
-    }, [appointment, onViewPatient, onClose]);
+    }, [appointment, onViewPatient, onClose, patientId, patientType]);
 
     const handleMessage = useCallback(async () => {
       if (!appointment) return;
 
-      // Prefer visit conversation if it exists (created on confirm)
       try {
         const { data: existing, error: e1 } = await supabase
-          .from('conversations')
-          .select('id')
-          .eq('context_type', 'visit')
-          .eq('context_id', appointment.id)
+          .from("conversations")
+          .select("id")
+          .eq("context_type", "visit")
+          .eq("context_id", appointment.id)
           .maybeSingle();
 
         if (e1) throw e1;
@@ -152,24 +234,22 @@ const AppointmentQuickPreview = memo(
           return;
         }
 
-        // Fallback: direct conversation for registered patients
         if (!appointment.patient_id) {
-          toast.error('Patient messaging is only available for registered patients.');
+          toast.error("Patient messaging is only available for registered patients.");
           return;
         }
 
-        const { data: conversationId, error } = await supabase.rpc(
-          'create_direct_conversation' as any,
-          { target_user_id: appointment.patient_id } as any
-        );
+        const { data: conversationId, error } = await supabase.rpc("create_direct_conversation" as any, {
+          target_user_id: appointment.patient_id,
+        } as any);
 
         if (error) throw error;
 
         navigate(`/messages?c=${conversationId}`);
         onClose();
       } catch (error) {
-        console.error('Error starting conversation:', error);
-        toast.error('Failed to start conversation');
+        console.error("Error starting conversation:", error);
+        toast.error("Failed to start conversation");
       }
     }, [appointment, navigate, onClose]);
 
@@ -177,26 +257,12 @@ const AppointmentQuickPreview = memo(
 
     const initials =
       appointment.patient_name
-        ?.split(' ')
+        ?.split(" ")
         .map((n) => n[0])
-        .join('')
-        .toUpperCase() || 'P';
+        .join("")
+        .toUpperCase() || "P";
 
-    const appointmentType = appointment.appointment_type || 'in_person';
-    const TypeIcon = typeIcons[appointmentType as keyof typeof typeIcons] || MapPin;
-    const typeLabel = typeLabels[appointmentType as keyof typeof typeLabels] || 'In-Person';
-
-    const isToday = new Date(appointment.appointment_date).toDateString() === new Date().toDateString();
-    const now = new Date();
-    const [hours, minutes] = appointment.start_time.split(':').map(Number);
-    const appointmentTime = new Date(appointment.appointment_date);
-    appointmentTime.setHours(hours, minutes, 0, 0);
-
-    // Start allowed: Today, confirmed, within 15 minutes of start
-    const canStart =
-      isToday && appointment.status === 'confirmed' && now >= new Date(appointmentTime.getTime() - 15 * 60 * 1000);
-
-    const isDentist = doctorSpecialty?.toLowerCase().includes('dent');
+    const isDentist = doctorSpecialty?.toLowerCase().includes("dent");
 
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -205,7 +271,7 @@ const AppointmentQuickPreview = memo(
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
                 <Avatar className="h-12 w-12 border-2 border-background shadow-lg">
-                  <AvatarImage src={appointment.patient_avatar} />
+                  <AvatarImage src={appointment.patient_avatar || ""} />
                   <AvatarFallback className="bg-primary/10 text-primary font-semibold">{initials}</AvatarFallback>
                 </Avatar>
                 <div>
@@ -216,7 +282,8 @@ const AppointmentQuickPreview = memo(
                   </DialogDescription>
                 </div>
               </div>
-              <Badge variant="outline" className={cn('capitalize text-xs', statusColors[appointment.status] || '')}>
+
+              <Badge variant="outline" className={cn("capitalize text-xs", statusColors[appointment.status] || "")}>
                 {appointment.status}
               </Badge>
             </div>
@@ -226,7 +293,7 @@ const AppointmentQuickPreview = memo(
             <div className="flex items-center gap-4 text-sm">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Calendar className="h-4 w-4" />
-                <span>{format(new Date(appointment.appointment_date), 'EEE, MMM d')}</span>
+                <span>{format(new Date(appointment.appointment_date), "EEE, MMM d")}</span>
               </div>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="h-4 w-4" />
@@ -263,23 +330,41 @@ const AppointmentQuickPreview = memo(
               </div>
             )}
 
-            {appointment.status === 'pending' && (
-              <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-sm text-amber-700 dark:text-amber-300">
-                Waiting for patient acceptance.
+            {appointment.patient_id &&
+              (appointment.patient_confirmation_status === "pending" || appointment.status === "pending") && (
+                <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-sm text-amber-700 dark:text-amber-300">
+                  Waiting for patient acceptance.
+                </div>
+              )}
+
+            <div className="p-3 rounded-lg bg-muted/30 border border-border text-xs text-muted-foreground">
+              <div className="flex items-center justify-between">
+                <span>Start requests</span>
+                <span className="font-medium">
+                  Doctor {startState.doctorRequested ? "✓" : "—"} • Patient{" "}
+                  {appointment.patient_id ? (startState.patientRequested ? "✓" : "—") : "(direct)"}
+                </span>
               </div>
-            )}
+              <div className="mt-1">{startButtonHint}</div>
+            </div>
           </div>
 
           <Separator />
 
           <div className="space-y-3">
-            {canStart && (
+            {canInteractNow && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                <Button onClick={handleStartSession} disabled={isStarting} className="w-full gap-2" size="lg">
+                <Button onClick={handleRequestOrStart} disabled={isStarting} className="w-full gap-2" size="lg">
                   <Play className="h-4 w-4" />
-                  {appointmentType === 'video' ? 'Start Video Appointment' : 'Start Appointment'}
+                  {startButtonLabel}
                 </Button>
               </motion.div>
+            )}
+
+            {!canInteractNow && (
+              <div className="text-xs text-muted-foreground">
+                Start requests are available on the appointment day, starting 15 minutes before the scheduled time.
+              </div>
             )}
 
             <div className="grid grid-cols-2 gap-2">
@@ -297,13 +382,8 @@ const AppointmentQuickPreview = memo(
               <Button
                 variant="secondary"
                 onClick={() => {
-                  const pid = appointment.patient_id || (appointment as any).doctor_patient_id;
-                  if (pid) {
-                    navigate(`/appointment-session/${appointment.id}?tab=dental`);
-                    onClose();
-                  } else {
-                    toast.error('Patient information not available');
-                  }
+                  navigate(`/appointment-session/${appointment.id}?tab=dental`);
+                  onClose();
                 }}
                 className="w-full gap-2"
               >
@@ -315,7 +395,7 @@ const AppointmentQuickPreview = memo(
 
           <Separator />
 
-          <div className={cn('flex items-center justify-between text-sm', isRTL && 'flex-row-reverse')}>
+          <div className={cn("flex items-center justify-between text-sm", isRTL && "flex-row-reverse")}>
             <Button variant="ghost" size="sm" onClick={onClose}>
               Close
             </Button>
@@ -330,6 +410,6 @@ const AppointmentQuickPreview = memo(
   }
 );
 
-AppointmentQuickPreview.displayName = 'AppointmentQuickPreview';
+AppointmentQuickPreview.displayName = "AppointmentQuickPreview";
 
 export default AppointmentQuickPreview;
