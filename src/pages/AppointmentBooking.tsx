@@ -36,8 +36,8 @@ type DoctorInfo = {
 };
 
 type AvailabilitySlot = {
-  start_at: string; // YYYY-MM-DDTHH:MM:SS
-  end_at: string; // YYYY-MM-DDTHH:MM:SS
+  start_at: string; // YYYY-MM-DDTHH:MM
+  end_at: string; // YYYY-MM-DDTHH:MM
   available: boolean;
   reason?: string | null;
 };
@@ -53,6 +53,11 @@ function formatDuration(minutes: number) {
   if (m === 0) return `${h}h`;
   return `${h}h ${m}m`;
 }
+
+const isSameMinuteOrPast = (isoLocal: string, nowMs: number) => {
+  const t = parseISO(isoLocal).getTime();
+  return Number.isFinite(t) ? t <= nowMs : true;
+};
 
 export default function AppointmentBooking() {
   const { doctorId } = useParams();
@@ -150,7 +155,8 @@ export default function AppointmentBooking() {
             entity_id: doctor?.practice_id ?? undefined,
             from: dateStr,
             to: dateStr,
-            duration_minutes: durationMinutes,
+            appointment_type: appointmentType,
+            procedure_duration_minutes: durationMinutes,
           },
         });
 
@@ -160,8 +166,8 @@ export default function AppointmentBooking() {
         const newSlots: AvailabilitySlot[] = (data?.slots ?? []) as AvailabilitySlot[];
         setSlots(newSlots);
 
-        // If the selected slot is no longer available, clear it
-        const stillAvailable = newSlots.some((s) => s.available && s.start_at === selectedSlotStart);
+        const nowMs = Date.now() + 60_000; // 1-minute safety buffer
+        const stillAvailable = newSlots.some((s) => s.available && s.start_at === selectedSlotStart && !isSameMinuteOrPast(s.start_at, nowMs));
         if (selectedSlotStart && !stillAvailable) setSelectedSlotStart("");
       } catch (e: any) {
         console.error(e);
@@ -174,12 +180,15 @@ export default function AppointmentBooking() {
     };
 
     loadSlots();
-  }, [doctorId, doctor?.practice_id, selectedDate, durationMinutes, selectedSlotStart]);
+  }, [doctorId, doctor?.practice_id, selectedDate, durationMinutes, selectedSlotStart, appointmentType]);
 
   const availableSlots = useMemo(() => {
+    const nowMs = Date.now() + 60_000; // 1-minute safety buffer
     const seen = new Set<string>();
+
     return slots
       .filter((s) => s.available)
+      .filter((s) => !isSameMinuteOrPast(s.start_at, nowMs))
       .filter((s) => {
         if (seen.has(s.start_at)) return false;
         seen.add(s.start_at);
@@ -200,6 +209,14 @@ export default function AppointmentBooking() {
 
     if (!selectedSlotStart) {
       toast.error("Please select a time slot");
+      return;
+    }
+
+    // ✅ Client-side hard stop: prevent booking in the past
+    const nowMs = Date.now() + 60_000; // 1-minute safety buffer
+    if (isSameMinuteOrPast(selectedSlotStart, nowMs)) {
+      toast.error("You can't book an appointment in the past.");
+      setSelectedSlotStart("");
       return;
     }
 
@@ -309,7 +326,7 @@ export default function AppointmentBooking() {
               <AlertTriangle className="h-4 w-4 text-amber-600" />
               <AlertTitle className="text-amber-700 dark:text-amber-400">Independent Practitioner</AlertTitle>
               <AlertDescription className="text-amber-600 dark:text-amber-300">
-                This doctor has not yet confirmed a clinic or practice location. Only <strong>video call</strong> and <strong>messaging</strong> appointments are available. 
+                This doctor has not yet confirmed a clinic or practice location. Only <strong>video call</strong> and <strong>messaging</strong> appointments are available.
                 <span className="block mt-2 font-medium">⚠️ Do not visit any physical location the doctor may suggest until they have verified their practice affiliation.</span>
               </AlertDescription>
             </Alert>
@@ -363,15 +380,15 @@ export default function AppointmentBooking() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <RadioGroup 
-                value={appointmentType} 
+              <RadioGroup
+                value={appointmentType}
                 onValueChange={(v) => setAppointmentType(v as AppointmentType)}
                 className="grid grid-cols-1 md:grid-cols-3 gap-4"
               >
                 <div className="relative">
                   <RadioGroupItem value="video" id="video" className="peer sr-only" />
-                  <Label 
-                    htmlFor="video" 
+                  <Label
+                    htmlFor="video"
                     className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer transition-colors"
                   >
                     <Video className="h-6 w-6 mb-2" />
@@ -382,8 +399,8 @@ export default function AppointmentBooking() {
 
                 <div className="relative">
                   <RadioGroupItem value="messaging" id="messaging" className="peer sr-only" />
-                  <Label 
-                    htmlFor="messaging" 
+                  <Label
+                    htmlFor="messaging"
                     className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer transition-colors"
                   >
                     <MessageSquare className="h-6 w-6 mb-2" />
@@ -393,17 +410,17 @@ export default function AppointmentBooking() {
                 </div>
 
                 <div className="relative">
-                  <RadioGroupItem 
-                    value="in-person" 
-                    id="in-person" 
-                    className="peer sr-only" 
+                  <RadioGroupItem
+                    value="in-person"
+                    id="in-person"
+                    className="peer sr-only"
                     disabled={!doctor.practice_id}
                   />
-                  <Label 
-                    htmlFor="in-person" 
+                  <Label
+                    htmlFor="in-person"
                     className={`flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 transition-colors ${
-                      doctor.practice_id 
-                        ? 'hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer' 
+                      doctor.practice_id
+                        ? 'hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer'
                         : 'opacity-50 cursor-not-allowed'
                     }`}
                   >
@@ -456,7 +473,6 @@ export default function AppointmentBooking() {
                   mode="single"
                   selected={selectedDate}
                   onSelect={(d) => d && setSelectedDate(d)}
-                  // Disable dates before today (but allow today)
                   disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))}
                   className="rounded-md border"
                 />
@@ -562,13 +578,9 @@ export default function AppointmentBooking() {
                       Booking...
                     </span>
                   ) : (
-                    "Confirm booking"
+                    "Book appointment"
                   )}
                 </Button>
-
-                {!selectedSlotStart && (
-                  <p className="text-xs text-muted-foreground">Select a time slot to enable booking.</p>
-                )}
               </CardContent>
             </Card>
           </div>
