@@ -1,58 +1,83 @@
-import { motion } from 'framer-motion';
-import { 
-  Calendar, FileText, FolderOpen, PenTool, 
-  Users, Shield, CreditCard, Bell, Video 
-} from 'lucide-react';
+import { motion } from "framer-motion";
+import {
+  Calendar,
+  FileText,
+  FolderOpen,
+  PenTool,
+  Users,
+  Shield,
+  CreditCard,
+  Bell,
+  Video,
+  ArrowRight,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 const capabilities = [
   {
     icon: Calendar,
-    title: 'Smart Scheduling',
-    description: 'AI-powered booking with real-time availability'
+    title: "Smart Scheduling",
+    description: "AI-powered booking with real-time availability",
+    featureId: "feature-scheduling",
   },
   {
     icon: FileText,
-    title: 'Digital Prescriptions',
-    description: 'Paperless prescriptions sent directly to pharmacies'
+    title: "Digital Prescriptions",
+    description: "Paperless prescriptions sent directly to pharmacies",
+    featureId: "feature-medication",
   },
   {
     icon: FolderOpen,
-    title: 'Secure File Storage',
-    description: 'HIPAA-compliant medical document management'
+    title: "Secure File Storage",
+    description: "HIPAA-compliant medical document management",
+    featureId: "feature-health-records",
   },
   {
     icon: PenTool,
-    title: 'Clinical Notes',
-    description: 'AI-assisted documentation and templates'
+    title: "Clinical Notes",
+    description: "AI-assisted documentation and templates",
+    featureId: "feature-health-records",
   },
   {
     icon: Users,
-    title: 'Team Collaboration',
-    description: 'Seamless coordination between care providers'
+    title: "Team Collaboration",
+    description: "Seamless coordination between care providers",
+    featureId: "feature-messaging",
   },
   {
     icon: Shield,
-    title: 'Insurance Support',
-    description: 'Integrated verification and claims processing'
+    title: "Insurance Support",
+    description: "Integrated verification and claims processing",
+    featureId: "feature-billing",
   },
   {
     icon: CreditCard,
-    title: 'Payment Processing',
-    description: 'Secure payments with multiple options'
+    title: "Payment Processing",
+    description: "Secure payments with multiple options",
+    featureId: "feature-billing",
   },
   {
     icon: Bell,
-    title: 'Smart Notifications',
-    description: 'Automated reminders and updates'
+    title: "Smart Notifications",
+    description: "Automated reminders and updates",
+    featureId: "feature-notifications",
   },
   {
     icon: Video,
-    title: 'Telemedicine',
-    description: 'HD video consultations with screen sharing'
+    title: "Telemedicine",
+    description: "HD video consultations with screen sharing",
+    featureId: "feature-telemedicine",
   },
 ];
 
 export default function CapabilitiesGrid() {
+  const navigate = useNavigate();
+
+  const goToFeature = (featureId: string) => {
+    navigate(`/features#${featureId}`);
+  };
+
   return (
     <section className="py-24 bg-gradient-to-b from-background to-muted/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -69,6 +94,25 @@ export default function CapabilitiesGrid() {
           <p className="text-lg text-muted-foreground font-light max-w-2xl mx-auto">
             Everything you need to deliver exceptional healthcare
           </p>
+
+          <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+            <Button
+              size="lg"
+              className="rounded-full h-12 px-6 gap-2"
+              onClick={() => navigate("/features#features")}
+            >
+              Explore Features
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="rounded-full h-12 px-6"
+              onClick={() => navigate("/features#features")}
+            >
+              See All Capabilities
+            </Button>
+          </div>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -82,16 +126,17 @@ export default function CapabilitiesGrid() {
               whileHover={{ y: -5, scale: 1.02 }}
               className="group"
             >
-              <div className="h-full p-6 rounded-3xl bg-card border border-border/50 transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5">
+              <div className="h-full p-6 rounded-3xl bg-card border border-border/50 transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 flex flex-col">
                 <div className="flex items-start gap-4">
                   <motion.div
                     whileHover={{ rotate: 5, scale: 1.1 }}
-                    transition={{ type: 'spring', stiffness: 300 }}
+                    transition={{ type: "spring", stiffness: 300 }}
                     className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center flex-shrink-0 group-hover:from-primary/30 group-hover:to-primary/10 transition-colors duration-300"
                   >
                     <capability.icon className="w-6 h-6 text-primary" />
                   </motion.div>
-                  <div>
+
+                  <div className="flex-1">
                     <h3 className="font-semibold text-foreground mb-2 group-hover:text-primary transition-colors duration-300">
                       {capability.title}
                     </h3>
@@ -99,6 +144,17 @@ export default function CapabilitiesGrid() {
                       {capability.description}
                     </p>
                   </div>
+                </div>
+
+                <div className="mt-5">
+                  <Button
+                    variant="ghost"
+                    className="px-0 h-auto text-primary hover:text-primary/90 hover:bg-transparent"
+                    onClick={() => goToFeature(capability.featureId)}
+                  >
+                    Learn more
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
                 </div>
               </div>
             </motion.div>
