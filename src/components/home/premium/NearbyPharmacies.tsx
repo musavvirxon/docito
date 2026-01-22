@@ -57,10 +57,11 @@ export default function NearbyPharmacies() {
       setLoading(true);
       try {
         const { data, error } = await (supabase as any)
-          .from('pharmacy_public_search_view')
-          .select('id, name, logo_url, city, country, delivery_available, accepts_insurance, rating, num_reviews')
+          .from('pharmacies')
+          .select('id, name, logo_url, city, country, delivery_available, accepts_insurance, average_rating, num_reviews')
+          .eq('is_verified', true)
           .order('num_reviews', { ascending: false })
-          .order('rating', { ascending: false })
+          .order('average_rating', { ascending: false })
           .limit(4);
 
         if (error) throw error;
@@ -74,7 +75,7 @@ export default function NearbyPharmacies() {
           country: p.country ?? null,
           delivery_available: typeof p.delivery_available === 'boolean' ? p.delivery_available : null,
           accepts_insurance: typeof p.accepts_insurance === 'boolean' ? p.accepts_insurance : null,
-          rating: safeRating(p.rating),
+          rating: safeRating(p.average_rating),
           num_reviews: safeNum(p.num_reviews, 0),
         }));
 

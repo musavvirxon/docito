@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Search, MapPin, Star, Calendar, DollarSign, Stethoscope, Filter, X, Check, ChevronDown, Clock, Globe, Languages } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Search, MapPin, Star, Calendar, DollarSign, Stethoscope, Filter, X, ChevronDown, Globe, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ import { useBookingAuth } from "@/hooks/useBookingAuth";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
+import { getMainSpecialtyCategory } from "@/utils/specialtyMapping";
 
 const DoctorSearchSection = () => {
   const { t } = useTranslation("dashboard");
@@ -37,8 +38,18 @@ const DoctorSearchSection = () => {
   const navigate = useNavigate();
   const { handleBookingClick } = useBookingAuth();
 
-  // Extract unique values for filters
-  const specialties = Array.from(new Set(doctors?.map(d => d.specialty).filter(Boolean))) as string[];
+  // Extract unique main specialty categories for filters
+  const specialties = useMemo(() => {
+    const mainCategories = new Set<string>();
+    doctors?.forEach(d => {
+      const mainCategory = getMainSpecialtyCategory(d.specialty);
+      if (mainCategory) {
+        mainCategories.add(mainCategory);
+      }
+    });
+    return Array.from(mainCategories).sort();
+  }, [doctors]);
+  
   const countries = Array.from(new Set(doctors?.map(d => d.practices?.country).filter(Boolean))) as string[];
   const regions = Array.from(new Set(doctors?.map(d => d.practices?.city).filter(Boolean))) as string[];
 
@@ -49,7 +60,9 @@ const DoctorSearchSection = () => {
       doctorName.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
       doctor.specialty?.toLowerCase().includes(debouncedSearch.toLowerCase());
     
-    const matchesSpecialty = selectedSpecialty === "all" || doctor.specialty === selectedSpecialty;
+    // Match by main specialty category
+    const doctorMainCategory = getMainSpecialtyCategory(doctor.specialty);
+    const matchesSpecialty = selectedSpecialty === "all" || doctorMainCategory === selectedSpecialty;
     const matchesCountry = selectedCountry === "all" || doctor.practices?.country === selectedCountry;
     const matchesRegion = selectedRegion === "all" || doctor.practices?.city === selectedRegion;
     const matchesRating = (doctor.average_rating || 0) >= minRating[0];

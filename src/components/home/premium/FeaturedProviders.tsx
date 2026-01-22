@@ -70,13 +70,28 @@ export default function FeaturedProviders() {
     const loadDoctors = async () => {
       setLoadingDoctors(true);
       try {
-        const { data, error } = await (supabase as any)
-          .from('doctor_public_search_view')
-          .select(
-            'id, full_name, avatar_url, specialty, rating, num_reviews, accepts_new_patients, practice_city, practice_country, appointment_count, practice_id'
-          )
+        const { data, error } = await supabase
+          .from('doctors')
+          .select(`
+            id,
+            specialty,
+            average_rating,
+            num_reviews,
+            accepts_new_patients,
+            appointment_count,
+            practice_id,
+            profiles:user_id (
+              full_name,
+              avatar_url
+            ),
+            practices:practice_id (
+              city,
+              country
+            )
+          `)
+          .eq('verified', true)
           .order('num_reviews', { ascending: false })
-          .order('rating', { ascending: false })
+          .order('average_rating', { ascending: false })
           .order('appointment_count', { ascending: false })
           .limit(4);
 
@@ -85,14 +100,14 @@ export default function FeaturedProviders() {
 
         const normalized: DoctorRow[] = (data || []).map((d: any) => ({
           id: String(d.id),
-          full_name: d.full_name ?? null,
-          avatar_url: d.avatar_url ?? null,
+          full_name: d.profiles?.full_name ?? null,
+          avatar_url: d.profiles?.avatar_url ?? null,
           specialty: d.specialty ?? null,
-          rating: safeRating(d.rating),
+          rating: safeRating(d.average_rating),
           num_reviews: safeNum(d.num_reviews, 0),
           accepts_new_patients: typeof d.accepts_new_patients === 'boolean' ? d.accepts_new_patients : null,
-          practice_city: d.practice_city ?? null,
-          practice_country: d.practice_country ?? null,
+          practice_city: d.practices?.city ?? null,
+          practice_country: d.practices?.country ?? null,
         }));
 
         setDoctors(normalized);
@@ -108,10 +123,11 @@ export default function FeaturedProviders() {
       setLoadingPractices(true);
       try {
         const { data, error } = await (supabase as any)
-          .from('practice_public_search_view')
-          .select('id, name, logo_url, practice_type, rating, num_reviews, city, country, appointment_count')
+          .from('practices')
+          .select('id, name, logo_url, practice_type, average_rating, num_reviews, city, country, appointment_count')
+          .eq('is_verified', true)
           .order('num_reviews', { ascending: false })
-          .order('rating', { ascending: false })
+          .order('average_rating', { ascending: false })
           .order('appointment_count', { ascending: false })
           .limit(3);
 
@@ -123,7 +139,7 @@ export default function FeaturedProviders() {
           name: String(p.name || ''),
           logo_url: p.logo_url ?? null,
           practice_type: p.practice_type ?? null,
-          rating: safeRating(p.rating),
+          rating: safeRating(p.average_rating),
           num_reviews: safeNum(p.num_reviews, 0),
           city: p.city ?? null,
           country: p.country ?? null,
@@ -138,9 +154,10 @@ export default function FeaturedProviders() {
         }
 
         const { data: docRows } = await (supabase as any)
-          .from('doctor_public_search_view')
+          .from('doctors')
           .select('practice_id')
           .in('practice_id', ids)
+          .eq('verified', true)
           .limit(5000);
 
         if (cancelled) return;

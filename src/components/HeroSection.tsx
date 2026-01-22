@@ -1,11 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, MapPin, CreditCard } from "lucide-react";
-import { useState } from "react";
+import { Search } from "lucide-react";
+import { useState, useEffect } from "react";
 import SearchResults from "@/components/patient/SearchResults";
 import { useBookingAuth } from "@/hooks/useBookingAuth";
 import { useDoctors } from "@/hooks/useDoctors";
 import { usePractices } from "@/hooks/usePractices";
+import { DISPLAY_SPECIALTIES, getSearchTermsForDisplaySpecialty, getMainSpecialtyCategory } from "@/utils/specialtyMapping";
+import { supabase } from "@/integrations/supabase/client";
 
 const HeroSection = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -14,9 +16,44 @@ const HeroSection = () => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [searching, setSearching] = useState(false);
+  const [specialtyCounts, setSpecialtyCounts] = useState<Record<string, number>>({});
   const { handleBookingClick } = useBookingAuth();
   const { searchDoctors } = useDoctors();
   const { searchPractices } = usePractices();
+
+  // Fetch specialty counts from verified doctors
+  useEffect(() => {
+    const fetchSpecialtyCounts = async () => {
+      try {
+        const { data: doctors } = await supabase
+          .from('doctors')
+          .select('specialty')
+          .eq('verified', true);
+        
+        if (doctors) {
+          const counts: Record<string, number> = {};
+          
+          for (const doctor of doctors) {
+            const mainCategory = getMainSpecialtyCategory(doctor.specialty);
+            
+            // Map to display specialty
+            for (const displaySpec of DISPLAY_SPECIALTIES) {
+              if (mainCategory && displaySpec.categories.includes(mainCategory)) {
+                counts[displaySpec.name] = (counts[displaySpec.name] || 0) + 1;
+                break;
+              }
+            }
+          }
+          
+          setSpecialtyCounts(counts);
+        }
+      } catch (error) {
+        console.error('Error fetching specialty counts:', error);
+      }
+    };
+    
+    fetchSpecialtyCounts();
+  }, []);
 
   const handleSearch = async () => {
     if (!searchTerm.trim() && !locationTerm.trim()) {
@@ -44,7 +81,7 @@ const HeroSection = () => {
         affiliatedPractice: doctor.practices ? (doctor.practices as any).name : "Independent Doctor",
         location: doctor.practices ? `${(doctor.practices as any).city || "City"}, ${(doctor.practices as any).country || "Country"}` : "Location",
         consultationFee: doctor.consultation_fee,
-        languages: ["English"], // Default language
+        languages: doctor.languages || ["English"],
         bio: doctor.bio,
         availability: "Available Today",
         acceptsInsurance: true,
@@ -60,10 +97,10 @@ const HeroSection = () => {
         practiceType: "Medical Practice",
         description: practice.description,
         location: `${practice.city || "City"}, ${practice.country || "Country"}`,
-        specialties: ["General Medicine", "Family Practice"], // Default specialties
+        specialties: ["General Medicine", "Family Practice"],
         rating: practice.weighted_rating || practice.average_rating || 4.7,
         reviewCount: practice.num_reviews || 0,
-        doctorCount: 5, // Default doctor count
+        doctorCount: 5,
         availability: "Open Today",
         acceptsInsurance: true,
         acceptsNewPatients: true,
@@ -75,7 +112,6 @@ const HeroSection = () => {
       setShowResults(true);
     } catch (error) {
       console.error('Search error:', error);
-      // Show empty results instead of mock data
       setSearchResults([]);
       setShowResults(true);
     } finally {
@@ -84,32 +120,21 @@ const HeroSection = () => {
   };
 
   const handleDoctorClick = (doctor: any) => {
-    // Use proper booking authentication flow
     handleBookingClick(doctor.id, doctor.name);
   };
-
-  const specialties = [
-    { name: "Primary Care", icon: "💝" },
-    { name: "Dentist", icon: "🦷" },
-    { name: "OB-GYN", icon: "👥" },
-    { name: "Dermatologist", icon: "🧴" },
-    { name: "Psychiatrist", icon: "🧠" },
-    { name: "Ophthalmologist", icon: "👁️" },
-    { name: "Cardiologist", icon: "❤️" },
-    { name: "Neurologist", icon: "🧠" },
-    { name: "Orthopedist", icon: "🦴" }
-  ];
 
   const handleSpecialtyClick = async (specialtyName: string) => {
     setSearchTerm(specialtyName);
     
-    // Auto-trigger search after setting the specialty
+    // Get all search terms for this display specialty
+    const searchTerms = getSearchTermsForDisplaySpecialty(specialtyName);
+    
     setSearching(true);
     try {
-      // Search both doctors and practices with the specialty
+      // Search with the first term (main specialty name)
       const [doctorsResults, practicesResults] = await Promise.all([
-        searchDoctors(specialtyName, locationTerm),
-        searchPractices(specialtyName, locationTerm)
+        searchDoctors(searchTerms[0], locationTerm),
+        searchPractices(searchTerms[0], locationTerm)
       ]);
 
       // Transform and combine results
@@ -125,7 +150,7 @@ const HeroSection = () => {
         affiliatedPractice: doctor.practices ? (doctor.practices as any).name : "Independent Doctor",
         location: doctor.practices ? `${(doctor.practices as any).city || "City"}, ${(doctor.practices as any).country || "Country"}` : "Location",
         consultationFee: doctor.consultation_fee,
-        languages: ["English"], // Default language
+        languages: doctor.languages || ["English"],
         bio: doctor.bio,
         availability: "Available Today",
         acceptsInsurance: true,
@@ -141,10 +166,10 @@ const HeroSection = () => {
         practiceType: "Medical Practice",
         description: practice.description,
         location: `${practice.city || "City"}, ${practice.country || "Country"}`,
-        specialties: ["General Medicine", "Family Practice"], // Default specialties
+        specialties: ["General Medicine", "Family Practice"],
         rating: practice.weighted_rating || practice.average_rating || 4.7,
         reviewCount: practice.num_reviews || 0,
-        doctorCount: 5, // Default doctor count
+        doctorCount: 5,
         availability: "Open Today",
         acceptsInsurance: true,
         acceptsNewPatients: true,
@@ -156,7 +181,6 @@ const HeroSection = () => {
       setShowResults(true);
     } catch (error) {
       console.error('Search error:', error);
-      // Show empty results instead of mock data
       setSearchResults([]);
       setShowResults(true);
     } finally {
@@ -232,8 +256,8 @@ const HeroSection = () => {
 
           {/* Specialty Squares */}
           {!showResults && (
-            <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-4 mb-8">
-              {specialties.map((specialty) => (
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
+              {DISPLAY_SPECIALTIES.map((specialty) => (
                 <div 
                   key={specialty.name} 
                   onClick={() => handleSpecialtyClick(specialty.name)}
@@ -241,6 +265,11 @@ const HeroSection = () => {
                 >
                   <span className="text-2xl mb-2 group-hover:scale-110 transition-transform duration-200">{specialty.icon}</span>
                   <span className="text-xs font-medium text-foreground group-hover:text-accent-foreground text-center transition-colors duration-200">{specialty.name}</span>
+                  {specialtyCounts[specialty.name] > 0 && (
+                    <span className="text-[10px] text-muted-foreground mt-1">
+                      {specialtyCounts[specialty.name]} doctors
+                    </span>
+                  )}
                 </div>
               ))}
             </div>
