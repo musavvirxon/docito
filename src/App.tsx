@@ -153,6 +153,7 @@ export default function App() {
 
                   {/* Booking */}
                   <Route path="/book/:doctorId" element={<AppointmentBooking />} />
+                  <Route path="/book-appointment/:doctorId" element={<AppointmentBooking />} />
                   <Route path="/booking-confirmation/:appointmentId" element={<BookingConfirmation />} />
 
                   {/* Info pages */}

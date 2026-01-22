@@ -37,7 +37,6 @@ import { PatientTreatmentPlans } from "@/components/patient/PatientTreatmentPlan
 import { PatientBilling } from "@/components/patient/PatientBilling";
 import { PatientTestResultsSection } from "@/components/patient/PatientTestResultsSection";
 import ThemeToggle from "@/components/home/ThemeToggle";
-import DoctorSearchSection from "@/components/patient/DoctorSearchSection";
 import { PatientReferralsSection } from "@/components/patient/PatientReferralsSection";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -76,9 +75,17 @@ const PatientDashboard = () => {
     { id: "test-results", label: "Test Results", icon: TestTube2 },
     { id: "treatment-plans", label: "Treatment Plans", icon: ClipboardList },
     { id: "billing", label: "Billing", icon: Receipt },
-    { id: "find-doctors", label: t("patient.navigation.findDoctors"), icon: Search },
     { id: "settings", label: t("patient.navigation.settings"), icon: Settings },
   ];
+
+  const handleNavClick = (itemId: string) => {
+    if (itemId === "find-doctors") {
+      navigate("/find-doctors");
+    } else {
+      setActiveSection(itemId);
+    }
+    setSidebarOpen(false);
+  };
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -131,10 +138,7 @@ const PatientDashboard = () => {
               return (
                 <button
                   key={item.id}
-                  onClick={() => {
-                    setActiveSection(item.id);
-                    setSidebarOpen(false);
-                  }}
+                  onClick={() => handleNavClick(item.id)}
                   className={cn(
                     "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left",
                     isActive
@@ -147,6 +151,14 @@ const PatientDashboard = () => {
                 </button>
               );
             })}
+            {/* Find Doctors - External link */}
+            <button
+              onClick={() => navigate("/find-doctors")}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left text-sidebar-foreground hover:bg-sidebar-accent/50"
+            >
+              <Search className="h-5 w-5 flex-shrink-0" />
+              <span>{t("patient.navigation.findDoctors")}</span>
+            </button>
           </nav>
 
           {/* Logout Button */}
@@ -288,7 +300,7 @@ const PatientDashboard = () => {
                     <Button
                       variant="outline"
                       className="justify-start"
-                      onClick={() => setActiveSection("find-doctors")}
+                      onClick={() => navigate("/find-doctors")}
                     >
                       <Search className="mr-2 h-4 w-4" />
                       {t("patient.quickActions.findDoctors")}
@@ -296,7 +308,7 @@ const PatientDashboard = () => {
                     <Button
                       variant="outline"
                       className="justify-start"
-                      onClick={() => setActiveSection("find-doctors")}
+                      onClick={() => navigate("/find-doctors")}
                     >
                       <Plus className="mr-2 h-4 w-4" />
                       {t("patient.quickActions.bookAppointment")}
@@ -379,7 +391,7 @@ const PatientDashboard = () => {
                     <Button
                       variant="link"
                       className="mt-2"
-                      onClick={() => setActiveSection("find-doctors")}
+                      onClick={() => navigate("/find-doctors")}
                     >
                       {t("patient.appointments.bookFirst")}
                     </Button>
@@ -409,9 +421,6 @@ const PatientDashboard = () => {
             <PatientBilling />
           )}
 
-          {activeSection === "find-doctors" && (
-            <DoctorSearchSection />
-          )}
 
           {activeSection === "referrals" && (
             <PatientReferralsSection />
