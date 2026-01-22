@@ -79,6 +79,7 @@ const DoctorScheduleSettings = lazy(() => import("@/pages/DoctorScheduleSettings
 const TreatmentPlanning = lazy(() => import("@/pages/TreatmentPlanning"));
 const ProcedureLibrary = lazy(() => import("@/pages/ProcedureLibrary"));
 const AppointmentSession = lazy(() => import("@/pages/AppointmentSession"));
+const DoctorPatientProfile = lazy(() => import("@/pages/doctor/DoctorPatientProfile"));
 
 // Practice/Admin pages
 const RegisterPractice = lazy(() => import("@/pages/RegisterPractice"));
@@ -101,8 +102,6 @@ const AcceptInvite = lazy(() => import("@/pages/AcceptInvite"));
 
 // Billing
 const BillingPage = lazy(() => import("@/pages/BillingPage"));
-
-// Admin verification - handled by super-admin DoctorVerificationTable
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -184,6 +183,7 @@ export default function App() {
                 <Route path="/doctor/schedule" element={<DoctorScheduleSettings />} />
                 <Route path="/doctor/treatment-planning" element={<TreatmentPlanning />} />
                 <Route path="/doctor/procedures" element={<ProcedureLibrary />} />
+                <Route path="/doctor/patient/:patientId" element={<DoctorPatientProfile />} />
 
                 {/* Staff/Admin */}
                 <Route path="/staff-dashboard" element={<StaffDashboard />} />
@@ -193,8 +193,6 @@ export default function App() {
                 <Route path="/practices/dashboard" element={<AdminDashboard />} />
                 <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
                 <Route path="/super-admin/dashboard" element={<SuperAdminDashboard />} />
-
-                {/* Doctor verification is handled in super-admin dashboard */}
 
                 {/* Facility dashboards */}
                 <Route path="/dashboard/labs" element={<LabDashboardPage />} />
