@@ -21,6 +21,7 @@ import {
   TableHeader as UITableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 import {
   Eye,
@@ -30,6 +31,11 @@ import {
   FileText,
   Trash2,
   RefreshCcw,
+  Download,
+  Image as ImageIcon,
+  FileIcon,
+  ExternalLink,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -73,6 +79,16 @@ type DocRow = {
   file_path: string;
   file_name: string;
   uploaded_at?: string | null;
+  signedUrl?: string | null;
+  mimeType?: string | null;
+};
+
+type FilePreview = {
+  doc: DocRow;
+  url: string;
+  mimeType: string;
+  loading: boolean;
+  error?: string;
 };
 
 function normalizeStatus(s: string | null | undefined) {
@@ -155,6 +171,10 @@ export default function DoctorVerificationTable({
   const [selected, setSelected] = useState<VerificationRow | null>(null);
   const [docs, setDocs] = useState<DocRow[]>([]);
   const [viewOpen, setViewOpen] = useState(false);
+  
+  // File preview state
+  const [previewDoc, setPreviewDoc] = useState<FilePreview | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const [rejectionReason, setRejectionReason] = useState("");
   const [search, setSearch] = useState("");
@@ -266,6 +286,51 @@ export default function DoctorVerificationTable({
     setViewOpen(true);
   };
 
+  // Determine mime type from file extension
+  const getMimeType = (fileName: string): string => {
+    const ext = fileName.split('.').pop()?.toLowerCase() || '';
+    const mimeTypes: Record<string, string> = {
+      'pdf': 'application/pdf',
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png': 'image/png',
+      'gif': 'image/gif',
+      'webp': 'image/webp',
+      'svg': 'image/svg+xml',
+      'bmp': 'image/bmp',
+      'doc': 'application/msword',
+      'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'xls': 'application/vnd.ms-excel',
+      'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'txt': 'text/plain',
+    };
+    return mimeTypes[ext] || 'application/octet-stream';
+  };
+
+  const isImageType = (mimeType: string) => mimeType.startsWith('image/');
+  const isPdfType = (mimeType: string) => mimeType === 'application/pdf';
+
+  const openFilePreview = async (doc: DocRow) => {
+    setPreviewDoc({ doc, url: '', mimeType: '', loading: true });
+    setPreviewOpen(true);
+
+    try {
+      const clean = extractStoragePath(doc.file_path);
+      const { data, error } = await supabase.storage
+        .from("verification-documents")
+        .createSignedUrl(clean, 60 * 60);
+
+      if (error) throw error;
+      if (!data?.signedUrl) throw new Error("No signed URL returned");
+
+      const mimeType = getMimeType(doc.file_name);
+      setPreviewDoc({ doc, url: data.signedUrl, mimeType, loading: false });
+    } catch (e: any) {
+      console.error(e);
+      setPreviewDoc(prev => prev ? { ...prev, loading: false, error: e?.message || 'Failed to load file' } : null);
+    }
+  };
+
   const viewDocument = async (filePath: string) => {
     try {
       const clean = extractStoragePath(filePath);
@@ -305,6 +370,88 @@ export default function DoctorVerificationTable({
       console.error(e);
       toast.error(e?.message || "Failed to download document");
     }
+  };
+
+  // Render file preview content
+  const renderFilePreview = () => {
+    if (!previewDoc) return null;
+
+    if (previewDoc.loading) {
+      return (
+        <div className="flex items-center justify-center h-96">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <span className="ml-2 text-muted-foreground">Loading file...</span>
+        </div>
+      );
+    }
+
+    if (previewDoc.error) {
+      return (
+        <div className="flex flex-col items-center justify-center h-96 text-destructive">
+          <XCircle className="w-12 h-12 mb-2" />
+          <p>{previewDoc.error}</p>
+          <Button 
+            variant="outline" 
+            className="mt-4"
+            onClick={() => viewDocument(previewDoc.doc.file_path)}
+          >
+            <ExternalLink className="w-4 h-4 mr-2" />
+            Open in new tab
+          </Button>
+        </div>
+      );
+    }
+
+    if (isImageType(previewDoc.mimeType)) {
+      return (
+        <div className="flex flex-col items-center justify-center p-4">
+          <img 
+            src={previewDoc.url} 
+            alt={previewDoc.doc.file_name}
+            className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-lg"
+          />
+        </div>
+      );
+    }
+
+    if (isPdfType(previewDoc.mimeType)) {
+      return (
+        <iframe
+          src={previewDoc.url}
+          className="w-full h-[70vh] rounded-lg border"
+          title={previewDoc.doc.file_name}
+        />
+      );
+    }
+
+    // For other file types, show download prompt
+    return (
+      <div className="flex flex-col items-center justify-center h-96 p-6">
+        <FileIcon className="w-16 h-16 text-muted-foreground mb-4" />
+        <p className="text-lg font-medium mb-2">{previewDoc.doc.file_name}</p>
+        <p className="text-sm text-muted-foreground mb-4">
+          This file type ({previewDoc.mimeType}) cannot be previewed directly.
+        </p>
+        <div className="flex gap-2">
+          <Button onClick={() => viewDocument(previewDoc.doc.file_path)}>
+            <ExternalLink className="w-4 h-4 mr-2" />
+            Open in new tab
+          </Button>
+          <Button variant="secondary" onClick={() => downloadDocument(previewDoc.doc.file_path, previewDoc.doc.file_name)}>
+            <Download className="w-4 h-4 mr-2" />
+            Download
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
+  // Get file icon based on mime type
+  const getFileIcon = (fileName: string) => {
+    const mimeType = getMimeType(fileName);
+    if (isImageType(mimeType)) return <ImageIcon className="w-4 h-4" />;
+    if (isPdfType(mimeType)) return <FileText className="w-4 h-4" />;
+    return <FileIcon className="w-4 h-4" />;
   };
 
   const handleUpdateStatus = async (
@@ -587,32 +734,45 @@ export default function DoctorVerificationTable({
               <div className="rounded-lg border p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="font-medium">Documents</div>
-                  <div className="text-xs text-muted-foreground">Latest per document type</div>
+                  <div className="text-xs text-muted-foreground">Click to preview • Latest per document type</div>
                 </div>
 
                 {docs.length === 0 ? (
                   <div className="text-sm text-muted-foreground">No documents found.</div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {docs.map((d) => (
                       <div
                         key={d.id}
-                        className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 rounded-md border p-3"
+                        className="group relative flex flex-col gap-2 rounded-lg border p-3 hover:border-primary/50 hover:bg-muted/30 transition-colors cursor-pointer"
+                        onClick={() => openFilePreview(d)}
                       >
-                        <div className="min-w-0">
-                          <div className="text-sm font-medium truncate">{d.document_type}</div>
-                          <div className="text-xs text-muted-foreground truncate">{d.file_name}</div>
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0 w-10 h-10 rounded-md bg-muted flex items-center justify-center">
+                            {getFileIcon(d.file_name)}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-sm font-medium truncate">{d.document_type}</div>
+                            <div className="text-xs text-muted-foreground truncate">{d.file_name}</div>
+                          </div>
                         </div>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline" onClick={() => viewDocument(d.file_path)}>
-                            <FileText className="w-4 h-4 mr-2" />
-                            View
+                        <div className="flex gap-2 mt-1">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="flex-1"
+                            onClick={(e) => { e.stopPropagation(); openFilePreview(d); }}
+                          >
+                            <Eye className="w-3 h-3 mr-1" />
+                            Preview
                           </Button>
                           <Button
                             size="sm"
                             variant="secondary"
-                            onClick={() => downloadDocument(d.file_path, d.file_name)}
+                            className="flex-1"
+                            onClick={(e) => { e.stopPropagation(); downloadDocument(d.file_path, d.file_name); }}
                           >
+                            <Download className="w-3 h-3 mr-1" />
                             Download
                           </Button>
                         </div>
@@ -711,6 +871,48 @@ export default function DoctorVerificationTable({
               </div>
             ) : null}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* File Preview Dialog */}
+      <Dialog open={previewOpen} onOpenChange={(open) => {
+        setPreviewOpen(open);
+        if (!open) setPreviewDoc(null);
+      }}>
+        <DialogContent className="max-w-4xl max-h-[90vh]">
+          <UIDialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {previewDoc && getFileIcon(previewDoc.doc.file_name)}
+              <span className="truncate">{previewDoc?.doc.file_name || 'File Preview'}</span>
+            </DialogTitle>
+            <DialogDescription className="flex items-center justify-between">
+              <span>{previewDoc?.doc.document_type || 'Document'}</span>
+              {previewDoc && !previewDoc.loading && !previewDoc.error && (
+                <div className="flex gap-2">
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => viewDocument(previewDoc.doc.file_path)}
+                  >
+                    <ExternalLink className="w-3 h-3 mr-1" />
+                    Open in new tab
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="secondary"
+                    onClick={() => downloadDocument(previewDoc.doc.file_path, previewDoc.doc.file_name)}
+                  >
+                    <Download className="w-3 h-3 mr-1" />
+                    Download
+                  </Button>
+                </div>
+              )}
+            </DialogDescription>
+          </UIDialogHeader>
+          
+          <ScrollArea className="max-h-[75vh]">
+            {renderFilePreview()}
+          </ScrollArea>
         </DialogContent>
       </Dialog>
     </>
