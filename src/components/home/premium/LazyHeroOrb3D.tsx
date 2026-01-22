@@ -1,8 +1,6 @@
-import { lazy, Suspense, useState, useEffect, useCallback, memo } from 'react';
-import HeroStaticFallback from './HeroStaticFallback';
-
-// Lazy load the heavy 3D component
-const HeroOrb3D = lazy(() => import('./HeroOrb3D'));
+import { memo, useCallback, useEffect, useState } from "react";
+import HeroStaticFallback from "./HeroStaticFallback";
+import HeroOrb3D from "./HeroOrb3D";
 
 function LazyHeroOrb3D() {
   const [shouldLoad3D, setShouldLoad3D] = useState(false);
@@ -11,16 +9,19 @@ function LazyHeroOrb3D() {
 
   // Detect mobile on mount
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768 || 'ontouchstart' in window);
+      setIsMobile(window.innerWidth < 768 || "ontouchstart" in window);
     };
+
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // On desktop: load 3D after first interaction (scroll/click anywhere)
   useEffect(() => {
+    if (typeof window === "undefined") return;
     if (isMobile || hasInteracted) return;
 
     const handleInteraction = () => {
@@ -28,35 +29,27 @@ function LazyHeroOrb3D() {
       setShouldLoad3D(true);
     };
 
-    // Use passive listeners for scroll performance
-    window.addEventListener('scroll', handleInteraction, { passive: true, once: true });
-    window.addEventListener('click', handleInteraction, { once: true });
-    window.addEventListener('touchstart', handleInteraction, { passive: true, once: true });
+    window.addEventListener("scroll", handleInteraction, { passive: true, once: true } as any);
+    window.addEventListener("click", handleInteraction, { once: true } as any);
+    window.addEventListener("touchstart", handleInteraction, { passive: true, once: true } as any);
 
     return () => {
-      window.removeEventListener('scroll', handleInteraction);
-      window.removeEventListener('click', handleInteraction);
-      window.removeEventListener('touchstart', handleInteraction);
+      window.removeEventListener("scroll", handleInteraction as any);
+      window.removeEventListener("click", handleInteraction as any);
+      window.removeEventListener("touchstart", handleInteraction as any);
     };
   }, [isMobile, hasInteracted]);
 
-  // Manual trigger for static fallback click
   const handleFallbackClick = useCallback(() => {
     setShouldLoad3D(true);
     setHasInteracted(true);
   }, []);
 
-  // Mobile: always show static fallback (can click to load 3D if desired)
-  // Desktop: show fallback until interaction, then load 3D
   if (!shouldLoad3D) {
     return <HeroStaticFallback onClick={handleFallbackClick} />;
   }
 
-  return (
-    <Suspense fallback={<HeroStaticFallback />}>
-      <HeroOrb3D />
-    </Suspense>
-  );
+  return <HeroOrb3D />;
 }
 
 export default memo(LazyHeroOrb3D);
