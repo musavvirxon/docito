@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { format, parseISO } from "date-fns";
-import { AlertCircle, Calendar as CalendarIcon, Clock, Loader2, MapPin } from "lucide-react";
+import { AlertCircle, AlertTriangle, Calendar as CalendarIcon, Clock, Loader2, MapPin, Video, MessageSquare, Building2 } from "lucide-react";
 
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -41,6 +42,8 @@ type AvailabilitySlot = {
   reason?: string | null;
 };
 
+type AppointmentType = "video" | "messaging" | "in-person";
+
 const DURATION_OPTIONS_MINUTES = [15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180];
 
 function formatDuration(minutes: number) {
@@ -66,6 +69,7 @@ export default function AppointmentBooking() {
 
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
   const [selectedSlotStart, setSelectedSlotStart] = useState<string>("");
+  const [appointmentType, setAppointmentType] = useState<AppointmentType>("video");
 
   // Patient details (ONLY phone is required; others optional)
   const [patientPhone, setPatientPhone] = useState<string>("");
@@ -219,6 +223,7 @@ export default function AppointmentBooking() {
 
       // Always capture phone in notes so the doctor can see it even if profile isn't readable.
       const combinedNotes = [
+        `Appointment Type: ${appointmentType}`,
         phone ? `Phone: ${phone}` : null,
         patientName.trim() ? `Name: ${patientName.trim()}` : null,
         patientEmail.trim() ? `Email: ${patientEmail.trim()}` : null,
@@ -235,6 +240,7 @@ export default function AppointmentBooking() {
           slot_start: selectedSlotStart,
           duration_minutes: durationMinutes,
           notes: combinedNotes || undefined,
+          appointment_type: appointmentType,
         },
       });
 
@@ -297,26 +303,122 @@ export default function AppointmentBooking() {
             </p>
           </div>
 
+          {/* Independent Practitioner Warning */}
+          {!doctor.practice_id && (
+            <Alert variant="destructive" className="border-amber-500/50 bg-amber-500/10">
+              <AlertTriangle className="h-4 w-4 text-amber-600" />
+              <AlertTitle className="text-amber-700 dark:text-amber-400">Independent Practitioner</AlertTitle>
+              <AlertDescription className="text-amber-600 dark:text-amber-300">
+                This doctor has not yet confirmed a clinic or practice location. Only <strong>video call</strong> and <strong>messaging</strong> appointments are available. 
+                <span className="block mt-2 font-medium">⚠️ Do not visit any physical location the doctor may suggest until they have verified their practice affiliation.</span>
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Doctor summary */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between gap-2">
                 <span>{doctor.profiles?.full_name ?? "Doctor"}</span>
-                <Badge variant="secondary">{doctor.specialty}</Badge>
+                <div className="flex items-center gap-2">
+                  {!doctor.practice_id && (
+                    <Badge variant="outline" className="border-amber-500 text-amber-600">
+                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      Independent
+                    </Badge>
+                  )}
+                  <Badge variant="secondary">{doctor.specialty}</Badge>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                <span>
-                  {doctor.practices?.name ?? "Practice"}
-                  {doctor.practices?.address ? ` • ${doctor.practices.address}` : ""}
-                </span>
-              </div>
+              {doctor.practice_id && doctor.practices ? (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <MapPin className="h-4 w-4" />
+                  <span>
+                    {doctor.practices.name}
+                    {doctor.practices.address ? ` • ${doctor.practices.address}` : ""}
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                  <Building2 className="h-4 w-4" />
+                  <span>No verified clinic - Remote consultations only</span>
+                </div>
+              )}
               {typeof doctor.consultation_fee === "number" && (
                 <div className="text-muted-foreground">
                   Consultation fee: <span className="font-medium text-foreground">${doctor.consultation_fee}</span>
                 </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Appointment Type Selection */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Video className="h-5 w-5" />
+                Appointment Type
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RadioGroup 
+                value={appointmentType} 
+                onValueChange={(v) => setAppointmentType(v as AppointmentType)}
+                className="grid grid-cols-1 md:grid-cols-3 gap-4"
+              >
+                <div className="relative">
+                  <RadioGroupItem value="video" id="video" className="peer sr-only" />
+                  <Label 
+                    htmlFor="video" 
+                    className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer transition-colors"
+                  >
+                    <Video className="h-6 w-6 mb-2" />
+                    <span className="font-medium">Video Call</span>
+                    <span className="text-xs text-muted-foreground">Live video consultation</span>
+                  </Label>
+                </div>
+
+                <div className="relative">
+                  <RadioGroupItem value="messaging" id="messaging" className="peer sr-only" />
+                  <Label 
+                    htmlFor="messaging" 
+                    className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer transition-colors"
+                  >
+                    <MessageSquare className="h-6 w-6 mb-2" />
+                    <span className="font-medium">Messaging</span>
+                    <span className="text-xs text-muted-foreground">Chat consultation</span>
+                  </Label>
+                </div>
+
+                <div className="relative">
+                  <RadioGroupItem 
+                    value="in-person" 
+                    id="in-person" 
+                    className="peer sr-only" 
+                    disabled={!doctor.practice_id}
+                  />
+                  <Label 
+                    htmlFor="in-person" 
+                    className={`flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-4 transition-colors ${
+                      doctor.practice_id 
+                        ? 'hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer' 
+                        : 'opacity-50 cursor-not-allowed'
+                    }`}
+                  >
+                    <Building2 className="h-6 w-6 mb-2" />
+                    <span className="font-medium">In-Person</span>
+                    <span className="text-xs text-muted-foreground">
+                      {doctor.practice_id ? 'Visit the clinic' : 'Not available'}
+                    </span>
+                  </Label>
+                </div>
+              </RadioGroup>
+              {!doctor.practice_id && (
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-3">
+                  In-person appointments are not available for independent practitioners without a verified clinic.
+                </p>
               )}
             </CardContent>
           </Card>
