@@ -171,21 +171,17 @@ export default function App() {
                   <Route path="/feedback" element={<FeedbackCenter />} />
                 </Route>
 
-                {/* Dashboard routes (no PublicLayout wrapper) */}
-                {/* Patient */}
+                {/* Dashboards */}
                 <Route path="/patient-dashboard" element={<PatientDashboard />} />
                 <Route path="/patient/dashboard" element={<PatientDashboard />} />
 
-                {/* Doctor */}
                 <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
                 <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
-                <Route path="/doctor/dashboard/verification" element={<ProfilePage />} />
                 <Route path="/doctor/schedule" element={<DoctorScheduleSettings />} />
                 <Route path="/doctor/treatment-planning" element={<TreatmentPlanning />} />
                 <Route path="/doctor/procedures" element={<ProcedureLibrary />} />
                 <Route path="/doctor/patient/:patientId" element={<DoctorPatientProfile />} />
 
-                {/* Staff/Admin */}
                 <Route path="/staff-dashboard" element={<StaffDashboard />} />
                 <Route path="/staff/dashboard" element={<StaffDashboard />} />
                 <Route path="/admin-dashboard" element={<AdminDashboard />} />
@@ -206,7 +202,8 @@ export default function App() {
                 <Route path="/register-practice" element={<RegisterPractice />} />
                 <Route path="/practice-settings" element={<PracticeSettings />} />
                 <Route path="/practice-verification" element={<PracticeVerification />} />
-                <Route path="/dashboard/verify" element={<PracticeVerification />} />
+
+                <Route path="/doctor/verification" element={<DoctorVerification />} />
                 <Route path="/lab/register" element={<LabRegistration />} />
                 <Route path="/lab/verification" element={<LabVerification />} />
                 <Route path="/pharmacy/register" element={<PharmacyRegistration />} />
@@ -228,7 +225,6 @@ export default function App() {
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
-
             <Toaster position="top-right" richColors />
           </AuthProvider>
         </ThemeProvider>
