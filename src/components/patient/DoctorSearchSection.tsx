@@ -238,10 +238,10 @@ const DoctorSearchSection = () => {
 
       {/* Results Count */}
       <div className="flex items-center justify-between">
-        <p className="text-muted-foreground">
+        <div className="text-muted-foreground">
           {loading ? (
             <span className="flex items-center gap-2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
+              <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
               {t("patient.findDoctors.loadingDoctors")}
             </span>
           ) : (
@@ -249,7 +249,7 @@ const DoctorSearchSection = () => {
               {sortedDoctors.length} {sortedDoctors.length === 1 ? t("patient.findDoctors.doctorsFound") : t("patient.findDoctors.doctorsFoundPlural")} {t("patient.findDoctors.found")}
             </span>
           )}
-        </p>
+        </div>
       </div>
 
       {/* Doctor Cards Grid */}
@@ -294,19 +294,19 @@ const DoctorSearchSection = () => {
                     <Avatar className="h-20 w-20 border-4 border-primary/10 group-hover:border-primary/30 transition-all">
                       <AvatarImage src={doctor.profiles?.avatar_url} />
                       <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground text-xl">
-                        {doctor.profiles?.full_name?.charAt(0) || 'D'}
+                        {(doctor.profiles?.full_name || doctor.specialty || 'D').charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold text-lg group-hover:text-primary transition-colors truncate">
-                        {doctor.profiles?.full_name || 'Doctor'}
+                        Dr. {doctor.profiles?.full_name || doctor.specialty || 'Medical Professional'}
                       </h3>
                       <Badge variant="secondary" className="mt-1">
-                        {doctor.specialty}
+                        {doctor.specialty || 'General Practice'}
                       </Badge>
                       <div className="flex items-center gap-1 mt-2">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-semibold">{doctor.average_rating?.toFixed(1) || 'N/A'}</span>
+                        <span className="text-sm font-semibold">{(doctor.average_rating || 0).toFixed(1)}</span>
                         <span className="text-xs text-muted-foreground">({doctor.num_reviews || 0} {t("patient.findDoctors.reviews")})</span>
                       </div>
                     </div>
@@ -316,27 +316,36 @@ const DoctorSearchSection = () => {
 
                   {/* Doctor Info */}
                   <div className="space-y-2">
-                    {doctor.practices?.name && (
+                    {doctor.practices?.name ? (
                       <div className="flex items-center gap-2 text-sm">
                         <MapPin className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                         <span className="truncate">{doctor.practices.name}</span>
                       </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-sm">
+                        <MapPin className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                        <span className="truncate text-muted-foreground">Independent Provider</span>
+                      </div>
                     )}
                     
-                    {doctor.practices?.city && doctor.practices?.country && (
+                    {(doctor.practices?.city || doctor.practices?.country) && (
                       <div className="flex items-center gap-2 text-sm">
                         <Globe className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                        <span className="truncate">{doctor.practices.city}, {doctor.practices.country}</span>
+                        <span className="truncate">
+                          {[doctor.practices.city, doctor.practices.country].filter(Boolean).join(', ')}
+                        </span>
                       </div>
                     )}
                     
-                    {doctor.consultation_fee && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <DollarSign className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                        <span className="font-medium text-primary">${doctor.consultation_fee}</span>
+                    <div className="flex items-center gap-2 text-sm">
+                      <DollarSign className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                      <span className="font-medium text-primary">
+                        {doctor.consultation_fee ? `$${doctor.consultation_fee}` : 'Contact for pricing'}
+                      </span>
+                      {doctor.consultation_fee && (
                         <span className="text-muted-foreground">{t("patient.findDoctors.perVisit")}</span>
-                      </div>
-                    )}
+                      )}
+                    </div>
 
                     {doctor.bio && (
                       <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
