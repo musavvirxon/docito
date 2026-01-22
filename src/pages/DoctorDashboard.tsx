@@ -33,6 +33,7 @@ import { NotificationDropdown } from "@/components/NotificationDropdown";
 import { DoctorVerificationStatusCard } from "@/components/doctor/DoctorVerificationStatusCard";
 import { DoctorReferralsSection } from "@/components/doctor/DoctorReferralsSection";
 import { DashboardBranding } from "@/components/dashboard/DashboardBranding";
+import { AcceptNewPatientsToggle } from "@/components/doctor/AcceptNewPatientsToggle";
 
 type DoctorStatus = "independent" | "clinic-member";
 const DoctorDashboardContent = () => {
@@ -295,6 +296,12 @@ const DoctorDashboardContent = () => {
 
             {/* Verification Status */}
             {!doctorProfile.verified && <DoctorVerificationStatusCard />}
+
+            {/* Accept New Patients Toggle */}
+            <AcceptNewPatientsToggle 
+              doctorId={doctorProfile.id} 
+              initialValue={doctorProfile.accepts_new_patients ?? true} 
+            />
 
             {/* Current/Upcoming Appointment Card */}
             <UpcomingAppointmentCard appointments={upcomingAppointments.map(apt => ({
