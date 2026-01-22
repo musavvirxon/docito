@@ -12,9 +12,10 @@ interface BookAppointmentRequest {
   patient_id?: string;
   doctor_patient_id?: string;
 
-  entity_id: string;        // practice_id
-  provider_id?: string;     // doctor_id
+  entity_id?: string;        // practice_id (optional for independent doctors)
+  provider_id: string;       // doctor_id (required)
   slot_start: string;
+  duration_minutes?: number;
   appointment_type?: string;
   notes?: string;
 }
@@ -41,12 +42,14 @@ const handler = async (req: Request): Promise<Response> => {
       entity_id,
       provider_id,
       slot_start,
+      duration_minutes = 30,
       appointment_type,
       notes,
     } = (await req.json()) as BookAppointmentRequest;
 
-    if (!entity_id || !slot_start) {
-      return new Response(JSON.stringify({ error: "Missing required fields: entity_id, slot_start" }), {
+    // provider_id and slot_start are required
+    if (!provider_id || !slot_start) {
+      return new Response(JSON.stringify({ error: "Missing required fields: provider_id, slot_start" }), {
         status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
@@ -76,10 +79,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     // ✅ Authorization rules:
     // - If booking for self (patient_id == user.id) => OK
-    // - Otherwise must be staff/doctor at this entity
+    // - Otherwise must be staff/doctor at this entity (if entity_id provided)
     const bookingForSelf = hasPatientId && patient_id === user.id;
 
-    if (!bookingForSelf) {
+    if (!bookingForSelf && entity_id) {
       const { data: staffRole } = await supabase
         .from("clinic_staff")
         .select("id")
@@ -107,7 +110,7 @@ const handler = async (req: Request): Promise<Response> => {
     const slotDate = new Date(slot_start);
     const appointmentDate = slotDate.toISOString().split("T")[0];
     const startTime = slotDate.toTimeString().slice(0, 8);
-    const endDate = new Date(slotDate.getTime() + 30 * 60000);
+    const endDate = new Date(slotDate.getTime() + duration_minutes * 60000);
     const endTime = endDate.toTimeString().slice(0, 8);
 
     // Prevent race conditions: check conflicts
@@ -131,7 +134,7 @@ const handler = async (req: Request): Promise<Response> => {
     // ✅ Insert appointment with correct patient field
     const insertPayload: any = {
       doctor_id: provider_id,
-      practice_id: entity_id,
+      practice_id: entity_id || null,
       appointment_date: appointmentDate,
       start_time: startTime,
       end_time: endTime,
