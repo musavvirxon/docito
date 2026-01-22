@@ -219,48 +219,135 @@ export type Database = {
           },
         ]
       }
+      appointment_sessions: {
+        Row: {
+          appointment_id: string
+          created_at: string
+          doctor_id: string
+          doctor_patient_id: string | null
+          ended_at: string | null
+          id: string
+          notes: Json | null
+          patient_id: string | null
+          session_status: string
+          session_type: Database["public"]["Enums"]["appointment_type"]
+          specialty_data: Json | null
+          started_at: string | null
+          updated_at: string
+          video_room_id: string | null
+        }
+        Insert: {
+          appointment_id: string
+          created_at?: string
+          doctor_id: string
+          doctor_patient_id?: string | null
+          ended_at?: string | null
+          id?: string
+          notes?: Json | null
+          patient_id?: string | null
+          session_status?: string
+          session_type: Database["public"]["Enums"]["appointment_type"]
+          specialty_data?: Json | null
+          started_at?: string | null
+          updated_at?: string
+          video_room_id?: string | null
+        }
+        Update: {
+          appointment_id?: string
+          created_at?: string
+          doctor_id?: string
+          doctor_patient_id?: string | null
+          ended_at?: string | null
+          id?: string
+          notes?: Json | null
+          patient_id?: string | null
+          session_status?: string
+          session_type?: Database["public"]["Enums"]["appointment_type"]
+          specialty_data?: Json | null
+          started_at?: string | null
+          updated_at?: string
+          video_room_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_sessions_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: true
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_sessions_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: true
+            referencedRelation: "patient_all_appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           appointment_date: string
+          appointment_type: Database["public"]["Enums"]["appointment_type"]
+          completed_at: string | null
           created_at: string | null
           doctor_id: string | null
           doctor_patient_id: string | null
           end_time: string
           id: string
           notes: string | null
+          patient_confirmation_status: string | null
+          patient_confirmed_at: string | null
           patient_id: string | null
           practice_id: string | null
           procedure_id: string | null
+          session_type: string | null
           start_time: string
+          started_at: string | null
           status: Database["public"]["Enums"]["appointment_status"] | null
+          video_room_id: string | null
         }
         Insert: {
           appointment_date: string
+          appointment_type?: Database["public"]["Enums"]["appointment_type"]
+          completed_at?: string | null
           created_at?: string | null
           doctor_id?: string | null
           doctor_patient_id?: string | null
           end_time: string
           id?: string
           notes?: string | null
+          patient_confirmation_status?: string | null
+          patient_confirmed_at?: string | null
           patient_id?: string | null
           practice_id?: string | null
           procedure_id?: string | null
+          session_type?: string | null
           start_time: string
+          started_at?: string | null
           status?: Database["public"]["Enums"]["appointment_status"] | null
+          video_room_id?: string | null
         }
         Update: {
           appointment_date?: string
+          appointment_type?: Database["public"]["Enums"]["appointment_type"]
+          completed_at?: string | null
           created_at?: string | null
           doctor_id?: string | null
           doctor_patient_id?: string | null
           end_time?: string
           id?: string
           notes?: string | null
+          patient_confirmation_status?: string | null
+          patient_confirmed_at?: string | null
           patient_id?: string | null
           practice_id?: string | null
           procedure_id?: string | null
+          session_type?: string | null
           start_time?: string
+          started_at?: string | null
           status?: Database["public"]["Enums"]["appointment_status"] | null
+          video_room_id?: string | null
         }
         Relationships: [
           {
@@ -8050,6 +8137,12 @@ export type Database = {
         | "completed"
         | "canceled"
         | "no_show"
+      appointment_type:
+        | "in_person"
+        | "video"
+        | "home_visit"
+        | "messaging"
+        | "follow_up"
       consent_status: "pending" | "signed" | "declined"
       dental_procedure_status:
         | "planned"
@@ -8321,6 +8414,13 @@ export const Constants = {
         "completed",
         "canceled",
         "no_show",
+      ],
+      appointment_type: [
+        "in_person",
+        "video",
+        "home_visit",
+        "messaging",
+        "follow_up",
       ],
       consent_status: ["pending", "signed", "declined"],
       dental_procedure_status: [

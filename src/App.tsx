@@ -78,6 +78,7 @@ const VideoCall = lazy(() => import("@/pages/VideoCall"));
 const DoctorScheduleSettings = lazy(() => import("@/pages/DoctorScheduleSettings"));
 const TreatmentPlanning = lazy(() => import("@/pages/TreatmentPlanning"));
 const ProcedureLibrary = lazy(() => import("@/pages/ProcedureLibrary"));
+const AppointmentSession = lazy(() => import("@/pages/AppointmentSession"));
 
 // Practice/Admin pages
 const RegisterPractice = lazy(() => import("@/pages/RegisterPractice"));
@@ -223,6 +224,7 @@ export default function App() {
                 <Route path="/billing" element={<BillingPage />} />
                 <Route path="/video-call" element={<VideoCall />} />
                 <Route path="/video/:roomId" element={<VideoCall />} />
+                <Route path="/appointment-session/:appointmentId" element={<AppointmentSession />} />
 
                 {/* Fallback */}
                 <Route path="*" element={<NotFound />} />
