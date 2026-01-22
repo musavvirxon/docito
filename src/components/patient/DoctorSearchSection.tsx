@@ -392,15 +392,17 @@ const DoctorSearchSection = () => {
                   <Avatar className="h-24 w-24 border-4 border-primary/20">
                     <AvatarImage src={selectedDoctor.profiles?.avatar_url} />
                     <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground text-2xl">
-                      {selectedDoctor.profiles?.full_name?.charAt(0) || 'D'}
+                      {(selectedDoctor.profiles?.full_name || selectedDoctor.specialty || 'D').charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    <h2 className="text-2xl font-bold">{selectedDoctor.profiles?.full_name || 'Doctor'}</h2>
-                    <Badge variant="secondary" className="mt-1">{selectedDoctor.specialty}</Badge>
+                    <h2 className="text-2xl font-bold">
+                      Dr. {selectedDoctor.profiles?.full_name || selectedDoctor.specialty || 'Medical Professional'}
+                    </h2>
+                    <Badge variant="secondary" className="mt-1">{selectedDoctor.specialty || 'General Practice'}</Badge>
                     <div className="flex items-center gap-1 mt-2">
                       <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                      <span className="text-lg font-semibold">{selectedDoctor.average_rating?.toFixed(1) || 'N/A'}</span>
+                      <span className="text-lg font-semibold">{(selectedDoctor.average_rating || 0).toFixed(1)}</span>
                       <span className="text-sm text-muted-foreground">({selectedDoctor.num_reviews || 0} {t("patient.findDoctors.reviews")})</span>
                     </div>
                   </div>
@@ -463,11 +465,11 @@ const DoctorSearchSection = () => {
                   size="lg"
                   onClick={() => {
                     setShowProfileModal(false);
-                    handleBookingClick(selectedDoctor.id, selectedDoctor.profiles?.full_name);
+                    handleBookingClick(selectedDoctor.id, selectedDoctor.profiles?.full_name || selectedDoctor.specialty);
                   }}
                 >
                   <Calendar className="w-4 h-4 mr-2" />
-                  {t("patient.findDoctors.bookAppointmentWith")} {selectedDoctor.profiles?.full_name?.split(' ').pop()}
+                  {t("patient.findDoctors.bookAppointmentWith")} Dr. {(selectedDoctor.profiles?.full_name || selectedDoctor.specialty || 'this doctor').split(' ').pop()}
                 </Button>
               </div>
             </ScrollArea>
