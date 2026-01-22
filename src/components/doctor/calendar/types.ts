@@ -1,9 +1,16 @@
-// Doctor Calendar Types
-
 export type CalendarView = 'day' | 'week' | 'month';
+export type AppointmentType =
+  | 'in_person'
+  | 'video'
+  | 'home_visit'
+  | 'messaging'
+  | 'follow_up'
+  | 'in-person'
+  | 'home'
+  | 'chat';
 
-export type AppointmentType = 'in-person' | 'video' | 'home' | 'chat';
-export type AppointmentStatus = 'scheduled' | 'confirmed' | 'completed' | 'canceled' | 'no-show';
+export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'canceled' | 'no_show';
+
 export type AppointmentSource = 'direct' | 'referral';
 
 export interface CalendarAppointment {
@@ -12,17 +19,30 @@ export interface CalendarAppointment {
   start_time: string;
   end_time: string;
   status: AppointmentStatus;
-  notes?: string;
-  doctor_id?: string;
-  patient_id?: string;
-  patient_name?: string;
-  patient_avatar?: string;
-  patient_phone?: string;
-  patient_email?: string;
-  appointment_type?: AppointmentType;
+
+  notes?: string | null;
+
+  doctor_id?: string | null;
+  practice_id?: string | null;
+
+  patient_id?: string | null;
+  doctor_patient_id?: string | null;
+
+  patient_name?: string | null;
+  patient_avatar?: string | null;
+  patient_phone?: string | null;
+  patient_email?: string | null;
+
+  appointment_type?: AppointmentType | null;
   source?: AppointmentSource;
-  referral_id?: string;
-  procedure_name?: string;
+
+  patient_confirmation_status?: 'pending' | 'confirmed' | 'declined' | null;
+  start_requested_by_doctor?: boolean | null;
+  start_requested_by_patient?: boolean | null;
+  started_at?: string | null;
+
+  referral_id?: string | null;
+  procedure_name?: string | null;
 }
 
 export interface BlockedTime {
