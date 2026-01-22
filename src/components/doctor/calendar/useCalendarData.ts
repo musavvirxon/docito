@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useScheduleSettings } from "@/hooks/useScheduleSettings";
-import type { CalendarAppointment, BlockedTime, CalendarView, ScheduleHealth } from "./types";
+import type { CalendarAppointment, BlockedTime, CalendarView, ScheduleHealth, AppointmentType } from "./types";
 
 interface UseCalendarDataProps {
   doctorId: string | null;
@@ -10,12 +10,6 @@ interface UseCalendarDataProps {
   view: CalendarView;
 }
 
-/**
- * ✅ IMPORTANT:
- * - Provides NAMED export: `useCalendarData` (fixes your runtime error)
- * - Also provides DEFAULT export (extra safety)
- * - Adds realtime subscription to refresh calendar when appointments/blocked_times change
- */
 export const useCalendarData = ({ doctorId, selectedDate, view }: UseCalendarDataProps) => {
   const { scheduleSettings, loading: scheduleLoading } = useScheduleSettings();
   const [appointments, setAppointments] = useState<CalendarAppointment[]>([]);
@@ -38,6 +32,14 @@ export const useCalendarData = ({ doctorId, selectedDate, view }: UseCalendarDat
     }
   }, [selectedDate, view]);
 
+  const normalizeAppointmentType = (t: any): AppointmentType => {
+    if (!t) return "in_person";
+    if (t === "in-person") return "in_person";
+    if (t === "home") return "home_visit";
+    if (t === "chat") return "messaging";
+    return t as AppointmentType;
+  };
+
   const fetchData = useCallback(async () => {
     if (!doctorId) return;
 
@@ -47,7 +49,6 @@ export const useCalendarData = ({ doctorId, selectedDate, view }: UseCalendarDat
     const endStr = format(end, "yyyy-MM-dd");
 
     try {
-      // ---- Appointments (try with doctor_patients join; fallback if schema relation missing)
       let appts: any[] | null = null;
       let apptErr: any = null;
 
@@ -56,13 +57,20 @@ export const useCalendarData = ({ doctorId, selectedDate, view }: UseCalendarDat
         .select(
           `
           id,
+          doctor_id,
+          practice_id,
           appointment_date,
           start_time,
           end_time,
           status,
+          appointment_type,
           notes,
           patient_id,
           doctor_patient_id,
+          patient_confirmation_status,
+          start_requested_by_doctor,
+          start_requested_by_patient,
+          started_at,
           profiles:patient_id(full_name, avatar_url, phone, email),
           doctor_patients:doctor_patient_id(full_name, phone, email)
         `
@@ -80,13 +88,20 @@ export const useCalendarData = ({ doctorId, selectedDate, view }: UseCalendarDat
           .select(
             `
             id,
+            doctor_id,
+            practice_id,
             appointment_date,
             start_time,
             end_time,
             status,
+            appointment_type,
             notes,
             patient_id,
             doctor_patient_id,
+            patient_confirmation_status,
+            start_requested_by_doctor,
+            start_requested_by_patient,
+            started_at,
             profiles:patient_id(full_name, avatar_url, phone, email)
           `
           )
@@ -101,7 +116,6 @@ export const useCalendarData = ({ doctorId, selectedDate, view }: UseCalendarDat
 
       if (apptErr) console.error("Failed to fetch appointments:", apptErr);
 
-      // ---- Blocked times
       const { data: blocked, error: blockErr } = await supabase
         .from("blocked_times")
         .select("*")
@@ -117,17 +131,24 @@ export const useCalendarData = ({ doctorId, selectedDate, view }: UseCalendarDat
 
         return {
           id: apt.id,
+          doctor_id: apt.doctor_id,
+          practice_id: apt.practice_id,
           appointment_date: apt.appointment_date,
           start_time: apt.start_time,
           end_time: apt.end_time,
           status: apt.status as any,
           notes: apt.notes,
           patient_id: apt.patient_id,
+          doctor_patient_id: apt.doctor_patient_id,
           patient_name: reg?.full_name || dp?.full_name || "Patient",
           patient_avatar: reg?.avatar_url,
           patient_phone: reg?.phone || dp?.phone,
           patient_email: reg?.email || dp?.email,
-          appointment_type: "in-person" as const,
+          appointment_type: normalizeAppointmentType(apt.appointment_type),
+          patient_confirmation_status: apt.patient_confirmation_status,
+          start_requested_by_doctor: apt.start_requested_by_doctor,
+          start_requested_by_patient: apt.start_requested_by_patient,
+          started_at: apt.started_at,
           source: "direct" as const,
         };
       });
@@ -141,12 +162,10 @@ export const useCalendarData = ({ doctorId, selectedDate, view }: UseCalendarDat
     }
   }, [doctorId, getDateRange]);
 
-  // Initial fetch + refetch when date/view changes
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  // ✅ Realtime refresh (so treatment plan-created appointments appear immediately)
   useEffect(() => {
     if (!doctorId) return;
 
@@ -155,16 +174,12 @@ export const useCalendarData = ({ doctorId, selectedDate, view }: UseCalendarDat
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "appointments", filter: `doctor_id=eq.${doctorId}` },
-        () => {
-          fetchData();
-        }
+        () => fetchData()
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "blocked_times", filter: `doctor_id=eq.${doctorId}` },
-        () => {
-          fetchData();
-        }
+        () => fetchData()
       )
       .subscribe();
 
@@ -234,5 +249,4 @@ const timeToMinutes = (time: string): number => {
   return hours * 60 + minutes;
 };
 
-// ✅ extra safety in case any file imports default
 export default useCalendarData;
