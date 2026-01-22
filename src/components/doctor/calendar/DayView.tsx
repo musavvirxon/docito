@@ -2,7 +2,7 @@ import { memo, useMemo, useEffect, useRef, useState } from 'react';
 import { format, isToday } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { Plus, Clock, Zap } from 'lucide-react';
+import { Plus, Clock, Zap, AlertTriangle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -58,28 +58,36 @@ const DayView = memo(({
 
   const dayName = format(selectedDate, 'EEEE').toLowerCase();
   const daySchedule = scheduleSettings?.working_days?.[dayName];
-  const isWorkingDay = daySchedule?.enabled;
+  const isWorkingDay = Boolean(daySchedule?.enabled);
 
+  const workStartMin = useMemo(() => {
+    const st = daySchedule?.start_time || '09:00';
+    return timeToMinutes(st);
+  }, [daySchedule]);
+
+  const workEndMin = useMemo(() => {
+    const et = daySchedule?.end_time || '17:00';
+    return timeToMinutes(et);
+  }, [daySchedule]);
+
+  // ✅ Always build the grid so appointments remain visible even on "day off"
   const timeSlots = useMemo(() => {
-    if (!isWorkingDay || !daySchedule) return [];
-
     const slots: { time: string; endTime: string; isWorking: boolean }[] = [];
     const startHour = 6;
     const endHour = 22;
-    const workStart = parseInt(daySchedule.start_time?.split(':')[0] || '9');
-    const workEnd = parseInt(daySchedule.end_time?.split(':')[0] || '17');
 
     for (let hour = startHour; hour < endHour; hour++) {
       for (let min = 0; min < 60; min += SLOT_MINUTES) {
         const time = `${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
         const endTime = `${String(hour + (min + SLOT_MINUTES >= 60 ? 1 : 0)).padStart(2, '0')}:${String((min + SLOT_MINUTES) % 60).padStart(2, '0')}`;
-        const isWorking = hour >= workStart && hour < workEnd;
+        const m = hour * 60 + min;
+        const isWorking = isWorkingDay && m >= workStartMin && m < workEndMin;
         slots.push({ time, endTime, isWorking });
       }
     }
 
     return slots;
-  }, [daySchedule, isWorkingDay]);
+  }, [isWorkingDay, workStartMin, workEndMin]);
 
   const nowPosition = useMemo(() => {
     if (!isToday(selectedDate)) return null;
@@ -138,66 +146,82 @@ const DayView = memo(({
     );
   }
 
-  if (!isWorkingDay) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col items-center justify-center h-[400px] text-center"
-      >
-        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-          <Clock className="h-8 w-8 text-muted-foreground" />
-        </div>
-        <h3 className="text-lg font-semibold mb-2">
-          {t('doctor.calendar.noWorkingHours', 'No Working Hours')}
-        </h3>
-        <p className="text-muted-foreground text-sm max-w-sm">
-          {t('doctor.calendar.dayOff', 'This day is not configured as a working day in your schedule settings.')}
-        </p>
-      </motion.div>
-    );
-  }
-
   const renderRightPanel = () => (
     <div className="space-y-4">
-      <Card className="border-border/50">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium">
+      {!isWorkingDay && (
+        <Card className="border-amber-500/30 bg-amber-500/5">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5">
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+              </div>
+              <div className="space-y-1">
+                <div className="text-sm font-medium">
+                  {t('doctor.calendar.noWorkingHours', 'No Working Hours')}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t('doctor.calendar.dayOff', 'This day is not configured as a working day in your schedule settings.')}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {t('doctor.calendar.appointmentsStillVisible', 'Appointments are still shown here if they exist.')}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {scheduleHealth.totalSlots > 0 ? (
+        <Card className="border-border/50">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium">
+                {t('doctor.calendar.scheduleHealth', 'Schedule Health')}
+              </span>
+              <Badge
+                variant="outline"
+                className={cn(
+                  'text-xs',
+                  scheduleHealth.status === 'fully-booked' && 'bg-emerald-500/10 text-emerald-600 border-emerald-200',
+                  scheduleHealth.status === 'balanced' && 'bg-blue-500/10 text-blue-600 border-blue-200',
+                  scheduleHealth.status === 'many-openings' && 'bg-amber-500/10 text-amber-600 border-amber-200'
+                )}
+              >
+                {scheduleHealth.status === 'fully-booked' && '✓ Fully Booked'}
+                {scheduleHealth.status === 'balanced' && '◉ Balanced'}
+                {scheduleHealth.status === 'many-openings' && '○ Many Openings'}
+              </Badge>
+            </div>
+            <div className="h-2 rounded-full bg-muted overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${scheduleHealth.percentage}%` }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+                className={cn(
+                  'h-full rounded-full',
+                  scheduleHealth.status === 'fully-booked' && 'bg-emerald-500',
+                  scheduleHealth.status === 'balanced' && 'bg-primary',
+                  scheduleHealth.status === 'many-openings' && 'bg-amber-500'
+                )}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              {scheduleHealth.openSlots} of {scheduleHealth.totalSlots} slots available
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="border-border/50">
+          <CardContent className="p-4">
+            <div className="text-sm font-medium mb-1">
               {t('doctor.calendar.scheduleHealth', 'Schedule Health')}
-            </span>
-            <Badge
-              variant="outline"
-              className={cn(
-                'text-xs',
-                scheduleHealth.status === 'fully-booked' && 'bg-emerald-500/10 text-emerald-600 border-emerald-200',
-                scheduleHealth.status === 'balanced' && 'bg-blue-500/10 text-blue-600 border-blue-200',
-                scheduleHealth.status === 'many-openings' && 'bg-amber-500/10 text-amber-600 border-amber-200'
-              )}
-            >
-              {scheduleHealth.status === 'fully-booked' && '✓ Fully Booked'}
-              {scheduleHealth.status === 'balanced' && '◉ Balanced'}
-              {scheduleHealth.status === 'many-openings' && '○ Many Openings'}
-            </Badge>
-          </div>
-          <div className="h-2 rounded-full bg-muted overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${scheduleHealth.percentage}%` }}
-              transition={{ duration: 0.5, ease: 'easeOut' }}
-              className={cn(
-                'h-full rounded-full',
-                scheduleHealth.status === 'fully-booked' && 'bg-emerald-500',
-                scheduleHealth.status === 'balanced' && 'bg-primary',
-                scheduleHealth.status === 'many-openings' && 'bg-amber-500'
-              )}
-            />
-          </div>
-          <p className="text-xs text-muted-foreground mt-2">
-            {scheduleHealth.openSlots} of {scheduleHealth.totalSlots} slots available
-          </p>
-        </CardContent>
-      </Card>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {t('doctor.calendar.notConfigured', 'Working hours are not configured for this day.')}
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {nextAppointment && (
         <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
@@ -273,7 +297,6 @@ const DayView = memo(({
           const timeMinutes = timeToMinutes(slot.time);
           const isFirstOfHour = slot.time.endsWith(':00');
 
-          // Blocked time covering this slot
           const blocked = blockedTimes.find(b => {
             const start = timeToMinutes(b.start_time);
             const end = timeToMinutes(b.end_time);
@@ -283,7 +306,6 @@ const DayView = memo(({
           const blockedStart = blocked && timeMinutes === timeToMinutes(blocked.start_time);
           const blockedInside = blocked && timeMinutes > timeToMinutes(blocked.start_time) && timeMinutes < timeToMinutes(blocked.end_time);
 
-          // Appointment covering this slot (use filteredAppointments so search/status filters affect grid)
           const apt = filteredAppointments.find(a => {
             const start = timeToMinutes(a.start_time);
             const end = timeToMinutes(a.end_time);
@@ -299,7 +321,6 @@ const DayView = memo(({
             const start = timeToMinutes(startTime);
             const end = timeToMinutes(endTime);
             const slots = Math.max(1, Math.ceil((end - start) / SLOT_MINUTES));
-            // -8 so it fits nicely inside padding/borders
             return slots * SLOT_HEIGHT_PX - 8;
           };
 
@@ -326,7 +347,6 @@ const DayView = memo(({
               </div>
 
               <div className="flex-1 py-1 px-2 min-w-0 relative">
-                {/* ✅ Render blocked ONLY once at start, spanning height */}
                 {blockedStart && blocked && (
                   <div
                     className="absolute left-2 right-2 top-1 z-20 rounded-lg bg-muted/50 border border-dashed border-border flex items-center justify-center px-2"
@@ -338,7 +358,6 @@ const DayView = memo(({
                   </div>
                 )}
 
-                {/* ✅ Render appointment ONLY once at start, spanning height */}
                 {aptStart && apt && !blocked && (
                   <div
                     className="absolute left-2 right-2 top-1 z-20"
@@ -352,12 +371,10 @@ const DayView = memo(({
                   </div>
                 )}
 
-                {/* ✅ For “inside” slots, show nothing (prevents segmented duplicates and prevents + button) */}
                 {(blockedInside || aptInside) && (
                   <div className="h-full" />
                 )}
 
-                {/* Empty slot -> allow booking */}
                 {!isOccupied && slot.isWorking && (
                   <div
                     className="group h-full rounded-lg hover:bg-primary/5 transition-colors cursor-pointer flex items-center justify-center opacity-0 hover:opacity-100"
