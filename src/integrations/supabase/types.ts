@@ -2950,6 +2950,33 @@ export type Database = {
           },
         ]
       }
+      messaging_permissions: {
+        Row: {
+          can_message_user_id: string
+          context_id: string | null
+          created_at: string
+          id: string
+          permission_type: string
+          user_id: string
+        }
+        Insert: {
+          can_message_user_id: string
+          context_id?: string | null
+          created_at?: string
+          id?: string
+          permission_type: string
+          user_id: string
+        }
+        Update: {
+          can_message_user_id?: string
+          context_id?: string | null
+          created_at?: string
+          id?: string
+          permission_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
