@@ -1,5 +1,3 @@
-// File: src/main.tsx
-
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
@@ -23,8 +21,8 @@ const queryClient = new QueryClient({
   const ATTEMPTS_KEY = "__chunk_reload_attempts__";
   const LAST_TS_KEY = "__chunk_reload_last_ts__";
 
-  const MAX_ATTEMPTS = 3;
-  const WINDOW_MS = 5 * 60_000; // 5 minutes
+  const MAX_ATTEMPTS = 8;
+  const WINDOW_MS = 10 * 60_000; // 10 minutes
 
   const shouldReloadFor = (msg: string) => {
     const m = msg.toLowerCase();
@@ -124,6 +122,17 @@ const queryClient = new QueryClient({
       void cacheBustReload();
     }
   });
+
+  // If we made it this far and the app booted, clear recovery counters shortly after.
+  // This prevents getting "stuck" after a successful load.
+  window.setTimeout(() => {
+    try {
+      window.sessionStorage.removeItem(ATTEMPTS_KEY);
+      window.sessionStorage.removeItem(LAST_TS_KEY);
+    } catch {
+      // ignore
+    }
+  }, 12_000);
 })();
 
 // Proactively unregister any Service Worker that might cache old assets/index.html
