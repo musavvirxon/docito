@@ -20,11 +20,15 @@ import {
   BarChart3,
   Settings as SettingsIcon,
   ArrowLeft,
+  Stethoscope,
+  Heart,
 } from "lucide-react";
 
 import AccountBillingSection from "@/components/profile/AccountBillingSection";
 import AccountAnalyticsSection from "@/components/profile/AccountAnalyticsSection";
 import AccountSettingsSection from "@/components/profile/AccountSettingsSection";
+import DoctorWorkspaceSettings from "@/components/settings/DoctorWorkspaceSettings";
+import PatientWorkspaceSettings from "@/components/settings/PatientWorkspaceSettings";
 import { getPrimaryRole, getUserRolesFromProfile, type AppRole } from "@/lib/rbac";
 
 const getNameLabel = (role: AppRole): string => {
@@ -63,7 +67,7 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const { user, profile, loading, updateProfile, signOut, activeRole } = useAuth();
 
-  const [tab, setTab] = useState<"settings" | "billing" | "analytics">("settings");
+  const [tab, setTab] = useState<"settings" | "workspace" | "billing" | "analytics">("settings");
 
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
@@ -164,11 +168,26 @@ export default function ProfilePage() {
       </div>
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="space-y-6">
-        <TabsList className="rounded-2xl">
+        <TabsList className="rounded-2xl flex-wrap">
           <TabsTrigger value="settings" className="rounded-xl">
             <SettingsIcon className="h-4 w-4 mr-2" />
             Settings
           </TabsTrigger>
+          {(primaryRole === "doctor" || primaryRole === "patient") && (
+            <TabsTrigger value="workspace" className="rounded-xl">
+              {primaryRole === "doctor" ? (
+                <>
+                  <Stethoscope className="h-4 w-4 mr-2" />
+                  Doctor Profile
+                </>
+              ) : (
+                <>
+                  <Heart className="h-4 w-4 mr-2" />
+                  Health Profile
+                </>
+              )}
+            </TabsTrigger>
+          )}
           <TabsTrigger value="billing" className="rounded-xl">
             <CreditCard className="h-4 w-4 mr-2" />
             Billing
@@ -263,6 +282,12 @@ export default function ProfilePage() {
           </div>
 
           <AccountSettingsSection />
+        </TabsContent>
+
+        {/* Role-specific workspace */}
+        <TabsContent value="workspace" className="space-y-6">
+          {primaryRole === "doctor" && <DoctorWorkspaceSettings />}
+          {primaryRole === "patient" && <PatientWorkspaceSettings />}
         </TabsContent>
 
         <TabsContent value="billing" className="space-y-6">

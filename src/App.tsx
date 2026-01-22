@@ -179,7 +179,7 @@ export default function App() {
                 {/* Doctor */}
                 <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
                 <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
-                <Route path="/doctor/dashboard/verification" element={<DoctorVerification />} />
+                <Route path="/doctor/dashboard/verification" element={<ProfilePage />} />
                 <Route path="/doctor/schedule" element={<DoctorScheduleSettings />} />
                 <Route path="/doctor/treatment-planning" element={<TreatmentPlanning />} />
                 <Route path="/doctor/procedures" element={<ProcedureLibrary />} />

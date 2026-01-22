@@ -49,8 +49,8 @@ export const DoctorVerificationStatusCard = () => {
           <p className="text-yellow-600 dark:text-yellow-400">
             You haven't submitted your verification application yet. Complete your profile and submit for verification to start accepting patients.
           </p>
-          <Button onClick={() => navigate('/doctor/dashboard/verification')} className="w-full">
-            Complete Verification Application
+          <Button onClick={() => navigate('/profile')} className="w-full">
+            Complete Verification in Profile
           </Button>
         </CardContent>
       </Card>
@@ -342,13 +342,13 @@ export const DoctorVerificationStatusCard = () => {
         {/* Action Buttons */}
         <div className="flex gap-2 pt-2">
         {verificationStatus.status === 'declined' && (
-            <Button onClick={() => navigate('/doctor/dashboard/verification')} className="flex-1">
-              Resubmit Application
+            <Button onClick={() => navigate('/profile')} className="flex-1">
+              Update Profile & Resubmit
             </Button>
           )}
           <Button 
             variant="outline" 
-            onClick={() => navigate('/doctor-dashboard?section=profile')}
+            onClick={() => navigate('/profile')}
             className="flex-1"
           >
             View Full Profile
