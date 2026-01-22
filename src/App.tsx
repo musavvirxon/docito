@@ -101,8 +101,7 @@ const AcceptInvite = lazy(() => import("@/pages/AcceptInvite"));
 // Billing
 const BillingPage = lazy(() => import("@/pages/BillingPage"));
 
-// ✅ Admin verification review (new)
-const DoctorVerificationReview = lazy(() => import("@/pages/admin/DoctorVerificationReview"));
+// Admin verification - handled by super-admin DoctorVerificationTable
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -193,9 +192,7 @@ export default function App() {
                 <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
                 <Route path="/super-admin/dashboard" element={<SuperAdminDashboard />} />
 
-                {/* ✅ Doctor verification review routes (new) */}
-                <Route path="/admin/doctor-verifications" element={<DoctorVerificationReview />} />
-                <Route path="/super-admin/doctor-verifications" element={<DoctorVerificationReview />} />
+                {/* Doctor verification is handled in super-admin dashboard */}
 
                 {/* Facility dashboards */}
                 <Route path="/dashboard/labs" element={<LabDashboardPage />} />

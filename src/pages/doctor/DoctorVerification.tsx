@@ -301,7 +301,7 @@ export default function DoctorVerification() {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("full_name, phone, gender, username, profile_visibility")
+        .select("full_name, phone, gender, username, profile_visibility, address")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -328,6 +328,22 @@ export default function DoctorVerification() {
         );
       }
 
+      // Parse address back to region and country
+      if (profile?.address) {
+        const addressParts = profile.address.split(",").map((s: string) => s.trim());
+        if (addressParts.length >= 2) {
+          const country = addressParts[addressParts.length - 1];
+          const region = addressParts.slice(0, -1).join(", ");
+          form.setValue("country", country);
+          setCountryCode(country);
+          // Region will be set after country updates availableRegions
+          setTimeout(() => form.setValue("region", region), 100);
+        } else if (addressParts.length === 1) {
+          form.setValue("country", addressParts[0]);
+          setCountryCode(addressParts[0]);
+        }
+      }
+
       if (doctor?.specialty) setSelectedSpecialties([doctor.specialty]);
       if (doctor?.bio) form.setValue("bio", doctor.bio);
       if (doctor?.license_number)
@@ -341,6 +357,21 @@ export default function DoctorVerification() {
           opt.value.startsWith(String(doctor.years_experience))
         );
         if (match) form.setValue("experience", match.value);
+      }
+
+      // Load verification data for degrees
+      if (doctor?.id) {
+        const { data: verification } = await supabase
+          .from("doctor_verification")
+          .select("verification_data")
+          .eq("doctor_id", doctor.id)
+          .maybeSingle();
+
+        if (verification?.verification_data) {
+          const vd = verification.verification_data as any;
+          if (vd.degrees) form.setValue("degrees", vd.degrees);
+          if (vd.all_specialties?.length) setSelectedSpecialties(vd.all_specialties);
+        }
       }
     };
 
@@ -410,6 +441,11 @@ export default function DoctorVerification() {
         avatarUrl = res?.url;
       }
 
+      // Build address from region and country
+      const country = form.getValues("country");
+      const region = form.getValues("region");
+      const address = [region, country].filter(Boolean).join(", ") || undefined;
+
       await supabase
         .from("profiles")
         .update({
@@ -421,6 +457,7 @@ export default function DoctorVerification() {
           username: form.getValues("username") || null,
           profile_visibility: form.getValues("profileVisibility") || "public",
           avatar_url: avatarUrl || undefined,
+          address: address,
           updated_at: new Date().toISOString(),
         })
         .eq("user_id", user.id);
@@ -434,6 +471,13 @@ export default function DoctorVerification() {
       const yearsExp = form.getValues("experience");
       const parsedYears = yearsExp ? parseInt(yearsExp.split("-")[0], 10) : null;
 
+      // Get username for custom profile link
+      const profileVisibility = form.getValues("profileVisibility");
+      const generatedLink =
+        profileVisibility === "private"
+          ? `doctor-${user.id.substring(0, 8)}-${Date.now()}`
+          : form.getValues("username") || null;
+
       const doctorPayload = {
         specialty: selectedSpecialties[0] || "General Practice",
         bio: form.getValues("bio") || null,
@@ -443,6 +487,7 @@ export default function DoctorVerification() {
           ? selectedConsultationTypes
           : null,
         years_experience: Number.isFinite(parsedYears as any) ? parsedYears : null,
+        custom_profile_link: generatedLink,
         verified: false,
       };
 
@@ -453,6 +498,30 @@ export default function DoctorVerification() {
           ...doctorPayload,
           user_id: user.id,
         });
+      }
+
+      // Save degrees to doctor_verification if it exists
+      const degrees = form.getValues("degrees");
+      if (degrees && existingDoctor?.id) {
+        const { data: existingVerification } = await supabase
+          .from("doctor_verification")
+          .select("id")
+          .eq("doctor_id", existingDoctor.id)
+          .maybeSingle();
+
+        if (existingVerification?.id) {
+          await supabase
+            .from("doctor_verification")
+            .update({
+              verification_data: {
+                degrees,
+                country,
+                region,
+                all_specialties: selectedSpecialties,
+              },
+            })
+            .eq("id", existingVerification.id);
+        }
       }
 
       toast.success("Draft saved");
