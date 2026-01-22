@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, type ComponentType } from "react";
 import { Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
@@ -24,84 +24,109 @@ const PageLoader = () => (
   </div>
 );
 
+// React.lazy wrapper that auto-reloads once on chunk load failure (stale deploy / CDN mismatch)
+const __CHUNK_RELOAD_KEY__ = "__lazy_chunk_reload_ts__";
+const __CHUNK_RELOAD_WINDOW_MS__ = 60_000; // 1 minute
+
+function lazyWithRetry<T extends ComponentType<any>>(
+  importer: () => Promise<{ default: T }>,
+) {
+  return lazy(async () => {
+    try {
+      return await importer();
+    } catch (err) {
+      const now = Date.now();
+      const prev = Number(sessionStorage.getItem(__CHUNK_RELOAD_KEY__) || "0");
+
+      // Reload at most once per minute to avoid infinite reload loops
+      if (!prev || now - prev > __CHUNK_RELOAD_WINDOW_MS__) {
+        sessionStorage.setItem(__CHUNK_RELOAD_KEY__, String(now));
+        window.location.reload();
+      }
+
+      throw err;
+    }
+  });
+}
+
 // Lazy load all other pages
-const About = lazy(() => import("@/pages/About"));
-const Contact = lazy(() => import("@/pages/Contact"));
-const Features = lazy(() => import("@/pages/Features"));
-const Pricing = lazy(() => import("@/pages/Pricing"));
-const HowItWorks = lazy(() => import("@/pages/HowItWorks"));
-const FAQs = lazy(() => import("@/pages/FAQs"));
-const HelpCenter = lazy(() => import("@/pages/HelpCenter"));
-const Support = lazy(() => import("@/pages/Support"));
-const Legal = lazy(() => import("@/pages/Legal"));
-const LegalDetail = lazy(() => import("@/pages/LegalDetail"));
+const About = lazyWithRetry(() => import("@/pages/About"));
+const Contact = lazyWithRetry(() => import("@/pages/Contact"));
+const Features = lazyWithRetry(() => import("@/pages/Features"));
+const Pricing = lazyWithRetry(() => import("@/pages/Pricing"));
+const HowItWorks = lazyWithRetry(() => import("@/pages/HowItWorks"));
+const FAQs = lazyWithRetry(() => import("@/pages/FAQs"));
+const HelpCenter = lazyWithRetry(() => import("@/pages/HelpCenter"));
+const Support = lazyWithRetry(() => import("@/pages/Support"));
+const Legal = lazyWithRetry(() => import("@/pages/Legal"));
+const LegalDetail = lazyWithRetry(() => import("@/pages/LegalDetail"));
 
 // Provider landing pages
-const DoctorLandingPage = lazy(() => import("@/pages/doctor/DoctorLandingPage"));
-const DoctorPublicProfile = lazy(() => import("@/pages/doctor/DoctorPublicProfile"));
-const PharmacyLandingPage = lazy(() => import("@/pages/pharmacy/PharmacyLandingPage"));
-const LabLandingPage = lazy(() => import("@/pages/lab/LabLandingPage"));
-const ImagingLandingPage = lazy(() => import("@/pages/imaging/ImagingLandingPage"));
-const Practices = lazy(() => import("@/pages/Practices"));
-const FindPractices = lazy(() => import("@/pages/FindPractices"));
+const DoctorLandingPage = lazyWithRetry(() => import("@/pages/doctor/DoctorLandingPage"));
+const DoctorPublicProfile = lazyWithRetry(() => import("@/pages/doctor/DoctorPublicProfile"));
+const PharmacyLandingPage = lazyWithRetry(() => import("@/pages/pharmacy/PharmacyLandingPage"));
+const LabLandingPage = lazyWithRetry(() => import("@/pages/lab/LabLandingPage"));
+const ImagingLandingPage = lazyWithRetry(() => import("@/pages/imaging/ImagingLandingPage"));
+const Practices = lazyWithRetry(() => import("@/pages/Practices"));
+const FindPractices = lazyWithRetry(() => import("@/pages/FindPractices"));
 
 // Search pages
-const SearchDoctors = lazy(() => import("@/pages/SearchDoctors"));
-const BrowseSpecialties = lazy(() => import("@/pages/BrowseSpecialties"));
-const CategorySearch = lazy(() => import("@/pages/CategorySearch"));
+const SearchDoctors = lazyWithRetry(() => import("@/pages/SearchDoctors"));
+const BrowseSpecialties = lazyWithRetry(() => import("@/pages/BrowseSpecialties"));
+const CategorySearch = lazyWithRetry(() => import("@/pages/CategorySearch"));
 
 // Booking
-const AppointmentBooking = lazy(() => import("@/pages/AppointmentBooking"));
-const BookingConfirmation = lazy(() => import("@/pages/BookingConfirmation"));
+const AppointmentBooking = lazyWithRetry(() => import("@/pages/AppointmentBooking"));
+const BookingConfirmation = lazyWithRetry(() => import("@/pages/BookingConfirmation"));
 
 // Dashboard pages
-const PatientDashboard = lazy(() => import("@/pages/PatientDashboard"));
-const DoctorDashboard = lazy(() => import("@/pages/DoctorDashboard"));
-const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
-const StaffDashboard = lazy(() => import("@/pages/StaffDashboard"));
-const SuperAdminDashboard = lazy(() => import("@/pages/SuperAdminDashboard"));
+const PatientDashboard = lazyWithRetry(() => import("@/pages/PatientDashboard"));
+const DoctorDashboard = lazyWithRetry(() => import("@/pages/DoctorDashboard"));
+const AdminDashboard = lazyWithRetry(() => import("@/pages/AdminDashboard"));
+const StaffDashboard = lazyWithRetry(() => import("@/pages/StaffDashboard"));
+const SuperAdminDashboard = lazyWithRetry(() => import("@/pages/SuperAdminDashboard"));
 
 // Facility dashboards
-const LabDashboardPage = lazy(() => import("@/pages/lab/LabDashboardPage"));
-const PharmacyDashboardPage = lazy(() => import("@/pages/pharmacy/PharmacyDashboardPage"));
-const ImagingDashboardPage = lazy(() => import("@/pages/imaging/ImagingDashboardPage"));
+const LabDashboardPage = lazyWithRetry(() => import("@/pages/lab/LabDashboardPage"));
+const PharmacyDashboardPage = lazyWithRetry(() => import("@/pages/pharmacy/PharmacyDashboardPage"));
+const ImagingDashboardPage = lazyWithRetry(() => import("@/pages/imaging/ImagingDashboardPage"));
 
 // Common authenticated pages
-const ProfilePage = lazy(() => import("@/pages/ProfilePage"));
-const Settings = lazy(() => import("@/pages/Settings"));
-const Notifications = lazy(() => import("@/pages/Notifications"));
-const Messages = lazy(() => import("@/pages/Messages"));
-const FeedbackCenter = lazy(() => import("@/pages/FeedbackCenter"));
-const VideoCall = lazy(() => import("@/pages/VideoCall"));
+const ProfilePage = lazyWithRetry(() => import("@/pages/ProfilePage"));
+const Settings = lazyWithRetry(() => import("@/pages/Settings"));
+const Notifications = lazyWithRetry(() => import("@/pages/Notifications"));
+const Messages = lazyWithRetry(() => import("@/pages/Messages"));
+const FeedbackCenter = lazyWithRetry(() => import("@/pages/FeedbackCenter"));
+const VideoCall = lazyWithRetry(() => import("@/pages/VideoCall"));
 
 // Doctor pages
-const DoctorScheduleSettings = lazy(() => import("@/pages/DoctorScheduleSettings"));
-const TreatmentPlanning = lazy(() => import("@/pages/TreatmentPlanning"));
-const ProcedureLibrary = lazy(() => import("@/pages/ProcedureLibrary"));
-const AppointmentSession = lazy(() => import("@/pages/AppointmentSession"));
-const DoctorPatientProfile = lazy(() => import("@/pages/doctor/DoctorPatientProfile"));
+const DoctorScheduleSettings = lazyWithRetry(() => import("@/pages/DoctorScheduleSettings"));
+const TreatmentPlanning = lazyWithRetry(() => import("@/pages/TreatmentPlanning"));
+const ProcedureLibrary = lazyWithRetry(() => import("@/pages/ProcedureLibrary"));
+const AppointmentSession = lazyWithRetry(() => import("@/pages/AppointmentSession"));
+const DoctorPatientProfile = lazyWithRetry(() => import("@/pages/doctor/DoctorPatientProfile"));
 
 // Practice/Admin pages
-const RegisterPractice = lazy(() => import("@/pages/RegisterPractice"));
-const PracticeSettings = lazy(() => import("@/pages/PracticeSettings"));
-const PracticeVerification = lazy(() => import("@/pages/PracticeVerification"));
+const RegisterPractice = lazyWithRetry(() => import("@/pages/RegisterPractice"));
+const PracticeSettings = lazyWithRetry(() => import("@/pages/PracticeSettings"));
+const PracticeVerification = lazyWithRetry(() => import("@/pages/PracticeVerification"));
 
 // Verification pages
-const DoctorVerification = lazy(() => import("@/pages/doctor/DoctorVerification"));
-const LabVerification = lazy(() => import("@/pages/lab/LabVerification"));
-const PharmacyVerification = lazy(() => import("@/pages/pharmacy/PharmacyVerification"));
-const ImagingVerification = lazy(() => import("@/pages/imaging/ImagingVerification"));
+const DoctorVerification = lazyWithRetry(() => import("@/pages/doctor/DoctorVerification"));
+const LabVerification = lazyWithRetry(() => import("@/pages/lab/LabVerification"));
+const PharmacyVerification = lazyWithRetry(() => import("@/pages/pharmacy/PharmacyVerification"));
+const ImagingVerification = lazyWithRetry(() => import("@/pages/imaging/ImagingVerification"));
 
 // Registration pages
-const LabRegistration = lazy(() => import("@/pages/lab/LabRegistration"));
-const PharmacyRegistration = lazy(() => import("@/pages/pharmacy/PharmacyRegistration"));
-const ImagingRegistration = lazy(() => import("@/pages/imaging/ImagingRegistration"));
+const LabRegistration = lazyWithRetry(() => import("@/pages/lab/LabRegistration"));
+const PharmacyRegistration = lazyWithRetry(() => import("@/pages/pharmacy/PharmacyRegistration"));
+const ImagingRegistration = lazyWithRetry(() => import("@/pages/imaging/ImagingRegistration"));
 
 // Staff invitation
-const AcceptInvite = lazy(() => import("@/pages/AcceptInvite"));
+const AcceptInvite = lazyWithRetry(() => import("@/pages/AcceptInvite"));
 
 // Billing
-const BillingPage = lazy(() => import("@/pages/BillingPage"));
+const BillingPage = lazyWithRetry(() => import("@/pages/BillingPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
