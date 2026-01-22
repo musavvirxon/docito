@@ -1,3 +1,4 @@
+// FILE: src/components/doctor/calendar/PremiumDoctorCalendar.tsx
 import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -5,6 +6,7 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import CalendarHeader from './CalendarHeader';
 import DayView from './DayView';
 import WeekView from './WeekView';
@@ -25,11 +27,13 @@ interface PremiumDoctorCalendarProps {
 
 const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDoctorCalendarProps) => {
   const { t } = useTranslation('dashboard');
+  const { profile, user } = useAuth();
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
 
-  const doctorId = doctorIdProp || (profile?.role === 'doctor' ? profile?.id : undefined);
+  // Use prop or denormalized doctor_id from profile
+  const doctorId = doctorIdProp || (profile as any)?.doctor_id || null;
 
+  // State
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [view, setView] = useState<CalendarView>('day');
   const [filters, setFilters] = useState<CalendarFilters>(defaultFilters);
@@ -40,57 +44,55 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
   const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
   const [isAvailabilityModalOpen, setIsAvailabilityModalOpen] = useState(false);
   const [prefilledTime, setPrefilledTime] = useState<string | undefined>();
+  const [doctorSpecialty, setDoctorSpecialty] = useState<string>('');
 
   // Safety check
   useEffect(() => {
     if (profile?.role === 'doctor' && !doctorId) {
-      toast.error(t('doctor.calendar.profileLoading', 'Doctor profile still loading...'));
+      toast.error(t('doctor.calendar.profileLoading', 'Doctor profile still loading. Please refresh.'));
     }
-  }, [profile?.role, doctorId, t]);
+  }, [profile, doctorId, t]);
 
+  // Fetch doctor specialty (for dentist UI)
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSpecialty() {
+      if (!user?.id) return;
+
+      // If your doctors table has a "specialty" field, this will populate the dentist tooling.
+      const { data, error } = await supabase
+        .from('doctors')
+        .select('specialty')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (cancelled) return;
+      if (!error) setDoctorSpecialty((data as any)?.specialty ?? '');
+    }
+
+    loadSpecialty();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+
+  // Fetch calendar data
   const {
     appointments,
     blockedTimes,
-    scheduleSettings,
     loading,
-    error,
+    scheduleSettings,
     refetch,
+    getScheduleHealth,
     getAppointmentsForDate,
     getBlockedTimesForDate,
-    getScheduleHealth
-  } = useCalendarData({
-    doctorId,
-    practiceId,
-    date: selectedDate,
-    view,
-    filters
-  });
+  } = useCalendarData({ doctorId, selectedDate, view });
 
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
-    }
-  }, [error]);
+  // Handlers
+  const handleToday = useCallback(() => setSelectedDate(new Date()), []);
 
-  const handleViewChange = useCallback((newView: CalendarView) => {
-    setView(newView);
-  }, []);
-
-  const handleToday = useCallback(() => {
-    setSelectedDate(new Date());
-  }, []);
-
-  const handleAddAppointment = useCallback(() => {
-    setIsBookModalOpen(true);
-  }, []);
-
-  const handleBlockTime = useCallback(() => {
-    setIsBlockModalOpen(true);
-  }, []);
-
-  const handleSetAvailability = useCallback(() => {
-    setIsAvailabilityModalOpen(true);
-  }, []);
+  const handleViewChange = useCallback((newView: CalendarView) => setView(newView), []);
 
   const handleDayClick = useCallback((date: Date) => {
     setSelectedDate(date);
@@ -102,13 +104,32 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
     setIsQuickPreviewOpen(true);
   }, []);
 
-  const handleStartSession = useCallback((apt: CalendarAppointment) => {
-    navigate(`/appointment-session/${apt.id}`);
-  }, [navigate]);
+  const handleStartSession = useCallback(
+    (apt: CalendarAppointment) => {
+      const type = (apt.appointment_type || 'in_person') as string;
 
-  const handleViewPatient = useCallback((patientId: string, patientType: 'registered' | 'direct') => {
-    navigate(`/patient-dashboard/${patientId}?type=${patientType}`);
-  }, [navigate]);
+      // Start based on appointment type
+      if (type === 'messaging' || type === 'chat') {
+        // Quick preview "Message" action handles navigation
+        return;
+      }
+
+      // For in_person / video / home_visit / follow_up
+      navigate(`/appointment-session/${apt.id}`);
+    },
+    [navigate]
+  );
+
+  const handleViewPatient = useCallback(
+    (patientId: string, patientType: 'registered' | 'direct') => {
+      if (!patientId) {
+        toast.error(t('doctor.calendar.patientMissing', 'Patient information not available.'));
+        return;
+      }
+      navigate(`/doctor/patient/${patientId}?type=${patientType}`);
+    },
+    [navigate, t]
+  );
 
   const handleOpenFullModal = useCallback(() => {
     setIsQuickPreviewOpen(false);
@@ -125,53 +146,59 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
     setIsBlockModalOpen(true);
   }, []);
 
+  const handleAddAppointment = useCallback(() => {
+    setPrefilledTime(undefined);
+    setIsBookModalOpen(true);
+  }, []);
+
+  const handleBlockTime = useCallback(() => {
+    setPrefilledTime(undefined);
+    setIsBlockModalOpen(true);
+  }, []);
+
+  const handleSetAvailability = useCallback(() => {
+    setIsAvailabilityModalOpen(true);
+  }, []);
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger shortcuts when modals are open or user is typing
-      const activeTag = (document.activeElement?.tagName || '').toLowerCase();
-      const isTyping = activeTag === 'input' || activeTag === 'textarea' || (document.activeElement as any)?.isContentEditable;
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
 
-      if (isTyping) return;
-      if (isAppointmentModalOpen || isQuickPreviewOpen || isBookModalOpen || isBlockModalOpen || isAvailabilityModalOpen) return;
-
-      if (e.key === 't' || e.key === 'T') {
-        handleToday();
+      switch (e.key.toLowerCase()) {
+        case 't':
+          handleToday();
+          break;
+        case 'arrowleft':
+          setSelectedDate(prev => {
+            const d = new Date(prev);
+            d.setDate(d.getDate() - (view === 'day' ? 1 : view === 'week' ? 7 : 30));
+            return d;
+          });
+          break;
+        case 'arrowright':
+          setSelectedDate(prev => {
+            const d = new Date(prev);
+            d.setDate(d.getDate() + (view === 'day' ? 1 : view === 'week' ? 7 : 30));
+            return d;
+          });
+          break;
+        case 'n':
+          handleAddAppointment();
+          break;
       }
-      if (e.key === 'a' || e.key === 'A') {
-        handleAddAppointment();
-      }
-      if (e.key === 'Escape') {
-        if (view !== 'day') setView('day');
-      }
-      if (e.key === '1') setView('day');
-      if (e.key === '2') setView('week');
-      if (e.key === '3') setView('month');
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [
-    view,
-    handleToday,
-    handleAddAppointment,
-    isAppointmentModalOpen,
-    isQuickPreviewOpen,
-    isBookModalOpen,
-    isBlockModalOpen,
-    isAvailabilityModalOpen
-  ]);
+  }, [view, handleToday, handleAddAppointment]);
 
   const dayAppointments = getAppointmentsForDate(selectedDate);
   const dayBlockedTimes = getBlockedTimesForDate(selectedDate);
   const scheduleHealth = getScheduleHealth(selectedDate);
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-6"
-    >
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       {/* Header */}
       <Card className="border-border/50 shadow-sm">
         <CardContent className="p-4">
@@ -234,14 +261,7 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
         </CardContent>
       </Card>
 
-      {/* Modals */}
-      <AppointmentModal
-        appointment={selectedAppointment}
-        isOpen={isAppointmentModalOpen}
-        onClose={() => setIsAppointmentModalOpen(false)}
-        onMarkComplete={() => { refetch(); setIsAppointmentModalOpen(false); }}
-      />
-
+      {/* Quick Preview (WIRED UP) */}
       <AppointmentQuickPreview
         appointment={selectedAppointment}
         isOpen={isQuickPreviewOpen}
@@ -249,14 +269,34 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
         onStartSession={handleStartSession}
         onViewPatient={handleViewPatient}
         onOpenFullModal={handleOpenFullModal}
-        doctorSpecialty={profile?.specialty}
+        doctorSpecialty={doctorSpecialty}
       />
 
+      {/* Full Details Modal */}
+      <AppointmentModal
+        appointment={selectedAppointment}
+        isOpen={isAppointmentModalOpen}
+        onClose={() => setIsAppointmentModalOpen(false)}
+        onStartVisit={
+          selectedAppointment
+            ? () => navigate(`/appointment-session/${selectedAppointment.id}`)
+            : undefined
+        }
+        onMarkComplete={() => {
+          refetch();
+          setIsAppointmentModalOpen(false);
+        }}
+      />
+
+      {/* Booking / Block / Availability Modals */}
       {doctorId && (
         <>
           <ManualBookAppointmentModal
             isOpen={isBookModalOpen}
-            onClose={() => { setIsBookModalOpen(false); setPrefilledTime(undefined); }}
+            onClose={() => {
+              setIsBookModalOpen(false);
+              setPrefilledTime(undefined);
+            }}
             doctorId={doctorId}
             practiceId={practiceId}
             onSuccess={refetch}
@@ -266,7 +306,10 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
 
           <BlockTimeModal
             isOpen={isBlockModalOpen}
-            onClose={() => { setIsBlockModalOpen(false); setPrefilledTime(undefined); }}
+            onClose={() => {
+              setIsBlockModalOpen(false);
+              setPrefilledTime(undefined);
+            }}
             prefilledDate={selectedDate}
             prefilledTime={prefilledTime}
             onSuccess={refetch}
