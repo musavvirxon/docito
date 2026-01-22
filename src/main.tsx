@@ -1,3 +1,5 @@
+// File: src/main.tsx
+
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
@@ -17,13 +19,12 @@ const queryClient = new QueryClient({
   },
 });
 
-/**
- * Prevent blank screens on Vite/Lovable deploys when the browser has cached old chunk names.
- * If a dynamic import fails ("Failed to fetch dynamically imported module" / chunk load error),
- * we do a single hard reload WITH a cache-busting query param to force fresh assets.
- */
 (function installChunkLoadRecovery() {
-  const KEY = "chunk_reload_once_v2";
+  const ATTEMPTS_KEY = "__chunk_reload_attempts__";
+  const LAST_TS_KEY = "__chunk_reload_last_ts__";
+
+  const MAX_ATTEMPTS = 3;
+  const WINDOW_MS = 5 * 60_000; // 5 minutes
 
   const shouldReloadFor = (msg: string) => {
     const m = msg.toLowerCase();
@@ -36,40 +37,104 @@ const queryClient = new QueryClient({
     );
   };
 
-  const cacheBustReloadOnce = () => {
+  const bumpAttempt = () => {
+    const now = Date.now();
+    let attempts = 0;
+    let lastTs = 0;
+
     try {
-      const already = window.sessionStorage.getItem(KEY);
-      if (already === "1") return;
-      window.sessionStorage.setItem(KEY, "1");
+      attempts = Number(window.sessionStorage.getItem(ATTEMPTS_KEY) || "0");
+      lastTs = Number(window.sessionStorage.getItem(LAST_TS_KEY) || "0");
     } catch {
       // ignore
     }
+
+    // Reset attempts if outside window
+    if (!lastTs || now - lastTs > WINDOW_MS) {
+      attempts = 0;
+    }
+
+    attempts += 1;
+
+    try {
+      window.sessionStorage.setItem(ATTEMPTS_KEY, String(attempts));
+      window.sessionStorage.setItem(LAST_TS_KEY, String(now));
+    } catch {
+      // ignore
+    }
+
+    return attempts;
+  };
+
+  const unregisterServiceWorkers = async () => {
+    try {
+      if (!("serviceWorker" in navigator)) return;
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister()));
+    } catch {
+      // ignore
+    }
+  };
+
+  const clearCaches = async () => {
+    try {
+      if (!("caches" in window)) return;
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+    } catch {
+      // ignore
+    }
+  };
+
+  const cacheBustReload = async () => {
+    const attempt = bumpAttempt();
+    if (attempt > MAX_ATTEMPTS) return;
+
+    await unregisterServiceWorkers();
+    await clearCaches();
 
     const url = new URL(window.location.href);
     url.searchParams.set("__v", String(Date.now()));
     window.location.replace(url.toString());
   };
 
+  const extractMessage = (reason: any) => {
+    if (!reason) return "";
+    if (typeof reason === "string") return reason;
+    if (typeof reason?.message === "string") return reason.message;
+    try {
+      return String(reason);
+    } catch {
+      return "";
+    }
+  };
+
   window.addEventListener("unhandledrejection", (event) => {
     const reason = (event as PromiseRejectionEvent).reason;
-    const msg =
-      typeof reason === "string"
-        ? reason
-        : reason?.message
-        ? String(reason.message)
-        : reason?.toString
-        ? String(reason.toString())
-        : "";
-
-    if (msg && shouldReloadFor(msg)) cacheBustReloadOnce();
+    const msg = extractMessage(reason);
+    if (msg && shouldReloadFor(msg)) {
+      void cacheBustReload();
+    }
   });
 
   window.addEventListener("error", (event) => {
     const e = event as ErrorEvent;
     const msg = e?.message ? String(e.message) : "";
-    if (msg && shouldReloadFor(msg)) cacheBustReloadOnce();
+    if (msg && shouldReloadFor(msg)) {
+      void cacheBustReload();
+    }
   });
 })();
+
+// Proactively unregister any Service Worker that might cache old assets/index.html
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker
+    .getRegistrations()
+    .then((regs) => regs.forEach((r) => r.unregister()))
+    .catch(() => {
+      // ignore
+    });
+}
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
@@ -80,5 +145,5 @@ createRoot(document.getElementById("root")!).render(
         </BrowserRouter>
       </QueryClientProvider>
     </HelmetProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );
