@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,6 +10,7 @@ import DayView from './DayView';
 import WeekView from './WeekView';
 import MonthView from './MonthView';
 import AppointmentModal from './AppointmentModal';
+import AppointmentQuickPreview from './AppointmentQuickPreview';
 import { useCalendarData } from './useCalendarData';
 import ManualBookAppointmentModal from '../ManualBookAppointmentModal';
 import BlockTimeModal from '../BlockTimeModal';
@@ -24,6 +26,7 @@ interface PremiumDoctorCalendarProps {
 const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDoctorCalendarProps) => {
   const { t } = useTranslation('dashboard');
   const { profile } = useAuth();
+  const navigate = useNavigate();
 
   // Use prop or denormalized doctor_id from profile
   const doctorId = doctorIdProp || (profile as any)?.doctor_id || null;
@@ -33,6 +36,7 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
   const [view, setView] = useState<CalendarView>('day');
   const [filters, setFilters] = useState<CalendarFilters>(defaultFilters);
   const [selectedAppointment, setSelectedAppointment] = useState<CalendarAppointment | null>(null);
+  const [isQuickPreviewOpen, setIsQuickPreviewOpen] = useState(false);
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
   const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
@@ -70,6 +74,19 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
 
   const handleAppointmentClick = useCallback((apt: CalendarAppointment) => {
     setSelectedAppointment(apt);
+    setIsQuickPreviewOpen(true);
+  }, []);
+
+  const handleStartSession = useCallback((apt: CalendarAppointment) => {
+    navigate(`/appointment-session/${apt.id}`);
+  }, [navigate]);
+
+  const handleViewPatient = useCallback((patientId: string, patientType: 'registered' | 'direct') => {
+    navigate(`/patient-dashboard/${patientId}?type=${patientType}`);
+  }, [navigate]);
+
+  const handleOpenFullModal = useCallback(() => {
+    setIsQuickPreviewOpen(false);
     setIsAppointmentModalOpen(true);
   }, []);
 
