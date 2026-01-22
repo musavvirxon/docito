@@ -8,7 +8,6 @@ const corsHeaders = {
 };
 
 interface BookAppointmentRequest {
-  // ✅ allow either registered patient or doctor-added patient
   patient_id?: string;
   doctor_patient_id?: string;
 
@@ -47,7 +46,6 @@ const handler = async (req: Request): Promise<Response> => {
       notes,
     } = (await req.json()) as BookAppointmentRequest;
 
-    // provider_id and slot_start are required; entity_id is optional (for independent doctors)
     if (!provider_id || !slot_start) {
       return new Response(JSON.stringify({ error: "Missing required fields: provider_id, slot_start" }), {
         status: 400,
@@ -55,7 +53,6 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // ✅ Must provide exactly one of patient_id or doctor_patient_id
     const hasPatientId = Boolean(patient_id);
     const hasDoctorPatientId = Boolean(doctor_patient_id);
     if (hasPatientId === hasDoctorPatientId) {
@@ -65,7 +62,6 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Verify user
     const { data: { user }, error: authError } = await supabase.auth.getUser(
       authHeader.replace("Bearer ", "")
     );
@@ -77,13 +73,9 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // ✅ Authorization rules:
-    // - If booking for self (patient_id == user.id) => OK
-    // - Otherwise must be staff/doctor at this entity (if entity_id provided)
     const bookingForSelf = hasPatientId && patient_id === user.id;
 
     if (!bookingForSelf) {
-      // For independent practitioners (no entity_id), only the doctor themselves can book
       if (!entity_id) {
         const { data: doctorRole } = await supabase
           .from("doctors")
@@ -123,14 +115,28 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // Parse slot time with dynamic duration
     const slotDate = new Date(slot_start);
+    if (Number.isNaN(slotDate.getTime())) {
+      return new Response(JSON.stringify({ error: "Invalid slot_start", code: "INVALID_SLOT_START" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // ✅ Hard stop: no booking in the past (server-enforced)
+    const now = new Date();
+    if (slotDate.getTime() <= now.getTime() + 60_000) {
+      return new Response(JSON.stringify({ error: "Cannot book an appointment in the past", code: "PAST_TIME" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
     const appointmentDate = slotDate.toISOString().split("T")[0];
     const startTime = slotDate.toTimeString().slice(0, 8);
     const endDate = new Date(slotDate.getTime() + duration_minutes * 60000);
     const endTime = endDate.toTimeString().slice(0, 8);
 
-    // Prevent race conditions: check conflicts
     const { data: existingAppointments } = await supabase
       .from("appointments")
       .select("id")
@@ -148,10 +154,9 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // ✅ Insert appointment with correct patient field
     const insertPayload: any = {
       doctor_id: provider_id,
-      practice_id: entity_id || null, // null for independent practitioners
+      practice_id: entity_id || null,
       appointment_date: appointmentDate,
       start_time: startTime,
       end_time: endTime,
