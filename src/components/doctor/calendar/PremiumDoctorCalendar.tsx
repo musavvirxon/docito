@@ -25,13 +25,11 @@ interface PremiumDoctorCalendarProps {
 
 const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDoctorCalendarProps) => {
   const { t } = useTranslation('dashboard');
-  const { profile } = useAuth();
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
 
-  // Use prop or denormalized doctor_id from profile
-  const doctorId = doctorIdProp || (profile as any)?.doctor_id || null;
+  const doctorId = doctorIdProp || (profile?.role === 'doctor' ? profile?.id : undefined);
 
-  // State
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [view, setView] = useState<CalendarView>('day');
   const [filters, setFilters] = useState<CalendarFilters>(defaultFilters);
@@ -46,26 +44,53 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
   // Safety check
   useEffect(() => {
     if (profile?.role === 'doctor' && !doctorId) {
-      toast.error(t('doctor.calendar.profileLoading', 'Doctor profile still loading. Please refresh.'));
+      toast.error(t('doctor.calendar.profileLoading', 'Doctor profile still loading...'));
     }
-  }, [profile, doctorId, t]);
+  }, [profile?.role, doctorId, t]);
 
-  // Fetch calendar data
   const {
     appointments,
     blockedTimes,
-    loading,
     scheduleSettings,
+    loading,
+    error,
     refetch,
-    getScheduleHealth,
     getAppointmentsForDate,
     getBlockedTimesForDate,
-  } = useCalendarData({ doctorId, selectedDate, view });
+    getScheduleHealth
+  } = useCalendarData({
+    doctorId,
+    practiceId,
+    date: selectedDate,
+    view,
+    filters
+  });
 
-  // Handlers
-  const handleToday = useCallback(() => setSelectedDate(new Date()), []);
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
 
-  const handleViewChange = useCallback((newView: CalendarView) => setView(newView), []);
+  const handleViewChange = useCallback((newView: CalendarView) => {
+    setView(newView);
+  }, []);
+
+  const handleToday = useCallback(() => {
+    setSelectedDate(new Date());
+  }, []);
+
+  const handleAddAppointment = useCallback(() => {
+    setIsBookModalOpen(true);
+  }, []);
+
+  const handleBlockTime = useCallback(() => {
+    setIsBlockModalOpen(true);
+  }, []);
+
+  const handleSetAvailability = useCallback(() => {
+    setIsAvailabilityModalOpen(true);
+  }, []);
 
   const handleDayClick = useCallback((date: Date) => {
     setSelectedDate(date);
@@ -100,52 +125,42 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
     setIsBlockModalOpen(true);
   }, []);
 
-  const handleAddAppointment = useCallback(() => {
-    setPrefilledTime(undefined);
-    setIsBookModalOpen(true);
-  }, []);
-
-  const handleBlockTime = useCallback(() => {
-    setPrefilledTime(undefined);
-    setIsBlockModalOpen(true);
-  }, []);
-
-  const handleSetAvailability = useCallback(() => {
-    setIsAvailabilityModalOpen(true);
-  }, []);
-
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      // Don't trigger shortcuts when modals are open or user is typing
+      const activeTag = (document.activeElement?.tagName || '').toLowerCase();
+      const isTyping = activeTag === 'input' || activeTag === 'textarea' || (document.activeElement as any)?.isContentEditable;
 
-      switch (e.key.toLowerCase()) {
-        case 't':
-          handleToday();
-          break;
-        case 'arrowleft':
-          setSelectedDate(prev => {
-            const d = new Date(prev);
-            d.setDate(d.getDate() - (view === 'day' ? 1 : view === 'week' ? 7 : 30));
-            return d;
-          });
-          break;
-        case 'arrowright':
-          setSelectedDate(prev => {
-            const d = new Date(prev);
-            d.setDate(d.getDate() + (view === 'day' ? 1 : view === 'week' ? 7 : 30));
-            return d;
-          });
-          break;
-        case 'n':
-          handleAddAppointment();
-          break;
+      if (isTyping) return;
+      if (isAppointmentModalOpen || isQuickPreviewOpen || isBookModalOpen || isBlockModalOpen || isAvailabilityModalOpen) return;
+
+      if (e.key === 't' || e.key === 'T') {
+        handleToday();
       }
+      if (e.key === 'a' || e.key === 'A') {
+        handleAddAppointment();
+      }
+      if (e.key === 'Escape') {
+        if (view !== 'day') setView('day');
+      }
+      if (e.key === '1') setView('day');
+      if (e.key === '2') setView('week');
+      if (e.key === '3') setView('month');
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [view, handleToday, handleAddAppointment]);
+  }, [
+    view,
+    handleToday,
+    handleAddAppointment,
+    isAppointmentModalOpen,
+    isQuickPreviewOpen,
+    isBookModalOpen,
+    isBlockModalOpen,
+    isAvailabilityModalOpen
+  ]);
 
   const dayAppointments = getAppointmentsForDate(selectedDate);
   const dayBlockedTimes = getBlockedTimesForDate(selectedDate);
@@ -225,6 +240,16 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
         isOpen={isAppointmentModalOpen}
         onClose={() => setIsAppointmentModalOpen(false)}
         onMarkComplete={() => { refetch(); setIsAppointmentModalOpen(false); }}
+      />
+
+      <AppointmentQuickPreview
+        appointment={selectedAppointment}
+        isOpen={isQuickPreviewOpen}
+        onClose={() => setIsQuickPreviewOpen(false)}
+        onStartSession={handleStartSession}
+        onViewPatient={handleViewPatient}
+        onOpenFullModal={handleOpenFullModal}
+        doctorSpecialty={profile?.specialty}
       />
 
       {doctorId && (
