@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { PDFDocument, StandardFonts, rgb } from "npm:pdf-lib@1.17.1";
+// Use esm.sh so the edge runtime doesn't require a local node_modules install
+import { PDFDocument, StandardFonts, rgb } from "https://esm.sh/pdf-lib@1.17.1";
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -242,14 +243,11 @@ serve(async (req) => {
     if ((!patientName || patientName === "Patient") && referral.patient_id) {
       const { data: prof, error: pErr } = await service
         .from("profiles")
-        .select("full_name, first_name, last_name")
+        .select("full_name")
         .eq("user_id", referral.patient_id)
         .maybeSingle();
       if (!pErr && prof) {
-        patientName =
-          (prof.full_name as string | null) ||
-          [prof.first_name, prof.last_name].filter(Boolean).join(" ") ||
-          patientName;
+        patientName = (prof.full_name as string | null) || patientName;
       }
     }
 
