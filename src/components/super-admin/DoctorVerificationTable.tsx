@@ -236,14 +236,15 @@ export default function DoctorVerificationTable({
 
   const fetchDocuments = async (verificationId: string) => {
     const { data, error } = await supabase
-      .from("doctor_verification_documents" as any)
+      .from("doctor_verification_documents")
       .select("*")
       .eq("doctor_verification_id", verificationId)
       .order("uploaded_at", { ascending: false });
 
     if (error) throw error;
 
-    const latest = (data || []).reduce((acc: DocRow[], doc: DocRow) => {
+    const rawData = (data || []) as unknown as DocRow[];
+    const latest = rawData.reduce((acc: DocRow[], doc: DocRow) => {
       const exists = acc.find((d) => d.document_type === doc.document_type);
       if (!exists) acc.push(doc);
       return acc;
