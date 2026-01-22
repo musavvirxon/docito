@@ -31,11 +31,12 @@ interface AppointmentModalProps {
 }
 
 const statusColors: Record<string, string> = {
-  scheduled: 'bg-blue-500/10 text-blue-600 border-blue-200',
   confirmed: 'bg-emerald-500/10 text-emerald-600 border-emerald-200',
+  pending: 'bg-amber-500/10 text-amber-600 border-amber-200',
   completed: 'bg-muted text-muted-foreground border-border',
   canceled: 'bg-destructive/10 text-destructive border-destructive/20',
   'no-show': 'bg-amber-500/10 text-amber-600 border-amber-200',
+  in_progress: 'bg-green-500/10 text-green-600 border-green-200',
 };
 
 const AppointmentModal = memo(({
@@ -48,7 +49,6 @@ const AppointmentModal = memo(({
   onMarkComplete,
   onReschedule,
   onCancel,
-  onMessage,
 }: AppointmentModalProps) => {
   const { t, i18n } = useTranslation('dashboard');
   const navigate = useNavigate();
@@ -56,23 +56,22 @@ const AppointmentModal = memo(({
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const [isRescheduling, setIsRescheduling] = useState(false);
-  
   const isRTL = i18n.language === 'ar';
 
   const handleCancelAppointment = useCallback(async (reason?: string) => {
     if (!appointment) return;
-    
+
     try {
       const { error } = await supabase
         .from('appointments')
-        .update({ 
+        .update({
           status: 'canceled' as any,
           notes: reason ? `${appointment.notes || ''}\n[Cancellation reason]: ${reason}`.trim() : appointment.notes
         })
         .eq('id', appointment.id);
-      
+
       if (error) throw error;
-      
+
       toast.success(t('doctor.calendar.cancelSuccess', 'Appointment cancelled successfully'));
       setIsCancelDialogOpen(false);
       onCancel?.();
@@ -99,15 +98,30 @@ const AppointmentModal = memo(({
       toast.error('Patient information not available');
       return;
     }
-    
+
     try {
+      const { data: existing, error: e1 } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('context_type', 'visit')
+        .eq('context_id', appointment.id)
+        .maybeSingle();
+
+      if (e1) throw e1;
+
+      if (existing?.id) {
+        navigate(`/messages?c=${existing.id}`);
+        onClose();
+        return;
+      }
+
       const { data: conversationId, error } = await supabase.rpc(
         'create_direct_conversation' as any,
         { target_user_id: appointment.patient_id } as any
       );
-      
+
       if (error) throw error;
-      
+
       navigate(`/messages?c=${conversationId}`);
       onClose();
     } catch (error) {
@@ -118,14 +132,10 @@ const AppointmentModal = memo(({
 
   if (!appointment) return null;
 
-  const initials = appointment.patient_name
-    ?.split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase() || 'P';
+  const initials = appointment.patient_name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'P';
 
-  const isActiveAppointment = appointment.status === 'confirmed' || appointment.status === 'scheduled';
-  const isPastAppointment = appointment.status === 'completed';
+  // HARD RULE: doctor can only start after patient accepts (confirmed)
+  const isActiveAppointment = appointment.status === 'confirmed';
   const isToday = new Date(appointment.appointment_date).toDateString() === new Date().toDateString();
 
   return (
@@ -162,10 +172,7 @@ const AppointmentModal = memo(({
                 </div>
               </div>
             </div>
-            <Badge
-              variant="outline"
-              className={cn('capitalize text-sm', statusColors[appointment.status])}
-            >
+            <Badge variant="outline" className={cn('capitalize text-sm', statusColors[appointment.status] || '')}>
               {appointment.status}
             </Badge>
           </div>
@@ -201,22 +208,15 @@ const AppointmentModal = memo(({
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden flex flex-col">
           <TabsList className="w-full justify-start">
-            <TabsTrigger value="details">
-              {t('doctor.calendar.details', 'Details')}
-            </TabsTrigger>
-            <TabsTrigger value="patient">
-              {t('doctor.calendar.patient', 'Patient')}
-            </TabsTrigger>
+            <TabsTrigger value="details">{t('doctor.calendar.details', 'Details')}</TabsTrigger>
+            <TabsTrigger value="patient">{t('doctor.calendar.patient', 'Patient')}</TabsTrigger>
             {appointment.source === 'referral' && (
-              <TabsTrigger value="referral">
-                {t('doctor.calendar.referral', 'Referral')}
-              </TabsTrigger>
+              <TabsTrigger value="referral">{t('doctor.calendar.referral', 'Referral')}</TabsTrigger>
             )}
           </TabsList>
 
           <div className="flex-1 overflow-y-auto">
             <TabsContent value="details" className="mt-4 space-y-4">
-              {/* Appointment Details */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <span className="text-sm text-muted-foreground">
@@ -224,36 +224,38 @@ const AppointmentModal = memo(({
                   </span>
                   <p className="font-medium capitalize flex items-center gap-2">
                     {appointment.appointment_type === 'video' && <Video className="h-4 w-4" />}
-                    {appointment.appointment_type === 'chat' && <MessageSquare className="h-4 w-4" />}
+                    {(appointment.appointment_type === 'chat' || appointment.appointment_type === 'messaging') && (
+                      <MessageSquare className="h-4 w-4" />
+                    )}
                     {appointment.appointment_type || 'In-Person'}
                   </p>
                 </div>
                 {appointment.procedure_name && (
                   <div className="space-y-1">
-                    <span className="text-sm text-muted-foreground">
-                      {t('doctor.calendar.procedure', 'Procedure')}
-                    </span>
+                    <span className="text-sm text-muted-foreground">{t('doctor.calendar.procedure', 'Procedure')}</span>
                     <p className="font-medium">{appointment.procedure_name}</p>
                   </div>
                 )}
               </div>
 
-              {/* Notes */}
               {appointment.notes && (
                 <div className="space-y-2">
                   <span className="text-sm text-muted-foreground flex items-center gap-2">
                     <FileText className="h-4 w-4" />
                     {t('doctor.calendar.notes', 'Notes')}
                   </span>
-                  <div className="p-3 rounded-lg bg-muted/50 text-sm">
-                    {appointment.notes}
-                  </div>
+                  <div className="p-3 rounded-lg bg-muted/50 text-sm">{appointment.notes}</div>
+                </div>
+              )}
+
+              {appointment.status === 'pending' && (
+                <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-sm text-amber-700 dark:text-amber-300">
+                  Waiting for patient acceptance. You can start after it becomes <b>confirmed</b>.
                 </div>
               )}
             </TabsContent>
 
             <TabsContent value="patient" className="mt-4 space-y-4">
-              {/* Patient Contact Info */}
               <div className="space-y-3">
                 {appointment.patient_phone && (
                   <div className="flex items-center gap-3">
@@ -279,11 +281,7 @@ const AppointmentModal = memo(({
                 )}
               </div>
 
-              <Button
-                variant="outline"
-                onClick={handleMessage}
-                className="w-full gap-2"
-              >
+              <Button variant="outline" onClick={handleMessage} className="w-full gap-2">
                 <MessageSquare className="h-4 w-4" />
                 {t('doctor.calendar.sendMessage', 'Send Message')}
               </Button>
@@ -292,9 +290,7 @@ const AppointmentModal = memo(({
             <TabsContent value="referral" className="mt-4 space-y-4">
               <div className="p-4 rounded-lg bg-muted/50 text-center">
                 <ArrowRightLeft className="h-8 w-8 mx-auto mb-2 text-primary" />
-                <p className="font-medium">
-                  {t('doctor.calendar.referralAppointment', 'Referral Appointment')}
-                </p>
+                <p className="font-medium">{t('doctor.calendar.referralAppointment', 'Referral Appointment')}</p>
                 <p className="text-sm text-muted-foreground mt-1">
                   {t('doctor.calendar.referralDetails', 'This appointment was created from a referral.')}
                 </p>
@@ -303,27 +299,23 @@ const AppointmentModal = memo(({
           </div>
         </Tabs>
 
-        {/* Footer Actions */}
         <Separator className="my-4" />
-        <div className={cn(
-          "flex items-center justify-between",
-          isRTL && "flex-row-reverse"
-        )}>
-          <div className={cn("flex gap-2", isRTL && "flex-row-reverse")}>
-            {isActiveAppointment && (
+        <div className={cn('flex items-center justify-between', isRTL && 'flex-row-reverse')}>
+          <div className={cn('flex gap-2', isRTL && 'flex-row-reverse')}>
+            {(appointment.status === 'confirmed' || appointment.status === 'pending') && (
               <>
-                <Button 
-                  variant="outline" 
-                  onClick={handleReschedule} 
+                <Button
+                  variant="outline"
+                  onClick={handleReschedule}
                   disabled={isRescheduling}
                   className="gap-2"
                 >
                   <Edit className="h-4 w-4" />
                   {t('doctor.calendar.reschedule', 'Reschedule')}
                 </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setIsCancelDialogOpen(true)} 
+                <Button
+                  variant="outline"
+                  onClick={() => setIsCancelDialogOpen(true)}
                   className="gap-2 text-destructive hover:text-destructive"
                 >
                   <XCircle className="h-4 w-4" />
@@ -338,7 +330,6 @@ const AppointmentModal = memo(({
         </div>
       </DialogContent>
 
-      {/* Cancel Confirmation Dialog */}
       <CancelAppointmentDialog
         isOpen={isCancelDialogOpen}
         onClose={() => setIsCancelDialogOpen(false)}
@@ -346,7 +337,6 @@ const AppointmentModal = memo(({
         patientName={appointment.patient_name}
       />
 
-      {/* Reschedule Modal */}
       <RescheduleAppointmentModal
         isOpen={isRescheduleModalOpen}
         onClose={() => setIsRescheduleModalOpen(false)}
