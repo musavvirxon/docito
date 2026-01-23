@@ -1,12 +1,12 @@
 import { motion } from "framer-motion";
-import { Building2, Pill, FlaskConical, Scan, Users, Stethoscope, Activity, TrendingUp } from "lucide-react";
+import { Building2, Pill, FlaskConical, Scan, Users, Stethoscope, Activity, TrendingUp, LucideIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 
 interface StatCardProps {
-  icon: React.ElementType;
+  icon: LucideIcon;
   label: string;
   value: number;
   color: string;
@@ -79,7 +79,7 @@ const EcosystemOverview = () => {
     staleTime: 30000,
   });
 
-  const ecosystemStats = [
+  const ecosystemStats: StatCardProps[] = [
     { icon: Building2, label: "Total Clinics", value: stats?.clinics || 0, color: "bg-blue-500", delay: 0 },
     { icon: Pill, label: "Total Pharmacies", value: stats?.pharmacies || 0, color: "bg-green-500", delay: 0.1 },
     { icon: FlaskConical, label: "Total Laboratories", value: stats?.labs || 0, color: "bg-purple-500", delay: 0.2 },
@@ -97,7 +97,7 @@ const EcosystemOverview = () => {
 
       {/* Main Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {ecosystemStats.map((stat, index) => (
+        {ecosystemStats.map((stat) => (
           <StatCard key={stat.label} {...stat} />
         ))}
       </div>

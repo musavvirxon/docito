@@ -1,7 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { MessageSquare, Calendar, ArrowRightLeft, Bell } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { MessageFilter } from '@/hooks/useHealthcareMessaging';
 
 interface MessageFiltersProps {
@@ -28,6 +27,7 @@ const MessageFilters: React.FC<MessageFiltersProps> = ({
         const Icon = filter.icon;
         const isActive = activeFilter === filter.value;
         const showBadge = filter.value === 'unread' && unreadCount > 0;
+        const activeClasses = isActive ? 'bg-background shadow-sm' : '';
 
         return (
           <Button
@@ -35,10 +35,7 @@ const MessageFilters: React.FC<MessageFiltersProps> = ({
             variant={isActive ? 'secondary' : 'ghost'}
             size="sm"
             onClick={() => onFilterChange(filter.value)}
-            className={cn(
-              'relative flex-1 h-8',
-              isActive && 'bg-background shadow-sm'
-            )}
+            className={["relative flex-1 h-8", activeClasses].filter(Boolean).join(" ")}
           >
             <Icon className="h-3.5 w-3.5 mr-1.5" />
             <span className="text-xs">{filter.label}</span>

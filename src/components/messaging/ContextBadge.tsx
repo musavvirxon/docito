@@ -1,7 +1,6 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, ArrowRightLeft, MessageSquare } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 export type ContextType = 'general' | 'visit' | 'referral' | 'appointment';
 
@@ -37,25 +36,21 @@ const contextConfig: Record<ContextType, { label: string; icon: React.ElementTyp
 const ContextBadge: React.FC<ContextBadgeProps> = ({ 
   contextType, 
   size = 'sm',
-  className 
+  className = ''
 }) => {
   const config = contextConfig[contextType] || contextConfig.general;
   const Icon = config.icon;
   const isSmall = size === 'sm';
+  const sizeClasses = isSmall ? 'text-[10px] px-1.5 py-0' : 'text-xs px-2 py-0.5';
+  const iconClasses = isSmall ? 'mr-1 h-2.5 w-2.5' : 'mr-1 h-3 w-3';
 
   return (
-    <Badge 
-      variant="secondary"
-      className={cn(
-        'font-medium border-0',
-        config.variant,
-        isSmall ? 'text-[10px] px-1.5 py-0' : 'text-xs px-2 py-0.5',
-        className
-      )}
+    <span 
+      className={["inline-flex items-center font-medium border-0 rounded-md", config.variant, sizeClasses, className].filter(Boolean).join(" ")}
     >
-      <Icon className={cn('mr-1', isSmall ? 'h-2.5 w-2.5' : 'h-3 w-3')} />
+      <Icon className={iconClasses} />
       {config.label}
-    </Badge>
+    </span>
   );
 };
 
