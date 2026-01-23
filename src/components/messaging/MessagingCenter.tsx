@@ -1,19 +1,21 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { MessageSquare, Lock } from 'lucide-react';
-import { useMessaging, useConversationMessages, Conversation } from '@/hooks/useMessaging';
-import ConversationList from './ConversationList';
-import MessageThread from './MessageThread';
-import NewChatDialog from './NewChatDialog';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import React, { useEffect, useRef, useState } from "react";
+import { Lock, MessageSquare } from "lucide-react";
+import { useMessaging, useConversationMessages, Conversation } from "@/hooks/useMessaging";
+import ConversationList from "./ConversationList";
+import MessageThread from "./MessageThread";
+import NewChatDialog from "./NewChatDialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface MessagingCenterProps {
   initialConversationId?: string | null;
+  initialRecipientUserId?: string | null;
   onConversationChange?: (conversationId: string | null) => void;
 }
 
 const MessagingCenter: React.FC<MessagingCenterProps> = ({
   initialConversationId,
+  initialRecipientUserId,
   onConversationChange,
 }) => {
   const { user } = useAuth();
@@ -28,31 +30,18 @@ const MessagingCenter: React.FC<MessagingCenterProps> = ({
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [showNewChat, setShowNewChat] = useState(false);
 
-  const {
-    messages,
-    loading: messagesLoading,
-    sendMessage,
-    fetchMessages,
-  } = useConversationMessages(selectedConversation?.id || null);
+  const { messages, loading: messagesLoading, sendMessage, fetchMessages } = useConversationMessages(
+    selectedConversation?.id || null
+  );
 
-  // Handle initial conversation ID from URL
-  useEffect(() => {
-    if (initialConversationId && conversations.length > 0) {
-      const conv = conversations.find(c => c.id === initialConversationId);
-      if (conv) {
-        setSelectedConversation(conv);
-      } else {
-        // Conversation not in list, try to fetch it directly
-        fetchConversationById(initialConversationId);
-      }
-    }
-  }, [initialConversationId, conversations]);
+  const didHandleInitialRecipient = useRef(false);
 
   const fetchConversationById = async (conversationId: string) => {
     try {
       const { data: conv, error } = await supabase
-        .from('conversations')
-        .select(`
+        .from("conversations")
+        .select(
+          `
           *,
           conversation_participants!inner (
             *,
@@ -61,28 +50,69 @@ const MessagingCenter: React.FC<MessagingCenterProps> = ({
               avatar_url
             )
           )
-        `)
-        .eq('id', conversationId)
+        `
+        )
+        .eq("id", conversationId)
         .single();
 
       if (error) throw error;
 
       if (conv) {
         const formattedConv: Conversation = {
-          ...conv,
-          participants: conv.conversation_participants?.map((p: any) => ({
-            ...p,
-            user: p.profiles
-          })) || [],
+          ...(conv as any),
+          participants:
+            (conv as any).conversation_participants?.map((p: any) => ({
+              ...p,
+              user: p.profiles,
+            })) || [],
         };
         setSelectedConversation(formattedConv);
-        // Refresh conversations list to include this one
         fetchConversations();
       }
     } catch (error) {
-      console.error('Error fetching conversation:', error);
+      console.error("Error fetching conversation:", error);
     }
   };
+
+  // Handle initial conversation ID from URL
+  useEffect(() => {
+    if (!initialConversationId) return;
+    if (conversationsLoading) return;
+
+    const conv = conversations.find((c) => c.id === initialConversationId);
+    if (conv) {
+      setSelectedConversation(conv);
+      return;
+    }
+
+    fetchConversationById(initialConversationId);
+  }, [initialConversationId, conversations, conversationsLoading]);
+
+  // Handle initial recipient param: create/open a direct conversation
+  useEffect(() => {
+    if (!initialRecipientUserId) return;
+    if (!user?.id) return;
+    if (conversationsLoading) return;
+    if (didHandleInitialRecipient.current) return;
+
+    didHandleInitialRecipient.current = true;
+
+    (async () => {
+      const conv = await getOrCreateDirectConversation(initialRecipientUserId);
+      if (!conv) return;
+
+      const fullConv = conversations.find((c) => c.id === conv.id) || (conv as any);
+      setSelectedConversation(fullConv as Conversation);
+      onConversationChange?.(conv.id);
+    })();
+  }, [
+    initialRecipientUserId,
+    user?.id,
+    conversationsLoading,
+    getOrCreateDirectConversation,
+    conversations,
+    onConversationChange,
+  ]);
 
   // Realtime subscription for new messages
   useEffect(() => {
@@ -91,11 +121,11 @@ const MessagingCenter: React.FC<MessagingCenterProps> = ({
     const channel = supabase
       .channel(`messages:${selectedConversation.id}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
           filter: `conversation_id=eq.${selectedConversation.id}`,
         },
         () => {
@@ -116,23 +146,21 @@ const MessagingCenter: React.FC<MessagingCenterProps> = ({
 
   const handleCreateDirect = async (userId: string) => {
     const conv = await getOrCreateDirectConversation(userId);
-    if (conv) {
-      // Find the full conversation with participants
-      const fullConv = conversations.find(c => c.id === conv.id) || conv;
-      setSelectedConversation(fullConv as Conversation);
-      onConversationChange?.(conv.id);
-    }
+    if (!conv) return;
+
+    const fullConv = conversations.find((c) => c.id === conv.id) || (conv as any);
+    setSelectedConversation(fullConv as Conversation);
+    onConversationChange?.(conv.id);
   };
 
   const handleCreateGroup = async (name: string, userIds: string[]) => {
     const conv = await createGroupConversation(name, userIds);
-    if (conv) {
-      setSelectedConversation(conv as Conversation);
-      onConversationChange?.(conv.id);
-    }
+    if (!conv) return;
+
+    setSelectedConversation(conv as Conversation);
+    onConversationChange?.(conv.id);
   };
 
-  // Check if conversation is locked
   const isLocked = (selectedConversation as any)?.is_locked === true;
   const lockedReason = (selectedConversation as any)?.locked_reason;
 
@@ -156,7 +184,9 @@ const MessagingCenter: React.FC<MessagingCenterProps> = ({
             {isLocked && (
               <div className="px-4 py-2 bg-muted/50 border-b border-border flex items-center gap-2 text-sm text-muted-foreground">
                 <Lock className="h-4 w-4" />
-                <span>This conversation is locked. {lockedReason || 'Messages cannot be sent.'}</span>
+                <span>
+                  This conversation is locked. {lockedReason || "Messages cannot be sent."}
+                </span>
               </div>
             )}
             <div className="flex-1">
