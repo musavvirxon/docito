@@ -6,24 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Calendar,
-  Clock,
-  User,
-  Phone,
-  Mail,
-  MapPin,
-  FileText,
-  Pill,
-  Heart,
-  Stethoscope,
-  AlertCircle,
-  ChevronRight,
-  Activity,
-  MessageSquare,
-  Video,
-  CalendarPlus,
-} from "lucide-react";
+import { Calendar, Clock, User, Phone, Mail, MapPin, FileText, Pill, Heart, Stethoscope, AlertCircle, ChevronRight, Activity, MessageSquare, Video, CalendarPlus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -37,12 +20,9 @@ interface Appointment {
   end_time: string;
   status: string;
   notes?: string;
-
   appointment_type?: string | null;
-
   patient_id?: string | null;
   doctor_patient_id?: string | null;
-
   patient_name?: string;
   patient_email?: string;
   patient_phone?: string;
@@ -50,16 +30,16 @@ interface Appointment {
 }
 
 interface PatientDetails {
-  id?: string;
-  user_id?: string;
-  full_name?: string;
-  email?: string;
+  id: string;
+  user_id: string;
+  full_name: string;
+  email: string;
   phone?: string;
   date_of_birth?: string;
   gender?: string;
   avatar_url?: string;
   address?: string;
-  created_at?: string;
+  created_at: string;
 }
 
 interface MedicalRecord {
@@ -91,199 +71,104 @@ interface TreatmentPlan {
   priority: string;
   estimated_cost?: number;
   created_at: string;
-  procedures?: any[];
 }
 
-interface AppointmentHistory {
-  id: string;
-  appointment_date: string;
-  start_time: string;
-  status: string;
-  notes?: string;
-}
-
-interface UpcomingAppointmentCardProps {
-  appointments: Appointment[];
-}
-
-export const UpcomingAppointmentCard = ({ appointments }: UpcomingAppointmentCardProps) => {
-  const { t } = useTranslation("dashboard");
+export const UpcomingAppointmentCard = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
+  
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
-  const [showAppointmentModal, setShowAppointmentModal] = useState(false);
-  const [showPatientModal, setShowPatientModal] = useState(false);
   const [patientDetails, setPatientDetails] = useState<PatientDetails | null>(null);
   const [medicalRecords, setMedicalRecords] = useState<MedicalRecord[]>([]);
   const [medications, setMedications] = useState<Medication[]>([]);
   const [treatmentPlans, setTreatmentPlans] = useState<TreatmentPlan[]>([]);
-  const [appointmentHistory, setAppointmentHistory] = useState<AppointmentHistory[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [starting, setStarting] = useState(false);
+  const [loadingPatientData, setLoadingPatientData] = useState(false);
+  const [showPatientModal, setShowPatientModal] = useState(false);
+  const [showAppointmentModal, setShowAppointmentModal] = useState(false);
 
-  const handleMessagePatient = (appointment: Appointment) => {
-    if (!appointment.patient_id) {
-      toast.error("Messaging is only available for registered patients.");
-      return;
-    }
-    navigate(`/messages?recipient=${appointment.patient_id}`);
-  };
+  // Get upcoming appointments from context/hook
+  // This component is used inside DoctorDashboard where appointments are provided
+  const upcomingAppointments = (window as any).__doctorUpcomingAppointments as Appointment[] || [];
 
-  const handleScheduleAppointment = (appointment: Appointment) => {
-    const pid = appointment.patient_id || "";
-    navigate(`/doctor-dashboard?section=calendar${pid ? `&patient=${pid}` : ""}`);
-  };
-
-  const handleStartVideoOrAppointment = async (appointment: Appointment) => {
-    setStarting(true);
+  const fetchPatientDetails = async (patientId: string) => {
+    setLoadingPatientData(true);
     try {
-      const { data, error } = await supabase.functions.invoke("request-start-appointment", {
-        body: { appointment_id: appointment.id },
-      });
+      // Fetch patient profile
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', patientId)
+        .single();
 
-      if (error) throw error;
-
-      if (data?.can_start) {
-        const type = (appointment.appointment_type || "in_person").toString();
-
-        if (type === "video") {
-          const room = data?.consultation?.room_id || data?.consultation?.room_url;
-          if (room) {
-            toast.success("Starting video consultation…");
-            navigate(`/video/${room}?join=true`);
-            return;
-          }
-          toast.error("Video room not available for this appointment.");
-          return;
-        }
-
-        toast.success("Appointment started.");
-        return;
+      if (profileData) {
+        setPatientDetails(profileData);
       }
 
-      toast.success("Start request sent.");
-    } catch (err: any) {
-      console.error("Start failed:", err);
-      toast.error(err?.message ?? "Failed to start appointment");
-    } finally {
-      setStarting(false);
-    }
-  };
-
-  // Get the current or next upcoming appointment
-  const now = new Date();
-  const currentOrNextAppointment = appointments
-    .filter((apt) => {
-      const aptDate = new Date(`${apt.appointment_date}T${apt.start_time}`);
-      return aptDate >= new Date(now.setHours(0, 0, 0, 0)) && (apt.status === "confirmed" || apt.status === "pending");
-    })
-    .sort((a, b) => {
-      const dateA = new Date(`${a.appointment_date}T${a.start_time}`);
-      const dateB = new Date(`${b.appointment_date}T${b.start_time}`);
-      return dateA.getTime() - dateB.getTime();
-    })[0];
-
-  const fetchPatientDetails = async (appointment: Appointment) => {
-    setLoading(true);
-    try {
-      setPatientDetails(null);
-      setMedicalRecords([]);
-      setMedications([]);
-      setTreatmentPlans([]);
-      setAppointmentHistory([]);
-
-      // Registered patient
-      if (appointment.patient_id) {
-        const patientId = appointment.patient_id;
-
-        const { data: profileData, error: profileErr } = await supabase.from("profiles").select("*").eq("user_id", patientId).single();
-        if (profileErr) console.warn("Profile fetch error:", profileErr);
-        if (profileData) setPatientDetails(profileData as any);
-
-        const { data: recordsData, error: recordsErr } = await supabase
-          .from("medical_records")
-          .select("*")
-          .eq("patient_id", patientId)
-          .order("record_date", { ascending: false });
-        if (recordsErr) console.warn("Medical records fetch error:", recordsErr);
-        setMedicalRecords((recordsData || []) as MedicalRecord[]);
-
-        const { data: medsData, error: medsErr } = await supabase
-          .from("medications")
-          .select("*")
-          .eq("patient_id", patientId)
-          .order("start_date", { ascending: false });
-        if (medsErr) console.warn("Medications fetch error:", medsErr);
-        setMedications((medsData || []) as Medication[]);
-
-        const { data: plansData, error: plansErr } = await supabase
-          .from("treatment_plans")
-          .select(
-            `
-            *,
-            treatment_plan_procedures (
-              id,
-              procedure_name,
-              estimated_cost,
-              status
+      // Fetch medical records
+      const { data: recordsData } = await supabase
+        .from('medical_records')
+        .select(`
+          id,
+          title,
+          description,
+          record_type,
+          record_date,
+          doctors:doctor_id (
+            profiles:user_id (
+              full_name
             )
-          `,
+          ),
+          practices:practice_id (
+            name
           )
-          .eq("patient_id", patientId)
-          .order("created_at", { ascending: false });
-        if (plansErr) console.warn("Treatment plans fetch error:", plansErr);
-        setTreatmentPlans(
-          ((plansData || []) as any[]).map((plan) => ({
-            ...plan,
-            procedures: plan.treatment_plan_procedures || [],
-          })) as TreatmentPlan[],
-        );
+        `)
+        .eq('patient_id', patientId)
+        .order('record_date', { ascending: false })
+        .limit(10);
 
-        const { data: doctor } = await supabase.from("doctors").select("id").eq("user_id", user?.id).single();
-        if (doctor) {
-          const { data: historyData, error: historyErr } = await supabase
-            .from("appointments")
-            .select("id, appointment_date, start_time, status, notes")
-            .eq("doctor_id", doctor.id)
-            .eq("patient_id", patientId)
-            .order("appointment_date", { ascending: false });
-          if (historyErr) console.warn("Appointment history fetch error:", historyErr);
-          setAppointmentHistory((historyData || []) as AppointmentHistory[]);
-        }
-
-        return;
+      if (recordsData) {
+        const formattedRecords = recordsData.map((record: any) => ({
+          id: record.id,
+          title: record.title,
+          description: record.description,
+          record_type: record.record_type,
+          record_date: record.record_date,
+          doctor_name: record.doctors?.profiles?.full_name,
+          practice_name: record.practices?.name,
+        }));
+        setMedicalRecords(formattedRecords);
       }
 
-      // Direct (non-registered) patient: limited info
-      if (appointment.doctor_patient_id) {
-        const { data: dp, error: dpErr } = await supabase
-          .from("doctor_patients")
-          .select("id, full_name, email, phone, address, created_at")
-          .eq("id", appointment.doctor_patient_id)
-          .single();
+      // Fetch medications
+      const { data: medsData } = await supabase
+        .from('prescriptions')
+        .select('*')
+        .eq('patient_id', patientId)
+        .eq('status', 'active')
+        .order('start_date', { ascending: false })
+        .limit(10);
 
-        if (dpErr) console.warn("Doctor patient fetch error:", dpErr);
-
-        if (dp) {
-          setPatientDetails({
-            id: dp.id,
-            full_name: (dp as any).full_name,
-            email: (dp as any).email,
-            phone: (dp as any).phone,
-            address: (dp as any).address,
-            created_at: (dp as any).created_at,
-          });
-        }
-
-        toast.message("Limited details", {
-          description: "This patient is not registered. Only basic contact details are available.",
-        });
+      if (medsData) {
+        setMedications(medsData);
       }
+
+      // Fetch treatment plans
+      const { data: plansData } = await supabase
+        .from('treatment_plans')
+        .select('*')
+        .eq('patient_id', patientId)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (plansData) {
+        setTreatmentPlans(plansData);
+      }
+
     } catch (error) {
-      console.error("Error fetching patient details:", error);
-      toast.error("Failed to load patient details");
+      console.error('Error fetching patient data:', error);
     } finally {
-      setLoading(false);
+      setLoadingPatientData(false);
     }
   };
 
@@ -292,9 +177,99 @@ export const UpcomingAppointmentCard = ({ appointments }: UpcomingAppointmentCar
     setShowAppointmentModal(true);
   };
 
+const requireRegisteredPatient = (appointment: Appointment) => {
+    const pid = appointment.patient_id;
+    if (!pid) {
+      toast.error(
+        t(
+          "doctor.messaging.unavailableDirectPatient",
+          "Messaging is only available for registered patients."
+        )
+      );
+      return null;
+    }
+    return pid;
+  };
+
+  const handleMessagePatient = (appointment: Appointment) => {
+    const pid = requireRegisteredPatient(appointment);
+    if (!pid) return;
+    navigate(`/messages?recipient=${pid}`);
+  };
+
+  const handleScheduleAppointment = (appointment: Appointment) => {
+    const patientParam = appointment.patient_id ? `&patient=${appointment.patient_id}` : "";
+    navigate(`/doctor-dashboard?section=calendar${patientParam}`);
+  };
+
+  const requestStartAppointment = async (appointment: Appointment) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("request-start-appointment", {
+        body: { appointment_id: appointment.id },
+      });
+      if (error) throw error;
+      return data as any;
+    } catch (e: any) {
+      console.error("request-start-appointment failed", e);
+      toast.error(e?.message || "Failed to start appointment");
+      return null;
+    }
+  };
+
+  const handleStartAppointment = async (appointment: Appointment) => {
+    const res = await requestStartAppointment(appointment);
+    if (!res) return;
+
+    if (!res.ok) {
+      toast.error(res.error || "Failed to start appointment");
+      return;
+    }
+
+    const apptType =
+      res.appointment?.appointment_type || appointment.appointment_type || "in_person";
+
+    if (res.can_start) {
+      toast.success(
+        apptType === "video"
+          ? t("doctor.appointmentDetails.videoReady", "Video consultation is ready.")
+          : t("doctor.appointmentDetails.started", "Appointment started.")
+      );
+
+      if (apptType === "video" && res.consultation?.room_url) {
+        navigate(`/video/${res.consultation.room_url}?join=true`);
+      }
+      return;
+    }
+
+    if (apptType === "video") {
+      toast.info(
+        t(
+          "doctor.appointmentDetails.waitingPatient",
+          "Waiting for patient to confirm and request start."
+        )
+      );
+    } else {
+      toast.info(
+        t(
+          "doctor.appointmentDetails.startRequested",
+          "Start request sent. Waiting for the other party."
+        )
+      );
+    }
+  };
+
   const handlePatientClick = async () => {
     if (!selectedAppointment) return;
-    await fetchPatientDetails(selectedAppointment);
+    if (!selectedAppointment.patient_id) {
+      toast.error(
+        t(
+          "doctor.patientDetails.unavailableDirectPatient",
+          "Patient details are only available for registered patients."
+        )
+      );
+      return;
+    }
+    await fetchPatientDetails(selectedAppointment.patient_id);
     setShowPatientModal(true);
   };
 
@@ -304,7 +279,7 @@ export const UpcomingAppointmentCard = ({ appointments }: UpcomingAppointmentCar
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    if (monthDiff < 0 || monthDiff === 0 && today.getDate() < birthDate.getDate()) {
       age--;
     }
     return age;
@@ -312,16 +287,11 @@ export const UpcomingAppointmentCard = ({ appointments }: UpcomingAppointmentCar
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "confirmed":
-        return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400";
-      case "pending":
-        return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400";
-      case "completed":
-        return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
-      case "cancelled":
-        return "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
-      default:
-        return "bg-muted text-muted-foreground";
+      case 'confirmed': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
+      case 'pending': return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
+      case 'completed': return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+      case 'cancelled': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+      default: return 'bg-muted text-muted-foreground';
     }
   };
 
@@ -330,6 +300,11 @@ export const UpcomingAppointmentCard = ({ appointments }: UpcomingAppointmentCar
     const today = new Date();
     return date.toDateString() === today.toDateString();
   };
+
+  // Get the current or next upcoming appointment
+  const currentOrNextAppointment = upcomingAppointments.length > 0 
+    ? upcomingAppointments[0] 
+    : null;
 
   if (!currentOrNextAppointment) {
     return (
@@ -353,56 +328,91 @@ export const UpcomingAppointmentCard = ({ appointments }: UpcomingAppointmentCar
 
   return (
     <>
-      <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
+      <Card 
+        className="cursor-pointer hover:shadow-md transition-shadow border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10"
+        onClick={() => handleAppointmentClick(currentOrNextAppointment)}
+      >
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg flex items-center gap-2">
-              <Clock className="w-5 h-5 text-primary" />
-              {t("doctor.currentAppointment.title", "Current/Upcoming Appointment")}
+              <Activity className="w-5 h-5 text-primary" />
+              {isToday(currentOrNextAppointment.appointment_date) 
+                ? t("doctor.currentAppointment.today", "Today's Appointment")
+                : t("doctor.currentAppointment.upcoming", "Next Appointment")}
             </CardTitle>
-            <Badge variant="secondary" className="bg-primary/10 text-primary">
-              {isToday(currentOrNextAppointment.appointment_date) ? t("doctor.currentAppointment.today", "Today") : t("doctor.currentAppointment.upcoming", "Upcoming")}
+            <Badge className={getStatusColor(currentOrNextAppointment.status)}>
+              {currentOrNextAppointment.status}
             </Badge>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold text-lg">{currentOrNextAppointment.patient_name || "Patient"}</h3>
-                <p className="text-muted-foreground flex items-center gap-1">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-14 w-14 border-2 border-primary/20">
+              <AvatarImage src={currentOrNextAppointment.patient_avatar} />
+              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                {currentOrNextAppointment.patient_name?.split(' ').map(n => n[0]).join('') || 'P'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <h3 className="font-semibold text-lg">{currentOrNextAppointment.patient_name || 'Patient'}</h3>
+              <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                <span className="flex items-center gap-1">
                   <Calendar className="w-4 h-4" />
-                  {format(new Date(currentOrNextAppointment.appointment_date), "EEEE, MMMM dd")}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="font-medium text-primary">
+                  {format(new Date(currentOrNextAppointment.appointment_date), 'MMM dd, yyyy')}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Clock className="w-4 h-4" />
                   {currentOrNextAppointment.start_time} - {currentOrNextAppointment.end_time}
-                </p>
-                <Badge className={getStatusColor(currentOrNextAppointment.status)}>{currentOrNextAppointment.status}</Badge>
+                </span>
               </div>
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="outline" onClick={() => handleAppointmentClick(currentOrNextAppointment)} className="flex-1">
-                {t("doctor.currentAppointment.viewDetails", "View Details")}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleMessagePatient(currentOrNextAppointment);
+                }}
+                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              >
+                <MessageSquare className="w-4 h-4 mr-2" />
+                {t("doctor.currentAppointment.message", "Message")}
               </Button>
 
               <Button
                 size="sm"
-                variant="default"
-                onClick={() => handleStartVideoOrAppointment(currentOrNextAppointment)}
-                disabled={starting}
-                className="flex-1 gap-2"
+                variant="outline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleScheduleAppointment(currentOrNextAppointment);
+                }}
+                className="text-green-600 hover:text-green-700 hover:bg-green-50"
               >
-                <Video className="w-4 h-4" />
-                {starting
-                  ? t("doctor.currentAppointment.starting", "Starting…")
-                  : (currentOrNextAppointment.appointment_type || "in_person") === "video"
-                    ? t("doctor.appointmentDetails.videoCall", "Start Video Call")
-                    : t("doctor.appointmentDetails.start", "Start Appointment")}
+                <CalendarPlus className="w-4 h-4 mr-2" />
+                {t("doctor.currentAppointment.followUp", "Follow-up")}
+              </Button>
+
+              <Button
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleStartAppointment(currentOrNextAppointment);
+                }}
+              >
+                {(currentOrNextAppointment.appointment_type || "in_person") === "video" ? (
+                  <Video className="w-4 h-4 mr-2" />
+                ) : (
+                  <Stethoscope className="w-4 h-4 mr-2" />
+                )}
+                {(currentOrNextAppointment.appointment_type || "in_person") === "video"
+                  ? t("doctor.currentAppointment.startVideo", "Start Video")
+                  : t("doctor.currentAppointment.start", "Start")}
               </Button>
             </div>
+
+            <ChevronRight className="w-5 h-5 text-muted-foreground" />
           </div>
         </CardContent>
       </Card>
@@ -419,20 +429,21 @@ export const UpcomingAppointmentCard = ({ appointments }: UpcomingAppointmentCar
 
           {selectedAppointment && (
             <div className="space-y-6">
+              {/* Appointment Info */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <span className="text-sm text-muted-foreground">{t("doctor.appointmentDetails.date", "Date")}</span>
-                  <p className="font-medium">{format(new Date(selectedAppointment.appointment_date), "EEEE, MMMM dd, yyyy")}</p>
+                  <p className="font-medium">{format(new Date(selectedAppointment.appointment_date), 'EEEE, MMMM dd, yyyy')}</p>
                 </div>
                 <div className="space-y-1">
                   <span className="text-sm text-muted-foreground">{t("doctor.appointmentDetails.time", "Time")}</span>
-                  <p className="font-medium">
-                    {selectedAppointment.start_time} - {selectedAppointment.end_time}
-                  </p>
+                  <p className="font-medium">{selectedAppointment.start_time} - {selectedAppointment.end_time}</p>
                 </div>
                 <div className="space-y-1">
                   <span className="text-sm text-muted-foreground">{t("doctor.appointmentDetails.status", "Status")}</span>
-                  <Badge className={getStatusColor(selectedAppointment.status)}>{selectedAppointment.status}</Badge>
+                  <Badge className={getStatusColor(selectedAppointment.status)}>
+                    {selectedAppointment.status}
+                  </Badge>
                 </div>
                 {selectedAppointment.notes && (
                   <div className="space-y-1 col-span-2">
@@ -442,6 +453,7 @@ export const UpcomingAppointmentCard = ({ appointments }: UpcomingAppointmentCar
                 )}
               </div>
 
+              {/* Quick Action Buttons */}
               <div className="flex flex-wrap gap-2 pt-4 border-t">
                 <Button
                   size="sm"
@@ -452,7 +464,7 @@ export const UpcomingAppointmentCard = ({ appointments }: UpcomingAppointmentCar
                   <MessageSquare className="w-4 h-4 mr-2" />
                   {t("doctor.appointmentDetails.message", "Message Patient")}
                 </Button>
-
+                
                 <Button
                   size="sm"
                   variant="outline"
@@ -462,33 +474,40 @@ export const UpcomingAppointmentCard = ({ appointments }: UpcomingAppointmentCar
                   <CalendarPlus className="w-4 h-4 mr-2" />
                   {t("doctor.appointmentDetails.schedule", "Schedule Follow-up")}
                 </Button>
-
+                
                 <Button
                   size="sm"
                   variant="default"
-                  onClick={() => handleStartVideoOrAppointment(selectedAppointment)}
-                  disabled={starting}
-                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                  onClick={() => handleStartAppointment(selectedAppointment)}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
-                  <Video className="w-4 h-4 mr-2" />
-                  {starting
-                    ? t("doctor.currentAppointment.starting", "Starting…")
-                    : (selectedAppointment.appointment_type || "in_person") === "video"
-                      ? t("doctor.appointmentDetails.videoCall", "Start Video Call")
-                      : t("doctor.appointmentDetails.start", "Start Appointment")}
+                  {(selectedAppointment.appointment_type || "in_person") === "video" ? (
+                    <Video className="w-4 h-4 mr-2" />
+                  ) : (
+                    <Stethoscope className="w-4 h-4 mr-2" />
+                  )}
+                  {(selectedAppointment.appointment_type || "in_person") === "video"
+                    ? t("doctor.appointmentDetails.startVideo", "Start Video Consultation")
+                    : t("doctor.appointmentDetails.startAppointment", "Start Appointment")}
                 </Button>
               </div>
 
-              <Card className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={handlePatientClick}>
+              {/* Patient Info Card */}
+              <Card 
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={handlePatientClick}
+              >
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <Avatar className="h-12 w-12">
                         <AvatarImage src={selectedAppointment.patient_avatar} />
-                        <AvatarFallback>{selectedAppointment.patient_name?.split(" ").map((n) => n[0]).join("") || "P"}</AvatarFallback>
+                        <AvatarFallback>
+                          {selectedAppointment.patient_name?.split(' ').map(n => n[0]).join('') || 'P'}
+                        </AvatarFallback>
                       </Avatar>
                       <div>
-                        <h4 className="font-semibold">{selectedAppointment.patient_name || "Patient"}</h4>
+                        <h4 className="font-semibold">{selectedAppointment.patient_name || 'Patient'}</h4>
                         <div className="flex items-center gap-3 text-sm text-muted-foreground">
                           {selectedAppointment.patient_email && (
                             <span className="flex items-center gap-1">
@@ -524,246 +543,224 @@ export const UpcomingAppointmentCard = ({ appointments }: UpcomingAppointmentCar
             <DialogTitle className="flex items-center gap-3">
               <Avatar className="h-10 w-10">
                 <AvatarImage src={patientDetails?.avatar_url} />
-                <AvatarFallback>{patientDetails?.full_name?.split(" ").map((n) => n[0]).join("") || "P"}</AvatarFallback>
+                <AvatarFallback>
+                  {patientDetails?.full_name?.split(' ').map(n => n[0]).join('') || 'P'}
+                </AvatarFallback>
               </Avatar>
-              {patientDetails?.full_name || "Patient"}
+              {patientDetails?.full_name || 'Patient'}
             </DialogTitle>
           </DialogHeader>
 
-          {loading ? (
+          {loadingPatientData ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                <p className="mt-2 text-sm text-muted-foreground">{t("doctor.patientDetails.loading", "Loading patient information...")}</p>
+              </div>
             </div>
-          ) : (
-            <Tabs defaultValue="overview" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="overview">{t("doctor.patientDetails.overview", "Overview")}</TabsTrigger>
-                <TabsTrigger value="medical">{t("doctor.patientDetails.medical", "Medical Records")}</TabsTrigger>
-                <TabsTrigger value="medications">{t("doctor.patientDetails.medications", "Medications")}</TabsTrigger>
-                <TabsTrigger value="treatments">{t("doctor.patientDetails.treatments", "Treatments")}</TabsTrigger>
-                <TabsTrigger value="history">{t("doctor.patientDetails.history", "History")}</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="overview" className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <User className="w-4 h-4" />
-                        {t("doctor.patientDetails.personalInfo", "Personal Information")}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3 text-sm">
-                      {patientDetails?.date_of_birth && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">{t("doctor.patientDetails.age", "Age")}:</span>
-                          <span>{calculateAge(patientDetails.date_of_birth)} years</span>
-                        </div>
-                      )}
-
-                      {patientDetails?.gender && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">{t("doctor.patientDetails.gender", "Gender")}:</span>
-                          <span className="capitalize">{patientDetails.gender}</span>
-                        </div>
-                      )}
-
-                      {patientDetails?.email && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground flex items-center gap-1">
-                            <Mail className="w-3 h-3" />
-                            {t("doctor.patientDetails.email", "Email")}:
-                          </span>
-                          <span>{patientDetails.email}</span>
-                        </div>
-                      )}
-
-                      {patientDetails?.phone && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground flex items-center gap-1">
-                            <Phone className="w-3 h-3" />
-                            {t("doctor.patientDetails.phone", "Phone")}:
-                          </span>
+          ) : patientDetails ? (
+            <div className="space-y-6">
+              {/* Patient Basic Info */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <User className="w-5 h-5 text-primary" />
+                    {t("doctor.patientDetails.basicInfo", "Basic Information")}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm">
+                        <Mail className="w-4 h-4 text-muted-foreground" />
+                        <span>{patientDetails.email}</span>
+                      </div>
+                      {patientDetails.phone && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Phone className="w-4 h-4 text-muted-foreground" />
                           <span>{patientDetails.phone}</span>
                         </div>
                       )}
-
-                      {patientDetails?.address && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {t("doctor.patientDetails.address", "Address")}:
-                          </span>
-                          <span className="text-right">{patientDetails.address}</span>
+                      {patientDetails.address && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <MapPin className="w-4 h-4 text-muted-foreground" />
+                          <span>{patientDetails.address}</span>
                         </div>
                       )}
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <Activity className="w-4 h-4" />
-                        {t("doctor.patientDetails.healthSummary", "Health Summary")}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-                        <FileText className="w-5 h-5 text-blue-600" />
-                        <div>
-                          <p className="font-medium text-sm">{medicalRecords.length} Records</p>
-                          <p className="text-xs text-muted-foreground">Medical history items</p>
+                    </div>
+                    <div className="space-y-2">
+                      {patientDetails.date_of_birth && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Calendar className="w-4 h-4 text-muted-foreground" />
+                          <span>
+                            {format(new Date(patientDetails.date_of_birth), 'MMM dd, yyyy')}
+                            {calculateAge(patientDetails.date_of_birth) && (
+                              <span className="text-muted-foreground ml-2">
+                                ({calculateAge(patientDetails.date_of_birth)} years)
+                              </span>
+                            )}
+                          </span>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-                        <Pill className="w-5 h-5 text-green-600" />
-                        <div>
-                          <p className="font-medium text-sm">{medications.length} Medications</p>
-                          <p className="text-xs text-muted-foreground">Active and past</p>
+                      )}
+                      {patientDetails.gender && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <User className="w-4 h-4 text-muted-foreground" />
+                          <span>{patientDetails.gender}</span>
                         </div>
+                      )}
+                      <div className="flex items-center gap-2 text-sm">
+                        <Clock className="w-4 h-4 text-muted-foreground" />
+                        <span>
+                          {t("doctor.patientDetails.memberSince", "Member since")} {format(new Date(patientDetails.created_at), 'MMM yyyy')}
+                        </span>
                       </div>
-                      <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-                        <Stethoscope className="w-5 h-5 text-purple-600" />
-                        <div>
-                          <p className="font-medium text-sm">{treatmentPlans.length} Treatment Plans</p>
-                          <p className="text-xs text-muted-foreground">Current and archived</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="medical" className="space-y-4">
-                {medicalRecords.length === 0 ? (
-                  <div className="text-center py-12">
-                    <AlertCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-muted-foreground">{t("doctor.patientDetails.noRecords", "No medical records found")}</p>
+                    </div>
                   </div>
-                ) : (
-                  <div className="space-y-3">
-                    {medicalRecords.map((record) => (
+                </CardContent>
+              </Card>
+
+              {/* Tabs for Medical Info */}
+              <Tabs defaultValue="records" className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="records" className="flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    {t("doctor.patientDetails.medicalRecords", "Records")}
+                  </TabsTrigger>
+                  <TabsTrigger value="medications" className="flex items-center gap-2">
+                    <Pill className="w-4 h-4" />
+                    {t("doctor.patientDetails.medications", "Medications")}
+                  </TabsTrigger>
+                  <TabsTrigger value="treatment" className="flex items-center gap-2">
+                    <Heart className="w-4 h-4" />
+                    {t("doctor.patientDetails.treatmentPlans", "Treatment")}
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* Medical Records Tab */}
+                <TabsContent value="records" className="space-y-4">
+                  {medicalRecords.length > 0 ? (
+                    medicalRecords.map(record => (
                       <Card key={record.id}>
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between">
-                            <div>
+                            <div className="space-y-1">
                               <h4 className="font-semibold">{record.title}</h4>
                               <p className="text-sm text-muted-foreground">
-                                {format(new Date(record.record_date), "MMM dd, yyyy")} • {record.record_type}
+                                {record.record_type} • {format(new Date(record.record_date), 'MMM dd, yyyy')}
                               </p>
-                              {record.description && <p className="text-sm mt-2">{record.description}</p>}
+                              {record.description && (
+                                <p className="text-sm mt-2">{record.description}</p>
+                              )}
+                              <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">
+                                {record.doctor_name && (
+                                  <span>{t("doctor.patientDetails.by", "By")} {record.doctor_name}</span>
+                                )}
+                                {record.practice_name && (
+                                  <span>{record.practice_name}</span>
+                                )}
+                              </div>
                             </div>
-                            <Badge variant="outline">{record.record_type}</Badge>
+                            <FileText className="w-5 h-5 text-muted-foreground" />
                           </div>
                         </CardContent>
                       </Card>
-                    ))}
-                  </div>
-                )}
-              </TabsContent>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <FileText className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+                      <p className="text-muted-foreground">{t("doctor.patientDetails.noRecords", "No medical records found")}</p>
+                    </div>
+                  )}
+                </TabsContent>
 
-              <TabsContent value="medications" className="space-y-4">
-                {medications.length === 0 ? (
-                  <div className="text-center py-12">
-                    <AlertCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-muted-foreground">{t("doctor.patientDetails.noMedications", "No medications found")}</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {medications.map((med) => (
+                {/* Medications Tab */}
+                <TabsContent value="medications" className="space-y-4">
+                  {medications.length > 0 ? (
+                    medications.map(med => (
                       <Card key={med.id}>
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between">
-                            <div>
+                            <div className="space-y-1">
                               <h4 className="font-semibold">{med.name}</h4>
                               <p className="text-sm text-muted-foreground">
                                 {med.dosage} • {med.frequency}
                               </p>
-                              {med.instructions && <p className="text-sm mt-2">{med.instructions}</p>}
-                              <p className="text-xs text-muted-foreground mt-2">
-                                Started: {format(new Date(med.start_date), "MMM dd, yyyy")}
-                                {med.end_date ? ` • Ended: ${format(new Date(med.end_date), "MMM dd, yyyy")}` : ""}
+                              <p className="text-xs text-muted-foreground">
+                                {format(new Date(med.start_date), 'MMM dd, yyyy')}
+                                {med.end_date && ` - ${format(new Date(med.end_date), 'MMM dd, yyyy')}`}
                               </p>
+                              {med.instructions && (
+                                <p className="text-sm mt-2">{med.instructions}</p>
+                              )}
                             </div>
-                            <Badge variant={med.status === "active" ? "default" : "secondary"}>{med.status}</Badge>
+                            <Badge variant="outline" className="capitalize">
+                              {med.status}
+                            </Badge>
                           </div>
                         </CardContent>
                       </Card>
-                    ))}
-                  </div>
-                )}
-              </TabsContent>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <Pill className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+                      <p className="text-muted-foreground">{t("doctor.patientDetails.noMedications", "No active medications")}</p>
+                    </div>
+                  )}
+                </TabsContent>
 
-              <TabsContent value="treatments" className="space-y-4">
-                {treatmentPlans.length === 0 ? (
-                  <div className="text-center py-12">
-                    <AlertCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-muted-foreground">{t("doctor.patientDetails.noTreatments", "No treatment plans found")}</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {treatmentPlans.map((plan) => (
+                {/* Treatment Plans Tab */}
+                <TabsContent value="treatment" className="space-y-4">
+                  {treatmentPlans.length > 0 ? (
+                    treatmentPlans.map(plan => (
                       <Card key={plan.id}>
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between">
-                            <div>
+                            <div className="space-y-1">
                               <h4 className="font-semibold">{plan.title}</h4>
-                              <p className="text-sm text-muted-foreground">
-                                Status: {plan.status} • Priority: {plan.priority}
-                              </p>
-                              {plan.description && <p className="text-sm mt-2">{plan.description}</p>}
-                              {plan.procedures && plan.procedures.length > 0 && (
-                                <div className="mt-3">
-                                  <p className="text-sm font-medium mb-2">Procedures:</p>
-                                  <div className="space-y-1">
-                                    {plan.procedures.map((proc: any) => (
-                                      <div key={proc.id} className="flex justify-between text-sm">
-                                        <span>{proc.procedure_name}</span>
-                                        <span className="text-muted-foreground">{proc.status}</span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <Badge variant="outline" className="capitalize">
+                                  {plan.status}
+                                </Badge>
+                                <Badge variant="secondary" className="capitalize">
+                                  {plan.priority}
+                                </Badge>
+                                {plan.estimated_cost && (
+                                  <span className="text-sm font-medium">
+                                    ${plan.estimated_cost}
+                                  </span>
+                                )}
+                              </div>
+                              {plan.description && (
+                                <p className="text-sm mt-2">{plan.description}</p>
                               )}
+                              <p className="text-xs text-muted-foreground mt-2">
+                                {t("doctor.patientDetails.created", "Created")} {format(new Date(plan.created_at), 'MMM dd, yyyy')}
+                              </p>
                             </div>
-                            <Badge variant="outline">{plan.status}</Badge>
+                            <Stethoscope className="w-5 h-5 text-muted-foreground" />
                           </div>
                         </CardContent>
                       </Card>
-                    ))}
-                  </div>
-                )}
-              </TabsContent>
-
-              <TabsContent value="history" className="space-y-4">
-                {appointmentHistory.length === 0 ? (
-                  <div className="text-center py-12">
-                    <AlertCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-muted-foreground">{t("doctor.patientDetails.noHistory", "No appointment history found")}</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {appointmentHistory.map((apt) => (
-                      <Card key={apt.id}>
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <h4 className="font-semibold">{format(new Date(apt.appointment_date), "MMM dd, yyyy")}</h4>
-                              <p className="text-sm text-muted-foreground">{apt.start_time}</p>
-                              {apt.notes && <p className="text-sm mt-2">{apt.notes}</p>}
-                            </div>
-                            <Badge className={getStatusColor(apt.status)}>{apt.status}</Badge>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <Heart className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+                      <p className="text-muted-foreground">{t("doctor.patientDetails.noTreatmentPlans", "No treatment plans")}</p>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <AlertCircle className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+              <p className="text-muted-foreground">{t("doctor.patientDetails.noPatientData", "Unable to load patient information")}</p>
+            </div>
           )}
         </DialogContent>
       </Dialog>
     </>
   );
 };
+
+export default UpcomingAppointmentCard;
