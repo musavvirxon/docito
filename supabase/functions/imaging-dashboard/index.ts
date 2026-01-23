@@ -81,7 +81,7 @@ function isMissingTableError(err: unknown) {
 }
 
 async function getPatientNames(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   patientIds: string[],
 ) {
   const unique = Array.from(new Set(patientIds)).filter(Boolean);

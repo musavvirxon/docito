@@ -149,7 +149,7 @@ async function ensureStripeCustomer(
 }
 
 async function isInvoicePaid(
-  service: ReturnType<typeof createClient>,
+  service: any,
   invoiceId: string,
   userId: string,
 ) {
@@ -160,11 +160,11 @@ async function isInvoicePaid(
     .eq("patient_id", userId)
     .maybeSingle();
   if (error) throw error;
-  return String(data?.status || "").toLowerCase() === "paid";
+  return String((data as any)?.status || "").toLowerCase() === "paid";
 }
 
 async function upsertPaidRecords(
-  service: ReturnType<typeof createClient>,
+  service: any,
   invoiceId: string,
   userId: string,
   providerPaymentId: string,
@@ -181,7 +181,7 @@ async function upsertPaidRecords(
     .maybeSingle();
   if (exErr) throw exErr;
 
-  if (!existingPay?.id) {
+  if (!(existingPay as any)?.id) {
     const { error: insErr } = await service.from("payments").insert({
       invoice_id: invoiceId,
       patient_id: userId,
@@ -191,13 +191,13 @@ async function upsertPaidRecords(
       currency: String(currency || "USD"),
       status: "paid",
       paid_at: now,
-    });
+    } as any);
     if (insErr) throw insErr;
   }
 
   const { error: invUpErr } = await service
     .from("invoices")
-    .update({ status: "paid", paid_at: now })
+    .update({ status: "paid", paid_at: now } as any)
     .eq("id", invoiceId)
     .eq("patient_id", userId);
   if (invUpErr) throw invUpErr;

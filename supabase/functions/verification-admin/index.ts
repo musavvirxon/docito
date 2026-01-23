@@ -34,7 +34,7 @@ async function requireEnv() {
   return { ok: true as const, url, anon, service };
 }
 
-async function assertSuperAdmin(authed: ReturnType<typeof createClient>) {
+async function assertSuperAdmin(authed: any) {
   const { data, error } = await authed.rpc("is_super_admin");
   if (error) throw error;
   return Boolean(data);
@@ -51,7 +51,7 @@ function safeText(v: unknown, max = 2000) {
 }
 
 async function notifySubmitter(
-  service: ReturnType<typeof createClient>,
+  service: any,
   submission: any,
   title: string,
   body: string,
@@ -62,7 +62,7 @@ async function notifySubmitter(
   const entityId = submission?.entity_id;
   if (!submitter || !entityType || !entityId) return;
 
-  await service.rpc("notify_user", {
+  await (service as any).rpc("notify_user", {
     p_user_id: submitter,
     p_entity_type: entityType,
     p_entity_id: entityId,

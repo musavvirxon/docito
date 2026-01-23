@@ -63,14 +63,14 @@ function errMeta(e: unknown) {
   };
 }
 
-async function assertPharmacyAccess(service: ReturnType<typeof createClient>, userId: string, pharmacyId: string) {
+async function assertPharmacyAccess(service: any, userId: string, pharmacyId: string) {
   const { data: ph, error: pErr } = await service
     .from("pharmacies")
     .select("id,admin_id,status")
     .eq("id", pharmacyId)
     .maybeSingle();
   if (pErr) throw pErr;
-  if (ph?.admin_id === userId) return { ok: true as const, role: "admin" as const };
+  if ((ph as any)?.admin_id === userId) return { ok: true as const, role: "admin" as const };
 
   const { data: staff, error: sErr } = await service
     .from("pharmacy_staff")
@@ -80,8 +80,9 @@ async function assertPharmacyAccess(service: ReturnType<typeof createClient>, us
     .maybeSingle();
   if (sErr) throw sErr;
 
-  if (!staff?.id || staff.status !== "active") return { ok: false as const, reason: "Not assigned to this pharmacy" };
-  if (staff.can_process_prescriptions !== true) return { ok: false as const, reason: "Missing permission: can_process_prescriptions" };
+  const s = staff as any;
+  if (!s?.id || s.status !== "active") return { ok: false as const, reason: "Not assigned to this pharmacy" };
+  if (s.can_process_prescriptions !== true) return { ok: false as const, reason: "Missing permission: can_process_prescriptions" };
   return { ok: true as const, role: "staff" as const };
 }
 
