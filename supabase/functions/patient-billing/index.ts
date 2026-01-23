@@ -100,7 +100,7 @@ function toCentsFromMajorUnits(amount: number) {
 }
 
 async function ensureStripeCustomer(
-  service: ReturnType<typeof createClient>,
+  service: any,
   stripeSecret: string,
   stripeVersion: string,
   userId: string,
@@ -114,7 +114,8 @@ async function ensureStripeCustomer(
 
   if (exErr) throw exErr;
 
-  if (existing?.stripe_customer_id) return String(existing.stripe_customer_id);
+  const ex = existing as any;
+  if (ex?.stripe_customer_id) return String(ex.stripe_customer_id);
 
   const form = new URLSearchParams();
   if (email) form.set("email", email);
@@ -125,22 +126,22 @@ async function ensureStripeCustomer(
 
   const stripeCustomerId = String(created.data.id);
 
-  if (existing?.id) {
+  if (ex?.id) {
     const { error: upErr } = await service
       .from("billing_customers")
       .update({
-        email: email ?? existing.email ?? null,
+        email: email ?? ex.email ?? null,
         stripe_customer_id: stripeCustomerId,
         updated_at: new Date().toISOString(),
-      })
-      .eq("id", existing.id);
+      } as any)
+      .eq("id", ex.id);
     if (upErr) throw upErr;
   } else {
     const { error: insErr } = await service.from("billing_customers").insert({
       user_id: userId,
       email: email ?? null,
       stripe_customer_id: stripeCustomerId,
-    });
+    } as any);
     if (insErr) throw insErr;
   }
 

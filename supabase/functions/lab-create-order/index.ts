@@ -52,14 +52,14 @@ function errMeta(e: unknown) {
   };
 }
 
-async function assertLabAccess(service: ReturnType<typeof createClient>, userId: string, labCenterId: string) {
+async function assertLabAccess(service: any, userId: string, labCenterId: string) {
   const { data: lab, error: lErr } = await service
     .from("lab_centers")
     .select("id,admin_id,status")
     .eq("id", labCenterId)
     .maybeSingle();
   if (lErr) throw lErr;
-  if (lab?.admin_id === userId) return { ok: true as const, role: "admin" as const };
+  if ((lab as any)?.admin_id === userId) return { ok: true as const, role: "admin" as const };
 
   const { data: staff, error: sErr } = await service
     .from("lab_staff")
@@ -69,7 +69,8 @@ async function assertLabAccess(service: ReturnType<typeof createClient>, userId:
     .maybeSingle();
   if (sErr) throw sErr;
 
-  if (!staff?.id || staff.status !== "active") return { ok: false as const, reason: "Not assigned to this lab" };
+  const s = staff as any;
+  if (!s?.id || s.status !== "active") return { ok: false as const, reason: "Not assigned to this lab" };
   return { ok: true as const, role: "staff" as const };
 }
 

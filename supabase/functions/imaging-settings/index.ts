@@ -112,35 +112,33 @@ function requireDbUrl(): string | null {
 }
 
 async function tableExists(client: Client, tableName: string): Promise<boolean> {
-  const res = await client.queryObject<{ exists: boolean }>(
-    `select exists (
+  const res = await client.queryObject<{ exists: boolean }>({
+    text: `select exists (
        select 1
        from information_schema.tables
        where table_schema = 'public' and table_name = $1
      ) as exists`,
-    tableName,
-  );
+    args: [tableName],
+  });
   return Boolean(res.rows?.[0]?.exists);
 }
 
 async function ensureCenterAccessPg(client: Client, userId: string, centerId: string): Promise<boolean> {
   // admin?
-  const admin = await client.queryObject<{ id: string }>(
-    `select id from public.imaging_centers where id = $1 and admin_id = $2 limit 1`,
-    centerId,
-    userId,
-  );
+  const admin = await client.queryObject<{ id: string }>({
+    text: `select id from public.imaging_centers where id = $1 and admin_id = $2 limit 1`,
+    args: [centerId, userId],
+  });
   if (admin.rows.length) return true;
 
   // staff?
-  const staff = await client.queryObject<{ id: string }>(
-    `select id
+  const staff = await client.queryObject<{ id: string }>({
+    text: `select id
      from public.imaging_staff
      where imaging_center_id = $1 and user_id = $2 and status = 'active'
      limit 1`,
-    centerId,
-    userId,
-  );
+    args: [centerId, userId],
+  });
   return staff.rows.length > 0;
 }
 
@@ -156,13 +154,13 @@ async function readCenterPg(client: Client, centerId: string) {
     modalities: string[] | null;
     accreditations: string[] | null;
     accepts_insurance: boolean | null;
-  }>(
-    `select id, name, phone, email, address, city, website, modalities, accreditations, accepts_insurance
+  }>({
+    text: `select id, name, phone, email, address, city, website, modalities, accreditations, accepts_insurance
      from public.imaging_centers
      where id = $1
      limit 1`,
-    centerId,
-  );
+    args: [centerId],
+  });
 
   if (!r.rows.length) throw new Error("Imaging center not found");
 
@@ -191,14 +189,14 @@ async function readSettingsPg(client: Client, centerId: string) {
     report_template: string | null;
     auto_accept_referrals: boolean | null;
     default_turnaround_hours: number | null;
-  }>(
-    `select imaging_center_id, timezone, billing_currency, notify_email, notify_sms, report_template,
+  }>({
+    text: `select imaging_center_id, timezone, billing_currency, notify_email, notify_sms, report_template,
             auto_accept_referrals, default_turnaround_hours
      from public.imaging_center_settings
      where imaging_center_id = $1
      limit 1`,
-    centerId,
-  );
+    args: [centerId],
+  });
 
   if (!r.rows.length) {
     return {
