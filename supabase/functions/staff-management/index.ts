@@ -92,7 +92,7 @@ async function getAuthedUser(req: Request, supabaseUrl: string, anonKey: string)
   return data.user;
 }
 
-async function isSuperAdmin(service: ReturnType<typeof createClient>, userId: string) {
+async function isSuperAdmin(service: any, userId: string) {
   const { data, error } = await service
     .from("user_roles")
     .select("role")
@@ -104,7 +104,7 @@ async function isSuperAdmin(service: ReturnType<typeof createClient>, userId: st
 }
 
 async function isEntityAdmin(
-  service: ReturnType<typeof createClient>,
+  service: any,
   entityType: EntityType,
   entityId: string,
   userId: string,
@@ -124,7 +124,7 @@ async function isEntityAdmin(
     .eq("id", entityId)
     .maybeSingle();
   if (error || !data) return false;
-  return data.admin_id === userId;
+  return (data as any).admin_id === userId;
 }
 
 function staffTable(entityType: EntityType) {

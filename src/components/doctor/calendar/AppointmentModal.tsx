@@ -1,7 +1,11 @@
-import { memo, useState, useCallback } from 'react';
+import { memo, useState, useCallback, useEffect } from 'react';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
-import { Calendar, Clock, Phone, Mail, FileText, Pill, Video, MessageSquare, CheckCircle, XCircle, Edit, ArrowRightLeft } from 'lucide-react';
+import { 
+  Calendar, Clock, Phone, Mail, FileText, Pill, Video, MessageSquare, 
+  CheckCircle, XCircle, Edit, ArrowRightLeft, Stethoscope, DollarSign,
+  ClipboardList, CalendarPlus, Check, AlertCircle
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -9,6 +13,8 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -16,6 +22,23 @@ import { useNavigate } from 'react-router-dom';
 import CancelAppointmentDialog from './CancelAppointmentDialog';
 import { RescheduleAppointmentModal } from '@/components/appointments/RescheduleAppointmentModal';
 import type { CalendarAppointment } from './types';
+
+interface AppointmentProcedure {
+  id: string;
+  procedure_id: string | null;
+  procedure_name?: string;
+  status: string | null;
+  estimated_cost: number | null;
+  procedure_notes: string | null;
+}
+
+interface TreatmentPlan {
+  id: string;
+  title: string;
+  status: string | null;
+  total_cost: number | null;
+  created_at: string;
+}
 
 interface AppointmentModalProps {
   appointment: CalendarAppointment | null;
@@ -39,6 +62,13 @@ const statusColors: Record<string, string> = {
   in_progress: 'bg-green-500/10 text-green-600 border-green-200',
 };
 
+const procedureStatusColors: Record<string, string> = {
+  pending: 'bg-amber-500/10 text-amber-600',
+  completed: 'bg-emerald-500/10 text-emerald-600',
+  cancelled: 'bg-destructive/10 text-destructive',
+  in_progress: 'bg-blue-500/10 text-blue-600',
+};
+
 const AppointmentModal = memo(({
   appointment,
   isOpen,
@@ -57,6 +87,111 @@ const AppointmentModal = memo(({
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
   const [isRescheduling, setIsRescheduling] = useState(false);
   const isRTL = i18n.language === 'ar';
+
+  // Procedures and treatment plans
+  const [appointmentProcedures, setAppointmentProcedures] = useState<AppointmentProcedure[]>([]);
+  const [treatmentPlans, setTreatmentPlans] = useState<TreatmentPlan[]>([]);
+  const [loadingProcedures, setLoadingProcedures] = useState(false);
+  const [loadingPlans, setLoadingPlans] = useState(false);
+
+  // Fetch procedures for this appointment
+  useEffect(() => {
+    if (!appointment?.id || !isOpen) return;
+
+    const fetchProcedures = async () => {
+      setLoadingProcedures(true);
+      try {
+        const { data, error } = await (supabase as any)
+          .from('appointment_procedures')
+          .select(`
+            id,
+            procedure_id,
+            status,
+            estimated_cost,
+            procedure_notes,
+            procedures:procedure_id(name, category)
+          `)
+          .eq('appointment_id', appointment.id);
+
+        if (error) throw error;
+
+        const procs: AppointmentProcedure[] = (data || []).map((p: any) => ({
+          id: p.id,
+          procedure_id: p.procedure_id,
+          procedure_name: p.procedures?.name || 'Unknown Procedure',
+          status: p.status,
+          estimated_cost: p.estimated_cost,
+          procedure_notes: p.procedure_notes,
+        }));
+
+        setAppointmentProcedures(procs);
+      } catch (err) {
+        console.error('Error fetching procedures:', err);
+      } finally {
+        setLoadingProcedures(false);
+      }
+    };
+
+    fetchProcedures();
+  }, [appointment?.id, isOpen]);
+
+  // Fetch treatment plans for this patient
+  useEffect(() => {
+    if (!appointment || !isOpen) return;
+
+    const patientId = appointment.patient_id || appointment.doctor_patient_id;
+    if (!patientId) return;
+
+    const fetchTreatmentPlans = async () => {
+      setLoadingPlans(true);
+      try {
+        const column = appointment.patient_id ? 'patient_id' : 'doctor_patient_id';
+        const { data, error } = await (supabase as any)
+          .from('treatment_plans')
+          .select('id, title, status, total_cost, created_at')
+          .eq(column, patientId)
+          .order('created_at', { ascending: false })
+          .limit(10);
+
+        if (error) throw error;
+        setTreatmentPlans(data || []);
+      } catch (err) {
+        console.error('Error fetching treatment plans:', err);
+      } finally {
+        setLoadingPlans(false);
+      }
+    };
+
+    fetchTreatmentPlans();
+  }, [appointment, isOpen]);
+
+  const handleMarkProcedureDone = useCallback(async (procedureId: string) => {
+    try {
+      const { error } = await (supabase as any)
+        .from('appointment_procedures')
+        .update({ status: 'completed' })
+        .eq('id', procedureId);
+
+      if (error) throw error;
+
+      setAppointmentProcedures(prev =>
+        prev.map(p => p.id === procedureId ? { ...p, status: 'completed' } : p)
+      );
+      toast.success('Procedure marked as completed');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to update procedure');
+    }
+  }, []);
+
+  const handleBookFollowUp = useCallback(() => {
+    if (!appointment) return;
+    // Navigate to calendar with prefilled patient
+    const patientKey = appointment.patient_id 
+      ? `reg:${appointment.patient_id}` 
+      : `dp:${appointment.doctor_patient_id}`;
+    navigate(`/doctor-dashboard?section=calendar&patient=${patientKey}&followup=true`);
+    onClose();
+  }, [appointment, navigate, onClose]);
 
   const handleCancelAppointment = useCallback(async (reason?: string) => {
     if (!appointment) return;
@@ -133,19 +268,20 @@ const AppointmentModal = memo(({
   if (!appointment) return null;
 
   const initials = appointment.patient_name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'P';
-
-  // HARD RULE: doctor can only start after patient accepts (confirmed)
   const isActiveAppointment = appointment.status === 'confirmed';
   const isToday = new Date(appointment.appointment_date).toDateString() === new Date().toDateString();
 
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader className="pb-0">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
               <Avatar className="h-14 w-14 border-2 border-background shadow-lg">
-                <AvatarImage src={appointment.patient_avatar} />
+                <AvatarImage src={appointment.patient_avatar || ''} />
                 <AvatarFallback className="bg-primary/10 text-primary font-semibold text-lg">
                   {initials}
                 </AvatarFallback>
@@ -209,13 +345,23 @@ const AppointmentModal = memo(({
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden flex flex-col">
           <TabsList className="w-full justify-start">
             <TabsTrigger value="details">{t('doctor.calendar.details', 'Details')}</TabsTrigger>
+            <TabsTrigger value="procedures" className="gap-1.5">
+              <Stethoscope className="h-3.5 w-3.5" />
+              Procedures
+              {appointmentProcedures.length > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                  {appointmentProcedures.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="treatment-plans" className="gap-1.5">
+              <ClipboardList className="h-3.5 w-3.5" />
+              Treatment Plans
+            </TabsTrigger>
             <TabsTrigger value="patient">{t('doctor.calendar.patient', 'Patient')}</TabsTrigger>
-            {appointment.source === 'referral' && (
-              <TabsTrigger value="referral">{t('doctor.calendar.referral', 'Referral')}</TabsTrigger>
-            )}
           </TabsList>
 
-          <div className="flex-1 overflow-y-auto">
+          <ScrollArea className="flex-1">
             <TabsContent value="details" className="mt-4 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
@@ -234,6 +380,12 @@ const AppointmentModal = memo(({
                   <div className="space-y-1">
                     <span className="text-sm text-muted-foreground">{t('doctor.calendar.procedure', 'Procedure')}</span>
                     <p className="font-medium">{appointment.procedure_name}</p>
+                    {appointment.procedure_cost && (
+                      <p className="text-sm text-muted-foreground flex items-center gap-1">
+                        <DollarSign className="h-3.5 w-3.5" />
+                        {formatCurrency(appointment.procedure_cost)}
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
@@ -251,6 +403,130 @@ const AppointmentModal = memo(({
               {appointment.status === 'pending' && (
                 <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-sm text-amber-700 dark:text-amber-300">
                   Waiting for patient acceptance. You can start after it becomes <b>confirmed</b>.
+                </div>
+              )}
+
+              {/* Quick booking actions */}
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={handleBookFollowUp} className="gap-2">
+                  <CalendarPlus className="h-4 w-4" />
+                  Book Follow-up
+                </Button>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="procedures" className="mt-4 space-y-4">
+              {loadingProcedures ? (
+                <div className="text-center py-8 text-muted-foreground">Loading procedures...</div>
+              ) : appointmentProcedures.length === 0 ? (
+                <div className="text-center py-8">
+                  <Stethoscope className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                  <p className="text-muted-foreground">No procedures assigned to this appointment</p>
+                  <Button variant="outline" size="sm" className="mt-4 gap-2">
+                    <Stethoscope className="h-4 w-4" />
+                    Add Procedure
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {appointmentProcedures.map((proc) => (
+                    <Card key={proc.id} className="border-border/50">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-medium">{proc.procedure_name}</h4>
+                              <Badge 
+                                variant="outline" 
+                                className={cn('text-xs capitalize', procedureStatusColors[proc.status || 'pending'])}
+                              >
+                                {proc.status || 'pending'}
+                              </Badge>
+                            </div>
+                            {proc.estimated_cost && (
+                              <p className="text-sm text-muted-foreground flex items-center gap-1">
+                                <DollarSign className="h-3.5 w-3.5" />
+                                {formatCurrency(proc.estimated_cost)}
+                              </p>
+                            )}
+                            {proc.procedure_notes && (
+                              <p className="text-sm text-muted-foreground">{proc.procedure_notes}</p>
+                            )}
+                          </div>
+                          {proc.status !== 'completed' && (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleMarkProcedureDone(proc.id)}
+                              className="gap-1.5"
+                            >
+                              <Check className="h-4 w-4" />
+                              Mark Done
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="treatment-plans" className="mt-4 space-y-4">
+              {loadingPlans ? (
+                <div className="text-center py-8 text-muted-foreground">Loading treatment plans...</div>
+              ) : treatmentPlans.length === 0 ? (
+                <div className="text-center py-8">
+                  <ClipboardList className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                  <p className="text-muted-foreground">No treatment plans for this patient</p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-4 gap-2"
+                    onClick={() => {
+                      navigate('/doctor-dashboard?section=treatment-planning');
+                      onClose();
+                    }}
+                  >
+                    <ClipboardList className="h-4 w-4" />
+                    Create Treatment Plan
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {treatmentPlans.map((plan) => (
+                    <Card 
+                      key={plan.id} 
+                      className="border-border/50 cursor-pointer hover:border-primary/30 transition-colors"
+                      onClick={() => {
+                        navigate(`/doctor-dashboard?section=treatment-planning&plan=${plan.id}`);
+                        onClose();
+                      }}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1">
+                            <h4 className="font-medium">{plan.title}</h4>
+                            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                              <Badge 
+                                variant="outline" 
+                                className={cn('text-xs capitalize', procedureStatusColors[plan.status || 'draft'])}
+                              >
+                                {plan.status || 'draft'}
+                              </Badge>
+                              {plan.total_cost && (
+                                <span className="flex items-center gap-1">
+                                  <DollarSign className="h-3.5 w-3.5" />
+                                  {formatCurrency(plan.total_cost)}
+                                </span>
+                              )}
+                              <span>{format(new Date(plan.created_at), 'MMM d, yyyy')}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
               )}
             </TabsContent>
@@ -286,17 +562,7 @@ const AppointmentModal = memo(({
                 {t('doctor.calendar.sendMessage', 'Send Message')}
               </Button>
             </TabsContent>
-
-            <TabsContent value="referral" className="mt-4 space-y-4">
-              <div className="p-4 rounded-lg bg-muted/50 text-center">
-                <ArrowRightLeft className="h-8 w-8 mx-auto mb-2 text-primary" />
-                <p className="font-medium">{t('doctor.calendar.referralAppointment', 'Referral Appointment')}</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {t('doctor.calendar.referralDetails', 'This appointment was created from a referral.')}
-                </p>
-              </div>
-            </TabsContent>
-          </div>
+          </ScrollArea>
         </Tabs>
 
         <Separator className="my-4" />

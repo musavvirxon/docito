@@ -52,7 +52,7 @@ export const useCalendarData = ({ doctorId, selectedDate, view }: UseCalendarDat
       let appts: any[] | null = null;
       let apptErr: any = null;
 
-      const q1 = await supabase
+      const q1 = await (supabase as any)
         .from("appointments")
         .select(
           `
@@ -67,12 +67,14 @@ export const useCalendarData = ({ doctorId, selectedDate, view }: UseCalendarDat
           notes,
           patient_id,
           doctor_patient_id,
+          procedure_id,
           patient_confirmation_status,
           start_requested_by_doctor,
           start_requested_by_patient,
           started_at,
           profiles:patient_id(full_name, avatar_url, phone, email),
-          doctor_patients:doctor_patient_id(full_name, phone, email)
+          doctor_patients:doctor_patient_id(full_name, phone, email),
+          procedures:procedure_id(id, name, category, default_cost, duration_minutes)
         `
         )
         .eq("doctor_id", doctorId)
@@ -83,7 +85,7 @@ export const useCalendarData = ({ doctorId, selectedDate, view }: UseCalendarDat
       if (!q1.error) {
         appts = q1.data || [];
       } else {
-        const q2 = await supabase
+        const q2 = await (supabase as any)
           .from("appointments")
           .select(
             `
@@ -98,6 +100,7 @@ export const useCalendarData = ({ doctorId, selectedDate, view }: UseCalendarDat
             notes,
             patient_id,
             doctor_patient_id,
+            procedure_id,
             patient_confirmation_status,
             start_requested_by_doctor,
             start_requested_by_patient,
@@ -128,6 +131,7 @@ export const useCalendarData = ({ doctorId, selectedDate, view }: UseCalendarDat
       const transformedAppts: CalendarAppointment[] = (appts || []).map((apt: any) => {
         const reg = apt.profiles;
         const dp = apt.doctor_patients;
+        const proc = apt.procedures;
 
         return {
           id: apt.id,
@@ -140,6 +144,10 @@ export const useCalendarData = ({ doctorId, selectedDate, view }: UseCalendarDat
           notes: apt.notes,
           patient_id: apt.patient_id,
           doctor_patient_id: apt.doctor_patient_id,
+          procedure_id: apt.procedure_id,
+          procedure_name: proc?.name || null,
+          procedure_category: proc?.category || null,
+          procedure_cost: proc?.default_cost || null,
           patient_name: reg?.full_name || dp?.full_name || "Patient",
           patient_avatar: reg?.avatar_url,
           patient_phone: reg?.phone || dp?.phone,

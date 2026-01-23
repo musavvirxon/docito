@@ -42,7 +42,12 @@ export interface CalendarAppointment {
   started_at?: string | null;
 
   referral_id?: string | null;
+  
+  // Procedure fields
+  procedure_id?: string | null;
   procedure_name?: string | null;
+  procedure_category?: string | null;
+  procedure_cost?: number | null;
 }
 
 export interface BlockedTime {
