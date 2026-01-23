@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
@@ -17,7 +16,6 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
 
 interface TreatmentPlan {
   id: string;
@@ -130,15 +128,13 @@ export const PatientTreatmentPlans = () => {
             const progress = plan.procedures_count 
               ? Math.round((plan.completed_count || 0) / plan.procedures_count * 100)
               : 0;
+            const isSelected = selectedPlan === plan.id;
 
             return (
               <Card 
                 key={plan.id} 
-                className={cn(
-                  "hover:shadow-md transition-all cursor-pointer",
-                  selectedPlan === plan.id && "ring-2 ring-primary"
-                )}
-                onClick={() => setSelectedPlan(selectedPlan === plan.id ? null : plan.id)}
+                className={`hover:shadow-md transition-all cursor-pointer ${isSelected ? 'ring-2 ring-primary' : ''}`}
+                onClick={() => setSelectedPlan(isSelected ? null : plan.id)}
               >
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between gap-4">
@@ -150,10 +146,10 @@ export const PatientTreatmentPlans = () => {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <h3 className="font-semibold text-lg">{plan.title}</h3>
-                            <Badge className={cn('text-xs', statusConfig.color)}>
+                            <span className={["inline-flex items-center text-xs px-2 py-0.5 rounded-md", statusConfig.color].join(" ")}>
                               <StatusIcon className="h-3 w-3 mr-1" />
                               {statusConfig.label}
-                            </Badge>
+                            </span>
                           </div>
                           {plan.notes && (
                             <p className="text-sm text-muted-foreground line-clamp-2">
@@ -195,14 +191,11 @@ export const PatientTreatmentPlans = () => {
                       </div>
                     </div>
 
-                    <ChevronRight className={cn(
-                      "h-5 w-5 text-muted-foreground transition-transform",
-                      selectedPlan === plan.id && "rotate-90"
-                    )} />
+                    <ChevronRight className={`h-5 w-5 text-muted-foreground transition-transform ${isSelected ? 'rotate-90' : ''}`} />
                   </div>
 
                   {/* Expanded Details */}
-                  {selectedPlan === plan.id && (
+                  {isSelected && (
                     <div className="mt-6 pt-6 border-t space-y-4">
                       <h4 className="font-medium">Treatment Procedures</h4>
                       <p className="text-sm text-muted-foreground">

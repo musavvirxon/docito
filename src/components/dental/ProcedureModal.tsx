@@ -135,6 +135,7 @@ export const ProcedureModal = ({
                     {filteredProcedures.map((procedure) => {
                       const Icon = CATEGORY_ICONS[procedure.category] || Stethoscope;
                       const isSelected = selectedProcedure === procedure.id;
+                      const colorClass = CATEGORY_COLORS[procedure.category] || "bg-gray-100 text-gray-700 border-gray-200";
 
                       return (
                         <motion.button
@@ -144,18 +145,17 @@ export const ProcedureModal = ({
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.9 }}
                           onClick={() => setSelectedProcedure(procedure.id)}
-                          className={`
-                            p-3 rounded-lg border-2 text-left transition-all
-                            ${isSelected 
+                          className={[
+                            "p-3 rounded-lg border-2 text-left transition-all",
+                            isSelected 
                               ? "border-primary bg-primary/10 ring-2 ring-primary/20" 
-                              : `${CATEGORY_COLORS[procedure.category]} hover:border-primary/50`
-                            }
-                          `}
+                              : [colorClass, "hover:border-primary/50"].join(" ")
+                          ].join(" ")}
                         >
                           <div className="flex items-center gap-2">
-                            <Icon className="w-4 h-4" />
+                            <Icon className="w-4 h-4 flex-shrink-0" />
                             <span className="text-sm font-medium">{procedure.name}</span>
-                            {isSelected && <Check className="w-4 h-4 text-primary ml-auto" />}
+                            {isSelected && <Check className="w-4 h-4 text-primary ml-auto flex-shrink-0" />}
                           </div>
                         </motion.button>
                       );

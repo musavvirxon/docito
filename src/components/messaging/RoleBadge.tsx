@@ -1,5 +1,4 @@
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
 import { 
   Stethoscope, 
   User, 
@@ -10,7 +9,6 @@ import {
   Shield,
   UserCog
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 interface RoleBadgeProps {
   role: string;
@@ -38,7 +36,7 @@ const RoleBadge: React.FC<RoleBadgeProps> = ({
   role, 
   size = 'sm',
   showIcon = true,
-  className 
+  className = ''
 }) => {
   const config = roleConfig[role] || { 
     label: role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
@@ -48,22 +46,16 @@ const RoleBadge: React.FC<RoleBadgeProps> = ({
   
   const Icon = config.icon;
   const isSmall = size === 'sm';
+  const sizeClasses = isSmall ? 'text-[10px] px-1.5 py-0' : 'text-xs px-2 py-0.5';
+  const iconClasses = isSmall ? 'mr-1 h-2.5 w-2.5' : 'mr-1 h-3 w-3';
 
   return (
-    <Badge 
-      variant="secondary"
-      className={cn(
-        'font-medium border-0',
-        config.variant,
-        isSmall ? 'text-[10px] px-1.5 py-0' : 'text-xs px-2 py-0.5',
-        className
-      )}
+    <span 
+      className={["inline-flex items-center font-medium border-0 rounded-md", config.variant, sizeClasses, className].filter(Boolean).join(" ")}
     >
-      {showIcon && (
-        <Icon className={cn('mr-1', isSmall ? 'h-2.5 w-2.5' : 'h-3 w-3')} />
-      )}
+      {showIcon && <Icon className={iconClasses} />}
       {config.label}
-    </Badge>
+    </span>
   );
 };
 
