@@ -13,58 +13,51 @@ export type BillingTx = {
   invoice_id: string | null;
   provider: string;
   provider_ref: string | null;
-  metadata: Record<string, unknown> | null;
+  metadata: Record<string, any>;
 };
 
-type BillingRes = {
-  ok: boolean;
-  currency: string;
+export type BillingInsightsResponse = {
+  action: "billing";
+  practiceId: string;
   period: { start: string; end: string; days: number };
   summary: {
-    totalRevenueCents: number;
-    pendingCents: number;
-    refundCents: number;
     transactionCount: number;
+    totalRevenueCents: number;
     completedCount: number;
+    completedCents: number;
     pendingCount: number;
+    pendingCents: number;
+    refundCount: number;
+    refundCents: number;
   };
   transactions: BillingTx[];
-  error?: string;
 };
 
 export type DailyTrendPoint = {
-  date: string; // YYYY-MM-DD
+  date: string;
   bookings: number;
   completed: number;
   revenue_cents: number;
 };
 
-type AnalyticsRes = {
-  ok: boolean;
-  currency: string;
+export type AnalyticsInsightsResponse = {
+  action: "analytics";
+  practiceId: string;
   period: { start: string; end: string; days: number };
   kpis: {
     totalRevenueCents: number;
-    totalAppointments: number;
-    completedAppointments: number;
-    canceledAppointments: number;
-    noShowAppointments: number;
-    uniquePatients: number;
-    averageRating: number;
-    patientRetentionPct: number;
-    noShowRatePct: number;
     revenueChangePct: number;
+    totalAppointments: number;
     appointmentsChangePct: number;
+    uniquePatients: number;
     patientsChangePct: number;
+    completedAppointments: number;
     completionRatePct: number;
-    prev: {
-      totalRevenueCents: number;
-      totalAppointments: number;
-      completedAppointments: number;
-    };
+    noShowRatePct: number;
+    patientRetentionPct: number;
+    averageRating: number;
   };
   dailyTrend: DailyTrendPoint[];
-  error?: string;
 };
 
 type BillingArgs = {
@@ -80,53 +73,91 @@ type AnalyticsArgs = {
   timeRange?: PracticeInsightsTimeRange;
 };
 
-type AnyArgs = BillingArgs | AnalyticsArgs;
+type HookReturn = {
+  data: BillingInsightsResponse | AnalyticsInsightsResponse | null;
+  loading: boolean;
+  error: string | null;
+  refetch: () => Promise<void>;
+};
 
-export function usePracticeInsights<T extends AnyArgs>(args: T | null) {
-  const [loading, setLoading] = useState(false);
+export function usePracticeInsights(args: BillingArgs | AnalyticsArgs | null): HookReturn {
+  const stableArgs = useMemo(() => {
+    if (!args) return null;
+    return {
+      action: args.action,
+      practiceId: args.practiceId,
+      timeRange: (args as any).timeRange ?? ("30d" as PracticeInsightsTimeRange),
+      limit: (args as any).limit as number | undefined,
+    };
+  }, [args]);
+
+  const [data, setData] = useState<BillingInsightsResponse | AnalyticsInsightsResponse | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<BillingRes | AnalyticsRes | null>(null);
 
-  const fetcher = useCallback(async () => {
-    if (!args?.practiceId) {
+  const refetch = useCallback(async () => {
+    if (!stableArgs?.practiceId) {
       setData(null);
       setError(null);
+      setLoading(false);
       return;
     }
 
     setLoading(true);
     setError(null);
 
-    try {
-      const { data: res, error: fnErr } = await supabase.functions.invoke<BillingRes | AnalyticsRes>(
-        "practice-insights",
-        {
-          body: args,
-        },
-      );
-
-      if (fnErr) throw fnErr;
-      if (!res?.ok) throw new Error((res as any)?.error || "Failed to load insights");
-      setData(res);
-    } catch (e: any) {
-      setData(null);
-      setError(e?.message || "Failed to load insights");
-    } finally {
+    const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
+    if (sessionErr) {
       setLoading(false);
+      setData(null);
+      setError(sessionErr.message || "Failed to read session");
+      return;
     }
-  }, [args]);
+
+    const token = sessionData?.session?.access_token;
+    if (!token) {
+      setLoading(false);
+      setData(null);
+      setError("Not authenticated");
+      return;
+    }
+
+    const payload: any = {
+      action: stableArgs.action,
+      practiceId: stableArgs.practiceId,
+      timeRange: stableArgs.timeRange,
+    };
+
+    if (stableArgs.action === "billing" && stableArgs.limit) {
+      payload.limit = stableArgs.limit;
+    }
+
+    const { data: fnData, error: fnError } = await supabase.functions.invoke("practice-insights", {
+      body: payload,
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (fnError) {
+      setLoading(false);
+      setData(null);
+      setError(fnError.message || "Failed to load insights");
+      return;
+    }
+
+    if (!fnData) {
+      setLoading(false);
+      setData(null);
+      setError("No data returned");
+      return;
+    }
+
+    setData(fnData as any);
+    setLoading(false);
+  }, [stableArgs]);
 
   useEffect(() => {
-    fetcher();
-  }, [fetcher]);
+    void refetch();
+  }, [refetch]);
 
-  return useMemo(
-    () => ({
-      loading,
-      error,
-      data: data as (T["action"] extends "billing" ? BillingRes : AnalyticsRes) | null,
-      refetch: fetcher,
-    }),
-    [data, error, fetcher, loading],
-  );
+  return { data, loading, error, refetch };
 }
