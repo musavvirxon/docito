@@ -159,9 +159,9 @@ const MonthView = memo(({
                       className={cn(
                         'text-[10px] truncate px-1.5 py-0.5 rounded',
                         apt.status === 'confirmed' && 'bg-emerald-500/10 text-emerald-700',
-                        apt.status === 'scheduled' && 'bg-blue-500/10 text-blue-700',
+                        apt.status === 'pending' && 'bg-amber-500/10 text-amber-700',
                         apt.status === 'completed' && 'bg-muted text-muted-foreground',
-                        apt.status === 'no-show' && 'bg-amber-500/10 text-amber-700'
+                        apt.status === 'no_show' && 'bg-red-500/10 text-red-700'
                       )}
                     >
                       {apt.start_time} {apt.patient_name?.split(' ')[0]}

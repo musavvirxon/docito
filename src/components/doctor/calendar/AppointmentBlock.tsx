@@ -16,17 +16,21 @@ interface AppointmentBlockProps {
 
 const typeIcons: Record<AppointmentType, typeof Video> = {
   'in-person': User,
+  'in_person': User,
   'video': Video,
   'home': Home,
+  'home_visit': Home,
   'chat': MessageSquare,
+  'messaging': MessageSquare,
+  'follow_up': User,
 };
 
 const statusColors: Record<string, string> = {
-  scheduled: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800',
+  pending: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800',
   confirmed: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
   completed: 'bg-muted text-muted-foreground border-border',
   canceled: 'bg-destructive/10 text-destructive border-destructive/20',
-  'no-show': 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800',
+  'no_show': 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800',
 };
 
 const AppointmentBlock = memo(({ appointment, compact = false, onClick, className }: AppointmentBlockProps) => {

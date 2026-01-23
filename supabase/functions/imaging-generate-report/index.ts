@@ -39,7 +39,7 @@ function trimOrNull(v: unknown) {
 }
 
 async function ensureCenterAccess(
-  serviceClient: ReturnType<typeof createClient>,
+  serviceClient: any,
   userId: string,
   centerId: string,
 ) {
@@ -51,7 +51,7 @@ async function ensureCenterAccess(
     .maybeSingle();
 
   if (adminErr) throw adminErr;
-  if (adminRow?.id) return true;
+  if ((adminRow as any)?.id) return true;
 
   const { data: staffRow, error: staffErr } = await serviceClient
     .from("imaging_staff")
@@ -62,7 +62,7 @@ async function ensureCenterAccess(
     .maybeSingle();
 
   if (staffErr) throw staffErr;
-  return Boolean(staffRow?.id);
+  return Boolean((staffRow as any)?.id);
 }
 
 function safeObj(v: unknown): Record<string, unknown> {

@@ -412,7 +412,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
 
       {/* Main Content */}
       <main className="container py-6">
-        <ResizablePanelGroup direction="horizontal" className="min-h-[calc(100vh-8rem)]">
+        <ResizablePanelGroup orientation="horizontal" className="min-h-[calc(100vh-8rem)]">
           {/* Left Panel - Session Tools */}
           <ResizablePanel defaultSize={65} minSize={40}>
             <div className="pr-4 h-full">

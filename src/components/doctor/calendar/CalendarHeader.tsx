@@ -26,18 +26,19 @@ interface CalendarHeaderProps {
 }
 
 const appointmentTypes: { value: AppointmentType; label: string }[] = [
-  { value: 'in-person', label: 'In-Person' },
+  { value: 'in_person', label: 'In-Person' },
   { value: 'video', label: 'Video Call' },
-  { value: 'home', label: 'Home Visit' },
-  { value: 'chat', label: 'Chat' },
+  { value: 'home_visit', label: 'Home Visit' },
+  { value: 'messaging', label: 'Chat' },
+  { value: 'follow_up', label: 'Follow-Up' },
 ];
 
 const statuses: { value: AppointmentStatus; label: string }[] = [
-  { value: 'scheduled', label: 'Scheduled' },
+  { value: 'pending', label: 'Pending' },
   { value: 'confirmed', label: 'Confirmed' },
   { value: 'completed', label: 'Completed' },
   { value: 'canceled', label: 'Canceled' },
-  { value: 'no-show', label: 'No Show' },
+  { value: 'no_show', label: 'No Show' },
 ];
 
 const CalendarHeader = memo(({

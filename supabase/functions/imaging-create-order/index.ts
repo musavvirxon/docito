@@ -58,14 +58,14 @@ function errMeta(e: unknown) {
   };
 }
 
-async function assertImagingAccess(service: ReturnType<typeof createClient>, userId: string, centerId: string) {
+async function assertImagingAccess(service: any, userId: string, centerId: string) {
   const { data: center, error: cErr } = await service
     .from("imaging_centers")
     .select("id,admin_id")
     .eq("id", centerId)
     .maybeSingle();
   if (cErr) throw cErr;
-  if (center?.admin_id === userId) return { ok: true as const, role: "admin" as const };
+  if ((center as any)?.admin_id === userId) return { ok: true as const, role: "admin" as const };
 
   const { data: staff, error: sErr } = await service
     .from("imaging_staff")
@@ -75,8 +75,9 @@ async function assertImagingAccess(service: ReturnType<typeof createClient>, use
     .maybeSingle();
   if (sErr) throw sErr;
 
-  if (!staff?.id || staff.status !== "active") return { ok: false as const, reason: "Not assigned to this imaging center" };
-  if (!staff.can_view_orders) return { ok: false as const, reason: "Missing permission: can_view_orders" };
+  const s = staff as any;
+  if (!s?.id || s.status !== "active") return { ok: false as const, reason: "Not assigned to this imaging center" };
+  if (!s.can_view_orders) return { ok: false as const, reason: "Missing permission: can_view_orders" };
   return { ok: true as const, role: "staff" as const };
 }
 
