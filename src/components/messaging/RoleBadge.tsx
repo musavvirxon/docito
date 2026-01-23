@@ -39,24 +39,26 @@ const RoleBadge: React.FC<RoleBadgeProps> = ({
   className = ''
 }) => {
   const config = roleConfig[role] || { 
-    label: role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
+    label: role.split('_').join(' ').replace(/\b\w/g, l => l.toUpperCase()), 
     icon: User, 
     variant: 'bg-muted text-muted-foreground' 
   };
   
   const Icon = config.icon;
   const isSmall = size === 'sm';
+  
+  const baseClasses = "inline-flex items-center font-medium border-0 rounded-md";
   const sizeClasses = isSmall ? 'text-[10px] px-1.5 py-0' : 'text-xs px-2 py-0.5';
   const iconClasses = isSmall ? 'mr-1 h-2.5 w-2.5' : 'mr-1 h-3 w-3';
+  const combinedClasses = `${baseClasses} ${config.variant} ${sizeClasses} ${className}`;
 
-  return (
-    <span 
-      className={["inline-flex items-center font-medium border-0 rounded-md", config.variant, sizeClasses, className].filter(Boolean).join(" ")}
-    >
-      {showIcon && <Icon className={iconClasses} />}
-      {config.label}
-    </span>
-  );
+  const children: React.ReactNode[] = [];
+  if (showIcon) {
+    children.push(React.createElement(Icon, { key: 'icon', className: iconClasses }));
+  }
+  children.push(config.label);
+
+  return React.createElement('span', { className: combinedClasses }, children);
 };
 
 export default RoleBadge;

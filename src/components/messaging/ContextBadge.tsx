@@ -1,5 +1,4 @@
 import React from 'react';
-import { Badge } from '@/components/ui/badge';
 import { Calendar, ArrowRightLeft, MessageSquare } from 'lucide-react';
 
 export type ContextType = 'general' | 'visit' | 'referral' | 'appointment';
@@ -41,17 +40,16 @@ const ContextBadge: React.FC<ContextBadgeProps> = ({
   const config = contextConfig[contextType] || contextConfig.general;
   const Icon = config.icon;
   const isSmall = size === 'sm';
+  
+  const baseClasses = "inline-flex items-center font-medium border-0 rounded-md";
   const sizeClasses = isSmall ? 'text-[10px] px-1.5 py-0' : 'text-xs px-2 py-0.5';
   const iconClasses = isSmall ? 'mr-1 h-2.5 w-2.5' : 'mr-1 h-3 w-3';
+  const combinedClasses = `${baseClasses} ${config.variant} ${sizeClasses} ${className}`;
 
-  return (
-    <span 
-      className={["inline-flex items-center font-medium border-0 rounded-md", config.variant, sizeClasses, className].filter(Boolean).join(" ")}
-    >
-      <Icon className={iconClasses} />
-      {config.label}
-    </span>
-  );
+  return React.createElement('span', { className: combinedClasses }, [
+    React.createElement(Icon, { key: 'icon', className: iconClasses }),
+    config.label
+  ]);
 };
 
 export default ContextBadge;

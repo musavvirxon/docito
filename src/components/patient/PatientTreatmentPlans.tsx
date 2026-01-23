@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -93,6 +93,16 @@ export const PatientTreatmentPlans = () => {
     return configs[status] || configs.pending;
   };
 
+  const getCardClassName = (isSelected: boolean): string => {
+    const base = "hover:shadow-md transition-all cursor-pointer";
+    return isSelected ? `${base} ring-2 ring-primary` : base;
+  };
+
+  const getChevronClassName = (isSelected: boolean): string => {
+    const base = "h-5 w-5 text-muted-foreground transition-transform";
+    return isSelected ? `${base} rotate-90` : base;
+  };
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -129,11 +139,14 @@ export const PatientTreatmentPlans = () => {
               ? Math.round((plan.completed_count || 0) / plan.procedures_count * 100)
               : 0;
             const isSelected = selectedPlan === plan.id;
+            const cardClassName = getCardClassName(isSelected);
+            const chevronClassName = getChevronClassName(isSelected);
+            const statusClassName = `inline-flex items-center text-xs px-2 py-0.5 rounded-md ${statusConfig.color}`;
 
             return (
               <Card 
                 key={plan.id} 
-                className={`hover:shadow-md transition-all cursor-pointer ${isSelected ? 'ring-2 ring-primary' : ''}`}
+                className={cardClassName}
                 onClick={() => setSelectedPlan(isSelected ? null : plan.id)}
               >
                 <CardContent className="p-6">
@@ -146,10 +159,10 @@ export const PatientTreatmentPlans = () => {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <h3 className="font-semibold text-lg">{plan.title}</h3>
-                            <span className={["inline-flex items-center text-xs px-2 py-0.5 rounded-md", statusConfig.color].join(" ")}>
-                              <StatusIcon className="h-3 w-3 mr-1" />
-                              {statusConfig.label}
-                            </span>
+                            {React.createElement('span', { className: statusClassName }, [
+                              React.createElement(StatusIcon, { key: 'icon', className: "h-3 w-3 mr-1" }),
+                              statusConfig.label
+                            ])}
                           </div>
                           {plan.notes && (
                             <p className="text-sm text-muted-foreground line-clamp-2">
@@ -159,7 +172,6 @@ export const PatientTreatmentPlans = () => {
                         </div>
                       </div>
 
-                      {/* Progress Bar */}
                       {plan.status === 'active' && (
                         <div className="space-y-2">
                           <div className="flex justify-between text-sm">
@@ -170,7 +182,6 @@ export const PatientTreatmentPlans = () => {
                         </div>
                       )}
 
-                      {/* Plan Details */}
                       <div className="flex flex-wrap gap-4 text-sm">
                         <div className="flex items-center gap-1 text-muted-foreground">
                           <Calendar className="h-4 w-4" />
@@ -191,10 +202,9 @@ export const PatientTreatmentPlans = () => {
                       </div>
                     </div>
 
-                    <ChevronRight className={`h-5 w-5 text-muted-foreground transition-transform ${isSelected ? 'rotate-90' : ''}`} />
+                    <ChevronRight className={chevronClassName} />
                   </div>
 
-                  {/* Expanded Details */}
                   {isSelected && (
                     <div className="mt-6 pt-6 border-t space-y-4">
                       <h4 className="font-medium">Treatment Procedures</h4>

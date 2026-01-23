@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -59,7 +58,6 @@ export const ProcedureModal = ({
   const [notes, setNotes] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
 
-  // Use database procedures if available, otherwise fallback to static list
   const proceduresList = dbProcedures?.length 
     ? dbProcedures.map(p => ({ id: p.code || p.id, name: p.name, category: p.category }))
     : DENTAL_PROCEDURES;
@@ -95,6 +93,14 @@ export const ProcedureModal = ({
     onOpenChange(false);
   };
 
+  const getButtonClassName = (isSelected: boolean, colorClass: string): string => {
+    const base = "p-3 rounded-lg border-2 text-left transition-all duration-200";
+    if (isSelected) {
+      return `${base} border-primary bg-primary/10 ring-2 ring-primary/20`;
+    }
+    return `${base} ${colorClass} hover:border-primary/50`;
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-lg">
@@ -106,7 +112,6 @@ export const ProcedureModal = ({
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Selected teeth display */}
           <div className="p-3 bg-muted/50 rounded-lg">
             <p className="text-sm text-muted-foreground mb-2">Selected Teeth:</p>
             <div className="flex flex-wrap gap-1">
@@ -118,7 +123,6 @@ export const ProcedureModal = ({
             </div>
           </div>
 
-          {/* Category tabs */}
           <Tabs value={activeCategory} onValueChange={setActiveCategory}>
             <TabsList className="flex flex-wrap h-auto gap-1">
               {categories.map((cat) => (
@@ -131,42 +135,30 @@ export const ProcedureModal = ({
             <TabsContent value={activeCategory} className="mt-3">
               <ScrollArea className="h-[200px]">
                 <div className="grid grid-cols-2 gap-2">
-                  <AnimatePresence mode="popLayout">
-                    {filteredProcedures.map((procedure) => {
-                      const Icon = CATEGORY_ICONS[procedure.category] || Stethoscope;
-                      const isSelected = selectedProcedure === procedure.id;
-                      const colorClass = CATEGORY_COLORS[procedure.category] || "bg-gray-100 text-gray-700 border-gray-200";
+                  {filteredProcedures.map((procedure) => {
+                    const Icon = CATEGORY_ICONS[procedure.category] || Stethoscope;
+                    const isSelected = selectedProcedure === procedure.id;
+                    const colorClass = CATEGORY_COLORS[procedure.category] || "bg-gray-100 text-gray-700 border-gray-200";
+                    const buttonClassName = getButtonClassName(isSelected, colorClass);
 
-                      return (
-                        <motion.button
-                          key={procedure.id}
-                          layout
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.9 }}
-                          onClick={() => setSelectedProcedure(procedure.id)}
-                          className={[
-                            "p-3 rounded-lg border-2 text-left transition-all",
-                            isSelected 
-                              ? "border-primary bg-primary/10 ring-2 ring-primary/20" 
-                              : [colorClass, "hover:border-primary/50"].join(" ")
-                          ].join(" ")}
-                        >
-                          <div className="flex items-center gap-2">
-                            <Icon className="w-4 h-4 flex-shrink-0" />
-                            <span className="text-sm font-medium">{procedure.name}</span>
-                            {isSelected && <Check className="w-4 h-4 text-primary ml-auto flex-shrink-0" />}
-                          </div>
-                        </motion.button>
-                      );
-                    })}
-                  </AnimatePresence>
+                    return React.createElement('button', {
+                      key: procedure.id,
+                      type: 'button',
+                      onClick: () => setSelectedProcedure(procedure.id),
+                      className: buttonClassName,
+                    }, 
+                      React.createElement('div', { className: "flex items-center gap-2" }, [
+                        React.createElement(Icon, { key: 'icon', className: "w-4 h-4 flex-shrink-0" }),
+                        React.createElement('span', { key: 'name', className: "text-sm font-medium" }, procedure.name),
+                        isSelected && React.createElement(Check, { key: 'check', className: "w-4 h-4 text-primary ml-auto flex-shrink-0" })
+                      ])
+                    );
+                  })}
                 </div>
               </ScrollArea>
             </TabsContent>
           </Tabs>
 
-          {/* Notes */}
           <div>
             <label className="text-sm font-medium mb-1 block">Notes (optional)</label>
             <Textarea
