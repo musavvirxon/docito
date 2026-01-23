@@ -21,31 +21,34 @@ const MessageFilters: React.FC<MessageFiltersProps> = ({
   onFilterChange,
   unreadCount = 0,
 }) => {
+  const getButtonClassName = (isActive: boolean): string => {
+    const base = "relative flex-1 h-8";
+    return isActive ? `${base} bg-background shadow-sm` : base;
+  };
+
   return (
     <div className="flex gap-1 p-1 bg-muted rounded-lg">
       {filters.map((filter) => {
         const Icon = filter.icon;
         const isActive = activeFilter === filter.value;
         const showBadge = filter.value === 'unread' && unreadCount > 0;
-        const activeClasses = isActive ? 'bg-background shadow-sm' : '';
+        const buttonClassName = getButtonClassName(isActive);
 
-        return (
-          <Button
-            key={filter.value}
-            variant={isActive ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => onFilterChange(filter.value)}
-            className={["relative flex-1 h-8", activeClasses].filter(Boolean).join(" ")}
-          >
-            <Icon className="h-3.5 w-3.5 mr-1.5" />
-            <span className="text-xs">{filter.label}</span>
-            {showBadge && (
-              <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center">
-                {unreadCount > 99 ? '99+' : unreadCount}
-              </span>
-            )}
-          </Button>
-        );
+        return React.createElement(Button, {
+          key: filter.value,
+          variant: isActive ? 'secondary' : 'ghost',
+          size: 'sm',
+          onClick: () => onFilterChange(filter.value),
+          className: buttonClassName,
+          children: [
+            React.createElement(Icon, { key: 'icon', className: "h-3.5 w-3.5 mr-1.5" }),
+            React.createElement('span', { key: 'label', className: "text-xs" }, filter.label),
+            showBadge && React.createElement('span', {
+              key: 'badge',
+              className: "absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center"
+            }, unreadCount > 99 ? '99+' : unreadCount)
+          ].filter(Boolean)
+        });
       })}
     </div>
   );
