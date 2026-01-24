@@ -201,20 +201,33 @@ export const useDoctorIntegration = () => {
     }
   }, [doctorProfile]);
 
-  // Diagnosis Library
+  // Diagnosis Library (using procedure_templates table)
   const fetchDiagnoses = useCallback(async () => {
     if (!doctorProfile) return;
     setDiagnosisLoading(true);
     try {
       const { data, error } = await (supabase as any)
-        .from("doctor_diagnosis_templates")
-        .select("id, doctor_id, title, icd10_code, description, tags, is_active, created_at, updated_at")
+        .from("procedure_templates")
+        .select("id, doctor_id, name, code, description, category, is_active, created_at, updated_at")
         .eq("doctor_id", doctorProfile.id)
-        .order("title", { ascending: true });
+        .order("name", { ascending: true });
       if (error) throw error;
-      setDiagnoses((data || []) as any);
+      // Map to expected diagnosis format
+      const mappedData = (data || []).map((item: any) => ({
+        id: item.id,
+        doctor_id: item.doctor_id,
+        title: item.name,
+        icd10_code: item.code,
+        description: item.description,
+        tags: item.category ? [item.category] : [],
+        is_active: item.is_active,
+        created_at: item.created_at,
+        updated_at: item.updated_at,
+      }));
+      setDiagnoses(mappedData as any);
     } catch (err: any) {
       console.error("Error fetching diagnoses:", err);
+      setDiagnoses([]);
     } finally {
       setDiagnosisLoading(false);
     }
@@ -431,20 +444,20 @@ export const useDoctorIntegration = () => {
     }
   };
 
-  // Diagnosis CRUD
+  // Diagnosis CRUD (using procedure_templates table)
   const addDiagnosis = async (diagnosis: any): Promise<{ success?: boolean; error?: string }> => {
     if (!doctorProfile) return { error: "No doctor profile found" };
     try {
       const payload = {
         doctor_id: doctorProfile.id,
-        title: String(diagnosis.title || "").trim(),
-        icd10_code: (diagnosis.icd10_code || null) as string | null,
+        name: String(diagnosis.title || "").trim(),
+        code: (diagnosis.icd10_code || null) as string | null,
         description: (diagnosis.description || null) as string | null,
-        tags: Array.isArray(diagnosis.tags) ? diagnosis.tags : [],
+        category: Array.isArray(diagnosis.tags) && diagnosis.tags.length > 0 ? diagnosis.tags[0] : null,
         is_active: diagnosis.is_active ?? true,
       };
-      if (!payload.title) return { error: "Title is required" };
-      const { error } = await (supabase as any).from("doctor_diagnosis_templates").insert(payload);
+      if (!payload.name) return { error: "Title is required" };
+      const { error } = await (supabase as any).from("procedure_templates").insert(payload);
       if (error) throw error;
       toast.success("Diagnosis added");
       refreshSeq.current += 1;
@@ -458,11 +471,15 @@ export const useDoctorIntegration = () => {
 
   const updateDiagnosis = async (id: string, updates: any): Promise<{ success?: boolean; error?: string }> => {
     try {
-      const payload: any = { ...updates };
-      if (payload.title != null) payload.title = String(payload.title).trim();
-      if (payload.tags != null && !Array.isArray(payload.tags)) payload.tags = [];
+      const payload: any = {};
+      if (updates.title != null) payload.name = String(updates.title).trim();
+      if (updates.icd10_code !== undefined) payload.code = updates.icd10_code;
+      if (updates.description !== undefined) payload.description = updates.description;
+      if (updates.tags != null) payload.category = Array.isArray(updates.tags) && updates.tags.length > 0 ? updates.tags[0] : null;
+      if (updates.is_active !== undefined) payload.is_active = updates.is_active;
+      
       const { error } = await (supabase as any)
-        .from("doctor_diagnosis_templates")
+        .from("procedure_templates")
         .update(payload)
         .eq("id", id);
       if (error) throw error;
@@ -479,7 +496,7 @@ export const useDoctorIntegration = () => {
   const deleteDiagnosis = async (id: string): Promise<{ success?: boolean; error?: string }> => {
     try {
       const { error } = await (supabase as any)
-        .from("doctor_diagnosis_templates")
+        .from("procedure_templates")
         .delete()
         .eq("id", id);
       if (error) throw error;
@@ -548,7 +565,7 @@ export const useDoctorIntegration = () => {
         .channel("doctor-diagnoses-changes")
         .on(
           "postgres_changes",
-          { event: "*", schema: "public", table: "doctor_diagnosis_templates", filter: `doctor_id=eq.${doctorProfile.id}` },
+          { event: "*", schema: "public", table: "procedure_templates", filter: `doctor_id=eq.${doctorProfile.id}` },
           bump
         )
         .subscribe(),

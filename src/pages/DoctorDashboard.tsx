@@ -242,29 +242,36 @@ const DoctorDashboardContent = () => {
   const renderContent = () => {
     switch (activeSection) {
       case "profile":
-        return <DoctorProfileSection doctorProfile={doctorProfile} />;
+        return <DoctorProfileSection />;
       case "services":
         return <DoctorServicesSection />;
       case "assigned-services":
-        return <DoctorServicesSection readOnly={true} assignedServices={doctorProfile?.practices?.name ? ["Clinic Services"] : []} />;
+        return <DoctorServicesSection />;
       case "schedule":
         return <DoctorScheduleSettingsSection />;
       case "calendar":
-        return <DoctorCalendarSection doctorId={doctorProfile?.id} practiceId={doctorProfile?.practice_id || undefined} />;
+        return <DoctorCalendarSection />;
       case "performance":
-        return <DoctorPerformanceSection doctorProfile={doctorProfile} stats={stats} />;
+        return <DoctorPerformanceSection doctorProfile={{
+          id: doctorProfile.id,
+          specialty: doctorProfile.specialty || '',
+          verified: doctorProfile.verified || false,
+          average_rating: doctorProfile.average_rating || 0,
+          num_reviews: doctorProfile.num_reviews || 0,
+          appointment_count: doctorProfile.appointment_count || 0,
+        }} stats={stats} />;
       case "financial-stats":
         return <DoctorFinancialStatsSection />;
       case "clinic-finder":
         return <ClinicFinderSection />;
       case "settings":
-        return <DoctorSettingsSection doctorProfile={doctorProfile} />;
+        return <DoctorSettingsSection />;
       case "assigned-patients":
-        return <DoctorPatientsSection doctorId={doctorProfile.id} />;
+        return <DoctorPatientsSection />;
       case "messages":
         return <DoctorMessagingSection />;
       case "treatment-planning":
-        return <TreatmentPlanningSection doctorId={doctorProfile.id} />;
+        return <TreatmentPlanningSection />;
       case "procedure-library":
         return <DoctorProcedureLibrarySection />;
       default:

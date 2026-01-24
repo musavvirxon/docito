@@ -142,25 +142,41 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
       setPatientDetails(patient as PatientDetails);
 
       // Fetch medical records
-      const { data: records, error: recordsError } = await supabase
+      const { data: records, error: recordsError } = await (supabase as any)
         .from('medical_records')
         .select('*')
         .eq('patient_id', patientId)
-        .order('date', { ascending: false });
+        .order('record_date', { ascending: false });
 
       if (recordsError) console.error('Error fetching medical records:', recordsError);
-      setMedicalRecords(records || []);
+      // Map records to expected format
+      const mappedRecords = (records || []).map((r: any) => ({
+        ...r,
+        date: r.record_date || r.created_at
+      }));
+      setMedicalRecords(mappedRecords);
 
       // Fetch current treatments
-      const { data: treatments, error: treatmentsError } = await supabase
-        .from('treatments')
+      const { data: treatments, error: treatmentsError } = await (supabase as any)
+        .from('treatment_plans')
         .select('*')
         .eq('patient_id', patientId)
-        .in('status', ['active', 'ongoing'])
-        .order('start_date', { ascending: false });
+        .in('status', ['active', 'pending'])
+        .order('created_at', { ascending: false });
 
       if (treatmentsError) console.error('Error fetching treatments:', treatmentsError);
-      setCurrentTreatments(treatments || []);
+      // Map to expected treatment format
+      const mappedTreatments = (treatments || []).map((t: any) => ({
+        id: t.id,
+        treatment_type: t.title || 'Treatment',
+        name: t.title || 'Treatment Plan',
+        description: t.description || '',
+        start_date: t.start_date || t.created_at,
+        end_date: t.end_date,
+        status: t.status,
+        notes: t.notes
+      }));
+      setCurrentTreatments(mappedTreatments);
 
       // Fetch appointment history
       const { data: history, error: historyError } = await supabase
@@ -182,24 +198,35 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
   const loadDiagnosisData = async (appointment: Appointment) => {
     setDxLoading(true);
     try {
-      const [{ data: dxRows }, { data: templates }] = await Promise.all([
-        (supabase as any)
-          .from("appointment_diagnoses")
-          .select("id, diagnosis_title, icd10_code, notes, created_at")
-          .eq("appointment_id", appointment.id)
-          .order("created_at", { ascending: false }),
-        (supabase as any)
-          .from("doctor_diagnosis_templates")
-          .select("id, title, icd10_code, description")
-          .eq("doctor_id", appointment.doctor_id)
-          .eq("is_active", true)
-          .order("title", { ascending: true }),
-      ]);
+      // Fetch appointment diagnoses
+      const { data: dxRows } = await (supabase as any)
+        .from("appointment_diagnoses")
+        .select("id, diagnosis_title, icd10_code, notes, created_at")
+        .eq("appointment_id", appointment.id)
+        .order("created_at", { ascending: false });
 
       setAppointmentDiagnoses((dxRows || []) as any);
-      setDiagnosisTemplates((templates || []) as any);
+      
+      // Fetch procedure templates as diagnosis templates (fallback)
+      const { data: templates } = await (supabase as any)
+        .from("procedure_templates")
+        .select("id, name, code, description")
+        .eq("doctor_id", appointment.doctor_id)
+        .eq("is_active", true)
+        .order("name", { ascending: true });
+
+      // Map procedure templates to diagnosis template format
+      const mappedTemplates = (templates || []).map((t: any) => ({
+        id: t.id,
+        title: t.name,
+        icd10_code: t.code,
+        description: t.description
+      }));
+      setDiagnosisTemplates(mappedTemplates);
     } catch (error) {
       console.error("Error loading diagnosis data:", error);
+      setAppointmentDiagnoses([]);
+      setDiagnosisTemplates([]);
     } finally {
       setDxLoading(false);
     }
@@ -349,7 +376,7 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
 
             {/* Appointment Count */}
             <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <span>{t("doctor.currentAppointment.upcomingCount", { count: appointments.length }, `${appointments.length} upcoming appointments`)}</span>
+              <span>{t("doctor.currentAppointment.upcomingCount", { count: appointments.length })}</span>
               <Button variant="ghost" size="sm" onClick={() => window.location.href = "/doctor/calendar"}>
                 {t("doctor.currentAppointment.viewAll", "View All")}
               </Button>

@@ -318,15 +318,15 @@ export const useDoctorDashboard = () => {
       
       const totalRevenue = (completedAppointments?.length || 0) * (doctorProfile.consultation_fee || 150);
 
-      // Get services count
-      const servicesPromise = supabase
-        .from('doctor_services')
+      // Get services count (use procedures table instead of doctor_services)
+      const servicesPromise = (supabase as any)
+        .from('procedures')
         .select('id')
-        .eq('doctor_id', doctorProfile.id);
+        .eq('dentist_id', doctorProfile.id);
 
       const { data: services, error: servicesError } = await Promise.race([servicesPromise, timeoutPromise]) as any;
 
-      if (servicesError) throw servicesError;
+      if (servicesError) console.error('Error fetching services:', servicesError);
       
       // Calculate profile completion
       const calculateProfileCompletion = () => {

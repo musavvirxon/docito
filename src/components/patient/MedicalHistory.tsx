@@ -184,9 +184,9 @@ export default function MedicalHistory() {
 
   const fetchAttachments = async (recordIds: string[]) => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         // table introduced by migration; keep TS happy without regenerating types
-        .from("medical_record_attachments" as any)
+        .from("medical_record_attachments")
         .select("*")
         .in("record_id", recordIds)
         .order("created_at", { ascending: false });
@@ -194,7 +194,7 @@ export default function MedicalHistory() {
       if (error) throw error;
 
       const grouped: Record<string, RecordAttachment[]> = {};
-      for (const row of (data || []) as RecordAttachment[]) {
+      for (const row of (data || []) as unknown as RecordAttachment[]) {
         if (!grouped[row.record_id]) grouped[row.record_id] = [];
         grouped[row.record_id].push(row);
       }

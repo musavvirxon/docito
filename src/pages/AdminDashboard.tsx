@@ -423,7 +423,7 @@ const AdminDashboard = () => {
               </Card>
             </div>
 
-            <PendingInvitationsSection practiceId={practice?.id || ""} isVerified={isVerified} />
+            <PendingInvitationsSection practiceId={practice?.id || ""} />
           </SectionWrapper>
         );
 
