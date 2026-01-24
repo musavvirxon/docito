@@ -210,8 +210,7 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
       // Fetch procedure templates as diagnosis templates (fallback)
       const { data: templates } = await (supabase as any)
         .from("procedure_templates")
-        .select("id, name, code, description")
-        .eq("doctor_id", appointment.doctor_id)
+        .select("id, name, description, category")
         .eq("is_active", true)
         .order("name", { ascending: true });
 
@@ -219,7 +218,7 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
       const mappedTemplates = (templates || []).map((t: any) => ({
         id: t.id,
         title: t.name,
-        icd10_code: t.code,
+        icd10_code: null,
         description: t.description
       }));
       setDiagnosisTemplates(mappedTemplates);
