@@ -39,6 +39,7 @@ interface DoctorDataContextType {
   // Loading states
   loading: boolean;
   refreshAll: () => Promise<void>;
+  refreshAllData: () => Promise<void>;
   
   // Schedule settings
   scheduleSettings: any;
@@ -65,6 +66,7 @@ export const DoctorDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     ...doctorData,
     // Legacy compatibility
     refreshAll: doctorData.refreshAllData,
+    refreshAllData: doctorData.refreshAllData,
     // Schedule settings integration
     scheduleSettings: scheduleData.scheduleSettings,
     updateScheduleSettings: scheduleData.updateScheduleSettings,

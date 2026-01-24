@@ -184,6 +184,57 @@ export default function DoctorPublicProfile() {
     );
   }
 
+  // Build location string
+  const location = [doctor.practice_city, doctor.practice_country].filter(Boolean).join(", ");
+  
+  // Build practice object for ClinicAffiliationsSection
+  const practice = doctor.practice_id ? {
+    id: doctor.practice_id,
+    name: doctor.practice_name || '',
+    address: doctor.practice_address,
+    phone: doctor.practice_phone,
+    city: doctor.practice_city,
+    country: doctor.practice_country,
+    verified: doctor.practice_verified,
+  } : null;
+
+  // Handlers for hero section
+  const handleBookClick = () => navigate(`/book/${doctor.id}`);
+  const handleMessageClick = () => navigate(`/messages?doctor=${doctor.id}`);
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({ title: doctor.full_name, url: window.location.href });
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast({ title: "Link copied to clipboard" });
+    }
+  };
+  const [isSaved, setIsSaved] = useState(false);
+  const handleToggleSave = () => setIsSaved(!isSaved);
+
+  // Map doctor to the format PremiumHeroSection expects
+  const doctorProfileData = {
+    id: doctor.id,
+    specialty: doctor.specialty,
+    bio: doctor.bio || '',
+    consultation_fee: doctor.consultation_fee,
+    verified: doctor.verified,
+    user_id: doctor.user_id,
+    languages: doctor.languages,
+    years_experience: doctor.years_experience,
+    average_rating: doctor.average_rating,
+    num_reviews: doctor.num_reviews,
+    consultation_types: doctor.consultation_types,
+    accepts_new_patients: doctor.accepts_new_patients,
+    profiles: {
+      full_name: doctor.full_name,
+      avatar_url: doctor.avatar_url,
+      city: doctor.practice_city || undefined,
+      country: doctor.practice_country || undefined,
+    },
+    practices: practice ? { id: practice.id, name: practice.name } : null,
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -193,27 +244,41 @@ export default function DoctorPublicProfile() {
         </Button>
       </div>
 
-      <PremiumHeroSection doctor={doctor} />
+      <PremiumHeroSection 
+        doctor={doctorProfileData}
+        localizedSpecialty={doctor.specialty}
+        location={location}
+        onBookClick={handleBookClick}
+        onMessageClick={handleMessageClick}
+        onShare={handleShare}
+        isSaved={isSaved}
+        onToggleSave={handleToggleSave}
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-10">
         <Suspense fallback={<div className="text-muted-foreground">Loading...</div>}>
-          <AvailabilityPreview doctorId={doctor.id} consultationTypes={doctor.consultation_types || []} />
+          <AvailabilityPreview doctorId={doctor.id} onOpenBooking={handleBookClick} />
         </Suspense>
 
         <Suspense fallback={<div className="text-muted-foreground">Loading...</div>}>
-          <AboutSection doctor={doctor} services={procedures} />
+          <AboutSection 
+            bio={doctor.bio || ''} 
+            yearsExperience={doctor.years_experience}
+            services={procedures.map(p => ({ id: p.id, name: p.name, category: p.category || undefined }))}
+            consultationTypes={doctor.consultation_types}
+          />
         </Suspense>
 
         <Suspense fallback={<div className="text-muted-foreground">Loading...</div>}>
-          <ClinicAffiliationsSection doctor={doctor} />
+          <ClinicAffiliationsSection practice={practice} />
         </Suspense>
 
         <Suspense fallback={<div className="text-muted-foreground">Loading...</div>}>
-          <ReviewsSection doctorId={doctor.id} reviews={reviews} />
+          <ReviewsSection averageRating={doctor.average_rating} numReviews={doctor.num_reviews} />
         </Suspense>
 
         <Suspense fallback={<div className="text-muted-foreground">Loading...</div>}>
-          <TrustSection doctor={doctor} />
+          <TrustSection />
         </Suspense>
       </div>
     </div>
