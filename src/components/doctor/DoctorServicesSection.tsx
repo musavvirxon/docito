@@ -1,197 +1,209 @@
-import { useState } from "react";
+// src/components/doctor/DoctorServicesSection.tsx
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Edit, Trash2, DollarSign, Clock } from "lucide-react";
+import { Plus, Edit, Trash2, Stethoscope } from "lucide-react";
 import { useDoctorData } from "@/contexts/DoctorDataContext";
 import { useTranslation } from "react-i18next";
 
 interface DoctorServicesSectionProps {
+  /** Legacy prop: kept so DoctorDashboard doesn't break. */
   readOnly?: boolean;
+  /** Legacy prop: kept so DoctorDashboard doesn't break. */
   assignedServices?: string[];
 }
 
-interface ServiceFormData {
-  name: string;
-  category: 'general' | 'preventive' | 'restorative' | 'cosmetic' | 'orthodontic' | 'oral_surgery' | 'endodontic' | 'periodontic';
+export interface DiagnosisTemplateFormData {
+  title: string;
+  icd10_code: string;
   description: string;
-  default_cost: number;
-  duration_minutes: number;
+  tags: string[];
   is_active: boolean;
 }
 
 const DoctorServicesSection = ({ readOnly = false, assignedServices }: DoctorServicesSectionProps) => {
   const { t } = useTranslation("dashboard");
-  const { services, loading, addService, updateService, deleteService } = useDoctorData();
-  const [isAddingService, setIsAddingService] = useState(false);
-  const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
+  const {
+    diagnoses,
+    diagnosisLoading,
+    addDiagnosis,
+    updateDiagnosis,
+    deleteDiagnosis,
+  } = useDoctorData() as any;
 
-  const categories = ['general', 'preventive', 'restorative', 'cosmetic', 'orthodontic', 'oral_surgery', 'endodontic', 'periodontic'] as const;
+  const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
 
-  const handleToggleStatus = async (serviceId: string, active: boolean) => {
-    if (readOnly) return;
-    await updateService(serviceId, { is_active: active });
-  };
-
-  const handleDeleteService = async (serviceId: string) => {
-    if (readOnly) return;
-    if (confirm(t("doctor.services.confirmDelete") || 'Are you sure you want to delete this service?')) {
-      await deleteService(serviceId);
-    }
-  };
-
-  const ServiceForm = ({ serviceId, onSave, onCancel }: { 
-    serviceId?: string; 
-    onSave: (serviceData: ServiceFormData) => void; 
-    onCancel: () => void; 
-  }) => {
-    const existingService = serviceId ? services.find(s => s.id === serviceId) : null;
-    
-    const [formData, setFormData] = useState<ServiceFormData>({
-      name: existingService?.name || '',
-      category: (existingService?.category as any) || 'general',
-      description: existingService?.description || '',
-      default_cost: existingService?.default_cost || 0,
-      duration_minutes: existingService?.duration_minutes || 30,
-      is_active: existingService?.is_active ?? true
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const items = (diagnoses || []) as any[];
+    if (!q) return items;
+    return items.filter((d) => {
+      const hay = [d.title, d.icd10_code, d.description, ...(d.tags || [])]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return hay.includes(q);
     });
+  }, [diagnoses, query]);
 
-    const handleSubmit = (e: React.FormEvent) => {
+  const formatTags = (raw: string) =>
+    raw
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .slice(0, 20);
+
+  const DiagnosisForm = ({
+    diagnosisId,
+    onSave,
+    onCancel,
+  }: {
+    diagnosisId?: string;
+    onSave: (data: DiagnosisTemplateFormData) => void;
+    onCancel: () => void;
+  }) => {
+    const existing = diagnosisId ? (diagnoses || []).find((d: any) => d.id === diagnosisId) : null;
+
+    const [title, setTitle] = useState(existing?.title || "");
+    const [icd10, setIcd10] = useState(existing?.icd10_code || "");
+    const [description, setDescription] = useState(existing?.description || "");
+    const [tagsRaw, setTagsRaw] = useState((existing?.tags || []).join(", "));
+    const [isActive, setIsActive] = useState(existing?.is_active ?? true);
+
+    const submit = (e: React.FormEvent) => {
       e.preventDefault();
-      onSave(formData);
+      onSave({
+        title: title.trim(),
+        icd10_code: icd10.trim(),
+        description: description.trim(),
+        tags: formatTags(tagsRaw),
+        is_active: isActive,
+      });
     };
 
     return (
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={submit} className="space-y-4">
         <div>
-          <Label htmlFor="serviceName">{t("doctor.services.serviceName")}</Label>
+          <Label htmlFor="dxTitle">{t("doctor.diagnoses.titleLabel", "Diagnosis")}</Label>
           <Input
-            id="serviceName"
-            value={formData.name}
-            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-            placeholder={t("doctor.services.serviceNamePlaceholder")}
+            id="dxTitle"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder={t("doctor.diagnoses.titlePlaceholder", "e.g. Hypertension")}
+            required
           />
         </div>
 
         <div>
-          <Label htmlFor="category">{t("doctor.services.category")}</Label>
-          <Select value={formData.category} onValueChange={(value: any) => setFormData(prev => ({ ...prev, category: value }))}>
-            <SelectTrigger>
-              <SelectValue placeholder={t("doctor.services.selectCategory")} />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map(category => (
-                <SelectItem key={category} value={category}>
-                  {category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <Label htmlFor="description">{t("doctor.services.description")}</Label>
-          <Textarea 
-            id="description"
-            value={formData.description}
-            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-            placeholder={t("doctor.services.descriptionPlaceholder")}
-            className="min-h-[80px]"
+          <Label htmlFor="dxCode">{t("doctor.diagnoses.codeLabel", "ICD-10 Code (optional)")}</Label>
+          <Input
+            id="dxCode"
+            value={icd10}
+            onChange={(e) => setIcd10(e.target.value)}
+            placeholder={t("doctor.diagnoses.codePlaceholder", "e.g. I10")}
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="price">{t("doctor.services.price")}</Label>
-            <Input 
-              id="price"
-              type="number"
-              value={formData.default_cost}
-              onChange={(e) => setFormData(prev => ({ ...prev, default_cost: Number(e.target.value) }))}
-              placeholder="150"
-            />
-          </div>
-          <div>
-            <Label htmlFor="duration">{t("doctor.services.duration")}</Label>
-            <Select value={formData.duration_minutes.toString()} onValueChange={(value) => setFormData(prev => ({ ...prev, duration_minutes: Number(value) }))}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="15">15 minutes</SelectItem>
-                <SelectItem value="30">30 minutes</SelectItem>
-                <SelectItem value="45">45 minutes</SelectItem>
-                <SelectItem value="60">60 minutes</SelectItem>
-                <SelectItem value="90">90 minutes</SelectItem>
-                <SelectItem value="120">2 hours</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <div>
+          <Label htmlFor="dxDesc">{t("doctor.diagnoses.descriptionLabel", "Notes / Description")}</Label>
+          <Textarea
+            id="dxDesc"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder={t("doctor.diagnoses.descriptionPlaceholder", "Typical findings, workup, plan...")}
+            className="min-h-[100px]"
+          />
         </div>
 
-        <div className="flex justify-between pt-4">
+        <div>
+          <Label htmlFor="dxTags">{t("doctor.diagnoses.tagsLabel", "Tags (comma-separated)")}</Label>
+          <Input
+            id="dxTags"
+            value={tagsRaw}
+            onChange={(e) => setTagsRaw(e.target.value)}
+            placeholder={t("doctor.diagnoses.tagsPlaceholder", "e.g. cardiology, chronic")}
+          />
+        </div>
+
+        <div className="flex items-center justify-between border rounded-lg p-3">
+          <div>
+            <p className="font-medium">{t("doctor.diagnoses.activeLabel", "Active")}</p>
+            <p className="text-sm text-muted-foreground">
+              {t("doctor.diagnoses.activeHelp", "Inactive diagnoses stay in your library but won't be suggested.")}
+            </p>
+          </div>
+          <Switch checked={isActive} onCheckedChange={setIsActive} />
+        </div>
+
+        <div className="flex justify-between pt-2">
           <Button type="button" variant="outline" onClick={onCancel}>
-            {t("doctor.services.cancel")}
+            {t("doctor.diagnoses.cancel", "Cancel")}
           </Button>
           <Button type="submit">
-            {serviceId ? t("doctor.services.updateService") : t("doctor.services.addService")}
+            {diagnosisId ? t("doctor.diagnoses.update", "Update") : t("doctor.diagnoses.add", "Add")}
           </Button>
         </div>
       </form>
     );
   };
 
-  const handleAddService = async (serviceData: ServiceFormData) => {
-    const result = await addService(serviceData);
-    if (result.success) {
-      setIsAddingService(false);
-    }
+  const onAdd = async (data: DiagnosisTemplateFormData) => {
+    const res = await addDiagnosis?.(data);
+    if (res?.success) setIsAdding(false);
   };
 
-  const handleUpdateService = async (serviceData: ServiceFormData) => {
-    if (!editingServiceId) return;
-    const result = await updateService(editingServiceId, serviceData);
-    if (result.success) {
-      setEditingServiceId(null);
-    }
+  const onUpdate = async (data: DiagnosisTemplateFormData) => {
+    if (!editingId) return;
+    const res = await updateDiagnosis?.(editingId, data);
+    if (res?.success) setEditingId(null);
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  const onDelete = async (id: string) => {
+    if (readOnly) return;
+    if (!confirm(t("doctor.diagnoses.confirmDelete", "Delete this diagnosis from your library?") as any)) return;
+    await deleteDiagnosis?.(id);
+  };
 
+  const onToggle = async (id: string, next: boolean) => {
+    if (readOnly) return;
+    await updateDiagnosis?.(id, { is_active: next });
+  };
+
+  // Legacy readOnly mode: show whatever the clinic assigned as a list.
   if (readOnly) {
     return (
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>{t("doctor.services.assignedServices")}</CardTitle>
-            <p className="text-muted-foreground">{t("doctor.services.assignedServicesDesc")}</p>
+            <CardTitle>{t("doctor.diagnoses.assignedTitle", "Assigned Diagnoses")}</CardTitle>
+            <p className="text-muted-foreground">
+              {t("doctor.diagnoses.assignedDesc", "Diagnoses provided by your clinic.")}
+            </p>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {assignedServices?.map((serviceName, index) => (
-                <div key={index} className="p-4 border rounded-lg">
-                  <div className="flex items-center justify-between">
+            <div className="space-y-3">
+              {(assignedServices || []).length > 0 ? (
+                assignedServices!.map((name, idx) => (
+                  <div key={idx} className="p-4 border rounded-lg flex items-center justify-between">
                     <div>
-                      <h3 className="font-medium">{serviceName}</h3>
-                      <p className="text-sm text-muted-foreground">{t("doctor.services.assignedByClinic")}</p>
+                      <p className="font-medium">{name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {t("doctor.diagnoses.assignedByClinic", "Assigned by clinic")}
+                      </p>
                     </div>
-                    <Badge variant="secondary">{t("doctor.services.assigned")}</Badge>
+                    <Badge variant="secondary">{t("doctor.diagnoses.assigned", "Assigned")}</Badge>
                   </div>
-                </div>
-              )) || (
-                <p className="text-muted-foreground">{t("doctor.services.noServicesAssigned")}</p>
+                ))
+              ) : (
+                <p className="text-muted-foreground">{t("doctor.diagnoses.noneAssigned", "No assigned diagnoses")}</p>
               )}
             </div>
           </CardContent>
@@ -204,106 +216,114 @@ const DoctorServicesSection = ({ readOnly = false, assignedServices }: DoctorSer
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-              <CardTitle>{t("doctor.services.title")}</CardTitle>
-              <p className="text-muted-foreground">{t("doctor.services.description")}</p>
+              <CardTitle className="flex items-center gap-2">
+                <Stethoscope className="w-5 h-5" />
+                {t("doctor.diagnoses.libraryTitle", "Diagnosis Library")}
+              </CardTitle>
+              <p className="text-muted-foreground">
+                {t(
+                  "doctor.diagnoses.libraryDesc",
+                  "Create reusable diagnoses you can quickly apply during appointments."
+                )}
+              </p>
             </div>
-            <Dialog open={isAddingService} onOpenChange={setIsAddingService}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="w-4 h-4 mr-2" />
-                  {t("doctor.services.addService")}
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>{t("doctor.services.addNewService")}</DialogTitle>
-                </DialogHeader>
-                <ServiceForm 
-                  onSave={handleAddService}
-                  onCancel={() => setIsAddingService(false)}
-                />
-              </DialogContent>
-            </Dialog>
+            <div className="flex gap-2">
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={t("doctor.diagnoses.search", "Search diagnoses...")}
+                className="w-full md:w-64"
+              />
+              <Dialog open={isAdding} onOpenChange={setIsAdding}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="w-4 h-4 mr-2" />
+                    {t("doctor.diagnoses.new", "New")}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>{t("doctor.diagnoses.addTitle", "Add Diagnosis")}</DialogTitle>
+                  </DialogHeader>
+                  <DiagnosisForm onSave={onAdd} onCancel={() => setIsAdding(false)} />
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {services.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <p>{t("doctor.services.noServices")}</p>
-              </div>
-            ) : (
-              services.map((service) => (
-                <div key={service.id} className="p-4 border rounded-lg">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-medium">{service.name}</h3>
-                        <Badge variant="outline">
-                          {service.category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                        </Badge>
-                        {service.is_active ? (
-                          <Badge className="bg-green-100 text-green-700">{t("doctor.services.active")}</Badge>
-                        ) : (
-                          <Badge variant="secondary">{t("doctor.services.inactive")}</Badge>
-                        )}
-                      </div>
-                      
-                      <p className="text-sm text-muted-foreground mb-3">{service.description}</p>
-                      
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <DollarSign className="w-4 h-4" />
-                          ${service.default_cost || 0}
+          {diagnosisLoading ? (
+            <div className="flex items-center justify-center p-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filtered.length === 0 ? (
+                <div className="text-center py-10">
+                  <Stethoscope className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-muted-foreground">
+                    {t("doctor.diagnoses.empty", "No diagnoses yet.")}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("doctor.diagnoses.emptyHelp", "Add your first diagnosis to reuse it in appointments.")}
+                  </p>
+                </div>
+              ) : (
+                filtered.map((d: any) => (
+                  <div key={d.id} className="p-4 border rounded-lg">
+                    <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                      <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="font-semibold">{d.title}</h3>
+                          {d.icd10_code ? <Badge variant="outline">{d.icd10_code}</Badge> : null}
+                          {!d.is_active ? <Badge variant="secondary">{t("doctor.diagnoses.inactive", "Inactive")}</Badge> : null}
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
-                          {service.duration_minutes} min
-                        </div>
+                        {d.description ? <p className="text-sm text-muted-foreground">{d.description}</p> : null}
+                        {(d.tags || []).length > 0 ? (
+                          <div className="flex flex-wrap gap-2 pt-2">
+                            {(d.tags || []).slice(0, 8).map((tag: string) => (
+                              <Badge key={tag} variant="secondary" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : null}
                       </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Switch 
-                        checked={service.is_active}
-                        onCheckedChange={(checked) => handleToggleStatus(service.id, checked)}
-                      />
-                      <Dialog open={editingServiceId === service.id} onOpenChange={(open) => !open && setEditingServiceId(null)}>
-                        <DialogTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => setEditingServiceId(service.id)}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-2xl">
-                          <DialogHeader>
-                            <DialogTitle>Edit Service</DialogTitle>
-                          </DialogHeader>
-                          <ServiceForm 
-                            serviceId={editingServiceId || undefined}
-                            onSave={handleUpdateService}
-                            onCancel={() => setEditingServiceId(null)}
-                          />
-                        </DialogContent>
-                      </Dialog>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => handleDeleteService(service.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+
+                      <div className="flex flex-wrap gap-2 items-center">
+                        <div className="flex items-center gap-2 mr-2">
+                          <span className="text-sm text-muted-foreground">{t("doctor.diagnoses.activeShort", "Active")}</span>
+                          <Switch checked={!!d.is_active} onCheckedChange={(v) => onToggle(d.id, v)} />
+                        </div>
+                        <Dialog open={editingId === d.id} onOpenChange={(open) => setEditingId(open ? d.id : null)}>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-2xl">
+                            <DialogHeader>
+                              <DialogTitle>{t("doctor.diagnoses.editTitle", "Edit Diagnosis")}</DialogTitle>
+                            </DialogHeader>
+                            <DiagnosisForm
+                              diagnosisId={d.id}
+                              onSave={onUpdate}
+                              onCancel={() => setEditingId(null)}
+                            />
+                          </DialogContent>
+                        </Dialog>
+                        <Button variant="outline" size="sm" onClick={() => onDelete(d.id)}>
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
-            )}
-          </div>
+                ))
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
