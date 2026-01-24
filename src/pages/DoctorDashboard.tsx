@@ -35,6 +35,7 @@ import { DoctorVerificationStatusCard } from "@/components/doctor/DoctorVerifica
 import { DoctorReferralsSection } from "@/components/doctor/DoctorReferralsSection";
 import { DashboardBranding } from "@/components/dashboard/DashboardBranding";
 import { AcceptNewPatientsToggle } from "@/components/doctor/AcceptNewPatientsToggle";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 type DoctorStatus = "independent" | "clinic-member";
 const DoctorDashboardContent = () => {
@@ -531,7 +532,9 @@ const DoctorDashboardContent = () => {
 const DoctorDashboard = () => {
   return <ThemeProvider>
       <DoctorDataProvider>
-        <DoctorDashboardContent />
+        <ErrorBoundary>
+          <DoctorDashboardContent />
+        </ErrorBoundary>
       </DoctorDataProvider>
     </ThemeProvider>;
 };

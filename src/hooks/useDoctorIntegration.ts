@@ -48,9 +48,7 @@ export interface DoctorService {
 
 export interface DiagnosisTemplate {
   id: string;
-  doctor_id: string;
   title: string;
-  icd10_code?: string | null;
   description?: string | null;
   tags?: string[] | null;
   is_active: boolean;
@@ -123,6 +121,7 @@ export const useDoctorIntegration = () => {
 
   const [loading, setLoading] = useState(true);
   const refreshSeq = useRef(0);
+  const didInitialLoad = useRef(false);
 
   const doctorIdFromProfile = useMemo(() => (profile as any)?.doctor_id as string | undefined, [profile]);
 
@@ -206,23 +205,24 @@ export const useDoctorIntegration = () => {
     if (!doctorProfile) return;
     setDiagnosisLoading(true);
     try {
+      // NOTE: public.procedure_templates does NOT have doctor_id/code/updated_at columns.
+      // Keep UI-compatible mapped shape while querying real columns.
       const { data, error } = await (supabase as any)
         .from("procedure_templates")
-        .select("id, doctor_id, name, code, description, category, is_active, created_at, updated_at")
-        .eq("doctor_id", doctorProfile.id)
+        .select("id, name, description, category, duration_minutes, default_price, is_active, created_at")
+        .eq("is_active", true)
         .order("name", { ascending: true });
       if (error) throw error;
       // Map to expected diagnosis format
       const mappedData = (data || []).map((item: any) => ({
         id: item.id,
-        doctor_id: item.doctor_id,
         title: item.name,
-        icd10_code: item.code,
         description: item.description,
         tags: item.category ? [item.category] : [],
         is_active: item.is_active,
         created_at: item.created_at,
-        updated_at: item.updated_at,
+        // procedure_templates has no updated_at; keep a stable value for UI.
+        updated_at: item.created_at,
       }));
       setDiagnoses(mappedData as any);
     } catch (err: any) {
@@ -449,12 +449,13 @@ export const useDoctorIntegration = () => {
     if (!doctorProfile) return { error: "No doctor profile found" };
     try {
       const payload = {
-        doctor_id: doctorProfile.id,
         name: String(diagnosis.title || "").trim(),
-        code: (diagnosis.icd10_code || null) as string | null,
         description: (diagnosis.description || null) as string | null,
         category: Array.isArray(diagnosis.tags) && diagnosis.tags.length > 0 ? diagnosis.tags[0] : null,
         is_active: diagnosis.is_active ?? true,
+        // Optional fields supported by the real schema
+        duration_minutes: diagnosis.duration_minutes ?? null,
+        default_price: diagnosis.default_price ?? null,
       };
       if (!payload.name) return { error: "Title is required" };
       const { error } = await (supabase as any).from("procedure_templates").insert(payload);
@@ -473,10 +474,11 @@ export const useDoctorIntegration = () => {
     try {
       const payload: any = {};
       if (updates.title != null) payload.name = String(updates.title).trim();
-      if (updates.icd10_code !== undefined) payload.code = updates.icd10_code;
       if (updates.description !== undefined) payload.description = updates.description;
       if (updates.tags != null) payload.category = Array.isArray(updates.tags) && updates.tags.length > 0 ? updates.tags[0] : null;
       if (updates.is_active !== undefined) payload.is_active = updates.is_active;
+      if (updates.duration_minutes !== undefined) payload.duration_minutes = updates.duration_minutes;
+      if (updates.default_price !== undefined) payload.default_price = updates.default_price;
       
       const { error } = await (supabase as any)
         .from("procedure_templates")
@@ -565,7 +567,8 @@ export const useDoctorIntegration = () => {
         .channel("doctor-diagnoses-changes")
         .on(
           "postgres_changes",
-          { event: "*", schema: "public", table: "procedure_templates", filter: `doctor_id=eq.${doctorProfile.id}` },
+          // procedure_templates has no doctor_id column; listen to global changes.
+          { event: "*", schema: "public", table: "procedure_templates" },
           bump
         )
         .subscribe(),
@@ -582,7 +585,10 @@ export const useDoctorIntegration = () => {
     let mounted = true;
     const run = async () => {
       if (!mounted) return;
+      // Prevent a re-run loop caused by callback identity changes when doctorProfile updates.
+      if (didInitialLoad.current) return;
       if (user && profile?.role === "doctor") {
+        didInitialLoad.current = true;
         await refreshAllData();
       } else {
         setLoading(false);
