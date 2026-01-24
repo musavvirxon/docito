@@ -1,3 +1,4 @@
+// src/contexts/DoctorDataContext.tsx
 import React, { createContext, useContext } from 'react';
 import { useDoctorIntegration } from '@/hooks/useDoctorIntegration';
 import { useScheduleSettings } from '@/hooks/useScheduleSettings';
@@ -12,6 +13,13 @@ interface DoctorDataContextType {
   addService: (service: any) => Promise<{ success?: boolean; error?: string }>;
   updateService: (id: string, updates: any) => Promise<{ success?: boolean; error?: string }>;
   deleteService: (id: string) => Promise<{ success?: boolean; error?: string }>;
+
+  // Diagnoses (Diagnosis Library)
+  diagnoses: any[];
+  diagnosisLoading: boolean;
+  addDiagnosis: (diagnosis: any) => Promise<{ success?: boolean; error?: string }>;
+  updateDiagnosis: (id: string, updates: any) => Promise<{ success?: boolean; error?: string }>;
+  deleteDiagnosis: (id: string) => Promise<{ success?: boolean; error?: string }>;
   
   // Appointments
   upcomingAppointments: any[];
