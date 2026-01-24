@@ -1,29 +1,20 @@
-import { motion, type Easing } from "framer-motion";
+// File: src/components/doctor/public/PremiumHeroSection.tsx
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import {
   Star,
   MapPin,
-  Calendar,
-  Clock,
-  GraduationCap,
   Award,
-  MessageSquare,
-  Heart,
-  Share2,
-  Video,
-  Building2,
   Users,
   Globe,
   BadgeCheck,
-  ChevronRight,
+  Video,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import CareNetworkAnimation from "./CareNetworkAnimation";
 
 interface DoctorProfileData {
   id: string;
@@ -74,7 +65,6 @@ export default function PremiumHeroSection({
   const { t, i18n } = useTranslation(["doctors", "common"]);
   const navigate = useNavigate();
   const isRTL = i18n.language === "ar";
-  const easeOut: Easing = [0, 0, 0.2, 1];
 
   const doctorName = doctor.profiles.full_name;
   const initials = doctorName
@@ -88,12 +78,7 @@ export default function PremiumHeroSection({
       <div className="max-w-6xl mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
           {/* Left: Doctor Identity */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, ease: easeOut }}
-            className="lg:col-span-7 space-y-6"
-          >
+          <div className="lg:col-span-7 space-y-6">
             {/* Avatar + Basic Info */}
             <div className="flex flex-col sm:flex-row gap-6">
               <div className="relative flex-shrink-0">
@@ -180,13 +165,19 @@ export default function PremiumHeroSection({
                     </Badge>
                   )}
                   {doctor.accepts_new_patients && (
-                    <Badge variant="outline" className="border-blue-500/30 text-blue-600">
+                    <Badge
+                      variant="outline"
+                      className="border-blue-500/30 text-blue-600"
+                    >
                       <Users className="w-3 h-3 mr-1" />
                       {t("profile.acceptingPatients")}
                     </Badge>
                   )}
                   {doctor.consultation_types?.includes("video") && (
-                    <Badge variant="outline" className="border-purple-500/30 text-purple-600">
+                    <Badge
+                      variant="outline"
+                      className="border-purple-500/30 text-purple-600"
+                    >
                       <Video className="w-3 h-3 mr-1" />
                       {t("profile.videoConsult")}
                     </Badge>
@@ -194,20 +185,10 @@ export default function PremiumHeroSection({
                 </div>
               </div>
             </div>
-
-            {/* Care Network Animation */}
-            <div className="pt-4 hidden lg:block">
-              <CareNetworkAnimation />
-            </div>
-          </motion.div>
+          </div>
 
           {/* Right: Sticky Booking Widget */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.2, ease: easeOut }}
-            className="lg:col-span-5"
-          >
+          <div className="lg:col-span-5">
             <div className="lg:sticky lg:top-24 bg-card rounded-2xl border border-border p-6 shadow-lg">
               <h3 className="text-lg font-semibold text-foreground mb-4">
                 {t("profile.bookAppointment")}
@@ -219,108 +200,49 @@ export default function PremiumHeroSection({
                   <span className="text-muted-foreground">
                     {t("profile.consultationFee")}
                   </span>
-                  <span className="text-2xl font-bold text-primary">
+                  <span className="text-xl font-bold text-foreground">
                     ${doctor.consultation_fee}
                   </span>
                 </div>
               )}
 
-              {/* Consultation Types */}
-              {doctor.consultation_types && doctor.consultation_types.length > 0 && (
-                <div className="mb-4">
-                  <p className="text-sm font-medium text-muted-foreground mb-2">
-                    {t("profile.availableTypes")}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {doctor.consultation_types.map((type) => (
-                      <Badge key={type} variant="secondary" className="capitalize text-xs">
-                        {type === "video" && <Video className="w-3 h-3 mr-1" />}
-                        {type === "in_person" && <Building2 className="w-3 h-3 mr-1" />}
-                        {type.split("_").join(" ")}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Next Available */}
-              <div className="flex items-center gap-2 mb-6 py-3 px-4 bg-primary/5 rounded-lg">
-                <Clock className="w-4 h-4 text-primary" />
-                <span className="text-sm text-foreground">
-                  {t("publicProfile.nextAvailable", "Next available: Today")}
-                </span>
-              </div>
-
               {/* Action Buttons */}
               <div className="space-y-3">
-                <Button
-                  onClick={onBookClick}
-                  className="w-full h-12 text-base font-semibold"
-                  size="lg"
-                >
-                  <Calendar className="w-5 h-5 mr-2" />
-                  {t("actions.bookAppointment")}
+                <Button className="w-full" onClick={onBookClick}>
+                  {t("profile.bookNow")}
                 </Button>
-                <Button
-                  variant="outline"
-                  onClick={onMessageClick}
-                  className="w-full h-11"
-                  size="lg"
-                >
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  {t("actions.sendMessage")}
+
+                <Button variant="outline" className="w-full" onClick={onMessageClick}>
+                  {t("profile.messageDoctor")}
                 </Button>
+
+                <div className="grid grid-cols-2 gap-3 pt-2">
+                  <Button variant="secondary" onClick={onToggleSave}>
+                    {isSaved ? t("profile.saved") : t("profile.save")}
+                  </Button>
+                  <Button variant="secondary" onClick={onShare}>
+                    {t("profile.share")}
+                  </Button>
+                </div>
               </div>
 
               <Separator className="my-5" />
 
-              {/* Quick Actions */}
-              <div className="flex justify-center gap-6">
-                <button
-                  onClick={onToggleSave}
-                  className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary transition-colors"
-                >
-                  <Heart
-                    className={cn(
-                      "w-5 h-5",
-                      isSaved && "fill-red-500 text-red-500"
-                    )}
-                  />
-                  <span className="text-xs">{t("common:actions.save")}</span>
-                </button>
-                <button
-                  onClick={onShare}
-                  className="flex flex-col items-center gap-1 text-muted-foreground hover:text-primary transition-colors"
-                >
-                  <Share2 className="w-5 h-5" />
-                  <span className="text-xs">{t("common:actions.share")}</span>
-                </button>
+              <div className="text-sm text-muted-foreground">
+                {t("profile.secureBookingNote")}
               </div>
 
-              {/* Clinic Link */}
-              {doctor.practices && (
-                <div className="mt-5 pt-4 border-t border-border">
-                  <button
-                    onClick={() => navigate(`/clinic/${doctor.practices?.id}`)}
-                    className="flex items-center justify-between w-full text-left group"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Building2 className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-                        {doctor.practices.name}
-                      </span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
-                  </button>
-                </div>
-              )}
+              <div className="pt-4">
+                <Button
+                  variant="link"
+                  className="px-0"
+                  onClick={() => navigate("/find-doctors")}
+                >
+                  {t("common:actions.browse")} →
+                </Button>
+              </div>
             </div>
-          </motion.div>
-        </div>
-
-        {/* Mobile: Care Network Animation */}
-        <div className="mt-8 lg:hidden">
-          <CareNetworkAnimation />
+          </div>
         </div>
       </div>
     </section>
