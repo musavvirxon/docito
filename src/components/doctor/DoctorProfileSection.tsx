@@ -1,420 +1,320 @@
-import { useState, useEffect, useMemo } from "react";
+// File: src/components/doctor/DoctorProfileSection.tsx
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, CheckCircle, Clock, Lock, ExternalLink, X, ChevronDown, ChevronRight, Search, Eye, Phone, CheckCircle2 } from "lucide-react";
-import { useDoctorData } from "@/contexts/DoctorDataContext";
-import { useFileUpload } from "@/hooks/useFileUpload";
-import { useDoctorVerificationStatus } from "@/hooks/useDoctorVerificationStatus";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { useTranslation } from "react-i18next";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2, ExternalLink, Shield, UserRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { specialtyCategories, allLanguages, consultationTypes, experienceOptions, validatePhoneNumber } from "@/config/doctorFormData";
-interface DoctorProfileSectionProps {
-  doctorProfile?: any;
-}
-const DoctorProfileSection = ({
-  doctorProfile: propProfile
-}: DoctorProfileSectionProps) => {
-  const {
-    t
-  } = useTranslation("dashboard");
-  const {
-    user
-  } = useAuth();
+import { useDoctorData } from "@/contexts/DoctorDataContext";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+
+const USERNAME_RE = /^[a-z0-9][a-z0-9_-]{2,29}$/;
+
+const normalizeUsername = (v: string) => v.trim().toLowerCase();
+
+export default function DoctorProfileSection() {
   const navigate = useNavigate();
-  const {
-    doctorProfile: profile,
-    loading,
-    refreshAll
-  } = useDoctorData();
-  const {
-    verificationStatus
-  } = useDoctorVerificationStatus();
-  const {
-    uploadFile,
-    uploading
-  } = useFileUpload();
-  const doctorProfile = propProfile || profile;
-  const isEditingLocked = verificationStatus?.status === 'pending' || verificationStatus?.status === 'resubmitted';
-  const [formData, setFormData] = useState({
-    bio: '',
-    license_number: '',
-    consultation_fee: '',
-    years_experience: '',
-    phone: '',
-    sms_phone: ''
-  });
-  const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
-  const [specialtySearch, setSpecialtySearch] = useState("");
-  const [expandedSpecialty, setExpandedSpecialty] = useState<string | null>(null);
-  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
-  const [languageSearch, setLanguageSearch] = useState("");
-  const [selectedConsultationTypes, setSelectedConsultationTypes] = useState<string[]>([]);
-  const [useSamePhoneForSms, setUseSamePhoneForSms] = useState(true);
-  const [phoneValidation, setPhoneValidation] = useState({
-    isValid: false,
-    message: ""
-  });
-  const [smsPhoneValidation, setSmsPhoneValidation] = useState({
-    isValid: false,
-    message: ""
-  });
+  const { toast } = useToast();
+  const { doctorProfile, refreshAllData } = useDoctorData();
 
-  // Real-time profile completion calculation
-  const profileCompletion = useMemo(() => {
-    let score = 0;
-    const totalFields = 10;
-    if (doctorProfile?.profiles?.avatar_url) score += 1;
-    if (selectedSpecialties.length > 0) score += 1;
-    if (formData.bio && formData.bio.length > 50) score += 1;
-    if (formData.license_number) score += 1;
-    if (formData.consultation_fee) score += 1;
-    if (formData.phone) score += 1;
-    if (doctorProfile?.practice_id || doctorProfile?.verified) score += 1;
-    if (formData.years_experience) score += 1;
-    if (selectedLanguages.length > 0) score += 1;
-    if (selectedConsultationTypes.length > 0) score += 1;
-    return Math.round(score / totalFields * 100);
-  }, [doctorProfile, selectedSpecialties, formData, selectedLanguages, selectedConsultationTypes]);
+  const [saving, setSaving] = useState(false);
 
-  // Phone validation effects
-  useEffect(() => {
-    if (formData.phone) {
-      setPhoneValidation(validatePhoneNumber(formData.phone));
-    }
-  }, [formData.phone]);
-  useEffect(() => {
-    if (!useSamePhoneForSms && formData.sms_phone) {
-      setSmsPhoneValidation(validatePhoneNumber(formData.sms_phone));
-    }
-  }, [formData.sms_phone, useSamePhoneForSms]);
-  useEffect(() => {
-    if (doctorProfile && user) {
-      setFormData({
-        bio: doctorProfile.bio || '',
-        license_number: doctorProfile.license_number || '',
-        consultation_fee: doctorProfile.consultation_fee?.toString() || '',
-        years_experience: doctorProfile.years_experience?.toString() || '',
-        phone: doctorProfile.profiles?.phone || '',
-        sms_phone: ''
-      });
-      if (doctorProfile.specialty) {
-        setSelectedSpecialties([doctorProfile.specialty]);
-      }
-      if (doctorProfile.languages) {
-        setSelectedLanguages(doctorProfile.languages);
-      }
-      if (doctorProfile.consultation_types) {
-        setSelectedConsultationTypes(doctorProfile.consultation_types);
-      }
-    }
-  }, [doctorProfile, user]);
-  const toggleSpecialty = (specialty: string, parentSpecialty: string) => {
-    if (isEditingLocked) return;
-    const fullName = `${parentSpecialty} - ${specialty}`;
-    setSelectedSpecialties(prev => {
-      if (prev.includes(fullName)) return prev.filter(s => s !== fullName);
-      if (prev.length >= 5) {
-        toast.error(t("doctor.profile.maxSpecialties"));
-        return prev;
-      }
-      return [...prev, fullName];
-    });
-  };
-  const removeSpecialty = (spec: string) => !isEditingLocked && setSelectedSpecialties(prev => prev.filter(s => s !== spec));
-  const toggleExpandSpecialty = (spec: string) => setExpandedSpecialty(prev => prev === spec ? null : spec);
-  const toggleLanguage = (lang: string) => !isEditingLocked && setSelectedLanguages(prev => prev.includes(lang) ? prev.filter(l => l !== lang) : [...prev, lang]);
-  const removeLanguage = (lang: string) => !isEditingLocked && setSelectedLanguages(prev => prev.filter(l => l !== lang));
-  const toggleConsultationType = (type: string) => !isEditingLocked && setSelectedConsultationTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]);
+  // Profile fields
+  const [specialty, setSpecialty] = useState("");
+  const [bio, setBio] = useState("");
+  const [consultationFee, setConsultationFee] = useState<string>("");
+  const [yearsExperience, setYearsExperience] = useState<string>("");
+  const [languages, setLanguages] = useState<string>("");
+  const [phone, setPhone] = useState("");
 
-  // Show ALL main specialties (including those with single entry)
-  const filteredMainSpecialties = Object.keys(specialtyCategories).filter(spec => {
-    if (specialtySearch) {
-      const subs = specialtyCategories[spec as keyof typeof specialtyCategories];
-      return spec.toLowerCase().includes(specialtySearch.toLowerCase()) || subs.some(sub => sub.toLowerCase().includes(specialtySearch.toLowerCase()));
-    }
-    return true;
-  });
-  const filteredLanguages = allLanguages.filter(lang => lang.toLowerCase().includes(languageSearch.toLowerCase()) && !selectedLanguages.includes(lang));
-  const handleSaveChanges = async () => {
-    if (!user || !doctorProfile) {
-      toast.error("Not authenticated");
+  // Public profile
+  const [isPublic, setIsPublic] = useState(false);
+  const [username, setUsername] = useState("");
+
+  useEffect(() => {
+    if (!doctorProfile) return;
+
+    setSpecialty(doctorProfile.specialty || "");
+    setBio(doctorProfile.bio || "");
+    setConsultationFee(
+      doctorProfile.consultation_fee !== null && doctorProfile.consultation_fee !== undefined
+        ? String(doctorProfile.consultation_fee)
+        : "",
+    );
+    setYearsExperience(
+      doctorProfile.years_experience !== null && doctorProfile.years_experience !== undefined
+        ? String(doctorProfile.years_experience)
+        : "",
+    );
+    setLanguages(Array.isArray(doctorProfile.languages) ? doctorProfile.languages.join(", ") : "");
+    setPhone(doctorProfile.profiles?.phone || "");
+
+    const vis = doctorProfile.profiles?.profile_visibility;
+    setIsPublic(vis === "public");
+    setUsername(doctorProfile.profiles?.username || "");
+  }, [doctorProfile]);
+
+  const publicSlug = useMemo(() => {
+    const vis = isPublic;
+    const un = normalizeUsername(username || "");
+
+    if (vis && USERNAME_RE.test(un)) return un;
+
+    // If not public, prefer custom link (unlisted), else fallback to id
+    return doctorProfile?.custom_profile_link || doctorProfile?.id || "";
+  }, [doctorProfile?.custom_profile_link, doctorProfile?.id, isPublic, username]);
+
+  const publicUrl = useMemo(() => {
+    if (!publicSlug) return "";
+    return `/doctor/${publicSlug}`;
+  }, [publicSlug]);
+
+  const usernameError = useMemo(() => {
+    const un = normalizeUsername(username || "");
+    if (!isPublic) return "";
+    if (!un) return "Username is required for a public profile.";
+    if (!USERNAME_RE.test(un)) return "Username must be 3–30 chars and use lowercase letters, numbers, _ or -.";
+    return "";
+  }, [isPublic, username]);
+
+  const handleSave = async () => {
+    if (!doctorProfile) return;
+    if (isPublic && usernameError) {
+      toast({ title: "Invalid username", description: usernameError, variant: "destructive" });
       return;
     }
-    if (isEditingLocked) {
-      toast.error("Profile locked during verification");
-      return;
-    }
+
+    setSaving(true);
     try {
-      const {
-        error: profileError
-      } = await supabase.from('profiles').update({
-        phone: formData.phone
-      }).eq('user_id', user.id);
-      if (profileError) {
-        console.error(profileError);
-        toast.error('Failed to update profile');
-        return;
-      }
-      const {
-        error: doctorError
-      } = await supabase.from('doctors').update({
-        specialty: selectedSpecialties[0] || doctorProfile.specialty,
-        bio: formData.bio,
-        license_number: formData.license_number,
-        consultation_fee: formData.consultation_fee ? parseFloat(formData.consultation_fee) : null,
-        years_experience: formData.years_experience ? parseInt(formData.years_experience) : null,
-        languages: selectedLanguages,
-        consultation_types: selectedConsultationTypes
-      }).eq('user_id', user.id);
-      if (doctorError) throw doctorError;
-      toast.success(t("doctor.profile.profileUpdatedSuccessfully"));
-      refreshAll?.();
-    } catch (error: any) {
-      console.error(error);
-      toast.error(error.message || "Failed to update profile");
-    }
-  };
-  const handleAvatarUpload = async (file: File) => {
-    if (!user || isEditingLocked) return;
-    if (!['image/png', 'image/jpg', 'image/jpeg'].includes(file.type)) {
-      toast.error(t("doctor.profile.avatarError"));
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error(t("doctor.profile.avatarSizeError"));
-      return;
-    }
-    const result = await uploadFile(file, 'avatars', `${user.id}/avatar-${Date.now()}.jpg`);
-    if (result) {
-      await supabase.from('profiles').update({
-        avatar_url: result.url
-      }).eq('user_id', user.id);
-      toast.success(t("doctor.profile.avatarUploaded"));
-      refreshAll?.();
-    }
-  };
-  if (loading) return <div className="flex items-center justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>;
-  if (!doctorProfile) return <div className="text-center p-8"><p className="text-muted-foreground">{t("doctor.profile.noProfile")}</p></div>;
-  return <div className="space-y-6">
-      {isEditingLocked && <Card className="border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20">
-          <CardContent className="pt-6 flex items-start gap-3">
-            <Lock className="w-5 h-5 text-yellow-600" />
-            <div>
-              <h3 className="font-semibold">{t("doctor.profile.verificationPending")}</h3>
-              <p className="text-sm text-muted-foreground">{t("doctor.profile.profileLockedDuringReview")}</p>
-              <Button variant="outline" size="sm" className="mt-2" onClick={() => navigate('/doctor-signup')}>{t("doctor.profile.viewStatus")} <ExternalLink className="w-3 h-3 ml-2" /></Button>
-            </div>
-          </CardContent>
-        </Card>}
+      const un = normalizeUsername(username || "");
 
+      // Update doctor profile fields
+      const { error: docErr } = await supabase
+        .from("doctors")
+        .update({
+          specialty: specialty.trim(),
+          bio: bio.trim() || null,
+          consultation_fee: consultationFee.trim() ? Number(consultationFee) : null,
+          years_experience: yearsExperience.trim() ? Number(yearsExperience) : null,
+          languages: languages
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean),
+        })
+        .eq("id", doctorProfile.id);
+
+      if (docErr) throw docErr;
+
+      // Update profile fields (phone + public profile settings)
+      const profileUpdate: Record<string, any> = {
+        phone: phone.trim() || null,
+        profile_visibility: isPublic ? "public" : "private",
+        username: isPublic ? un : null,
+      };
+
+      const { error: profErr } = await supabase
+        .from("profiles")
+        .update(profileUpdate)
+        .eq("user_id", doctorProfile.user_id);
+
+      if (profErr) {
+        // Handle unique violations cleanly
+        const msg = String((profErr as any)?.message || "");
+        if (msg.toLowerCase().includes("duplicate") || msg.toLowerCase().includes("unique")) {
+          throw new Error("That username is already taken. Please choose another.");
+        }
+        throw profErr;
+      }
+
+      toast({ title: "Saved", description: "Your profile has been updated." });
+      await refreshAllData();
+    } catch (e: any) {
+      console.error("Profile save error:", e);
+      toast({ title: "Error", description: e?.message || "Failed to save profile", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!doctorProfile) {
+    return (
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle className="flex items-center gap-2">
-              {t("doctor.profile.title")} 
-              {doctorProfile?.verified ? <CheckCircle className="w-5 h-5 text-green-600" /> : <Clock className="w-5 h-5 text-amber-600" />}
-            </CardTitle>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => navigate(`/doctor/${doctorProfile.id}`)}>
-                <Eye className="w-4 h-4 mr-2" />{t("doctor.profile.previewProfile")}
-              </Button>
-              
-            </div>
-          </div>
-          <div className="mt-4">
-            <Progress value={profileCompletion} className="h-2" />
-            <p className="text-sm mt-1">{profileCompletion}% {t("doctor.profile.complete")}</p>
-          </div>
+          <CardTitle>Profile</CardTitle>
         </CardHeader>
-      </Card>
-
-      <Card>
-        <CardHeader className="border-b"><CardTitle className="text-lg">{t("doctor.profile.basicInformation")}</CardTitle></CardHeader>
-        <CardContent className="space-y-4 pt-6">
-          <div className="flex items-center gap-6">
-            <Avatar className="h-20 w-20">
-              <AvatarImage src={doctorProfile.profiles?.avatar_url} />
-              <AvatarFallback>{doctorProfile.profiles?.full_name?.charAt(0) || 'DR'}</AvatarFallback>
-            </Avatar>
-            <Button variant="outline" size="sm" disabled={uploading || isEditingLocked} onClick={() => {
-            const i = document.createElement('input');
-            i.type = 'file';
-            i.accept = 'image/*';
-            i.onchange = e => {
-              const f = (e.target as HTMLInputElement)?.files?.[0];
-              if (f) handleAvatarUpload(f);
-            };
-            i.click();
-          }}>
-              <Upload className="w-4 h-4 mr-2" />{uploading ? t("doctor.profile.uploading") : t("doctor.profile.uploadPhoto")}
-            </Button>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div><Label>{t("doctor.profile.fullName")}</Label><Input value={doctorProfile.profiles?.full_name || ''} readOnly className="bg-muted/50" /></div>
-            <div><Label>{t("doctor.profile.email")}</Label><Input value={doctorProfile.profiles?.email || ''} readOnly className="bg-muted/50" /></div>
-          </div>
-          
-          {/* Phone with validation */}
-          <div>
-            <Label><Phone className="w-4 h-4 inline mr-1" />{t("doctor.profile.displayPhone")}</Label>
-            <Input value={formData.phone} onChange={e => setFormData(p => ({
-            ...p,
-            phone: e.target.value
-          }))} disabled={isEditingLocked} className={phoneValidation.isValid ? 'border-green-500' : formData.phone ? 'border-red-500' : ''} placeholder="+1234567890" />
-            {formData.phone && <p className={`text-xs mt-1 ${phoneValidation.isValid ? 'text-green-600' : 'text-red-600'}`}>
-                {phoneValidation.isValid ? <><CheckCircle2 className="w-3 h-3 inline mr-1" />{t("doctor.profile.validPhone")}</> : phoneValidation.message}
-              </p>}
-          </div>
-
-          {/* SMS Phone */}
-          <Card className="border-blue-200 bg-blue-50/30 dark:bg-blue-950/20">
-            <CardContent className="pt-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <Checkbox id="useSamePhone" checked={useSamePhoneForSms} onCheckedChange={checked => setUseSamePhoneForSms(checked as boolean)} disabled={isEditingLocked} />
-                <Label htmlFor="useSamePhone" className="text-sm cursor-pointer">{t("doctor.profile.useSamePhoneForSms")}</Label>
-              </div>
-              {!useSamePhoneForSms && <div>
-                  <Label>{t("doctor.profile.smsPhoneNumber")}</Label>
-                  <Input value={formData.sms_phone} onChange={e => setFormData(p => ({
-                ...p,
-                sms_phone: e.target.value
-              }))} placeholder="+1234567890" disabled={isEditingLocked} className={smsPhoneValidation.isValid ? 'border-green-500' : formData.sms_phone ? 'border-red-500' : ''} />
-                  {formData.sms_phone && <p className={`text-xs mt-1 ${smsPhoneValidation.isValid ? 'text-green-600' : 'text-red-600'}`}>
-                      {smsPhoneValidation.message}
-                    </p>}
-                </div>}
-            </CardContent>
-          </Card>
-
-          <div><Label>{t("doctor.profile.bio")}</Label><Textarea value={formData.bio} onChange={e => setFormData(p => ({
-            ...p,
-            bio: e.target.value
-          }))} disabled={isEditingLocked} className="min-h-[100px]" placeholder={t("doctor.profile.bioPlaceholder")} /></div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="border-b">
-          <CardTitle className="text-lg">{t("doctor.profile.specialties")}</CardTitle>
-          <p className="text-sm text-muted-foreground">{t("doctor.profile.specialtiesNote")}</p>
-        </CardHeader>
-        <CardContent className="pt-6 space-y-4">
-          {selectedSpecialties.length > 0 && <div className="flex flex-wrap gap-2">
-              {selectedSpecialties.map((s, i) => <Badge key={s} variant={i === 0 ? "default" : "secondary"} className="flex items-center gap-1">
-                  {i === 0 && <span className="text-xs mr-1">[Main]</span>}
-                  {s}
-                  {!isEditingLocked && <X className="w-3 h-3 cursor-pointer" onClick={() => removeSpecialty(s)} />}
-                </Badge>)}
-            </div>}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input placeholder="Search..." value={specialtySearch} onChange={e => setSpecialtySearch(e.target.value)} className="pl-10" disabled={isEditingLocked} />
-          </div>
-          <div className="border rounded-lg max-h-[250px] overflow-y-auto">
-            {filteredMainSpecialties.map(main => {
-            const subs = specialtyCategories[main as keyof typeof specialtyCategories];
-            return <div key={main} className="border-b last:border-b-0">
-                  <button type="button" onClick={() => toggleExpandSpecialty(main)} className="w-full px-4 py-2 flex justify-between items-center hover:bg-muted/50" disabled={isEditingLocked}>
-                    <span className="text-sm font-medium">{main}</span>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-xs">{subs.length}</Badge>
-                      {expandedSpecialty === main ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                    </div>
-                  </button>
-                  {expandedSpecialty === main && <div className="px-4 pb-2 grid grid-cols-2 gap-1 bg-muted/30">
-                      {subs.map(sub => {
-                  const fullName = `${main} - ${sub}`;
-                  return <label key={sub} className="flex items-center gap-2 p-1 text-sm cursor-pointer">
-                            <Checkbox checked={selectedSpecialties.includes(fullName)} onCheckedChange={() => toggleSpecialty(sub, main)} disabled={isEditingLocked} />
-                            {sub}
-                          </label>;
-                })}
-                    </div>}
-                </div>;
-          })}
+        <CardContent>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Loading profile…
           </div>
         </CardContent>
       </Card>
+    );
+  }
 
-      <Card>
-        <CardHeader className="border-b"><CardTitle className="text-lg">{t("doctor.profile.languages")}</CardTitle></CardHeader>
-        <CardContent className="pt-6 space-y-4">
-          {selectedLanguages.length > 0 && <div className="flex flex-wrap gap-2">
-              {selectedLanguages.map(l => <Badge key={l} variant="secondary" className="flex items-center gap-1">
-                  {l}{!isEditingLocked && <X className="w-3 h-3 cursor-pointer" onClick={() => removeLanguage(l)} />}
-                </Badge>)}
-            </div>}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input placeholder={t("doctor.profile.search")} value={languageSearch} onChange={e => setLanguageSearch(e.target.value)} className="pl-10" disabled={isEditingLocked} />
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between gap-4">
+        <div className="min-w-0">
+          <CardTitle className="flex items-center gap-2">
+            <UserRound className="h-5 w-5" />
+            Doctor Profile
+          </CardTitle>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <Badge variant={doctorProfile.verified ? "default" : "secondary"}>
+              {doctorProfile.verified ? "Verified" : "Unverified"}
+            </Badge>
+            {doctorProfile.profiles?.profile_visibility === "public" ? (
+              <Badge variant="outline">Public</Badge>
+            ) : (
+              <Badge variant="outline">Private</Badge>
+            )}
           </div>
-          <div className="border rounded-lg max-h-[250px] overflow-y-auto p-2 grid grid-cols-3 gap-1">
-            {filteredLanguages.map(l => <label key={l} className="flex items-center gap-2 p-1 text-sm cursor-pointer hover:bg-muted/50 rounded">
-                <Checkbox checked={selectedLanguages.includes(l)} onCheckedChange={() => toggleLanguage(l)} disabled={isEditingLocked} />
-                {l}
-              </label>)}
-            {filteredLanguages.length === 0 && <p className="text-sm text-muted-foreground col-span-3 p-2">{t("doctor.profile.noLanguagesFound")}</p>}
-          </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      <Card>
-        <CardHeader className="border-b"><CardTitle className="text-lg">{t("doctor.profile.professionalDetails")}</CardTitle></CardHeader>
-        <CardContent className="space-y-4 pt-6">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (publicSlug) navigate(`/doctor/${publicSlug}`);
+            }}
+            disabled={!publicSlug}
+          >
+            <ExternalLink className="h-4 w-4 mr-2" />
+            Preview
+          </Button>
+          <Button size="sm" onClick={handleSave} disabled={saving}>
+            {saving ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Saving…
+              </>
+            ) : (
+              "Save"
+            )}
+          </Button>
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="specialty">Specialty</Label>
+            <Input
+              id="specialty"
+              value={specialty}
+              onChange={(e) => setSpecialty(e.target.value)}
+              placeholder="e.g., Dermatology"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phone">Phone</Label>
+            <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+998…" />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="consultationFee">Consultation Fee</Label>
+            <Input
+              id="consultationFee"
+              type="number"
+              inputMode="decimal"
+              value={consultationFee}
+              onChange={(e) => setConsultationFee(e.target.value)}
+              placeholder="e.g., 200"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="yearsExperience">Years of Experience</Label>
+            <Input
+              id="yearsExperience"
+              type="number"
+              inputMode="numeric"
+              value={yearsExperience}
+              onChange={(e) => setYearsExperience(e.target.value)}
+              placeholder="e.g., 8"
+            />
+          </div>
+
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="languages">Languages</Label>
+            <Input
+              id="languages"
+              value={languages}
+              onChange={(e) => setLanguages(e.target.value)}
+              placeholder="English, Russian, Uzbek"
+            />
+            <p className="text-xs text-muted-foreground">Comma-separated</p>
+          </div>
+
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="bio">Bio</Label>
+            <Textarea
+              id="bio"
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              rows={5}
+              placeholder="Introduce yourself to patients…"
+            />
+          </div>
+        </div>
+
+        <Separator />
+
+        <div className="space-y-4">
+          <div className="flex items-start justify-between gap-4">
             <div>
-              <Label>{t("doctor.profile.licenseNumber")}</Label>
-              <Input value={formData.license_number} onChange={e => setFormData(p => ({
-              ...p,
-              license_number: e.target.value
-            }))} disabled={isEditingLocked} />
+              <h3 className="font-medium flex items-center gap-2">
+                <Shield className="h-4 w-4" />
+                Public Profile
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                When enabled, patients can visit your profile at{" "}
+                <span className="font-mono">{publicUrl || "/doctor/username"}</span>.
+              </p>
             </div>
-            <div>
-              <Label>{t("doctor.profile.experience")}</Label>
-              <Select value={formData.years_experience} onValueChange={v => setFormData(p => ({
-              ...p,
-              years_experience: v
-            }))} disabled={isEditingLocked}>
-                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                <SelectContent>{experienceOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
+            <Switch checked={isPublic} onCheckedChange={setIsPublic} />
           </div>
-          <div>
-            <Label>{t("doctor.profile.consultationTypes")}</Label>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {consultationTypes.map(ct => <label key={ct} className={`flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer ${selectedConsultationTypes.includes(ct) ? 'border-primary bg-primary/10' : ''}`}>
-                  <Checkbox checked={selectedConsultationTypes.includes(ct)} onCheckedChange={() => toggleConsultationType(ct)} disabled={isEditingLocked} />
-                  {ct}
-                </label>)}
-            </div>
-          </div>
-          <div>
-            <Label>{t("doctor.profile.consultationFee")}</Label>
-            <Input type="number" value={formData.consultation_fee} onChange={e => setFormData(p => ({
-            ...p,
-            consultation_fee: e.target.value
-          }))} disabled={isEditingLocked} />
-          </div>
-        </CardContent>
-      </Card>
 
-      <div className="flex justify-end">
-        <Button onClick={handleSaveChanges} disabled={isEditingLocked} size="lg">
-          {isEditingLocked ? <><Lock className="w-4 h-4 mr-2" />{t("doctor.profile.locked")}</> : t("doctor.profile.saveChanges")}
-        </Button>
-      </div>
-    </div>;
-};
-export default DoctorProfileSection;
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="e.g., dr_ahmad"
+                disabled={!isPublic}
+              />
+              {usernameError ? (
+                <p className="text-xs text-destructive">{usernameError}</p>
+              ) : (
+                <p className="text-xs text-muted-foreground">3–30 chars, lowercase letters/numbers, _ or -</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label>Profile URL</Label>
+              <Input value={publicUrl || ""} readOnly />
+            </div>
+          </div>
+
+          {!isPublic && (
+            <Alert>
+              <AlertDescription>Your profile is private (unlisted). Share your link directly if needed.</AlertDescription>
+            </Alert>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
