@@ -1,3 +1,4 @@
+// File: src/pages/AppointmentBooking.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { format, parseISO, startOfDay, isBefore, isSameDay } from "date-fns";
@@ -11,6 +12,7 @@ import {
   Video,
   MessageSquare,
   Building2,
+  Lock,
 } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -86,7 +88,6 @@ export default function AppointmentBooking() {
   const [notes, setNotes] = useState<string>("");
 
   const today = useMemo(() => startOfDay(new Date()), []);
-  const nowMsWithBuffer = useMemo(() => Date.now() + 60_000, [selectedDate, durationMinutes, appointmentType]);
 
   // Prefill email/phone
   useEffect(() => {
@@ -466,14 +467,14 @@ export default function AppointmentBooking() {
                 selected={selectedDate}
                 onSelect={(d) => d && setSelectedDate(startOfDay(d))}
                 weekStartsOn={1}
-                // ✅ mark old days as not bookable
+                // ✅ old days disabled (not bookable) + today highlighted by Calendar component styling
                 disabled={(d) => isBefore(startOfDay(d), today)}
                 className="rounded-md border"
               />
 
               <div className="text-xs text-muted-foreground">
                 {isSameDay(selectedDate, today)
-                  ? "Today is highlighted. Past days are disabled."
+                  ? "Today is outlined. Past days are disabled."
                   : "Past days are disabled. Select a future date to book."}
               </div>
             </CardContent>
@@ -512,17 +513,28 @@ export default function AppointmentBooking() {
                         type="button"
                         variant={selected ? "default" : "outline"}
                         onClick={() => setSelectedSlotStart(slot.start_at)}
-                        className="justify-center"
-                        disabled={locked} // ✅ lock old times
+                        disabled={locked} // ✅ old times locked (not bookable)
+                        className={cn(
+                          "justify-center rounded-md border-2",
+                          selected ? "border-primary" : "border-muted-foreground/20",
+                          locked ? "bg-muted/40 text-muted-foreground/60 border-muted-foreground/20" : "",
+                        )}
                       >
-                        {label}
+                        {locked ? (
+                          <span className="inline-flex items-center gap-2">
+                            <Lock className="h-3.5 w-3.5" />
+                            {label}
+                          </span>
+                        ) : (
+                          label
+                        )}
                       </Button>
                     );
                   })}
                 </div>
               )}
               <div className="mt-3 text-xs text-muted-foreground">
-                Past times are automatically locked and cannot be selected.
+                Past time slots are shown as locked and cannot be selected.
               </div>
             </CardContent>
           </Card>
@@ -545,7 +557,12 @@ export default function AppointmentBooking() {
 
               <div className="space-y-2">
                 <Label htmlFor="name">Name (optional)</Label>
-                <Input id="name" value={patientName} onChange={(e) => setPatientName(e.target.value)} placeholder="Your name" />
+                <Input
+                  id="name"
+                  value={patientName}
+                  onChange={(e) => setPatientName(e.target.value)}
+                  placeholder="Your name"
+                />
               </div>
 
               <div className="space-y-2">
@@ -561,7 +578,13 @@ export default function AppointmentBooking() {
 
               <div className="space-y-2">
                 <Label htmlFor="notes">Notes (optional)</Label>
-                <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Any details for the doctor..." rows={4} />
+                <Textarea
+                  id="notes"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Any details for the doctor..."
+                  rows={4}
+                />
               </div>
 
               <Button onClick={handleBook} disabled={!canBook} className="w-full">
@@ -577,7 +600,8 @@ export default function AppointmentBooking() {
 
               {selectedSlotStart ? (
                 <div className="text-xs text-muted-foreground">
-                  Selected: {format(parseISO(selectedSlotStart), "PPP")} at {format(parseISO(selectedSlotStart), "HH:mm")} ({durationMinutes} min)
+                  Selected: {format(parseISO(selectedSlotStart), "PPP")} at {format(parseISO(selectedSlotStart), "HH:mm")}{" "}
+                  ({durationMinutes} min)
                 </div>
               ) : (
                 <div className="text-xs text-muted-foreground">Select a time slot to continue.</div>
@@ -588,4 +612,8 @@ export default function AppointmentBooking() {
       </div>
     </main>
   );
+}
+
+function cn(...inputs: Array<string | undefined | null | false>) {
+  return inputs.filter(Boolean).join(" ");
 }
