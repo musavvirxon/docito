@@ -103,7 +103,7 @@ function Calendar({
           white-space: nowrap;
         }
         .rdp-root .rdp-grid-cell {
-          height: 2.25rem;
+          height: 2.5rem; /* a bit taller to show "rectangles" clearly */
           display: flex;
           align-items: center;
           justify-content: center;
@@ -128,27 +128,41 @@ function Calendar({
           nav_button_previous: "absolute left-1",
           nav_button_next: "absolute right-1",
 
-          // DayPicker still uses these keys; our custom components receive them as className
           table: "w-full",
           head_row: "",
           head_cell: "text-muted-foreground font-normal text-[0.8rem]",
           row: "",
           cell:
-            "relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-          day: cn(buttonVariants({ variant: "ghost" }), "h-9 w-9 p-0 font-normal aria-selected:opacity-100"),
+            "relative focus-within:relative focus-within:z-20",
+
+          // ✅ Rectangles around day numbers via border + rounded-md
+          day: cn(
+            buttonVariants({ variant: "ghost" }),
+            "h-10 w-10 p-0 font-normal rounded-md border border-transparent aria-selected:opacity-100",
+          ),
           day_range_end: "day-range-end",
+
+          // Selected day: filled + strong rectangle
           day_selected:
-            "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-          day_today: "bg-accent text-accent-foreground",
+            "bg-primary text-primary-foreground border-2 border-primary hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+
+          // Today: outlined rectangle (no fill)
+          day_today:
+            "bg-transparent text-foreground border-2 border-primary/70",
+
+          // Disabled (past) days: light fill + muted rectangle + not clickable
+          day_disabled:
+            "text-muted-foreground/60 border border-muted-foreground/20 bg-muted/40",
+
+          // Outside month days: very faint rectangle
           day_outside:
-            "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
-          day_disabled: "text-muted-foreground opacity-50",
+            "day-outside text-muted-foreground/50 border border-muted-foreground/10 aria-selected:bg-accent/40 aria-selected:text-muted-foreground aria-selected:opacity-60",
+
           day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
           day_hidden: "invisible",
           ...classNames,
         }}
         components={{
-          // ✅ DIV-grid structure but with FULL prop/ref forwarding so selection works
           Table: GridTable as any,
           HeadRow: GridHeadRow as any,
           Row: GridRow as any,
