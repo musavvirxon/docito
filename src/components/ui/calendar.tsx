@@ -1,3 +1,4 @@
+// File: src/components/ui/calendar.tsx
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker } from "react-day-picker";
@@ -39,31 +40,48 @@ function Calendar({
 
   /**
    * ✅ IMPORTANT:
-   * Some projects have global CSS that breaks <table>/<tr>/<td> (e.g. display:block/flex).
-   * To make the calendar always render correctly, we override DayPicker's table parts
-   * and render a DIV-based 7-column grid instead of using table semantics.
+   * Your project likely has global CSS that breaks <table>/<tr>/<td> (e.g. display:block/flex).
+   * We render DayPicker's "table" parts using DIVs in a strict 7-column grid.
+   *
+   * ✅ ALSO IMPORTANT:
+   * DayPicker passes props/events/roles to these components.
+   * We MUST forward ALL props (and refs) so day selection works.
    */
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const GridTable = ({ className: cn0, children }: any) => (
-    <div className={cn("rdp-grid-table w-full", cn0)}>{children}</div>
+  const GridTable = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+    ({ className: cn0, ...p }, ref) => (
+      <div ref={ref} className={cn("rdp-grid-table w-full", cn0)} {...p} />
+    ),
   );
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const GridHeadRow = ({ className: cn0, children }: any) => (
-    <div className={cn("rdp-grid-head", cn0)}>{children}</div>
+  GridTable.displayName = "GridTable";
+
+  const GridHeadRow = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+    ({ className: cn0, ...p }, ref) => (
+      <div ref={ref} className={cn("rdp-grid-head", cn0)} {...p} />
+    ),
   );
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const GridRow = ({ className: cn0, children }: any) => (
-    <div className={cn("rdp-grid-row", cn0)}>{children}</div>
+  GridHeadRow.displayName = "GridHeadRow";
+
+  const GridRow = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+    ({ className: cn0, ...p }, ref) => (
+      <div ref={ref} className={cn("rdp-grid-row", cn0)} {...p} />
+    ),
   );
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const GridHeadCell = ({ className: cn0, children }: any) => (
-    <div className={cn("rdp-grid-head-cell", cn0)}>{children}</div>
+  GridRow.displayName = "GridRow";
+
+  const GridHeadCell = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+    ({ className: cn0, ...p }, ref) => (
+      <div ref={ref} className={cn("rdp-grid-head-cell", cn0)} {...p} />
+    ),
   );
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const GridCell = ({ className: cn0, children }: any) => (
-    <div className={cn("rdp-grid-cell", cn0)}>{children}</div>
+  GridHeadCell.displayName = "GridHeadCell";
+
+  const GridCell = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+    ({ className: cn0, ...p }, ref) => (
+      <div ref={ref} className={cn("rdp-grid-cell", cn0)} {...p} />
+    ),
   );
+  GridCell.displayName = "GridCell";
 
   return (
     <div className={cn("rdp-root", className)}>
@@ -71,8 +89,8 @@ function Calendar({
         .rdp-root .rdp-grid-table { display: flex; flex-direction: column; gap: .5rem; }
         .rdp-root .rdp-grid-head,
         .rdp-root .rdp-grid-row {
-          display: grid;
-          grid-template-columns: repeat(7, minmax(0, 1fr));
+          display: grid !important;
+          grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
           gap: .25rem;
           width: 100%;
         }
@@ -110,17 +128,14 @@ function Calendar({
           nav_button_previous: "absolute left-1",
           nav_button_next: "absolute right-1",
 
-          // These are still used by DayPicker for class application (even with custom components)
+          // DayPicker still uses these keys; our custom components receive them as className
           table: "w-full",
           head_row: "",
           head_cell: "text-muted-foreground font-normal text-[0.8rem]",
           row: "",
           cell:
             "relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-          day: cn(
-            buttonVariants({ variant: "ghost" }),
-            "h-9 w-9 p-0 font-normal aria-selected:opacity-100",
-          ),
+          day: cn(buttonVariants({ variant: "ghost" }), "h-9 w-9 p-0 font-normal aria-selected:opacity-100"),
           day_range_end: "day-range-end",
           day_selected:
             "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
@@ -133,16 +148,11 @@ function Calendar({
           ...classNames,
         }}
         components={{
-          // ✅ Replace table layout with grid layout to guarantee 7-day alignment
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // ✅ DIV-grid structure but with FULL prop/ref forwarding so selection works
           Table: GridTable as any,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           HeadRow: GridHeadRow as any,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           Row: GridRow as any,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           HeadCell: GridHeadCell as any,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           Cell: GridCell as any,
           Chevron: ({ orientation }) =>
             orientation === "left" ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />,
