@@ -43,19 +43,37 @@ function Calendar({
   }
 
   return (
-    <div className={cn("rdp-root", className)}>
-      {/* ✅ Hard CSS override to prevent vertical stacking regardless of global styles */}
+    <div className={cn("rdp-fix p-3", className)}>
+      {/* ✅ Force real table semantics. Some projects globally set table/tr/td to block/flex -> breaks DayPicker. */}
       <style>{`
-        .rdp-root .rdp-months { display: flex; flex-direction: column; gap: 1rem; }
-        .rdp-root .rdp-month { width: 100%; }
-        .rdp-root .rdp-table { width: 100% !important; table-layout: fixed !important; border-collapse: collapse !important; }
-        .rdp-root .rdp-thead { width: 100% !important; }
-        .rdp-root .rdp-tbody { width: 100% !important; }
-        .rdp-root .rdp-head_row { display: grid !important; grid-template-columns: repeat(7, minmax(0, 1fr)) !important; width: 100% !important; }
-        .rdp-root .rdp-row { display: grid !important; grid-template-columns: repeat(7, minmax(0, 1fr)) !important; width: 100% !important; }
-        .rdp-root .rdp-head_cell { text-align: center !important; padding: 0 !important; height: 2.25rem !important; }
-        .rdp-root .rdp-cell { padding: 0 !important; height: 2.25rem !important; display: flex !important; align-items: center !important; justify-content: center !important; }
-        .rdp-root .rdp-day { margin: 0 auto !important; }
+        .rdp-fix .rdp-table { 
+          display: table !important; 
+          width: 100% !important; 
+          table-layout: fixed !important; 
+          border-collapse: collapse !important; 
+        }
+        .rdp-fix .rdp-thead { display: table-header-group !important; }
+        .rdp-fix .rdp-tbody { display: table-row-group !important; }
+        .rdp-fix .rdp-head_row { display: table-row !important; }
+        .rdp-fix .rdp-row { display: table-row !important; }
+        .rdp-fix .rdp-head_cell { 
+          display: table-cell !important; 
+          width: calc(100% / 7) !important;
+          text-align: center !important;
+          vertical-align: middle !important;
+          padding: 0 !important;
+          height: 2.25rem !important;
+          white-space: nowrap !important;
+        }
+        .rdp-fix .rdp-cell { 
+          display: table-cell !important; 
+          width: calc(100% / 7) !important;
+          text-align: center !important;
+          vertical-align: middle !important;
+          padding: 0 !important;
+          height: 2.25rem !important;
+        }
+        .rdp-fix .rdp-day { margin: 0 auto !important; }
       `}</style>
 
       <DayPicker
@@ -64,8 +82,8 @@ function Calendar({
         modifiers={modifiers}
         modifiersClassNames={modifiersClassNames}
         classNames={{
-          months: "rdp-months",
-          month: "rdp-month space-y-4",
+          months: "flex flex-col space-y-4",
+          month: "space-y-4",
           caption: "flex justify-center pt-1 relative items-center",
           caption_label: "text-sm font-medium",
           nav: "space-x-1 flex items-center",
@@ -76,11 +94,13 @@ function Calendar({
           nav_button_previous: "absolute left-1",
           nav_button_next: "absolute right-1",
 
-          // These class hooks are used by the injected CSS above
-          table: "rdp-table",
+          // Hook classes used by the CSS above
+          table: "rdp-table w-full",
+          thead: "rdp-thead",
+          tbody: "rdp-tbody",
           head_row: "rdp-head_row",
+          row: "rdp-row",
           head_cell: "rdp-head_cell text-muted-foreground font-normal text-[0.8rem]",
-          row: "rdp-row mt-2",
           cell:
             "rdp-cell relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
 
@@ -97,6 +117,7 @@ function Calendar({
           day_disabled: "text-muted-foreground opacity-50",
           day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
           day_hidden: "invisible",
+
           ...classNames,
         }}
         components={{
