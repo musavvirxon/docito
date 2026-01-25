@@ -1,51 +1,55 @@
 // File: src/pages/PatientDashboard.tsx
 import { useMemo, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { format } from "date-fns";
+import {
+  ArrowRightLeft,
+  Calendar,
+  CheckCircle2,
+  ClipboardList,
+  Clock,
+  FileText,
+  Home,
+  LogOut,
+  MapPin,
+  Menu,
+  Pill,
+  Plus,
+  Receipt,
+  Search,
+  Settings,
+  TestTube2,
+  User,
+  X,
+  XCircle,
+} from "lucide-react";
+import { toast } from "sonner";
+
 import { useAuth } from "@/contexts/AuthContext";
 import { useAppointments } from "@/hooks/useAppointments";
 import { usePatientDashboard } from "@/hooks/usePatientDashboard";
-import { useTranslation } from "react-i18next";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import {
-  Calendar,
-  Settings,
-  User,
-  LogOut,
-  FileText,
-  Pill,
-  Home,
-  Search,
-  Plus,
-  Clock,
-  MapPin,
-  Menu,
-  X,
-  Receipt,
-  ClipboardList,
-  TestTube2,
-  ArrowRightLeft,
-  CheckCircle2,
-  XCircle,
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
-import { NotificationDropdown } from "@/components/NotificationDropdown";
-import { MedicationReminderDashboard } from "@/components/medication/MedicationReminderDashboard";
-import { PatientSettingsPanel } from "@/components/patient/PatientSettingsPanel";
-import { PatientMedicalRecords } from "@/components/patient/PatientMedicalRecords";
-import { PatientTreatmentPlans } from "@/components/patient/PatientTreatmentPlans";
-import { PatientBilling } from "@/components/patient/PatientBilling";
-import { PatientTestResultsSection } from "@/components/patient/PatientTestResultsSection";
-import ThemeToggle from "@/components/home/ThemeToggle";
-import { PatientReferralsSection } from "@/components/patient/PatientReferralsSection";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { DashboardBranding } from "@/components/dashboard/DashboardBranding";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+
+import { cn } from "@/lib/utils";
+import ThemeToggle from "@/components/home/ThemeToggle";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { NotificationDropdown } from "@/components/NotificationDropdown";
+import { DashboardBranding } from "@/components/dashboard/DashboardBranding";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+
+import { MedicationReminderDashboard } from "@/components/medication/MedicationReminderDashboard";
+import { PatientBilling } from "@/components/patient/PatientBilling";
+import { PatientMedicalRecords } from "@/components/patient/PatientMedicalRecords";
+import { PatientReferralsSection } from "@/components/patient/PatientReferralsSection";
+import { PatientSettingsPanel } from "@/components/patient/PatientSettingsPanel";
+import { PatientTestResultsSection } from "@/components/patient/PatientTestResultsSection";
+import { PatientTreatmentPlans } from "@/components/patient/PatientTreatmentPlans";
 
 function asOne<T = any>(v: any): T | null {
   if (!v) return null;
@@ -68,8 +72,12 @@ function appointmentRoute(apt: any) {
   return id ? `/booking-confirmation/${id}` : "";
 }
 
-const PatientDashboard = () => {
+export default function PatientDashboard() {
+  // ✅ ALL HOOKS MUST BE CALLED UNCONDITIONALLY (fixes React invariant #310)
   const { user, profile, signOut, loading: authLoading } = useAuth();
+  const { t } = useTranslation("dashboard");
+  const navigate = useNavigate();
+
   const { stats, loading: statsLoading, refetch: refetchStats } = usePatientDashboard();
   const {
     appointments,
@@ -78,60 +86,28 @@ const PatientDashboard = () => {
     refetch: refetchAppointments,
   } = useAppointments();
 
-  const [activeSection, setActiveSection] = useState("dashboard");
+  const [activeSection, setActiveSection] = useState<string>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const navigate = useNavigate();
-  const { t } = useTranslation("dashboard");
 
-  // ✅ Fix: don't redirect while profile is still loading (prevents empty/blank dashboard)
-  if (!authLoading && !user) {
-    return <Navigate to="/auth" replace />;
-  }
+  const doctorFallbackLabel = useMemo(() => t("patient.appointments.doctor"), [t]);
 
-  if (!authLoading && user && !profile) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
-          <p className="text-muted-foreground">Loading your profile...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!authLoading && profile && profile.role !== "patient") {
-    return <Navigate to="/doctor-dashboard" replace />;
-  }
-
-  if (authLoading || statsLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
-          <p className="text-muted-foreground">{t("patient.loading")}</p>
-        </div>
-      </div>
-    );
-  }
-
-  const navItems = [
-    { id: "dashboard", label: t("patient.navigation.dashboard"), icon: Home },
-    { id: "appointments", label: t("patient.navigation.myAppointments"), icon: Calendar },
-    { id: "referrals", label: "My Referrals", icon: ArrowRightLeft },
-    { id: "medications", label: t("patient.navigation.medications"), icon: Pill },
-    { id: "records", label: t("patient.navigation.medicalRecords"), icon: FileText },
-    { id: "test-results", label: "Test Results", icon: TestTube2 },
-    { id: "treatment-plans", label: "Treatment Plans", icon: ClipboardList },
-    { id: "billing", label: "Billing", icon: Receipt },
-    { id: "settings", label: t("patient.navigation.settings"), icon: Settings },
-  ];
+  const navItems = useMemo(
+    () => [
+      { id: "dashboard", label: t("patient.navigation.dashboard"), icon: Home },
+      { id: "appointments", label: t("patient.navigation.myAppointments"), icon: Calendar },
+      { id: "referrals", label: "My Referrals", icon: ArrowRightLeft },
+      { id: "medications", label: t("patient.navigation.medications"), icon: Pill },
+      { id: "records", label: t("patient.navigation.medicalRecords"), icon: FileText },
+      { id: "test-results", label: "Test Results", icon: TestTube2 },
+      { id: "treatment-plans", label: "Treatment Plans", icon: ClipboardList },
+      { id: "billing", label: "Billing", icon: Receipt },
+      { id: "settings", label: t("patient.navigation.settings"), icon: Settings },
+    ],
+    [t],
+  );
 
   const handleNavClick = (itemId: string) => {
-    if (itemId === "find-doctors") {
-      navigate("/find-doctors");
-    } else {
-      setActiveSection(itemId);
-    }
+    setActiveSection(itemId);
     setSidebarOpen(false);
   };
 
@@ -165,7 +141,34 @@ const PatientDashboard = () => {
     }
   }
 
-  const doctorFallbackLabel = useMemo(() => t("patient.appointments.doctor"), [t]);
+  // ✅ AFTER ALL HOOKS: safe to early-return
+  if (!authLoading && !user) return <Navigate to="/auth" replace />;
+
+  if (!authLoading && user && !profile) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
+          <p className="text-muted-foreground">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!authLoading && profile && profile.role !== "patient") {
+    return <Navigate to="/doctor-dashboard" replace />;
+  }
+
+  if (authLoading || statsLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
+          <p className="text-muted-foreground">{t("patient.loading")}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -173,16 +176,14 @@ const PatientDashboard = () => {
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-50 w-64 bg-sidebar border-r border-sidebar-border transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          sidebarOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         <div className="flex flex-col h-full">
-          {/* Branding */}
           <div className="p-4 border-b border-sidebar-border">
             <DashboardBranding size="md" />
           </div>
 
-          {/* User Profile Section */}
           <div className="p-6 border-b border-sidebar-border">
             <div className="flex items-center gap-3 mb-4">
               <Avatar className="h-12 w-12">
@@ -192,23 +193,15 @@ const PatientDashboard = () => {
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sidebar-foreground truncate">
-                  {profile?.full_name || "Patient"}
-                </p>
+                <p className="font-semibold text-sidebar-foreground truncate">{profile?.full_name || "Patient"}</p>
                 <p className="text-sm text-sidebar-foreground/60 truncate">{profile?.email}</p>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="lg:hidden"
-                onClick={() => setSidebarOpen(false)}
-              >
+              <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(false)}>
                 <X className="h-5 w-5" />
               </Button>
             </div>
           </div>
 
-          {/* Navigation Items */}
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -221,7 +214,7 @@ const PatientDashboard = () => {
                     "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left",
                     isActive
                       ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent/50"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent/50",
                   )}
                 >
                   <Icon className="h-5 w-5 flex-shrink-0" />
@@ -229,6 +222,7 @@ const PatientDashboard = () => {
                 </button>
               );
             })}
+
             <button
               onClick={() => navigate("/find-doctors")}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left text-sidebar-foreground hover:bg-sidebar-accent/50"
@@ -238,7 +232,6 @@ const PatientDashboard = () => {
             </button>
           </nav>
 
-          {/* Logout Button */}
           <div className="p-4 border-t border-sidebar-border">
             <Button
               variant="ghost"
@@ -252,25 +245,13 @@ const PatientDashboard = () => {
         </div>
       </aside>
 
-      {/* Overlay for mobile */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      {sidebarOpen && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Header */}
         <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="flex h-16 items-center gap-4 px-4 lg:px-6">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden"
-              onClick={() => setSidebarOpen(true)}
-            >
+            <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(true)}>
               <Menu className="h-5 w-5" />
             </Button>
 
@@ -286,7 +267,6 @@ const PatientDashboard = () => {
           </div>
         </header>
 
-        {/* Content Area */}
         <main className="flex-1 overflow-auto p-6">
           {activeSection === "dashboard" && (
             <div className="space-y-6">
@@ -295,9 +275,7 @@ const PatientDashboard = () => {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div className="space-y-2">
-                        <p className="text-sm font-medium text-muted-foreground">
-                          {t("patient.stats.upcomingAppointments")}
-                        </p>
+                        <p className="text-sm font-medium text-muted-foreground">{t("patient.stats.upcomingAppointments")}</p>
                         <p className="text-3xl font-bold">{stats?.upcomingAppointmentsCount || 0}</p>
                       </div>
                       <div className="p-3 rounded-full bg-blue-50 dark:bg-blue-950/30">
@@ -311,9 +289,7 @@ const PatientDashboard = () => {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div className="space-y-2">
-                        <p className="text-sm font-medium text-muted-foreground">
-                          {t("patient.stats.medicalRecords")}
-                        </p>
+                        <p className="text-sm font-medium text-muted-foreground">{t("patient.stats.medicalRecords")}</p>
                         <p className="text-3xl font-bold">{stats?.medicalRecordsCount || 0}</p>
                       </div>
                       <div className="p-3 rounded-full bg-green-50 dark:bg-green-950/30">
@@ -327,9 +303,7 @@ const PatientDashboard = () => {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div className="space-y-2">
-                        <p className="text-sm font-medium text-muted-foreground">
-                          {t("patient.stats.pendingReminders")}
-                        </p>
+                        <p className="text-sm font-medium text-muted-foreground">{t("patient.stats.pendingReminders")}</p>
                         <p className="text-3xl font-bold">{stats?.pendingReminders || 0}</p>
                       </div>
                       <div className="p-3 rounded-full bg-purple-50 dark:bg-purple-950/30">
@@ -343,9 +317,7 @@ const PatientDashboard = () => {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div className="space-y-2">
-                        <p className="text-sm font-medium text-muted-foreground">
-                          {t("patient.stats.nextAppointment")}
-                        </p>
+                        <p className="text-sm font-medium text-muted-foreground">{t("patient.stats.nextAppointment")}</p>
                         <p className="text-lg font-bold">
                           {stats?.nextAppointment?.appointment_date
                             ? format(new Date(stats.nextAppointment.appointment_date), "MMM dd")
@@ -451,7 +423,7 @@ const PatientDashboard = () => {
                           key={apt.id}
                           className={cn(
                             "flex flex-col gap-3 md:flex-row md:items-center md:justify-between p-4 rounded-lg border",
-                            "cursor-pointer hover:bg-accent/30 hover:border-accent-foreground/20 transition-colors"
+                            "cursor-pointer hover:bg-accent/30 hover:border-accent-foreground/20 transition-colors",
                           )}
                           role="button"
                           tabIndex={0}
@@ -466,7 +438,8 @@ const PatientDashboard = () => {
                           <div className="space-y-1">
                             <p className="font-medium">{doctorName}</p>
                             <p className="text-sm text-muted-foreground">
-                              {format(new Date(apt.appointment_date), "MMM dd, yyyy")} at {apt.start_time}
+                              {apt.appointment_date ? format(new Date(apt.appointment_date), "MMM dd, yyyy") : ""}{" "}
+                              {apt.start_time ? `at ${apt.start_time}` : ""}
                             </p>
                             <p className="text-xs text-muted-foreground capitalize">
                               Type: {apt.appointment_type || "in_person"}
@@ -532,6 +505,4 @@ const PatientDashboard = () => {
       </div>
     </div>
   );
-};
-
-export default PatientDashboard;
+}
