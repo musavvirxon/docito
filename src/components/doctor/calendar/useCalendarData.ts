@@ -52,6 +52,7 @@ export const useCalendarData = ({ doctorId, selectedDate, view }: UseCalendarDat
       let appts: any[] | null = null;
       let apptErr: any = null;
 
+      // First try with all columns including the new start_requested ones
       const q1 = await (supabase as any)
         .from("appointments")
         .select(
@@ -80,11 +81,14 @@ export const useCalendarData = ({ doctorId, selectedDate, view }: UseCalendarDat
         .eq("doctor_id", doctorId)
         .gte("appointment_date", startStr)
         .lte("appointment_date", endStr)
-        .neq("status", "canceled");
+        .neq("status", "canceled")
+        .order("appointment_date", { ascending: true })
+        .order("start_time", { ascending: true });
 
       if (!q1.error) {
         appts = q1.data || [];
       } else {
+        // Fallback without start_requested columns if they don't exist
         const q2 = await (supabase as any)
           .from("appointments")
           .select(
@@ -102,16 +106,17 @@ export const useCalendarData = ({ doctorId, selectedDate, view }: UseCalendarDat
             doctor_patient_id,
             procedure_id,
             patient_confirmation_status,
-            start_requested_by_doctor,
-            start_requested_by_patient,
-            started_at,
-            profiles:patient_id(full_name, avatar_url, phone, email)
+            profiles:patient_id(full_name, avatar_url, phone, email),
+            doctor_patients:doctor_patient_id(full_name, phone, email),
+            procedures:procedure_id(id, name, category, default_cost, duration_minutes)
           `
           )
           .eq("doctor_id", doctorId)
           .gte("appointment_date", startStr)
           .lte("appointment_date", endStr)
-          .neq("status", "canceled");
+          .neq("status", "canceled")
+          .order("appointment_date", { ascending: true })
+          .order("start_time", { ascending: true });
 
         appts = q2.data || [];
         apptErr = q2.error || q1.error;

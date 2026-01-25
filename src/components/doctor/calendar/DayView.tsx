@@ -376,12 +376,32 @@ const DayView = memo(({
                 )}
 
                 {!isOccupied && slot.isWorking && (
-                  <div
-                    className="group h-full rounded-lg hover:bg-primary/5 transition-colors cursor-pointer flex items-center justify-center opacity-0 hover:opacity-100"
-                    onClick={() => onSlotClick(slot.time)}
-                  >
-                    <Plus className="h-4 w-4 text-primary" />
-                  </div>
+                  (() => {
+                    // Block past times for today
+                    const now = new Date();
+                    const slotDateTime = new Date(selectedDate);
+                    const [slotHours, slotMinutes] = slot.time.split(':').map(Number);
+                    slotDateTime.setHours(slotHours, slotMinutes, 0, 0);
+                    
+                    const isPastTime = isToday(selectedDate) && slotDateTime <= now;
+                    
+                    if (isPastTime) {
+                      return (
+                        <div className="h-full rounded-lg bg-muted/20 flex items-center justify-center">
+                          <span className="text-xs text-muted-foreground/50">Past</span>
+                        </div>
+                      );
+                    }
+                    
+                    return (
+                      <div
+                        className="group h-full rounded-lg hover:bg-primary/5 transition-colors cursor-pointer flex items-center justify-center opacity-0 hover:opacity-100"
+                        onClick={() => onSlotClick(slot.time)}
+                      >
+                        <Plus className="h-4 w-4 text-primary" />
+                      </div>
+                    );
+                  })()
                 )}
               </div>
             </motion.div>

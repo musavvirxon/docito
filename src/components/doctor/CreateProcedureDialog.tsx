@@ -89,7 +89,7 @@ export function CreateProcedureDialog({
         is_consultation: false,
       };
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("procedures")
         .insert(payload)
         .select("id, dentist_id, name, description, category, duration_minutes, price, is_active, is_bookable, is_consultation, created_at")
@@ -97,12 +97,19 @@ export function CreateProcedureDialog({
 
       if (error) throw error;
 
-      const created = {
-        ...data,
-        duration_minutes: Number((data as any).duration_minutes || 0),
-        price: Number((data as any).price || 0),
-        is_active: Boolean((data as any).is_active),
-      } as CreatedProcedure;
+      const created: CreatedProcedure = {
+        id: data.id,
+        dentist_id: data.dentist_id,
+        name: data.name,
+        description: data.description,
+        category: data.category,
+        duration_minutes: Number(data.duration_minutes || 0),
+        price: Number(data.price || 0),
+        is_active: Boolean(data.is_active),
+        is_bookable: data.is_bookable,
+        is_consultation: data.is_consultation,
+        created_at: data.created_at,
+      };
 
       onProcedureCreated(created);
       onOpenChange(false);

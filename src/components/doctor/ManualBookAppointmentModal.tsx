@@ -239,7 +239,13 @@ const ManualBookAppointmentModal = ({
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               type="date"
               value={format(selectedDate, "yyyy-MM-dd")}
-              onChange={(e) => setSelectedDate(new Date(e.target.value + "T00:00:00"))}
+              min={format(new Date(), "yyyy-MM-dd")}
+              onChange={(e) => {
+                const newDate = new Date(e.target.value + "T00:00:00");
+                if (newDate >= new Date(new Date().toDateString())) {
+                  setSelectedDate(newDate);
+                }
+              }}
             />
           </div>
 
@@ -249,8 +255,29 @@ const ManualBookAppointmentModal = ({
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               type="time"
               value={selectedTime}
-              onChange={(e) => setSelectedTime(e.target.value)}
+              min={format(selectedDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd") 
+                ? format(new Date(), "HH:mm") 
+                : undefined}
+              onChange={(e) => {
+                const [hours, minutes] = e.target.value.split(":").map(Number);
+                const now = new Date();
+                const isToday = format(selectedDate, "yyyy-MM-dd") === format(now, "yyyy-MM-dd");
+                
+                if (isToday) {
+                  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+                  const selectedMinutes = hours * 60 + minutes;
+                  if (selectedMinutes < nowMinutes) {
+                    return; // Don't allow past times today
+                  }
+                }
+                setSelectedTime(e.target.value);
+              }}
             />
+            {format(selectedDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd") && (
+              <p className="text-xs text-muted-foreground">
+                Past times are not available for today
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
