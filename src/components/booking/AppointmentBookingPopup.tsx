@@ -1,6 +1,6 @@
 // File: src/components/booking/AppointmentBookingPopup.tsx
-import { useState, useEffect } from "react";
-import { format, addDays, parseISO, startOfDay, isBefore } from "date-fns";
+import { useState, useEffect, useMemo } from "react";
+import { format, addDays, parseISO, startOfDay, isBefore, isToday, isSameDay } from "date-fns";
 import {
   Dialog,
   DialogContent,
@@ -29,6 +29,7 @@ import { useBookAppointment } from "@/hooks/useBookAppointment";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 
 interface AppointmentBookingPopupProps {
   open: boolean;
@@ -61,8 +62,10 @@ export function AppointmentBookingPopup({
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
   const [step, setStep] = useState<"date" | "time" | "confirm" | "success">("date");
+  const [blockedDates, setBlockedDates] = useState<Date[]>([]);
+  const [workingDays, setWorkingDays] = useState<Record<string, boolean>>({});
 
-  const { loading: slotsLoading, fetchAvailability, getAvailableSlotsForDate } = useAvailability({
+  const { loading: slotsLoading, fetchAvailability, getAvailableSlotsForDate, slots } = useAvailability({
     entityId,
     providerId,
     appointmentType,
@@ -105,10 +108,62 @@ export function AppointmentBookingPopup({
   useEffect(() => {
     if (open && selectedDate) {
       const from = format(selectedDate, "yyyy-MM-dd");
-      const to = format(addDays(selectedDate, 7), "yyyy-MM-dd");
+      const to = format(addDays(selectedDate, 30), "yyyy-MM-dd"); // Fetch 30 days for calendar view
       fetchAvailability(from, to);
     }
   }, [open, selectedDate, fetchAvailability]);
+
+  // Fetch blocked times and working days for the doctor
+  useEffect(() => {
+    if (!open || !providerId) return;
+
+    const fetchScheduleData = async () => {
+      try {
+        // Fetch blocked times
+        const { data: blocked } = await supabase
+          .from("blocked_times")
+          .select("blocked_date")
+          .eq("doctor_id", providerId)
+          .gte("blocked_date", format(todayStart, "yyyy-MM-dd"));
+
+        if (blocked) {
+          setBlockedDates(blocked.map(b => new Date(b.blocked_date + "T00:00:00")));
+        }
+
+        // Fetch schedule settings for working days
+        const { data: scheduleData } = await supabase
+          .from("schedule_settings")
+          .select("working_days")
+          .eq("doctor_id", providerId)
+          .maybeSingle();
+
+        if (scheduleData?.working_days) {
+          const wd = scheduleData.working_days as Record<string, { enabled: boolean }>;
+          const days: Record<string, boolean> = {};
+          Object.keys(wd).forEach(day => {
+            days[day.toLowerCase()] = wd[day]?.enabled || false;
+          });
+          setWorkingDays(days);
+        }
+      } catch (err) {
+        console.error("Failed to fetch schedule data:", err);
+      }
+    };
+
+    fetchScheduleData();
+  }, [open, providerId, todayStart]);
+
+  // Compute which dates have available slots
+  const datesWithAvailability = useMemo(() => {
+    const dates = new Set<string>();
+    slots.forEach(slot => {
+      if (slot.available) {
+        const dateStr = slot.start_at.split("T")[0];
+        dates.add(dateStr);
+      }
+    });
+    return dates;
+  }, [slots]);
 
   // Reset state when popup closes
   useEffect(() => {
@@ -214,16 +269,69 @@ export function AppointmentBookingPopup({
         </DialogHeader>
 
         {step === "date" && (
-          <div className="py-4">
+          <div className="py-4 space-y-4">
             <Label className="text-sm font-medium mb-3 block">Select a Date</Label>
+            
+            {/* Legend */}
+            <div className="flex flex-wrap gap-3 text-xs mb-2">
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-full bg-primary" />
+                <span>Today</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-full bg-emerald-500" />
+                <span>Available</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-full bg-muted-foreground/30" />
+                <span>Past/Unavailable</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-full bg-amber-500" />
+                <span>Day Off</span>
+              </div>
+            </div>
+            
             <Calendar
               mode="single"
               selected={selectedDate}
               onSelect={handleDateSelect}
               weekStartsOn={1}
-              // ✅ Past days NOT bookable (today is allowed)
-              disabled={(date) => isBefore(startOfDay(date), todayStart)}
-              className="rounded-md border mx-auto"
+              disabled={(date) => {
+                const d = startOfDay(date);
+                // Past dates
+                if (isBefore(d, todayStart)) return true;
+                // Blocked dates
+                if (blockedDates.some(bd => isSameDay(bd, d))) return true;
+                // Non-working days (if schedule configured)
+                if (Object.keys(workingDays).length > 0) {
+                  const dayName = format(d, "EEEE").toLowerCase();
+                  if (!workingDays[dayName]) return true;
+                }
+                return false;
+              }}
+              modifiers={{
+                today: (date) => isToday(date),
+                available: (date) => {
+                  const dateStr = format(date, "yyyy-MM-dd");
+                  return datesWithAvailability.has(dateStr) && !isBefore(startOfDay(date), todayStart);
+                },
+                blocked: (date) => blockedDates.some(bd => isSameDay(bd, date)),
+                dayOff: (date) => {
+                  if (Object.keys(workingDays).length === 0) return false;
+                  const dayName = format(date, "EEEE").toLowerCase();
+                  return !workingDays[dayName] && !isBefore(startOfDay(date), todayStart);
+                },
+                past: (date) => isBefore(startOfDay(date), todayStart),
+              }}
+              modifiersClassNames={{
+                today: "!bg-primary !text-primary-foreground font-bold",
+                available: "!bg-emerald-100 dark:!bg-emerald-900/30 !text-emerald-700 dark:!text-emerald-300 hover:!bg-emerald-200 dark:hover:!bg-emerald-900/50",
+                blocked: "!bg-destructive/20 !text-destructive line-through",
+                dayOff: "!bg-amber-100 dark:!bg-amber-900/30 !text-amber-600 dark:!text-amber-400",
+                past: "!bg-muted !text-muted-foreground opacity-50",
+              }}
+              className="rounded-md border mx-auto pointer-events-auto"
             />
           </div>
         )}

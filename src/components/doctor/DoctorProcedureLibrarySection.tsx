@@ -724,19 +724,31 @@ const DoctorProcedureLibrarySection = () => {
       fetchProcedures();
     }} categories={categories} types={types} />}
 
-      <ManageCategoriesModal open={showManageCategoriesModal} onOpenChange={open => {
-      setShowManageCategoriesModal(open);
-      if (!open) {
-        loadCustomCategoriesAndTypes();
-      }
-    }} customCategories={customCategories} onUpdateCategories={handleUpdateCategories} />
+      <ManageCategoriesModal 
+        open={showManageCategoriesModal} 
+        onOpenChange={open => {
+          setShowManageCategoriesModal(open);
+          if (!open) {
+            loadCustomCategoriesAndTypes();
+          }
+        }} 
+        categories={customCategories} 
+        onCategoriesChange={handleUpdateCategories}
+        defaultCategories={defaultCategories}
+      />
 
-      <ManageTypesModal open={showManageTypesModal} onOpenChange={open => {
-      setShowManageTypesModal(open);
-      if (!open) {
-        loadCustomCategoriesAndTypes();
-      }
-    }} customTypes={customTypes} onUpdateTypes={handleUpdateTypes} />
+      <ManageTypesModal 
+        open={showManageTypesModal} 
+        onOpenChange={open => {
+          setShowManageTypesModal(open);
+          if (!open) {
+            loadCustomCategoriesAndTypes();
+          }
+        }} 
+        types={customTypes} 
+        onTypesChange={handleUpdateTypes}
+        defaultTypes={defaultTypes}
+      />
     </div>;
 };
 export default DoctorProcedureLibrarySection;

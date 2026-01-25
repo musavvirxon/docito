@@ -17,6 +17,7 @@ import {
   Pill,
   Plus,
   Receipt,
+  RotateCcw,
   Search,
   Settings,
   TestTube2,
@@ -58,13 +59,29 @@ function asOne<T = any>(v: any): T | null {
 }
 
 function getDoctorName(apt: any, fallback: string) {
+  // Handle various nested structures from different queries
   const doctor = asOne(apt?.doctor);
+  if (!doctor) return fallback;
+  
+  // Try multiple paths to find the doctor's name
   const profiles = asOne(doctor?.profiles);
-  const full =
-    (profiles?.full_name && String(profiles.full_name).trim()) ||
-    (doctor?.profiles?.full_name && String(doctor.profiles.full_name).trim()) ||
-    "";
-  return full || fallback;
+  
+  // Path 1: profiles.full_name
+  if (profiles?.full_name && String(profiles.full_name).trim()) {
+    return String(profiles.full_name).trim();
+  }
+  
+  // Path 2: Direct access on doctor.profiles
+  if (doctor?.profiles?.full_name && String(doctor.profiles.full_name).trim()) {
+    return String(doctor.profiles.full_name).trim();
+  }
+  
+  // Path 3: If doctor has specialty, show it with generic label
+  if (doctor?.specialty) {
+    return `Dr. (${doctor.specialty})`;
+  }
+  
+  return fallback;
 }
 
 function appointmentRoute(apt: any) {
@@ -147,6 +164,34 @@ export default function PatientDashboard() {
       await Promise.allSettled([refetchAppointments?.(), refetchStats?.()]);
     } catch (e: any) {
       toast.error(e?.message ?? "Failed to accept appointment");
+    }
+  }
+
+  async function requestStartAppointment(appointmentId: string) {
+    try {
+      const { error } = await (supabase as any)
+        .from("appointments")
+        .update({ 
+          start_requested_by_patient: true,
+          patient_confirmation_status: "confirmed"
+        })
+        .eq("id", appointmentId);
+
+      if (error) throw error;
+      toast.success("Start request sent to doctor.");
+      await Promise.allSettled([refetchAppointments?.(), refetchStats?.()]);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to request start");
+    }
+  }
+
+  async function rescheduleAppointment(apt: any) {
+    // Navigate to doctor booking page with reschedule context
+    const doctorId = asOne(apt?.doctor)?.id || apt?.doctor_id;
+    if (doctorId) {
+      navigate(`/book/${doctorId}?reschedule=${apt.id}`);
+    } else {
+      toast.error("Unable to reschedule - doctor information not available");
     }
   }
 
@@ -449,7 +494,7 @@ export default function PatientDashboard() {
                             <Badge>{apt.status}</Badge>
 
                             {apt.status === "pending" ? (
-                              <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
                                 <Button
                                   size="sm"
                                   className="gap-2"
@@ -472,6 +517,33 @@ export default function PatientDashboard() {
                                 >
                                   <XCircle className="h-4 w-4" />
                                   Decline
+                                </Button>
+                              </div>
+                            ) : apt.status === "confirmed" ? (
+                              <div className="flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
+                                <Button
+                                  size="sm"
+                                  className="gap-2"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    requestStartAppointment(String(apt.id));
+                                  }}
+                                  disabled={apt.start_requested_by_patient}
+                                >
+                                  <Clock className="h-4 w-4" />
+                                  {apt.start_requested_by_patient ? "Start Requested" : "Request Start"}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="gap-2"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    rescheduleAppointment(apt);
+                                  }}
+                                >
+                                  <RotateCcw className="h-4 w-4" />
+                                  Reschedule
                                 </Button>
                               </div>
                             ) : null}

@@ -302,6 +302,8 @@ export type Database = {
           practice_id: string | null
           procedure_id: string | null
           session_type: string | null
+          start_requested_by_doctor: boolean | null
+          start_requested_by_patient: boolean | null
           start_time: string
           started_at: string | null
           status: Database["public"]["Enums"]["appointment_status"] | null
@@ -323,6 +325,8 @@ export type Database = {
           practice_id?: string | null
           procedure_id?: string | null
           session_type?: string | null
+          start_requested_by_doctor?: boolean | null
+          start_requested_by_patient?: boolean | null
           start_time: string
           started_at?: string | null
           status?: Database["public"]["Enums"]["appointment_status"] | null
@@ -344,6 +348,8 @@ export type Database = {
           practice_id?: string | null
           procedure_id?: string | null
           session_type?: string | null
+          start_requested_by_doctor?: boolean | null
+          start_requested_by_patient?: boolean | null
           start_time?: string
           started_at?: string | null
           status?: Database["public"]["Enums"]["appointment_status"] | null
