@@ -47,35 +47,60 @@ import { DashboardBranding } from "@/components/dashboard/DashboardBranding";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-function getDoctorNameFromAppointment(apt: any, fallback: string) {
-  const doctor = Array.isArray(apt?.doctor) ? apt.doctor?.[0] : apt?.doctor;
-  const profiles = Array.isArray(doctor?.profiles) ? doctor.profiles?.[0] : doctor?.profiles;
-  const fullName =
-    (profiles?.full_name && String(profiles.full_name).trim()) ||
-    (doctor?.profiles?.full_name && String(doctor.profiles.full_name).trim()) ||
-    (doctor?.full_name && String(doctor.full_name).trim()) ||
-    "";
-  return fullName || fallback;
+function asOne<T = any>(v: any): T | null {
+  if (!v) return null;
+  if (Array.isArray(v)) return (v[0] as T) ?? null;
+  return v as T;
 }
 
-function appointmentClickRoute(apt: any) {
-  // Keep it simple: confirmation always exists and is safe to view
+function getDoctorName(apt: any, fallback: string) {
+  const doctor = asOne(apt?.doctor);
+  const profiles = asOne(doctor?.profiles);
+  const full =
+    (profiles?.full_name && String(profiles.full_name).trim()) ||
+    (doctor?.profiles?.full_name && String(doctor.profiles.full_name).trim()) ||
+    "";
+  return full || fallback;
+}
+
+function appointmentRoute(apt: any) {
   const id = apt?.id ? String(apt.id) : "";
   return id ? `/booking-confirmation/${id}` : "";
 }
 
 const PatientDashboard = () => {
   const { user, profile, signOut, loading: authLoading } = useAuth();
-  const { stats, loading: statsLoading } = usePatientDashboard();
-  const { appointments, loading: appointmentsLoading, refetch: refetchAppointments } = useAppointments();
+  const { stats, loading: statsLoading, refetch: refetchStats } = usePatientDashboard();
+  const {
+    appointments,
+    loading: appointmentsLoading,
+    error: appointmentsError,
+    refetch: refetchAppointments,
+  } = useAppointments();
+
   const [activeSection, setActiveSection] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation("dashboard");
 
-  // Redirect if not authenticated or not a patient
-  if (!authLoading && (!user || profile?.role !== "patient")) {
+  // ✅ Fix: don't redirect while profile is still loading (prevents empty/blank dashboard)
+  if (!authLoading && !user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  if (!authLoading && user && !profile) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
+          <p className="text-muted-foreground">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!authLoading && profile && profile.role !== "patient") {
+    return <Navigate to="/doctor-dashboard" replace />;
   }
 
   if (authLoading || statsLoading) {
@@ -112,11 +137,14 @@ const PatientDashboard = () => {
 
   async function acceptAppointment(appointmentId: string) {
     try {
-      const { error } = await supabase.from("appointments").update({ status: "confirmed" as any }).eq("id", appointmentId);
+      const { error } = await supabase
+        .from("appointments")
+        .update({ status: "confirmed" as any })
+        .eq("id", appointmentId);
 
       if (error) throw error;
       toast.success("Appointment accepted.");
-      refetchAppointments?.();
+      await Promise.allSettled([refetchAppointments?.(), refetchStats?.()]);
     } catch (e: any) {
       toast.error(e?.message ?? "Failed to accept appointment");
     }
@@ -124,11 +152,14 @@ const PatientDashboard = () => {
 
   async function declineAppointment(appointmentId: string) {
     try {
-      const { error } = await supabase.from("appointments").update({ status: "canceled" as any }).eq("id", appointmentId);
+      const { error } = await supabase
+        .from("appointments")
+        .update({ status: "canceled" as any })
+        .eq("id", appointmentId);
 
       if (error) throw error;
       toast.success("Appointment declined.");
-      refetchAppointments?.();
+      await Promise.allSettled([refetchAppointments?.(), refetchStats?.()]);
     } catch (e: any) {
       toast.error(e?.message ?? "Failed to decline appointment");
     }
@@ -142,7 +173,7 @@ const PatientDashboard = () => {
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-50 w-64 bg-sidebar border-r border-sidebar-border transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="flex flex-col h-full">
@@ -161,10 +192,17 @@ const PatientDashboard = () => {
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sidebar-foreground truncate">{profile?.full_name || "Patient"}</p>
+                <p className="font-semibold text-sidebar-foreground truncate">
+                  {profile?.full_name || "Patient"}
+                </p>
                 <p className="text-sm text-sidebar-foreground/60 truncate">{profile?.email}</p>
               </div>
-              <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(false)}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden"
+                onClick={() => setSidebarOpen(false)}
+              >
                 <X className="h-5 w-5" />
               </Button>
             </div>
@@ -183,7 +221,7 @@ const PatientDashboard = () => {
                     "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left",
                     isActive
                       ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent/50",
+                      : "text-sidebar-foreground hover:bg-sidebar-accent/50"
                   )}
                 >
                   <Icon className="h-5 w-5 flex-shrink-0" />
@@ -215,14 +253,24 @@ const PatientDashboard = () => {
       </aside>
 
       {/* Overlay for mobile */}
-      {sidebarOpen && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Header */}
         <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="flex h-16 items-center gap-4 px-4 lg:px-6">
-            <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(true)}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+              onClick={() => setSidebarOpen(true)}
+            >
               <Menu className="h-5 w-5" />
             </Button>
 
@@ -247,7 +295,9 @@ const PatientDashboard = () => {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div className="space-y-2">
-                        <p className="text-sm font-medium text-muted-foreground">{t("patient.stats.upcomingAppointments")}</p>
+                        <p className="text-sm font-medium text-muted-foreground">
+                          {t("patient.stats.upcomingAppointments")}
+                        </p>
                         <p className="text-3xl font-bold">{stats?.upcomingAppointmentsCount || 0}</p>
                       </div>
                       <div className="p-3 rounded-full bg-blue-50 dark:bg-blue-950/30">
@@ -261,7 +311,9 @@ const PatientDashboard = () => {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div className="space-y-2">
-                        <p className="text-sm font-medium text-muted-foreground">{t("patient.stats.medicalRecords")}</p>
+                        <p className="text-sm font-medium text-muted-foreground">
+                          {t("patient.stats.medicalRecords")}
+                        </p>
                         <p className="text-3xl font-bold">{stats?.medicalRecordsCount || 0}</p>
                       </div>
                       <div className="p-3 rounded-full bg-green-50 dark:bg-green-950/30">
@@ -275,7 +327,9 @@ const PatientDashboard = () => {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div className="space-y-2">
-                        <p className="text-sm font-medium text-muted-foreground">{t("patient.stats.pendingReminders")}</p>
+                        <p className="text-sm font-medium text-muted-foreground">
+                          {t("patient.stats.pendingReminders")}
+                        </p>
                         <p className="text-3xl font-bold">{stats?.pendingReminders || 0}</p>
                       </div>
                       <div className="p-3 rounded-full bg-purple-50 dark:bg-purple-950/30">
@@ -289,9 +343,13 @@ const PatientDashboard = () => {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div className="space-y-2">
-                        <p className="text-sm font-medium text-muted-foreground">{t("patient.stats.nextAppointment")}</p>
+                        <p className="text-sm font-medium text-muted-foreground">
+                          {t("patient.stats.nextAppointment")}
+                        </p>
                         <p className="text-lg font-bold">
-                          {stats?.nextAppointment ? format(new Date(stats.nextAppointment.appointment_date), "MMM dd") : t("patient.stats.none")}
+                          {stats?.nextAppointment?.appointment_date
+                            ? format(new Date(stats.nextAppointment.appointment_date), "MMM dd")
+                            : t("patient.stats.none")}
                         </p>
                       </div>
                       <div className="p-3 rounded-full bg-yellow-50 dark:bg-yellow-950/30">
@@ -330,13 +388,13 @@ const PatientDashboard = () => {
                   role="button"
                   tabIndex={0}
                   onClick={() => {
-                    const route = appointmentClickRoute(stats.nextAppointment);
+                    const route = appointmentRoute(stats.nextAppointment);
                     if (route) navigate(route);
                   }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
-                      const route = appointmentClickRoute(stats.nextAppointment);
+                      const route = appointmentRoute(stats.nextAppointment);
                       if (route) navigate(route);
                     }
                   }}
@@ -372,7 +430,11 @@ const PatientDashboard = () => {
                 <CardTitle>{t("patient.appointments.title")}</CardTitle>
               </CardHeader>
               <CardContent>
-                {appointmentsLoading ? (
+                {appointmentsError ? (
+                  <div className="p-4 rounded-lg border border-destructive/30 bg-destructive/10 text-destructive">
+                    {appointmentsError}
+                  </div>
+                ) : appointmentsLoading ? (
                   <div className="space-y-3">
                     {[1, 2, 3].map((i) => (
                       <Skeleton key={i} className="h-20 w-full" />
@@ -381,21 +443,19 @@ const PatientDashboard = () => {
                 ) : appointments && appointments.length > 0 ? (
                   <div className="space-y-3">
                     {appointments.map((apt: any) => {
-                      const doctorName = getDoctorNameFromAppointment(apt, doctorFallbackLabel);
-                      const route = appointmentClickRoute(apt);
+                      const doctorName = getDoctorName(apt, doctorFallbackLabel);
+                      const route = appointmentRoute(apt);
 
                       return (
                         <div
                           key={apt.id}
                           className={cn(
                             "flex flex-col gap-3 md:flex-row md:items-center md:justify-between p-4 rounded-lg border",
-                            "cursor-pointer hover:bg-accent/30 hover:border-accent-foreground/20 transition-colors",
+                            "cursor-pointer hover:bg-accent/30 hover:border-accent-foreground/20 transition-colors"
                           )}
                           role="button"
                           tabIndex={0}
-                          onClick={() => {
-                            if (route) navigate(route);
-                          }}
+                          onClick={() => route && navigate(route)}
                           onKeyDown={(e) => {
                             if ((e.key === "Enter" || e.key === " ") && route) {
                               e.preventDefault();
@@ -408,20 +468,22 @@ const PatientDashboard = () => {
                             <p className="text-sm text-muted-foreground">
                               {format(new Date(apt.appointment_date), "MMM dd, yyyy")} at {apt.start_time}
                             </p>
-                            <p className="text-xs text-muted-foreground capitalize">Type: {apt.appointment_type || "in_person"}</p>
+                            <p className="text-xs text-muted-foreground capitalize">
+                              Type: {apt.appointment_type || "in_person"}
+                            </p>
                           </div>
 
                           <div className="flex flex-col md:items-end gap-2">
                             <Badge>{apt.status}</Badge>
 
                             {apt.status === "pending" ? (
-                              <div className="flex gap-2" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+                              <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                                 <Button
                                   size="sm"
                                   className="gap-2"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    acceptAppointment(apt.id);
+                                    acceptAppointment(String(apt.id));
                                   }}
                                 >
                                   <CheckCircle2 className="h-4 w-4" />
@@ -433,7 +495,7 @@ const PatientDashboard = () => {
                                   className="gap-2 text-destructive hover:text-destructive"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    declineAppointment(apt.id);
+                                    declineAppointment(String(apt.id));
                                   }}
                                 >
                                   <XCircle className="h-4 w-4" />
