@@ -1,7 +1,6 @@
-// File: src/components/ui/calendar.tsx
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker, Matcher } from "react-day-picker";
+import { DayPicker } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -22,58 +21,75 @@ function Calendar({
   modifiersClassNames: externalModifiersClassNames,
   ...props
 }: CalendarProps) {
-  const modifiers: Record<string, Matcher | Matcher[]> = {
-    ...(((externalModifiers as Record<string, Matcher | Matcher[]>) || {}) as Record<string, Matcher | Matcher[]>),
-  };
+  const modifiers = {
+    ...(externalModifiers || {}),
+    ...(holidayDates?.length ? { holiday: holidayDates } : {}),
+    ...(blockedDates?.length ? { blocked: blockedDates } : {}),
+  } as any;
 
-  const modifiersClassNames: Record<string, string> = {
+  const modifiersClassNames = {
     ...(externalModifiersClassNames || {}),
-  };
+    ...(holidayDates?.length
+      ? { holiday: "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 font-medium" }
+      : {}),
+    ...(blockedDates?.length
+      ? { blocked: "bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500 line-through" }
+      : {}),
+  } as any;
 
-  if (holidayDates.length > 0) {
-    modifiers.holiday = holidayDates;
-    modifiersClassNames.holiday =
-      "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 font-medium";
-  }
+  /**
+   * ✅ IMPORTANT:
+   * Some projects have global CSS that breaks <table>/<tr>/<td> (e.g. display:block/flex).
+   * To make the calendar always render correctly, we override DayPicker's table parts
+   * and render a DIV-based 7-column grid instead of using table semantics.
+   */
 
-  if (blockedDates.length > 0) {
-    modifiers.blocked = blockedDates;
-    modifiersClassNames.blocked =
-      "bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500 line-through";
-  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const GridTable = ({ className: cn0, children }: any) => (
+    <div className={cn("rdp-grid-table w-full", cn0)}>{children}</div>
+  );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const GridHeadRow = ({ className: cn0, children }: any) => (
+    <div className={cn("rdp-grid-head", cn0)}>{children}</div>
+  );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const GridRow = ({ className: cn0, children }: any) => (
+    <div className={cn("rdp-grid-row", cn0)}>{children}</div>
+  );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const GridHeadCell = ({ className: cn0, children }: any) => (
+    <div className={cn("rdp-grid-head-cell", cn0)}>{children}</div>
+  );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const GridCell = ({ className: cn0, children }: any) => (
+    <div className={cn("rdp-grid-cell", cn0)}>{children}</div>
+  );
 
   return (
-    <div className={cn("rdp-fix p-3", className)}>
-      {/* ✅ Force real table semantics. Some projects globally set table/tr/td to block/flex -> breaks DayPicker. */}
+    <div className={cn("rdp-root", className)}>
       <style>{`
-        .rdp-fix .rdp-table { 
-          display: table !important; 
-          width: 100% !important; 
-          table-layout: fixed !important; 
-          border-collapse: collapse !important; 
+        .rdp-root .rdp-grid-table { display: flex; flex-direction: column; gap: .5rem; }
+        .rdp-root .rdp-grid-head,
+        .rdp-root .rdp-grid-row {
+          display: grid;
+          grid-template-columns: repeat(7, minmax(0, 1fr));
+          gap: .25rem;
+          width: 100%;
         }
-        .rdp-fix .rdp-thead { display: table-header-group !important; }
-        .rdp-fix .rdp-tbody { display: table-row-group !important; }
-        .rdp-fix .rdp-head_row { display: table-row !important; }
-        .rdp-fix .rdp-row { display: table-row !important; }
-        .rdp-fix .rdp-head_cell { 
-          display: table-cell !important; 
-          width: calc(100% / 7) !important;
-          text-align: center !important;
-          vertical-align: middle !important;
-          padding: 0 !important;
-          height: 2.25rem !important;
-          white-space: nowrap !important;
+        .rdp-root .rdp-grid-head-cell {
+          height: 2.25rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          white-space: nowrap;
         }
-        .rdp-fix .rdp-cell { 
-          display: table-cell !important; 
-          width: calc(100% / 7) !important;
-          text-align: center !important;
-          vertical-align: middle !important;
-          padding: 0 !important;
-          height: 2.25rem !important;
+        .rdp-root .rdp-grid-cell {
+          height: 2.25rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
-        .rdp-fix .rdp-day { margin: 0 auto !important; }
       `}</style>
 
       <DayPicker
@@ -94,19 +110,16 @@ function Calendar({
           nav_button_previous: "absolute left-1",
           nav_button_next: "absolute right-1",
 
-          // Hook classes used by the CSS above
-          table: "rdp-table w-full",
-          thead: "rdp-thead",
-          tbody: "rdp-tbody",
-          head_row: "rdp-head_row",
-          row: "rdp-row",
-          head_cell: "rdp-head_cell text-muted-foreground font-normal text-[0.8rem]",
+          // These are still used by DayPicker for class application (even with custom components)
+          table: "w-full",
+          head_row: "",
+          head_cell: "text-muted-foreground font-normal text-[0.8rem]",
+          row: "",
           cell:
-            "rdp-cell relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-
+            "relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
           day: cn(
             buttonVariants({ variant: "ghost" }),
-            "rdp-day h-9 w-9 p-0 font-normal aria-selected:opacity-100",
+            "h-9 w-9 p-0 font-normal aria-selected:opacity-100",
           ),
           day_range_end: "day-range-end",
           day_selected:
@@ -117,10 +130,20 @@ function Calendar({
           day_disabled: "text-muted-foreground opacity-50",
           day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
           day_hidden: "invisible",
-
           ...classNames,
         }}
         components={{
+          // ✅ Replace table layout with grid layout to guarantee 7-day alignment
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          Table: GridTable as any,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          HeadRow: GridHeadRow as any,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          Row: GridRow as any,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          HeadCell: GridHeadCell as any,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          Cell: GridCell as any,
           Chevron: ({ orientation }) =>
             orientation === "left" ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />,
         }}
