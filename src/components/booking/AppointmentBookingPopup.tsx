@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import { format, addDays, isSameDay, parseISO } from 'date-fns';
+// File: src/components/booking/AppointmentBookingPopup.tsx
+import { useState, useEffect } from 'react';
+import { format, addDays, parseISO, startOfDay, isBefore } from 'date-fns';
 import {
   Dialog,
   DialogContent,
@@ -18,7 +19,6 @@ import { useAvailability } from '@/hooks/useAvailability';
 import { useBookAppointment } from '@/hooks/useBookAppointment';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { cn } from '@/lib/utils';
 
 interface AppointmentBookingPopupProps {
   open: boolean;
@@ -43,7 +43,7 @@ export function AppointmentBookingPopup({
 }: AppointmentBookingPopupProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(startOfDay(new Date()));
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [notes, setNotes] = useState('');
   const [step, setStep] = useState<'date' | 'time' | 'confirm' | 'success'>('date');
@@ -75,7 +75,7 @@ export function AppointmentBookingPopup({
   }, [open]);
 
   const handleDateSelect = (date: Date | undefined) => {
-    setSelectedDate(date);
+    setSelectedDate(date ? startOfDay(date) : undefined);
     setSelectedSlot(null);
     if (date) {
       setStep('time');
@@ -110,7 +110,7 @@ export function AppointmentBookingPopup({
   };
 
   // Get available slots for selected date
-  const availableSlots = selectedDate 
+  const availableSlots = selectedDate
     ? getAvailableSlotsForDate(format(selectedDate, 'yyyy-MM-dd'))
     : [];
 
@@ -157,7 +157,9 @@ export function AppointmentBookingPopup({
               mode="single"
               selected={selectedDate}
               onSelect={handleDateSelect}
-              disabled={(date) => date < new Date() || date.getDay() === 0 || date.getDay() === 6}
+              disabled={(date) =>
+                isBefore(date, startOfDay(new Date())) || date.getDay() === 0 || date.getDay() === 6
+              }
               className="rounded-md border mx-auto"
             />
           </div>
@@ -168,9 +170,9 @@ export function AppointmentBookingPopup({
             <div className="flex items-center gap-2 mb-4">
               <CalendarIcon className="h-4 w-4 text-muted-foreground" />
               <span className="font-medium">{format(selectedDate, 'EEEE, MMMM d, yyyy')}</span>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setStep('date')}
                 className="ml-auto"
               >
@@ -187,9 +189,9 @@ export function AppointmentBookingPopup({
               <div className="text-center py-8">
                 <AlertCircle className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
                 <p className="text-muted-foreground">No available slots for this date</p>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setStep('date')} 
+                <Button
+                  variant="outline"
+                  onClick={() => setStep('date')}
                   className="mt-4"
                 >
                   Select Another Date
@@ -224,7 +226,7 @@ export function AppointmentBookingPopup({
             <div className="bg-muted/50 rounded-lg p-4 space-y-2">
               <div className="flex items-center gap-2">
                 <CalendarIcon className="h-4 w-4 text-primary" />
-                <span className="font-medium">{format(selectedDate, 'EEEE, MMMM d, yyyy')}</span>
+                <span className="font-medium">{format(parseISO(selectedSlot), 'EEEE, MMMM d, yyyy')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-primary" />
