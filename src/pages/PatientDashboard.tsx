@@ -1,5 +1,5 @@
 // File: src/pages/PatientDashboard.tsx
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
@@ -73,11 +73,8 @@ function appointmentRoute(apt: any) {
 }
 
 export default function PatientDashboard() {
-  // ✅ ALL HOOKS MUST BE CALLED UNCONDITIONALLY (fixes React invariant #310)
+  // ✅ Keep hook order stable (NO conditional hooks, NO extra hooks like useMemo)
   const { user, profile, signOut, loading: authLoading } = useAuth();
-  const { t } = useTranslation("dashboard");
-  const navigate = useNavigate();
-
   const { stats, loading: statsLoading, refetch: refetchStats } = usePatientDashboard();
   const {
     appointments,
@@ -85,26 +82,53 @@ export default function PatientDashboard() {
     error: appointmentsError,
     refetch: refetchAppointments,
   } = useAppointments();
-
-  const [activeSection, setActiveSection] = useState<string>("dashboard");
+  const [activeSection, setActiveSection] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
+  const { t } = useTranslation("dashboard");
 
-  const doctorFallbackLabel = useMemo(() => t("patient.appointments.doctor"), [t]);
+  // ✅ Do NOT redirect while profile is still loading (prevents blank/empty dashboard)
+  if (!authLoading && !user) {
+    return <Navigate to="/auth" replace />;
+  }
 
-  const navItems = useMemo(
-    () => [
-      { id: "dashboard", label: t("patient.navigation.dashboard"), icon: Home },
-      { id: "appointments", label: t("patient.navigation.myAppointments"), icon: Calendar },
-      { id: "referrals", label: "My Referrals", icon: ArrowRightLeft },
-      { id: "medications", label: t("patient.navigation.medications"), icon: Pill },
-      { id: "records", label: t("patient.navigation.medicalRecords"), icon: FileText },
-      { id: "test-results", label: "Test Results", icon: TestTube2 },
-      { id: "treatment-plans", label: "Treatment Plans", icon: ClipboardList },
-      { id: "billing", label: "Billing", icon: Receipt },
-      { id: "settings", label: t("patient.navigation.settings"), icon: Settings },
-    ],
-    [t],
-  );
+  if (!authLoading && user && !profile) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
+          <p className="text-muted-foreground">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!authLoading && profile && profile.role !== "patient") {
+    return <Navigate to="/doctor-dashboard" replace />;
+  }
+
+  if (authLoading || statsLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
+          <p className="text-muted-foreground">{t("patient.loading")}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const navItems = [
+    { id: "dashboard", label: t("patient.navigation.dashboard"), icon: Home },
+    { id: "appointments", label: t("patient.navigation.myAppointments"), icon: Calendar },
+    { id: "referrals", label: "My Referrals", icon: ArrowRightLeft },
+    { id: "medications", label: t("patient.navigation.medications"), icon: Pill },
+    { id: "records", label: t("patient.navigation.medicalRecords"), icon: FileText },
+    { id: "test-results", label: "Test Results", icon: TestTube2 },
+    { id: "treatment-plans", label: "Treatment Plans", icon: ClipboardList },
+    { id: "billing", label: "Billing", icon: Receipt },
+    { id: "settings", label: t("patient.navigation.settings"), icon: Settings },
+  ];
 
   const handleNavClick = (itemId: string) => {
     setActiveSection(itemId);
@@ -141,34 +165,7 @@ export default function PatientDashboard() {
     }
   }
 
-  // ✅ AFTER ALL HOOKS: safe to early-return
-  if (!authLoading && !user) return <Navigate to="/auth" replace />;
-
-  if (!authLoading && user && !profile) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
-          <p className="text-muted-foreground">Loading your profile...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!authLoading && profile && profile.role !== "patient") {
-    return <Navigate to="/doctor-dashboard" replace />;
-  }
-
-  if (authLoading || statsLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
-          <p className="text-muted-foreground">{t("patient.loading")}</p>
-        </div>
-      </div>
-    );
-  }
+  const doctorFallbackLabel = t("patient.appointments.doctor");
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -192,10 +189,12 @@ export default function PatientDashboard() {
                   <User className="h-6 w-6" />
                 </AvatarFallback>
               </Avatar>
+
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-sidebar-foreground truncate">{profile?.full_name || "Patient"}</p>
                 <p className="text-sm text-sidebar-foreground/60 truncate">{profile?.email}</p>
               </div>
+
               <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(false)}>
                 <X className="h-5 w-5" />
               </Button>
