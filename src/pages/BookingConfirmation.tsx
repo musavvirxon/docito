@@ -4,6 +4,9 @@ import { Link, useParams } from "react-router-dom";
 import { format } from "date-fns";
 import { Calendar, CheckCircle, Clock, Download, MapPin, Printer, User } from "lucide-react";
 
+import PremiumTopNav from "@/components/home/premium/PremiumTopNav";
+import PremiumFooter from "@/components/home/premium/PremiumFooter";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -53,7 +56,7 @@ export default function BookingConfirmation() {
               profiles:user_id(full_name),
               practices:practice_id(name,address,city,country)
             )
-          `
+          `,
           )
           .eq("id", appointmentId)
           .maybeSingle();
@@ -116,28 +119,36 @@ export default function BookingConfirmation() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 pt-24 pb-12">
-        <div className="max-w-2xl mx-auto">
-          <Card>
-            <CardContent className="p-8 flex items-center justify-center">
-              <Loader />
-            </CardContent>
-          </Card>
+      <div className="min-h-screen bg-background">
+        <PremiumTopNav />
+        <div className="container mx-auto px-4 pt-24 pb-12">
+          <div className="max-w-2xl mx-auto">
+            <Card>
+              <CardContent className="p-8 flex items-center justify-center">
+                <Loader />
+              </CardContent>
+            </Card>
+          </div>
         </div>
+        <PremiumFooter />
       </div>
     );
   }
 
   if (!details) {
     return (
-      <div className="container mx-auto px-4 pt-24 pb-12">
-        <div className="max-w-2xl mx-auto text-center">
-          <h1 className="text-2xl font-bold text-destructive mb-2">Appointment Not Found</h1>
-          <p className="text-muted-foreground mb-6">We couldn't find the appointment you're looking for.</p>
-          <Link to="/">
-            <Button>Return Home</Button>
-          </Link>
+      <div className="min-h-screen bg-background">
+        <PremiumTopNav />
+        <div className="container mx-auto px-4 pt-24 pb-12">
+          <div className="max-w-2xl mx-auto text-center">
+            <h1 className="text-2xl font-bold text-destructive mb-2">Appointment Not Found</h1>
+            <p className="text-muted-foreground mb-6">We couldn't find the appointment you're looking for.</p>
+            <Link to="/">
+              <Button>Return Home</Button>
+            </Link>
+          </div>
         </div>
+        <PremiumFooter />
       </div>
     );
   }
@@ -146,77 +157,81 @@ export default function BookingConfirmation() {
   const specialty = details.doctor?.specialty || "";
 
   return (
-    <div className="container mx-auto px-4 pt-24 pb-12">
-      <div className="max-w-2xl mx-auto space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CheckCircle className="h-6 w-6 text-green-600" />
-              Appointment Confirmed
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex flex-wrap gap-2">
-              {details.status && <Badge variant="secondary">{details.status}</Badge>}
-              <Badge variant="outline">ID: {details.id}</Badge>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <div className="font-medium">{doctorName}</div>
-                  {specialty && <div className="text-sm text-muted-foreground">{specialty}</div>}
-                </div>
+    <div className="min-h-screen bg-background">
+      <PremiumTopNav />
+      <div className="container mx-auto px-4 pt-24 pb-12">
+        <div className="max-w-2xl mx-auto space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+                Appointment Confirmed
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex flex-wrap gap-2">
+                {details.status && <Badge variant="secondary">{details.status}</Badge>}
+                <Badge variant="outline">ID: {details.id}</Badge>
               </div>
 
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>{format(new Date(details.appointment_date), "PPP")}</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span>
-                  {details.start_time} – {details.end_time}
-                </span>
-              </div>
-
-              {location && (
+              <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span>{location}</span>
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <div className="font-medium">{doctorName}</div>
+                    {specialty && <div className="text-sm text-muted-foreground">{specialty}</div>}
+                  </div>
                 </div>
+
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span>{format(new Date(details.appointment_date), "PPP")}</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span>
+                    {details.start_time} – {details.end_time}
+                  </span>
+                </div>
+
+                {location && (
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <span>{location}</span>
+                  </div>
+                )}
+              </div>
+
+              {details.notes && (
+                <>
+                  <Separator />
+                  <div>
+                    <div className="font-medium mb-2">Notes</div>
+                    <pre className="whitespace-pre-wrap text-sm text-muted-foreground">{details.notes}</pre>
+                  </div>
+                </>
               )}
-            </div>
 
-            {details.notes && (
-              <>
-                <Separator />
-                <div>
-                  <div className="font-medium mb-2">Notes</div>
-                  <pre className="whitespace-pre-wrap text-sm text-muted-foreground">{details.notes}</pre>
-                </div>
-              </>
-            )}
-
-            <Separator />
-            <div className="flex flex-wrap gap-2">
-              <Button variant="outline" onClick={handlePrint}>
-                <Printer className="h-4 w-4 mr-2" />
-                Print
-              </Button>
-              <Button variant="outline" onClick={downloadIcs}>
-                <Download className="h-4 w-4 mr-2" />
-                Download .ics
-              </Button>
-              <Link to="/patient-dashboard">
-                <Button>Go to Dashboard</Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
+              <Separator />
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" onClick={handlePrint}>
+                  <Printer className="h-4 w-4 mr-2" />
+                  Print
+                </Button>
+                <Button variant="outline" onClick={downloadIcs}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Download .ics
+                </Button>
+                <Link to="/patient-dashboard">
+                  <Button>Go to Dashboard</Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
+      <PremiumFooter />
     </div>
   );
 }
