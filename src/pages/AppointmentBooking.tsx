@@ -30,23 +30,20 @@ import { toast } from "sonner";
 
 type DoctorInfo = {
   id: string;
+  user_id: string | null;
   specialty: string;
   consultation_fee: number | null;
   practice_id: string | null;
-  profiles: {
-    full_name: string;
-    phone: string | null;
-    email: string | null;
-  } | null;
-  practices: {
-    name: string;
-    address: string | null;
-  } | null;
+  profile_full_name: string | null;
+  profile_phone: string | null;
+  profile_email: string | null;
+  practice_name: string | null;
+  practice_address: string | null;
 };
 
 type AvailabilitySlot = {
-  start_at: string; // local ISO: YYYY-MM-DDTHH:mm:ss...
-  end_at: string; // local ISO: YYYY-MM-DDTHH:mm:ss...
+  start_at: string; // local ISO
+  end_at: string; // local ISO
   available: boolean;
   reason?: string | null;
 };
@@ -85,13 +82,13 @@ export default function AppointmentBooking() {
   const [selectedSlotStart, setSelectedSlotStart] = useState<string>("");
   const [appointmentType, setAppointmentType] = useState<AppointmentType>("video");
 
-  // Patient details (ONLY phone is required; others optional)
+  // Patient details
   const [patientPhone, setPatientPhone] = useState<string>("");
   const [patientName, setPatientName] = useState<string>("");
   const [patientEmail, setPatientEmail] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
 
-  // Prefill email/phone from profile when logged in (optional convenience)
+  // Prefill email/phone
   useEffect(() => {
     const prefill = async () => {
       const { data: auth } = await supabase.auth.getUser();
@@ -107,35 +104,73 @@ export default function AppointmentBooking() {
     prefill().catch(console.error);
   }, []);
 
-  // Load doctor
+  // Load doctor (robust profile + practice fetching)
   useEffect(() => {
     const loadDoctor = async () => {
       if (!doctorId) return;
 
       setLoadingDoctor(true);
       try {
-        const { data, error } = await supabase
+        const { data: d, error: dErr } = await supabase
           .from("doctors")
-          .select(
-            `
-            id,
-            specialty,
-            consultation_fee,
-            practice_id,
-            profiles:user_id ( full_name, phone, email ),
-            practices:practice_id ( name, address )
-          `,
-          )
+          .select("id, user_id, specialty, consultation_fee, practice_id")
           .eq("id", doctorId)
           .maybeSingle();
 
-        if (error) throw error;
-        if (!data) {
+        if (dErr) throw dErr;
+        if (!d) {
           setDoctor(null);
           return;
         }
 
-        setDoctor(data as DoctorInfo);
+        const doctorRow = d as any;
+
+        let profile_full_name: string | null = null;
+        let profile_phone: string | null = null;
+        let profile_email: string | null = null;
+
+        if (doctorRow.user_id) {
+          const { data: p } = await supabase
+            .from("profiles")
+            .select("full_name, phone, email")
+            .eq("user_id", doctorRow.user_id)
+            .maybeSingle();
+
+          if (p) {
+            profile_full_name = (p as any).full_name ?? null;
+            profile_phone = (p as any).phone ?? null;
+            profile_email = (p as any).email ?? null;
+          }
+        }
+
+        let practice_name: string | null = null;
+        let practice_address: string | null = null;
+
+        if (doctorRow.practice_id) {
+          const { data: pr } = await supabase
+            .from("practices")
+            .select("name, address")
+            .eq("id", doctorRow.practice_id)
+            .maybeSingle();
+
+          if (pr) {
+            practice_name = (pr as any).name ?? null;
+            practice_address = (pr as any).address ?? null;
+          }
+        }
+
+        setDoctor({
+          id: String(doctorRow.id),
+          user_id: doctorRow.user_id ? String(doctorRow.user_id) : null,
+          specialty: String(doctorRow.specialty ?? ""),
+          consultation_fee: doctorRow.consultation_fee == null ? null : Number(doctorRow.consultation_fee),
+          practice_id: doctorRow.practice_id ? String(doctorRow.practice_id) : null,
+          profile_full_name,
+          profile_phone,
+          profile_email,
+          practice_name,
+          practice_address,
+        });
       } catch (e: any) {
         console.error(e);
         toast.error(e?.message ?? "Failed to load doctor");
@@ -148,7 +183,7 @@ export default function AppointmentBooking() {
     loadDoctor();
   }, [doctorId]);
 
-  // Load availability slots using Edge Function
+  // Load slots
   useEffect(() => {
     const loadSlots = async () => {
       if (!doctorId) return;
@@ -174,7 +209,7 @@ export default function AppointmentBooking() {
         const newSlots: AvailabilitySlot[] = (data?.slots ?? []) as AvailabilitySlot[];
         setSlots(newSlots);
 
-        const nowMs = Date.now() + 60_000; // 1-minute safety buffer
+        const nowMs = Date.now() + 60_000;
         const stillAvailable = newSlots.some(
           (s) => s.available && s.start_at === selectedSlotStart && !isSameMinuteOrPast(s.start_at, nowMs),
         );
@@ -193,7 +228,7 @@ export default function AppointmentBooking() {
   }, [doctorId, doctor?.practice_id, selectedDate, durationMinutes, selectedSlotStart, appointmentType]);
 
   const availableSlots = useMemo(() => {
-    const nowMs = Date.now() + 60_000; // 1-minute safety buffer
+    const nowMs = Date.now() + 60_000;
     const seen = new Set<string>();
 
     return slots
@@ -222,7 +257,6 @@ export default function AppointmentBooking() {
       return;
     }
 
-    // prevent booking in the past
     const nowMs = Date.now() + 60_000;
     if (isSameMinuteOrPast(selectedSlotStart, nowMs)) {
       toast.error("You can't book an appointment in the past.");
@@ -241,7 +275,6 @@ export default function AppointmentBooking() {
 
     setBooking(true);
     try {
-      // best-effort: save phone to profile
       try {
         await supabase.from("profiles").update({ phone }).eq("user_id", user.id);
       } catch {
@@ -310,6 +343,8 @@ export default function AppointmentBooking() {
     );
   }
 
+  const doctorName = doctor.profile_full_name?.trim() || "Doctor";
+
   return (
     <main className="container max-w-5xl mx-auto px-4 py-8">
       <div className="space-y-6">
@@ -320,7 +355,6 @@ export default function AppointmentBooking() {
           </p>
         </div>
 
-        {/* Independent Practitioner Warning */}
         {!doctor.practice_id && (
           <Alert variant="destructive" className="border-amber-500/50 bg-amber-500/10">
             <AlertTriangle className="h-4 w-4 text-amber-600" />
@@ -343,7 +377,7 @@ export default function AppointmentBooking() {
           <CardContent className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div className="space-y-1">
-                <div className="text-xl font-semibold">{doctor.profiles?.full_name ?? "Doctor"}</div>
+                <div className="text-xl font-semibold">{doctorName}</div>
                 <div className="text-sm text-muted-foreground">{doctor.specialty}</div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
                   <Badge variant="secondary">Consultation fee</Badge>
@@ -352,15 +386,15 @@ export default function AppointmentBooking() {
               </div>
 
               <div className="space-y-2">
-                {doctor.practice_id && doctor.practices?.name ? (
+                {doctor.practice_id && doctor.practice_name ? (
                   <div className="flex items-start gap-2 text-sm">
                     <Building2 className="h-4 w-4 mt-0.5 text-muted-foreground" />
                     <div>
-                      <div className="font-medium">{doctor.practices.name}</div>
-                      {doctor.practices.address && (
+                      <div className="font-medium">{doctor.practice_name}</div>
+                      {doctor.practice_address && (
                         <div className="text-muted-foreground flex items-start gap-2 mt-1">
                           <MapPin className="h-4 w-4 mt-0.5" />
-                          <span>{doctor.practices.address}</span>
+                          <span>{doctor.practice_address}</span>
                         </div>
                       )}
                     </div>
@@ -373,7 +407,6 @@ export default function AppointmentBooking() {
           </CardContent>
         </Card>
 
-        {/* Appointment Type */}
         <Card>
           <CardHeader>
             <CardTitle>Appointment type</CardTitle>
@@ -406,6 +439,7 @@ export default function AppointmentBooking() {
                 </Label>
               </div>
             </RadioGroup>
+
             {!doctor.practice_id && (
               <p className="text-xs text-amber-600 dark:text-amber-400 mt-3">
                 In-person appointments are not available for independent practitioners without a verified clinic.
@@ -415,7 +449,6 @@ export default function AppointmentBooking() {
         </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left: date + duration */}
           <Card className="lg:col-span-1">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -451,7 +484,6 @@ export default function AppointmentBooking() {
             </CardContent>
           </Card>
 
-          {/* Middle: time slots */}
           <Card className="lg:col-span-1">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -494,7 +526,6 @@ export default function AppointmentBooking() {
             </CardContent>
           </Card>
 
-          {/* Right: patient details */}
           <Card className="lg:col-span-1">
             <CardHeader>
               <CardTitle>Patient details</CardTitle>
@@ -513,12 +544,7 @@ export default function AppointmentBooking() {
 
               <div className="space-y-2">
                 <Label htmlFor="name">Name (optional)</Label>
-                <Input
-                  id="name"
-                  value={patientName}
-                  onChange={(e) => setPatientName(e.target.value)}
-                  placeholder="Your name"
-                />
+                <Input id="name" value={patientName} onChange={(e) => setPatientName(e.target.value)} placeholder="Your name" />
               </div>
 
               <div className="space-y-2">
@@ -534,13 +560,7 @@ export default function AppointmentBooking() {
 
               <div className="space-y-2">
                 <Label htmlFor="notes">Notes (optional)</Label>
-                <Textarea
-                  id="notes"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Any details for the doctor..."
-                  rows={4}
-                />
+                <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Any details for the doctor..." rows={4} />
               </div>
 
               <Button onClick={handleBook} disabled={!canBook} className="w-full">
@@ -556,8 +576,7 @@ export default function AppointmentBooking() {
 
               {selectedSlotStart ? (
                 <div className="text-xs text-muted-foreground">
-                  Selected: {format(parseISO(selectedSlotStart), "PPP")} at {format(parseISO(selectedSlotStart), "HH:mm")}{" "}
-                  ({durationMinutes} min)
+                  Selected: {format(parseISO(selectedSlotStart), "PPP")} at {format(parseISO(selectedSlotStart), "HH:mm")} ({durationMinutes} min)
                 </div>
               ) : (
                 <div className="text-xs text-muted-foreground">Select a time slot to continue.</div>
