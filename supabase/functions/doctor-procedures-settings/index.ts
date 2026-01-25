@@ -1,3 +1,4 @@
+// File: supabase/functions/doctor-procedures-settings/index.ts
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -7,41 +8,6 @@ const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-type GetReq = {
-  action: "get";
-};
-
-type SaveReq = {
-  action: "save";
-  consultation_fee?: number | null;
-  accepts_new_patients?: boolean | null;
-  consultation_duration_minutes?: number | null;
-  consultation_is_active?: boolean | null;
-  consultation_is_bookable?: boolean | null;
-};
-
-type ReqBody = GetReq | SaveReq;
-
-type DoctorRow = {
-  id: string;
-  user_id: string;
-  verified: boolean | null;
-  consultation_fee: number | null;
-  accepts_new_patients?: boolean | null;
-};
-
-type ProcedureRow = {
-  id: string;
-  dentist_id: string;
-  name: string;
-  price: number | null;
-  default_cost: number | null;
-  duration_minutes: number | null;
-  is_active: boolean | null;
-  is_bookable: boolean | null;
-  is_consultation: boolean | null;
-};
-
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -49,92 +15,28 @@ function json(data: unknown, status = 200) {
   });
 }
 
-function requireEnv() {
+function getEnv() {
   const url = Deno.env.get("SUPABASE_URL");
   const anon = Deno.env.get("SUPABASE_ANON_KEY");
   const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
   if (!url || !anon || !service) {
     return {
       ok: false as const,
       error: "Missing SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY",
     };
   }
-
   return { ok: true as const, url, anon, service };
 }
 
-function clampNumber(v: unknown, min: number, max: number, fallback: number | null) {
-  if (v === null || v === undefined) return fallback;
-  const n = typeof v === "number" ? v : Number(v);
-  if (!Number.isFinite(n)) return fallback;
-  return Math.min(max, Math.max(min, n));
-}
-
-function clampInt(v: unknown, min: number, max: number, fallback: number | null) {
-  const n = clampNumber(v, min, max, fallback);
-  if (n === null) return null;
-  return Math.trunc(n);
-}
-
-async function getDoctorByUserId(serviceClient: any, userId: string): Promise<DoctorRow | null> {
-  const { data, error } = await serviceClient
-    .from("doctors")
-    .select("id, user_id, verified, consultation_fee, accepts_new_patients")
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (error) throw error;
-  return (data as DoctorRow) ?? null;
-}
-
-async function getConsultationProcedure(serviceClient: any, doctorId: string): Promise<ProcedureRow | null> {
-  const { data, error } = await serviceClient
-    .from("procedures")
-    .select("id, dentist_id, name, price, default_cost, duration_minutes, is_active, is_bookable, is_consultation")
-    .eq("dentist_id", doctorId)
-    .eq("is_consultation", true)
-    .maybeSingle();
-
-  if (error) throw error;
-  return (data as ProcedureRow) ?? null;
-}
-
-async function ensureConsultationProcedure(serviceClient: any, doctor: DoctorRow): Promise<ProcedureRow | null> {
-  if (!doctor.verified) return null;
-  if (doctor.consultation_fee === null || doctor.consultation_fee === undefined) return null;
-
-  const existing = await getConsultationProcedure(serviceClient, doctor.id);
-  if (existing) return existing;
-
-  const fee = Number(doctor.consultation_fee);
-
-  const { data, error } = await serviceClient
-    .from("procedures")
-    .insert({
-      dentist_id: doctor.id,
-      name: "Consultation",
-      category: "general",
-      type: "single_visit",
-      default_cost: fee,
-      price: fee,
-      duration_minutes: 30,
-      is_active: true,
-      is_bookable: true,
-      is_consultation: true,
-    })
-    .select("id, dentist_id, name, price, default_cost, duration_minutes, is_active, is_bookable, is_consultation")
-    .single();
-
-  if (error) {
-    // Race condition safety (unique partial index): if another request created it first, read it back.
-    const readBack = await getConsultationProcedure(serviceClient, doctor.id);
-    if (readBack) return readBack;
-    throw error;
-  }
-
-  return (data as ProcedureRow) ?? null;
-}
+type GetResp = {
+  doctor_id: string;
+  verified: boolean;
+  consultation_fee: number | null;
+  accepts_new_patients: boolean | null;
+  consultation_procedure_id: string | null;
+  consultation_procedure_cost: number | null;
+  consultation_is_bookable: boolean | null;
+};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -143,21 +45,10 @@ serve(async (req) => {
   const authHeader = req.headers.get("authorization") || req.headers.get("Authorization") || "";
   if (!authHeader) return json({ ok: false, error: "Missing Authorization" }, 401);
 
-  const env = requireEnv();
+  const env = getEnv();
   if (!env.ok) return json({ ok: false, error: env.error }, 500);
 
-  let body: ReqBody;
-  try {
-    body = (await req.json()) as ReqBody;
-  } catch {
-    return json({ ok: false, error: "Invalid JSON body" }, 400);
-  }
-
-  if (!body || ((body as any).action !== "get" && (body as any).action !== "save")) {
-    return json({ ok: false, error: "Invalid action" }, 400);
-  }
-
-  // Authed client for user identity
+  // Verify JWT with anon client
   const authed = createClient(env.url, env.anon, {
     global: { headers: { Authorization: authHeader } },
   });
@@ -165,120 +56,167 @@ serve(async (req) => {
   const { data: userRes, error: userErr } = await authed.auth.getUser();
   if (userErr || !userRes?.user) return json({ ok: false, error: "Unauthorized" }, 401);
 
-  // Service role client for DB ops (we still enforce ownership checks ourselves)
-  const service = createClient(env.url, env.service);
+  const userId = userRes.user.id;
+
+  // Service role for DB reads/writes; still authorize on userId
+  const admin = createClient(env.url, env.service);
+
+  let body: any = {};
+  try {
+    body = await req.json();
+  } catch {
+    body = {};
+  }
+
+  const action = String(body?.action || "get").toLowerCase();
 
   try {
-    const doctor = await getDoctorByUserId(service, userRes.user.id);
-    if (!doctor) return json({ ok: false, error: "Doctor profile not found" }, 404);
+    const { data: doctorRow, error: doctorErr } = await admin
+      .from("doctors")
+      .select("id, verified, consultation_fee, accepts_new_patients")
+      .eq("user_id", userId)
+      .maybeSingle();
 
-    // Always ensure the consultation procedure exists when doctor is verified & has a fee.
-    // (DB trigger should handle this too; this is a safe fallback for legacy data.)
-    const ensured = await ensureConsultationProcedure(service, doctor);
+    if (doctorErr) throw doctorErr;
+    if (!doctorRow?.id) return json({ ok: false, error: "Doctor profile not found" }, 404);
 
-    if (body.action === "get") {
-      const proc = ensured ?? (await getConsultationProcedure(service, doctor.id));
-      return json({
-        ok: true,
-        doctor: {
-          id: doctor.id,
-          verified: Boolean(doctor.verified),
-          consultation_fee: doctor.consultation_fee,
-          accepts_new_patients: (doctor as any).accepts_new_patients ?? null,
-        },
-        consultationProcedure: proc,
-      });
-    }
+    const doctorId = String(doctorRow.id);
+    const verified = Boolean(doctorRow.verified);
+    const consultationFee = doctorRow.consultation_fee == null ? null : Number(doctorRow.consultation_fee);
+    const acceptsNewPatients =
+      typeof doctorRow.accepts_new_patients === "boolean" ? doctorRow.accepts_new_patients : null;
 
-    // save
-    const saveBody = body as SaveReq;
-
-    const nextFee =
-      saveBody.consultation_fee === undefined ? undefined : clampNumber(saveBody.consultation_fee, 0, 1000000, null);
-
-    const nextAccepts =
-      saveBody.accepts_new_patients === undefined
-        ? undefined
-        : saveBody.accepts_new_patients === null
-          ? null
-          : Boolean(saveBody.accepts_new_patients);
-
-    const nextDuration =
-      saveBody.consultation_duration_minutes === undefined
-        ? undefined
-        : clampInt(saveBody.consultation_duration_minutes, 5, 600, null);
-
-    const nextIsActive =
-      saveBody.consultation_is_active === undefined
-        ? undefined
-        : saveBody.consultation_is_active === null
-          ? null
-          : Boolean(saveBody.consultation_is_active);
-
-    const nextIsBookable =
-      saveBody.consultation_is_bookable === undefined
-        ? undefined
-        : saveBody.consultation_is_bookable === null
-          ? null
-          : Boolean(saveBody.consultation_is_bookable);
-
-    // Update doctor settings
-    const doctorUpdate: Record<string, unknown> = {};
-    if (nextFee !== undefined) doctorUpdate.consultation_fee = nextFee;
-    if (nextAccepts !== undefined) doctorUpdate.accepts_new_patients = nextAccepts;
-
-    if (Object.keys(doctorUpdate).length > 0) {
-      const { error: dErr } = await service.from("doctors").update(doctorUpdate).eq("id", doctor.id);
-      if (dErr) throw dErr;
-    }
-
-    // Re-fetch doctor after update
-    const updatedDoctor = (await getDoctorByUserId(service, userRes.user.id)) as DoctorRow;
-
-    // Ensure consultation procedure exists if verified+fee
-    const consultationProc = await ensureConsultationProcedure(service, updatedDoctor);
-
-    // Update consultation procedure settings if it exists
-    const procToUpdate = consultationProc ?? (await getConsultationProcedure(service, updatedDoctor.id));
-    if (procToUpdate) {
-      const procUpdate: Record<string, unknown> = {};
-
-      if (nextFee !== undefined) {
-        procUpdate.price = nextFee;
-        procUpdate.default_cost = nextFee;
+    const ensureIfEligible = async (fee: number | null) => {
+      if (!verified) return;
+      if (fee == null) return;
+      // RPC created by migration; safe to call even if already exists
+      const { error } = await admin.rpc("ensure_consultation_procedure", { p_doctor_id: doctorId });
+      if (error) {
+        // Don't hard-fail GET; but do fail SAVE so user sees the issue
+        if (action === "save") throw error;
       }
-      if (nextDuration !== undefined) procUpdate.duration_minutes = nextDuration;
-      if (nextIsActive !== undefined) procUpdate.is_active = nextIsActive;
-      if (nextIsBookable !== undefined) procUpdate.is_bookable = nextIsBookable;
+    };
 
-      if (Object.keys(procUpdate).length > 0) {
-        const { error: pErr } = await service
-          .from("procedures")
-          .update(procUpdate)
-          .eq("id", procToUpdate.id)
-          .eq("dentist_id", updatedDoctor.id)
-          .eq("is_consultation", true);
-        if (pErr) throw pErr;
-      }
+    const fetchConsultationProcedure = async () => {
+      const { data, error } = await admin
+        .from("procedures")
+        .select("id, default_cost, price, is_bookable, is_active, is_consultation")
+        .eq("dentist_id", doctorId)
+        .eq("is_consultation", true)
+        .eq("is_active", true)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      return data
+        ? {
+            id: String(data.id),
+            cost: data.default_cost == null ? null : Number(data.default_cost),
+            is_bookable: typeof data.is_bookable === "boolean" ? data.is_bookable : null,
+          }
+        : null;
+    };
+
+    if (action === "get") {
+      await ensureIfEligible(consultationFee);
+      const proc = await fetchConsultationProcedure();
+
+      const resp: GetResp = {
+        doctor_id: doctorId,
+        verified,
+        consultation_fee: consultationFee,
+        accepts_new_patients: acceptsNewPatients,
+        consultation_procedure_id: proc?.id ?? null,
+        consultation_procedure_cost: proc?.cost ?? null,
+        consultation_is_bookable: proc?.is_bookable ?? null,
+      };
+
+      return json({ ok: true, data: resp });
     }
 
-    // Return fresh values
-    const finalDoctor = (await getDoctorByUserId(service, userRes.user.id)) as DoctorRow;
-    const finalProc = await getConsultationProcedure(service, finalDoctor.id);
+    if (action === "save") {
+      const fee =
+        body?.consultation_fee === null || body?.consultation_fee === undefined ? undefined : Number(body.consultation_fee);
+      const ap = body?.accepts_new_patients;
+      const bookable = body?.consultation_is_bookable;
 
-    return json({
-      ok: true,
-      doctor: {
-        id: finalDoctor.id,
-        verified: Boolean(finalDoctor.verified),
-        consultation_fee: finalDoctor.consultation_fee,
-        accepts_new_patients: (finalDoctor as any).accepts_new_patients ?? null,
-      },
-      consultationProcedure: finalProc,
-    });
-  } catch (e) {
-    const msg = (e as any)?.message || String(e);
-    console.error("doctor-procedures-settings error:", msg);
-    return json({ ok: false, error: msg }, 500);
+      if (fee !== undefined && (Number.isNaN(fee) || fee < 0)) {
+        return json({ ok: false, error: "consultation_fee must be a non-negative number or null" }, 400);
+      }
+      if (ap !== undefined && typeof ap !== "boolean") {
+        return json({ ok: false, error: "accepts_new_patients must be boolean" }, 400);
+      }
+      if (bookable !== undefined && typeof bookable !== "boolean") {
+        return json({ ok: false, error: "consultation_is_bookable must be boolean" }, 400);
+      }
+
+      const doctorUpdate: Record<string, any> = {};
+      if (body?.consultation_fee === null) doctorUpdate.consultation_fee = null;
+      if (fee !== undefined) doctorUpdate.consultation_fee = fee;
+      if (ap !== undefined) doctorUpdate.accepts_new_patients = ap;
+
+      if (Object.keys(doctorUpdate).length > 0) {
+        const { error } = await admin.from("doctors").update(doctorUpdate).eq("id", doctorId);
+        if (error) throw error;
+      }
+
+      const finalFee =
+        doctorUpdate.consultation_fee !== undefined
+          ? doctorUpdate.consultation_fee === null
+            ? null
+            : Number(doctorUpdate.consultation_fee)
+          : consultationFee;
+
+      // Ensure + sync procedure fields (only if verified + fee is set)
+      await ensureIfEligible(finalFee);
+
+      const proc = await fetchConsultationProcedure();
+      if (proc?.id) {
+        const procUpdate: Record<string, any> = {};
+        if (finalFee !== undefined) {
+          procUpdate.default_cost = finalFee;
+          procUpdate.price = finalFee;
+        }
+        if (bookable !== undefined) procUpdate.is_bookable = bookable;
+
+        if (Object.keys(procUpdate).length > 0) {
+          const { error } = await admin.from("procedures").update(procUpdate).eq("id", proc.id);
+          if (error) throw error;
+        }
+      }
+
+      const updatedDoctor = await admin
+        .from("doctors")
+        .select("verified, consultation_fee, accepts_new_patients")
+        .eq("id", doctorId)
+        .single();
+
+      if (updatedDoctor.error) throw updatedDoctor.error;
+
+      const updatedFee =
+        updatedDoctor.data.consultation_fee == null ? null : Number(updatedDoctor.data.consultation_fee);
+      const updatedAccepts =
+        typeof updatedDoctor.data.accepts_new_patients === "boolean" ? updatedDoctor.data.accepts_new_patients : null;
+
+      // Re-fetch procedure after updates
+      const proc2 = await fetchConsultationProcedure();
+
+      const resp: GetResp = {
+        doctor_id: doctorId,
+        verified: Boolean(updatedDoctor.data.verified),
+        consultation_fee: updatedFee,
+        accepts_new_patients: updatedAccepts,
+        consultation_procedure_id: proc2?.id ?? null,
+        consultation_procedure_cost: proc2?.cost ?? null,
+        consultation_is_bookable: proc2?.is_bookable ?? null,
+      };
+
+      return json({ ok: true, data: resp });
+    }
+
+    return json({ ok: false, error: "Unknown action" }, 400);
+  } catch (e: any) {
+    console.error(e);
+    return json({ ok: false, error: e?.message || "Unknown error" }, 500);
   }
 });
