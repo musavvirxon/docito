@@ -1,7 +1,6 @@
-// File: src/pages/AppointmentBooking.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { format, parseISO, startOfDay, isBefore } from "date-fns";
+import { format, parseISO, startOfDay, isBefore, isSameDay } from "date-fns";
 import {
   AlertCircle,
   AlertTriangle,
@@ -35,8 +34,6 @@ type DoctorInfo = {
   consultation_fee: number | null;
   practice_id: string | null;
   profile_full_name: string | null;
-  profile_phone: string | null;
-  profile_email: string | null;
   practice_name: string | null;
   practice_address: string | null;
 };
@@ -88,6 +85,9 @@ export default function AppointmentBooking() {
   const [patientEmail, setPatientEmail] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
 
+  const today = useMemo(() => startOfDay(new Date()), []);
+  const nowMsWithBuffer = useMemo(() => Date.now() + 60_000, [selectedDate, durationMinutes, appointmentType]);
+
   // Prefill email/phone
   useEffect(() => {
     const prefill = async () => {
@@ -104,7 +104,7 @@ export default function AppointmentBooking() {
     prefill().catch(console.error);
   }, []);
 
-  // Load doctor (robust profile + practice fetching)
+  // Load doctor
   useEffect(() => {
     const loadDoctor = async () => {
       if (!doctorId) return;
@@ -126,21 +126,13 @@ export default function AppointmentBooking() {
         const doctorRow = d as any;
 
         let profile_full_name: string | null = null;
-        let profile_phone: string | null = null;
-        let profile_email: string | null = null;
-
         if (doctorRow.user_id) {
           const { data: p } = await supabase
             .from("profiles")
-            .select("full_name, phone, email")
+            .select("full_name")
             .eq("user_id", doctorRow.user_id)
             .maybeSingle();
-
-          if (p) {
-            profile_full_name = (p as any).full_name ?? null;
-            profile_phone = (p as any).phone ?? null;
-            profile_email = (p as any).email ?? null;
-          }
+          if (p) profile_full_name = (p as any).full_name ?? null;
         }
 
         let practice_name: string | null = null;
@@ -152,7 +144,6 @@ export default function AppointmentBooking() {
             .select("name, address")
             .eq("id", doctorRow.practice_id)
             .maybeSingle();
-
           if (pr) {
             practice_name = (pr as any).name ?? null;
             practice_address = (pr as any).address ?? null;
@@ -166,8 +157,6 @@ export default function AppointmentBooking() {
           consultation_fee: doctorRow.consultation_fee == null ? null : Number(doctorRow.consultation_fee),
           practice_id: doctorRow.practice_id ? String(doctorRow.practice_id) : null,
           profile_full_name,
-          profile_phone,
-          profile_email,
           practice_name,
           practice_address,
         });
@@ -209,9 +198,8 @@ export default function AppointmentBooking() {
         const newSlots: AvailabilitySlot[] = (data?.slots ?? []) as AvailabilitySlot[];
         setSlots(newSlots);
 
-        const nowMs = Date.now() + 60_000;
         const stillAvailable = newSlots.some(
-          (s) => s.available && s.start_at === selectedSlotStart && !isSameMinuteOrPast(s.start_at, nowMs),
+          (s) => s.available && s.start_at === selectedSlotStart && !isSameMinuteOrPast(s.start_at, Date.now() + 60_000),
         );
         if (selectedSlotStart && !stillAvailable) setSelectedSlotStart("");
       } catch (e: any) {
@@ -228,12 +216,12 @@ export default function AppointmentBooking() {
   }, [doctorId, doctor?.practice_id, selectedDate, durationMinutes, selectedSlotStart, appointmentType]);
 
   const availableSlots = useMemo(() => {
-    const nowMs = Date.now() + 60_000;
     const seen = new Set<string>();
+    const bufferNow = Date.now() + 60_000;
 
     return slots
       .filter((s) => s.available)
-      .filter((s) => !isSameMinuteOrPast(s.start_at, nowMs))
+      .filter((s) => !isSameMinuteOrPast(s.start_at, bufferNow)) // ✅ lock old times
       .filter((s) => {
         if (seen.has(s.start_at)) return false;
         seen.add(s.start_at);
@@ -478,9 +466,16 @@ export default function AppointmentBooking() {
                 selected={selectedDate}
                 onSelect={(d) => d && setSelectedDate(startOfDay(d))}
                 weekStartsOn={1}
-                disabled={(d) => isBefore(d, startOfDay(new Date()))}
+                // ✅ mark old days as not bookable
+                disabled={(d) => isBefore(startOfDay(d), today)}
                 className="rounded-md border"
               />
+
+              <div className="text-xs text-muted-foreground">
+                {isSameDay(selectedDate, today)
+                  ? "Today is highlighted. Past days are disabled."
+                  : "Past days are disabled. Select a future date to book."}
+              </div>
             </CardContent>
           </Card>
 
@@ -501,7 +496,7 @@ export default function AppointmentBooking() {
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    No available slots for {format(selectedDate, "PPP")} (try another date or duration).
+                    No bookable future times for {format(selectedDate, "PPP")} (try another date or duration).
                   </AlertDescription>
                 </Alert>
               ) : (
@@ -509,6 +504,8 @@ export default function AppointmentBooking() {
                   {availableSlots.map((slot) => {
                     const selected = selectedSlotStart === slot.start_at;
                     const label = format(parseISO(slot.start_at), "HH:mm");
+                    const locked = isSameMinuteOrPast(slot.start_at, Date.now() + 60_000);
+
                     return (
                       <Button
                         key={slot.start_at}
@@ -516,6 +513,7 @@ export default function AppointmentBooking() {
                         variant={selected ? "default" : "outline"}
                         onClick={() => setSelectedSlotStart(slot.start_at)}
                         className="justify-center"
+                        disabled={locked} // ✅ lock old times
                       >
                         {label}
                       </Button>
@@ -523,6 +521,9 @@ export default function AppointmentBooking() {
                   })}
                 </div>
               )}
+              <div className="mt-3 text-xs text-muted-foreground">
+                Past times are automatically locked and cannot be selected.
+              </div>
             </CardContent>
           </Card>
 
