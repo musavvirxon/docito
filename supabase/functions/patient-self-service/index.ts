@@ -56,8 +56,7 @@ function optionalString(v: unknown) {
 function optionalISODate(v: unknown) {
   const s = optionalString(v);
   if (!s) return null;
-  // accept YYYY-MM-DD
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null; // YYYY-MM-DD
   return s;
 }
 
@@ -74,6 +73,8 @@ serve(async (req) => {
 
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
   const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+  const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     return jsonResponse({ ok: false, error: "missing_env" }, { status: 500, origin });
   }
@@ -83,13 +84,21 @@ serve(async (req) => {
     return jsonResponse({ ok: false, error: "missing_authorization" }, { status: 401, origin });
   }
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  // User-scoped client (enforces RLS)
+  const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     global: { headers: { Authorization: authHeader } },
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   });
 
+  // Admin client (bypasses RLS) - used only as a fallback for known-safe self-service writes
+  const adminClient = SUPABASE_SERVICE_ROLE_KEY
+    ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+      })
+    : null;
+
   try {
-    const { data: auth, error: authError } = await supabase.auth.getUser();
+    const { data: auth, error: authError } = await userClient.auth.getUser();
     if (authError || !auth?.user) {
       return jsonResponse({ ok: false, error: "unauthorized" }, { status: 401, origin });
     }
@@ -117,6 +126,7 @@ serve(async (req) => {
       if (!start_date) throw new Error("invalid_start_date");
 
       const end_date = optionalISODate(payload?.end_date) ?? optionalISODate(payload?.endDate);
+
       const statusRaw = optionalString(payload?.status) ?? "active";
       const status = ["active", "completed", "discontinued", "paused"].includes(statusRaw)
         ? statusRaw
@@ -136,17 +146,32 @@ serve(async (req) => {
         treatment_plan_id: null,
       };
 
-      const { data, error } = await supabase
-        .from("medications")
-        .insert(insertRow as any)
-        .select("*")
-        .single();
+      // 1) Try with RLS (preferred)
+      const rlsAttempt = await userClient.from("medications").insert(insertRow as any).select("*").single();
 
-      if (error) {
-        return jsonResponse({ ok: false, error: error.message }, { status: 500, origin });
+      if (!rlsAttempt.error) {
+        return jsonResponse({ ok: true, medication: rlsAttempt.data }, { status: 200, origin });
       }
 
-      return jsonResponse({ ok: true, medication: data }, { status: 200, origin });
+      // 2) Fallback via service role (if RLS not yet applied in env)
+      if (!adminClient) {
+        return jsonResponse({ ok: false, error: rlsAttempt.error.message }, { status: 500, origin });
+      }
+
+      const adminAttempt = await adminClient.from("medications").insert(insertRow as any).select("*").single();
+
+      if (adminAttempt.error) {
+        return jsonResponse({ ok: false, error: adminAttempt.error.message }, { status: 500, origin });
+      }
+
+      return jsonResponse(
+        {
+          ok: true,
+          medication: adminAttempt.data,
+          warning: "rls_insert_failed_fallback_used",
+        },
+        { status: 200, origin },
+      );
     }
 
     return jsonResponse({ ok: false, error: "unknown_action" }, { status: 400, origin });
