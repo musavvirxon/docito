@@ -1,28 +1,30 @@
 // File: src/lib/api/supabase-api.ts
-import { supabase } from '@/integrations/supabase/client';
-import { Tables, Database } from '@/integrations/supabase/types';
+import { supabase } from "@/integrations/supabase/client";
+import { Tables, Database } from "@/integrations/supabase/types";
+import { toast } from "sonner";
 
-type ProcedureInsert = Database['public']['Tables']['procedures']['Insert'];
-type MedicalRecordInsert = Database['public']['Tables']['medical_records']['Insert'];
-import { toast } from 'sonner';
+type ProcedureInsert = Database["public"]["Tables"]["procedures"]["Insert"];
+type MedicalRecordInsert = Database["public"]["Tables"]["medical_records"]["Insert"];
+type PracticeRow = Tables<"practices">;
+type DoctorRow = Tables<"doctors">;
 
 // Types
-export type Doctor = Tables<'doctors'> & {
+export type Doctor = DoctorRow & {
   profiles?: any;
   practices?: any;
 };
 
-export type Appointment = Tables<'appointments'> & {
+export type Appointment = Tables<"appointments"> & {
   doctor?: any;
   practice?: any;
 };
 
-export type TreatmentPlan = Tables<'treatment_plans'> & {
+export type TreatmentPlan = Tables<"treatment_plans"> & {
   treatment_plan_procedures?: any[];
   medications?: any[];
 };
 
-export type Procedure = Tables<'procedures'> & {
+export type Procedure = Tables<"procedures"> & {
   procedure_materials?: any[];
   procedure_files?: any[];
 };
@@ -35,6 +37,12 @@ const handleApiError = (error: any, defaultMessage: string) => {
   return { error: message };
 };
 
+function asOne<T = any>(v: any): T | null {
+  if (!v) return null;
+  if (Array.isArray(v)) return (v[0] as T) ?? null;
+  return v as T;
+}
+
 // Authentication API
 export const authApi = {
   async signUp(email: string, password: string, userData: any = {}) {
@@ -46,16 +54,16 @@ export const authApi = {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
             full_name: userData.fullName || email,
-            role: userData.role || 'patient'
-          }
-        }
+            role: userData.role || "patient",
+          },
+        },
       });
 
       if (error) throw error;
-      toast.success('Account created successfully! Please check your email to verify your account.');
+      toast.success("Account created successfully! Please check your email to verify your account.");
       return { success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to create account');
+      return handleApiError(error, "Failed to create account");
     }
   },
 
@@ -67,10 +75,10 @@ export const authApi = {
       });
 
       if (error) throw error;
-      toast.success('Successfully signed in!');
+      toast.success("Successfully signed in!");
       return { success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to sign in');
+      return handleApiError(error, "Failed to sign in");
     }
   },
 
@@ -78,10 +86,10 @@ export const authApi = {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      toast.success('Successfully signed out!');
+      toast.success("Successfully signed out!");
       return { success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to sign out');
+      return handleApiError(error, "Failed to sign out");
     }
   },
 
@@ -92,10 +100,10 @@ export const authApi = {
       });
 
       if (error) throw error;
-      toast.success('Password reset instructions sent to your email!');
+      toast.success("Password reset instructions sent to your email!");
       return { success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to send password reset email');
+      return handleApiError(error, "Failed to send password reset email");
     }
   },
 
@@ -106,10 +114,10 @@ export const authApi = {
       });
 
       if (error) throw error;
-      toast.success('Password updated successfully!');
+      toast.success("Password updated successfully!");
       return { success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to update password');
+      return handleApiError(error, "Failed to update password");
     }
   },
 };
@@ -118,67 +126,142 @@ export const authApi = {
 export const profileApi = {
   async fetchProfile(userId: string) {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
-
+      const { data, error } = await supabase.from("profiles").select("*").eq("user_id", userId).single();
       if (error) throw error;
       return { data, success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to fetch profile');
+      return handleApiError(error, "Failed to fetch profile");
     }
   },
 
   async updateProfile(userId: string, updates: any) {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('user_id', userId)
-        .select()
-        .single();
-
+      const { data, error } = await supabase.from("profiles").update(updates).eq("user_id", userId).select().single();
       if (error) throw error;
-      toast.success('Profile updated successfully!');
+      toast.success("Profile updated successfully!");
       return { data, success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to update profile');
+      return handleApiError(error, "Failed to update profile");
     }
   },
 
   async updateNotificationSettings(userId: string, settings: any) {
     try {
       const { data, error } = await supabase
-        .from('profiles')
+        .from("profiles")
         .update({ notification_settings: settings })
-        .eq('user_id', userId)
+        .eq("user_id", userId)
         .select()
         .single();
 
       if (error) throw error;
-      toast.success('Notification settings updated!');
+      toast.success("Notification settings updated!");
       return { data, success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to update notification settings');
+      return handleApiError(error, "Failed to update notification settings");
     }
   },
 
   async updatePrivacySettings(userId: string, settings: any) {
     try {
       const { data, error } = await supabase
-        .from('profiles')
+        .from("profiles")
         .update({ privacy_settings: settings })
-        .eq('user_id', userId)
+        .eq("user_id", userId)
         .select()
         .single();
 
       if (error) throw error;
-      toast.success('Privacy settings updated!');
+      toast.success("Privacy settings updated!");
       return { data, success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to update privacy settings');
+      return handleApiError(error, "Failed to update privacy settings");
+    }
+  },
+};
+
+// Search API (needed by FindPractices.tsx, FindDoctors.tsx, etc.)
+export const searchApi = {
+  async searchPractices(query: string) {
+    try {
+      const q = String(query || "").trim();
+      let req = supabase.from("practices").select("*").order("name", { ascending: true }).limit(50);
+
+      if (q.length > 0) {
+        // Try server-side ilike if name exists
+        req = supabase
+          .from("practices")
+          .select("*")
+          .or(`name.ilike.%${q}%,address.ilike.%${q}%,phone.ilike.%${q}%`)
+          .order("name", { ascending: true })
+          .limit(50);
+      }
+
+      const { data, error } = await req;
+      if (error) throw error;
+      return { data: (data || []) as PracticeRow[], success: true };
+    } catch (error: any) {
+      return handleApiError(error, "Failed to search practices");
+    }
+  },
+
+  async searchDoctors(query: string) {
+    try {
+      const q = String(query || "").trim();
+
+      // Fetch verified doctors (and join minimal doctor fields); we enrich with profiles below
+      let req = supabase
+        .from("doctors")
+        .select("id, user_id, specialty, verified, created_at")
+        .eq("verified", true)
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (q.length > 0) {
+        req = supabase
+          .from("doctors")
+          .select("id, user_id, specialty, verified, created_at")
+          .eq("verified", true)
+          .ilike("specialty", `%${q}%`)
+          .order("created_at", { ascending: false })
+          .limit(50);
+      }
+
+      const { data: doctors, error } = await req;
+      if (error) throw error;
+
+      const doctorRows = (doctors || []) as DoctorRow[];
+      const userIds = Array.from(new Set(doctorRows.map((d) => String((d as any).user_id)).filter(Boolean)));
+
+      let profiles: any[] = [];
+      if (userIds.length > 0) {
+        const { data: profs, error: pe } = await supabase.from("profiles").select("user_id, full_name, avatar_url").in("user_id", userIds);
+        if (pe) throw pe;
+        profiles = profs || [];
+      }
+
+      const profileMap = new Map<string, any>();
+      profiles.forEach((p) => p?.user_id && profileMap.set(String(p.user_id), p));
+
+      const enriched = doctorRows.map((d: any) => ({
+        ...d,
+        profiles: profileMap.get(String(d.user_id)) || null,
+      }));
+
+      // If query provided, also try filtering by profile full_name client-side
+      if (q.length > 0) {
+        const qLower = q.toLowerCase();
+        const filtered = enriched.filter((d: any) => {
+          const name = String(d?.profiles?.full_name || "").toLowerCase();
+          const spec = String(d?.specialty || "").toLowerCase();
+          return name.includes(qLower) || spec.includes(qLower);
+        });
+        return { data: filtered as any[], success: true };
+      }
+
+      return { data: enriched as any[], success: true };
+    } catch (error: any) {
+      return handleApiError(error, "Failed to search doctors");
     }
   },
 };
@@ -187,74 +270,63 @@ export const profileApi = {
 export const doctorApi = {
   async fetchDoctors() {
     try {
-      const { data, error } = await supabase
-        .from('doctors')
-        .select('*')
-        .eq('verified', true);
-
+      const { data, error } = await supabase.from("doctors").select("*").eq("verified", true);
       if (error) throw error;
       return { data: data || [], success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to fetch doctors');
+      return handleApiError(error, "Failed to fetch doctors");
     }
   },
 
   async fetchDoctorById(doctorId: string) {
     try {
-      const { data, error } = await supabase
-        .from('doctors')
-        .select('*')
-        .eq('id', doctorId)
-        .single();
-
+      const { data, error } = await supabase.from("doctors").select("*").eq("id", doctorId).single();
       if (error) throw error;
       return { data, success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to fetch doctor');
+      return handleApiError(error, "Failed to fetch doctor");
     }
   },
 
   async fetchDoctorAvailability(doctorId: string, date: string) {
     try {
       const { data, error } = await supabase
-        .from('availability_slots')
-        .select('*')
-        .eq('doctor_id', doctorId)
-        .eq('date', date)
-        .eq('is_available', true)
-        .order('start_time', { ascending: true });
+        .from("availability_slots")
+        .select("*")
+        .eq("doctor_id", doctorId)
+        .eq("date", date)
+        .eq("is_available", true)
+        .order("start_time", { ascending: true });
 
       if (error) throw error;
       return { data: data || [], success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to fetch doctor availability');
+      return handleApiError(error, "Failed to fetch doctor availability");
     }
   },
 };
 
 // Appointment API
 export const appointmentApi = {
-  async fetchAppointments(userId: string, userRole: 'patient' | 'doctor') {
+  async fetchAppointments(userId: string, userRole: "patient" | "doctor") {
     try {
       const attachDoctorProfiles = async (rows: any[]) => {
         if (!rows || rows.length === 0) return rows;
-
-        const asOne = (v: any) => (Array.isArray(v) ? v[0] ?? null : v ?? null);
 
         const doctorUserIds = Array.from(
           new Set(
             rows
               .map((r) => asOne(r?.doctor)?.user_id)
-              .filter((v) => typeof v === 'string' && v.length > 0)
-          )
+              .filter((v) => typeof v === "string" && v.length > 0),
+          ),
         ) as string[];
 
         if (doctorUserIds.length === 0) return rows;
 
         const { data: profiles, error: profilesError } = await supabase
-          .from('profiles')
-          .select('user_id, full_name, avatar_url')
-          .in('user_id', doctorUserIds);
+          .from("profiles")
+          .select("user_id, full_name, avatar_url")
+          .in("user_id", doctorUserIds);
 
         if (profilesError) throw profilesError;
 
@@ -268,7 +340,7 @@ export const appointmentApi = {
 
           if (Array.isArray(doctorRaw)) {
             r.doctor = doctorRaw.map((d: any) => {
-              const uid = d?.user_id ? String(d.user_id) : '';
+              const uid = d?.user_id ? String(d.user_id) : "";
               const prof = uid ? profileMap.get(uid) : null;
               return prof ? { ...d, profiles: prof } : d;
             });
@@ -276,17 +348,16 @@ export const appointmentApi = {
           }
 
           const d = doctorRaw;
-          const uid = d?.user_id ? String(d.user_id) : '';
+          const uid = d?.user_id ? String(d.user_id) : "";
           const prof = uid ? profileMap.get(uid) : null;
           r.doctor = prof ? { ...d, profiles: prof } : d;
           return r;
         });
       };
 
-      if (userRole === 'patient') {
-        // Use unified view for patients - includes appointments matched by email/phone
+      if (userRole === "patient") {
         const { data, error } = await supabase
-          .from('patient_all_appointments')
+          .from("patient_all_appointments")
           .select(
             `
             *,
@@ -302,29 +373,24 @@ export const appointmentApi = {
               address,
               phone
             )
-          `
+          `,
           )
-          .order('appointment_date', { ascending: true })
-          .order('start_time', { ascending: true });
+          .order("appointment_date", { ascending: true })
+          .order("start_time", { ascending: true });
 
         if (error) throw error;
 
         const enriched = await attachDoctorProfiles(data || []);
         return { data: enriched || [], success: true };
       } else {
-        // For doctors, use regular appointments table
-        const { data: doctorData } = await supabase
-          .from('doctors')
-          .select('id')
-          .eq('user_id', userId)
-          .single();
+        const { data: doctorData } = await supabase.from("doctors").select("id").eq("user_id", userId).single();
 
         if (!doctorData) {
           return { data: [], success: true };
         }
 
         const { data, error } = await supabase
-          .from('appointments')
+          .from("appointments")
           .select(
             `
             *,
@@ -340,11 +406,11 @@ export const appointmentApi = {
               address,
               phone
             )
-          `
+          `,
           )
-          .eq('doctor_id', doctorData.id)
-          .order('appointment_date', { ascending: true })
-          .order('start_time', { ascending: true });
+          .eq("doctor_id", doctorData.id)
+          .order("appointment_date", { ascending: true })
+          .order("start_time", { ascending: true });
 
         if (error) throw error;
 
@@ -352,7 +418,7 @@ export const appointmentApi = {
         return { data: enriched || [], success: true };
       }
     } catch (error: any) {
-      return handleApiError(error, 'Failed to fetch appointments');
+      return handleApiError(error, "Failed to fetch appointments");
     }
   },
 
@@ -366,9 +432,8 @@ export const appointmentApi = {
     notes?: string;
   }) {
     try {
-      // Insert appointment directly
       const { data, error } = await supabase
-        .from('appointments')
+        .from("appointments")
         .insert({
           doctor_id: appointmentData.doctor_id,
           patient_id: appointmentData.patient_id,
@@ -377,50 +442,38 @@ export const appointmentApi = {
           start_time: appointmentData.start_time,
           end_time: appointmentData.end_time,
           notes: appointmentData.notes || null,
-          status: 'confirmed'
+          status: "confirmed",
         })
         .select()
         .single();
 
       if (error) throw error;
-      toast.success('Appointment booked successfully!');
+      toast.success("Appointment booked successfully!");
       return { data, success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to book appointment');
+      return handleApiError(error, "Failed to book appointment");
     }
   },
 
   async cancelAppointment(appointmentId: string) {
     try {
-      const { data, error } = await supabase
-        .from('appointments')
-        .update({ status: 'canceled' })
-        .eq('id', appointmentId)
-        .select()
-        .single();
-
+      const { data, error } = await supabase.from("appointments").update({ status: "canceled" }).eq("id", appointmentId).select().single();
       if (error) throw error;
-      toast.success('Appointment cancelled');
+      toast.success("Appointment cancelled");
       return { data, success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to cancel appointment');
+      return handleApiError(error, "Failed to cancel appointment");
     }
   },
 
   async updateAppointmentStatus(appointmentId: string, status: string) {
     try {
-      const { data, error } = await supabase
-        .from('appointments')
-        .update({ status })
-        .eq('id', appointmentId)
-        .select()
-        .single();
-
+      const { data, error } = await supabase.from("appointments").update({ status }).eq("id", appointmentId).select().single();
       if (error) throw error;
-      toast.success('Appointment status updated');
+      toast.success("Appointment status updated");
       return { data, success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to update appointment status');
+      return handleApiError(error, "Failed to update appointment status");
     }
   },
 };
@@ -429,16 +482,11 @@ export const appointmentApi = {
 export const medicationApi = {
   async fetchMedications(userId: string) {
     try {
-      const { data, error } = await supabase
-        .from('medications')
-        .select('*')
-        .eq('patient_id', userId)
-        .order('created_at', { ascending: false });
-
+      const { data, error } = await supabase.from("medications").select("*").eq("patient_id", userId).order("created_at", { ascending: false });
       if (error) throw error;
       return { data: data || [], success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to fetch medications');
+      return handleApiError(error, "Failed to fetch medications");
     }
   },
 
@@ -453,7 +501,7 @@ export const medicationApi = {
   }) {
     try {
       const { data, error } = await supabase
-        .from('medications')
+        .from("medications")
         .insert({
           patient_id: medication.patient_id,
           name: medication.name,
@@ -468,42 +516,32 @@ export const medicationApi = {
         .single();
 
       if (error) throw error;
-      toast.success('Medication added');
+      toast.success("Medication added");
       return { data, success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to add medication');
+      return handleApiError(error, "Failed to add medication");
     }
   },
 
   async deleteMedication(medicationId: string) {
     try {
-      const { error } = await supabase
-        .from('medications')
-        .delete()
-        .eq('id', medicationId);
-
+      const { error } = await supabase.from("medications").delete().eq("id", medicationId);
       if (error) throw error;
-      toast.success('Medication deleted');
+      toast.success("Medication deleted");
       return { success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to delete medication');
+      return handleApiError(error, "Failed to delete medication");
     }
   },
 
   async updateMedication(medicationId: string, updates: any) {
     try {
-      const { data, error } = await supabase
-        .from('medications')
-        .update(updates)
-        .eq('id', medicationId)
-        .select()
-        .single();
-
+      const { data, error } = await supabase.from("medications").update(updates).eq("id", medicationId).select().single();
       if (error) throw error;
-      toast.success('Medication updated');
+      toast.success("Medication updated");
       return { data, success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to update medication');
+      return handleApiError(error, "Failed to update medication");
     }
   },
 };
@@ -513,63 +551,53 @@ export const remindersApi = {
   async fetchReminders(userId: string) {
     try {
       const { data, error } = await supabase
-        .from('medication_reminders')
-        .select(`
+        .from("medication_reminders")
+        .select(
+          `
           *,
           medication:medications(*)
-        `)
-        .eq('patient_id', userId)
-        .order('scheduled_time', { ascending: true });
+        `,
+        )
+        .eq("patient_id", userId)
+        .order("scheduled_time", { ascending: true });
 
       if (error) throw error;
       return { data: data || [], success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to fetch reminders');
+      return handleApiError(error, "Failed to fetch reminders");
     }
   },
 
   async updateReminderStatus(reminderId: string, status: string) {
     try {
-      const { data, error } = await supabase
-        .from('medication_reminders')
-        .update({ status })
-        .eq('id', reminderId)
-        .select()
-        .single();
-
+      const { data, error } = await supabase.from("medication_reminders").update({ status }).eq("id", reminderId).select().single();
       if (error) throw error;
-      toast.success('Reminder updated');
+      toast.success("Reminder updated");
       return { data, success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to update reminder');
+      return handleApiError(error, "Failed to update reminder");
     }
   },
 
-  async createReminder(reminder: {
-    medication_id: string;
-    patient_id: string;
-    scheduled_time: string;
-    status?: string;
-    notes?: string;
-  }) {
+  async createReminder(reminder: { medication_id: string; patient_id: string; scheduled_time: string; status?: string; notes?: string }) {
     try {
       const { data, error } = await supabase
-        .from('medication_reminders')
+        .from("medication_reminders")
         .insert({
           medication_id: reminder.medication_id,
           patient_id: reminder.patient_id,
           scheduled_time: reminder.scheduled_time,
-          status: reminder.status || 'pending',
+          status: reminder.status || "pending",
           notes: reminder.notes || null,
         })
         .select()
         .single();
 
       if (error) throw error;
-      toast.success('Reminder created');
+      toast.success("Reminder created");
       return { data, success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to create reminder');
+      return handleApiError(error, "Failed to create reminder");
     }
   },
 };
@@ -578,47 +606,33 @@ export const remindersApi = {
 export const medicalRecordsApi = {
   async fetchMedicalRecords(userId: string) {
     try {
-      const { data, error } = await supabase
-        .from('medical_records')
-        .select('*')
-        .eq('patient_id', userId)
-        .order('created_at', { ascending: false });
-
+      const { data, error } = await supabase.from("medical_records").select("*").eq("patient_id", userId).order("created_at", { ascending: false });
       if (error) throw error;
       return { data: data || [], success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to fetch medical records');
+      return handleApiError(error, "Failed to fetch medical records");
     }
   },
 
   async addMedicalRecord(record: MedicalRecordInsert) {
     try {
-      const { data, error } = await supabase
-        .from('medical_records')
-        .insert(record)
-        .select()
-        .single();
-
+      const { data, error } = await supabase.from("medical_records").insert(record).select().single();
       if (error) throw error;
-      toast.success('Medical record added');
+      toast.success("Medical record added");
       return { data, success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to add medical record');
+      return handleApiError(error, "Failed to add medical record");
     }
   },
 
   async deleteMedicalRecord(recordId: string) {
     try {
-      const { error } = await supabase
-        .from('medical_records')
-        .delete()
-        .eq('id', recordId);
-
+      const { error } = await supabase.from("medical_records").delete().eq("id", recordId);
       if (error) throw error;
-      toast.success('Medical record deleted');
+      toast.success("Medical record deleted");
       return { success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to delete medical record');
+      return handleApiError(error, "Failed to delete medical record");
     }
   },
 };
@@ -627,47 +641,33 @@ export const medicalRecordsApi = {
 export const testResultsApi = {
   async fetchTestResults(userId: string) {
     try {
-      const { data, error } = await supabase
-        .from('test_results')
-        .select('*')
-        .eq('patient_id', userId)
-        .order('created_at', { ascending: false });
-
+      const { data, error } = await supabase.from("test_results").select("*").eq("patient_id", userId).order("created_at", { ascending: false });
       if (error) throw error;
       return { data: data || [], success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to fetch test results');
+      return handleApiError(error, "Failed to fetch test results");
     }
   },
 
   async addTestResult(result: any) {
     try {
-      const { data, error } = await supabase
-        .from('test_results')
-        .insert(result)
-        .select()
-        .single();
-
+      const { data, error } = await supabase.from("test_results").insert(result).select().single();
       if (error) throw error;
-      toast.success('Test result added');
+      toast.success("Test result added");
       return { data, success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to add test result');
+      return handleApiError(error, "Failed to add test result");
     }
   },
 
   async deleteTestResult(resultId: string) {
     try {
-      const { error } = await supabase
-        .from('test_results')
-        .delete()
-        .eq('id', resultId);
-
+      const { error } = await supabase.from("test_results").delete().eq("id", resultId);
       if (error) throw error;
-      toast.success('Test result deleted');
+      toast.success("Test result deleted");
       return { success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to delete test result');
+      return handleApiError(error, "Failed to delete test result");
     }
   },
 };
@@ -677,67 +677,54 @@ export const treatmentPlansApi = {
   async fetchTreatmentPlans(userId: string) {
     try {
       const { data, error } = await supabase
-        .from('treatment_plans')
-        .select(`
+        .from("treatment_plans")
+        .select(
+          `
           *,
           treatment_plan_procedures(*),
           medications(*)
-        `)
-        .eq('patient_id', userId)
-        .order('created_at', { ascending: false });
+        `,
+        )
+        .eq("patient_id", userId)
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       return { data: data || [], success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to fetch treatment plans');
+      return handleApiError(error, "Failed to fetch treatment plans");
     }
   },
 
   async addTreatmentPlan(plan: any) {
     try {
-      const { data, error } = await supabase
-        .from('treatment_plans')
-        .insert(plan)
-        .select()
-        .single();
-
+      const { data, error } = await supabase.from("treatment_plans").insert(plan).select().single();
       if (error) throw error;
-      toast.success('Treatment plan created');
+      toast.success("Treatment plan created");
       return { data, success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to create treatment plan');
+      return handleApiError(error, "Failed to create treatment plan");
     }
   },
 
   async updateTreatmentPlan(planId: string, updates: any) {
     try {
-      const { data, error } = await supabase
-        .from('treatment_plans')
-        .update(updates)
-        .eq('id', planId)
-        .select()
-        .single();
-
+      const { data, error } = await supabase.from("treatment_plans").update(updates).eq("id", planId).select().single();
       if (error) throw error;
-      toast.success('Treatment plan updated');
+      toast.success("Treatment plan updated");
       return { data, success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to update treatment plan');
+      return handleApiError(error, "Failed to update treatment plan");
     }
   },
 
   async deleteTreatmentPlan(planId: string) {
     try {
-      const { error } = await supabase
-        .from('treatment_plans')
-        .delete()
-        .eq('id', planId);
-
+      const { error } = await supabase.from("treatment_plans").delete().eq("id", planId);
       if (error) throw error;
-      toast.success('Treatment plan deleted');
+      toast.success("Treatment plan deleted");
       return { success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to delete treatment plan');
+      return handleApiError(error, "Failed to delete treatment plan");
     }
   },
 };
@@ -747,66 +734,53 @@ export const proceduresApi = {
   async fetchProcedures() {
     try {
       const { data, error } = await supabase
-        .from('procedures')
-        .select(`
+        .from("procedures")
+        .select(
+          `
           *,
           procedure_materials(*),
           procedure_files(*)
-        `)
-        .order('name', { ascending: true });
+        `,
+        )
+        .order("name", { ascending: true });
 
       if (error) throw error;
       return { data: data || [], success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to fetch procedures');
+      return handleApiError(error, "Failed to fetch procedures");
     }
   },
 
   async addProcedure(procedure: ProcedureInsert) {
     try {
-      const { data, error } = await supabase
-        .from('procedures')
-        .insert(procedure)
-        .select()
-        .single();
-
+      const { data, error } = await supabase.from("procedures").insert(procedure).select().single();
       if (error) throw error;
-      toast.success('Procedure created');
+      toast.success("Procedure created");
       return { data, success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to create procedure');
+      return handleApiError(error, "Failed to create procedure");
     }
   },
 
   async updateProcedure(procedureId: string, updates: any) {
     try {
-      const { data, error } = await supabase
-        .from('procedures')
-        .update(updates)
-        .eq('id', procedureId)
-        .select()
-        .single();
-
+      const { data, error } = await supabase.from("procedures").update(updates).eq("id", procedureId).select().single();
       if (error) throw error;
-      toast.success('Procedure updated');
+      toast.success("Procedure updated");
       return { data, success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to update procedure');
+      return handleApiError(error, "Failed to update procedure");
     }
   },
 
   async deleteProcedure(procedureId: string) {
     try {
-      const { error } = await supabase
-        .from('procedures')
-        .delete()
-        .eq('id', procedureId);
-
+      const { error } = await supabase.from("procedures").delete().eq("id", procedureId);
       if (error) throw error;
-      toast.success('Procedure deleted');
+      toast.success("Procedure deleted");
       return { success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to delete procedure');
+      return handleApiError(error, "Failed to delete procedure");
     }
   },
 };
