@@ -1,24 +1,29 @@
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+// File: src/components/medication/MedicationReminderDashboard.tsx
+
+import { useMemo, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { 
-  Clock, 
-  Pill, 
-  CheckCircle, 
-  XCircle, 
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Clock,
+  Pill,
+  CheckCircle,
+  XCircle,
   AlertTriangle,
   Plus,
   Calendar,
   Bell,
   MoreHorizontal,
-  RotateCcw
+  RotateCcw,
 } from "lucide-react";
-import { useMedicationReminders } from "@/hooks/useMedicationReminders";
+import { useMedicationReminders, type MedicationReminder } from "@/hooks/useMedicationReminders";
 import { format, isToday, isTomorrow, isYesterday } from "date-fns";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +31,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTranslation } from "react-i18next";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+type AddMedicationForm = {
+  name: string;
+  dosage: string;
+  route: string;
+  frequency: string;
+  instructions: string;
+  start_date: string;
+  end_date: string;
+  reminder_enabled: boolean;
+};
 
 export const MedicationReminderDashboard = () => {
   const { t } = useTranslation("dashboard");
@@ -36,11 +57,28 @@ export const MedicationReminderDashboard = () => {
     markReminderAsTaken,
     markReminderAsSkipped,
     snoozeReminder,
+    loadReminders,
     getPendingRemindersCount,
     getOverdueRemindersCount,
   } = useMedicationReminders();
 
   const [expandedReminder, setExpandedReminder] = useState<string | null>(null);
+
+  const [addOpen, setAddOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState<AddMedicationForm>(() => {
+    const today = new Date().toISOString().split("T")[0];
+    return {
+      name: "",
+      dosage: "",
+      route: "oral",
+      frequency: "once daily",
+      instructions: "",
+      start_date: today,
+      end_date: "",
+      reminder_enabled: true,
+    };
+  });
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -78,22 +116,17 @@ export const MedicationReminderDashboard = () => {
       case "skipped":
         return <AlertTriangle className="w-4 h-4" />;
       case "pending":
-        return <Clock className="w-4 h-4" />;
       default:
         return <Clock className="w-4 h-4" />;
     }
   };
 
-  const isOverdue = (reminderTime: string) => {
-    return new Date(reminderTime) < new Date() && new Date(reminderTime).toDateString() === new Date().toDateString();
-  };
-
   const getPendingCount = () => {
-    return todaysReminders.filter(r => r.status === 'pending').length;
+    return todaysReminders.filter((r) => r.status === "pending").length;
   };
 
   const getCompletedCount = () => {
-    return todaysReminders.filter(r => r.status === 'taken').length;
+    return todaysReminders.filter((r) => r.status === "taken").length;
   };
 
   const getCompletionPercentage = () => {
@@ -101,93 +134,90 @@ export const MedicationReminderDashboard = () => {
     return Math.round((getCompletedCount() / todaysReminders.length) * 100);
   };
 
-  const ReminderCard = ({ reminder, showDate = false }: { reminder: any; showDate?: boolean }) => {
+  const ReminderCard = ({ reminder, showDate = false }: { reminder: MedicationReminder; showDate?: boolean }) => {
     const isExpanded = expandedReminder === reminder.id;
-    const overdueStatus = isOverdue(reminder.reminder_time);
+    const statusClasses = getStatusColor(reminder.status);
+
+    const isPatientAdded =
+      (reminder.medications?.doctor_id == null || reminder.medications?.doctor_id === "") &&
+      (reminder.medications?.treatment_plan_id == null || reminder.medications?.treatment_plan_id === "");
 
     return (
-      <Card className={`transition-all ${overdueStatus && reminder.status === 'pending' ? 'border-red-200 bg-red-50' : ''}`}>
+      <Card className={cn("transition-all duration-200", isExpanded ? "shadow-md" : "hover:shadow-sm")}>
         <CardContent className="p-4">
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between gap-3">
             <div className="flex items-start gap-3 flex-1">
               <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
                 <Pill className="w-5 h-5 text-primary" />
               </div>
-              
+
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-medium text-foreground truncate">
-                    {reminder.medications?.name || 'Unknown Medication'}
-                  </h3>
-                  <Badge className={`${getStatusColor(reminder.status)} border text-xs`}>
-                    {getStatusIcon(reminder.status)}
-                    <span className="ml-1 capitalize">{reminder.status}</span>
-                  </Badge>
-                </div>
-                
-                <div className="text-sm text-muted-foreground space-y-1">
-                  <div className="flex items-center gap-4">
-                    <span>{reminder.medications?.dosage}</span>
-                    <span>•</span>
-                    <span>{reminder.medications?.route || 'Oral'}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-3 h-3" />
-                    <span>
-                      {showDate && formatDate(reminder.reminder_time) + " at "}
-                      {formatTime(reminder.reminder_time)}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-medium truncate">{reminder.medications?.name || "Medication"}</h3>
+                  <Badge variant="outline" className={cn("text-xs border", statusClasses)}>
+                    <span className="flex items-center gap-1">
+                      {getStatusIcon(reminder.status)}
+                      {reminder.status}
                     </span>
-                    {overdueStatus && reminder.status === 'pending' && (
-                      <Badge variant="outline" className="text-red-600 border-red-200 text-xs">
-                        {t("patient.medications.overdue")}
-                      </Badge>
-                    )}
-                  </div>
+                  </Badge>
+                  {isPatientAdded && (
+                    <Badge variant="secondary" className="text-xs">
+                      Added by you
+                    </Badge>
+                  )}
                 </div>
 
-                {reminder.medications?.instructions && isExpanded && (
-                  <div className="mt-2 p-2 bg-muted rounded text-sm">
-                    <strong>{t("patient.settings.instructions")}:</strong> {reminder.medications.instructions}
+                <p className="text-sm text-muted-foreground mt-1">
+                  {reminder.medications?.dosage || ""} {reminder.medications?.route ? `• ${reminder.medications.route}` : ""}
+                </p>
+
+                <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground flex-wrap">
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
+                    <span>{formatTime(reminder.reminder_time)}</span>
+                  </div>
+                  {showDate && (
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      <span>{formatDate(reminder.reminder_time)}</span>
+                    </div>
+                  )}
+                </div>
+
+                {isExpanded && reminder.medications?.instructions && (
+                  <div className="mt-3 p-3 bg-muted/40 rounded-lg">
+                    <p className="text-sm text-muted-foreground">{reminder.medications.instructions}</p>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="flex items-center gap-1">
-              {reminder.status === 'pending' && (
+            <div className="flex items-center gap-2">
+              {reminder.status === "pending" && (
                 <>
-                  <Button
-                    size="sm"
-                    onClick={() => markReminderAsTaken(reminder.id)}
-                    className="bg-green-600 hover:bg-green-700 text-white"
-                  >
-                    <CheckCircle className="w-3 h-3 mr-1" />
-                    {t("patient.medications.taken")}
+                  <Button size="sm" onClick={() => void markReminderAsTaken(reminder.id)}>
+                    <CheckCircle className="w-4 h-4 mr-1" />
+                    Taken
                   </Button>
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button size="sm" variant="outline">
-                        <MoreHorizontal className="w-3 h-3" />
+                      <Button variant="outline" size="sm">
+                        <MoreHorizontal className="w-4 h-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => snoozeReminder(reminder.id, 15)}>
-                        <RotateCcw className="w-3 h-3 mr-2" />
-                        {t("patient.medications.snooze")} 15 min
+                      <DropdownMenuItem onClick={() => void snoozeReminder(reminder.id, 15)}>
+                        <RotateCcw className="w-4 h-4 mr-2" />
+                        Snooze 15 min
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => snoozeReminder(reminder.id, 30)}>
-                        <RotateCcw className="w-3 h-3 mr-2" />
-                        {t("patient.medications.snooze")} 30 min
+                      <DropdownMenuItem onClick={() => void snoozeReminder(reminder.id, 60)}>
+                        <RotateCcw className="w-4 h-4 mr-2" />
+                        Snooze 1 hour
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => snoozeReminder(reminder.id, 60)}>
-                        <RotateCcw className="w-3 h-3 mr-2" />
-                        {t("patient.medications.snooze")} 1 hour
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => markReminderAsSkipped(reminder.id)}>
-                        <XCircle className="w-3 h-3 mr-2" />
-                        {t("patient.medications.markSkipped")}
+                      <DropdownMenuItem onClick={() => void markReminderAsSkipped(reminder.id)}>
+                        <XCircle className="w-4 h-4 mr-2" />
+                        Skip
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -195,11 +225,11 @@ export const MedicationReminderDashboard = () => {
               )}
 
               <Button
-                size="sm"
                 variant="ghost"
+                size="sm"
                 onClick={() => setExpandedReminder(isExpanded ? null : reminder.id)}
               >
-                <MoreHorizontal className="w-3 h-3" />
+                <span className={cn("transition-transform", isExpanded && "rotate-90")}>›</span>
               </Button>
             </div>
           </div>
@@ -208,20 +238,207 @@ export const MedicationReminderDashboard = () => {
     );
   };
 
+  const resetForm = () => {
+    const today = new Date().toISOString().split("T")[0];
+    setForm({
+      name: "",
+      dosage: "",
+      route: "oral",
+      frequency: "once daily",
+      instructions: "",
+      start_date: today,
+      end_date: "",
+      reminder_enabled: true,
+    });
+  };
+
+  const submitAddMedication = async () => {
+    if (!form.name.trim() || !form.dosage.trim() || !form.frequency.trim() || !form.start_date.trim()) {
+      toast.error("Please fill required fields");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const { data, error } = await supabase.functions.invoke<{
+        ok: boolean;
+        error?: string;
+        medication?: any;
+      }>("patient-self-service", {
+        body: {
+          action: "add_medication",
+          payload: {
+            name: form.name.trim(),
+            dosage: form.dosage.trim(),
+            route: form.route.trim() || "oral",
+            frequency: form.frequency.trim(),
+            instructions: form.instructions.trim() ? form.instructions.trim() : null,
+            start_date: form.start_date,
+            end_date: form.end_date.trim() ? form.end_date : null,
+            reminder_enabled: form.reminder_enabled,
+          },
+        },
+      });
+
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || "Failed to add medication");
+
+      toast.success("Medication added");
+      setAddOpen(false);
+      resetForm();
+      await loadReminders();
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to add medication");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const statsTitle = useMemo(() => {
+    return {
+      title: t("patient.medications.title") || "Medications",
+      subtitle: t("patient.medications.subtitle") || "Track and manage your medication reminders",
+    };
+  }, [t]);
+
   if (loading) {
     return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="space-y-4">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-sm text-muted-foreground">Loading…</div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
     <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h2 className="text-2xl font-bold">{statsTitle.title}</h2>
+          <p className="text-muted-foreground">{statsTitle.subtitle}</p>
+        </div>
+        <Button onClick={() => setAddOpen(true)}>
+          <Plus className="w-4 h-4 mr-2" />
+          Add medication
+        </Button>
+      </div>
+
+      <Dialog open={addOpen} onOpenChange={(v) => (saving ? null : setAddOpen(v))}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Add medication</DialogTitle>
+          </DialogHeader>
+
+          <div className="grid gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="med_name">Name *</Label>
+              <Input
+                id="med_name"
+                value={form.name}
+                onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))}
+                placeholder="e.g., Amoxicillin"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="med_dosage">Dosage *</Label>
+                <Input
+                  id="med_dosage"
+                  value={form.dosage}
+                  onChange={(e) => setForm((s) => ({ ...s, dosage: e.target.value }))}
+                  placeholder="e.g., 500mg"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="med_route">Route</Label>
+                <Input
+                  id="med_route"
+                  value={form.route}
+                  onChange={(e) => setForm((s) => ({ ...s, route: e.target.value }))}
+                  placeholder="e.g., oral"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="med_frequency">Frequency *</Label>
+              <Input
+                id="med_frequency"
+                value={form.frequency}
+                onChange={(e) => setForm((s) => ({ ...s, frequency: e.target.value }))}
+                placeholder="e.g., once daily / twice daily"
+              />
+              <p className="text-xs text-muted-foreground">
+                Tip: reminders auto-generate based on frequency (existing DB trigger).
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="med_start">Start date *</Label>
+                <Input
+                  id="med_start"
+                  type="date"
+                  value={form.start_date}
+                  onChange={(e) => setForm((s) => ({ ...s, start_date: e.target.value }))}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="med_end">End date</Label>
+                <Input
+                  id="med_end"
+                  type="date"
+                  value={form.end_date}
+                  onChange={(e) => setForm((s) => ({ ...s, end_date: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="med_instructions">Instructions</Label>
+              <Textarea
+                id="med_instructions"
+                value={form.instructions}
+                onChange={(e) => setForm((s) => ({ ...s, instructions: e.target.value }))}
+                placeholder="e.g., Take after meals"
+              />
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border p-3">
+              <div>
+                <div className="text-sm font-medium">Enable reminders</div>
+                <div className="text-xs text-muted-foreground">Generate reminders automatically</div>
+              </div>
+              <Switch
+                checked={form.reminder_enabled}
+                onCheckedChange={(v) => setForm((s) => ({ ...s, reminder_enabled: v }))}
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (saving) return;
+                setAddOpen(false);
+                resetForm();
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={() => void submitAddMedication()} disabled={saving}>
+              {saving ? "Saving…" : "Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Header with Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
@@ -287,7 +504,10 @@ export const MedicationReminderDashboard = () => {
         <Alert className="border-red-200 bg-red-50">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            <span className="font-medium">You have {getOverdueRemindersCount()} overdue medication{getOverdueRemindersCount() > 1 ? 's' : ''}.</span>{' '}
+            <span className="font-medium">
+              You have {getOverdueRemindersCount()} overdue medication
+              {getOverdueRemindersCount() > 1 ? "s" : ""}.
+            </span>{" "}
             Please take them as soon as possible or mark them as skipped if no longer needed.
           </AlertDescription>
         </Alert>
