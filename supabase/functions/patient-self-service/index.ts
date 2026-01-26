@@ -1,5 +1,4 @@
 // File: supabase/functions/patient-self-service/index.ts
-/// <reference deno-types="https://deno.land/x/supabase_functions@1.3.3/mod.ts" />
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";

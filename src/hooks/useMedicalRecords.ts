@@ -23,7 +23,7 @@ export const useMedicalRecords = () => {
       const result = await medicalRecordsApi.fetchMedicalRecords(user.id);
       
       if ('success' in result && result.success) {
-        setRecords(result.data);
+        setRecords(result.data as MedicalRecord[]);
         setError(null);
       } else if ('error' in result) {
         setError(result.error);
@@ -47,7 +47,7 @@ export const useMedicalRecords = () => {
     if (!user) return { error: 'User not authenticated' };
 
     try {
-      const result = await medicalRecordsApi.addMedicalRecord({
+      const result = await medicalRecordsApi.createMedicalRecord({
         title: recordData.title,
         description: recordData.description,
         record_type: recordData.record_type || 'note',

@@ -136,7 +136,7 @@ const SearchBar = ({ onSearch, className, initialQuery, showResultsInline = fals
             name: doctor.profiles ? (doctor.profiles as any).full_name || "Dr. Professional" : `Dr. ${doctor.specialty} Specialist`,
             image: doctor.profiles ? (doctor.profiles as any).avatar_url : undefined,
             specialty: doctor.specialty,
-            degree: doctor.license_number ? doctor.license_number : 'MD',
+            degree: (doctor as any).license_number ? (doctor as any).license_number : 'MD',
             rating: doctor.weighted_rating || doctor.average_rating || 4.8,
             reviewCount: doctor.num_reviews || 0,
             affiliatedPractice: doctor.practices ? (doctor.practices as any).name : 'Independent Doctor',
