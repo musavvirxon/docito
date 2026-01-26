@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { format, isAfter, isEqual, startOfDay } from "date-fns";
+import { format } from "date-fns";
 import {
   ArrowRightLeft,
   Calendar,
@@ -59,26 +59,29 @@ function asOne<T = any>(v: any): T | null {
 }
 
 function getDoctorName(apt: any, fallback: string) {
+  // Handle various nested structures from different queries
   const doctor = asOne(apt?.doctor);
+  if (!doctor) return fallback;
+
+  // Try multiple paths to find the doctor's name
   const profiles = asOne(doctor?.profiles);
 
-  const fromProfiles =
-    profiles?.full_name && String(profiles.full_name).trim()
-      ? String(profiles.full_name).trim()
-      : "";
+  // Path 1: profiles.full_name
+  if (profiles?.full_name && String(profiles.full_name).trim()) {
+    return String(profiles.full_name).trim();
+  }
 
-  const fromDoctor =
-    doctor?.full_name && String(doctor.full_name).trim()
-      ? String(doctor.full_name).trim()
-      : "";
+  // Path 2: Direct access on doctor.profiles
+  if (doctor?.profiles?.full_name && String(doctor.profiles.full_name).trim()) {
+    return String(doctor.profiles.full_name).trim();
+  }
 
-  const fromFlat =
-    (apt?.doctor_full_name && String(apt.doctor_full_name).trim()) ||
-    (apt?.doctor_name && String(apt.doctor_name).trim()) ||
-    "";
+  // Path 3: If doctor has specialty, show it with generic label
+  if (doctor?.specialty) {
+    return `Dr. (${doctor.specialty})`;
+  }
 
-  const name = fromProfiles || fromDoctor || fromFlat;
-  return name || fallback;
+  return fallback;
 }
 
 function appointmentRoute(apt: any) {
@@ -87,49 +90,21 @@ function appointmentRoute(apt: any) {
 }
 
 export default function PatientDashboard() {
-  // ✅ All hooks MUST run every render, before any early returns
+  // ✅ Keep hook order stable (NO conditional hooks, NO extra hooks like useMemo)
   const { user, profile, signOut, loading: authLoading } = useAuth();
   const { stats, loading: statsLoading, refetch: refetchStats } = usePatientDashboard();
-  const { appointments, loading: appointmentsLoading, error: appointmentsError, refetch: refetchAppointments } =
-    useAppointments();
+  const {
+    appointments,
+    loading: appointmentsLoading,
+    error: appointmentsError,
+    refetch: refetchAppointments,
+  } = useAppointments();
   const [activeSection, setActiveSection] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation("dashboard");
 
-  const doctorFallbackLabel = t("patient.appointments.doctor", { defaultValue: "Doctor" });
-
-  // ✅ No hooks below this line (prevents hook-order runtime errors)
-  const upcomingAppointments = (() => {
-    const list = Array.isArray(appointments) ? appointments : [];
-    const today = startOfDay(new Date());
-
-    const upcoming = list
-      .filter((apt: any) => {
-        const d = apt?.appointment_date ? new Date(apt.appointment_date) : null;
-        if (!d || Number.isNaN(d.getTime())) return false;
-
-        const day = startOfDay(d);
-        const isUpcomingDay = isEqual(day, today) || isAfter(day, today);
-
-        const status = String(apt?.status || "").toLowerCase();
-        const okStatus = status !== "canceled" && status !== "cancelled" && status !== "completed";
-
-        return isUpcomingDay && okStatus;
-      })
-      .sort((a: any, b: any) => {
-        const ad = a?.appointment_date ? new Date(a.appointment_date).getTime() : 0;
-        const bd = b?.appointment_date ? new Date(b.appointment_date).getTime() : 0;
-        if (ad !== bd) return ad - bd;
-
-        const at = String(a?.start_time || "");
-        const bt = String(b?.start_time || "");
-        return at.localeCompare(bt);
-      });
-
-    return upcoming.slice(0, 5);
-  })();
-
+  // ✅ Do NOT redirect while profile is still loading (prevents blank/empty dashboard)
   if (!authLoading && !user) {
     return <Navigate to="/auth" replace />;
   }
@@ -154,22 +129,22 @@ export default function PatientDashboard() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
-          <p className="text-muted-foreground">{t("patient.loading", { defaultValue: "Loading dashboard..." })}</p>
+          <p className="text-muted-foreground">{t("patient.loading")}</p>
         </div>
       </div>
     );
   }
 
   const navItems = [
-    { id: "dashboard", label: t("patient.navigation.dashboard", { defaultValue: "Dashboard" }), icon: Home },
-    { id: "appointments", label: t("patient.navigation.myAppointments", { defaultValue: "My Appointments" }), icon: Calendar },
-    { id: "referrals", label: t("patient.navigation.referrals", { defaultValue: "My Referrals" }), icon: ArrowRightLeft },
-    { id: "medications", label: t("patient.navigation.medications", { defaultValue: "Medications" }), icon: Pill },
-    { id: "records", label: t("patient.navigation.medicalRecords", { defaultValue: "Medical Records" }), icon: FileText },
-    { id: "test-results", label: t("patient.navigation.testResults", { defaultValue: "Test Results" }), icon: TestTube2 },
-    { id: "treatment-plans", label: t("patient.navigation.treatmentPlans", { defaultValue: "Treatment Plans" }), icon: ClipboardList },
-    { id: "billing", label: t("patient.navigation.billing", { defaultValue: "Billing" }), icon: Receipt },
-    { id: "settings", label: t("patient.navigation.settings", { defaultValue: "Settings" }), icon: Settings },
+    { id: "dashboard", label: t("patient.navigation.dashboard"), icon: Home },
+    { id: "appointments", label: t("patient.navigation.myAppointments"), icon: Calendar },
+    { id: "referrals", label: "My Referrals", icon: ArrowRightLeft },
+    { id: "medications", label: t("patient.navigation.medications"), icon: Pill },
+    { id: "records", label: t("patient.navigation.medicalRecords"), icon: FileText },
+    { id: "test-results", label: "Test Results", icon: TestTube2 },
+    { id: "treatment-plans", label: "Treatment Plans", icon: ClipboardList },
+    { id: "billing", label: "Billing", icon: Receipt },
+    { id: "settings", label: t("patient.navigation.settings"), icon: Settings },
   ];
 
   const handleNavClick = (itemId: string) => {
@@ -179,7 +154,11 @@ export default function PatientDashboard() {
 
   async function acceptAppointment(appointmentId: string) {
     try {
-      const { error } = await supabase.from("appointments").update({ status: "confirmed" as any }).eq("id", appointmentId);
+      const { error } = await supabase
+        .from("appointments")
+        .update({ status: "confirmed" as any })
+        .eq("id", appointmentId);
+
       if (error) throw error;
       toast.success("Appointment accepted.");
       await Promise.allSettled([refetchAppointments?.(), refetchStats?.()]);
@@ -192,8 +171,12 @@ export default function PatientDashboard() {
     try {
       const { error } = await (supabase as any)
         .from("appointments")
-        .update({ start_requested_by_patient: true, patient_confirmation_status: "confirmed" })
+        .update({
+          start_requested_by_patient: true,
+          patient_confirmation_status: "confirmed"
+        })
         .eq("id", appointmentId);
+
       if (error) throw error;
       toast.success("Start request sent to doctor.");
       await Promise.allSettled([refetchAppointments?.(), refetchStats?.()]);
@@ -203,6 +186,7 @@ export default function PatientDashboard() {
   }
 
   async function rescheduleAppointment(apt: any) {
+    // Navigate to doctor booking page with reschedule context
     const doctorId = asOne(apt?.doctor)?.id || apt?.doctor_id;
     if (doctorId) {
       navigate(`/book/${doctorId}?reschedule=${apt.id}`);
@@ -213,7 +197,11 @@ export default function PatientDashboard() {
 
   async function declineAppointment(appointmentId: string) {
     try {
-      const { error } = await supabase.from("appointments").update({ status: "canceled" as any }).eq("id", appointmentId);
+      const { error } = await supabase
+        .from("appointments")
+        .update({ status: "canceled" as any })
+        .eq("id", appointmentId);
+
       if (error) throw error;
       toast.success("Appointment declined.");
       await Promise.allSettled([refetchAppointments?.(), refetchStats?.()]);
@@ -222,19 +210,11 @@ export default function PatientDashboard() {
     }
   }
 
-  async function cancelAppointment(appointmentId: string) {
-    try {
-      const { error } = await supabase.from("appointments").update({ status: "canceled" as any }).eq("id", appointmentId);
-      if (error) throw error;
-      toast.success("Appointment canceled.");
-      await Promise.allSettled([refetchAppointments?.(), refetchStats?.()]);
-    } catch (e: any) {
-      toast.error(e?.message ?? "Failed to cancel appointment");
-    }
-  }
+  const doctorFallbackLabel = t("patient.appointments.doctor");
 
   return (
     <div className="flex min-h-screen bg-background">
+      {/* Sidebar */}
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-50 w-64 bg-sidebar border-r border-sidebar-border transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static",
@@ -278,294 +258,146 @@ export default function PatientDashboard() {
                     "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left",
                     isActive
                       ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                      : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
+                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
                   )}
                 >
                   <Icon className="h-5 w-5" />
-                  <span className="flex-1">{item.label}</span>
+                  <span>{item.label}</span>
                 </button>
               );
             })}
           </nav>
 
           <div className="p-4 border-t border-sidebar-border space-y-2">
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center justify-between">
               <LanguageSwitcher />
               <ThemeToggle />
             </div>
-
             <Button
-              variant="outline"
-              className="w-full gap-2"
+              variant="ghost"
+              className="w-full justify-start gap-3 text-sidebar-foreground/70 hover:text-sidebar-foreground"
               onClick={async () => {
-                try {
-                  await signOut();
-                } catch {
-                  // ignore
-                }
+                await signOut();
+                navigate("/");
               }}
             >
-              <LogOut className="h-4 w-4" />
-              {t("patient.navigation.logout", { defaultValue: "Log Out" })}
+              <LogOut className="h-5 w-5" />
+              <span>{t("patient.navigation.logout")}</span>
             </Button>
           </div>
         </div>
       </aside>
 
-      {sidebarOpen && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />}
+      {/* Main content */}
+      <div className="flex-1 flex flex-col min-h-screen lg:ml-0">
+        {/* Top bar */}
+        <header className="h-16 border-b bg-background flex items-center justify-between px-4 lg:px-6">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(true)}>
+              <Menu className="h-5 w-5" />
+            </Button>
 
-      <div className="flex-1 flex flex-col">
-        <header className="sticky top-0 z-40 bg-background/80 backdrop-blur border-b border-border">
-          <div className="flex items-center justify-between p-4">
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(true)}>
-                <Menu className="h-5 w-5" />
-              </Button>
-              <div className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-primary" />
-                <span className="font-semibold">MedicalBook</span>
-              </div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-semibold">
+                {activeSection === "dashboard"
+                  ? t("patient.dashboard.title")
+                  : navItems.find((i) => i.id === activeSection)?.label}
+              </h1>
             </div>
+          </div>
 
-            <div className="flex items-center gap-3">
-              <NotificationDropdown />
-              <Button variant="outline" className="gap-2" onClick={() => navigate("/find-doctors")}>
-                <Search className="h-4 w-4" />
-                {t("patient.navigation.findDoctors", { defaultValue: "Find Doctors" })}
-              </Button>
-              <Button className="gap-2" onClick={() => navigate("/booking")}>
-                <Plus className="h-4 w-4" />
-                {t("patient.quickActions.bookAppointment", { defaultValue: "Book Appointment" })}
-              </Button>
-            </div>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/find-doctors")}>
+              <Search className="h-5 w-5" />
+            </Button>
+            <NotificationDropdown />
           </div>
         </header>
 
-        <main className="flex-1 p-4 md:p-6 space-y-6">
+        <main className="flex-1 p-4 lg:p-6 space-y-6">
           {activeSection === "dashboard" && (
-            <>
-              <div className="space-y-2">
-                <h1 className="text-2xl md:text-3xl font-bold">{t("patient.welcome", { defaultValue: "Welcome" })}</h1>
-                <p className="text-muted-foreground">
-                  {t("patient.subtitle", { defaultValue: "Manage your health information and appointments." })}
-                </p>
-              </div>
-
+            <div className="space-y-6">
+              {/* Quick Stats */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      {t("patient.stats.upcomingAppointments", { defaultValue: "Upcoming Appointments" })}
+                    <CardTitle className="text-sm font-medium">
+                      {t("patient.stats.upcomingAppointments")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{stats?.upcomingAppointmentsCount ?? 0}</div>
-                    <p className="text-xs text-muted-foreground">
-                      {t("patient.stats.upcomingAppointmentsDesc", { defaultValue: "Appointments scheduled in the future." })}
-                    </p>
+                    <div className="text-2xl font-bold">{stats?.upcomingAppointments ?? 0}</div>
+                    <p className="text-xs text-muted-foreground">{t("patient.stats.upcomingAppointmentsDesc")}</p>
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      {t("patient.stats.activeMedications", { defaultValue: "Active Medications" })}
-                    </CardTitle>
+                    <CardTitle className="text-sm font-medium">{t("patient.stats.activeMedications")}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{stats?.pendingReminders ?? 0}</div>
-                    <p className="text-xs text-muted-foreground">
-                      {t("patient.stats.activeMedicationsDesc", { defaultValue: "Medication reminders that are currently pending." })}
-                    </p>
+                    <div className="text-2xl font-bold">{stats?.activeMedications ?? 0}</div>
+                    <p className="text-xs text-muted-foreground">{t("patient.stats.activeMedicationsDesc")}</p>
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      {t("patient.stats.medicalRecords", { defaultValue: "Medical Records" })}
-                    </CardTitle>
+                    <CardTitle className="text-sm font-medium">{t("patient.stats.medicalRecords")}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{stats?.medicalRecordsCount ?? 0}</div>
-                    <p className="text-xs text-muted-foreground">
-                      {t("patient.stats.medicalRecordsDesc", { defaultValue: "Records available in your profile." })}
-                    </p>
+                    <div className="text-2xl font-bold">{stats?.medicalRecords ?? 0}</div>
+                    <p className="text-xs text-muted-foreground">{t("patient.stats.medicalRecordsDesc")}</p>
                   </CardContent>
                 </Card>
               </div>
 
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between gap-3">
-                  <div>
-                    <CardTitle>{t("patient.dashboard.upcoming.title", { defaultValue: "Upcoming appointments" })}</CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      {t("patient.dashboard.upcoming.subtitle", { defaultValue: "Your next scheduled visits." })}
-                    </p>
-                  </div>
-                  <Button variant="outline" className="gap-2" onClick={() => setActiveSection("appointments")}>
-                    <Calendar className="h-4 w-4" />
-                    {t("patient.dashboard.upcoming.viewAll", { defaultValue: "View all" })}
-                  </Button>
-                </CardHeader>
-
-                <CardContent className="space-y-3">
-                  {appointmentsLoading ? (
-                    <div className="space-y-3">
-                      {[1, 2, 3].map((i) => (
-                        <Skeleton key={i} className="h-16 w-full" />
-                      ))}
+              {/* Next Appointment */}
+              {stats?.nextAppointment && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Calendar className="h-5 w-5" />
+                      {t("patient.nextAppointment.title")}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1 space-y-2">
+                        <p className="font-medium">
+                          {format(new Date(stats.nextAppointment.appointment_date), "EEEE, MMMM dd, yyyy")}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {stats.nextAppointment.start_time} - {stats.nextAppointment.end_time}
+                        </p>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <MapPin className="h-4 w-4" />
+                          <span>{t("patient.nextAppointment.location")}</span>
+                        </div>
+                      </div>
+                      <Badge>{stats.nextAppointment.status}</Badge>
                     </div>
-                  ) : appointmentsError ? (
-                    <div className="text-center py-6 text-muted-foreground">
-                      <p>{t("patient.appointments.loadError", { defaultValue: "Failed to load appointments." })}</p>
-                      <Button variant="outline" className="mt-3" onClick={() => refetchAppointments?.()}>
-                        {t("common.tryAgain", { defaultValue: "Try Again" })}
-                      </Button>
-                    </div>
-                  ) : upcomingAppointments.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Calendar className="h-10 w-10 mx-auto mb-2 opacity-50" />
-                      <p>{t("patient.dashboard.upcoming.none", { defaultValue: "No upcoming appointments." })}</p>
-                      <Button variant="link" className="mt-1" onClick={() => navigate("/find-doctors")}>
-                        {t("patient.appointments.bookFirst", { defaultValue: "Book your first appointment" })}
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {upcomingAppointments.map((apt: any) => {
-                        const doctorName = getDoctorName(apt, doctorFallbackLabel);
-                        const route = appointmentRoute(apt);
-
-                        return (
-                          <div
-                            key={apt.id}
-                            className={cn(
-                              "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between rounded-lg border p-4",
-                              "hover:bg-accent/30 hover:border-accent-foreground/20 transition-colors",
-                              route ? "cursor-pointer" : "cursor-default",
-                            )}
-                            role={route ? "button" : undefined}
-                            tabIndex={route ? 0 : -1}
-                            onClick={() => route && navigate(route)}
-                            onKeyDown={(e) => {
-                              if (!route) return;
-                              if (e.key === "Enter" || e.key === " ") {
-                                e.preventDefault();
-                                navigate(route);
-                              }
-                            }}
-                          >
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <p className="font-medium">{doctorName}</p>
-                                <Badge variant="secondary">{String(apt.status || "")}</Badge>
-                              </div>
-                              <p className="text-sm text-muted-foreground">
-                                {apt.appointment_date ? format(new Date(apt.appointment_date), "MMM dd, yyyy") : ""}{" "}
-                                {apt.start_time ? `• ${apt.start_time}` : ""}
-                              </p>
-                            </div>
-
-                            {String(apt.status || "").toLowerCase() === "confirmed" ? (
-                              <div className="flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
-                                <Button
-                                  size="sm"
-                                  className="gap-2"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    requestStartAppointment(String(apt.id));
-                                  }}
-                                  disabled={apt.start_requested_by_patient}
-                                >
-                                  <Clock className="h-4 w-4" />
-                                  {apt.start_requested_by_patient
-                                    ? t("patient.appointments.startRequested", { defaultValue: "Start Requested" })
-                                    : t("patient.appointments.requestStart", { defaultValue: "Request Start" })}
-                                </Button>
-
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="gap-2"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    rescheduleAppointment(apt);
-                                  }}
-                                >
-                                  <RotateCcw className="h-4 w-4" />
-                                  {t("patient.appointments.reschedule", { defaultValue: "Reschedule" })}
-                                </Button>
-
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="gap-2 text-destructive hover:text-destructive"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    cancelAppointment(String(apt.id));
-                                  }}
-                                >
-                                  <XCircle className="h-4 w-4" />
-                                  {t("patient.appointments.cancel", { defaultValue: "Cancel" })}
-                                </Button>
-                              </div>
-                            ) : String(apt.status || "").toLowerCase() === "pending" ? (
-                              <div className="flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
-                                <Button
-                                  size="sm"
-                                  className="gap-2"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    acceptAppointment(String(apt.id));
-                                  }}
-                                >
-                                  <CheckCircle2 className="h-4 w-4" />
-                                  {t("patient.appointments.accept", { defaultValue: "Accept" })}
-                                </Button>
-
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="gap-2 text-destructive hover:text-destructive"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    declineAppointment(String(apt.id));
-                                  }}
-                                >
-                                  <XCircle className="h-4 w-4" />
-                                  {t("patient.appointments.decline", { defaultValue: "Decline" })}
-                                </Button>
-                              </div>
-                            ) : null}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           )}
 
           {activeSection === "appointments" && (
             <Card>
               <CardHeader>
-                <CardTitle>{t("patient.appointments.title", { defaultValue: "My Appointments" })}</CardTitle>
+                <CardTitle>{t("patient.appointments.title")}</CardTitle>
               </CardHeader>
               <CardContent>
-                {appointmentsLoading ? (
+                {appointmentsError ? (
+                  <div className="p-4 rounded-lg border border-destructive/30 bg-destructive/10 text-destructive">
+                    {appointmentsError}
+                  </div>
+                ) : appointmentsLoading ? (
                   <div className="space-y-3">
                     {[1, 2, 3].map((i) => (
                       <Skeleton key={i} className="h-20 w-full" />
                     ))}
-                  </div>
-                ) : appointmentsError ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <p>{t("patient.appointments.loadError", { defaultValue: "Failed to load appointments." })}</p>
-                    <Button variant="outline" className="mt-4" onClick={() => refetchAppointments?.()}>
-                      {t("common.tryAgain", { defaultValue: "Try Again" })}
-                    </Button>
                   </div>
                 ) : appointments && appointments.length > 0 ? (
                   <div className="space-y-3">
@@ -597,8 +429,7 @@ export default function PatientDashboard() {
                               {apt.start_time ? `at ${apt.start_time}` : ""}
                             </p>
                             <p className="text-xs text-muted-foreground capitalize">
-                              {t("patient.appointments.type", { defaultValue: "Type" })}:{" "}
-                              {apt.appointment_type || "in_person"}
+                              Type: {apt.appointment_type || "in_person"}
                             </p>
                           </div>
 
@@ -616,9 +447,8 @@ export default function PatientDashboard() {
                                   }}
                                 >
                                   <CheckCircle2 className="h-4 w-4" />
-                                  {t("patient.appointments.accept", { defaultValue: "Accept" })}
+                                  Accept
                                 </Button>
-
                                 <Button
                                   size="sm"
                                   variant="outline"
@@ -629,7 +459,7 @@ export default function PatientDashboard() {
                                   }}
                                 >
                                   <XCircle className="h-4 w-4" />
-                                  {t("patient.appointments.decline", { defaultValue: "Decline" })}
+                                  Decline
                                 </Button>
                               </div>
                             ) : apt.status === "confirmed" ? (
@@ -644,11 +474,8 @@ export default function PatientDashboard() {
                                   disabled={apt.start_requested_by_patient}
                                 >
                                   <Clock className="h-4 w-4" />
-                                  {apt.start_requested_by_patient
-                                    ? t("patient.appointments.startRequested", { defaultValue: "Start Requested" })
-                                    : t("patient.appointments.requestStart", { defaultValue: "Request Start" })}
+                                  {apt.start_requested_by_patient ? "Start Requested" : "Request Start"}
                                 </Button>
-
                                 <Button
                                   size="sm"
                                   variant="outline"
@@ -659,20 +486,19 @@ export default function PatientDashboard() {
                                   }}
                                 >
                                   <RotateCcw className="h-4 w-4" />
-                                  {t("patient.appointments.reschedule", { defaultValue: "Reschedule" })}
+                                  Reschedule
                                 </Button>
-
                                 <Button
                                   size="sm"
                                   variant="outline"
                                   className="gap-2 text-destructive hover:text-destructive"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    cancelAppointment(String(apt.id));
+                                    declineAppointment(String(apt.id));
                                   }}
                                 >
-                                  <XCircle className="h-4 w-4" />
-                                  {t("patient.appointments.cancel", { defaultValue: "Cancel" })}
+                                  <X className="h-4 w-4" />
+                                  Cancel
                                 </Button>
                               </div>
                             ) : null}
@@ -684,9 +510,9 @@ export default function PatientDashboard() {
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <Calendar className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                    <p>{t("patient.appointments.noAppointments", { defaultValue: "No appointments scheduled" })}</p>
+                    <p>{t("patient.appointments.noAppointments")}</p>
                     <Button variant="link" className="mt-2" onClick={() => navigate("/find-doctors")}>
-                      {t("patient.appointments.bookFirst", { defaultValue: "Book your first appointment" })}
+                      {t("patient.appointments.bookFirst")}
                     </Button>
                   </div>
                 )}
