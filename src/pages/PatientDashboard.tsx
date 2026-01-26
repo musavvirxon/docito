@@ -1,5 +1,5 @@
 // File: src/pages/PatientDashboard.tsx
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format, isAfter, isEqual, startOfDay } from "date-fns";
@@ -91,6 +91,39 @@ export default function PatientDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation("dashboard");
+
+  const doctorFallbackLabel = t("patient.appointments.doctor", { defaultValue: "Doctor" });
+
+  // ✅ IMPORTANT: no hooks after this point (prevents "Rendered more hooks..." error)
+  const upcomingAppointments = (() => {
+    const list = Array.isArray(appointments) ? appointments : [];
+    const today = startOfDay(new Date());
+
+    const upcoming = list
+      .filter((apt: any) => {
+        const d = apt?.appointment_date ? new Date(apt.appointment_date) : null;
+        if (!d || Number.isNaN(d.getTime())) return false;
+
+        const day = startOfDay(d);
+        const isUpcomingDay = isEqual(day, today) || isAfter(day, today);
+
+        const status = String(apt?.status || "").toLowerCase();
+        const okStatus = status !== "canceled" && status !== "cancelled" && status !== "completed";
+
+        return isUpcomingDay && okStatus;
+      })
+      .sort((a: any, b: any) => {
+        const ad = a?.appointment_date ? new Date(a.appointment_date).getTime() : 0;
+        const bd = b?.appointment_date ? new Date(b.appointment_date).getTime() : 0;
+        if (ad !== bd) return ad - bd;
+
+        const at = String(a?.start_time || "");
+        const bt = String(b?.start_time || "");
+        return at.localeCompare(bt);
+      });
+
+    return upcoming.slice(0, 5);
+  })();
 
   if (!authLoading && !user) {
     return <Navigate to="/auth" replace />;
@@ -228,35 +261,6 @@ export default function PatientDashboard() {
       toast.error(e?.message ?? "Failed to cancel appointment");
     }
   }
-
-  const doctorFallbackLabel = t("patient.appointments.doctor", { defaultValue: "Doctor" });
-
-  const upcomingAppointments = useMemo(() => {
-    const list = Array.isArray(appointments) ? appointments : [];
-    const today = startOfDay(new Date());
-
-    const upcoming = list
-      .filter((apt: any) => {
-        const d = apt?.appointment_date ? new Date(apt.appointment_date) : null;
-        if (!d || Number.isNaN(d.getTime())) return false;
-        const day = startOfDay(d);
-        const isUpcomingDay = isEqual(day, today) || isAfter(day, today);
-        const status = String(apt?.status || "").toLowerCase();
-        const okStatus = status !== "canceled" && status !== "cancelled" && status !== "completed";
-        return isUpcomingDay && okStatus;
-      })
-      .sort((a: any, b: any) => {
-        const ad = a?.appointment_date ? new Date(a.appointment_date).getTime() : 0;
-        const bd = b?.appointment_date ? new Date(b.appointment_date).getTime() : 0;
-        if (ad !== bd) return ad - bd;
-
-        const at = String(a?.start_time || "");
-        const bt = String(b?.start_time || "");
-        return at.localeCompare(bt);
-      });
-
-    return upcoming.slice(0, 5);
-  }, [appointments]);
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -440,11 +444,7 @@ export default function PatientDashboard() {
                       {t("patient.dashboard.upcoming.subtitle", { defaultValue: "Your next scheduled visits." })}
                     </p>
                   </div>
-                  <Button
-                    variant="outline"
-                    className="gap-2"
-                    onClick={() => setActiveSection("appointments")}
-                  >
+                  <Button variant="outline" className="gap-2" onClick={() => setActiveSection("appointments")}>
                     <Calendar className="h-4 w-4" />
                     {t("patient.dashboard.upcoming.viewAll", { defaultValue: "View all" })}
                   </Button>
@@ -477,6 +477,7 @@ export default function PatientDashboard() {
                       {upcomingAppointments.map((apt: any) => {
                         const doctorName = getDoctorName(apt, doctorFallbackLabel);
                         const route = appointmentRoute(apt);
+
                         return (
                           <div
                             key={apt.id}
@@ -629,7 +630,6 @@ export default function PatientDashboard() {
                         >
                           <div className="space-y-1">
                             <p className="font-medium">{doctorName}</p>
-
                             <p className="text-sm text-muted-foreground">
                               {apt.appointment_date ? format(new Date(apt.appointment_date), "MMM dd, yyyy") : ""}{" "}
                               {apt.start_time ? `at ${apt.start_time}` : ""}
