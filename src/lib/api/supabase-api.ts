@@ -7,9 +7,32 @@ type MedicalRecordInsert = Database['public']['Tables']['medical_records']['Inse
 import { toast } from 'sonner';
 
 // Types
-export type Doctor = Tables<'doctors'> & {
-  profiles?: any;
-  practices?: any;
+export type Doctor = {
+  id: string;
+  user_id?: string;
+  specialty?: string | null;
+  bio?: string | null;
+  languages?: string[] | null;
+  consultation_fee?: number | null;
+  accepts_new_patients?: boolean | null;
+  verified?: boolean | null;
+  weighted_rating?: number | null;
+  average_rating?: number | null;
+  num_reviews?: number | null;
+  appointment_count?: number | null;
+  profiles?: {
+    full_name?: string | null;
+    avatar_url?: string | null;
+    email?: string | null;
+    username?: string | null;
+  } | null;
+  practices?: {
+    id?: string | null;
+    name?: string | null;
+    city?: string | null;
+    country?: string | null;
+    logo_url?: string | null;
+  } | null;
 };
 
 export type Appointment = Tables<'appointments'> & {
@@ -50,7 +73,7 @@ export const authApi = {
           }
         }
       });
-      
+
       if (error) throw error;
       toast.success('Account created successfully! Please check your email to verify your account.');
       return { success: true };
@@ -65,7 +88,7 @@ export const authApi = {
         email,
         password,
       });
-      
+
       if (error) throw error;
       toast.success('Successfully signed in!');
       return { success: true };
@@ -90,7 +113,7 @@ export const authApi = {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`
       });
-      
+
       if (error) throw error;
       toast.success('Password reset email sent!');
       return { success: true };
@@ -102,31 +125,51 @@ export const authApi = {
 
 // Doctor API
 export const doctorApi = {
+  /**
+   * NOTE:
+   * - We use the anon-safe views for search/listing so public pages work (anon can SELECT these views).
+   * - We avoid embedded PostgREST joins like `profiles:user_id` because FK naming can differ per project,
+   *   which caused missing doctor names and empty lists.
+   */
   async fetchDoctors() {
     try {
       const { data, error } = await supabase
-        .from('doctors')
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            avatar_url,
-            email
-          ),
-          practices:practice_id (
-            name,
-            city,
-            country,
-            logo_url
-          )
-        `)
-        .eq('verified', true)
+        .from('doctor_public_search_view')
+        .select('*')
         .eq('accepts_new_patients', true)
-        .order('weighted_rating', { ascending: false })
-        .order('appointment_count', { ascending: false });
+        .order('rating', { ascending: false, nullsFirst: false })
+        .order('appointment_count', { ascending: false, nullsFirst: false });
 
       if (error) throw error;
-      return { data: data || [], success: true };
+
+      const mapped: Doctor[] = (data || []).map((row: any) => ({
+        id: row.id,
+        specialty: row.specialty ?? null,
+        bio: row.bio ?? null,
+        languages: row.languages ?? null,
+        consultation_fee: row.consultation_fee ?? null,
+        accepts_new_patients: row.accepts_new_patients ?? null,
+        verified: true,
+        weighted_rating: row.rating ?? null,
+        average_rating: row.rating ?? null,
+        num_reviews: row.num_reviews ?? null,
+        appointment_count: row.appointment_count ?? null,
+        profiles: {
+          full_name: row.full_name ?? null,
+          avatar_url: row.avatar_url ?? null,
+          email: null,
+          username: row.username ?? null,
+        },
+        practices: {
+          id: row.practice_id ?? null,
+          name: row.practice_name ?? null,
+          city: row.practice_city ?? null,
+          country: row.practice_country ?? null,
+          logo_url: null,
+        },
+      }));
+
+      return { data: mapped, success: true };
     } catch (error: any) {
       return handleApiError(error, 'Failed to fetch doctors');
     }
@@ -134,40 +177,53 @@ export const doctorApi = {
 
   async fetchTopDoctorsBySpecialty(limit: number = 6) {
     try {
-      // Get all doctors first
-      const { data: allDoctors, error } = await supabase
-        .from('doctors')
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            avatar_url,
-            email
-          ),
-          practices:practice_id (
-            name,
-            city,
-            country,
-            logo_url
-          )
-        `)
-        .eq('verified', true)
+      const { data, error } = await supabase
+        .from('doctor_public_search_view')
+        .select('*')
         .eq('accepts_new_patients', true)
-        .order('weighted_rating', { ascending: false });
+        .order('rating', { ascending: false, nullsFirst: false })
+        .order('appointment_count', { ascending: false, nullsFirst: false });
 
       if (error) throw error;
 
-      // Group by specialty and pick top doctor from each
-      const specialtyMap = new Map<string, any>();
-      allDoctors?.forEach(doctor => {
-        const specialty = doctor.specialty;
-        if (!specialtyMap.has(specialty) || 
-            (specialtyMap.get(specialty).weighted_rating || 0) < (doctor.weighted_rating || 0)) {
+      const allDoctors: Doctor[] = (data || []).map((row: any) => ({
+        id: row.id,
+        specialty: row.specialty ?? null,
+        bio: row.bio ?? null,
+        languages: row.languages ?? null,
+        consultation_fee: row.consultation_fee ?? null,
+        accepts_new_patients: row.accepts_new_patients ?? null,
+        verified: true,
+        weighted_rating: row.rating ?? null,
+        average_rating: row.rating ?? null,
+        num_reviews: row.num_reviews ?? null,
+        appointment_count: row.appointment_count ?? null,
+        profiles: {
+          full_name: row.full_name ?? null,
+          avatar_url: row.avatar_url ?? null,
+          email: null,
+          username: row.username ?? null,
+        },
+        practices: {
+          id: row.practice_id ?? null,
+          name: row.practice_name ?? null,
+          city: row.practice_city ?? null,
+          country: row.practice_country ?? null,
+          logo_url: null,
+        },
+      }));
+
+      const specialtyMap = new Map<string, Doctor>();
+      allDoctors.forEach((doctor) => {
+        const specialty = (doctor.specialty || 'General').trim();
+        const existing = specialtyMap.get(specialty);
+        const existingRating = existing?.weighted_rating || 0;
+        const candidateRating = doctor.weighted_rating || 0;
+        if (!existing || candidateRating > existingRating) {
           specialtyMap.set(specialty, doctor);
         }
       });
 
-      // Get top N doctors from different specialties
       const diverseDoctors = Array.from(specialtyMap.values())
         .sort((a, b) => (b.weighted_rating || 0) - (a.weighted_rating || 0))
         .slice(0, limit);
@@ -181,93 +237,70 @@ export const doctorApi = {
   async searchDoctors(searchTerm: string, location?: string, specialty?: string) {
     try {
       let query = supabase
-        .from('doctors')
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            avatar_url,
-            email
-          ),
-          practices:practice_id (
-            name,
-            city,
-            country,
-            logo_url
-          )
-        `)
-        .eq('verified', true)
+        .from('doctor_public_search_view')
+        .select('*')
         .eq('accepts_new_patients', true);
 
-      if (searchTerm) {
-        query = query.or(`specialty.ilike.%${searchTerm}%,bio.ilike.%${searchTerm}%`);
+      if (specialty) {
+        query = query.ilike('specialty', `%${specialty}%`);
       }
 
       if (location) {
-        // Search by practice city/country
-        query = query.or(`practices.city.ilike.%${location}%,practices.country.ilike.%${location}%`);
+        const cleanLoc = location.replace(/[,()]/g, ' ').trim();
+        if (cleanLoc) {
+          query = query.or(`practice_city.ilike.%${cleanLoc}%,practice_country.ilike.%${cleanLoc}%`);
+        }
       }
 
-      if (specialty) {
-        query = query.eq('specialty', specialty);
+      if (searchTerm && !specialty) {
+        const cleanSearchTerm = searchTerm.replace(/[,()]/g, ' ').trim();
+        if (cleanSearchTerm) {
+          const words = cleanSearchTerm.split(/\s+/).filter((w) => w.length > 0);
+          if (words.length > 0) {
+            const w = words[0];
+            query = query.or(
+              `full_name.ilike.%${w}%,specialty.ilike.%${w}%,bio.ilike.%${w}%,practice_name.ilike.%${w}%,username.ilike.%${w}%`,
+            );
+          }
+        }
       }
 
       const { data, error } = await query
-        .order('weighted_rating', { ascending: false })
-        .order('appointment_count', { ascending: false });
+        .order('rating', { ascending: false, nullsFirst: false })
+        .order('appointment_count', { ascending: false, nullsFirst: false });
 
       if (error) throw error;
-      return { data: data || [], success: true };
+
+      const mapped: Doctor[] = (data || []).map((row: any) => ({
+        id: row.id,
+        specialty: row.specialty ?? null,
+        bio: row.bio ?? null,
+        languages: row.languages ?? null,
+        consultation_fee: row.consultation_fee ?? null,
+        accepts_new_patients: row.accepts_new_patients ?? null,
+        verified: true,
+        weighted_rating: row.rating ?? null,
+        average_rating: row.rating ?? null,
+        num_reviews: row.num_reviews ?? null,
+        appointment_count: row.appointment_count ?? null,
+        profiles: {
+          full_name: row.full_name ?? null,
+          avatar_url: row.avatar_url ?? null,
+          email: null,
+          username: row.username ?? null,
+        },
+        practices: {
+          id: row.practice_id ?? null,
+          name: row.practice_name ?? null,
+          city: row.practice_city ?? null,
+          country: row.practice_country ?? null,
+          logo_url: null,
+        },
+      }));
+
+      return { data: mapped, success: true };
     } catch (error: any) {
       return handleApiError(error, 'Failed to search doctors');
-    }
-  },
-
-  async fetchDoctorById(doctorId: string) {
-    try {
-      const { data, error } = await supabase
-        .from('doctors')
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            avatar_url,
-            email,
-            phone
-          ),
-          practices:practice_id (
-            name,
-            city,
-            country,
-            logo_url,
-            address,
-            phone
-          )
-        `)
-        .eq('id', doctorId)
-        .single();
-
-      if (error) throw error;
-      return { data, success: true };
-    } catch (error: any) {
-      return handleApiError(error, 'Failed to fetch doctor details');
-    }
-  },
-
-  async fetchDoctorAvailability(doctorId: string, date: string) {
-    try {
-      const { data, error } = await supabase
-        .from('availability_slots')
-        .select('*')
-        .eq('doctor_id', doctorId)
-        .eq('date', date)
-        .eq('is_available', true)
-        .order('start_time', { ascending: true });
-
-      if (error) throw error;
-      return { data: data || [], success: true };
-    } catch (error: any) {
-      return handleApiError(error, 'Failed to fetch doctor availability');
     }
   },
 
@@ -293,9 +326,7 @@ export const appointmentApi = {
     try {
       if (userRole === 'patient') {
         // Use unified view for patients - includes appointments matched by email/phone
-        // NOTE: patient_all_appointments is a VIEW (a.*) without PostgREST relationships,
-        // so we fetch appointments first, then hydrate doctor + practice manually.
-        const { data: appts, error } = await supabase
+        const { data: rows, error } = await supabase
           .from('patient_all_appointments')
           .select('*')
           .order('appointment_date', { ascending: true })
@@ -303,73 +334,60 @@ export const appointmentApi = {
 
         if (error) throw error;
 
-        const appointments = appts || [];
-        if (appointments.length === 0) {
-          return { data: [], success: true };
-        }
-
         const doctorIds = Array.from(
-          new Set(
-            appointments
-              .map((a: any) => a.doctor_id)
-              .filter((v: any) => typeof v === 'string' && v.length > 0)
-          )
+          new Set((rows || []).map((r: any) => r.doctor_id).filter(Boolean)),
         ) as string[];
-
         const practiceIds = Array.from(
-          new Set(
-            appointments
-              .map((a: any) => a.practice_id)
-              .filter((v: any) => typeof v === 'string' && v.length > 0)
-          )
+          new Set((rows || []).map((r: any) => r.practice_id).filter(Boolean)),
         ) as string[];
 
         const doctorMap = new Map<string, any>();
         if (doctorIds.length > 0) {
-          const { data: doctors, error: dErr } = await supabase
-            .from('doctors')
-            .select(`
-              *,
-              profiles:user_id (
-                full_name,
-                avatar_url,
-                email
-              ),
-              practices:practice_id (
-                name,
-                city,
-                country,
-                logo_url
-              )
-            `)
+          const { data: docRows, error: docErr } = await supabase
+            .from('doctor_public_profile_view')
+            .select('id, specialty, full_name, avatar_url')
             .in('id', doctorIds);
 
-          if (dErr) throw dErr;
-          (doctors || []).forEach((d: any) => {
-            if (d?.id) doctorMap.set(String(d.id), d);
-          });
+          if (!docErr && docRows) {
+            docRows.forEach((d: any) => {
+              doctorMap.set(d.id, {
+                id: d.id,
+                specialty: d.specialty,
+                profiles: { full_name: d.full_name, avatar_url: d.avatar_url },
+              });
+            });
+          }
         }
 
         const practiceMap = new Map<string, any>();
         if (practiceIds.length > 0) {
-          const { data: practices, error: pErr } = await supabase
+          // Prefer full practices table (more fields), but fall back to public view if RLS blocks it.
+          const { data: pRows, error: pErr } = await supabase
             .from('practices')
-            .select('*')
+            .select('id, name, address, phone, city, country')
             .in('id', practiceIds);
 
-          if (pErr) throw pErr;
-          (practices || []).forEach((pr: any) => {
-            if (pr?.id) practiceMap.set(String(pr.id), pr);
-          });
+          if (!pErr && pRows) {
+            pRows.forEach((p: any) => practiceMap.set(p.id, p));
+          } else {
+            const { data: pvRows, error: pvErr } = await supabase
+              .from('practice_public_search_view')
+              .select('id, name, city, country')
+              .in('id', practiceIds);
+
+            if (!pvErr && pvRows) {
+              pvRows.forEach((p: any) => practiceMap.set(p.id, p));
+            }
+          }
         }
 
-        const hydrated = appointments.map((a: any) => ({
-          ...a,
-          doctor: a.doctor_id ? doctorMap.get(String(a.doctor_id)) || null : null,
-          practice: a.practice_id ? practiceMap.get(String(a.practice_id)) || null : null
+        const hydrated = (rows || []).map((apt: any) => ({
+          ...apt,
+          doctor: apt.doctor_id ? doctorMap.get(apt.doctor_id) : null,
+          practice: apt.practice_id ? practiceMap.get(apt.practice_id) : null,
         }));
 
-        return { data: hydrated || [], success: true };
+        return { data: hydrated, success: true };
       } else {
         // For doctors, use regular appointments table
         const { data: doctorData } = await supabase
@@ -382,32 +400,46 @@ export const appointmentApi = {
           return { data: [], success: true };
         }
 
-        const { data, error } = await supabase
+        const { data: rows, error } = await supabase
           .from('appointments')
-          .select(`
-            *,
-            doctor:doctors(
-              id,
-              specialty,
-              user_id,
-              profiles:user_id (
-                full_name,
-                avatar_url
-              )
-            ),
-            practice:practices(
-              id,
-              name,
-              address,
-              phone
-            )
-          `)
+          .select('*')
           .eq('doctor_id', doctorData.id)
           .order('appointment_date', { ascending: true })
           .order('start_time', { ascending: true });
 
         if (error) throw error;
-        return { data: data || [], success: true };
+
+        const practiceIds = Array.from(
+          new Set((rows || []).map((r: any) => r.practice_id).filter(Boolean)),
+        ) as string[];
+
+        const practiceMap = new Map<string, any>();
+        if (practiceIds.length > 0) {
+          const { data: pRows, error: pErr } = await supabase
+            .from('practices')
+            .select('id, name, address, phone, city, country')
+            .in('id', practiceIds);
+
+          if (!pErr && pRows) {
+            pRows.forEach((p: any) => practiceMap.set(p.id, p));
+          } else {
+            const { data: pvRows, error: pvErr } = await supabase
+              .from('practice_public_search_view')
+              .select('id, name, city, country')
+              .in('id', practiceIds);
+
+            if (!pvErr && pvRows) {
+              pvRows.forEach((p: any) => practiceMap.set(p.id, p));
+            }
+          }
+        }
+
+        const hydrated = (rows || []).map((apt: any) => ({
+          ...apt,
+          practice: apt.practice_id ? practiceMap.get(apt.practice_id) : null,
+        }));
+
+        return { data: hydrated, success: true };
       }
     } catch (error: any) {
       return handleApiError(error, 'Failed to fetch appointments');
@@ -507,27 +539,86 @@ export const treatmentPlanApi = {
     }
   },
 
-  async createTreatmentPlan(treatmentPlan: any) {
+  async createTreatmentPlan(planData: {
+    doctor_id: string;
+    patient_id: string;
+    title: string;
+    description?: string;
+    procedures?: Array<{
+      procedure_id: string;
+      cost?: number;
+    }>;
+    medications?: Array<{
+      name: string;
+      dosage: string;
+      frequency: string;
+      duration?: string;
+      instructions?: string;
+    }>;
+  }) {
     try {
-      const { data, error } = await supabase
+      // Create treatment plan
+      const { data: plan, error: planError } = await supabase
         .from('treatment_plans')
-        .insert(treatmentPlan)
+        .insert({
+          doctor_id: planData.doctor_id,
+          patient_id: planData.patient_id,
+          title: planData.title,
+          description: planData.description || null,
+          status: 'active'
+        })
         .select()
         .single();
 
-      if (error) throw error;
+      if (planError) throw planError;
+
+      // Add procedures if provided
+      if (planData.procedures && planData.procedures.length > 0) {
+        const proceduresData = planData.procedures.map(proc => ({
+          treatment_plan_id: plan.id,
+          procedure_id: proc.procedure_id,
+          cost: proc.cost || null
+        }));
+
+        const { error: procError } = await supabase
+          .from('treatment_plan_procedures')
+          .insert(proceduresData);
+
+        if (procError) throw procError;
+      }
+
+      // Add medications if provided
+      if (planData.medications && planData.medications.length > 0) {
+        const medicationsData = planData.medications.map(med => ({
+          treatment_plan_id: plan.id,
+          patient_id: planData.patient_id,
+          name: med.name,
+          dosage: med.dosage,
+          frequency: med.frequency,
+          duration: med.duration || null,
+          instructions: med.instructions || null,
+          prescribed_by: planData.doctor_id
+        }));
+
+        const { error: medError } = await supabase
+          .from('medications')
+          .insert(medicationsData);
+
+        if (medError) throw medError;
+      }
+
       toast.success('Treatment plan created successfully!');
-      return { data, success: true };
+      return { data: plan, success: true };
     } catch (error: any) {
       return handleApiError(error, 'Failed to create treatment plan');
     }
   },
 
-  async updateTreatmentPlan(planId: string, updates: any) {
+  async updateTreatmentPlanStatus(planId: string, status: string) {
     try {
       const { error } = await supabase
         .from('treatment_plans')
-        .update(updates)
+        .update({ status })
         .eq('id', planId);
 
       if (error) throw error;
@@ -536,36 +627,26 @@ export const treatmentPlanApi = {
     } catch (error: any) {
       return handleApiError(error, 'Failed to update treatment plan');
     }
-  },
-
-  async deleteTreatmentPlan(planId: string) {
-    try {
-      const { error } = await supabase
-        .from('treatment_plans')
-        .delete()
-        .eq('id', planId);
-
-      if (error) throw error;
-      toast.success('Treatment plan deleted successfully!');
-      return { success: true };
-    } catch (error: any) {
-      return handleApiError(error, 'Failed to delete treatment plan');
-    }
   }
 };
 
 // Procedure API
 export const procedureApi = {
-  async fetchProcedures() {
+  async fetchProcedures(doctorId?: string) {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('procedures')
         .select(`
           *,
           procedure_materials (*),
           procedure_files (*)
-        `)
-        .order('name', { ascending: true });
+        `);
+
+      if (doctorId) {
+        query = query.eq('doctor_id', doctorId);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
       return { data: data || [], success: true };
@@ -574,11 +655,11 @@ export const procedureApi = {
     }
   },
 
-  async createProcedure(procedure: ProcedureInsert) {
+  async createProcedure(procedureData: ProcedureInsert) {
     try {
       const { data, error } = await supabase
         .from('procedures')
-        .insert(procedure)
+        .insert(procedureData)
         .select()
         .single();
 
@@ -590,7 +671,7 @@ export const procedureApi = {
     }
   },
 
-  async updateProcedure(procedureId: string, updates: any) {
+  async updateProcedure(procedureId: string, updates: Partial<ProcedureInsert>) {
     try {
       const { error } = await supabase
         .from('procedures')
@@ -623,13 +704,24 @@ export const procedureApi = {
 
 // Medical Records API
 export const medicalRecordsApi = {
-  async fetchMedicalRecords(userId: string) {
+  async fetchMedicalRecords(patientId: string) {
     try {
       const { data, error } = await supabase
         .from('medical_records')
-        .select('*')
-        .eq('patient_id', userId)
-        .order('record_date', { ascending: false });
+        .select(`
+          *,
+          doctor:doctors (
+            id,
+            profiles:user_id (
+              full_name
+            )
+          ),
+          practice:practices (
+            name
+          )
+        `)
+        .eq('patient_id', patientId)
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       return { data: data || [], success: true };
@@ -638,11 +730,11 @@ export const medicalRecordsApi = {
     }
   },
 
-  async createMedicalRecord(medicalRecord: MedicalRecordInsert) {
+  async createMedicalRecord(recordData: MedicalRecordInsert) {
     try {
       const { data, error } = await supabase
         .from('medical_records')
-        .insert(medicalRecord)
+        .insert(recordData)
         .select()
         .single();
 
@@ -652,69 +744,35 @@ export const medicalRecordsApi = {
     } catch (error: any) {
       return handleApiError(error, 'Failed to create medical record');
     }
-  },
-
-  async updateMedicalRecord(recordId: string, updates: any) {
-    try {
-      const { error } = await supabase
-        .from('medical_records')
-        .update(updates)
-        .eq('id', recordId);
-
-      if (error) throw error;
-      toast.success('Medical record updated successfully!');
-      return { success: true };
-    } catch (error: any) {
-      return handleApiError(error, 'Failed to update medical record');
-    }
-  },
-
-  async deleteMedicalRecord(recordId: string) {
-    try {
-      const { error } = await supabase
-        .from('medical_records')
-        .delete()
-        .eq('id', recordId);
-
-      if (error) throw error;
-      toast.success('Medical record deleted successfully!');
-      return { success: true };
-    } catch (error: any) {
-      return handleApiError(error, 'Failed to delete medical record');
-    }
   }
 };
 
-// Storage API
+// File Storage API
 export const storageApi = {
   async uploadFile(bucket: string, path: string, file: File) {
     try {
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from(bucket)
-        .upload(path, file, {
-          cacheControl: '3600',
-          upsert: true
-        });
+        .upload(path, file);
 
       if (error) throw error;
-      return { data, success: true };
+
+      const { data: { publicUrl } } = supabase.storage
+        .from(bucket)
+        .getPublicUrl(path);
+
+      return { data: publicUrl, success: true };
     } catch (error: any) {
       return handleApiError(error, 'Failed to upload file');
     }
   },
 
-  async getPublicUrl(bucket: string, path: string) {
-    try {
-      const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-      return { data, success: true };
-    } catch (error: any) {
-      return handleApiError(error, 'Failed to get file URL');
-    }
-  },
-
   async deleteFile(bucket: string, path: string) {
     try {
-      const { error } = await supabase.storage.from(bucket).remove([path]);
+      const { error } = await supabase.storage
+        .from(bucket)
+        .remove([path]);
+
       if (error) throw error;
       toast.success('File deleted successfully!');
       return { success: true };
@@ -724,71 +782,47 @@ export const storageApi = {
   }
 };
 
-// Doctor Dashboard API
+// Doctor Dashboard Stats API
 export const doctorDashboardApi = {
-  async getDoctorStats(doctorId: string) {
+  async getDashboardStats(doctorId: string) {
     try {
-      const { data: appointments, error: appointmentsError } = await supabase
+      // Get appointments for today
+      const today = new Date().toISOString().split('T')[0];
+      const { data: todayAppointments, error: todayError } = await supabase
         .from('appointments')
         .select('*')
+        .eq('doctor_id', doctorId)
+        .eq('appointment_date', today);
+
+      if (todayError) throw todayError;
+
+      // Get total patients count
+      const { count: patientCount, error: patientError } = await supabase
+        .from('doctor_patients')
+        .select('*', { count: 'exact', head: true })
         .eq('doctor_id', doctorId);
 
-      if (appointmentsError) throw appointmentsError;
+      if (patientError) throw patientError;
 
-      const today = new Date().toISOString().split('T')[0];
-      const upcomingAppointments = appointments?.filter(a => a.appointment_date >= today) || [];
-      const totalAppointments = appointments?.length || 0;
-
-      // Get treatment plans count
-      const { data: treatmentPlans, error: treatmentPlansError } = await supabase
+      // Get active treatment plans count
+      const { count: activePlans, error: plansError } = await supabase
         .from('treatment_plans')
-        .select('id')
-        .eq('doctor_id', doctorId);
+        .select('*', { count: 'exact', head: true })
+        .eq('doctor_id', doctorId)
+        .eq('status', 'active');
 
-      if (treatmentPlansError) throw treatmentPlansError;
-
-      // Get procedures count
-      const { data: procedures, error: proceduresError } = await supabase
-        .from('procedures')
-        .select('id')
-        .eq('doctor_id', doctorId);
-
-      if (proceduresError) throw proceduresError;
+      if (plansError) throw plansError;
 
       return {
         data: {
-          totalAppointments,
-          upcomingAppointments: upcomingAppointments.length,
-          totalTreatmentPlans: treatmentPlans?.length || 0,
-          totalProcedures: procedures?.length || 0
+          todayAppointments: todayAppointments?.length || 0,
+          totalPatients: patientCount || 0,
+          activeTreatmentPlans: activePlans || 0,
         },
         success: true
       };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to fetch doctor stats');
-    }
-  },
-
-  async getRecentAppointments(doctorId: string, limit: number = 5) {
-    try {
-      const { data, error } = await supabase
-        .from('appointments')
-        .select(`
-          *,
-          patient:profiles!appointments_patient_id_fkey (
-            full_name,
-            avatar_url,
-            email
-          )
-        `)
-        .eq('doctor_id', doctorId)
-        .order('created_at', { ascending: false })
-        .limit(limit);
-
-      if (error) throw error;
-      return { data: data || [], success: true };
-    } catch (error: any) {
-      return handleApiError(error, 'Failed to fetch recent appointments');
+      return handleApiError(error, 'Failed to fetch dashboard stats');
     }
   }
 };
@@ -800,49 +834,149 @@ export const practiceApi = {
       const { data, error } = await supabase
         .from('practices')
         .select('*')
-        .order('name', { ascending: true });
+        .eq('verified', true)
+        .order('weighted_rating', { ascending: false });
 
       if (error) throw error;
       return { data: data || [], success: true };
     } catch (error: any) {
       return handleApiError(error, 'Failed to fetch practices');
     }
-  },
-
-  async fetchPracticeById(practiceId: string) {
-    try {
-      const { data, error } = await supabase
-        .from('practices')
-        .select('*')
-        .eq('id', practiceId)
-        .single();
-
-      if (error) throw error;
-      return { data, success: true };
-    } catch (error: any) {
-      return handleApiError(error, 'Failed to fetch practice details');
-    }
   }
 };
 
-// Search API
 export const searchApi = {
-  async searchPractices(searchTerm: string) {
+  async advancedDoctorSearch(params: {
+    query?: string;
+    specialty?: string;
+    location?: string;
+    minRating?: number;
+    minPrice?: number;
+    maxPrice?: number;
+    acceptsNewPatients?: boolean;
+    videoConsultation?: boolean;
+    acceptsInsurance?: boolean;
+    language?: string;
+    gender?: string;
+  }) {
     try {
-      const { data, error } = await supabase
-        .from('practices')
-        .select('*')
-        .or(`name.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,country.ilike.%${searchTerm}%`)
-        .order('name', { ascending: true });
+      // Use anon-safe search view so Find Doctors works publicly
+      let q = supabase
+        .from('doctor_public_search_view')
+        .select('*');
+
+      if (params.query) {
+        const cleanQuery = params.query.replace(/[,()]/g, ' ').trim();
+        if (cleanQuery) {
+          const words = cleanQuery.split(/\s+/).filter((w) => w.length > 0);
+          if (words.length > 0) {
+            const w = words[0];
+            q = q.or(
+              `full_name.ilike.%${w}%,specialty.ilike.%${w}%,bio.ilike.%${w}%,practice_name.ilike.%${w}%,username.ilike.%${w}%`,
+            );
+          }
+        }
+      }
+
+      if (params.specialty) {
+        q = q.ilike('specialty', `%${params.specialty}%`);
+      }
+
+      if (params.location) {
+        const cleanLoc = params.location.replace(/[,()]/g, ' ').trim();
+        if (cleanLoc) {
+          q = q.or(`practice_city.ilike.%${cleanLoc}%,practice_country.ilike.%${cleanLoc}%`);
+        }
+      }
+
+      if (params.minRating) {
+        q = q.gte('rating', params.minRating);
+      }
+
+      if (params.minPrice !== undefined) {
+        q = q.gte('consultation_fee', params.minPrice);
+      }
+      if (params.maxPrice !== undefined) {
+        q = q.lte('consultation_fee', params.maxPrice);
+      }
+
+      if (params.acceptsNewPatients) {
+        q = q.eq('accepts_new_patients', true);
+      }
+
+      // videoConsultation/gender/acceptsInsurance are not exposed by the public view; we ignore them safely.
+      if (params.language) {
+        q = q.contains('languages', [params.language]);
+      }
+
+      const { data, error } = await q
+        .order('rating', { ascending: false, nullsFirst: false })
+        .order('appointment_count', { ascending: false, nullsFirst: false });
 
       if (error) throw error;
-      return { data: data || [], success: true };
+
+      // Normalize fields so UI components that expect doctors-table-like columns still work
+      const normalized = (data || []).map((row: any) => ({
+        ...row,
+        weighted_rating: row.rating,
+        average_rating: row.rating,
+      }));
+
+      return { data: normalized, success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to search practices');
+      return handleApiError(error, 'Failed to search doctors');
     }
   },
 
-  async searchDoctors(searchTerm: string, location?: string, specialty?: string) {
-    return doctorApi.searchDoctors(searchTerm, location, specialty);
+  async advancedPracticeSearch(params: {
+    query?: string;
+    location?: string;
+    practiceType?: string;
+    minRating?: number;
+  }) {
+    try {
+      // Use anon-safe search view so Find Practices works publicly
+      let q = supabase
+        .from('practice_public_search_view')
+        .select('*');
+
+      if (params.query) {
+        const cleanQuery = params.query.replace(/[,()]/g, ' ').trim();
+        if (cleanQuery) {
+          q = q.or(`name.ilike.%${cleanQuery}%,description.ilike.%${cleanQuery}%`);
+        }
+      }
+
+      if (params.location) {
+        const cleanLoc = params.location.replace(/[,()]/g, ' ').trim();
+        if (cleanLoc) {
+          q = q.or(`city.ilike.%${cleanLoc}%,country.ilike.%${cleanLoc}%`);
+        }
+      }
+
+      if (params.practiceType && params.practiceType !== 'all') {
+        q = q.eq('practice_type', params.practiceType);
+      }
+
+      if (params.minRating) {
+        q = q.gte('rating', params.minRating);
+      }
+
+      const { data, error } = await q
+        .order('rating', { ascending: false, nullsFirst: false })
+        .order('appointment_count', { ascending: false, nullsFirst: false });
+
+      if (error) throw error;
+
+      const normalized = (data || []).map((row: any) => ({
+        ...row,
+        average_rating: row.rating,
+        weighted_rating: row.rating,
+      }));
+
+      return { data: normalized, success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to search practices');
+    }
   }
 };
