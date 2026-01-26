@@ -62,25 +62,25 @@ function getDoctorName(apt: any, fallback: string) {
   // Handle various nested structures from different queries
   const doctor = asOne(apt?.doctor);
   if (!doctor) return fallback;
-  
+
   // Try multiple paths to find the doctor's name
   const profiles = asOne(doctor?.profiles);
-  
+
   // Path 1: profiles.full_name
   if (profiles?.full_name && String(profiles.full_name).trim()) {
     return String(profiles.full_name).trim();
   }
-  
+
   // Path 2: Direct access on doctor.profiles
   if (doctor?.profiles?.full_name && String(doctor.profiles.full_name).trim()) {
     return String(doctor.profiles.full_name).trim();
   }
-  
+
   // Path 3: If doctor has specialty, show it with generic label
   if (doctor?.specialty) {
     return `Dr. (${doctor.specialty})`;
   }
-  
+
   return fallback;
 }
 
@@ -171,9 +171,9 @@ export default function PatientDashboard() {
     try {
       const { error } = await (supabase as any)
         .from("appointments")
-        .update({ 
+        .update({
           start_requested_by_patient: true,
-          patient_confirmation_status: "confirmed"
+          patient_confirmation_status: "confirmed",
         })
         .eq("id", appointmentId);
 
@@ -207,6 +207,21 @@ export default function PatientDashboard() {
       await Promise.allSettled([refetchAppointments?.(), refetchStats?.()]);
     } catch (e: any) {
       toast.error(e?.message ?? "Failed to decline appointment");
+    }
+  }
+
+  async function cancelAppointment(appointmentId: string) {
+    try {
+      const { error } = await supabase
+        .from("appointments")
+        .update({ status: "canceled" as any })
+        .eq("id", appointmentId);
+
+      if (error) throw error;
+      toast.success("Appointment canceled.");
+      await Promise.allSettled([refetchAppointments?.(), refetchStats?.()]);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to cancel appointment");
     }
   }
 
@@ -258,120 +273,111 @@ export default function PatientDashboard() {
                     "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left",
                     isActive
                       ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent/50",
+                      : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
                   )}
                 >
-                  <Icon className="h-5 w-5 flex-shrink-0" />
-                  <span>{item.label}</span>
+                  <Icon className="h-5 w-5" />
+                  <span className="flex-1">{item.label}</span>
                 </button>
               );
             })}
-
-            <button
-              onClick={() => navigate("/find-doctors")}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left text-sidebar-foreground hover:bg-sidebar-accent/50"
-            >
-              <Search className="h-5 w-5 flex-shrink-0" />
-              <span>{t("patient.navigation.findDoctors")}</span>
-            </button>
           </nav>
 
-          <div className="p-4 border-t border-sidebar-border">
+          <div className="p-4 border-t border-sidebar-border space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <LanguageSwitcher />
+              <ThemeToggle />
+            </div>
+
             <Button
-              variant="ghost"
-              className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent/50"
-              onClick={signOut}
+              variant="outline"
+              className="w-full gap-2"
+              onClick={async () => {
+                try {
+                  await signOut();
+                } catch {
+                  // ignore
+                }
+              }}
             >
-              <LogOut className="mr-3 h-5 w-5" />
+              <LogOut className="h-4 w-4" />
               {t("patient.navigation.logout")}
             </Button>
           </div>
         </div>
       </aside>
 
-      {sidebarOpen && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />}
+      {/* Main content */}
+      <div className="flex-1 flex flex-col">
+        {/* Top bar */}
+        <header className="sticky top-0 z-40 bg-background/80 backdrop-blur border-b border-border">
+          <div className="flex items-center justify-between p-4">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(true)}>
+                <Menu className="h-5 w-5" />
+              </Button>
+              <div className="flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-primary" />
+                <span className="font-semibold">MedicalBook</span>
+              </div>
+            </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="flex h-16 items-center gap-4 px-4 lg:px-6">
-            <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(true)}>
-              <Menu className="h-5 w-5" />
-            </Button>
-
-            <h1 className="text-xl font-semibold flex-1">
-              {navItems.find((item) => item.id === activeSection)?.label || t("patient.title")}
-            </h1>
-
-            <div className="flex items-center gap-2">
-              <ThemeToggle />
-              <LanguageSwitcher />
+            <div className="flex items-center gap-3">
               <NotificationDropdown />
+              <Button variant="outline" className="gap-2" onClick={() => navigate("/find-doctors")}>
+                <Search className="h-4 w-4" />
+                Find Doctors
+              </Button>
+              <Button className="gap-2" onClick={() => navigate("/booking")}>
+                <Plus className="h-4 w-4" />
+                Book Appointment
+              </Button>
             </div>
           </div>
         </header>
 
-        <main className="flex-1 overflow-auto p-6">
+        <main className="flex-1 p-4 md:p-6 space-y-6">
           {activeSection === "dashboard" && (
-            <div className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <>
+              <div className="space-y-2">
+                <h1 className="text-2xl md:text-3xl font-bold">{t("patient.welcome")}</h1>
+                <p className="text-muted-foreground">{t("patient.subtitle")}</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-2">
-                        <p className="text-sm font-medium text-muted-foreground">{t("patient.stats.upcomingAppointments")}</p>
-                        <p className="text-3xl font-bold">{stats?.upcomingAppointmentsCount || 0}</p>
-                      </div>
-                      <div className="p-3 rounded-full bg-blue-50 dark:bg-blue-950/30">
-                        <Calendar className="h-6 w-6 text-blue-600" />
-                      </div>
-                    </div>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      {t("patient.stats.upcomingAppointments")}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{stats?.upcomingAppointments ?? 0}</div>
+                    <p className="text-xs text-muted-foreground">{t("patient.stats.upcomingAppointmentsDesc")}</p>
                   </CardContent>
                 </Card>
 
                 <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-2">
-                        <p className="text-sm font-medium text-muted-foreground">{t("patient.stats.medicalRecords")}</p>
-                        <p className="text-3xl font-bold">{stats?.medicalRecordsCount || 0}</p>
-                      </div>
-                      <div className="p-3 rounded-full bg-green-50 dark:bg-green-950/30">
-                        <FileText className="h-6 w-6 text-green-600" />
-                      </div>
-                    </div>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      {t("patient.stats.activeMedications")}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{stats?.activeMedications ?? 0}</div>
+                    <p className="text-xs text-muted-foreground">{t("patient.stats.activeMedicationsDesc")}</p>
                   </CardContent>
                 </Card>
 
                 <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-2">
-                        <p className="text-sm font-medium text-muted-foreground">{t("patient.stats.pendingReminders")}</p>
-                        <p className="text-3xl font-bold">{stats?.pendingReminders || 0}</p>
-                      </div>
-                      <div className="p-3 rounded-full bg-purple-50 dark:bg-purple-950/30">
-                        <Pill className="h-6 w-6 text-purple-600" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-2">
-                        <p className="text-sm font-medium text-muted-foreground">{t("patient.stats.nextAppointment")}</p>
-                        <p className="text-lg font-bold">
-                          {stats?.nextAppointment?.appointment_date
-                            ? format(new Date(stats.nextAppointment.appointment_date), "MMM dd")
-                            : t("patient.stats.none")}
-                        </p>
-                      </div>
-                      <div className="p-3 rounded-full bg-yellow-50 dark:bg-yellow-950/30">
-                        <Clock className="h-6 w-6 text-yellow-600" />
-                      </div>
-                    </div>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">
+                      {t("patient.stats.medicalRecords")}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{stats?.medicalRecords ?? 0}</div>
+                    <p className="text-xs text-muted-foreground">{t("patient.stats.medicalRecordsDesc")}</p>
                   </CardContent>
                 </Card>
               </div>
@@ -380,64 +386,36 @@ export default function PatientDashboard() {
                 <CardHeader>
                   <CardTitle>{t("patient.quickActions.title")}</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid gap-3 md:grid-cols-3">
-                    <Button variant="outline" className="justify-start" onClick={() => navigate("/find-doctors")}>
-                      <Search className="mr-2 h-4 w-4" />
-                      {t("patient.quickActions.findDoctors")}
-                    </Button>
-                    <Button variant="outline" className="justify-start" onClick={() => navigate("/find-doctors")}>
-                      <Plus className="mr-2 h-4 w-4" />
-                      {t("patient.quickActions.bookAppointment")}
-                    </Button>
-                    <Button variant="outline" className="justify-start" onClick={() => setActiveSection("appointments")}>
-                      <Calendar className="mr-2 h-4 w-4" />
-                      {t("patient.quickActions.viewAppointments")}
-                    </Button>
-                  </div>
+                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Button
+                    variant="outline"
+                    className="h-20 flex-col gap-2"
+                    onClick={() => setActiveSection("appointments")}
+                  >
+                    <Calendar className="h-6 w-6" />
+                    <span>{t("patient.quickActions.viewAppointments")}</span>
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    className="h-20 flex-col gap-2"
+                    onClick={() => setActiveSection("medications")}
+                  >
+                    <Pill className="h-6 w-6" />
+                    <span>{t("patient.quickActions.manageMedications")}</span>
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    className="h-20 flex-col gap-2"
+                    onClick={() => setActiveSection("records")}
+                  >
+                    <FileText className="h-6 w-6" />
+                    <span>{t("patient.quickActions.viewRecords")}</span>
+                  </Button>
                 </CardContent>
               </Card>
-
-              {stats?.nextAppointment && (
-                <Card
-                  className="cursor-pointer hover:bg-accent/30 transition-colors"
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => {
-                    const route = appointmentRoute(stats.nextAppointment);
-                    if (route) navigate(route);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      const route = appointmentRoute(stats.nextAppointment);
-                      if (route) navigate(route);
-                    }
-                  }}
-                >
-                  <CardHeader>
-                    <CardTitle>{t("patient.nextAppointment.title")}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center gap-4">
-                      <div className="flex-1 space-y-2">
-                        <p className="font-medium">
-                          {format(new Date(stats.nextAppointment.appointment_date), "EEEE, MMMM dd, yyyy")}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {stats.nextAppointment.start_time} - {stats.nextAppointment.end_time}
-                        </p>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <MapPin className="h-4 w-4" />
-                          <span>{t("patient.nextAppointment.location")}</span>
-                        </div>
-                      </div>
-                      <Badge>{stats.nextAppointment.status}</Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
+            </>
           )}
 
           {activeSection === "appointments" && (
@@ -446,15 +424,18 @@ export default function PatientDashboard() {
                 <CardTitle>{t("patient.appointments.title")}</CardTitle>
               </CardHeader>
               <CardContent>
-                {appointmentsError ? (
-                  <div className="p-4 rounded-lg border border-destructive/30 bg-destructive/10 text-destructive">
-                    {appointmentsError}
-                  </div>
-                ) : appointmentsLoading ? (
+                {appointmentsLoading ? (
                   <div className="space-y-3">
                     {[1, 2, 3].map((i) => (
                       <Skeleton key={i} className="h-20 w-full" />
                     ))}
+                  </div>
+                ) : appointmentsError ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>Failed to load appointments.</p>
+                    <Button variant="outline" className="mt-4" onClick={() => refetchAppointments?.()}>
+                      Try Again
+                    </Button>
                   </div>
                 ) : appointments && appointments.length > 0 ? (
                   <div className="space-y-3">
@@ -544,6 +525,18 @@ export default function PatientDashboard() {
                                 >
                                   <RotateCcw className="h-4 w-4" />
                                   Reschedule
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="gap-2 text-destructive hover:text-destructive"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    cancelAppointment(String(apt.id));
+                                  }}
+                                >
+                                  <XCircle className="h-4 w-4" />
+                                  Cancel
                                 </Button>
                               </div>
                             ) : null}
