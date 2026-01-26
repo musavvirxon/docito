@@ -20,10 +20,11 @@ export const useProcedures = () => {
 
     try {
       setLoading(true);
-      const result = await procedureApi.fetchDoctorProcedures(user.id);
+      // Fetch doctor record first to get doctor_id
+      const result = await procedureApi.fetchProcedures();
       
       if ('success' in result && result.success) {
-        setProcedures(result.data);
+        setProcedures(result.data as Procedure[]);
         setError(null);
       } else if ('error' in result) {
         setError(result.error);
