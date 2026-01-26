@@ -1,15 +1,16 @@
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
-import { usePatientSettings } from '@/hooks/usePatientSettings';
-import { Bell, Shield, User, Lock, Save } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+// File: src/components/patient/PatientSettingsPanel.tsx
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { usePatientSettings } from "@/hooks/usePatientSettings";
+import { Bell, Shield, User, Lock, Save } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export const PatientSettingsPanel = () => {
   const { t } = useTranslation("dashboard");
@@ -28,14 +29,19 @@ export const PatientSettingsPanel = () => {
   const [localPrivacy, setLocalPrivacy] = useState(privacySettings);
   const [localAccount, setLocalAccount] = useState(accountSettings);
   const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
 
   const [hasNotificationChanges, setHasNotificationChanges] = useState(false);
   const [hasPrivacyChanges, setHasPrivacyChanges] = useState(false);
   const [hasAccountChanges, setHasAccountChanges] = useState(false);
+
+  // Keep local state in sync once hook finishes loading defaults
+  useEffect(() => setLocalNotifications(notificationSettings), [notificationSettings]);
+  useEffect(() => setLocalPrivacy(privacySettings), [privacySettings]);
+  useEffect(() => setLocalAccount(accountSettings), [accountSettings]);
 
   const handleNotificationChange = (key: keyof typeof notificationSettings, value: boolean) => {
     setLocalNotifications({ ...localNotifications, [key]: value });
@@ -72,7 +78,7 @@ export const PatientSettingsPanel = () => {
       return;
     }
     await updatePassword(passwordData.currentPassword, passwordData.newPassword);
-    setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
   };
 
   if (loading) {
@@ -87,85 +93,102 @@ export const PatientSettingsPanel = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold">{t("patient.settings.title")}</h2>
-        <p className="text-muted-foreground mt-2">{t("patient.settings.subtitle")}</p>
+        <h2 className="text-3xl font-bold">
+          {t("patient.settings.title", { defaultValue: "Settings" })}
+        </h2>
+        <p className="text-muted-foreground mt-2">
+          {t("patient.settings.subtitle", { defaultValue: "Manage your account, notifications, privacy, and security." })}
+        </p>
       </div>
 
       <Tabs defaultValue="account" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="account">
             <User className="w-4 h-4 mr-2" />
-            {t("patient.settings.account")}
+            {t("patient.settings.account", { defaultValue: "Account" })}
           </TabsTrigger>
           <TabsTrigger value="notifications">
             <Bell className="w-4 h-4 mr-2" />
-            {t("patient.settings.notifications")}
+            {t("patient.settings.notifications", { defaultValue: "Notifications" })}
           </TabsTrigger>
           <TabsTrigger value="privacy">
             <Shield className="w-4 h-4 mr-2" />
-            {t("patient.settings.privacy")}
+            {t("patient.settings.privacy", { defaultValue: "Privacy" })}
           </TabsTrigger>
           <TabsTrigger value="security">
             <Lock className="w-4 h-4 mr-2" />
-            {t("patient.settings.security")}
+            {t("patient.settings.security", { defaultValue: "Security" })}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="account" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>{t("patient.settings.account.title")}</CardTitle>
-              <CardDescription>{t("patient.settings.account.description")}</CardDescription>
+              <CardTitle>
+                {t("patient.settings.account.title", { defaultValue: "Account Information" })}
+              </CardTitle>
+              <CardDescription>
+                {t("patient.settings.account.description", { defaultValue: "Update your personal details." })}
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="full_name">{t("patient.settings.account.fullName")}</Label>
+                  <Label htmlFor="full_name">
+                    {t("patient.settings.account.fullName", { defaultValue: "Full Name" })}
+                  </Label>
                   <Input
                     id="full_name"
                     value={localAccount.full_name}
-                    onChange={(e) => handleAccountChange('full_name', e.target.value)}
+                    onChange={(e) => handleAccountChange("full_name", e.target.value)}
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="email">{t("patient.settings.account.email")}</Label>
+                  <Label htmlFor="email">{t("patient.settings.account.email", { defaultValue: "Email" })}</Label>
                   <Input
                     id="email"
                     type="email"
                     value={localAccount.email}
-                    onChange={(e) => handleAccountChange('email', e.target.value)}
+                    onChange={(e) => handleAccountChange("email", e.target.value)}
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
+                  <Label htmlFor="phone">{t("patient.settings.account.phone", { defaultValue: "Phone" })}</Label>
                   <Input
                     id="phone"
-                    value={localAccount.phone || ''}
-                    onChange={(e) => handleAccountChange('phone', e.target.value)}
+                    value={localAccount.phone || ""}
+                    onChange={(e) => handleAccountChange("phone", e.target.value)}
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="date_of_birth">Date of Birth</Label>
+                  <Label htmlFor="date_of_birth">
+                    {t("patient.settings.account.dateOfBirth", { defaultValue: "Date of Birth" })}
+                  </Label>
                   <Input
                     id="date_of_birth"
                     type="date"
-                    value={localAccount.date_of_birth || ''}
-                    onChange={(e) => handleAccountChange('date_of_birth', e.target.value)}
+                    value={localAccount.date_of_birth || ""}
+                    onChange={(e) => handleAccountChange("date_of_birth", e.target.value)}
                   />
                 </div>
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
+                <Label htmlFor="address">{t("patient.settings.account.address", { defaultValue: "Address" })}</Label>
                 <Input
                   id="address"
-                  value={localAccount.address || ''}
-                  onChange={(e) => handleAccountChange('address', e.target.value)}
+                  value={localAccount.address || ""}
+                  onChange={(e) => handleAccountChange("address", e.target.value)}
                 />
               </div>
+
               {hasAccountChanges && (
                 <Button onClick={handleSaveAccount} className="mt-4">
                   <Save className="w-4 h-4 mr-2" />
-                  {t("patient.settings.account.saveChanges")}
+                  {t("patient.settings.account.saveChanges", { defaultValue: "Save Changes" })}
                 </Button>
               )}
             </CardContent>
@@ -175,40 +198,67 @@ export const PatientSettingsPanel = () => {
         <TabsContent value="notifications" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>{t("patient.settings.notifications.emailTitle")}</CardTitle>
-              <CardDescription>{t("patient.settings.notifications.emailDescription")}</CardDescription>
+              <CardTitle>
+                {t("patient.settings.notifications.emailTitle", { defaultValue: "Email Notifications" })}
+              </CardTitle>
+              <CardDescription>
+                {t("patient.settings.notifications.emailDescription", { defaultValue: "Manage your email preferences." })}
+              </CardDescription>
             </CardHeader>
+
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>Booking Confirmations</Label>
-                  <p className="text-sm text-muted-foreground">Receive emails when appointments are booked</p>
+                  <Label>
+                    {t("patient.settings.notifications.bookingConfirmations", { defaultValue: "Booking Confirmations" })}
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    {t("patient.settings.notifications.bookingConfirmationsDesc", {
+                      defaultValue: "Receive emails when appointments are booked",
+                    })}
+                  </p>
                 </div>
                 <Switch
                   checked={localNotifications.emailBookings}
-                  onCheckedChange={(value) => handleNotificationChange('emailBookings', value)}
+                  onCheckedChange={(value) => handleNotificationChange("emailBookings", value)}
                 />
               </div>
+
               <Separator />
+
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>Appointment Reminders</Label>
-                  <p className="text-sm text-muted-foreground">Get reminded before your appointments</p>
+                  <Label>
+                    {t("patient.settings.notifications.appointmentReminders", { defaultValue: "Appointment Reminders" })}
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    {t("patient.settings.notifications.appointmentRemindersDesc", {
+                      defaultValue: "Get reminded before your appointments",
+                    })}
+                  </p>
                 </div>
                 <Switch
                   checked={localNotifications.emailReminders}
-                  onCheckedChange={(value) => handleNotificationChange('emailReminders', value)}
+                  onCheckedChange={(value) => handleNotificationChange("emailReminders", value)}
                 />
               </div>
+
               <Separator />
+
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>Cancellation Notices</Label>
-                  <p className="text-sm text-muted-foreground">Receive cancellation confirmations</p>
+                  <Label>
+                    {t("patient.settings.notifications.cancellationNotices", { defaultValue: "Cancellation Notices" })}
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    {t("patient.settings.notifications.cancellationNoticesDesc", {
+                      defaultValue: "Receive cancellation confirmations",
+                    })}
+                  </p>
                 </div>
                 <Switch
                   checked={localNotifications.emailCancellations}
-                  onCheckedChange={(value) => handleNotificationChange('emailCancellations', value)}
+                  onCheckedChange={(value) => handleNotificationChange("emailCancellations", value)}
                 />
               </div>
             </CardContent>
@@ -216,29 +266,44 @@ export const PatientSettingsPanel = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>SMS Notifications</CardTitle>
-              <CardDescription>Manage your SMS notification preferences</CardDescription>
+              <CardTitle>{t("patient.settings.notifications.smsTitle", { defaultValue: "SMS Notifications" })}</CardTitle>
+              <CardDescription>
+                {t("patient.settings.notifications.smsDescription", {
+                  defaultValue: "Manage your SMS notification preferences",
+                })}
+              </CardDescription>
             </CardHeader>
+
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>SMS Reminders</Label>
-                  <p className="text-sm text-muted-foreground">Get text reminders before appointments</p>
+                  <Label>{t("patient.settings.notifications.smsReminders", { defaultValue: "SMS Reminders" })}</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {t("patient.settings.notifications.smsRemindersDesc", {
+                      defaultValue: "Get text reminders before appointments",
+                    })}
+                  </p>
                 </div>
                 <Switch
                   checked={localNotifications.smsReminders}
-                  onCheckedChange={(value) => handleNotificationChange('smsReminders', value)}
+                  onCheckedChange={(value) => handleNotificationChange("smsReminders", value)}
                 />
               </div>
+
               <Separator />
+
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>Push Notifications</Label>
-                  <p className="text-sm text-muted-foreground">Receive in-app notifications</p>
+                  <Label>{t("patient.settings.notifications.pushNotifications", { defaultValue: "Push Notifications" })}</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {t("patient.settings.notifications.pushNotificationsDesc", {
+                      defaultValue: "Receive in-app notifications",
+                    })}
+                  </p>
                 </div>
                 <Switch
                   checked={localNotifications.pushNotifications}
-                  onCheckedChange={(value) => handleNotificationChange('pushNotifications', value)}
+                  onCheckedChange={(value) => handleNotificationChange("pushNotifications", value)}
                 />
               </div>
             </CardContent>
@@ -247,7 +312,7 @@ export const PatientSettingsPanel = () => {
           {hasNotificationChanges && (
             <Button onClick={handleSaveNotifications}>
               <Save className="w-4 h-4 mr-2" />
-              Save Notification Settings
+              {t("patient.settings.notifications.save", { defaultValue: "Save Notification Settings" })}
             </Button>
           )}
         </TabsContent>
@@ -255,40 +320,41 @@ export const PatientSettingsPanel = () => {
         <TabsContent value="privacy" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Privacy Settings</CardTitle>
-              <CardDescription>Control your privacy preferences</CardDescription>
+              <CardTitle>{t("patient.settings.privacy.title", { defaultValue: "Privacy Settings" })}</CardTitle>
+              <CardDescription>
+                {t("patient.settings.privacy.description", { defaultValue: "Control your privacy preferences" })}
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>Profile Visibility</Label>
-                  <p className="text-sm text-muted-foreground">Allow doctors to see your profile</p>
+                  <Label>{t("patient.settings.privacy.shareProfile", { defaultValue: "Share Profile" })}</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {t("patient.settings.privacy.shareProfileDesc", {
+                      defaultValue: "Allow doctors to view your profile details",
+                    })}
+                  </p>
                 </div>
                 <Switch
-                  checked={localPrivacy.profileVisibility}
-                  onCheckedChange={(value) => handlePrivacyChange('profileVisibility', value)}
+                  checked={(localPrivacy as any).shareProfile ?? false}
+                  onCheckedChange={(value) => handlePrivacyChange("shareProfile" as any, value)}
                 />
               </div>
+
               <Separator />
+
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>Share Analytics</Label>
-                  <p className="text-sm text-muted-foreground">Help us improve with anonymous data</p>
+                  <Label>{t("patient.settings.privacy.shareRecords", { defaultValue: "Share Records" })}</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {t("patient.settings.privacy.shareRecordsDesc", {
+                      defaultValue: "Allow doctors to view your medical records",
+                    })}
+                  </p>
                 </div>
                 <Switch
-                  checked={localPrivacy.shareAnalytics}
-                  onCheckedChange={(value) => handlePrivacyChange('shareAnalytics', value)}
-                />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label>Marketing Communications</Label>
-                  <p className="text-sm text-muted-foreground">Receive promotional emails</p>
-                </div>
-                <Switch
-                  checked={localPrivacy.marketingCommunications}
-                  onCheckedChange={(value) => handlePrivacyChange('marketingCommunications', value)}
+                  checked={(localPrivacy as any).shareRecords ?? false}
+                  onCheckedChange={(value) => handlePrivacyChange("shareRecords" as any, value)}
                 />
               </div>
             </CardContent>
@@ -297,7 +363,7 @@ export const PatientSettingsPanel = () => {
           {hasPrivacyChanges && (
             <Button onClick={handleSavePrivacy}>
               <Save className="w-4 h-4 mr-2" />
-              Save Privacy Settings
+              {t("patient.settings.privacy.save", { defaultValue: "Save Privacy Settings" })}
             </Button>
           )}
         </TabsContent>
@@ -305,50 +371,52 @@ export const PatientSettingsPanel = () => {
         <TabsContent value="security" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>{t("patient.settings.security.title")}</CardTitle>
-              <CardDescription>{t("patient.settings.security.description")}</CardDescription>
+              <CardTitle>{t("patient.settings.security.title", { defaultValue: "Change Password" })}</CardTitle>
+              <CardDescription>
+                {t("patient.settings.security.description", { defaultValue: "Update your password to keep your account secure." })}
+              </CardDescription>
             </CardHeader>
+
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="current_password">Current Password</Label>
+                <Label htmlFor="currentPassword">
+                  {t("patient.settings.security.currentPassword", { defaultValue: "Current Password" })}
+                </Label>
                 <Input
-                  id="current_password"
+                  id="currentPassword"
                   type="password"
                   value={passwordData.currentPassword}
-                  onChange={(e) =>
-                    setPasswordData({ ...passwordData, currentPassword: e.target.value })
-                  }
+                  onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
                 />
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="new_password">New Password</Label>
+                <Label htmlFor="newPassword">
+                  {t("patient.settings.security.newPassword", { defaultValue: "New Password" })}
+                </Label>
                 <Input
-                  id="new_password"
+                  id="newPassword"
                   type="password"
                   value={passwordData.newPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                 />
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="confirm_password">Confirm New Password</Label>
+                <Label htmlFor="confirmPassword">
+                  {t("patient.settings.security.confirmPassword", { defaultValue: "Confirm New Password" })}
+                </Label>
                 <Input
-                  id="confirm_password"
+                  id="confirmPassword"
                   type="password"
                   value={passwordData.confirmPassword}
-                  onChange={(e) =>
-                    setPasswordData({ ...passwordData, confirmPassword: e.target.value })
-                  }
+                  onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                 />
               </div>
-              <Button
-                onClick={handleChangePassword}
-                disabled={
-                  !passwordData.currentPassword ||
-                  !passwordData.newPassword ||
-                  passwordData.newPassword !== passwordData.confirmPassword
-                }
-              >
-                Update Password
+
+              <Button onClick={handleChangePassword}>
+                <Save className="w-4 h-4 mr-2" />
+                {t("patient.settings.security.updatePassword", { defaultValue: "Update Password" })}
               </Button>
             </CardContent>
           </Card>
