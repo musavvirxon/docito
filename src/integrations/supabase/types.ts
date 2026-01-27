@@ -149,6 +149,83 @@ export type Database = {
         }
         Relationships: []
       }
+      appointment_holds: {
+        Row: {
+          appointment_type: string
+          created_at: string
+          doctor_id: string
+          doctor_patient_id: string | null
+          end_at: string
+          expires_at: string
+          id: string
+          notes: string | null
+          patient_id: string | null
+          practice_id: string | null
+          start_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_type?: string
+          created_at?: string
+          doctor_id: string
+          doctor_patient_id?: string | null
+          end_at: string
+          expires_at?: string
+          id?: string
+          notes?: string | null
+          patient_id?: string | null
+          practice_id?: string | null
+          start_at: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_type?: string
+          created_at?: string
+          doctor_id?: string
+          doctor_patient_id?: string | null
+          end_at?: string
+          expires_at?: string
+          id?: string
+          notes?: string | null
+          patient_id?: string | null
+          practice_id?: string | null
+          start_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_holds_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_holds_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_holds_doctor_patient_id_fkey"
+            columns: ["doctor_patient_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_holds_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointment_procedures: {
         Row: {
           appointment_id: string | null
@@ -7742,6 +7819,7 @@ export type Database = {
           user_exists: boolean
         }[]
       }
+      cleanup_expired_appointment_holds: { Args: never; Returns: undefined }
       create_appointment_hold: {
         Args: {
           p_amount: number

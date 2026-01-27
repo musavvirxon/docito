@@ -201,7 +201,7 @@ export function AppointmentBookingPopup({
 
     if (res) {
       setStep("success");
-      onSuccess?.(res.appointment_id);
+      onSuccess?.(res.hold_id);
     }
   };
 
@@ -479,33 +479,36 @@ export function AppointmentBookingPopup({
 
         {step === "success" && result && (
           <div className="py-8 text-center">
-            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+            <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Clock className="h-8 w-8 text-amber-600 dark:text-amber-400" />
             </div>
             <h3 className="text-lg font-semibold mb-2">
-              Your appointment is confirmed!
+              Almost there!
             </h3>
             <p className="text-muted-foreground mb-4">
+              Your slot is reserved for{" "}
               {format(
                 parseISO(`${result.appointment_date}T${result.start_time}`),
-                "EEEE, MMMM d, yyyy"
+                "EEEE, MMMM d"
               )}{" "}
               at{" "}
               {format(
                 parseISO(`${result.appointment_date}T${result.start_time}`),
                 "h:mm a"
               )}
+              . Please confirm to finalize your appointment.
             </p>
             <div className="flex gap-2 justify-center">
               <Button variant="outline" onClick={() => onOpenChange(false)}>
-                Close
+                Cancel
               </Button>
               <Button
                 onClick={() =>
-                  navigate(`/booking-confirmation/${result.appointment_id}`)
+                  navigate(`/booking-confirmation/${result.hold_id}`)
                 }
               >
-                View Details
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Confirm Appointment
               </Button>
             </div>
           </div>
