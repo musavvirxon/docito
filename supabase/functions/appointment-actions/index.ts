@@ -8,11 +8,14 @@ const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-type ReqBody = { action: "request_start"; appointment_id: string };
+type ReqBody = {
+  action: "request_start";
+  appointment_id: string;
+};
 
-type Resp =
-  | { ok: true; updated?: boolean; notified?: boolean }
-  | { ok: false; error: string; code?: string };
+type OkResp = { ok: true };
+type ErrResp = { ok: false; error: string; code?: string };
+type Resp = OkResp | ErrResp;
 
 function json(data: Resp, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -41,7 +44,18 @@ serve(async (req) => {
     const serviceKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
 
     const authHeader = getAuthHeader(req);
-    if (!authHeader) return json({ ok: false, error: "Missing Authorization header" }, 401);
+    if (!authHeader) return json({ ok: false, error: "Missing Authorization" }, 401);
+
+    let body: ReqBody;
+    try {
+      body = (await req.json()) as ReqBody;
+    } catch {
+      return json({ ok: false, error: "Invalid JSON body" }, 400);
+    }
+
+    if (!body?.action) return json({ ok: false, error: "Missing action" }, 400);
+    if (body.action !== "request_start") return json({ ok: false, error: "Invalid action" }, 400);
+    if (!body.appointment_id) return json({ ok: false, error: "Missing appointment_id" }, 400);
 
     const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
@@ -53,108 +67,96 @@ serve(async (req) => {
       error: userErr,
     } = await userClient.auth.getUser();
 
-    if (userErr || !user?.id) return json({ ok: false, error: "Unauthorized" }, 401);
+    if (userErr || !user) return json({ ok: false, error: "Unauthorized" }, 401);
 
-    let body: ReqBody;
-    try {
-      body = (await req.json()) as ReqBody;
-    } catch {
-      return json({ ok: false, error: "Invalid JSON body" }, 400);
-    }
+    const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+    const userId = user.id;
+    const nowIso = new Date().toISOString();
 
-    if (!body?.action || body.action !== "request_start") {
-      return json({ ok: false, error: "Unknown action" }, 400);
-    }
-    if (!body?.appointment_id) return json({ ok: false, error: "Missing appointment_id" }, 400);
-
-    const service = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
-
-    const { data: apt, error: aptErr } = await service
+    const { data: apt, error: aptErr } = await admin
       .from("appointments")
       .select(
-        "id, appointment_date, start_time, status, appointment_type, doctor_id, patient_id, start_requested_by_patient, patient_confirmation_status",
+        `
+        id,
+        doctor_id,
+        patient_id,
+        appointment_date,
+        start_time,
+        appointment_type,
+        status,
+        start_requested_by_patient,
+        start_requested_patient_at,
+        patient_confirmation_status,
+        patient_confirmed_at,
+        doctors:doctor_id(id, user_id)
+      `,
       )
       .eq("id", body.appointment_id)
       .maybeSingle();
 
     if (aptErr) {
-      console.error("Appointment read error:", aptErr);
+      console.error("appointments select error:", aptErr);
       return json({ ok: false, error: "Failed to load appointment" }, 500);
     }
     if (!apt) return json({ ok: false, error: "Appointment not found", code: "NOT_FOUND" }, 404);
 
-    if (apt.patient_id !== user.id) return json({ ok: false, error: "Forbidden" }, 403);
+    if (!apt.patient_id || apt.patient_id !== userId) return json({ ok: false, error: "Forbidden" }, 403);
 
-    // Idempotently set start_requested_by_patient = true
-    // Also set patient_confirmation_status = 'confirmed' to match existing UI expectations.
-    let updated = false;
+    // Idempotent patch: only set timestamps if not already requested.
+    if (!apt.start_requested_by_patient) {
+      const patch: Record<string, unknown> = {
+        start_requested_by_patient: true,
+        patient_confirmation_status: "confirmed",
+      };
 
-    if (!apt.start_requested_by_patient || apt.patient_confirmation_status !== "confirmed") {
-      const { error: updErr } = await service
-        .from("appointments")
-        .update({
-          start_requested_by_patient: true,
-          patient_confirmation_status: "confirmed",
-        } as any)
-        .eq("id", apt.id)
-        .eq("patient_id", user.id);
+      if (!apt.start_requested_patient_at) patch.start_requested_patient_at = nowIso;
+      if (!apt.patient_confirmed_at) patch.patient_confirmed_at = nowIso;
 
-      if (updErr) {
-        console.error("Appointment update error:", updErr);
+      const { error: upErr } = await admin.from("appointments").update(patch).eq("id", apt.id);
+      if (upErr) {
+        console.error("appointments update error:", upErr);
         return json({ ok: false, error: "Failed to update appointment" }, 500);
       }
-      updated = true;
     }
 
-    const { data: doc, error: docErr } = await service
-      .from("doctors")
-      .select("id, user_id")
-      .eq("id", apt.doctor_id)
-      .maybeSingle();
+    // Notify doctor (deduped by unread notification of same type)
+    const doctorUserId = (apt as any)?.doctors?.user_id as string | undefined;
+    if (doctorUserId) {
+      const { data: existing, error: existingErr } = await admin
+        .from("notifications")
+        .select("id")
+        .eq("user_id", doctorUserId)
+        .eq("entity_type", "appointment")
+        .eq("entity_id", apt.id)
+        .eq("metadata->>type", "appointment_start_request")
+        .is("read_at", null)
+        .limit(1);
 
-    if (docErr || !doc?.user_id) {
-      console.error("Doctor lookup error:", docErr);
-      return json({ ok: false, error: "Failed to resolve doctor" }, 500);
-    }
+      if (existingErr) console.error("notifications dedupe error:", existingErr);
 
-    // Dedupe: only create a new unread "start request" notification if one doesn't already exist
-    const { data: existing, error: existingErr } = await service
-      .from("notifications")
-      .select("id")
-      .eq("user_id", doc.user_id)
-      .eq("entity_type", "appointment")
-      .eq("entity_id", apt.id)
-      .eq("metadata->>type", "appointment_start_request")
-      .is("read_at", null)
-      .limit(1);
+      if (!existing || existing.length === 0) {
+        const { error: insErr } = await admin.from("notifications").insert({
+          user_id: doctorUserId,
+          entity_type: "appointment",
+          entity_id: apt.id,
+          role_scope: "doctor",
+          level: "info",
+          title: "Patient is ready to start",
+          body: `Appointment start requested for ${apt.appointment_date} ${apt.start_time}`,
+          action_url: `/appointment-session/${apt.id}`,
+          metadata: {
+            type: "appointment_start_request",
+            appointment_type: apt.appointment_type,
+          },
+        });
 
-    if (existingErr) console.error("Notification dedupe error:", existingErr);
-
-    let notified = false;
-
-    if (!existing || existing.length === 0) {
-      const { error: insErr } = await service.from("notifications").insert({
-        user_id: doc.user_id,
-        entity_type: "appointment",
-        entity_id: apt.id,
-        role_scope: "doctor",
-        level: "info",
-        title: "Patient is ready to start",
-        body: `Appointment start requested for ${apt.appointment_date} ${apt.start_time}`,
-        action_url: `/appointment-session/${apt.id}`,
-        metadata: { type: "appointment_start_request", appointment_type: apt.appointment_type },
-      });
-
-      if (insErr) {
-        console.error("Notification insert error:", insErr);
-      } else {
-        notified = true;
+        if (insErr) console.error("notifications insert error:", insErr);
       }
     }
 
-    return json({ ok: true, updated, notified }, 200);
+    return json({ ok: true }, 200);
   } catch (e: any) {
-    console.error("Error in appointment-actions:", e);
+    console.error("appointment-actions error:", e);
     return json({ ok: false, error: e?.message ?? String(e) }, 500);
   }
 });
