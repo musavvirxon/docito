@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   Loader2,
   XCircle,
+  ClipboardList,
 } from "lucide-react";
 
 import PremiumTopNav from "@/components/home/premium/PremiumTopNav";
@@ -55,8 +56,18 @@ type ConfirmedAppointment = {
   appointment_type: string;
 };
 
+type ClinicalItem = {
+  id: string;
+  appointment_id: string;
+  item_type: string;
+  title: string;
+  details: any;
+  created_at: string;
+  updated_at: string;
+};
+
 export default function BookingConfirmation() {
-  const { appointmentId: holdId } = useParams(); // This is actually a hold_id
+  const { appointmentId: holdId } = useParams(); // This is actually a hold_id OR an appointment_id fallback
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -68,7 +79,10 @@ export default function BookingConfirmation() {
   const [confirmedAppointment, setConfirmedAppointment] = useState<ConfirmedAppointment | null>(null);
   const [error, setError] = useState<{ title: string; message: string } | null>(null);
 
-  // Load hold details
+  const [clinicalLoading, setClinicalLoading] = useState(false);
+  const [clinicalItems, setClinicalItems] = useState<ClinicalItem[]>([]);
+
+  // Load hold details (or confirmed appointment fallback)
   useEffect(() => {
     if (!holdId) return;
 
@@ -110,12 +124,14 @@ export default function BookingConfirmation() {
           // Fetch doctor details
           const { data: doctor } = await supabase
             .from("doctors")
-            .select(`
+            .select(
+              `
               id,
               specialty,
               profiles:user_id(full_name),
               practices:practice_id(name,address,city,country)
-            `)
+            `,
+            )
             .eq("id", hold.doctor_id)
             .maybeSingle();
 
@@ -126,7 +142,8 @@ export default function BookingConfirmation() {
           // Maybe it was already confirmed - check appointments
           const { data: appointment } = await supabase
             .from("appointments")
-            .select(`
+            .select(
+              `
               id,
               appointment_date,
               start_time,
@@ -138,7 +155,8 @@ export default function BookingConfirmation() {
                 profiles:user_id(full_name),
                 practices:practice_id(name,address,city,country)
               )
-            `)
+            `,
+            )
             .eq("id", holdId)
             .maybeSingle();
 
@@ -233,6 +251,42 @@ export default function BookingConfirmation() {
       setConfirming(false);
     }
   }, [holdId, user]);
+
+  // Fetch clinical items (confirmed appointment only)
+  useEffect(() => {
+    const run = async () => {
+      if (!confirmedAppointment?.id) return;
+
+      setClinicalLoading(true);
+      try {
+        const { data: session } = await supabase.auth.getSession();
+        const accessToken = session.session?.access_token;
+
+        if (!accessToken) {
+          setClinicalItems([]);
+          return;
+        }
+
+        const { data, error } = await supabase.functions.invoke("appointment-clinical-items", {
+          body: { action: "list", appointment_id: confirmedAppointment.id },
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+        if (error) throw error;
+        if (!data?.ok) throw new Error(data?.error || "Failed to load clinical items");
+
+        setClinicalItems((data.data ?? []) as ClinicalItem[]);
+      } catch (e: any) {
+        console.error(e);
+        // soft-fail: booking confirmation should still render
+        setClinicalItems([]);
+      } finally {
+        setClinicalLoading(false);
+      }
+    };
+
+    run();
+  }, [confirmedAppointment?.id]);
 
   const location = useMemo(() => {
     const p = doctorInfo?.practices;
@@ -384,6 +438,7 @@ export default function BookingConfirmation() {
                 </div>
 
                 <Separator />
+
                 <div className="flex flex-wrap gap-2">
                   <Button variant="outline" onClick={handlePrint}>
                     <Printer className="h-4 w-4 mr-2" />
@@ -397,6 +452,41 @@ export default function BookingConfirmation() {
                     <Button>Go to Dashboard</Button>
                   </Link>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ClipboardList className="h-5 w-5" />
+                  Clinical items
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {clinicalLoading ? (
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Loading clinical items...
+                  </div>
+                ) : clinicalItems.length === 0 ? (
+                  <div className="text-sm text-muted-foreground">No clinical items have been added yet.</div>
+                ) : (
+                  <div className="space-y-3">
+                    {clinicalItems.map((it) => (
+                      <div key={it.id} className="rounded-lg border p-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="font-medium">{it.title}</div>
+                          <Badge variant="secondary">{it.item_type}</Badge>
+                        </div>
+                        {it.details && Object.keys(it.details || {}).length > 0 && (
+                          <pre className="mt-2 text-xs whitespace-pre-wrap text-muted-foreground">
+                            {JSON.stringify(it.details, null, 2)}
+                          </pre>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -501,6 +591,18 @@ export default function BookingConfirmation() {
                     )}
                   </Button>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ClipboardList className="h-5 w-5" />
+                  Clinical items
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground">
+                Clinical items will appear here after your appointment is confirmed.
               </CardContent>
             </Card>
           </div>
