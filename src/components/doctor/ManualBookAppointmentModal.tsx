@@ -1,5 +1,6 @@
 // File: src/components/doctor/ManualBookAppointmentModal.tsx
-import { useState, useEffect, useMemo } from "react";
+
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -8,16 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { CalendarPlus, User, Link2 } from "lucide-react";
+import { CalendarPlus, User } from "lucide-react";
 
 import PatientSelector, { type Patient } from "@/components/patient/PatientSelector";
 import CreatePatientModal, { type DoctorPatientRow } from "@/components/patient/CreatePatientModal";
 import { useProcedures } from "@/hooks/useProcedures";
-import { Badge } from "@/components/ui/badge";
-
-type PreselectedPatient =
-  | { id: string; source: "registered" }
-  | { id: string; source: "doctor_added" };
 
 interface ManualBookAppointmentModalProps {
   isOpen: boolean;
@@ -27,11 +23,9 @@ interface ManualBookAppointmentModalProps {
   onSuccess?: () => Promise<void> | void;
   prefilledDate?: Date;
   prefilledTime?: string;
-
-  // ✅ NEW: follow-up support / preselected patient
-  preselectedPatient?: PreselectedPatient | null;
-  appointmentType?: string; // e.g. "follow_up"
-  followupOfAppointmentId?: string;
+  preselectedPatient?: Patient | null;
+  followupOfAppointmentId?: string | null;
+  forceAppointmentType?: "in_person" | "video" | "home_visit" | "follow_up" | "messaging" | "chat";
 }
 
 const DURATION_OPTIONS_MINUTES = [10, 15, 20, 30, 45, 60, 75, 90, 105, 120, 150, 180];
@@ -53,8 +47,8 @@ const ManualBookAppointmentModal = ({
   prefilledDate,
   prefilledTime,
   preselectedPatient,
-  appointmentType,
   followupOfAppointmentId,
+  forceAppointmentType,
 }: ManualBookAppointmentModalProps) => {
   const { procedures } = useProcedures();
 
@@ -63,12 +57,11 @@ const ManualBookAppointmentModal = ({
   const [procedureId, setProcedureId] = useState<string>("");
   const [durationMinutes, setDurationMinutes] = useState<number>(30);
   const [notes, setNotes] = useState("");
+  const [appointmentType, setAppointmentType] = useState<string>(forceAppointmentType || (followupOfAppointmentId ? "follow_up" : "in_person"));
   const [loading, setLoading] = useState(false);
 
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [createPatientOpen, setCreatePatientOpen] = useState(false);
-
-  const isFollowUp = useMemo(() => String(appointmentType || "").toLowerCase() === "follow_up", [appointmentType]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -77,100 +70,13 @@ const ManualBookAppointmentModal = ({
     else setSelectedDate(new Date());
 
     if (prefilledTime) setSelectedTime(prefilledTime);
-    else setSelectedTime("");
 
     setProcedureId("");
     setDurationMinutes(30);
     setNotes("");
-
-    // Reset patient unless preselected
-    setSelectedPatient(null);
-  }, [isOpen, prefilledDate, prefilledTime]);
-
-  // ✅ Apply preselected patient (best-effort fetch for name/phone/email; UI still works even if missing)
-  useEffect(() => {
-    if (!isOpen) return;
-    if (!preselectedPatient?.id) return;
-
-    let cancelled = false;
-
-    const run = async () => {
-      try {
-        if (preselectedPatient.source === "registered") {
-          const { data, error } = await supabase
-            .from("profiles")
-            .select("user_id, full_name, email, phone, date_of_birth, created_at")
-            .eq("user_id", preselectedPatient.id)
-            .maybeSingle();
-
-          if (cancelled) return;
-          if (error) throw error;
-
-          if (data) {
-            setSelectedPatient({
-              id: data.user_id,
-              name: data.full_name || "Unknown",
-              email: data.email || undefined,
-              phone: (data as any).phone || undefined,
-              date_of_birth: (data as any).date_of_birth || undefined,
-              created_at: (data as any).created_at || undefined,
-              source: "registered",
-            });
-          } else {
-            // fallback placeholder
-            setSelectedPatient({
-              id: preselectedPatient.id,
-              name: "Selected patient",
-              source: "registered",
-            });
-          }
-        } else {
-          const { data, error } = await supabase
-            .from("doctor_patients")
-            .select("id, full_name, phone, email, date_of_birth, created_at")
-            .eq("id", preselectedPatient.id)
-            .maybeSingle();
-
-          if (cancelled) return;
-          if (error) throw error;
-
-          if (data) {
-            setSelectedPatient({
-              id: data.id,
-              name: data.full_name,
-              phone: data.phone || undefined,
-              email: data.email ?? undefined,
-              date_of_birth: data.date_of_birth ?? undefined,
-              created_at: data.created_at ?? undefined,
-              source: "doctor_added",
-            });
-          } else {
-            setSelectedPatient({
-              id: preselectedPatient.id,
-              name: "Selected patient",
-              source: "doctor_added",
-            });
-          }
-        }
-      } catch (e) {
-        console.error(e);
-        // placeholder so submit can still work
-        setSelectedPatient((prev) => {
-          if (prev?.id === preselectedPatient.id) return prev;
-          return {
-            id: preselectedPatient.id,
-            name: "Selected patient",
-            source: preselectedPatient.source,
-          } as Patient;
-        });
-      }
-    };
-
-    run();
-    return () => {
-      cancelled = true;
-    };
-  }, [isOpen, preselectedPatient?.id, preselectedPatient?.source]);
+    setSelectedPatient(preselectedPatient ?? null);
+    setAppointmentType(forceAppointmentType || (followupOfAppointmentId ? "follow_up" : "in_person"));
+  }, [isOpen, prefilledDate, prefilledTime, preselectedPatient, followupOfAppointmentId, forceAppointmentType]);
 
   const resetForm = () => {
     setSelectedDate(new Date());
@@ -179,6 +85,7 @@ const ManualBookAppointmentModal = ({
     setDurationMinutes(30);
     setNotes("");
     setSelectedPatient(null);
+    setAppointmentType(forceAppointmentType || "in_person");
   };
 
   const buildSupabaseErrorText = (err: any) => {
@@ -203,12 +110,12 @@ const ManualBookAppointmentModal = ({
     } catch (err: any) {
       const msg = String(err?.message || "");
 
-      // If DB doesn't have certain columns, retry without them
+      // If DB doesn't have these columns, retry without them
       const retry = { ...payload };
       if (msg.includes("procedure_id")) delete retry.procedure_id;
       if (msg.includes("practice_id")) delete retry.practice_id;
-      if (msg.toLowerCase().includes("appointment_type")) delete retry.appointment_type;
-      if (msg.toLowerCase().includes("follow_up_of_appointment_id")) delete retry.follow_up_of_appointment_id;
+      if (msg.includes("appointment_type")) delete retry.appointment_type;
+      if (msg.includes("follow_up_of_appointment_id")) delete retry.follow_up_of_appointment_id;
 
       // Also fallback if doctor_patient_id missing
       if (err?.code === "42703" && msg.toLowerCase().includes("doctor_patient_id")) {
@@ -251,7 +158,6 @@ const ManualBookAppointmentModal = ({
           selectedPatient.phone ? `Patient phone: ${selectedPatient.phone}` : null,
           selectedPatient.email ? `Patient email: ${selectedPatient.email}` : null,
           procedureName ? `Procedure: ${procedureName}` : null,
-          isFollowUp && followupOfAppointmentId ? `Follow-up of appointment: ${followupOfAppointmentId}` : null,
           notes?.trim() ? notes.trim() : null,
         ]
           .filter(Boolean)
@@ -265,14 +171,12 @@ const ManualBookAppointmentModal = ({
         end_time: endTime,
         notes: notesCombined,
         status: "confirmed",
+        appointment_type: appointmentType,
+        follow_up_of_appointment_id: followupOfAppointmentId || null,
         ...patientLink,
 
         // optional: if DB supports it
         procedure_id: procedureId || null,
-
-        // ✅ follow-up support
-        appointment_type: appointmentType || null,
-        follow_up_of_appointment_id: followupOfAppointmentId || null,
       };
 
       await insertWithFallback(payload);
@@ -305,13 +209,7 @@ const ManualBookAppointmentModal = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CalendarPlus className="w-5 h-5" />
-            {isFollowUp ? "Book Follow-up" : "Book Appointment"}
-            {isFollowUp && followupOfAppointmentId && (
-              <Badge variant="secondary" className="ml-2 gap-1">
-                <Link2 className="h-3.5 w-3.5" />
-                Follow-up
-              </Badge>
-            )}
+            {followupOfAppointmentId ? "Book Follow-up" : "Book Appointment"}
           </DialogTitle>
         </DialogHeader>
 
@@ -320,16 +218,16 @@ const ManualBookAppointmentModal = ({
             <div className="flex items-center gap-2">
               <User className="w-4 h-4" />
               <Label className="text-base font-medium">Select Patient</Label>
-              {preselectedPatient?.id && (
-                <Badge variant="outline" className="ml-2">
-                  Preselected
-                </Badge>
-              )}
             </div>
 
             <PatientSelector value={selectedPatient?.id} required onSelect={(p) => setSelectedPatient(p)} />
 
-            <Button type="button" variant="link" className="p-0 h-auto text-primary" onClick={() => setCreatePatientOpen(true)}>
+            <Button
+              type="button"
+              variant="link"
+              className="p-0 h-auto text-primary"
+              onClick={() => setCreatePatientOpen(true)}
+            >
               Add New Patient
             </Button>
 
@@ -372,23 +270,39 @@ const ManualBookAppointmentModal = ({
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               type="time"
               value={selectedTime}
-              min={format(selectedDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd") ? format(new Date(), "HH:mm") : undefined}
+              min={format(selectedDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd") 
+                ? format(new Date(), "HH:mm") 
+                : undefined}
               onChange={(e) => {
-                const [hours, minutes] = e.target.value.split(":").map(Number);
-                const now = new Date();
-                const isToday = format(selectedDate, "yyyy-MM-dd") === format(now, "yyyy-MM-dd");
-
-                if (isToday) {
-                  const nowMinutes = now.getHours() * 60 + now.getMinutes();
-                  const selectedMinutes = hours * 60 + minutes;
-                  if (selectedMinutes < nowMinutes) return; // no past times today
-                }
                 setSelectedTime(e.target.value);
               }}
             />
             {format(selectedDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd") && (
-              <p className="text-xs text-muted-foreground">Past times are not available for today</p>
+              <p className="text-xs text-muted-foreground">
+                Cannot book in the past. Minimum time auto-adjusted for today
+              </p>
             )}
+          </div>
+
+          <div className="space-y-2">
+            <Label>Appointment Type</Label>
+            <Select
+              value={appointmentType}
+              onValueChange={(v) => setAppointmentType(v)}
+              disabled={Boolean(forceAppointmentType) || Boolean(followupOfAppointmentId)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select appointment type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="in_person">In person</SelectItem>
+                <SelectItem value="video">Video</SelectItem>
+                <SelectItem value="home_visit">Home visit</SelectItem>
+                <SelectItem value="follow_up">Follow-up</SelectItem>
+                <SelectItem value="messaging">Messaging</SelectItem>
+                <SelectItem value="chat">Chat</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
@@ -402,13 +316,13 @@ const ManualBookAppointmentModal = ({
               }}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select procedure" />
+                <SelectValue placeholder="Select a procedure" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">No procedure</SelectItem>
                 {procedures.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
-                    {p.name} • {formatDuration(Number(p.duration_minutes || 30))}
+                    {p.name} {p.duration_minutes ? `(${p.duration_minutes} min)` : ""}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -419,7 +333,7 @@ const ManualBookAppointmentModal = ({
             <Label>Duration</Label>
             <Select value={String(durationMinutes)} onValueChange={(v) => setDurationMinutes(Number(v))}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select duration" />
               </SelectTrigger>
               <SelectContent>
                 {DURATION_OPTIONS_MINUTES.map((m) => (
@@ -429,15 +343,19 @@ const ManualBookAppointmentModal = ({
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">Defaults from procedure if selected, but you can override.</p>
           </div>
 
           <div className="space-y-2">
-            <Label>Notes</Label>
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Additional notes..." />
+            <Label>Notes (optional)</Label>
+            <Textarea
+              placeholder="Add any notes for this appointment..."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={4}
+            />
           </div>
 
-          <div className="flex justify-end gap-3">
+          <div className="flex justify-end gap-2">
             <Button
               type="button"
               variant="outline"
@@ -445,11 +363,12 @@ const ManualBookAppointmentModal = ({
                 onClose();
                 resetForm();
               }}
+              disabled={loading}
             >
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Booking..." : isFollowUp ? "Book Follow-up" : "Book Appointment"}
+              {loading ? "Booking..." : "Book Appointment"}
             </Button>
           </div>
         </form>
