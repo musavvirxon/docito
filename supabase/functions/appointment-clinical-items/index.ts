@@ -8,33 +8,84 @@ const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-type ItemType = "procedure" | "medication" | "treatment_plan";
+type ClinicalItemType = "procedure" | "medication" | "treatment_plan";
+
+type Action =
+  | "list"
+  | "create"
+  | "update"
+  | "delete"
+  | "templates_list"
+  | "template_create"
+  | "template_update"
+  | "template_delete";
 
 type ReqBody =
-  | { action: "list"; appointment_id: string }
+  | {
+      action: "list";
+      appointment_id: string;
+    }
   | {
       action: "create";
       appointment_id: string;
-      item_type: ItemType;
-      title: string;
-      details?: Record<string, unknown>;
+      item: {
+        item_type: ClinicalItemType;
+        title: string;
+        details?: Record<string, unknown>;
+      };
+      save_as_template?: boolean;
+      template?: {
+        name?: string;
+        description?: string | null;
+        default_cost?: number | null;
+      };
     }
   | {
       action: "update";
-      id: string;
-      title?: string;
-      details?: Record<string, unknown>;
-      item_type?: ItemType;
+      appointment_id: string;
+      item_id: string;
+      patch: {
+        title?: string;
+        details?: Record<string, unknown>;
+        item_type?: ClinicalItemType;
+      };
     }
-  | { action: "delete"; id: string }
-  | { action: "save_as_template"; id: string; template_title?: string }
-  | { action: "list_templates" }
-  | { action: "create_template"; item_type: ItemType; title: string; details?: Record<string, unknown> }
-  | { action: "update_template"; id: string; item_type?: ItemType; title?: string; details?: Record<string, unknown> }
-  | { action: "delete_template"; id: string };
+  | {
+      action: "delete";
+      appointment_id: string;
+      item_id: string;
+    }
+  | {
+      action: "templates_list";
+    }
+  | {
+      action: "template_create";
+      template: {
+        type: ClinicalItemType;
+        name: string;
+        description?: string | null;
+        default_cost?: number | null;
+        is_active?: boolean;
+      };
+    }
+  | {
+      action: "template_update";
+      template_id: string;
+      patch: {
+        type?: ClinicalItemType;
+        name?: string;
+        description?: string | null;
+        default_cost?: number | null;
+        is_active?: boolean;
+      };
+    }
+  | {
+      action: "template_delete";
+      template_id: string;
+    };
 
 type Resp =
-  | { ok: true; data?: unknown }
+  | { ok: true; items?: unknown[]; templates?: unknown[] }
   | { ok: false; error: string; code?: string };
 
 function json(data: Resp, status = 200) {
@@ -50,316 +101,355 @@ function requireEnv(name: string) {
   return v;
 }
 
-function getAuthHeader(req: Request) {
-  return req.headers.get("authorization") || req.headers.get("Authorization") || "";
+function getBearer(req: Request) {
+  return req.headers.get("authorization") || req.headers.get("Authorization");
 }
 
-async function getAuthedUserId(supabaseUrl: string, anonKey: string, authHeader: string) {
+async function getAuthedUser(supabaseUrl: string, anonKey: string, authHeader: string) {
   const userClient = createClient(supabaseUrl, anonKey, {
     global: { headers: { Authorization: authHeader } },
     auth: { persistSession: false },
   });
-
-  const {
-    data: { user },
-    error,
-  } = await userClient.auth.getUser();
-
-  if (error || !user?.id) return null;
-  return user.id;
+  const { data, error } = await userClient.auth.getUser();
+  if (error || !data?.user) return { user: null as any, error: error?.message || "Unauthorized" };
+  return { user: data.user, error: null as string | null };
 }
 
-async function getDoctorIdForUser(service: ReturnType<typeof createClient>, userId: string) {
-  const { data, error } = await service.from("doctors").select("id").eq("user_id", userId).maybeSingle();
-  if (error) {
-    console.error("Doctor lookup error:", error);
-    return null;
-  }
+async function getDoctorIdByUserId(admin: any, userId: string): Promise<string | null> {
+  const { data, error } = await admin.from("doctors").select("id").eq("user_id", userId).maybeSingle();
+  if (error) return null;
   return data?.id ?? null;
 }
 
-async function loadAppointment(service: ReturnType<typeof createClient>, appointmentId: string) {
-  const { data, error } = await service
+async function assertAppointmentAccess(params: {
+  admin: any;
+  appointmentId: string;
+  userId: string;
+}): Promise<
+  | { ok: true; role: "doctor" | "patient"; appointment: any; doctorId: string | null }
+  | { ok: false; error: string; code?: string }
+> {
+  const { admin, appointmentId, userId } = params;
+
+  const { data: appt, error: apptErr } = await admin
     .from("appointments")
-    .select("id, doctor_id, patient_id, appointment_date, start_time, status, appointment_type")
+    .select("id, doctor_id, patient_id, doctor_patient_id, practice_id, status, appointment_type, appointment_date, start_time, end_time")
     .eq("id", appointmentId)
     .maybeSingle();
 
-  if (error) {
-    console.error("Appointment read error:", error);
-    return { apt: null as any, error: "Failed to load appointment" };
+  if (apptErr) return { ok: false, error: "Failed to load appointment", code: "APPOINTMENT_READ_FAILED" };
+  if (!appt) return { ok: false, error: "Appointment not found", code: "NOT_FOUND" };
+
+  // Doctor?
+  const doctorId = await getDoctorIdByUserId(admin, userId);
+  if (doctorId && appt.doctor_id === doctorId) {
+    return { ok: true, role: "doctor", appointment: appt, doctorId };
   }
-  if (!data) return { apt: null as any, error: "Appointment not found" };
-  return { apt: data, error: null as string | null };
+
+  // Patient?
+  if (appt.patient_id && appt.patient_id === userId) {
+    return { ok: true, role: "patient", appointment: appt, doctorId: null };
+  }
+
+  return { ok: false, error: "Forbidden", code: "FORBIDDEN" };
+}
+
+function safeType(t: unknown): ClinicalItemType {
+  const v = String(t || "").trim().toLowerCase();
+  if (v === "procedure" || v === "medication" || v === "treatment_plan") return v;
+  throw new Error("Invalid item_type");
 }
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  if (req.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 405);
+  if (req.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 200);
 
   try {
     const supabaseUrl = requireEnv("SUPABASE_URL");
     const anonKey = requireEnv("SUPABASE_ANON_KEY");
     const serviceKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
 
-    const authHeader = getAuthHeader(req);
-    if (!authHeader) return json({ ok: false, error: "Missing Authorization header" }, 401);
+    const authHeader = getBearer(req);
+    if (!authHeader) return json({ ok: false, error: "Missing Authorization header", code: "NO_AUTH" }, 200);
 
-    const userId = await getAuthedUserId(supabaseUrl, anonKey, authHeader);
-    if (!userId) return json({ ok: false, error: "Unauthorized" }, 401);
+    const { user, error: userError } = await getAuthedUser(supabaseUrl, anonKey, authHeader);
+    if (!user) return json({ ok: false, error: userError || "Unauthorized", code: "UNAUTHORIZED" }, 200);
 
     let body: ReqBody;
     try {
       body = (await req.json()) as ReqBody;
     } catch {
-      return json({ ok: false, error: "Invalid JSON body" }, 400);
+      return json({ ok: false, error: "Invalid JSON body", code: "BAD_JSON" }, 200);
     }
 
-    const service = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+    const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
-    const doctorId = await getDoctorIdForUser(service, userId);
+    const action = (body as any)?.action as Action | undefined;
+    if (!action) return json({ ok: false, error: "Missing action", code: "MISSING_ACTION" }, 200);
 
-    // Templates: doctor-only
-    if (body.action === "list_templates") {
-      if (!doctorId) return json({ ok: false, error: "Forbidden" }, 403);
+    // -----------------------
+    // Templates (doctor-only)
+    // -----------------------
+    if (action === "templates_list") {
+      const doctorId = await getDoctorIdByUserId(admin, user.id);
+      if (!doctorId) return json({ ok: false, error: "Forbidden", code: "NOT_DOCTOR" }, 200);
 
-      const { data, error } = await service
-        .from("clinical_item_templates")
-        .select("id, doctor_id, item_type, title, details, created_at, updated_at")
+      const { data, error } = await admin
+        .from("appointment_clinical_item_templates")
+        .select("id, doctor_id, type, name, description, default_cost, is_active, created_at, updated_at")
         .eq("doctor_id", doctorId)
-        .order("created_at", { ascending: false });
+        .order("updated_at", { ascending: false });
 
-      if (error) {
-        console.error("Templates list error:", error);
-        return json({ ok: false, error: "Failed to list templates" }, 500);
-      }
-      return json({ ok: true, data }, 200);
+      if (error) return json({ ok: false, error: error.message, code: "TEMPLATES_READ_FAILED" }, 200);
+      return json({ ok: true, templates: data || [] }, 200);
     }
 
-    if (body.action === "create_template") {
-      if (!doctorId) return json({ ok: false, error: "Forbidden" }, 403);
+    if (action === "template_create") {
+      const doctorId = await getDoctorIdByUserId(admin, user.id);
+      if (!doctorId) return json({ ok: false, error: "Forbidden", code: "NOT_DOCTOR" }, 200);
 
-      if (!body.item_type || !body.title) return json({ ok: false, error: "Missing item_type or title" }, 400);
+      const t = (body as any).template;
+      if (!t?.name) return json({ ok: false, error: "template.name is required", code: "MISSING_NAME" }, 200);
 
-      const { data, error } = await service
-        .from("clinical_item_templates")
+      const type = safeType(t.type);
+
+      const { data, error } = await admin
+        .from("appointment_clinical_item_templates")
         .insert({
           doctor_id: doctorId,
-          item_type: body.item_type,
-          title: body.title,
-          details: body.details ?? {},
+          type,
+          name: String(t.name).trim(),
+          description: t.description ?? null,
+          default_cost: t.default_cost ?? null,
+          is_active: typeof t.is_active === "boolean" ? t.is_active : true,
         })
-        .select("id, doctor_id, item_type, title, details, created_at, updated_at")
-        .maybeSingle();
+        .select("id, doctor_id, type, name, description, default_cost, is_active, created_at, updated_at")
+        .single();
 
-      if (error) {
-        console.error("Template create error:", error);
-        return json({ ok: false, error: "Failed to create template" }, 500);
-      }
-      return json({ ok: true, data }, 200);
+      if (error) return json({ ok: false, error: error.message, code: "TEMPLATE_CREATE_FAILED" }, 200);
+      return json({ ok: true, templates: [data] }, 200);
     }
 
-    if (body.action === "update_template") {
-      if (!doctorId) return json({ ok: false, error: "Forbidden" }, 403);
-      if (!body.id) return json({ ok: false, error: "Missing id" }, 400);
+    if (action === "template_update") {
+      const doctorId = await getDoctorIdByUserId(admin, user.id);
+      if (!doctorId) return json({ ok: false, error: "Forbidden", code: "NOT_DOCTOR" }, 200);
 
-      const patch: Record<string, unknown> = {};
-      if (body.title !== undefined) patch.title = body.title;
-      if (body.item_type !== undefined) patch.item_type = body.item_type;
-      if (body.details !== undefined) patch.details = body.details;
+      const templateId = (body as any).template_id;
+      const patch = (body as any).patch || {};
+      if (!templateId) return json({ ok: false, error: "template_id is required", code: "MISSING_TEMPLATE_ID" }, 200);
 
-      const { data, error } = await service
-        .from("clinical_item_templates")
-        .update(patch)
-        .eq("id", body.id)
+      const updatePatch: Record<string, unknown> = {};
+      if (patch.type != null) updatePatch.type = safeType(patch.type);
+      if (patch.name != null) updatePatch.name = String(patch.name).trim();
+      if (patch.description !== undefined) updatePatch.description = patch.description ?? null;
+      if (patch.default_cost !== undefined) updatePatch.default_cost = patch.default_cost ?? null;
+      if (patch.is_active !== undefined) updatePatch.is_active = Boolean(patch.is_active);
+
+      const { data: owned, error: ownedErr } = await admin
+        .from("appointment_clinical_item_templates")
+        .select("id")
+        .eq("id", templateId)
         .eq("doctor_id", doctorId)
-        .select("id, doctor_id, item_type, title, details, created_at, updated_at")
         .maybeSingle();
 
-      if (error) {
-        console.error("Template update error:", error);
-        return json({ ok: false, error: "Failed to update template" }, 500);
-      }
-      if (!data) return json({ ok: false, error: "Not found", code: "NOT_FOUND" }, 404);
-      return json({ ok: true, data }, 200);
+      if (ownedErr) return json({ ok: false, error: ownedErr.message, code: "TEMPLATE_OWNERSHIP_CHECK_FAILED" }, 200);
+      if (!owned) return json({ ok: false, error: "Not found", code: "NOT_FOUND" }, 200);
+
+      const { data, error } = await admin
+        .from("appointment_clinical_item_templates")
+        .update(updatePatch)
+        .eq("id", templateId)
+        .select("id, doctor_id, type, name, description, default_cost, is_active, created_at, updated_at")
+        .single();
+
+      if (error) return json({ ok: false, error: error.message, code: "TEMPLATE_UPDATE_FAILED" }, 200);
+      return json({ ok: true, templates: [data] }, 200);
     }
 
-    if (body.action === "delete_template") {
-      if (!doctorId) return json({ ok: false, error: "Forbidden" }, 403);
-      if (!body.id) return json({ ok: false, error: "Missing id" }, 400);
+    if (action === "template_delete") {
+      const doctorId = await getDoctorIdByUserId(admin, user.id);
+      if (!doctorId) return json({ ok: false, error: "Forbidden", code: "NOT_DOCTOR" }, 200);
 
-      const { error } = await service.from("clinical_item_templates").delete().eq("id", body.id).eq("doctor_id", doctorId);
-      if (error) {
-        console.error("Template delete error:", error);
-        return json({ ok: false, error: "Failed to delete template" }, 500);
-      }
+      const templateId = (body as any).template_id;
+      if (!templateId) return json({ ok: false, error: "template_id is required", code: "MISSING_TEMPLATE_ID" }, 200);
+
+      const { data: owned, error: ownedErr } = await admin
+        .from("appointment_clinical_item_templates")
+        .select("id")
+        .eq("id", templateId)
+        .eq("doctor_id", doctorId)
+        .maybeSingle();
+
+      if (ownedErr) return json({ ok: false, error: ownedErr.message, code: "TEMPLATE_OWNERSHIP_CHECK_FAILED" }, 200);
+      if (!owned) return json({ ok: false, error: "Not found", code: "NOT_FOUND" }, 200);
+
+      const { error } = await admin.from("appointment_clinical_item_templates").delete().eq("id", templateId);
+      if (error) return json({ ok: false, error: error.message, code: "TEMPLATE_DELETE_FAILED" }, 200);
+
       return json({ ok: true }, 200);
     }
 
-    // Appointment clinical items
-    if (body.action === "list") {
-      if (!body.appointment_id) return json({ ok: false, error: "Missing appointment_id" }, 400);
+    // -----------------------
+    // Appointment items
+    // -----------------------
+    if (action === "list") {
+      const appointmentId = (body as any).appointment_id;
+      if (!appointmentId) return json({ ok: false, error: "appointment_id is required", code: "MISSING_APPOINTMENT_ID" }, 200);
 
-      const { apt, error } = await loadAppointment(service, body.appointment_id);
-      if (error) return json({ ok: false, error, code: error === "Appointment not found" ? "NOT_FOUND" : undefined }, error === "Appointment not found" ? 404 : 500);
+      const access = await assertAppointmentAccess({ admin, appointmentId, userId: user.id });
+      if (!access.ok) return json(access, 200);
 
-      const isDoctorParty = doctorId && apt.doctor_id === doctorId;
-      const isPatientParty = apt.patient_id && apt.patient_id === userId;
-
-      if (!isDoctorParty && !isPatientParty) return json({ ok: false, error: "Forbidden" }, 403);
-
-      const { data, error: listErr } = await service
+      const { data, error } = await admin
         .from("appointment_clinical_items")
         .select("id, appointment_id, doctor_id, patient_id, doctor_patient_id, item_type, title, details, created_at, updated_at")
-        .eq("appointment_id", apt.id)
+        .eq("appointment_id", appointmentId)
         .order("created_at", { ascending: true });
 
-      if (listErr) {
-        console.error("Items list error:", listErr);
-        return json({ ok: false, error: "Failed to list clinical items" }, 500);
-      }
-
-      return json({ ok: true, data }, 200);
+      if (error) return json({ ok: false, error: error.message, code: "ITEMS_LIST_FAILED" }, 200);
+      return json({ ok: true, items: data || [] }, 200);
     }
 
-    if (body.action === "create") {
-      if (!doctorId) return json({ ok: false, error: "Forbidden" }, 403);
-      if (!body.appointment_id || !body.item_type || !body.title) return json({ ok: false, error: "Missing appointment_id, item_type, or title" }, 400);
+    if (action === "create") {
+      const appointmentId = (body as any).appointment_id;
+      const item = (body as any).item;
+      if (!appointmentId) return json({ ok: false, error: "appointment_id is required", code: "MISSING_APPOINTMENT_ID" }, 200);
+      if (!item?.item_type || !item?.title) {
+        return json({ ok: false, error: "item.item_type and item.title are required", code: "MISSING_FIELDS" }, 200);
+      }
 
-      const { apt, error } = await loadAppointment(service, body.appointment_id);
-      if (error) return json({ ok: false, error, code: error === "Appointment not found" ? "NOT_FOUND" : undefined }, error === "Appointment not found" ? 404 : 500);
+      const access = await assertAppointmentAccess({ admin, appointmentId, userId: user.id });
+      if (!access.ok) return json(access, 200);
+      if (access.role !== "doctor") return json({ ok: false, error: "Forbidden", code: "DOCTOR_ONLY" }, 200);
 
-      if (apt.doctor_id !== doctorId) return json({ ok: false, error: "Forbidden" }, 403);
+      const itemType = safeType(item.item_type);
+      const title = String(item.title).trim();
+      const details = (item.details ?? {}) as Record<string, unknown>;
 
-      const insertRow = {
-        appointment_id: apt.id,
-        doctor_id: doctorId,
-        patient_id: apt.patient_id ?? null,
-        doctor_patient_id: null,
-        item_type: body.item_type,
-        title: body.title,
-        details: body.details ?? {},
-      };
+      // Fill patient_id/doctor_patient_id from appointment
+      const appt = access.appointment;
 
-      const { data, error: insErr } = await service
+      const { data: created, error } = await admin
         .from("appointment_clinical_items")
-        .insert(insertRow)
+        .insert({
+          appointment_id: appointmentId,
+          doctor_id: appt.doctor_id,
+          patient_id: appt.patient_id ?? null,
+          doctor_patient_id: appt.doctor_patient_id ?? null,
+          item_type: itemType,
+          title,
+          details,
+        })
         .select("id, appointment_id, doctor_id, patient_id, doctor_patient_id, item_type, title, details, created_at, updated_at")
-        .maybeSingle();
+        .single();
 
-      if (insErr) {
-        console.error("Item insert error:", insErr);
-        return json({ ok: false, error: "Failed to create clinical item" }, 500);
+      if (error) return json({ ok: false, error: error.message, code: "ITEM_CREATE_FAILED" }, 200);
+
+      // Optional "save as template" (best-effort)
+      const saveAsTemplate = Boolean((body as any).save_as_template);
+      if (saveAsTemplate && access.doctorId) {
+        const t = (body as any).template || {};
+        const name = String(t.name || title).trim();
+
+        const descFromDetails =
+          typeof details?.description === "string"
+            ? String(details.description)
+            : typeof details?.notes === "string"
+              ? String(details.notes)
+              : null;
+
+        const description = (t.description ?? descFromDetails) ?? null;
+
+        const defaultCost =
+          typeof t.default_cost === "number"
+            ? t.default_cost
+            : typeof (details as any)?.cost === "number"
+              ? Number((details as any).cost)
+              : null;
+
+        await admin
+          .from("appointment_clinical_item_templates")
+          .insert({
+            doctor_id: access.doctorId,
+            type: itemType,
+            name,
+            description,
+            default_cost: defaultCost,
+            is_active: true,
+          })
+          .catch(() => {
+            // ignore template errors
+          });
       }
 
-      return json({ ok: true, data }, 200);
+      return json({ ok: true, items: [created] }, 200);
     }
 
-    if (body.action === "update") {
-      if (!doctorId) return json({ ok: false, error: "Forbidden" }, 403);
-      if (!body.id) return json({ ok: false, error: "Missing id" }, 400);
+    if (action === "update") {
+      const appointmentId = (body as any).appointment_id;
+      const itemId = (body as any).item_id;
+      const patch = (body as any).patch || {};
+      if (!appointmentId) return json({ ok: false, error: "appointment_id is required", code: "MISSING_APPOINTMENT_ID" }, 200);
+      if (!itemId) return json({ ok: false, error: "item_id is required", code: "MISSING_ITEM_ID" }, 200);
 
-      const { data: existing, error: getErr } = await service
+      const access = await assertAppointmentAccess({ admin, appointmentId, userId: user.id });
+      if (!access.ok) return json(access, 200);
+      if (access.role !== "doctor") return json({ ok: false, error: "Forbidden", code: "DOCTOR_ONLY" }, 200);
+
+      const { data: ownedItem, error: ownedErr } = await admin
         .from("appointment_clinical_items")
-        .select("id, appointment_id, doctor_id")
-        .eq("id", body.id)
+        .select("id, doctor_id, appointment_id")
+        .eq("id", itemId)
+        .eq("appointment_id", appointmentId)
         .maybeSingle();
 
-      if (getErr) {
-        console.error("Item read error:", getErr);
-        return json({ ok: false, error: "Failed to load clinical item" }, 500);
-      }
-      if (!existing) return json({ ok: false, error: "Not found", code: "NOT_FOUND" }, 404);
-      if (existing.doctor_id !== doctorId) return json({ ok: false, error: "Forbidden" }, 403);
+      if (ownedErr) return json({ ok: false, error: ownedErr.message, code: "ITEM_OWNERSHIP_CHECK_FAILED" }, 200);
+      if (!ownedItem) return json({ ok: false, error: "Not found", code: "NOT_FOUND" }, 200);
 
-      const patch: Record<string, unknown> = {};
-      if (body.title !== undefined) patch.title = body.title;
-      if (body.item_type !== undefined) patch.item_type = body.item_type;
-      if (body.details !== undefined) patch.details = body.details;
+      const updatePatch: Record<string, unknown> = {};
+      if (patch.title != null) updatePatch.title = String(patch.title).trim();
+      if (patch.details != null) updatePatch.details = patch.details;
+      if (patch.item_type != null) updatePatch.item_type = safeType(patch.item_type);
 
-      const { data, error: updErr } = await service
+      const { data: updated, error } = await admin
         .from("appointment_clinical_items")
-        .update(patch)
-        .eq("id", body.id)
-        .eq("doctor_id", doctorId)
+        .update(updatePatch)
+        .eq("id", itemId)
         .select("id, appointment_id, doctor_id, patient_id, doctor_patient_id, item_type, title, details, created_at, updated_at")
-        .maybeSingle();
+        .single();
 
-      if (updErr) {
-        console.error("Item update error:", updErr);
-        return json({ ok: false, error: "Failed to update clinical item" }, 500);
-      }
-      if (!data) return json({ ok: false, error: "Not found", code: "NOT_FOUND" }, 404);
-
-      return json({ ok: true, data }, 200);
+      if (error) return json({ ok: false, error: error.message, code: "ITEM_UPDATE_FAILED" }, 200);
+      return json({ ok: true, items: [updated] }, 200);
     }
 
-    if (body.action === "delete") {
-      if (!doctorId) return json({ ok: false, error: "Forbidden" }, 403);
-      if (!body.id) return json({ ok: false, error: "Missing id" }, 400);
+    if (action === "delete") {
+      const appointmentId = (body as any).appointment_id;
+      const itemId = (body as any).item_id;
+      if (!appointmentId) return json({ ok: false, error: "appointment_id is required", code: "MISSING_APPOINTMENT_ID" }, 200);
+      if (!itemId) return json({ ok: false, error: "item_id is required", code: "MISSING_ITEM_ID" }, 200);
 
-      const { data: existing, error: getErr } = await service
+      const access = await assertAppointmentAccess({ admin, appointmentId, userId: user.id });
+      if (!access.ok) return json(access, 200);
+      if (access.role !== "doctor") return json({ ok: false, error: "Forbidden", code: "DOCTOR_ONLY" }, 200);
+
+      const { data: ownedItem, error: ownedErr } = await admin
         .from("appointment_clinical_items")
-        .select("id, doctor_id")
-        .eq("id", body.id)
+        .select("id")
+        .eq("id", itemId)
+        .eq("appointment_id", appointmentId)
         .maybeSingle();
 
-      if (getErr) {
-        console.error("Item read error:", getErr);
-        return json({ ok: false, error: "Failed to load clinical item" }, 500);
-      }
-      if (!existing) return json({ ok: false, error: "Not found", code: "NOT_FOUND" }, 404);
-      if (existing.doctor_id !== doctorId) return json({ ok: false, error: "Forbidden" }, 403);
+      if (ownedErr) return json({ ok: false, error: ownedErr.message, code: "ITEM_OWNERSHIP_CHECK_FAILED" }, 200);
+      if (!ownedItem) return json({ ok: false, error: "Not found", code: "NOT_FOUND" }, 200);
 
-      const { error: delErr } = await service.from("appointment_clinical_items").delete().eq("id", body.id).eq("doctor_id", doctorId);
-      if (delErr) {
-        console.error("Item delete error:", delErr);
-        return json({ ok: false, error: "Failed to delete clinical item" }, 500);
-      }
+      const { error } = await admin.from("appointment_clinical_items").delete().eq("id", itemId);
+      if (error) return json({ ok: false, error: error.message, code: "ITEM_DELETE_FAILED" }, 200);
+
       return json({ ok: true }, 200);
     }
 
-    if (body.action === "save_as_template") {
-      if (!doctorId) return json({ ok: false, error: "Forbidden" }, 403);
-      if (!body.id) return json({ ok: false, error: "Missing id" }, 400);
-
-      const { data: item, error: itemErr } = await service
-        .from("appointment_clinical_items")
-        .select("id, doctor_id, item_type, title, details")
-        .eq("id", body.id)
-        .maybeSingle();
-
-      if (itemErr) {
-        console.error("Item read error:", itemErr);
-        return json({ ok: false, error: "Failed to load clinical item" }, 500);
-      }
-      if (!item) return json({ ok: false, error: "Not found", code: "NOT_FOUND" }, 404);
-      if (item.doctor_id !== doctorId) return json({ ok: false, error: "Forbidden" }, 403);
-
-      const title = (body.template_title && body.template_title.trim()) ? body.template_title.trim() : item.title;
-
-      const { data: tpl, error: tplErr } = await service
-        .from("clinical_item_templates")
-        .insert({
-          doctor_id: doctorId,
-          item_type: item.item_type,
-          title,
-          details: item.details ?? {},
-        })
-        .select("id, doctor_id, item_type, title, details, created_at, updated_at")
-        .maybeSingle();
-
-      if (tplErr) {
-        console.error("Template insert error:", tplErr);
-        return json({ ok: false, error: "Failed to save template" }, 500);
-      }
-
-      return json({ ok: true, data: tpl }, 200);
-    }
-
-    return json({ ok: false, error: "Unknown action" }, 400);
+    return json({ ok: false, error: "Unknown action", code: "UNKNOWN_ACTION" }, 200);
   } catch (e: any) {
     console.error("Error in appointment-clinical-items:", e);
-    return json({ ok: false, error: e?.message ?? String(e) }, 500);
+    return json({ ok: false, error: e?.message ?? String(e), code: "UNEXPECTED" }, 200);
   }
 });
