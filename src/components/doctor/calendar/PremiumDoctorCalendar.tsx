@@ -1,37 +1,34 @@
 // File: src/components/doctor/calendar/PremiumDoctorCalendar.tsx
 // FILE: src/components/doctor/calendar/PremiumDoctorCalendar.tsx
-import { useState, useCallback, useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import { useNavigate, useLocation } from "react-router-dom";
-import { motion } from "framer-motion";
-import { toast } from "sonner";
-import { Card, CardContent } from "@/components/ui/card";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import CalendarHeader from "./CalendarHeader";
-import DayView from "./DayView";
-import WeekView from "./WeekView";
-import MonthView from "./MonthView";
-import AppointmentModal from "./AppointmentModal";
-import AppointmentQuickPreview from "./AppointmentQuickPreview";
-import { useCalendarData } from "./useCalendarData";
-import ManualBookAppointmentModal from "../ManualBookAppointmentModal";
-import BlockTimeModal from "../BlockTimeModal";
-import SetAvailabilityModal from "../SetAvailabilityModal";
-import type { CalendarView, CalendarFilters, CalendarAppointment } from "./types";
-import { defaultFilters } from "./types";
+import { useState, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { toast } from 'sonner';
+import { Card, CardContent } from '@/components/ui/card';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import CalendarHeader from './CalendarHeader';
+import DayView from './DayView';
+import WeekView from './WeekView';
+import MonthView from './MonthView';
+import AppointmentModal from './AppointmentModal';
+import AppointmentQuickPreview from './AppointmentQuickPreview';
+import { useCalendarData } from './useCalendarData';
+import ManualBookAppointmentModal from '../ManualBookAppointmentModal';
+import type { Patient } from '@/components/patient/PatientSelector';
+import BlockTimeModal from '../BlockTimeModal';
+import SetAvailabilityModal from '../SetAvailabilityModal';
+import type { CalendarView, CalendarFilters, CalendarAppointment } from './types';
+import { defaultFilters } from './types';
 
 interface PremiumDoctorCalendarProps {
   doctorId?: string;
   practiceId?: string;
 }
 
-type PreselectedPatient =
-  | { id: string; source: "registered" }
-  | { id: string; source: "doctor_added" };
-
 const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDoctorCalendarProps) => {
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation('dashboard');
   const { profile, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -41,7 +38,7 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
 
   // State
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [view, setView] = useState<CalendarView>("day");
+  const [view, setView] = useState<CalendarView>('day');
   const [filters, setFilters] = useState<CalendarFilters>(defaultFilters);
   const [selectedAppointment, setSelectedAppointment] = useState<CalendarAppointment | null>(null);
   const [isQuickPreviewOpen, setIsQuickPreviewOpen] = useState(false);
@@ -50,18 +47,15 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
   const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
   const [isAvailabilityModalOpen, setIsAvailabilityModalOpen] = useState(false);
   const [prefilledTime, setPrefilledTime] = useState<string | undefined>();
-  const [doctorSpecialty, setDoctorSpecialty] = useState<string>("");
+  const [doctorSpecialty, setDoctorSpecialty] = useState<string>('');
 
-  // Follow-up / preselect flow (from query params)
-  const [preselectedPatient, setPreselectedPatient] = useState<PreselectedPatient | null>(null);
   const [followupOfAppointmentId, setFollowupOfAppointmentId] = useState<string | null>(null);
-  const [forcedAppointmentType, setForcedAppointmentType] = useState<string | undefined>(undefined);
-  const [handledQueryKey, setHandledQueryKey] = useState<string>("");
+  const [preselectedPatient, setPreselectedPatient] = useState<Patient | null>(null);
 
   // Safety check
   useEffect(() => {
-    if (profile?.role === "doctor" && !doctorId) {
-      toast.error(t("doctor.calendar.profileLoading", "Doctor profile still loading. Please refresh."));
+    if (profile?.role === 'doctor' && !doctorId) {
+      toast.error(t('doctor.calendar.profileLoading', 'Doctor profile still loading. Please refresh.'));
     }
   }, [profile, doctorId, t]);
 
@@ -73,10 +67,14 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
       if (!user?.id) return;
 
       // If your doctors table has a "specialty" field, this will populate the dentist tooling.
-      const { data, error } = await supabase.from("doctors").select("specialty").eq("user_id", user.id).maybeSingle();
+      const { data, error } = await supabase
+        .from('doctors')
+        .select('specialty')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
       if (cancelled) return;
-      if (!error) setDoctorSpecialty((data as any)?.specialty ?? "");
+      if (!error) setDoctorSpecialty((data as any)?.specialty ?? '');
     }
 
     loadSpecialty();
@@ -84,6 +82,77 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
       cancelled = true;
     };
   }, [user?.id]);
+
+  // Deep-link follow-up booking:
+  // /doctor-dashboard?section=calendar&followupOf=<appointmentId>&patient=<patientId>&patientType=registered|direct
+  useEffect(() => {
+    if (!doctorId) return;
+
+    const sp = new URLSearchParams(location.search);
+    const followupOf = sp.get("followupOf");
+    const patientId = sp.get("patient");
+    const patientTypeRaw = sp.get("patientType");
+
+    if (!followupOf || !patientId) return;
+
+    const patientSource: Patient["source"] = patientTypeRaw === "registered" ? "registered" : "doctor_added";
+
+    const loadPatient = async () => {
+      try {
+        if (patientSource === "registered") {
+          const { data, error } = await supabase
+            .from("profiles")
+            .select("user_id, full_name, phone, email, date_of_birth, created_at")
+            .eq("user_id", patientId)
+            .maybeSingle();
+
+          if (error) throw error;
+
+          if (data) {
+            setPreselectedPatient({
+              id: data.user_id,
+              name: data.full_name || "Patient",
+              phone: data.phone || undefined,
+              email: data.email || undefined,
+              date_of_birth: data.date_of_birth || undefined,
+              created_at: data.created_at || undefined,
+              source: "registered",
+            });
+          }
+        } else {
+          const { data, error } = await supabase
+            .from("doctor_patients")
+            .select("id, full_name, phone, email, date_of_birth, created_at")
+            .eq("id", patientId)
+            .maybeSingle();
+
+          if (error) throw error;
+
+          if (data) {
+            setPreselectedPatient({
+              id: data.id,
+              name: data.full_name || "Patient",
+              phone: data.phone || undefined,
+              email: data.email || undefined,
+              date_of_birth: data.date_of_birth || undefined,
+              created_at: data.created_at || undefined,
+              source: "doctor_added",
+            });
+          }
+        }
+
+        setFollowupOfAppointmentId(followupOf);
+        setPrefilledTime(undefined);
+        setIsBookModalOpen(true);
+      } catch (e) {
+        console.error("Failed to prefill follow-up booking:", e);
+        toast.error("Failed to prefill follow-up booking");
+      }
+    };
+
+    loadPatient();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [doctorId, location.search]);
 
   // Fetch calendar data
   const {
@@ -104,7 +173,7 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
 
   const handleDayClick = useCallback((date: Date) => {
     setSelectedDate(date);
-    setView("day");
+    setView('day');
   }, []);
 
   const handleAppointmentClick = useCallback((apt: CalendarAppointment) => {
@@ -114,10 +183,10 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
 
   const handleStartSession = useCallback(
     (apt: CalendarAppointment) => {
-      const type = (apt.appointment_type || "in_person") as string;
+      const type = (apt.appointment_type || 'in_person') as string;
 
       // Start based on appointment type
-      if (type === "messaging" || type === "chat") {
+      if (type === 'messaging' || type === 'chat') {
         // Quick preview "Message" action handles navigation
         return;
       }
@@ -125,18 +194,18 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
       // For in_person / video / home_visit / follow_up
       navigate(`/appointment-session/${apt.id}`);
     },
-    [navigate],
+    [navigate]
   );
 
   const handleViewPatient = useCallback(
-    (patientId: string, patientType: "registered" | "direct") => {
+    (patientId: string, patientType: 'registered' | 'direct') => {
       if (!patientId) {
-        toast.error(t("doctor.calendar.patientMissing", "Patient information not available."));
+        toast.error(t('doctor.calendar.patientMissing', 'Patient information not available.'));
         return;
       }
       navigate(`/doctor/patient/${patientId}?type=${patientType}`);
     },
-    [navigate, t],
+    [navigate, t]
   );
 
   const handleOpenFullModal = useCallback(() => {
@@ -156,9 +225,6 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
 
   const handleAddAppointment = useCallback(() => {
     setPrefilledTime(undefined);
-    setPreselectedPatient(null);
-    setFollowupOfAppointmentId(null);
-    setForcedAppointmentType(undefined);
     setIsBookModalOpen(true);
   }, []);
 
@@ -177,83 +243,32 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
 
       switch (e.key.toLowerCase()) {
-        case "t":
+        case 't':
           handleToday();
           break;
-        case "arrowleft":
-          setSelectedDate((prev) => {
+        case 'arrowleft':
+          setSelectedDate(prev => {
             const d = new Date(prev);
-            d.setDate(d.getDate() - (view === "day" ? 1 : view === "week" ? 7 : 30));
+            d.setDate(d.getDate() - (view === 'day' ? 1 : view === 'week' ? 7 : 30));
             return d;
           });
           break;
-        case "arrowright":
-          setSelectedDate((prev) => {
+        case 'arrowright':
+          setSelectedDate(prev => {
             const d = new Date(prev);
-            d.setDate(d.getDate() + (view === "day" ? 1 : view === "week" ? 7 : 30));
+            d.setDate(d.getDate() + (view === 'day' ? 1 : view === 'week' ? 7 : 30));
             return d;
           });
           break;
-        case "n":
+        case 'n':
           handleAddAppointment();
           break;
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [view, handleToday, handleAddAppointment]);
-
-  // ✅ Follow-up query param parsing + auto-open booking modal
-  useEffect(() => {
-    if (!doctorId) return;
-
-    const params = new URLSearchParams(location.search);
-    const patientParam = params.get("patient");
-    const followupOf = params.get("followupOf");
-
-    // create a stable key to prevent re-running on re-render
-    const key = `${patientParam || ""}|${followupOf || ""}|${doctorId}`;
-    if (!patientParam && !followupOf) return;
-    if (handledQueryKey === key) return;
-
-    let parsedPatient: PreselectedPatient | null = null;
-
-    if (patientParam) {
-      const v = String(patientParam);
-      if (v.startsWith("reg:")) {
-        const id = v.slice("reg:".length);
-        if (id) parsedPatient = { id, source: "registered" };
-      } else if (v.startsWith("dp:")) {
-        const id = v.slice("dp:".length);
-        if (id) parsedPatient = { id, source: "doctor_added" };
-      } else {
-        // backward compat if someone passed raw id (assume registered)
-        parsedPatient = { id: v, source: "registered" };
-      }
-    }
-
-    if (followupOf) {
-      setForcedAppointmentType("follow_up");
-      setFollowupOfAppointmentId(String(followupOf));
-    } else {
-      setForcedAppointmentType(undefined);
-      setFollowupOfAppointmentId(null);
-    }
-
-    setPreselectedPatient(parsedPatient);
-    setIsBookModalOpen(true);
-    setHandledQueryKey(key);
-
-    // Clean URL (remove followupOf & patient so it won't re-open on close/refresh)
-    params.delete("followupOf");
-    params.delete("patient");
-    const nextSearch = params.toString();
-    navigate(
-      { pathname: location.pathname, search: nextSearch ? `?${nextSearch}` : "" },
-      { replace: true },
-    );
-  }, [doctorId, location.pathname, location.search, navigate, handledQueryKey]);
 
   const dayAppointments = getAppointmentsForDate(selectedDate);
   const dayBlockedTimes = getBlockedTimesForDate(selectedDate);
@@ -282,7 +297,7 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
       {/* Calendar View */}
       <Card className="border-border/50 shadow-sm">
         <CardContent className="p-6">
-          {view === "day" && (
+          {view === 'day' && (
             <DayView
               selectedDate={selectedDate}
               appointments={dayAppointments}
@@ -296,7 +311,7 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
               onBlockSlot={handleBlockSlot}
             />
           )}
-          {view === "week" && (
+          {view === 'week' && (
             <WeekView
               selectedDate={selectedDate}
               appointments={appointments}
@@ -309,7 +324,7 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
               onDayClick={handleDayClick}
             />
           )}
-          {view === "month" && (
+          {view === 'month' && (
             <MonthView
               selectedDate={selectedDate}
               appointments={appointments}
@@ -323,40 +338,39 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
         </CardContent>
       </Card>
 
-      {/* Quick Preview (WIRED UP) */}
+      {/* Quick Preview */}
       <AppointmentQuickPreview
         appointment={selectedAppointment}
         isOpen={isQuickPreviewOpen}
         onClose={() => setIsQuickPreviewOpen(false)}
+        onOpenFullDetails={handleOpenFullModal}
         onStartSession={handleStartSession}
         onViewPatient={handleViewPatient}
-        onOpenFullModal={handleOpenFullModal}
         doctorSpecialty={doctorSpecialty}
       />
 
-      {/* Full Details Modal */}
-      <AppointmentModal
-        appointment={selectedAppointment}
-        isOpen={isAppointmentModalOpen}
-        onClose={() => setIsAppointmentModalOpen(false)}
-        onStartVisit={selectedAppointment ? () => navigate(`/appointment-session/${selectedAppointment.id}`) : undefined}
-        onMarkComplete={() => {
-          refetch();
-          setIsAppointmentModalOpen(false);
-        }}
-      />
+      {/* Full Appointment Modal */}
+      {selectedAppointment && (
+        <AppointmentModal
+          isOpen={isAppointmentModalOpen}
+          onClose={() => setIsAppointmentModalOpen(false)}
+          appointment={selectedAppointment}
+          onUpdate={refetch}
+          onStartSession={handleStartSession}
+          onViewPatient={handleViewPatient}
+          doctorSpecialty={doctorSpecialty}
+        />
+      )}
 
-      {/* Booking / Block / Availability Modals */}
-      {doctorId && (
-        <>
-          <ManualBookAppointmentModal
+      {/* Modals */}
+      <ManualBookAppointmentModal
             isOpen={isBookModalOpen}
             onClose={() => {
               setIsBookModalOpen(false);
               setPrefilledTime(undefined);
-              setPreselectedPatient(null);
               setFollowupOfAppointmentId(null);
-              setForcedAppointmentType(undefined);
+              setPreselectedPatient(null);
+              if (location.search) navigate({ pathname: location.pathname }, { replace: true });
             }}
             doctorId={doctorId}
             practiceId={practiceId}
@@ -364,30 +378,30 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
             prefilledDate={selectedDate}
             prefilledTime={prefilledTime}
             preselectedPatient={preselectedPatient}
-            appointmentType={forcedAppointmentType}
-            followupOfAppointmentId={followupOfAppointmentId ?? undefined}
+            followupOfAppointmentId={followupOfAppointmentId}
+            forceAppointmentType={followupOfAppointmentId ? "follow_up" : undefined}
           />
 
-          <BlockTimeModal
-            isOpen={isBlockModalOpen}
-            onClose={() => {
-              setIsBlockModalOpen(false);
-              setPrefilledTime(undefined);
-            }}
-            prefilledDate={selectedDate}
-            prefilledTime={prefilledTime}
-            onSuccess={refetch}
-          />
+      <BlockTimeModal
+        isOpen={isBlockModalOpen}
+        onClose={() => {
+          setIsBlockModalOpen(false);
+          setPrefilledTime(undefined);
+        }}
+        doctorId={doctorId}
+        practiceId={practiceId}
+        onSuccess={refetch}
+        prefilledDate={selectedDate}
+        prefilledTime={prefilledTime}
+      />
 
-          <SetAvailabilityModal
-            isOpen={isAvailabilityModalOpen}
-            onClose={() => setIsAvailabilityModalOpen(false)}
-            doctorId={doctorId}
-            practiceId={practiceId}
-            onSuccess={refetch}
-          />
-        </>
-      )}
+      <SetAvailabilityModal
+        isOpen={isAvailabilityModalOpen}
+        onClose={() => setIsAvailabilityModalOpen(false)}
+        doctorId={doctorId}
+        practiceId={practiceId}
+        onSuccess={refetch}
+      />
     </motion.div>
   );
 };
