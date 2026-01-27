@@ -1,3 +1,4 @@
+// File: src/pages/DoctorDashboard.tsx
 // src/pages/DoctorDashboard.tsx
 import { useState, useEffect } from "react";
 import { Settings, User, Calendar, BarChart3, Search, Briefcase, MapPin, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2 } from "lucide-react";
@@ -25,7 +26,7 @@ import DoctorScheduleSettingsSection from "@/components/doctor/DoctorScheduleSet
 import DoctorProcedureLibrarySection from "@/components/doctor/DoctorProcedureLibrarySection";
 import { DoctorFinancialStatsSection } from "@/components/doctor/DoctorFinancialStatsSection";
 import { UpcomingAppointmentCard } from "@/components/doctor/UpcomingAppointmentCard";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/lib/api/supabase-api";
 import QuickActionModals from "@/components/doctor/QuickActionModals";
@@ -40,6 +41,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 type DoctorStatus = "independent" | "clinic-member";
 const DoctorDashboardContent = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const {
     user,
     profile
@@ -55,6 +57,13 @@ const DoctorDashboardContent = () => {
     scheduleSettings
   } = useDoctorData();
   const [activeSection, setActiveSection] = useState("dashboard");
+  // Deep-link support (e.g. /doctor-dashboard?section=calendar&followupOf=...).
+  useEffect(() => {
+    const section = searchParams.get("section");
+    if (!section) return;
+    setActiveSection(section);
+  }, [searchParams]);
+
   const [quickActionModal, setQuickActionModal] = useState<{
     isOpen: boolean;
     action: "schedule" | "procedures" | "settings" | "block-time" | "add-service" | null;
@@ -258,284 +267,237 @@ const DoctorDashboardContent = () => {
           specialty: doctorProfile.specialty || '',
           verified: doctorProfile.verified || false,
           average_rating: doctorProfile.average_rating || 0,
-          num_reviews: doctorProfile.num_reviews || 0,
-          appointment_count: doctorProfile.appointment_count || 0,
+          total_patients: (stats as any)?.totalPatients || 0,
+          total_appointments: (stats as any)?.totalAppointments || 0,
+          completion_rate: (stats as any)?.completionRate || 0,
+          average_response_time: (stats as any)?.responseTime || 0,
+          practice_id: doctorProfile.practice_id
         }} stats={stats} />;
       case "financial-stats":
-        return <DoctorFinancialStatsSection />;
+        return <DoctorFinancialStatsSection doctorId={doctorProfile.id} />;
       case "clinic-finder":
         return <ClinicFinderSection />;
       case "settings":
         return <DoctorSettingsSection />;
       case "assigned-patients":
-        return <DoctorPatientsSection />;
+        return <DoctorPatientsSection doctorId={doctorProfile.id} />;
       case "messages":
-        return <DoctorMessagingSection />;
+        return <DoctorMessagingSection doctorId={doctorProfile.id} />;
       case "treatment-planning":
-        return <TreatmentPlanningSection />;
+        return <TreatmentPlanningSection doctorId={doctorProfile.id} />;
       case "procedure-library":
-        return <DoctorProcedureLibrarySection />;
+        return <DoctorProcedureLibrarySection doctorId={doctorProfile.id} />;
       default:
         return <div className="space-y-6">
-            {/* Welcome Card */}
-            <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
-              <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                  <div>
-                    <h2 className="text-2xl font-bold text-foreground">
-                      {t("doctor.dashboardContent.welcomeBack")}, {doctorProfile?.profiles?.full_name || "Doctor"}!
-                    </h2>
-                    <p className="text-muted-foreground mt-1">
-                      {t("doctor.dashboardContent.hereIsYourOverview")} {new Date().toLocaleDateString()}
-                    </p>
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      {doctorProfile?.verified && <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
-                          {t("doctor.dashboardContent.verifiedProvider")}
-                        </Badge>}
-                      {doctorProfile?.practice_id ? <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">
-                          {t("doctor.dashboardContent.clinicMember")}
-                        </Badge> : <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">
-                          {t("doctor.dashboardContent.independent")}
-                        </Badge>}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-muted-foreground">{t("doctor.dashboardContent.profileCompletion")}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Progress value={profileCompletion} className="w-24 h-2" />
-                      <span className="text-sm font-medium">{profileCompletion}%</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Profile Completion Alert */}
-            {isProfileIncomplete && <Card className="border-orange-200 bg-orange-50">
+            {isProfileIncomplete && <Card className="border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950">
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 text-orange-600 mt-0.5" />
+                    <AlertCircle className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5" />
                     <div className="flex-1">
-                      <h3 className="font-semibold text-orange-800">{t("doctor.profileIncomplete.title")}</h3>
-                      <p className="text-sm text-orange-700 mt-1">
-                        {t("doctor.profileIncomplete.description")}
+                      <h3 className="font-semibold text-orange-800 dark:text-orange-200">
+                        {t("doctor.profileCompletion.incomplete")}
+                      </h3>
+                      <p className="text-sm text-orange-700 dark:text-orange-300 mt-1">
+                        {t("doctor.profileCompletion.completeProfile", {
+                      percent: profileCompletion
+                    })}
                       </p>
-                      <Button size="sm" className="mt-3" onClick={() => setActiveSection("profile")}>
-                        {t("doctor.profileIncomplete.completeNow")}
+                      <div className="mt-3">
+                        <Progress value={profileCompletion} className="h-2" />
+                      </div>
+                      <Button variant="outline" size="sm" className="mt-3 border-orange-300 text-orange-700 hover:bg-orange-100 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-900" onClick={() => setActiveSection("profile")}>
+                        {t("doctor.profileCompletion.updateProfile")}
                       </Button>
                     </div>
                   </div>
                 </CardContent>
               </Card>}
 
-            {/* Verification Status Card */}
-            {!doctorProfile?.verified && <DoctorVerificationStatusCard />}
-
-            {/* Accept New Patients Toggle */}
-            <AcceptNewPatientsToggle 
-              doctorId={doctorProfile.id} 
-              initialValue={doctorProfile.accepts_new_patients ?? true} 
-            />
-
-            {/* Current/Upcoming Appointment Card */}
-            <UpcomingAppointmentCard appointments={upcomingAppointments.map(apt => ({
-            ...apt,
-            patient_name: apt.patient_name,
-            patient_email: apt.patient_email,
-            patient_phone: apt.patient_phone,
-            patient_avatar: apt.patient_avatar
-          }))} />
-
-            {/* Key Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Dashboard Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">{t("doctor.stats.totalAppointments")}</CardTitle>
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats?.totalAppointments || 0}</div>
-                  <p className="text-xs text-muted-foreground">{t("doctor.stats.allTimeBookings")}</p>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">{t("doctor.stats.totalAppointments")}</p>
+                      <p className="text-2xl font-bold">{(stats as any)?.totalAppointments || 0}</p>
+                    </div>
+                    <Calendar className="h-8 w-8 text-primary" />
+                  </div>
                 </CardContent>
               </Card>
-
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">{t("doctor.stats.totalPatients")}</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats?.totalPatients || 0}</div>
-                  <p className="text-xs text-muted-foreground">{t("doctor.stats.uniquePatients")}</p>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">{t("doctor.stats.totalPatients")}</p>
+                      <p className="text-2xl font-bold">{(stats as any)?.totalPatients || 0}</p>
+                    </div>
+                    <Users className="h-8 w-8 text-primary" />
+                  </div>
                 </CardContent>
               </Card>
-
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">{t("doctor.stats.averageRating")}</CardTitle>
-                  <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{(stats?.averageRating || 0).toFixed(1)}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {t("doctor.stats.basedOnReviews", {
-                    count: stats?.numReviews || 0
-                  })}
-                  </p>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">{t("doctor.stats.rating")}</p>
+                      <p className="text-2xl font-bold">{doctorProfile.average_rating?.toFixed(1) || "0.0"}</p>
+                    </div>
+                    <BarChart3 className="h-8 w-8 text-primary" />
+                  </div>
                 </CardContent>
               </Card>
-
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">{t("doctor.stats.revenue")}</CardTitle>
-                  <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">${(stats?.totalRevenue || 0).toLocaleString()}</div>
-                  <p className="text-xs text-muted-foreground">{t("doctor.stats.totalEarnings")}</p>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">{t("doctor.stats.earnings")}</p>
+                      <p className="text-2xl font-bold">${(stats as any)?.totalEarnings || 0}</p>
+                    </div>
+                    <Building2 className="h-8 w-8 text-primary" />
+                  </div>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Upcoming Activity */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t("doctor.upcomingAppointments.title")}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {upcomingAppointments.length > 0 ? upcomingAppointments.slice(0, 3).map(appointment => <div key={appointment.id} className="flex items-center space-x-4">
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback>{appointment.patient_name?.charAt(0) || "P"}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 space-y-1">
-                          <p className="text-sm font-medium">{appointment.patient_name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            <Clock className="w-3 h-3 inline mr-1" />
-                            {new Date(appointment.appointment_date).toLocaleDateString()} at {appointment.start_time}
-                          </p>
-                        </div>
-                        <Badge variant="outline" className={appointment.status === "confirmed" ? "bg-blue-100 text-blue-700" : appointment.status === "pending" ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-700"}>
-                          {t(`doctor.appointmentStatus.${appointment.status}`)}
-                        </Badge>
-                      </div>) : <div className="text-center py-8">
-                      <Calendar className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                      <p className="text-muted-foreground text-sm">{t("doctor.upcomingAppointments.noAppointments")}</p>
-                      <p className="text-xs text-muted-foreground">{t("doctor.upcomingAppointments.scheduleIsClear")}</p>
-                    </div>}
-                </CardContent>
-              </Card>
+            {/* Upcoming Appointments */}
+            <Card>
+              <CardHeader>
+                <CardTitle>{t("doctor.upcomingAppointments")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {upcomingAppointments?.length ? upcomingAppointments.slice(0, 3).map((appointment: any) => <UpcomingAppointmentCard key={appointment.id} appointment={appointment} />) : <p className="text-muted-foreground text-center py-4">
+                      {t("doctor.noUpcomingAppointments")}
+                    </p>}
+                </div>
+              </CardContent>
+            </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t("doctor.quickActions.title")}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button className="w-full justify-start" variant="outline" onClick={() => setQuickActionModal({
-                  isOpen: true,
-                  action: "schedule"
-                })}>
-                    <Calendar className="w-4 h-4 mr-2" />
-                    {t("doctor.todaysSchedule.viewFull")} ({todaysAppointments.length})
+            {/* Verification Status */}
+            <DoctorVerificationStatusCard doctorProfile={doctorProfile} />
+
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>{t("doctor.quickActions")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Button variant="outline" className="h-20 flex flex-col items-center justify-center gap-2" onClick={() => setQuickActionModal({
+                isOpen: true,
+                action: "schedule"
+              })}>
+                    <Calendar className="h-6 w-6" />
+                    {t("doctor.actions.updateSchedule")}
                   </Button>
-
-                  <Button className="w-full justify-start" variant="outline" onClick={() => setActiveSection("calendar")}>
-                    <Clock className="w-4 h-4 mr-2" />
-                    {t("doctor.quickActions.updateSettings")}
+                  <Button variant="outline" className="h-20 flex flex-col items-center justify-center gap-2" onClick={() => setQuickActionModal({
+                isOpen: true,
+                action: "procedures"
+              })}>
+                    <FileText className="h-6 w-6" />
+                    {t("doctor.actions.manageProcedures")}
                   </Button>
-
-                  {!doctorProfile?.practice_id && doctorStatus === "independent" ? <Button className="w-full justify-start" variant="outline" onClick={() => setActiveSection("clinic-finder")}>
-                      <Search className="w-4 h-4 mr-2" />
-                      {t("doctor.navigation.clinicFinder")}
-                    </Button> : <Button className="w-full justify-start" variant="outline" onClick={() => setQuickActionModal({
-                  isOpen: true,
-                  action: "block-time"
-                })}>
-                      <Clock className="w-4 h-4 mr-2" />
-                      {t("doctor.quickActions.blockTime")}
-                    </Button>}
-                </CardContent>
-              </Card>
-            </div>
+                  <Button variant="outline" className="h-20 flex flex-col items-center justify-center gap-2" onClick={() => setQuickActionModal({
+                isOpen: true,
+                action: "settings"
+              })}>
+                    <Settings className="h-6 w-6" />
+                    {t("doctor.actions.updateSettings")}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>;
     }
   };
   return <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background">
-        <Sidebar className="border-r">
-          <SidebarContent>
-            {/* Logo Branding */}
-            <div className="p-4 border-b border-border">
-              <DashboardBranding size="md" />
-            </div>
-            
-            <SidebarGroup>
-              <SidebarGroupLabel>{t("doctor.title")}</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {sidebarItems.map(item => <SidebarMenuItem key={item.id}>
-                      <SidebarMenuButton onClick={() => setActiveSection(item.id)} isActive={activeSection === item.id}>
-                        <item.icon className="w-4 h-4" />
-                        <span>{item.label}</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>)}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </SidebarContent>
-        </Sidebar>
+      <ThemeProvider>
+        <div className="flex min-h-screen w-full bg-background">
+          <Sidebar className="border-r border-border">
+            <SidebarContent>
+              {/* Header */}
+              <div className="p-4 border-b border-border">
+                <DashboardBranding />
+                <div className="flex items-center gap-3 mt-4">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={profile?.avatar_url || ""} />
+                    <AvatarFallback>
+                      {profile?.full_name?.split(" ").map(n => n[0]).join("").toUpperCase() || "D"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold truncate">{profile?.full_name}</p>
+                    <p className="text-sm text-muted-foreground truncate">
+                      {doctorProfile.specialty || "Doctor"}
+                    </p>
+                  </div>
+                </div>
 
-        <div className="flex-1 flex flex-col">
-          {/* Header */}
-          <header className="h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40">
-            <div className="flex h-16 items-center justify-between px-6">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger />
-                <div>
-                  <h1 className="text-lg font-semibold">
-                    {t("doctor.dashboardContent.welcomeBack")}, {doctorProfile?.profiles?.full_name || "Doctor"}
-                  </h1>
-                  <p className="text-sm text-muted-foreground">
-                    {doctorProfile?.specialty && doctorProfile.specialty !== "General Practice" ? doctorProfile.specialty : t("doctor.dashboardContent.specialtyNotProvided")}
-                  </p>
+                {/* Accept New Patients Toggle */}
+                <div className="mt-3">
+                  <AcceptNewPatientsToggle doctorId={doctorProfile.id} />
+                </div>
+
+                <div className="mt-3 flex items-center gap-2">
+                  <ThemeToggle />
+                  <LanguageSwitcher />
+                  <NotificationDropdown />
                 </div>
               </div>
 
-              {/* ✅ FIXED: Theme + Notifications */}
-              <div className="flex items-center gap-4">
-                <ThemeToggle />
-                <LanguageSwitcher />
-                <NotificationDropdown />
-                <Button variant="ghost" size="sm" onClick={handleLogout}>
-                  <LogOut className="w-4 h-4" />
+              {/* Navigation */}
+              <SidebarGroup>
+                <SidebarGroupLabel>{t("doctor.navigation.main")}</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {sidebarItems.map(item => <SidebarMenuItem key={item.id}>
+                        <SidebarMenuButton onClick={() => setActiveSection(item.id)} isActive={activeSection === item.id}>
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.label}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>)}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+
+              {/* Footer */}
+              <div className="mt-auto p-4 border-t border-border">
+                <Button variant="ghost" className="w-full justify-start gap-2" onClick={handleLogout}>
+                  <LogOut className="h-4 w-4" />
+                  {t("auth.logout")}
                 </Button>
               </div>
-            </div>
-          </header>
+            </SidebarContent>
+          </Sidebar>
 
           {/* Main Content */}
-          <main className="flex-1 p-6">
-            {/* Profile Completion Banner */}
-            {isProfileIncomplete}
+          <div className="flex-1 flex flex-col">
+            <header className="h-14 border-b border-border flex items-center px-4 gap-4">
+              <SidebarTrigger />
+              <h1 className="text-lg font-semibold">
+                {sidebarItems.find(item => item.id === activeSection)?.label || t("doctor.navigation.dashboard")}
+              </h1>
+            </header>
 
-            {renderContent()}
-          </main>
+            <main className="flex-1 p-6 overflow-auto">
+              <ErrorBoundary>
+                {renderContent()}
+              </ErrorBoundary>
+            </main>
+          </div>
 
-          <QuickActionModals isOpen={quickActionModal.isOpen} action={quickActionModal.action} onClose={() => setQuickActionModal({
-          isOpen: false,
-          action: null
-        })} doctorProfile={doctorProfile} todaysAppointments={todaysAppointments} />
+          {/* Quick Action Modals */}
+          <QuickActionModals modal={quickActionModal} setModal={setQuickActionModal} doctorId={doctorProfile.id} />
         </div>
-      </div>
+      </ThemeProvider>
     </SidebarProvider>;
 };
 const DoctorDashboard = () => {
-  return <ThemeProvider>
-      <DoctorDataProvider>
-        <ErrorBoundary>
-          <DoctorDashboardContent />
-        </ErrorBoundary>
-      </DoctorDataProvider>
-    </ThemeProvider>;
+  return <DoctorDataProvider>
+      <DoctorDashboardContent />
+    </DoctorDataProvider>;
 };
 export default DoctorDashboard;
