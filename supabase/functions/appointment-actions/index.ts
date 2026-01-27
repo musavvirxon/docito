@@ -10,7 +10,9 @@ const corsHeaders: Record<string, string> = {
 
 type ReqBody = { action: "request_start"; appointment_id: string };
 
-type Resp = { ok: true } | { ok: false; error: string; code?: string };
+type Resp =
+  | { ok: true; updated?: boolean; notified?: boolean }
+  | { ok: false; error: string; code?: string };
 
 function json(data: Resp, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -25,6 +27,10 @@ function requireEnv(name: string) {
   return v;
 }
 
+function getAuthHeader(req: Request) {
+  return req.headers.get("authorization") || req.headers.get("Authorization") || "";
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 405);
@@ -34,7 +40,7 @@ serve(async (req) => {
     const anonKey = requireEnv("SUPABASE_ANON_KEY");
     const serviceKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
 
-    const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
+    const authHeader = getAuthHeader(req);
     if (!authHeader) return json({ ok: false, error: "Missing Authorization header" }, 401);
 
     const userClient = createClient(supabaseUrl, anonKey, {
@@ -47,7 +53,7 @@ serve(async (req) => {
       error: userErr,
     } = await userClient.auth.getUser();
 
-    if (userErr || !user) return json({ ok: false, error: "Unauthorized" }, 401);
+    if (userErr || !user?.id) return json({ ok: false, error: "Unauthorized" }, 401);
 
     let body: ReqBody;
     try {
@@ -56,13 +62,18 @@ serve(async (req) => {
       return json({ ok: false, error: "Invalid JSON body" }, 400);
     }
 
-    const service = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+    if (!body?.action || body.action !== "request_start") {
+      return json({ ok: false, error: "Unknown action" }, 400);
+    }
+    if (!body?.appointment_id) return json({ ok: false, error: "Missing appointment_id" }, 400);
 
-    if (!body.appointment_id) return json({ ok: false, error: "Missing appointment_id" }, 400);
+    const service = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
     const { data: apt, error: aptErr } = await service
       .from("appointments")
-      .select("id, appointment_date, start_time, status, appointment_type, doctor_id, patient_id")
+      .select(
+        "id, appointment_date, start_time, status, appointment_type, doctor_id, patient_id, start_requested_by_patient, patient_confirmation_status",
+      )
       .eq("id", body.appointment_id)
       .maybeSingle();
 
@@ -73,6 +84,27 @@ serve(async (req) => {
     if (!apt) return json({ ok: false, error: "Appointment not found", code: "NOT_FOUND" }, 404);
 
     if (apt.patient_id !== user.id) return json({ ok: false, error: "Forbidden" }, 403);
+
+    // Idempotently set start_requested_by_patient = true
+    // Also set patient_confirmation_status = 'confirmed' to match existing UI expectations.
+    let updated = false;
+
+    if (!apt.start_requested_by_patient || apt.patient_confirmation_status !== "confirmed") {
+      const { error: updErr } = await service
+        .from("appointments")
+        .update({
+          start_requested_by_patient: true,
+          patient_confirmation_status: "confirmed",
+        } as any)
+        .eq("id", apt.id)
+        .eq("patient_id", user.id);
+
+      if (updErr) {
+        console.error("Appointment update error:", updErr);
+        return json({ ok: false, error: "Failed to update appointment" }, 500);
+      }
+      updated = true;
+    }
 
     const { data: doc, error: docErr } = await service
       .from("doctors")
@@ -85,6 +117,7 @@ serve(async (req) => {
       return json({ ok: false, error: "Failed to resolve doctor" }, 500);
     }
 
+    // Dedupe: only create a new unread "start request" notification if one doesn't already exist
     const { data: existing, error: existingErr } = await service
       .from("notifications")
       .select("id")
@@ -97,24 +130,29 @@ serve(async (req) => {
 
     if (existingErr) console.error("Notification dedupe error:", existingErr);
 
+    let notified = false;
+
     if (!existing || existing.length === 0) {
-      await service
-        .from("notifications")
-        .insert({
-          user_id: doc.user_id,
-          entity_type: "appointment",
-          entity_id: apt.id,
-          role_scope: "doctor",
-          level: "info",
-          title: "Patient is ready to start",
-          body: `Appointment start requested for ${apt.appointment_date} ${apt.start_time}`,
-          action_url: `/appointment-session/${apt.id}`,
-          metadata: { type: "appointment_start_request", appointment_type: apt.appointment_type },
-        })
-        .catch((e) => console.error("Notification insert error:", e));
+      const { error: insErr } = await service.from("notifications").insert({
+        user_id: doc.user_id,
+        entity_type: "appointment",
+        entity_id: apt.id,
+        role_scope: "doctor",
+        level: "info",
+        title: "Patient is ready to start",
+        body: `Appointment start requested for ${apt.appointment_date} ${apt.start_time}`,
+        action_url: `/appointment-session/${apt.id}`,
+        metadata: { type: "appointment_start_request", appointment_type: apt.appointment_type },
+      });
+
+      if (insErr) {
+        console.error("Notification insert error:", insErr);
+      } else {
+        notified = true;
+      }
     }
 
-    return json({ ok: true }, 200);
+    return json({ ok: true, updated, notified }, 200);
   } catch (e: any) {
     console.error("Error in appointment-actions:", e);
     return json({ ok: false, error: e?.message ?? String(e) }, 500);
