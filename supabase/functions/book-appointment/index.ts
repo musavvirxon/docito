@@ -2,34 +2,54 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
+const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-interface BookAppointmentRequest {
+type AppointmentType = "in_person" | "video" | "home_visit" | "messaging" | "follow_up";
+
+type BookAppointmentRequest = {
   patient_id?: string;
   doctor_patient_id?: string;
 
-  entity_id?: string; // practice_id (optional)
-  provider_id: string; // doctor_id
-  slot_start: string; // ISO string
+  entity_id?: string;
+  provider_id: string;
+  slot_start: string;
   duration_minutes?: number;
   appointment_type?: string;
-  procedure_id?: string;
   notes?: string;
-}
+};
 
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
+type Resp =
+  | {
+      ok: true;
+      hold_id: string;
+      expires_at: string;
+      appointment_date: string;
+      start_time: string;
+      end_time: string;
+      appointment_type: AppointmentType;
+      provider_id: string;
+      entity_id: string | null;
+    }
+  | { ok: false; error: string; code?: string };
+
+function json(data: Resp, status = 200) {
+  return new Response(JSON.stringify(data), {
     status,
     headers: { "Content-Type": "application/json", ...corsHeaders },
   });
 }
 
-function normalizeAppointmentType(
-  input?: string,
-): "in_person" | "video" | "home_visit" | "messaging" | "follow_up" {
+function requireEnv(name: string) {
+  const v = Deno.env.get(name);
+  if (!v) throw new Error(`Missing env: ${name}`);
+  return v;
+}
+
+function normalizeAppointmentType(input?: string): AppointmentType {
   const t = (input || "").trim().toLowerCase();
   if (!t) return "in_person";
   if (t === "in-person" || t === "in_person" || t === "inperson") return "in_person";
@@ -40,29 +60,43 @@ function normalizeAppointmentType(
   return "in_person";
 }
 
-function timeToMinutes(t: string) {
-  const [h, m, s] = t.split(":").map((x) => Number(x));
-  return (h || 0) * 60 + (m || 0) + (s ? s / 60 : 0);
+function isoDate(d: Date) {
+  return d.toISOString().split("T")[0];
+}
+function hhmmss(d: Date) {
+  return d.toISOString().split("T")[1].slice(0, 8);
 }
 
-function overlaps(aStart: number, aEnd: number, bStart: number, bEnd: number) {
-  return aStart < bEnd && aEnd > bStart;
-}
-
-const handler = async (req: Request): Promise<Response> => {
+serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
+  if (req.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 405);
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+    const supabaseUrl = requireEnv("SUPABASE_URL");
+    const anonKey = requireEnv("SUPABASE_ANON_KEY");
+    const serviceKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
 
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader || !authHeader.toLowerCase().startsWith("bearer ")) {
-      return json({ error: "Missing authorization header" }, 401);
+    const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
+    if (!authHeader) return json({ ok: false, error: "Missing Authorization header" }, 401);
+
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+      auth: { persistSession: false },
+    });
+
+    const {
+      data: { user },
+      error: userErr,
+    } = await userClient.auth.getUser();
+
+    if (userErr || !user) return json({ ok: false, error: "Unauthorized" }, 401);
+
+    let body: BookAppointmentRequest;
+    try {
+      body = (await req.json()) as BookAppointmentRequest;
+    } catch {
+      return json({ ok: false, error: "Invalid JSON body" }, 400);
     }
-    const token = authHeader.replace(/bearer\s+/i, "").trim();
 
     const {
       patient_id,
@@ -72,216 +106,87 @@ const handler = async (req: Request): Promise<Response> => {
       slot_start,
       duration_minutes = 30,
       appointment_type,
-      procedure_id,
       notes,
-    } = (await req.json()) as BookAppointmentRequest;
+    } = body;
 
     if (!provider_id || !slot_start) {
-      return json({ error: "Missing required fields: provider_id, slot_start" }, 400);
+      return json({ ok: false, error: "Missing required fields: provider_id, slot_start" }, 400);
     }
 
     const hasPatientId = Boolean(patient_id);
     const hasDoctorPatientId = Boolean(doctor_patient_id);
+
     if (hasPatientId === hasDoctorPatientId) {
-      return json({ error: "Provide exactly one of patient_id or doctor_patient_id" }, 400);
+      return json({ ok: false, error: "Provide exactly one of patient_id or doctor_patient_id" }, 400);
     }
 
-    const { data: userRes, error: authError } = await supabase.auth.getUser(token);
-    const user = userRes?.user;
-    if (authError || !user) return json({ error: "Unauthorized" }, 401);
-
-    const bookingForSelf = hasPatientId && patient_id === user.id;
-
-    // Authorization: if booking for someone else, must be doctor/staff (depending on entity_id)
-    if (!bookingForSelf) {
-      if (!entity_id) {
-        const { data: doctorRole } = await supabase
-          .from("doctors")
-          .select("id")
-          .eq("id", provider_id)
-          .eq("user_id", user.id)
-          .maybeSingle();
-        if (!doctorRole) return json({ error: "Unauthorized: cannot book for this patient" }, 403);
-      } else {
-        const { data: staffRole } = await supabase
-          .from("clinic_staff")
-          .select("id")
-          .eq("practice_id", entity_id)
-          .eq("user_id", user.id)
-          .eq("status", "active")
-          .maybeSingle();
-
-        const { data: doctorRole } = await supabase
-          .from("doctors")
-          .select("id")
-          .eq("practice_id", entity_id)
-          .eq("user_id", user.id)
-          .maybeSingle();
-
-        if (!staffRole && !doctorRole) {
-          return json({ error: "Unauthorized: cannot book for this patient" }, 403);
-        }
-      }
+    if (!hasPatientId || patient_id !== user.id) {
+      return json({ ok: false, error: "Unauthorized: patient_id must match authenticated user" }, 403);
     }
 
-    const slotDate = new Date(slot_start);
-    if (Number.isNaN(slotDate.getTime())) {
-      return json({ error: "Invalid slot_start", code: "INVALID_SLOT_START" }, 400);
-    }
+    const startAt = new Date(slot_start);
+    if (Number.isNaN(startAt.getTime())) return json({ ok: false, error: "Invalid slot_start", code: "INVALID_SLOT_START" }, 400);
 
-    // Server-enforced: no booking in the past (with 60s skew)
     const now = new Date();
-    if (slotDate.getTime() <= now.getTime() + 60_000) {
-      return json({ error: "Cannot book an appointment in the past", code: "PAST_TIME" }, 400);
+    if (startAt.getTime() <= now.getTime() + 60_000) {
+      return json({ ok: false, error: "Cannot book an appointment in the past", code: "PAST_TIME" }, 400);
     }
 
-    const appointmentDate = slotDate.toISOString().split("T")[0];
-    const startTime = slotDate.toTimeString().slice(0, 8);
-    const endDate = new Date(slotDate.getTime() + duration_minutes * 60000);
-    const endTime = endDate.toTimeString().slice(0, 8);
+    const endAt = new Date(startAt.getTime() + Math.max(5, Number(duration_minutes || 30)) * 60_000);
 
-    // Validate against blocked times
-    const { data: blocked, error: blockedErr } = await supabase
-      .from("blocked_times")
-      .select("id, blocked_date, start_time, end_time")
-      .eq("doctor_id", provider_id)
-      .eq("blocked_date", appointmentDate);
-    if (blockedErr) {
-      console.error("Blocked times check error:", blockedErr);
-      return json({ error: "Failed to validate slot availability" }, 500);
-    }
-    for (const b of blocked || []) {
-      if (
-        overlaps(
-          timeToMinutes(startTime),
-          timeToMinutes(endTime),
-          timeToMinutes((b as any).start_time),
-          timeToMinutes((b as any).end_time),
-        )
-      ) {
-        return json({ error: "Slot is blocked", code: "SLOT_BLOCKED" }, 409);
-      }
-    }
+    const service = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
-    // Conflict check: existing appointments
-    const { data: existingAppointments, error: conflictErr } = await supabase
+    await service.rpc("cleanup_expired_appointment_holds").catch(() => {});
+
+    const appointmentDate = isoDate(startAt);
+    const startTime = hhmmss(startAt);
+    const endTime = hhmmss(endAt);
+
+    const { data: existingAppointments, error: conflictErr } = await service
       .from("appointments")
-      .select("id,start_time,end_time,status")
+      .select("id")
       .eq("appointment_date", appointmentDate)
       .eq("doctor_id", provider_id)
-      .neq("status", "canceled");
+      .neq("status", "canceled")
+      .or(`and(start_time.lte.${startTime},end_time.gt.${startTime}),and(start_time.lt.${endTime},end_time.gte.${endTime})`);
 
     if (conflictErr) {
       console.error("Conflict check error:", conflictErr);
-      return json({ error: "Failed to validate slot availability" }, 500);
+      return json({ ok: false, error: "Failed to validate slot availability" }, 500);
     }
 
-    const hasConflictWithAppointments = (existingAppointments || []).some((a: any) =>
-      overlaps(
-        timeToMinutes(startTime),
-        timeToMinutes(endTime),
-        timeToMinutes(a.start_time),
-        timeToMinutes(a.end_time),
-      ),
-    );
-    if (hasConflictWithAppointments) {
-      return json({ error: "Slot is no longer available", code: "SLOT_TAKEN" }, 409);
+    if (existingAppointments && existingAppointments.length > 0) {
+      return json({ ok: false, error: "Slot is no longer available", code: "SLOT_TAKEN" }, 409);
     }
 
-    // Conflict check: pending appointment requests (unconfirmed holds)
-    const { data: pendingRequests, error: reqErr } = await supabase
-      .from("appointment_requests")
-      .select("id,start_time,end_time,expires_at,status")
+    const { data: otherHolds, error: holdErr } = await service
+      .from("appointment_holds")
+      .select("id")
       .eq("doctor_id", provider_id)
-      .eq("appointment_date", appointmentDate)
-      .eq("status", "pending");
-    if (reqErr) {
-      console.error("Request conflict check error:", reqErr);
-      return json({ error: "Failed to validate slot availability" }, 500);
+      .eq("status", "pending")
+      .gt("expires_at", new Date().toISOString())
+      .or(`and(start_at.lte.${startAt.toISOString()},end_at.gt.${startAt.toISOString()}),and(start_at.lt.${endAt.toISOString()},end_at.gte.${endAt.toISOString()})`);
+
+    if (holdErr) {
+      console.error("Hold conflict check error:", holdErr);
+      return json({ ok: false, error: "Failed to validate slot availability" }, 500);
     }
 
-    const nowIso = new Date().toISOString();
-    const hasConflictWithRequests = (pendingRequests || []).some((r: any) => {
-      if (r.expires_at && r.expires_at <= nowIso) return false;
-      return overlaps(
-        timeToMinutes(startTime),
-        timeToMinutes(endTime),
-        timeToMinutes(r.start_time),
-        timeToMinutes(r.end_time),
-      );
-    });
-    if (hasConflictWithRequests) {
-      return json({ error: "Slot is temporarily held", code: "SLOT_HELD" }, 409);
+    if (otherHolds && otherHolds.length > 0) {
+      return json({ ok: false, error: "Slot is temporarily held by another patient", code: "SLOT_TAKEN" }, 409);
     }
 
     const normalizedType = normalizeAppointmentType(appointment_type);
 
-    // If a doctor_patient_id is used (no auth-user patient), create appointment immediately (no confirmation step possible).
-    if (hasDoctorPatientId) {
-      const insertPayload: any = {
-        doctor_id: provider_id,
-        practice_id: entity_id || null,
-        appointment_date: appointmentDate,
-        start_time: startTime,
-        end_time: endTime,
-        notes: notes ?? null,
-        status: "pending",
-        appointment_type: normalizedType,
-        patient_id: null,
-        doctor_patient_id,
-        procedure_id: procedure_id ?? null,
-        patient_confirmation_status: null,
-      };
-
-      const { data: appointment, error: insertError } = await supabase
-        .from("appointments")
-        .insert(insertPayload)
-        .select()
-        .single();
-
-      if (insertError) {
-        console.error("Error creating appointment:", insertError);
-        return json({ error: "Failed to create appointment", details: insertError.message }, 500);
-      }
-
-      await supabase.from("entity_audit_logs").insert({
-        entity_type: "appointment",
-        entity_id: appointment.id,
-        action: "create",
-        actor_id: user.id,
-        new_values: appointment,
-        metadata: { appointment_type: normalizedType, booked_via: "edge_function" },
-      });
-
-      return json(
-        {
-          appointment_id: appointment.id,
-          pending_confirmation: false,
-          status: appointment.status,
-          appointment_date: appointment.appointment_date,
-          start_time: appointment.start_time,
-          end_time: appointment.end_time,
-          appointment_type: appointment.appointment_type,
-        },
-        201,
-      );
-    }
-
-    // Patient flow: create a request (hold) and require explicit patient confirmation.
-    if (!hasPatientId) {
-      return json({ error: "Missing patient_id" }, 400);
-    }
-
-    const { data: requestRow, error: reqInsertErr } = await supabase
-      .from("appointment_requests")
+    const { data: holdRow, error: insertErr } = await service
+      .from("appointment_holds")
       .insert({
-        patient_id,
+        patient_id: user.id,
+        doctor_patient_id: null,
         doctor_id: provider_id,
         practice_id: entity_id || null,
-        procedure_id: procedure_id ?? null,
-        appointment_date: appointmentDate,
-        start_time: startTime,
-        end_time: endTime,
+        start_at: startAt.toISOString(),
+        end_at: endAt.toISOString(),
         appointment_type: normalizedType,
         notes: notes ?? null,
         status: "pending",
@@ -289,34 +194,27 @@ const handler = async (req: Request): Promise<Response> => {
       .select("id, expires_at")
       .single();
 
-    if (reqInsertErr) {
-      console.error("Error creating appointment request:", reqInsertErr);
-      const isUnique = String(reqInsertErr.message || "").toLowerCase().includes("uniq_appointment_requests_pending_slot");
-      if (isUnique) return json({ error: "Slot is temporarily held", code: "SLOT_HELD" }, 409);
-      return json({ error: "Failed to create appointment request", details: reqInsertErr.message }, 500);
+    if (insertErr || !holdRow) {
+      console.error("Error creating appointment hold:", insertErr);
+      return json({ ok: false, error: "Failed to create booking hold" }, 500);
     }
-
-    await supabase.from("entity_audit_logs").insert({
-      entity_type: "appointment_request",
-      entity_id: requestRow.id,
-      action: "create",
-      actor_id: user.id,
-      new_values: requestRow,
-      metadata: { appointment_type: normalizedType, booked_via: "edge_function" },
-    });
 
     return json(
       {
-        request_id: requestRow.id,
-        expires_at: requestRow.expires_at,
-        pending_confirmation: true,
+        ok: true,
+        hold_id: holdRow.id,
+        expires_at: holdRow.expires_at,
+        appointment_date: appointmentDate,
+        start_time: startTime,
+        end_time: endTime,
+        appointment_type: normalizedType,
+        provider_id,
+        entity_id: entity_id || null,
       },
       201,
     );
-  } catch (error: any) {
-    console.error("Error in book-appointment:", error);
-    return json({ error: error?.message ?? String(error) }, 500);
+  } catch (e: any) {
+    console.error("Error in book-appointment:", e);
+    return json({ ok: false, error: e?.message ?? String(e) }, 500);
   }
-};
-
-serve(handler);
+});
