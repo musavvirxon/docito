@@ -1,4 +1,4 @@
-// File: supabase/functions/appointment-clinical-items/index.ts
+// FILE: supabase/functions/appointment-clinical-items/index.ts
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -8,84 +8,82 @@ const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-type ClinicalItemType = "procedure" | "medication" | "treatment_plan";
+type ItemType = "procedure" | "medication" | "treatment_plan";
 
-type Action =
-  | "list"
-  | "create"
-  | "update"
-  | "delete"
-  | "templates_list"
-  | "template_create"
-  | "template_update"
-  | "template_delete";
+type ListReq = { action: "list"; appointment_id: string };
+type CreateReq = {
+  action: "create";
+  appointment_id: string;
+  type: ItemType;
+  name: string;
+  description?: string | null;
+  quantity?: number | null;
+  dosage?: string | null;
+  frequency?: string | null;
+  duration?: string | null;
+  cost?: number | null;
+  template_id?: string | null;
+  save_as_template?: boolean;
+  template_name?: string | null;
+  template_description?: string | null;
+  template_default_cost?: number | null;
+};
+type UpdateReq = {
+  action: "update";
+  item_id: string;
+  appointment_id: string;
+  type?: ItemType;
+  name?: string;
+  description?: string | null;
+  quantity?: number | null;
+  dosage?: string | null;
+  frequency?: string | null;
+  duration?: string | null;
+  cost?: number | null;
+  template_id?: string | null;
+};
+type DeleteReq = { action: "delete"; item_id: string; appointment_id: string };
+
+type TemplatesListReq = { action: "templates_list"; type?: ItemType | null; include_inactive?: boolean | null };
+type TemplatesCreateReq = {
+  action: "templates_create";
+  type: ItemType;
+  name: string;
+  description?: string | null;
+  default_cost?: number | null;
+  is_active?: boolean | null;
+};
+type TemplatesUpdateReq = {
+  action: "templates_update";
+  template_id: string;
+  type?: ItemType;
+  name?: string;
+  description?: string | null;
+  default_cost?: number | null;
+  is_active?: boolean | null;
+};
+type TemplatesDeleteReq = { action: "templates_delete"; template_id: string };
+
+type ApplyTemplateReq = {
+  action: "apply_template";
+  appointment_id: string;
+  template_id: string;
+  overrides?: Partial<Pick<CreateReq, "name" | "description" | "quantity" | "dosage" | "frequency" | "duration" | "cost">> | null;
+};
 
 type ReqBody =
-  | {
-      action: "list";
-      appointment_id: string;
-    }
-  | {
-      action: "create";
-      appointment_id: string;
-      item: {
-        item_type: ClinicalItemType;
-        title: string;
-        details?: Record<string, unknown>;
-      };
-      save_as_template?: boolean;
-      template?: {
-        name?: string;
-        description?: string | null;
-        default_cost?: number | null;
-      };
-    }
-  | {
-      action: "update";
-      appointment_id: string;
-      item_id: string;
-      patch: {
-        title?: string;
-        details?: Record<string, unknown>;
-        item_type?: ClinicalItemType;
-      };
-    }
-  | {
-      action: "delete";
-      appointment_id: string;
-      item_id: string;
-    }
-  | {
-      action: "templates_list";
-    }
-  | {
-      action: "template_create";
-      template: {
-        type: ClinicalItemType;
-        name: string;
-        description?: string | null;
-        default_cost?: number | null;
-        is_active?: boolean;
-      };
-    }
-  | {
-      action: "template_update";
-      template_id: string;
-      patch: {
-        type?: ClinicalItemType;
-        name?: string;
-        description?: string | null;
-        default_cost?: number | null;
-        is_active?: boolean;
-      };
-    }
-  | {
-      action: "template_delete";
-      template_id: string;
-    };
+  | ListReq
+  | CreateReq
+  | UpdateReq
+  | DeleteReq
+  | TemplatesListReq
+  | TemplatesCreateReq
+  | TemplatesUpdateReq
+  | TemplatesDeleteReq
+  | ApplyTemplateReq;
 
 type Resp =
-  | { ok: true; items?: unknown[]; templates?: unknown[] }
+  | { ok: true; items?: unknown[]; templates?: unknown[]; item?: unknown; template?: unknown }
   | { ok: false; error: string; code?: string };
 
 function json(data: Resp, status = 200) {
@@ -101,355 +99,541 @@ function requireEnv(name: string) {
   return v;
 }
 
-function getBearer(req: Request) {
-  return req.headers.get("authorization") || req.headers.get("Authorization");
+function isBearer(h: string | null) {
+  return Boolean(h && h.toLowerCase().startsWith("bearer "));
 }
 
-async function getAuthedUser(supabaseUrl: string, anonKey: string, authHeader: string) {
+function asString(v: unknown) {
+  return typeof v === "string" ? v : "";
+}
+
+function isMissingColumnError(err: any, columnName: string) {
+  const msg = String(err?.message || "").toLowerCase();
+  const col = columnName.toLowerCase();
+  return msg.includes("schema cache") && msg.includes(col);
+}
+
+function pickDefined<T extends Record<string, unknown>>(obj: T): Partial<T> {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (v !== undefined) out[k] = v;
+  }
+  return out as Partial<T>;
+}
+
+async function getUserFromAuth(supabaseUrl: string, anonKey: string, authHeader: string) {
   const userClient = createClient(supabaseUrl, anonKey, {
     global: { headers: { Authorization: authHeader } },
     auth: { persistSession: false },
   });
   const { data, error } = await userClient.auth.getUser();
-  if (error || !data?.user) return { user: null as any, error: error?.message || "Unauthorized" };
-  return { user: data.user, error: null as string | null };
+  if (error || !data?.user) throw new Error("Unauthorized");
+  return data.user;
 }
 
-async function getDoctorIdByUserId(admin: any, userId: string): Promise<string | null> {
-  const { data, error } = await admin.from("doctors").select("id").eq("user_id", userId).maybeSingle();
-  if (error) return null;
-  return data?.id ?? null;
+async function getAppointment(service: any, appointmentId: string) {
+  // Select * to survive schema drift between migrations.
+  const { data, error } = await service.from("appointments").select("*").eq("id", appointmentId).maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  return data as any;
 }
 
-async function assertAppointmentAccess(params: {
-  admin: any;
-  appointmentId: string;
-  userId: string;
-}): Promise<
-  | { ok: true; role: "doctor" | "patient"; appointment: any; doctorId: string | null }
-  | { ok: false; error: string; code?: string }
-> {
-  const { admin, appointmentId, userId } = params;
+async function getDoctor(service: any, doctorId: string) {
+  const { data, error } = await service.from("doctors").select("id,user_id").eq("id", doctorId).maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  return data as any;
+}
 
-  const { data: appt, error: apptErr } = await admin
-    .from("appointments")
-    .select("id, doctor_id, patient_id, doctor_patient_id, practice_id, status, appointment_type, appointment_date, start_time, end_time")
-    .eq("id", appointmentId)
+function normalizeItem(row: any) {
+  // Supports:
+  // - Legacy schema: item_type, title, details (jsonb), doctor_patient_id
+  // - Newer schema: type, name, description, quantity, dosage, frequency, duration, cost
+  const details = (row?.details && typeof row.details === "object") ? row.details : {};
+  const type = (row?.item_type || row?.type) as ItemType;
+  const name = (row?.title || row?.name) as string;
+
+  const description = row?.description ?? details?.description ?? details?.notes ?? null;
+  const quantity = row?.quantity ?? details?.quantity ?? null;
+  const dosage = row?.dosage ?? details?.dosage ?? null;
+  const frequency = row?.frequency ?? details?.frequency ?? null;
+  const duration = row?.duration ?? details?.duration ?? null;
+  const cost = row?.cost ?? details?.cost ?? details?.estimated_cost ?? null;
+
+  return {
+    id: row?.id,
+    appointment_id: row?.appointment_id,
+    doctor_id: row?.doctor_id,
+    patient_id: row?.patient_id ?? null,
+    doctor_patient_id: row?.doctor_patient_id ?? null,
+    template_id: row?.template_id ?? null,
+    type,
+    name,
+    description,
+    quantity,
+    dosage,
+    frequency,
+    duration,
+    cost,
+    created_at: row?.created_at ?? null,
+    updated_at: row?.updated_at ?? null,
+  };
+}
+
+function normalizeTemplate(row: any) {
+  return {
+    id: row?.id,
+    doctor_id: row?.doctor_id,
+    type: row?.type,
+    name: row?.name,
+    description: row?.description ?? null,
+    default_cost: row?.default_cost ?? null,
+    is_active: row?.is_active ?? true,
+    created_at: row?.created_at ?? null,
+    updated_at: row?.updated_at ?? null,
+  };
+}
+
+async function resolveContext(service: any, userId: string, appointmentId: string) {
+  const appt = await getAppointment(service, appointmentId);
+  if (!appt) return { ok: false as const, code: "NOT_FOUND", error: "Appointment not found" };
+
+  const doctor = await getDoctor(service, appt.doctor_id);
+  if (!doctor) return { ok: false as const, code: "NOT_FOUND", error: "Doctor not found for appointment" };
+
+  const isDoctor = asString(doctor.user_id) === userId;
+  const isPatient = appt.patient_id && asString(appt.patient_id) === userId;
+
+  return {
+    ok: true as const,
+    appt,
+    doctor,
+    isDoctor,
+    isPatient,
+  };
+}
+
+async function insertItemLegacy(service: any, appt: any, payload: any) {
+  const details: Record<string, unknown> = {
+    description: payload.description ?? null,
+    quantity: payload.quantity ?? null,
+    dosage: payload.dosage ?? null,
+    frequency: payload.frequency ?? null,
+    duration: payload.duration ?? null,
+    cost: payload.cost ?? null,
+  };
+
+  const base: Record<string, unknown> = {
+    appointment_id: appt.id,
+    doctor_id: appt.doctor_id,
+    patient_id: appt.patient_id ?? null,
+    doctor_patient_id: appt.doctor_patient_id ?? null,
+    item_type: payload.type,
+    title: payload.name,
+    details,
+    template_id: payload.template_id ?? null,
+  };
+
+  // If doctor_patient_id column doesn't exist, retry without it.
+  const { data, error } = await service.from("appointment_clinical_items").insert(base).select("*").maybeSingle();
+  if (!error) return { data, error: null };
+
+  if (isMissingColumnError(error, "doctor_patient_id")) {
+    const retry = { ...base };
+    delete retry.doctor_patient_id;
+    const r2 = await service.from("appointment_clinical_items").insert(retry).select("*").maybeSingle();
+    return { data: r2.data, error: r2.error };
+  }
+
+  if (isMissingColumnError(error, "template_id")) {
+    const retry = { ...base };
+    delete retry.template_id;
+    const r2 = await service.from("appointment_clinical_items").insert(retry).select("*").maybeSingle();
+    return { data: r2.data, error: r2.error };
+  }
+
+  return { data: null, error };
+}
+
+async function insertItemNew(service: any, appt: any, payload: any) {
+  const base: Record<string, unknown> = {
+    appointment_id: appt.id,
+    doctor_id: appt.doctor_id,
+    patient_id: appt.patient_id ?? null,
+    type: payload.type,
+    name: payload.name,
+    description: payload.description ?? null,
+    quantity: payload.quantity ?? null,
+    dosage: payload.dosage ?? null,
+    frequency: payload.frequency ?? null,
+    duration: payload.duration ?? null,
+    cost: payload.cost ?? null,
+    template_id: payload.template_id ?? null,
+  };
+
+  const { data, error } = await service.from("appointment_clinical_items").insert(base).select("*").maybeSingle();
+  if (!error) return { data, error: null };
+
+  if (isMissingColumnError(error, "template_id")) {
+    const retry = { ...base };
+    delete retry.template_id;
+    const r2 = await service.from("appointment_clinical_items").insert(retry).select("*").maybeSingle();
+    return { data: r2.data, error: r2.error };
+  }
+
+  return { data: null, error };
+}
+
+async function updateItemLegacy(service: any, appt: any, itemId: string, patch: any) {
+  const details: Record<string, unknown> = {};
+  if (patch.description !== undefined) details.description = patch.description ?? null;
+  if (patch.quantity !== undefined) details.quantity = patch.quantity ?? null;
+  if (patch.dosage !== undefined) details.dosage = patch.dosage ?? null;
+  if (patch.frequency !== undefined) details.frequency = patch.frequency ?? null;
+  if (patch.duration !== undefined) details.duration = patch.duration ?? null;
+  if (patch.cost !== undefined) details.cost = patch.cost ?? null;
+
+  const updatePayload: Record<string, unknown> = {
+    ...(patch.type !== undefined ? { item_type: patch.type } : {}),
+    ...(patch.name !== undefined ? { title: patch.name } : {}),
+    ...(Object.keys(details).length > 0 ? { details } : {}),
+    ...(patch.template_id !== undefined ? { template_id: patch.template_id ?? null } : {}),
+  };
+
+  const { data, error } = await service
+    .from("appointment_clinical_items")
+    .update(updatePayload)
+    .eq("id", itemId)
+    .eq("appointment_id", appt.id)
+    .select("*")
     .maybeSingle();
 
-  if (apptErr) return { ok: false, error: "Failed to load appointment", code: "APPOINTMENT_READ_FAILED" };
-  if (!appt) return { ok: false, error: "Appointment not found", code: "NOT_FOUND" };
+  if (!error) return { data, error: null };
 
-  // Doctor?
-  const doctorId = await getDoctorIdByUserId(admin, userId);
-  if (doctorId && appt.doctor_id === doctorId) {
-    return { ok: true, role: "doctor", appointment: appt, doctorId };
+  if (isMissingColumnError(error, "template_id")) {
+    const retry = { ...updatePayload };
+    delete retry.template_id;
+    const r2 = await service
+      .from("appointment_clinical_items")
+      .update(retry)
+      .eq("id", itemId)
+      .eq("appointment_id", appt.id)
+      .select("*")
+      .maybeSingle();
+    return { data: r2.data, error: r2.error };
   }
 
-  // Patient?
-  if (appt.patient_id && appt.patient_id === userId) {
-    return { ok: true, role: "patient", appointment: appt, doctorId: null };
-  }
-
-  return { ok: false, error: "Forbidden", code: "FORBIDDEN" };
+  return { data: null, error };
 }
 
-function safeType(t: unknown): ClinicalItemType {
-  const v = String(t || "").trim().toLowerCase();
-  if (v === "procedure" || v === "medication" || v === "treatment_plan") return v;
-  throw new Error("Invalid item_type");
+async function updateItemNew(service: any, appt: any, itemId: string, patch: any) {
+  const updatePayload: Record<string, unknown> = pickDefined({
+    type: patch.type,
+    name: patch.name,
+    description: patch.description,
+    quantity: patch.quantity,
+    dosage: patch.dosage,
+    frequency: patch.frequency,
+    duration: patch.duration,
+    cost: patch.cost,
+    template_id: patch.template_id,
+  });
+
+  const { data, error } = await service
+    .from("appointment_clinical_items")
+    .update(updatePayload)
+    .eq("id", itemId)
+    .eq("appointment_id", appt.id)
+    .select("*")
+    .maybeSingle();
+
+  if (!error) return { data, error: null };
+
+  if (isMissingColumnError(error, "template_id")) {
+    const retry = { ...updatePayload };
+    delete retry.template_id;
+    const r2 = await service
+      .from("appointment_clinical_items")
+      .update(retry)
+      .eq("id", itemId)
+      .eq("appointment_id", appt.id)
+      .select("*")
+      .maybeSingle();
+    return { data: r2.data, error: r2.error };
+  }
+
+  return { data: null, error };
+}
+
+async function createTemplate(service: any, doctorId: string, payload: any) {
+  const row = {
+    doctor_id: doctorId,
+    type: payload.type,
+    name: payload.name,
+    description: payload.description ?? null,
+    default_cost: payload.default_cost ?? null,
+    is_active: payload.is_active ?? true,
+  };
+
+  const { data, error } = await service.from("appointment_clinical_item_templates").insert(row).select("*").single();
+  if (error) throw error;
+  return data;
 }
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  if (req.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 200);
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
+  if (req.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 405);
 
   try {
     const supabaseUrl = requireEnv("SUPABASE_URL");
     const anonKey = requireEnv("SUPABASE_ANON_KEY");
     const serviceKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
 
-    const authHeader = getBearer(req);
-    if (!authHeader) return json({ ok: false, error: "Missing Authorization header", code: "NO_AUTH" }, 200);
+    const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
+    if (!isBearer(authHeader)) return json({ ok: false, error: "Missing Authorization" }, 401);
 
-    const { user, error: userError } = await getAuthedUser(supabaseUrl, anonKey, authHeader);
-    if (!user) return json({ ok: false, error: userError || "Unauthorized", code: "UNAUTHORIZED" }, 200);
+    const user = await getUserFromAuth(supabaseUrl, anonKey, authHeader!);
 
-    let body: ReqBody;
-    try {
-      body = (await req.json()) as ReqBody;
-    } catch {
-      return json({ ok: false, error: "Invalid JSON body", code: "BAD_JSON" }, 200);
-    }
+    const service = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
-    const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
-
-    const action = (body as any)?.action as Action | undefined;
-    if (!action) return json({ ok: false, error: "Missing action", code: "MISSING_ACTION" }, 200);
+    const body = (await req.json().catch(() => null)) as ReqBody | null;
+    if (!body?.action) return json({ ok: false, error: "Missing action" }, 400);
 
     // -----------------------
     // Templates (doctor-only)
     // -----------------------
-    if (action === "templates_list") {
-      const doctorId = await getDoctorIdByUserId(admin, user.id);
-      if (!doctorId) return json({ ok: false, error: "Forbidden", code: "NOT_DOCTOR" }, 200);
+    if (
+      body.action === "templates_list" ||
+      body.action === "templates_create" ||
+      body.action === "templates_update" ||
+      body.action === "templates_delete"
+    ) {
+      const { data: doctor, error: dErr } = await service.from("doctors").select("id,user_id").eq("user_id", user.id).maybeSingle();
+      if (dErr) return json({ ok: false, error: dErr.message }, 500);
+      if (!doctor?.id) return json({ ok: false, error: "Forbidden" }, 403);
 
-      const { data, error } = await admin
-        .from("appointment_clinical_item_templates")
-        .select("id, doctor_id, type, name, description, default_cost, is_active, created_at, updated_at")
-        .eq("doctor_id", doctorId)
-        .order("updated_at", { ascending: false });
+      if (body.action === "templates_list") {
+        let q = service.from("appointment_clinical_item_templates").select("*").eq("doctor_id", doctor.id).order("created_at", { ascending: false });
 
-      if (error) return json({ ok: false, error: error.message, code: "TEMPLATES_READ_FAILED" }, 200);
-      return json({ ok: true, templates: data || [] }, 200);
-    }
+        if (body.type) q = q.eq("type", body.type);
+        if (!body.include_inactive) q = q.eq("is_active", true);
 
-    if (action === "template_create") {
-      const doctorId = await getDoctorIdByUserId(admin, user.id);
-      if (!doctorId) return json({ ok: false, error: "Forbidden", code: "NOT_DOCTOR" }, 200);
+        const { data, error } = await q;
+        if (error) return json({ ok: false, error: error.message }, 500);
 
-      const t = (body as any).template;
-      if (!t?.name) return json({ ok: false, error: "template.name is required", code: "MISSING_NAME" }, 200);
-
-      const type = safeType(t.type);
-
-      const { data, error } = await admin
-        .from("appointment_clinical_item_templates")
-        .insert({
-          doctor_id: doctorId,
-          type,
-          name: String(t.name).trim(),
-          description: t.description ?? null,
-          default_cost: t.default_cost ?? null,
-          is_active: typeof t.is_active === "boolean" ? t.is_active : true,
-        })
-        .select("id, doctor_id, type, name, description, default_cost, is_active, created_at, updated_at")
-        .single();
-
-      if (error) return json({ ok: false, error: error.message, code: "TEMPLATE_CREATE_FAILED" }, 200);
-      return json({ ok: true, templates: [data] }, 200);
-    }
-
-    if (action === "template_update") {
-      const doctorId = await getDoctorIdByUserId(admin, user.id);
-      if (!doctorId) return json({ ok: false, error: "Forbidden", code: "NOT_DOCTOR" }, 200);
-
-      const templateId = (body as any).template_id;
-      const patch = (body as any).patch || {};
-      if (!templateId) return json({ ok: false, error: "template_id is required", code: "MISSING_TEMPLATE_ID" }, 200);
-
-      const updatePatch: Record<string, unknown> = {};
-      if (patch.type != null) updatePatch.type = safeType(patch.type);
-      if (patch.name != null) updatePatch.name = String(patch.name).trim();
-      if (patch.description !== undefined) updatePatch.description = patch.description ?? null;
-      if (patch.default_cost !== undefined) updatePatch.default_cost = patch.default_cost ?? null;
-      if (patch.is_active !== undefined) updatePatch.is_active = Boolean(patch.is_active);
-
-      const { data: owned, error: ownedErr } = await admin
-        .from("appointment_clinical_item_templates")
-        .select("id")
-        .eq("id", templateId)
-        .eq("doctor_id", doctorId)
-        .maybeSingle();
-
-      if (ownedErr) return json({ ok: false, error: ownedErr.message, code: "TEMPLATE_OWNERSHIP_CHECK_FAILED" }, 200);
-      if (!owned) return json({ ok: false, error: "Not found", code: "NOT_FOUND" }, 200);
-
-      const { data, error } = await admin
-        .from("appointment_clinical_item_templates")
-        .update(updatePatch)
-        .eq("id", templateId)
-        .select("id, doctor_id, type, name, description, default_cost, is_active, created_at, updated_at")
-        .single();
-
-      if (error) return json({ ok: false, error: error.message, code: "TEMPLATE_UPDATE_FAILED" }, 200);
-      return json({ ok: true, templates: [data] }, 200);
-    }
-
-    if (action === "template_delete") {
-      const doctorId = await getDoctorIdByUserId(admin, user.id);
-      if (!doctorId) return json({ ok: false, error: "Forbidden", code: "NOT_DOCTOR" }, 200);
-
-      const templateId = (body as any).template_id;
-      if (!templateId) return json({ ok: false, error: "template_id is required", code: "MISSING_TEMPLATE_ID" }, 200);
-
-      const { data: owned, error: ownedErr } = await admin
-        .from("appointment_clinical_item_templates")
-        .select("id")
-        .eq("id", templateId)
-        .eq("doctor_id", doctorId)
-        .maybeSingle();
-
-      if (ownedErr) return json({ ok: false, error: ownedErr.message, code: "TEMPLATE_OWNERSHIP_CHECK_FAILED" }, 200);
-      if (!owned) return json({ ok: false, error: "Not found", code: "NOT_FOUND" }, 200);
-
-      const { error } = await admin.from("appointment_clinical_item_templates").delete().eq("id", templateId);
-      if (error) return json({ ok: false, error: error.message, code: "TEMPLATE_DELETE_FAILED" }, 200);
-
-      return json({ ok: true }, 200);
-    }
-
-    // -----------------------
-    // Appointment items
-    // -----------------------
-    if (action === "list") {
-      const appointmentId = (body as any).appointment_id;
-      if (!appointmentId) return json({ ok: false, error: "appointment_id is required", code: "MISSING_APPOINTMENT_ID" }, 200);
-
-      const access = await assertAppointmentAccess({ admin, appointmentId, userId: user.id });
-      if (!access.ok) return json(access, 200);
-
-      const { data, error } = await admin
-        .from("appointment_clinical_items")
-        .select("id, appointment_id, doctor_id, patient_id, doctor_patient_id, item_type, title, details, created_at, updated_at")
-        .eq("appointment_id", appointmentId)
-        .order("created_at", { ascending: true });
-
-      if (error) return json({ ok: false, error: error.message, code: "ITEMS_LIST_FAILED" }, 200);
-      return json({ ok: true, items: data || [] }, 200);
-    }
-
-    if (action === "create") {
-      const appointmentId = (body as any).appointment_id;
-      const item = (body as any).item;
-      if (!appointmentId) return json({ ok: false, error: "appointment_id is required", code: "MISSING_APPOINTMENT_ID" }, 200);
-      if (!item?.item_type || !item?.title) {
-        return json({ ok: false, error: "item.item_type and item.title are required", code: "MISSING_FIELDS" }, 200);
+        return json({ ok: true, templates: (data || []).map(normalizeTemplate) });
       }
 
-      const access = await assertAppointmentAccess({ admin, appointmentId, userId: user.id });
-      if (!access.ok) return json(access, 200);
-      if (access.role !== "doctor") return json({ ok: false, error: "Forbidden", code: "DOCTOR_ONLY" }, 200);
+      if (body.action === "templates_create") {
+        const t = await createTemplate(service, doctor.id, body);
+        return json({ ok: true, template: normalizeTemplate(t) });
+      }
 
-      const itemType = safeType(item.item_type);
-      const title = String(item.title).trim();
-      const details = (item.details ?? {}) as Record<string, unknown>;
+      if (body.action === "templates_update") {
+        const patch = pickDefined({
+          type: body.type,
+          name: body.name,
+          description: body.description,
+          default_cost: body.default_cost,
+          is_active: body.is_active,
+        });
 
-      // Fill patient_id/doctor_patient_id from appointment
-      const appt = access.appointment;
-
-      const { data: created, error } = await admin
-        .from("appointment_clinical_items")
-        .insert({
-          appointment_id: appointmentId,
-          doctor_id: appt.doctor_id,
-          patient_id: appt.patient_id ?? null,
-          doctor_patient_id: appt.doctor_patient_id ?? null,
-          item_type: itemType,
-          title,
-          details,
-        })
-        .select("id, appointment_id, doctor_id, patient_id, doctor_patient_id, item_type, title, details, created_at, updated_at")
-        .single();
-
-      if (error) return json({ ok: false, error: error.message, code: "ITEM_CREATE_FAILED" }, 200);
-
-      // Optional "save as template" (best-effort)
-      const saveAsTemplate = Boolean((body as any).save_as_template);
-      if (saveAsTemplate && access.doctorId) {
-        const t = (body as any).template || {};
-        const name = String(t.name || title).trim();
-
-        const descFromDetails =
-          typeof details?.description === "string"
-            ? String(details.description)
-            : typeof details?.notes === "string"
-              ? String(details.notes)
-              : null;
-
-        const description = (t.description ?? descFromDetails) ?? null;
-
-        const defaultCost =
-          typeof t.default_cost === "number"
-            ? t.default_cost
-            : typeof (details as any)?.cost === "number"
-              ? Number((details as any).cost)
-              : null;
-
-        await admin
+        const { data, error } = await service
           .from("appointment_clinical_item_templates")
-          .insert({
-            doctor_id: access.doctorId,
-            type: itemType,
-            name,
-            description,
-            default_cost: defaultCost,
-            is_active: true,
-          })
-          .catch(() => {
-            // ignore template errors
-          });
+          .update(patch)
+          .eq("id", body.template_id)
+          .eq("doctor_id", doctor.id)
+          .select("*")
+          .maybeSingle();
+
+        if (error) return json({ ok: false, error: error.message }, 500);
+        if (!data) return json({ ok: false, error: "Template not found" }, 404);
+
+        return json({ ok: true, template: normalizeTemplate(data) });
       }
 
-      return json({ ok: true, items: [created] }, 200);
+      if (body.action === "templates_delete") {
+        const { error } = await service.from("appointment_clinical_item_templates").delete().eq("id", body.template_id).eq("doctor_id", doctor.id);
+        if (error) return json({ ok: false, error: error.message }, 500);
+        return json({ ok: true });
+      }
     }
 
-    if (action === "update") {
-      const appointmentId = (body as any).appointment_id;
-      const itemId = (body as any).item_id;
-      const patch = (body as any).patch || {};
-      if (!appointmentId) return json({ ok: false, error: "appointment_id is required", code: "MISSING_APPOINTMENT_ID" }, 200);
-      if (!itemId) return json({ ok: false, error: "item_id is required", code: "MISSING_ITEM_ID" }, 200);
+    // -----------------------
+    // Appointment context (items)
+    // -----------------------
+    const appointmentId = (body as any).appointment_id;
+    if (!appointmentId) return json({ ok: false, error: "appointment_id is required" }, 400);
 
-      const access = await assertAppointmentAccess({ admin, appointmentId, userId: user.id });
-      if (!access.ok) return json(access, 200);
-      if (access.role !== "doctor") return json({ ok: false, error: "Forbidden", code: "DOCTOR_ONLY" }, 200);
+    const ctx = await resolveContext(service, user.id, appointmentId);
+    if (!ctx.ok) return json({ ok: false, error: ctx.error, code: ctx.code }, 404);
 
-      const { data: ownedItem, error: ownedErr } = await admin
+    const { appt, doctor, isDoctor, isPatient } = ctx;
+
+    // Patients can only read their own appointment items
+    if (!isDoctor && !isPatient) return json({ ok: false, error: "Forbidden" }, 403);
+
+    if (body.action === "list") {
+      const { data, error } = await service
         .from("appointment_clinical_items")
-        .select("id, doctor_id, appointment_id")
-        .eq("id", itemId)
-        .eq("appointment_id", appointmentId)
+        .select("*")
+        .eq("appointment_id", appt.id)
+        .order("created_at", { ascending: false });
+
+      if (error) return json({ ok: false, error: error.message }, 500);
+
+      const items = (data || []).map(normalizeItem);
+
+      // Extra defense-in-depth: if patient, filter to only their rows
+      const filtered = isPatient ? items.filter((i: any) => !i.patient_id || i.patient_id === user.id) : items;
+
+      return json({ ok: true, items: filtered });
+    }
+
+    // Doctor-only writes
+    if (!isDoctor) return json({ ok: false, error: "Forbidden" }, 403);
+
+    if (body.action === "apply_template") {
+      const { data: tpl, error: tErr } = await service
+        .from("appointment_clinical_item_templates")
+        .select("*")
+        .eq("id", body.template_id)
+        .eq("doctor_id", doctor.id)
         .maybeSingle();
 
-      if (ownedErr) return json({ ok: false, error: ownedErr.message, code: "ITEM_OWNERSHIP_CHECK_FAILED" }, 200);
-      if (!ownedItem) return json({ ok: false, error: "Not found", code: "NOT_FOUND" }, 200);
+      if (tErr) return json({ ok: false, error: tErr.message }, 500);
+      if (!tpl) return json({ ok: false, error: "Template not found" }, 404);
 
-      const updatePatch: Record<string, unknown> = {};
-      if (patch.title != null) updatePatch.title = String(patch.title).trim();
-      if (patch.details != null) updatePatch.details = patch.details;
-      if (patch.item_type != null) updatePatch.item_type = safeType(patch.item_type);
+      const overrides = body.overrides || {};
+      const payload = {
+        type: (overrides as any).type ?? tpl.type,
+        name: (overrides as any).name ?? tpl.name,
+        description: (overrides as any).description ?? tpl.description ?? null,
+        quantity: (overrides as any).quantity ?? null,
+        dosage: (overrides as any).dosage ?? null,
+        frequency: (overrides as any).frequency ?? null,
+        duration: (overrides as any).duration ?? null,
+        cost: (overrides as any).cost ?? tpl.default_cost ?? null,
+        template_id: tpl.id,
+      };
 
-      const { data: updated, error } = await admin
-        .from("appointment_clinical_items")
-        .update(updatePatch)
-        .eq("id", itemId)
-        .select("id, appointment_id, doctor_id, patient_id, doctor_patient_id, item_type, title, details, created_at, updated_at")
-        .single();
+      // Try legacy insert, fallback to new schema insert
+      let inserted: any = null;
+      let lastErr: any = null;
 
-      if (error) return json({ ok: false, error: error.message, code: "ITEM_UPDATE_FAILED" }, 200);
-      return json({ ok: true, items: [updated] }, 200);
+      {
+        const r1 = await insertItemLegacy(service, appt, payload);
+        if (r1.error) {
+          lastErr = r1.error;
+          const r2 = await insertItemNew(service, appt, payload);
+          if (r2.error) lastErr = r2.error;
+          else inserted = r2.data;
+        } else {
+          inserted = r1.data;
+        }
+      }
+
+      if (lastErr) return json({ ok: false, error: String(lastErr?.message || lastErr) }, 500);
+      return json({ ok: true, item: normalizeItem(inserted) });
     }
 
-    if (action === "delete") {
-      const appointmentId = (body as any).appointment_id;
-      const itemId = (body as any).item_id;
-      if (!appointmentId) return json({ ok: false, error: "appointment_id is required", code: "MISSING_APPOINTMENT_ID" }, 200);
-      if (!itemId) return json({ ok: false, error: "item_id is required", code: "MISSING_ITEM_ID" }, 200);
+    if (body.action === "create") {
+      if (!body.type || !body.name) return json({ ok: false, error: "type and name are required" }, 400);
 
-      const access = await assertAppointmentAccess({ admin, appointmentId, userId: user.id });
-      if (!access.ok) return json(access, 200);
-      if (access.role !== "doctor") return json({ ok: false, error: "Forbidden", code: "DOCTOR_ONLY" }, 200);
+      let createdTemplate: any = null;
+      let templateIdToUse: string | null = body.template_id ?? null;
 
-      const { data: ownedItem, error: ownedErr } = await admin
-        .from("appointment_clinical_items")
-        .select("id")
-        .eq("id", itemId)
-        .eq("appointment_id", appointmentId)
-        .maybeSingle();
+      if (body.save_as_template) {
+        const tplPayload = {
+          type: body.type,
+          name: body.template_name?.trim() || body.name,
+          description: body.template_description ?? body.description ?? null,
+          default_cost: body.template_default_cost ?? body.cost ?? null,
+          is_active: true,
+        };
+        createdTemplate = await createTemplate(service, doctor.id, tplPayload);
+        templateIdToUse = createdTemplate.id;
+      }
 
-      if (ownedErr) return json({ ok: false, error: ownedErr.message, code: "ITEM_OWNERSHIP_CHECK_FAILED" }, 200);
-      if (!ownedItem) return json({ ok: false, error: "Not found", code: "NOT_FOUND" }, 200);
+      const payload = {
+        type: body.type,
+        name: body.name,
+        description: body.description ?? null,
+        quantity: body.quantity ?? null,
+        dosage: body.dosage ?? null,
+        frequency: body.frequency ?? null,
+        duration: body.duration ?? null,
+        cost: body.cost ?? null,
+        template_id: templateIdToUse,
+      };
 
-      const { error } = await admin.from("appointment_clinical_items").delete().eq("id", itemId);
-      if (error) return json({ ok: false, error: error.message, code: "ITEM_DELETE_FAILED" }, 200);
+      let inserted: any = null;
+      let lastErr: any = null;
 
-      return json({ ok: true }, 200);
+      {
+        const r1 = await insertItemLegacy(service, appt, payload);
+        if (r1.error) {
+          lastErr = r1.error;
+          const r2 = await insertItemNew(service, appt, payload);
+          if (r2.error) lastErr = r2.error;
+          else inserted = r2.data;
+        } else {
+          inserted = r1.data;
+        }
+      }
+
+      if (lastErr) return json({ ok: false, error: String(lastErr?.message || lastErr) }, 500);
+
+      return json({
+        ok: true,
+        item: normalizeItem(inserted),
+        ...(createdTemplate ? { template: normalizeTemplate(createdTemplate) } : {}),
+      });
     }
 
-    return json({ ok: false, error: "Unknown action", code: "UNKNOWN_ACTION" }, 200);
+    if (body.action === "update") {
+      if (!body.item_id) return json({ ok: false, error: "item_id is required" }, 400);
+
+      // Determine schema by attempting legacy update first; fallback to new schema update.
+      let updated: any = null;
+      let lastErr: any = null;
+
+      {
+        const r1 = await updateItemLegacy(service, appt, body.item_id, body);
+        if (r1.error) {
+          lastErr = r1.error;
+          const r2 = await updateItemNew(service, appt, body.item_id, body);
+          if (r2.error) lastErr = r2.error;
+          else updated = r2.data;
+        } else {
+          updated = r1.data;
+        }
+      }
+
+      if (lastErr) return json({ ok: false, error: String(lastErr?.message || lastErr) }, 500);
+      if (!updated) return json({ ok: false, error: "Item not found" }, 404);
+
+      return json({ ok: true, item: normalizeItem(updated) });
+    }
+
+    if (body.action === "delete") {
+      if (!body.item_id) return json({ ok: false, error: "item_id is required" }, 400);
+
+      const { error } = await service
+        .from("appointment_clinical_items")
+        .delete()
+        .eq("id", body.item_id)
+        .eq("appointment_id", appt.id);
+
+      if (error) return json({ ok: false, error: error.message }, 500);
+
+      return json({ ok: true });
+    }
+
+    return json({ ok: false, error: "Unknown action" }, 400);
   } catch (e: any) {
-    console.error("Error in appointment-clinical-items:", e);
-    return json({ ok: false, error: e?.message ?? String(e), code: "UNEXPECTED" }, 200);
+    console.error("appointment-clinical-items error:", e);
+    return json({ ok: false, error: e?.message ?? String(e) }, 500);
   }
 });
