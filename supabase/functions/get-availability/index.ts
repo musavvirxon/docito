@@ -13,11 +13,9 @@ interface GetAvailabilityRequest {
   from: string; // YYYY-MM-DD
   to: string; // YYYY-MM-DD
   appointment_type?: string;
-
   procedure_duration_minutes?: number;
   include_breaks?: boolean;
   return_meta?: boolean;
-
   duration_minutes?: number;
 }
 
@@ -114,6 +112,7 @@ serve(async (req) => {
       });
     }
 
+    // Fetch schedule settings
     const { data: sched, error: schedErr } = await supabase
       .from("schedule_settings")
       .select("working_days,buffer_time,holidays")
@@ -132,36 +131,11 @@ serve(async (req) => {
             breaks?: Array<{ start_time: string; end_time: string; name?: string }>;
           }
         >) ?? {
-          monday: {
-            enabled: true,
-            start_time: "09:00",
-            end_time: "17:00",
-            breaks: [{ start_time: "12:00", end_time: "13:00", name: "Lunch Break" }],
-          },
-          tuesday: {
-            enabled: true,
-            start_time: "09:00",
-            end_time: "17:00",
-            breaks: [{ start_time: "12:00", end_time: "13:00", name: "Lunch Break" }],
-          },
-          wednesday: {
-            enabled: true,
-            start_time: "09:00",
-            end_time: "17:00",
-            breaks: [{ start_time: "12:00", end_time: "13:00", name: "Lunch Break" }],
-          },
-          thursday: {
-            enabled: true,
-            start_time: "09:00",
-            end_time: "17:00",
-            breaks: [{ start_time: "12:00", end_time: "13:00", name: "Lunch Break" }],
-          },
-          friday: {
-            enabled: true,
-            start_time: "09:00",
-            end_time: "17:00",
-            breaks: [{ start_time: "12:00", end_time: "13:00", name: "Lunch Break" }],
-          },
+          monday: { enabled: true, start_time: "09:00", end_time: "17:00", breaks: [{ start_time: "12:00", end_time: "13:00", name: "Lunch Break" }] },
+          tuesday: { enabled: true, start_time: "09:00", end_time: "17:00", breaks: [{ start_time: "12:00", end_time: "13:00", name: "Lunch Break" }] },
+          wednesday: { enabled: true, start_time: "09:00", end_time: "17:00", breaks: [{ start_time: "12:00", end_time: "13:00", name: "Lunch Break" }] },
+          thursday: { enabled: true, start_time: "09:00", end_time: "17:00", breaks: [{ start_time: "12:00", end_time: "13:00", name: "Lunch Break" }] },
+          friday: { enabled: true, start_time: "09:00", end_time: "17:00", breaks: [{ start_time: "12:00", end_time: "13:00", name: "Lunch Break" }] },
           saturday: { enabled: false, start_time: "09:00", end_time: "17:00", breaks: [] },
           sunday: { enabled: false, start_time: "09:00", end_time: "17:00", breaks: [] },
         },
@@ -171,25 +145,27 @@ serve(async (req) => {
 
     const bufferTime = scheduleSettings.buffer_time ?? 0;
 
+    // Fetch existing appointments (confirmed ones)
     const { data: existingAppointments, error: apptErr } = await supabase
       .from("appointments")
-      .select("appointment_date,start_time,end_time")
-      .eq("doctor_id", provider_id)
-      .gte("appointment_date", from)
-      .lte("appointment_date", to);
-    if (apptErr) throw apptErr;
-
-    // Pending (unconfirmed) appointment requests hold slots temporarily
-    const nowIso = new Date().toISOString();
-    const { data: pendingRequests, error: reqErr } = await supabase
-      .from("appointment_requests")
-      .select("appointment_date,start_time,end_time,expires_at,status")
+      .select("appointment_date,start_time,end_time,status")
       .eq("doctor_id", provider_id)
       .gte("appointment_date", from)
       .lte("appointment_date", to)
-      .eq("status", "pending");
-    if (reqErr) throw reqErr;
+      .neq("status", "canceled");
+    if (apptErr) throw apptErr;
 
+    // Pending (unconfirmed) appointment holds block slots temporarily
+    const nowIso = new Date().toISOString();
+    const { data: pendingHolds, error: holdErr } = await supabase
+      .from("appointment_holds")
+      .select("start_at,end_at,expires_at,status")
+      .eq("doctor_id", provider_id)
+      .eq("status", "pending")
+      .gt("expires_at", nowIso);
+    if (holdErr) throw holdErr;
+
+    // Fetch blocked times
     const { data: bt, error: btErr } = await supabase
       .from("blocked_times")
       .select("blocked_date,start_time,end_time,reason,block_type")
@@ -199,6 +175,7 @@ serve(async (req) => {
     if (btErr) throw btErr;
     const blockedTimes = bt || [];
 
+    // Fetch availability overrides
     const { data: ov, error: ovErr } = await supabase
       .from("availability_overrides")
       .select("override_date,start_time,end_time,is_available")
@@ -213,10 +190,118 @@ serve(async (req) => {
 
     const slots: Array<{ start_at: string; end_at: string; available: boolean; reason?: string }> = [];
 
-    const meta: Record<
-      string,
-      {
-        date: string;
-        is_holiday: boolean;
-        is_working_day: boolean;
-        working
+    const meta: Record<string, { date: string; is_holiday: boolean; is_working_day: boolean; working_hours?: { start: string; end: string }; breaks?: Array<{ start: string; end: string }> }> = {};
+
+    // Iterate through each day in range
+    for (let d = new Date(fromDate); d <= toDate; d.setDate(d.getDate() + 1)) {
+      const dateStr = d.toISOString().split("T")[0];
+      const dayName = DAY_NAMES[d.getDay()];
+      const daySettings = scheduleSettings.working_days[dayName];
+      const isHoliday = scheduleSettings.holidays.includes(dateStr);
+      const isWorkingDay = daySettings?.enabled && !isHoliday;
+
+      if (returnMeta) {
+        meta[dateStr] = {
+          date: dateStr,
+          is_holiday: isHoliday,
+          is_working_day: isWorkingDay,
+          working_hours: isWorkingDay ? { start: daySettings.start_time, end: daySettings.end_time } : undefined,
+          breaks: isWorkingDay ? daySettings.breaks?.map(b => ({ start: b.start_time, end: b.end_time })) : undefined,
+        };
+      }
+
+      if (!isWorkingDay) continue;
+
+      // Build available intervals for the day
+      const dayStartMins = timeToMinutes(daySettings.start_time);
+      const dayEndMins = timeToMinutes(daySettings.end_time);
+
+      let availableIntervals: Interval[] = [{ start: dayStartMins, end: dayEndMins }];
+
+      // Apply overrides for this date
+      const dayOverrides = overrides.filter(o => o.override_date === dateStr);
+      for (const override of dayOverrides) {
+        const oStart = timeToMinutes(override.start_time);
+        const oEnd = timeToMinutes(override.end_time);
+        if (!override.is_available) {
+          availableIntervals = subtractIntervals(availableIntervals, [{ start: oStart, end: oEnd }]);
+        }
+      }
+
+      // Subtract breaks if not including them
+      if (!includeBreaks && daySettings.breaks) {
+        const breakIntervals = daySettings.breaks.map(b => ({
+          start: timeToMinutes(b.start_time),
+          end: timeToMinutes(b.end_time),
+        }));
+        availableIntervals = subtractIntervals(availableIntervals, breakIntervals);
+      }
+
+      // Subtract blocked times
+      const dayBlocked = blockedTimes.filter(b => b.blocked_date === dateStr);
+      if (dayBlocked.length > 0) {
+        const blockedIntervals = dayBlocked.map(b => ({
+          start: timeToMinutes(b.start_time),
+          end: timeToMinutes(b.end_time),
+        }));
+        availableIntervals = subtractIntervals(availableIntervals, blockedIntervals);
+      }
+
+      // Subtract existing appointments (with buffer)
+      const dayAppts = (existingAppointments || []).filter(a => a.appointment_date === dateStr);
+      if (dayAppts.length > 0) {
+        const apptIntervals = dayAppts.map(a => ({
+          start: timeToMinutes(a.start_time) - bufferTime,
+          end: timeToMinutes(a.end_time) + bufferTime,
+        }));
+        availableIntervals = subtractIntervals(availableIntervals, apptIntervals);
+      }
+
+      // Subtract pending holds
+      const dayHolds = (pendingHolds || []).filter(h => {
+        const holdStart = new Date(h.start_at);
+        return holdStart.toISOString().split("T")[0] === dateStr;
+      });
+      if (dayHolds.length > 0) {
+        const holdIntervals = dayHolds.map(h => {
+          const sDate = new Date(h.start_at);
+          const eDate = new Date(h.end_at);
+          return {
+            start: sDate.getUTCHours() * 60 + sDate.getUTCMinutes() - bufferTime,
+            end: eDate.getUTCHours() * 60 + eDate.getUTCMinutes() + bufferTime,
+          };
+        });
+        availableIntervals = subtractIntervals(availableIntervals, holdIntervals);
+      }
+
+      // Generate slots from available intervals
+      for (const interval of availableIntervals) {
+        let cursor = interval.start;
+        while (cursor + procedureDuration <= interval.end) {
+          const slotStart = minutesToTime(cursor);
+          const slotEnd = minutesToTime(cursor + procedureDuration);
+          slots.push({
+            start_at: `${dateStr}T${slotStart}:00Z`,
+            end_at: `${dateStr}T${slotEnd}:00Z`,
+            available: true,
+          });
+          cursor += 15; // 15-minute increments
+        }
+      }
+    }
+
+    const response: any = { slots };
+    if (returnMeta) response.meta = meta;
+
+    return new Response(JSON.stringify(response), {
+      status: 200,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  } catch (error: any) {
+    console.error("get-availability error:", error);
+    return new Response(JSON.stringify({ error: error?.message ?? "Unknown error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...corsHeaders },
+    });
+  }
+});

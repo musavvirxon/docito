@@ -25,7 +25,7 @@ export interface BookingHoldResult {
 }
 
 type BookAppointmentFnResponse =
-  | ({ ok: true } & BookingHoldResult)
+  | { ok: true; hold_id: string; expires_at: string; appointment_date: string; start_time: string; end_time: string; appointment_type: string; provider_id: string; entity_id: string | null }
   | { ok: false; error: string; code?: string };
 
 export function useBookAppointment() {
@@ -87,7 +87,8 @@ export function useBookAppointment() {
         }
 
         if (!fnData.ok) {
-          const msg = fnData.error || 'Failed to create booking hold';
+          const errorData = fnData as { ok: false; error: string; code?: string };
+          const msg = errorData.error || 'Failed to create booking hold';
           setError(msg);
           toast({
             variant: 'destructive',

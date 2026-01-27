@@ -190,11 +190,37 @@ export default function PatientDashboard() {
 
   async function requestStartAppointment(appointmentId: string) {
     try {
+      // Get appointment details to find the doctor
+      const { data: apt, error: fetchError } = await (supabase as any)
+        .from("appointments")
+        .select("id, doctor_id, doctors!doctor_id(user_id)")
+        .eq("id", appointmentId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Update appointment status
       const { error } = await (supabase as any)
         .from("appointments")
         .update({ start_requested_by_patient: true, patient_confirmation_status: "confirmed" })
         .eq("id", appointmentId);
       if (error) throw error;
+
+      // Create notification for the doctor
+      const doctorUserId = apt?.doctors?.user_id;
+      if (doctorUserId && profile?.full_name) {
+        await (supabase as any)
+          .from("notifications")
+          .insert({
+            user_id: doctorUserId,
+            title: "Patient Requesting to Start",
+            message: `${profile.full_name} is requesting to start their appointment.`,
+            type: "appointment_start_request",
+            related_id: appointmentId,
+            related_type: "appointment",
+          });
+      }
+
       toast.success("Start request sent to doctor.");
       await Promise.allSettled([refetchAppointments?.(), refetchStats?.()]);
     } catch (e: any) {

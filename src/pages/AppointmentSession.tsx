@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import {
   ArrowLeft, Video, MessageSquare, MapPin, Home, Activity,
   User, Clock, Phone, Pill, FileText, Send, Stethoscope,
-  CheckCircle, XCircle, Loader2, AlertTriangle
+  CheckCircle, XCircle, Loader2, AlertTriangle, Calendar
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -75,6 +75,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   const [isEnding, setIsEnding] = useState(false);
   const [showVideoRoom, setShowVideoRoom] = useState(false);
   const [videoConsultation, setVideoConsultation] = useState<any>(null);
+  const [videoEnded, setVideoEnded] = useState(false); // Track if video call has ended
 
   const { createConsultation, joinAsDoctor, endConsultation } = useVideoConsultation();
 
@@ -224,6 +225,8 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
         await joinAsDoctor(consultation.id);
         setVideoConsultation(consultation);
         setShowVideoRoom(true);
+        setVideoEnded(false);
+        setActiveTab('video'); // Switch to video tab
       }
     } catch (error) {
       console.error('Error starting video:', error);
@@ -291,12 +294,20 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
       console.error('Error ending session:', error);
       toast.error('Failed to end session');
     } finally {
-      setIsEnding(false);
+    setIsEnding(false);
     }
   };
 
   const handleLeaveVideo = () => {
     setShowVideoRoom(false);
+    setVideoEnded(true); // Mark video as ended but don't end session
+    toast.info('Video call ended. You can end the session when ready.');
+  };
+
+  const handleVideoEnd = (notes?: string) => {
+    setSessionNotes(notes || sessionNotes);
+    setShowVideoRoom(false);
+    setVideoEnded(true);
   };
 
   if (loading) {
@@ -341,23 +352,8 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   const patientId = appointment.patient_id || appointment.doctor_patient_id || '';
   const patientType = appointment.patient_id ? 'registered' : 'direct';
 
-  // Full screen video room
-  if (showVideoRoom && videoConsultation) {
-    return (
-      <div className="h-screen">
-        <VideoRoom
-          consultation={videoConsultation}
-          userName="Doctor"
-          userRole="doctor"
-          onEnd={(notes) => {
-            setSessionNotes(notes || sessionNotes);
-            handleEndSession();
-          }}
-          onLeave={handleLeaveVideo}
-        />
-      </div>
-    );
-  }
+  // Video room is now shown in split view, not full screen replacement
+  // This allows keeping patient info visible
 
   return (
     <div className="min-h-screen bg-background">
@@ -387,11 +383,23 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
           </div>
 
           <div className="flex items-center gap-2">
-            {isVideoAppointment && !showVideoRoom && (
+            {isVideoAppointment && !showVideoRoom && !videoEnded && (
               <Button onClick={handleStartVideo} className="gap-2">
                 <Video className="h-4 w-4" />
                 Start Video
               </Button>
+            )}
+            {showVideoRoom && (
+              <Button variant="outline" onClick={handleLeaveVideo} className="gap-2">
+                <XCircle className="h-4 w-4" />
+                Leave Video
+              </Button>
+            )}
+            {isVideoAppointment && videoEnded && (
+              <Badge variant="secondary" className="gap-2">
+                <CheckCircle className="h-4 w-4" />
+                Video Completed
+              </Badge>
             )}
             <Button
               variant="destructive"
@@ -418,6 +426,12 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
             <div className="pr-4 h-full">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
                 <TabsList className="w-full justify-start">
+                  {showVideoRoom && (
+                    <TabsTrigger value="video" className="gap-2">
+                      <Video className="h-4 w-4" />
+                      Video Call
+                    </TabsTrigger>
+                  )}
                   <TabsTrigger value="session" className="gap-2">
                     <Activity className="h-4 w-4" />
                     Session
@@ -439,6 +453,23 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                 </TabsList>
 
                 <ScrollArea className="flex-1 mt-4">
+                  {/* Video Tab Content */}
+                  {showVideoRoom && videoConsultation && (
+                    <TabsContent value="video" className="mt-0 h-[calc(100vh-16rem)]">
+                      <Card className="h-full">
+                        <CardContent className="p-0 h-full">
+                          <VideoRoom
+                            consultation={videoConsultation}
+                            userName="Doctor"
+                            userRole="doctor"
+                            onEnd={handleVideoEnd}
+                            onLeave={handleLeaveVideo}
+                          />
+                        </CardContent>
+                      </Card>
+                    </TabsContent>
+                  )}
+
                   <TabsContent value="session" className="mt-0 space-y-4">
                     {/* Quick Actions */}
                     <Card>
@@ -447,12 +478,20 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                       </CardHeader>
                       <CardContent>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                          {isVideoAppointment && !showVideoRoom && (
+                          {isVideoAppointment && !showVideoRoom && !videoEnded && (
                             <Button variant="outline" onClick={handleStartVideo} className="gap-2">
                               <Video className="h-4 w-4" />
                               Start Video
                             </Button>
                           )}
+                          <Button 
+                            variant="outline" 
+                            className="gap-2"
+                            onClick={() => navigate(`/book/${appointment.doctor_id}?followup=${appointment.id}&patient=${patientId}`)}
+                          >
+                            <Calendar className="h-4 w-4" />
+                            Book Follow-up
+                          </Button>
                           <Button variant="outline" className="gap-2">
                             <Pill className="h-4 w-4" />
                             Prescription
