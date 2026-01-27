@@ -190,36 +190,17 @@ export default function PatientDashboard() {
 
   async function requestStartAppointment(appointmentId: string) {
     try {
-      // Get appointment details to find the doctor
-      const { data: apt, error: fetchError } = await (supabase as any)
-        .from("appointments")
-        .select("id, doctor_id, doctors!doctor_id(user_id)")
-        .eq("id", appointmentId)
-        .single();
+      const { data: session } = await supabase.auth.getSession();
+      const accessToken = session.session?.access_token;
+      if (!accessToken) throw new Error("Not authenticated");
 
-      if (fetchError) throw fetchError;
+      const { data, error } = await supabase.functions.invoke("appointment-actions", {
+        body: { action: "request_start", appointment_id: appointmentId },
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
 
-      // Update appointment status
-      const { error } = await (supabase as any)
-        .from("appointments")
-        .update({ start_requested_by_patient: true, patient_confirmation_status: "confirmed" })
-        .eq("id", appointmentId);
       if (error) throw error;
-
-      // Create notification for the doctor
-      const doctorUserId = apt?.doctors?.user_id;
-      if (doctorUserId && profile?.full_name) {
-        await (supabase as any)
-          .from("notifications")
-          .insert({
-            user_id: doctorUserId,
-            title: "Patient Requesting to Start",
-            message: `${profile.full_name} is requesting to start their appointment.`,
-            type: "appointment_start_request",
-            related_id: appointmentId,
-            related_type: "appointment",
-          });
-      }
+      if (!data?.ok) throw new Error(data?.error || "Failed to request start");
 
       toast.success("Start request sent to doctor.");
       await Promise.allSettled([refetchAppointments?.(), refetchStats?.()]);
