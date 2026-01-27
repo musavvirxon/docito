@@ -1,18 +1,18 @@
 // File: src/pages/AppointmentBooking.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { format, parseISO, startOfDay, isBefore, isSameDay } from "date-fns";
+import { format, parseISO, startOfDay } from "date-fns";
 import {
   AlertCircle,
   AlertTriangle,
+  Building2,
   Calendar as CalendarIcon,
   Clock,
   Loader2,
-  MapPin,
-  Video,
-  MessageSquare,
-  Building2,
   Lock,
+  MapPin,
+  MessageSquare,
+  Video,
 } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -22,9 +22,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -293,13 +293,24 @@ export default function AppointmentBooking() {
       });
 
       if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+      if (!data?.ok) throw new Error(data?.error || "Failed to book appointment");
 
+      // ✅ New flow: hold-based pending confirmation
+      if (data?.hold_id) {
+        toast.success("Slot held. Please confirm your appointment.");
+        navigate(`/booking-confirmation/${data.hold_id}?mode=pending`);
+        return;
+      }
+
+      // Backwards compatibility (if any older server returns appointment_id / id)
       const appointmentId = data?.appointment_id || data?.id;
-      if (!appointmentId) throw new Error("Booking succeeded but no appointment id returned");
+      if (appointmentId) {
+        toast.success("Appointment booked!");
+        navigate(`/booking-confirmation/${appointmentId}`);
+        return;
+      }
 
-      toast.success("Appointment booked!");
-      navigate(`/booking-confirmation/${appointmentId}`);
+      throw new Error("Booking succeeded but no hold_id/appointment_id returned");
     } catch (e: any) {
       console.error(e);
       toast.error(e?.message ?? "Failed to book appointment");
@@ -339,9 +350,7 @@ export default function AppointmentBooking() {
       <div className="space-y-6">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold">Book an appointment</h1>
-          <p className="text-muted-foreground">
-            Choose a date, a start time, and the appointment duration. Only phone is required.
-          </p>
+          <p className="text-muted-foreground">Choose a date, a start time, and the appointment duration. Only phone is required.</p>
         </div>
 
         {!doctor.practice_id && (
@@ -349,11 +358,10 @@ export default function AppointmentBooking() {
             <AlertTriangle className="h-4 w-4 text-amber-600" />
             <AlertTitle className="text-amber-700 dark:text-amber-400">Independent Practitioner</AlertTitle>
             <AlertDescription className="text-amber-600 dark:text-amber-300">
-              This doctor has not yet confirmed a clinic or practice location. Only <strong>video call</strong> and{" "}
-              <strong>messaging</strong> appointments are available.
+              This doctor has not yet confirmed a clinic or practice location. Only <strong>video call</strong> and <strong>messaging</strong>{" "}
+              appointments are available.
               <span className="block mt-2 font-medium">
-                ⚠️ Do not visit any physical location the doctor may suggest until they have verified their practice
-                affiliation.
+                ⚠️ Do not visit any physical location the doctor may suggest until they have verified their practice affiliation.
               </span>
             </AlertDescription>
           </Alert>
@@ -400,56 +408,85 @@ export default function AppointmentBooking() {
           <CardHeader>
             <CardTitle>Appointment type</CardTitle>
           </CardHeader>
-          <CardContent>
-            <RadioGroup value={appointmentType} onValueChange={(v) => setAppointmentType(v as AppointmentType)}>
-              <div className="flex items-center space-x-2">
+          <CardContent className="space-y-4">
+            <RadioGroup
+              value={appointmentType}
+              onValueChange={(v) => setAppointmentType(v as AppointmentType)}
+              className="grid grid-cols-1 sm:grid-cols-3 gap-3"
+            >
+              <label className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/40">
                 <RadioGroupItem value="video" id="video" />
-                <Label htmlFor="video" className="flex items-center gap-2 cursor-pointer">
-                  <Video className="h-4 w-4" />
-                  <span>Video call</span>
-                </Label>
-              </div>
+                <Video className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <div className="font-medium">Video</div>
+                  <div className="text-xs text-muted-foreground">Real-time consultation</div>
+                </div>
+              </label>
 
-              <div className="flex items-center space-x-2 mt-3">
+              <label className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/40">
                 <RadioGroupItem value="messaging" id="messaging" />
-                <Label htmlFor="messaging" className="flex items-center gap-2 cursor-pointer">
-                  <MessageSquare className="h-4 w-4" />
-                  <span>Messaging</span>
-                </Label>
-              </div>
+                <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <div className="font-medium">Messaging</div>
+                  <div className="text-xs text-muted-foreground">Chat-based visit</div>
+                </div>
+              </label>
 
-              <div className="flex items-center space-x-2 mt-3">
-                <RadioGroupItem value="in-person" id="inperson" disabled={!doctor.practice_id} />
-                <Label htmlFor="inperson" className="flex items-center gap-2 cursor-pointer">
-                  <MapPin className="h-4 w-4" />
-                  <span className={doctor.practice_id ? "" : "text-muted-foreground"}>
-                    {doctor.practice_id ? "In-person" : "In-person (clinic required)"}
-                  </span>
-                </Label>
-              </div>
+              <label
+                className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/40 ${
+                  !doctor.practice_id ? "opacity-50 pointer-events-none" : ""
+                }`}
+              >
+                <RadioGroupItem value="in-person" id="in-person" />
+                <MapPin className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <div className="font-medium flex items-center gap-2">
+                    In-person {!doctor.practice_id && <Lock className="h-3.5 w-3.5" />}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Clinic visit</div>
+                </div>
+              </label>
             </RadioGroup>
 
             {!doctor.practice_id && (
-              <p className="text-xs text-amber-600 dark:text-amber-400 mt-3">
-                In-person appointments are not available for independent practitioners without a verified clinic.
-              </p>
+              <div className="text-sm text-muted-foreground">
+                In-person appointments require a verified practice location.
+              </div>
             )}
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-1">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CalendarIcon className="h-5 w-5" />
-                Date &amp; Duration
+                Pick a date
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(d) => d && setSelectedDate(startOfDay(d))}
+                disabled={(d) => startOfDay(d) < today}
+                className="rounded-md border"
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                Choose time & duration
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label className="text-sm">Appointment duration</Label>
+              <div className="space-y-2">
+                <Label>Duration</Label>
                 <Select value={String(durationMinutes)} onValueChange={(v) => setDurationMinutes(Number(v))}>
-                  <SelectTrigger className="mt-2">
+                  <SelectTrigger>
                     <SelectValue placeholder="Select duration" />
                   </SelectTrigger>
                   <SelectContent>
@@ -462,132 +499,70 @@ export default function AppointmentBooking() {
                 </Select>
               </div>
 
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={(d) => d && setSelectedDate(startOfDay(d))}
-                weekStartsOn={1}
-                // ✅ old days disabled (not bookable) + today highlighted by Calendar component styling
-                disabled={(d) => isBefore(startOfDay(d), today)}
-                className="rounded-md border"
-              />
-
-              <div className="text-xs text-muted-foreground">
-                {isSameDay(selectedDate, today)
-                  ? "Today is outlined. Past days are disabled."
-                  : "Past days are disabled. Select a future date to book."}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="lg:col-span-1">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5" />
-                Available times
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loadingSlots ? (
-                <div className="flex items-center gap-2 text-muted-foreground py-6">
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  Loading available slots...
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <Label>Available times</Label>
+                  {loadingSlots && (
+                    <div className="text-xs text-muted-foreground flex items-center gap-2">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Loading...
+                    </div>
+                  )}
                 </div>
-              ) : availableSlots.length === 0 ? (
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    No bookable future times for {format(selectedDate, "PPP")} (try another date or duration).
-                  </AlertDescription>
-                </Alert>
-              ) : (
+
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {availableSlots.map((slot) => {
-                    const selected = selectedSlotStart === slot.start_at;
-                    const label = format(parseISO(slot.start_at), "HH:mm");
-                    const locked = isSameMinuteOrPast(slot.start_at, Date.now() + 60_000);
-
-                    return (
-                      <Button
-                        key={slot.start_at}
-                        type="button"
-                        variant={selected ? "default" : "outline"}
-                        onClick={() => setSelectedSlotStart(slot.start_at)}
-                        disabled={locked} // ✅ old times locked (not bookable)
-                        className={cn(
-                          "justify-center rounded-md border-2",
-                          selected ? "border-primary" : "border-muted-foreground/20",
-                          locked ? "bg-muted/40 text-muted-foreground/60 border-muted-foreground/20" : "",
-                        )}
-                      >
-                        {locked ? (
-                          <span className="inline-flex items-center gap-2">
-                            <Lock className="h-3.5 w-3.5" />
-                            {label}
-                          </span>
-                        ) : (
-                          label
-                        )}
-                      </Button>
-                    );
-                  })}
+                  {availableSlots.length === 0 && !loadingSlots ? (
+                    <div className="col-span-2 sm:col-span-3 text-sm text-muted-foreground">
+                      No available slots for this date.
+                    </div>
+                  ) : (
+                    availableSlots.map((s) => {
+                      const selected = selectedSlotStart === s.start_at;
+                      return (
+                        <Button
+                          key={s.start_at}
+                          type="button"
+                          variant={selected ? "default" : "outline"}
+                          onClick={() => setSelectedSlotStart(s.start_at)}
+                        >
+                          {format(parseISO(s.start_at), "h:mm a")}
+                        </Button>
+                      );
+                    })
+                  )}
                 </div>
-              )}
-              <div className="mt-3 text-xs text-muted-foreground">
-                Past time slots are shown as locked and cannot be selected.
               </div>
             </CardContent>
           </Card>
+        </div>
 
-          <Card className="lg:col-span-1">
-            <CardHeader>
-              <CardTitle>Patient details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Patient details</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone *</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={patientPhone}
-                  onChange={(e) => setPatientPhone(e.target.value)}
-                  placeholder="e.g. +1 415 555 2671"
-                />
+                <Input id="phone" value={patientPhone} onChange={(e) => setPatientPhone(e.target.value)} placeholder="+1 555 123 4567" />
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="name">Name (optional)</Label>
-                <Input
-                  id="name"
-                  value={patientName}
-                  onChange={(e) => setPatientName(e.target.value)}
-                  placeholder="Your name"
-                />
+                <Label htmlFor="name">Name</Label>
+                <Input id="name" value={patientName} onChange={(e) => setPatientName(e.target.value)} placeholder="Optional" />
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="email">Email (optional)</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={patientEmail}
-                  onChange={(e) => setPatientEmail(e.target.value)}
-                  placeholder="you@example.com"
-                />
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" value={patientEmail} onChange={(e) => setPatientEmail(e.target.value)} placeholder="Optional" />
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="notes">Notes (optional)</Label>
-                <Textarea
-                  id="notes"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Any details for the doctor..."
-                  rows={4}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional: describe your symptoms, history, or questions" />
+            </div>
 
-              <Button onClick={handleBook} disabled={!canBook} className="w-full">
+            <div className="flex justify-end">
+              <Button onClick={handleBook} disabled={!canBook}>
                 {booking ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -597,23 +572,10 @@ export default function AppointmentBooking() {
                   "Book appointment"
                 )}
               </Button>
-
-              {selectedSlotStart ? (
-                <div className="text-xs text-muted-foreground">
-                  Selected: {format(parseISO(selectedSlotStart), "PPP")} at {format(parseISO(selectedSlotStart), "HH:mm")}{" "}
-                  ({durationMinutes} min)
-                </div>
-              ) : (
-                <div className="text-xs text-muted-foreground">Select a time slot to continue.</div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </main>
   );
-}
-
-function cn(...inputs: Array<string | undefined | null | false>) {
-  return inputs.filter(Boolean).join(" ");
 }
