@@ -1,4 +1,11 @@
 // File: supabase/functions/account-dashboard/index.ts
+// Deno Edge Function: Account dashboard data for signed-in user (Billing + Analytics + Settings).
+//
+// Hard requirements:
+// - Deno + supabase-js v2
+// - CORS + Authorization
+// - Service-role guarded DB access, manual auth via auth.getUser()
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -34,6 +41,12 @@ function getEnv() {
     };
   }
   return { ok: true as const, url, anon, service };
+}
+
+function clampDays(n: unknown, fallback = 30) {
+  const v = Number(n);
+  if (!Number.isFinite(v)) return fallback;
+  return Math.max(1, Math.min(365, Math.trunc(v)));
 }
 
 serve(async (req) => {
@@ -79,13 +92,13 @@ serve(async (req) => {
             .limit(10),
           admin
             .from("invoices")
-            .select("id, practice_id, appointment_id, status, currency, total_amount, notes, issued_at, paid_at, created_at")
-            .eq("patient_id", userId)
+            .select("id, created_at, invoice_number, status, currency, total_amount, due_date, paid_at, pdf_url")
+            .eq("user_id", userId)
             .order("created_at", { ascending: false })
             .limit(100),
           admin
             .from("payments")
-            .select("id, invoice_id, provider, provider_payment_id, amount, currency, status, paid_at, created_at")
+            .select("id, amount, status, paid_at, created_at, appointment_id, practice_id, transaction_id")
             .eq("patient_id", userId)
             .order("created_at", { ascending: false })
             .limit(100),
@@ -99,7 +112,10 @@ serve(async (req) => {
       const pays = (payments || []) as Array<any>;
 
       const totalPaid = pays
-        .filter((p) => String(p.status || "").toLowerCase() === "paid")
+        .filter((p) => {
+          const s = String(p.status || "").toLowerCase();
+          return s === "paid" || s === "completed";
+        })
         .reduce((sum, p) => sum + Number(p.amount || 0), 0);
 
       const totalDue = invs
@@ -110,13 +126,13 @@ serve(async (req) => {
         .reduce((sum, i) => sum + Number(i.total_amount || 0), 0);
 
       const overdueCount = invs.filter((i) => String(i.status || "").toLowerCase() === "overdue").length;
-
       const defaultPm = (paymentMethods || []).find((m: any) => Boolean(m.is_default))?.id ?? null;
 
       return json({
         ok: true,
         payment_methods: paymentMethods || [],
         invoices: invs,
+        payments: pays,
         summary: {
           total_paid: totalPaid,
           total_due: totalDue,
@@ -127,7 +143,7 @@ serve(async (req) => {
     }
 
     if (action === "analytics") {
-      const days = Math.max(1, Math.min(365, Number((body as any)?.days ?? 30) || 30));
+      const days = clampDays((body as any)?.days, 30);
       const { data, error } = await admin.rpc("account_analytics", { p_user_id: userId, p_days: days });
       if (error) throw error;
       return json({ ok: true, data });
@@ -160,7 +176,7 @@ serve(async (req) => {
         .maybeSingle();
       if (selErr) throw selErr;
 
-      const merged = { ...(existing?.settings as any || {}), ...(incoming as any) };
+      const merged = { ...(((existing?.settings as any) || {}) as Record<string, unknown>), ...(incoming as Record<string, unknown>) };
 
       const { data, error } = await admin
         .from("user_settings")
