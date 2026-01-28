@@ -432,7 +432,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
                     <div className="grid gap-3 md:grid-cols-4">
                       {Object.entries(analytics.kpis || {}).map(([k, v]) => (
                         <div key={k} className="rounded-lg border p-3">
-                          <div className="text-xs text-muted-foreground">{k.replaceAll("_", " ")}</div>
+                          <div className="text-xs text-muted-foreground">{k.split("_").join(" ")}</div>
                           <div className="text-lg font-semibold">{Number(v || 0).toLocaleString()}</div>
                         </div>
                       ))}

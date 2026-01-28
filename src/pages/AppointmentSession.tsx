@@ -584,8 +584,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                 <CardContent className="space-y-4">
                   <PatientProfileView
                     patientId={patientId}
-                    patientType={patientType as any}
-                    doctorId={appointment.doctor_id}
+                    patientType={patientType as 'registered' | 'direct'}
                   />
                 </CardContent>
               </Card>

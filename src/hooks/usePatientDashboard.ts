@@ -7,7 +7,11 @@ import { isFuture, isToday, isPast } from 'date-fns';
 export interface DashboardStats {
   nextAppointment: any | null;
   upcomingAppointmentsCount: number;
-  medicalRecordsCount: number;
+  upcomingAppointments: number; // Alias for count
+  completedAppointments: number;
+  testResults: number;
+  medicalRecords: number;
+  medicalRecordsCount: number; // Alias
   pendingReminders: number;
   recentAppointments: any[];
 }
@@ -16,6 +20,10 @@ export const usePatientDashboard = () => {
   const [stats, setStats] = useState<DashboardStats>({
     nextAppointment: null,
     upcomingAppointmentsCount: 0,
+    upcomingAppointments: 0,
+    completedAppointments: 0,
+    testResults: 0,
+    medicalRecords: 0,
     medicalRecordsCount: 0,
     pendingReminders: 0,
     recentAppointments: [],
@@ -83,6 +91,10 @@ export const usePatientDashboard = () => {
       setStats({
         nextAppointment: upcoming[0] || null,
         upcomingAppointmentsCount: upcoming.length,
+        upcomingAppointments: upcoming.length,
+        completedAppointments: past.length,
+        testResults: 0, // TODO: Fetch from lab orders
+        medicalRecords: recordsCount || 0,
         medicalRecordsCount: recordsCount || 0,
         pendingReminders: remindersCount || 0,
         recentAppointments: past.slice(0, 3),
