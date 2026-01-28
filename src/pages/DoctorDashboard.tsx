@@ -267,26 +267,23 @@ const DoctorDashboardContent = () => {
           specialty: doctorProfile.specialty || '',
           verified: doctorProfile.verified || false,
           average_rating: doctorProfile.average_rating || 0,
-          total_patients: (stats as any)?.totalPatients || 0,
-          total_appointments: (stats as any)?.totalAppointments || 0,
-          completion_rate: (stats as any)?.completionRate || 0,
-          average_response_time: (stats as any)?.responseTime || 0,
-          practice_id: doctorProfile.practice_id
+          num_reviews: doctorProfile.num_reviews || 0,
+          appointment_count: (stats as any)?.totalAppointments || 0,
         }} stats={stats} />;
       case "financial-stats":
-        return <DoctorFinancialStatsSection doctorId={doctorProfile.id} />;
+        return <DoctorFinancialStatsSection />;
       case "clinic-finder":
         return <ClinicFinderSection />;
       case "settings":
         return <DoctorSettingsSection />;
       case "assigned-patients":
-        return <DoctorPatientsSection doctorId={doctorProfile.id} />;
+        return <DoctorPatientsSection />;
       case "messages":
-        return <DoctorMessagingSection doctorId={doctorProfile.id} />;
+        return <DoctorMessagingSection />;
       case "treatment-planning":
-        return <TreatmentPlanningSection doctorId={doctorProfile.id} />;
+        return <TreatmentPlanningSection />;
       case "procedure-library":
-        return <DoctorProcedureLibrarySection doctorId={doctorProfile.id} />;
+        return <DoctorProcedureLibrarySection />;
       default:
         return <div className="space-y-6">
             {/* Profile Completion Alert */}
@@ -314,97 +311,190 @@ const DoctorDashboardContent = () => {
                 </CardContent>
               </Card>}
 
-            {/* Dashboard Stats */}
+            {/* Modern Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
+              <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-primary/10 via-background to-background">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -translate-y-8 translate-x-8" />
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between relative z-10">
                     <div>
                       <p className="text-sm text-muted-foreground">{t("doctor.stats.totalAppointments")}</p>
-                      <p className="text-2xl font-bold">{(stats as any)?.totalAppointments || 0}</p>
+                      <p className="text-3xl font-bold mt-1">{(stats as any)?.totalAppointments || 0}</p>
+                      <p className="text-xs text-muted-foreground mt-1">total visits</p>
                     </div>
-                    <Calendar className="h-8 w-8 text-primary" />
+                    <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+                      <Calendar className="h-7 w-7 text-primary" />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
+              <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-emerald-500/10 via-background to-background">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full -translate-y-8 translate-x-8" />
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between relative z-10">
                     <div>
                       <p className="text-sm text-muted-foreground">{t("doctor.stats.totalPatients")}</p>
-                      <p className="text-2xl font-bold">{(stats as any)?.totalPatients || 0}</p>
+                      <p className="text-3xl font-bold mt-1">{(stats as any)?.totalPatients || 0}</p>
+                      <p className="text-xs text-muted-foreground mt-1">active patients</p>
                     </div>
-                    <Users className="h-8 w-8 text-primary" />
+                    <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+                      <Users className="h-7 w-7 text-emerald-500" />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
+              <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-amber-500/10 via-background to-background">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full -translate-y-8 translate-x-8" />
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between relative z-10">
                     <div>
                       <p className="text-sm text-muted-foreground">{t("doctor.stats.rating")}</p>
-                      <p className="text-2xl font-bold">{doctorProfile.average_rating?.toFixed(1) || "0.0"}</p>
+                      <p className="text-3xl font-bold mt-1">{doctorProfile.average_rating?.toFixed(1) || "0.0"}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{doctorProfile.num_reviews || 0} reviews</p>
                     </div>
-                    <BarChart3 className="h-8 w-8 text-primary" />
+                    <div className="h-14 w-14 rounded-2xl bg-amber-500/10 flex items-center justify-center">
+                      <BarChart3 className="h-7 w-7 text-amber-500" />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
+              <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-blue-500/10 via-background to-background">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full -translate-y-8 translate-x-8" />
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between relative z-10">
                     <div>
                       <p className="text-sm text-muted-foreground">{t("doctor.stats.earnings")}</p>
-                      <p className="text-2xl font-bold">${(stats as any)?.totalEarnings || 0}</p>
+                      <p className="text-3xl font-bold mt-1">${(stats as any)?.totalEarnings || 0}</p>
+                      <p className="text-xs text-muted-foreground mt-1">this month</p>
                     </div>
-                    <Building2 className="h-8 w-8 text-primary" />
+                    <div className="h-14 w-14 rounded-2xl bg-blue-500/10 flex items-center justify-center">
+                      <Building2 className="h-7 w-7 text-blue-500" />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Upcoming Appointments */}
-            <Card>
-              <CardHeader>
-                <CardTitle>{t("doctor.upcomingAppointments")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {upcomingAppointments?.length ? upcomingAppointments.slice(0, 3).map((appointment: any) => <UpcomingAppointmentCard key={appointment.id} appointment={appointment} />) : <p className="text-muted-foreground text-center py-4">
-                      {t("doctor.noUpcomingAppointments")}
-                    </p>}
-                </div>
-              </CardContent>
-            </Card>
+            {/* Two Column Layout: Appointments & Quick Access */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Upcoming Appointments - 2 columns */}
+              <Card className="lg:col-span-2 border-0 shadow-lg">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-primary" />
+                    {t("doctor.upcomingAppointments")}
+                  </CardTitle>
+                  <Button variant="ghost" size="sm" onClick={() => setActiveSection("calendar")}>
+                    View Calendar
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {upcomingAppointments?.length ? <UpcomingAppointmentCard appointments={upcomingAppointments.slice(0, 3)} /> : <p className="text-muted-foreground text-center py-8">
+                        {t("doctor.noUpcomingAppointments")}
+                      </p>}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Quick Access to Custom Procedures & Treatment Plans */}
+              <Card className="border-0 shadow-lg">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Quick Access</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start gap-3 h-12 hover:bg-primary/5 hover:border-primary/30" 
+                    onClick={() => setActiveSection("procedure-library")}
+                  >
+                    <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <FileText className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-medium text-sm">My Procedures</p>
+                      <p className="text-xs text-muted-foreground">Custom templates</p>
+                    </div>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start gap-3 h-12 hover:bg-emerald-500/5 hover:border-emerald-500/30" 
+                    onClick={() => setActiveSection("treatment-planning")}
+                  >
+                    <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                      <Calendar className="h-4 w-4 text-emerald-500" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-medium text-sm">Treatment Plans</p>
+                      <p className="text-xs text-muted-foreground">Active plans</p>
+                    </div>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start gap-3 h-12 hover:bg-blue-500/5 hover:border-blue-500/30" 
+                    onClick={() => setActiveSection("assigned-patients")}
+                  >
+                    <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                      <Users className="h-4 w-4 text-blue-500" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-medium text-sm">My Patients</p>
+                      <p className="text-xs text-muted-foreground">Patient records</p>
+                    </div>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start gap-3 h-12 hover:bg-amber-500/5 hover:border-amber-500/30" 
+                    onClick={() => setActiveSection("services")}
+                  >
+                    <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                      <Briefcase className="h-4 w-4 text-amber-500" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-medium text-sm">My Services</p>
+                      <p className="text-xs text-muted-foreground">Diagnoses & services</p>
+                    </div>
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
 
             {/* Verification Status */}
-            <DoctorVerificationStatusCard doctorProfile={doctorProfile} />
+            <DoctorVerificationStatusCard />
 
             {/* Quick Actions */}
-            <Card>
+            <Card className="border-0 shadow-lg">
               <CardHeader>
                 <CardTitle>{t("doctor.quickActions")}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Button variant="outline" className="h-20 flex flex-col items-center justify-center gap-2" onClick={() => setQuickActionModal({
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <Button variant="outline" className="h-20 flex flex-col items-center justify-center gap-2 hover:bg-primary/5 hover:border-primary/30" onClick={() => setQuickActionModal({
                 isOpen: true,
                 action: "schedule"
               })}>
-                    <Calendar className="h-6 w-6" />
+                    <Clock className="h-6 w-6 text-primary" />
                     {t("doctor.actions.updateSchedule")}
                   </Button>
-                  <Button variant="outline" className="h-20 flex flex-col items-center justify-center gap-2" onClick={() => setQuickActionModal({
+                  <Button variant="outline" className="h-20 flex flex-col items-center justify-center gap-2 hover:bg-emerald-500/5 hover:border-emerald-500/30" onClick={() => setQuickActionModal({
                 isOpen: true,
                 action: "procedures"
               })}>
-                    <FileText className="h-6 w-6" />
+                    <FileText className="h-6 w-6 text-emerald-500" />
                     {t("doctor.actions.manageProcedures")}
                   </Button>
-                  <Button variant="outline" className="h-20 flex flex-col items-center justify-center gap-2" onClick={() => setQuickActionModal({
+                  <Button variant="outline" className="h-20 flex flex-col items-center justify-center gap-2 hover:bg-blue-500/5 hover:border-blue-500/30" onClick={() => setQuickActionModal({
+                isOpen: true,
+                action: "block-time"
+              })}>
+                    <Calendar className="h-6 w-6 text-blue-500" />
+                    Block Time
+                  </Button>
+                  <Button variant="outline" className="h-20 flex flex-col items-center justify-center gap-2 hover:bg-amber-500/5 hover:border-amber-500/30" onClick={() => setQuickActionModal({
                 isOpen: true,
                 action: "settings"
               })}>
-                    <Settings className="h-6 w-6" />
+                    <Settings className="h-6 w-6 text-amber-500" />
                     {t("doctor.actions.updateSettings")}
                   </Button>
                 </div>
@@ -490,7 +580,12 @@ const DoctorDashboardContent = () => {
           </div>
 
           {/* Quick Action Modals */}
-          <QuickActionModals modal={quickActionModal} setModal={setQuickActionModal} doctorId={doctorProfile.id} />
+          <QuickActionModals 
+            isOpen={quickActionModal.isOpen} 
+            action={quickActionModal.action} 
+            onClose={() => setQuickActionModal({ isOpen: false, action: null })} 
+            doctorProfile={doctorProfile} 
+          />
         </div>
       </ThemeProvider>
     </SidebarProvider>;

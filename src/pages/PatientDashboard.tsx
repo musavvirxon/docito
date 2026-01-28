@@ -359,60 +359,76 @@ export default function PatientDashboard() {
         <main className="flex-1 p-4 md:p-6 space-y-6">
           {activeSection === "dashboard" && (
             <>
-              {/* Stats */}
+              {/* Modern Stats Grid */}
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
+                <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-primary/10 via-background to-background">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -translate-y-8 translate-x-8" />
                   <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between relative z-10">
                       <div>
                         <p className="text-sm font-medium text-muted-foreground">
-                          {t("patient.stats.upcomingAppointments", { defaultValue: "Upcoming Appointments" })}
+                          {t("patient.stats.upcomingAppointments", { defaultValue: "Upcoming" })}
                         </p>
-                        <p className="text-2xl font-bold">{stats?.upcomingAppointments ?? 0}</p>
+                        <p className="text-3xl font-bold mt-1">{stats?.upcomingAppointmentsCount ?? 0}</p>
+                        <p className="text-xs text-muted-foreground mt-1">appointments</p>
                       </div>
-                      <Calendar className="h-8 w-8 text-primary" />
+                      <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+                        <Calendar className="h-7 w-7 text-primary" />
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-emerald-500/10 via-background to-background">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full -translate-y-8 translate-x-8" />
                   <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between relative z-10">
                       <div>
                         <p className="text-sm font-medium text-muted-foreground">
-                          {t("patient.stats.completedAppointments", { defaultValue: "Completed Appointments" })}
+                          {t("patient.stats.completedAppointments", { defaultValue: "Completed" })}
                         </p>
-                        <p className="text-2xl font-bold">{stats?.completedAppointments ?? 0}</p>
+                        <p className="text-3xl font-bold mt-1">{stats?.completedAppointments ?? 0}</p>
+                        <p className="text-xs text-muted-foreground mt-1">visits</p>
                       </div>
-                      <CheckCircle2 className="h-8 w-8 text-green-500" />
+                      <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+                        <CheckCircle2 className="h-7 w-7 text-emerald-500" />
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-blue-500/10 via-background to-background">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full -translate-y-8 translate-x-8" />
                   <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between relative z-10">
                       <div>
                         <p className="text-sm font-medium text-muted-foreground">
                           {t("patient.stats.testResults", { defaultValue: "Test Results" })}
                         </p>
-                        <p className="text-2xl font-bold">{stats?.testResults ?? 0}</p>
+                        <p className="text-3xl font-bold mt-1">{stats?.testResults ?? 0}</p>
+                        <p className="text-xs text-muted-foreground mt-1">pending</p>
                       </div>
-                      <TestTube2 className="h-8 w-8 text-blue-500" />
+                      <div className="h-14 w-14 rounded-2xl bg-blue-500/10 flex items-center justify-center">
+                        <TestTube2 className="h-7 w-7 text-blue-500" />
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-purple-500/10 via-background to-background">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-full -translate-y-8 translate-x-8" />
                   <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between relative z-10">
                       <div>
                         <p className="text-sm font-medium text-muted-foreground">
-                          {t("patient.stats.medicalRecords", { defaultValue: "Medical Records" })}
+                          {t("patient.stats.medicalRecords", { defaultValue: "Records" })}
                         </p>
-                        <p className="text-2xl font-bold">{stats?.medicalRecords ?? 0}</p>
+                        <p className="text-3xl font-bold mt-1">{stats?.medicalRecordsCount ?? 0}</p>
+                        <p className="text-xs text-muted-foreground mt-1">documents</p>
                       </div>
-                      <FileText className="h-8 w-8 text-purple-500" />
+                      <div className="h-14 w-14 rounded-2xl bg-purple-500/10 flex items-center justify-center">
+                        <FileText className="h-7 w-7 text-purple-500" />
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

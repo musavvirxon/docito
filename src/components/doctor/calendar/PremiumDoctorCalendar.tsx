@@ -343,7 +343,7 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
         appointment={selectedAppointment}
         isOpen={isQuickPreviewOpen}
         onClose={() => setIsQuickPreviewOpen(false)}
-        onOpenFullDetails={handleOpenFullModal}
+        onOpenFullModal={handleOpenFullModal}
         onStartSession={handleStartSession}
         onViewPatient={handleViewPatient}
         doctorSpecialty={doctorSpecialty}
@@ -355,10 +355,8 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
           isOpen={isAppointmentModalOpen}
           onClose={() => setIsAppointmentModalOpen(false)}
           appointment={selectedAppointment}
-          onUpdate={refetch}
-          onStartSession={handleStartSession}
-          onViewPatient={handleViewPatient}
-          doctorSpecialty={doctorSpecialty}
+          onReschedule={refetch}
+          onCancel={refetch}
         />
       )}
 
@@ -388,8 +386,6 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
           setIsBlockModalOpen(false);
           setPrefilledTime(undefined);
         }}
-        doctorId={doctorId}
-        practiceId={practiceId}
         onSuccess={refetch}
         prefilledDate={selectedDate}
         prefilledTime={prefilledTime}
