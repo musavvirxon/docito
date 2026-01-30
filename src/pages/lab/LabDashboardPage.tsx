@@ -1,5 +1,6 @@
+// Path: src/pages/lab/LabDashboardPage.tsx
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { useAuth } from "@/contexts/AuthContext";
@@ -70,6 +71,7 @@ async function fetchMyLabCenter(userId: string): Promise<LabCenterRow | null> {
 }
 
 export default function LabDashboardPage() {
+  const location = useLocation();
   const navigate = useNavigate();
   const { user, loading: authLoading, activeRole } = useAuth();
 
@@ -133,6 +135,24 @@ export default function LabDashboardPage() {
     if (labCenterId) fetchOrders();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [labCenterId]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const raw = (params.get("tab") || params.get("section") || "").trim();
+    const hash = (location.hash || "").replace("#", "").trim();
+    const desired = (raw || hash).toLowerCase();
+
+    if (!desired) return;
+
+    const allowed = ["overview", "orders", "home", "samples", "analytics", "billing", "referrals", "staff"];
+    if (!allowed.includes(desired)) return;
+
+    if (activeTab !== (desired as any)) {
+      setActiveTab(desired as any);
+      if (desired === "orders" && labCenterId) fetchOrders();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.hash, location.search, labCenterId]);
 
   const sidebarItems: SidebarItem[] = useMemo(
     () => [
@@ -217,6 +237,17 @@ export default function LabDashboardPage() {
       onItemChange={(id) => {
         const next = id as any;
         setActiveTab(next);
+
+        const params = new URLSearchParams(location.search);
+        params.set("tab", String(next));
+        navigate(
+          {
+            pathname: location.pathname,
+            search: params.toString() ? `?${params.toString()}` : "",
+          },
+          { replace: true },
+        );
+
         if (next === "orders") fetchOrders();
       }}
     >
