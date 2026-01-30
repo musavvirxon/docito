@@ -8,9 +8,11 @@ const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+type EntityType = "lab" | "imaging" | "pharmacy";
+
 type ReqBody = {
-  facilityId: string;
-  facilityType: "lab" | "imaging" | "pharmacy" | "facility";
+  entityType: EntityType;
+  entityId: string;
   limit?: number;
 };
 
@@ -57,140 +59,114 @@ function hasPermission(scope: ScopeRow, key: string): boolean {
 async function authorizeFacilityAccess(params: {
   url: string;
   anon: string;
-  authHeader: string;
-  facilityType: string;
-  facilityId: string;
-}): Promise<{ ok: true; userId: string; scope: ScopeRow } | { ok: false; status: number; error: string }> {
-  const { url, anon, authHeader, facilityType, facilityId } = params;
+  service: string;
+  authHeader: string | null;
+  entityType: EntityType;
+  entityId: string;
+  required: { anyOf: string[] };
+}) {
+  if (!params.authHeader) return { ok: false as const, error: "Missing Authorization header" };
 
-  const supabaseUser = createClient(url, anon, {
-    global: { headers: { Authorization: authHeader } },
+  const userClient = createClient(params.url, params.anon, {
+    global: { headers: { Authorization: params.authHeader } },
+    auth: { persistSession: false },
   });
 
-  const { data: userRes, error: userErr } = await supabaseUser.auth.getUser();
-  if (userErr || !userRes?.user) return { ok: false, status: 401, error: "Unauthorized" };
+  const { data: userData, error: userErr } = await userClient.auth.getUser();
+  if (userErr || !userData?.user) return { ok: false as const, error: "Unauthorized" };
 
-  const { data: scopes, error: scopesErr } = await supabaseUser.rpc("get_my_entity_scopes");
-  if (scopesErr) return { ok: false, status: 500, error: scopesErr.message || "Failed to load scopes" };
+  const serviceClient = createClient(params.url, params.service, { auth: { persistSession: false } });
 
-  const list = (scopes || []) as ScopeRow[];
-  const scope = list.find((s) => s.entity_type === facilityType && String(s.entity_id) === facilityId);
-  if (!scope) return { ok: false, status: 403, error: "Forbidden" };
+  const { data: scopes, error: scopesErr } = await serviceClient.rpc("get_my_entity_scopes" as any, {});
+  if (scopesErr) return { ok: false as const, error: "Unable to authorize access" };
 
-  // billing permission
-  if (!scope.is_admin && !hasPermission(scope, "can_manage_billing")) {
-    return { ok: false, status: 403, error: "Forbidden" };
-  }
+  const wanted = (scopes as ScopeRow[] | null)?.find((s) => s.entity_type === params.entityType && s.entity_id === params.entityId) || null;
+  if (!wanted) return { ok: false as const, error: "Forbidden" };
 
-  return { ok: true, userId: userRes.user.id, scope };
+  const isAdmin = !!wanted.is_admin;
+  const okByPermission = params.required.anyOf.some((k) => hasPermission(wanted, k));
+  if (!isAdmin && !okByPermission) return { ok: false as const, error: "Forbidden" };
+
+  return { ok: true as const, userId: userData.user.id, scope: wanted, serviceClient };
 }
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
-  if (req.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 405);
-
-  const authHeader = req.headers.get("authorization") || req.headers.get("Authorization") || "";
-  if (!authHeader) return json({ ok: false, error: "Missing Authorization" }, 401);
-
-  const env = requireEnv();
-  if (!env.ok) return json({ ok: false, error: env.error }, 500);
-
-  let body: ReqBody;
-  try {
-    body = (await req.json()) as ReqBody;
-  } catch {
-    return json({ ok: false, error: "Invalid JSON body" }, 400);
-  }
-
-  const facilityId = String(body.facilityId || "");
-  const facilityType = String(body.facilityType || "");
-
-  if (!facilityId || !isUuid(facilityId)) return json({ ok: false, error: "Invalid facilityId" }, 400);
-  if (!facilityType) return json({ ok: false, error: "Invalid facilityType" }, 400);
-
-  const authz = await authorizeFacilityAccess({
-    url: env.url,
-    anon: env.anon,
-    authHeader,
-    facilityType,
-    facilityId,
-  });
-  if (!authz.ok) return json({ ok: false, error: authz.error }, authz.status);
-
-  const admin = createClient(env.url, env.service, {
-    auth: { persistSession: false },
-    global: { headers: { "X-Client-Info": "facility-billing" } },
-  });
 
   try {
-    const limit = Math.max(5, Math.min(200, Number(body.limit ?? 50) || 50));
+    const env = requireEnv();
+    if (!env.ok) return json(env, 500);
 
-    const [{ data: invoices, error: invErr }, { data: txs, error: txErr }] = await Promise.all([
-      admin
-        .from("billing_invoices")
-        .select(
-          "id, status, currency, amount_due_cents, amount_paid_cents, amount_remaining_cents, due_at, paid_at, created_at, hosted_invoice_url, invoice_pdf_url, metadata",
-        )
-        .eq("entity_type", facilityType)
-        .eq("entity_id", facilityId)
-        .order("created_at", { ascending: false })
-        .limit(limit),
-      admin
-        .from("billing_transactions")
-        .select(
-          "id, status, transaction_type, currency, amount_cents, provider, provider_ref, created_at, metadata, invoice_id",
-        )
-        .eq("entity_type", facilityType)
-        .eq("entity_id", facilityId)
-        .order("created_at", { ascending: false })
-        .limit(limit),
-    ]);
+    const authHeader = req.headers.get("authorization");
+    const body = (await req.json().catch(() => null)) as ReqBody | null;
+    if (!body) return json({ ok: false, error: "Invalid JSON body" }, 400);
+
+    const entityType = body.entityType;
+    const entityId = body.entityId;
+    if (!entityType || !entityId) return json({ ok: false, error: "Missing entityType/entityId" }, 400);
+    if (!isUuid(entityId)) return json({ ok: false, error: "Invalid entityId" }, 400);
+
+    const authz = await authorizeFacilityAccess({
+      url: env.url,
+      anon: env.anon,
+      service: env.service,
+      authHeader,
+      entityType,
+      entityId,
+      required: { anyOf: ["billing:view", "billing:manage"] },
+    });
+
+    if (!authz.ok) return json(authz, 403);
+
+    const limit = Math.max(1, Math.min(200, body.limit ?? 50));
+
+    const { data: invoices, error: invErr } = await authz.serviceClient
+      .from("billing_invoices")
+      .select("id,status,currency,amount_due_cents,amount_paid_cents,amount_remaining_cents,due_at,paid_at,created_at,hosted_invoice_url,invoice_pdf_url")
+      .eq("entity_type", entityType)
+      .eq("entity_id", entityId)
+      .order("created_at", { ascending: false })
+      .limit(limit);
 
     if (invErr) throw invErr;
+
+    const { data: transactions, error: txErr } = await authz.serviceClient
+      .from("billing_transactions")
+      .select("id,entity_type,entity_id,status,transaction_type,currency,amount_cents,provider,provider_ref,invoice_id,created_at,metadata")
+      .eq("entity_type", entityType)
+      .eq("entity_id", entityId)
+      .order("created_at", { ascending: false })
+      .limit(limit * 2);
+
     if (txErr) throw txErr;
 
-    const inv = (invoices || []) as any[];
-    const tr = (txs || []) as any[];
+    const txs = (transactions || []) as Array<any>;
+    const totalPaid = txs.filter((t) => t.status === "completed" && t.transaction_type === "charge").reduce((s, t) => s + (t.amount_cents || 0), 0);
+    const totalRefunded = txs.filter((t) => t.status === "completed" && t.transaction_type === "refund").reduce((s, t) => s + (t.amount_cents || 0), 0);
 
-    const totalPaidCents = tr
-      .filter(
-        (t) =>
-          String(t.status || "").toLowerCase() === "completed" &&
-          String(t.transaction_type || "") === "charge",
-      )
-      .reduce((sum, t) => sum + Number(t.amount_cents || 0), 0);
-
-    const totalRefundedCents = tr
-      .filter(
-        (t) =>
-          String(t.status || "").toLowerCase() === "completed" &&
-          String(t.transaction_type || "") === "refund",
-      )
-      .reduce((sum, t) => sum + Number(t.amount_cents || 0), 0);
-
-    const outstandingCents = inv
-      .filter((i) => {
-        const s = String(i.status || "").toLowerCase();
-        return s !== "paid" && s !== "void" && s !== "uncollectible";
-      })
-      .reduce((sum, i) => sum + Number(i.amount_remaining_cents || 0), 0);
-
-    const openInvoiceCount = inv.filter((i) => String(i.status || "").toLowerCase() === "open").length;
+    const invs = (invoices || []) as Array<any>;
+    const outstanding = invs.filter((i) => i.status === "open").reduce((s, i) => s + (i.amount_remaining_cents || 0), 0);
+    const openInvoiceCount = invs.filter((i) => i.status === "open").length;
+    const currency = invs?.[0]?.currency || txs?.[0]?.currency || "usd";
 
     return json({
       ok: true,
-      facility: { facility_type: facilityType, facility_id: facilityId },
+      currency,
       summary: {
-        total_paid_cents: totalPaidCents,
-        total_refunded_cents: totalRefundedCents,
-        outstanding_cents: outstandingCents,
+        total_paid_cents: totalPaid,
+        total_refunded_cents: totalRefunded,
+        outstanding_cents: outstanding,
         open_invoice_count: openInvoiceCount,
       },
-      invoices: inv,
-      transactions: tr,
+      invoices: invs,
+      transactions: txs.map((t) => ({
+        ...t,
+        provider_ref: t.provider_ref ?? null,
+        invoice_id: t.invoice_id ?? null,
+        metadata: t.metadata ?? null,
+      })),
     });
   } catch (e: any) {
-    console.error("facility-billing error:", e);
-    return json({ ok: false, error: e?.message || "Unknown error" }, 500);
+    return json({ ok: false, error: e?.message || "Server error" }, 500);
   }
 });
