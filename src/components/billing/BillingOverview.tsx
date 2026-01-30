@@ -12,6 +12,26 @@ interface BillingOverviewProps {
   entityId: string;
 }
 
+type TxStatus = "completed" | "pending" | "failed" | "refunded" | "unknown";
+type TxType = "charge" | "refund" | "adjustment" | "unknown";
+
+function normalizeStatus(status: BillingTransaction["status"]): TxStatus {
+  const s = String(status || "").toLowerCase();
+  if (s === "completed") return "completed";
+  if (s === "pending") return "pending";
+  if (s === "failed") return "failed";
+  if (s === "refunded") return "refunded";
+  return "unknown";
+}
+
+function normalizeType(type: BillingTransaction["transaction_type"]): TxType {
+  const t = String(type || "").toLowerCase();
+  if (t === "charge") return "charge";
+  if (t === "refund") return "refund";
+  if (t === "adjustment") return "adjustment";
+  return "unknown";
+}
+
 const formatCents = (amountCents: number, currency: string) => {
   const cents = Number(amountCents || 0);
   return new Intl.NumberFormat("en-US", {
@@ -21,32 +41,36 @@ const formatCents = (amountCents: number, currency: string) => {
 };
 
 const getStatusBadge = (status: BillingTransaction["status"]) => {
-  const variants: Record<BillingTransaction["status"], "default" | "secondary" | "destructive" | "outline"> = {
+  const variants: Record<TxStatus, "default" | "secondary" | "destructive" | "outline"> = {
     completed: "default",
     pending: "secondary",
     failed: "destructive",
     refunded: "outline",
+    unknown: "secondary",
   };
-  return <Badge variant={variants[status] || "secondary"}>{status}</Badge>;
+
+  const s = normalizeStatus(status);
+  return <Badge variant={variants[s] || "secondary"}>{s}</Badge>;
 };
 
 const getTypeLabel = (type: BillingTransaction["transaction_type"]) => {
-  const labels: Record<BillingTransaction["transaction_type"], string> = {
+  const labels: Record<TxType, string> = {
     charge: "Charge",
     refund: "Refund",
     adjustment: "Adjustment",
+    unknown: "Transaction",
   };
-  return labels[type] || type;
+  const t = normalizeType(type);
+  return labels[t] || "Transaction";
 };
 
-const isRefundLike = (t: BillingTransaction) => t.transaction_type === "refund" || t.status === "refunded";
+const isRefundLike = (t: BillingTransaction) => normalizeType(t.transaction_type) === "refund" || normalizeStatus(t.status) === "refunded";
 
 export const BillingOverview = ({ entityType, entityId }: BillingOverviewProps) => {
-  const { transactions, isLoading, refetch, totalRevenue, totalRefunds, netRevenue } = useBillingTransactions(
-    undefined,
-    undefined,
-    { entityType, entityId },
-  );
+  const { transactions, isLoading, refetch, totalRevenue, totalRefunds, netRevenue } = useBillingTransactions({
+    entityType,
+    entityId,
+  });
 
   const currency = transactions.find((t) => t.currency)?.currency || "usd";
 
@@ -66,7 +90,7 @@ export const BillingOverview = ({ entityType, entityId }: BillingOverviewProps) 
     );
   }
 
-  const revenueTxCount = transactions.filter((t) => t.status === "completed" && !isRefundLike(t)).length;
+  const revenueTxCount = transactions.filter((t) => normalizeStatus(t.status) === "completed" && !isRefundLike(t)).length;
   const refundTxCount = transactions.filter((t) => isRefundLike(t)).length;
 
   return (
@@ -138,19 +162,15 @@ export const BillingOverview = ({ entityType, entityId }: BillingOverviewProps) 
                       </div>
                       <div>
                         <p className="font-medium">{getTypeLabel(transaction.transaction_type)}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {format(new Date(transaction.created_at), "MMM d, yyyy h:mm a")}
-                        </p>
-                        {transaction.description ? (
-                          <p className="text-xs text-muted-foreground mt-1">{transaction.description}</p>
-                        ) : null}
+                        <p className="text-sm text-muted-foreground">{format(new Date(transaction.created_at), "MMM d, yyyy h:mm a")}</p>
+                        {transaction.description ? <p className="text-xs text-muted-foreground mt-1">{transaction.description}</p> : null}
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
                       {getStatusBadge(transaction.status)}
                       <span className={`font-semibold ${refundLike ? "text-destructive" : "text-green-600"}`}>
                         {refundLike ? "-" : "+"}
-                        {formatCents(Math.abs(transaction.amount_cents), transaction.currency)}
+                        {formatCents(Math.abs(Number(transaction.amount_cents || 0)), transaction.currency || "usd")}
                       </span>
                     </div>
                   </div>
