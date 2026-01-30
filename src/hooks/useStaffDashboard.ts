@@ -275,23 +275,26 @@ export const useStaffDashboard = () => {
 
   const fetchRecentPayments = useCallback(async (pid: string) => {
     try {
-      // Use Edge Function (service-role read + explicit authz) to avoid RLS pitfalls.
-      const { data, error } = await supabase.functions.invoke<
-        {
-          ok: boolean;
-          error?: string;
-          transactions?: Array<{
-            id: string;
-            amount_cents: number;
-            currency: string;
-            status: string;
-            transaction_type: string;
-            created_at: string;
-            metadata: Record<string, any>;
-          }>;
-        }
-      >("clinic-billing", {
-        body: { clinicId: pid, limit: 10 },
+      // Clinics must use entity-dashboard billing (service-role read + explicit authz in the function).
+      const { data, error } = await supabase.functions.invoke<{
+        ok: boolean;
+        error?: string;
+        transactions?: Array<{
+          id: string;
+          amount_cents: number;
+          currency: string;
+          status: string;
+          transaction_type: string;
+          created_at: string;
+          metadata: Record<string, any>;
+        }>;
+      }>("entity-dashboard", {
+        body: {
+          action: "billing",
+          entityType: "clinic",
+          entityId: pid,
+          limit: 10,
+        },
       });
 
       if (error) throw error;
