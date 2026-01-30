@@ -1,3 +1,4 @@
+// Path: src/components/doctor/ManualBookAppointmentModal.tsx
 // File: src/components/doctor/ManualBookAppointmentModal.tsx
 
 import { useState, useEffect } from "react";
@@ -23,6 +24,8 @@ interface ManualBookAppointmentModalProps {
   onSuccess?: () => Promise<void> | void;
   prefilledDate?: Date;
   prefilledTime?: string;
+
+  // ✅ Follow-up flow
   preselectedPatient?: Patient | null;
   followupOfAppointmentId?: string | null;
   forceAppointmentType?: "in_person" | "video" | "home_visit" | "follow_up" | "messaging" | "chat";
@@ -58,7 +61,7 @@ const ManualBookAppointmentModal = ({
   const [durationMinutes, setDurationMinutes] = useState<number>(30);
   const [notes, setNotes] = useState("");
   const [appointmentType, setAppointmentType] = useState<string>(
-    forceAppointmentType || (followupOfAppointmentId ? "follow_up" : "in_person")
+    forceAppointmentType || (followupOfAppointmentId ? "follow_up" : "in_person"),
   );
   const [loading, setLoading] = useState(false);
 
@@ -72,12 +75,16 @@ const ManualBookAppointmentModal = ({
     else setSelectedDate(new Date());
 
     if (prefilledTime) setSelectedTime(prefilledTime);
+    else setSelectedTime("");
 
     setProcedureId("");
     setDurationMinutes(30);
     setNotes("");
     setSelectedPatient(preselectedPatient ?? null);
-    setAppointmentType(forceAppointmentType || (followupOfAppointmentId ? "follow_up" : "in_person"));
+
+    // ✅ Follow-up must always be follow_up type
+    const nextType = forceAppointmentType || (followupOfAppointmentId ? "follow_up" : "in_person");
+    setAppointmentType(nextType);
   }, [isOpen, prefilledDate, prefilledTime, preselectedPatient, followupOfAppointmentId, forceAppointmentType]);
 
   const resetForm = () => {
@@ -144,7 +151,10 @@ const ManualBookAppointmentModal = ({
       const endDate = new Date(selectedDate);
       endDate.setHours(hours, minutes + durationMinutes, 0, 0);
 
-      const endTime = `${String(endDate.getHours()).padStart(2, "0")}:${String(endDate.getMinutes()).padStart(2, "0")}`;
+      const endTime = `${String(endDate.getHours()).padStart(2, "0")}:${String(endDate.getMinutes()).padStart(
+        2,
+        "0",
+      )}`;
 
       const patientLink =
         selectedPatient.source === "registered"
@@ -165,6 +175,9 @@ const ManualBookAppointmentModal = ({
           .filter(Boolean)
           .join("\n") || null;
 
+      // ✅ Force follow_up type if followupOfAppointmentId is set
+      const finalAppointmentType = followupOfAppointmentId ? "follow_up" : appointmentType;
+
       const payload: any = {
         doctor_id: doctorId,
         practice_id: practiceId || null,
@@ -173,7 +186,7 @@ const ManualBookAppointmentModal = ({
         end_time: endTime,
         notes: notesCombined,
         status: "confirmed",
-        appointment_type: appointmentType,
+        appointment_type: finalAppointmentType,
         follow_up_of_appointment_id: followupOfAppointmentId || null,
         ...patientLink,
 
@@ -224,7 +237,12 @@ const ManualBookAppointmentModal = ({
 
             <PatientSelector value={selectedPatient?.id} required onSelect={(p) => setSelectedPatient(p)} />
 
-            <Button type="button" variant="link" className="p-0 h-auto text-primary" onClick={() => setCreatePatientOpen(true)}>
+            <Button
+              type="button"
+              variant="link"
+              className="p-0 h-auto text-primary"
+              onClick={() => setCreatePatientOpen(true)}
+            >
               Add New Patient
             </Button>
 
@@ -267,7 +285,11 @@ const ManualBookAppointmentModal = ({
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               type="time"
               value={selectedTime}
-              min={format(selectedDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd") ? format(new Date(), "HH:mm") : undefined}
+              min={
+                format(selectedDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd")
+                  ? format(new Date(), "HH:mm")
+                  : undefined
+              }
               onChange={(e) => {
                 setSelectedTime(e.target.value);
               }}
@@ -280,7 +302,7 @@ const ManualBookAppointmentModal = ({
           <div className="space-y-2">
             <Label>Appointment Type</Label>
             <Select
-              value={appointmentType}
+              value={followupOfAppointmentId ? "follow_up" : appointmentType}
               onValueChange={(v) => setAppointmentType(v)}
               disabled={Boolean(forceAppointmentType) || Boolean(followupOfAppointmentId)}
             >
@@ -340,7 +362,12 @@ const ManualBookAppointmentModal = ({
 
           <div className="space-y-2">
             <Label>Notes (optional)</Label>
-            <Textarea placeholder="Add any notes for this appointment..." value={notes} onChange={(e) => setNotes(e.target.value)} rows={4} />
+            <Textarea
+              placeholder="Add any notes for this appointment..."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={4}
+            />
           </div>
 
           <div className="flex justify-end gap-2">
