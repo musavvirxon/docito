@@ -1,303 +1,444 @@
-// Path: supabase/functions/entity-dashboard/index.ts
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+// File: supabase/functions/entity-dashboard/index.ts
+
+/// <reference lib="deno.unstable" />
+
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
+
+type Json = Record<string, unknown>;
+
+type ReqBody = {
+  action: "billing" | "analytics";
+  entityType: "clinic";
+  entityId: string;
+  limit?: number;
+  days?: number;
+};
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-type EntityType = "clinic" | "lab" | "imaging" | "pharmacy";
-type Action = "billing" | "analytics";
-
-type ReqBody =
-  | { action: "billing"; entityType: EntityType; entityId: string; limit?: number }
-  | { action: "analytics"; entityType: EntityType; entityId: string; days?: number };
-
-function json(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), {
+function jsonResponse(status: number, body: unknown) {
+  return new Response(JSON.stringify(body), {
     status,
-    headers: { "Content-Type": "application/json", ...corsHeaders },
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }
 
-function requireEnv() {
-  const url = Deno.env.get("SUPABASE_URL");
-  const anon = Deno.env.get("SUPABASE_ANON_KEY");
-  const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!url || !anon || !service) {
-    return {
-      ok: false as const,
-      error: "Missing SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY",
-    };
+function parseAuthToken(req: Request): string | null {
+  const h = req.headers.get("authorization") || req.headers.get("Authorization");
+  if (!h) return null;
+  const m = h.match(/^Bearer\s+(.+)$/i);
+  return m ? m[1] : null;
+}
+
+function startOfDayISO(d: Date) {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x.toISOString();
+}
+
+function ymd(d: Date) {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function safeNum(v: unknown, fallback = 0) {
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+async function assertClinicAccess(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  userId: string,
+  clinicId: string,
+) {
+  // Prefer a "user scopes" style view/table if present.
+  const candidates: Array<() => Promise<boolean>> = [
+    async () => {
+      const { data, error } = await supabaseAdmin
+        .from("user_entity_scopes")
+        .select("entity_id, entity_type, is_admin, permissions, status")
+        .eq("user_id", userId)
+        .eq("entity_type", "clinic")
+        .eq("entity_id", clinicId)
+        .maybeSingle();
+      if (error) return false;
+      return Boolean(data) && (data as any).status !== "inactive";
+    },
+    async () => {
+      const { data, error } = await supabaseAdmin
+        .from("entity_memberships")
+        .select("entity_id, entity_type, status")
+        .eq("user_id", userId)
+        .eq("entity_type", "clinic")
+        .eq("entity_id", clinicId)
+        .maybeSingle();
+      if (error) return false;
+      return Boolean(data) && (data as any).status !== "inactive";
+    },
+    async () => {
+      const { data, error } = await supabaseAdmin
+        .from("practice_staff")
+        .select("practice_id, status")
+        .eq("user_id", userId)
+        .eq("practice_id", clinicId)
+        .maybeSingle();
+      if (error) return false;
+      return Boolean(data) && (data as any).status !== "inactive";
+    },
+    async () => {
+      // doctors table often ties a doctor to a practice/clinic
+      const { data, error } = await supabaseAdmin
+        .from("doctors")
+        .select("id, practice_id, clinic_id, user_id")
+        .eq("user_id", userId)
+        .or(`practice_id.eq.${clinicId},clinic_id.eq.${clinicId}`)
+        .limit(1)
+        .maybeSingle();
+      if (error) return false;
+      return Boolean(data);
+    },
+  ];
+
+  for (const fn of candidates) {
+    try {
+      if (await fn()) return;
+    } catch {
+      // ignore and try next
+    }
   }
-  return { ok: true as const, url, anon, service };
+
+  throw new Error("forbidden");
 }
 
-function isUuid(v: string) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
+async function loadClinicBilling(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  clinicId: string,
+  limit: number,
+) {
+  // Prefer generic billing_transactions table if present
+  const tryTables = [
+    async () => {
+      const { data, error } = await supabaseAdmin
+        .from("billing_transactions")
+        .select(
+          "id, created_at, status, transaction_type, currency, amount_cents, metadata, entity_type, entity_id, invoice_id, provider, provider_ref",
+        )
+        .eq("entity_type", "clinic")
+        .eq("entity_id", clinicId)
+        .order("created_at", { ascending: false })
+        .limit(limit);
+      if (error) throw error;
+      return data as any[];
+    },
+    async () => {
+      const { data, error } = await supabaseAdmin
+        .from("facility_billing_transactions")
+        .select(
+          "id, created_at, status, transaction_type, currency, amount_cents, metadata, entity_type, entity_id, invoice_id, provider, provider_ref",
+        )
+        .eq("entity_type", "clinic")
+        .eq("entity_id", clinicId)
+        .order("created_at", { ascending: false })
+        .limit(limit);
+      if (error) throw error;
+      return data as any[];
+    },
+  ];
+
+  let rows: any[] = [];
+  let lastErr: unknown = null;
+  for (const t of tryTables) {
+    try {
+      rows = await t();
+      lastErr = null;
+      break;
+    } catch (e) {
+      lastErr = e;
+      continue;
+    }
+  }
+  if (lastErr) throw lastErr;
+
+  const currency = (rows.find((r) => r.currency)?.currency as string | undefined) ||
+    "usd";
+
+  // Summary
+  let paid = 0;
+  let refunded = 0;
+
+  for (const r of rows) {
+    const status = String(r.status || "").toLowerCase();
+    if (status !== "completed" && status !== "paid") continue;
+
+    const amt = safeNum(r.amount_cents, 0);
+    const type = String(r.transaction_type || "").toLowerCase();
+
+    if (type.includes("refund") || amt < 0) refunded += Math.abs(amt);
+    else paid += amt;
+  }
+
+  return {
+    ok: true,
+    currency,
+    summary: {
+      total_paid_cents: paid,
+      total_refunded_cents: refunded,
+      net_cents: paid - refunded,
+    },
+    transactions: rows.map((r) => ({
+      id: r.id,
+      created_at: r.created_at,
+      status: r.status,
+      transaction_type: r.transaction_type,
+      currency: r.currency || currency,
+      amount_cents: safeNum(r.amount_cents, 0),
+      metadata: (r.metadata || {}) as Json,
+      provider: r.provider ?? null,
+      provider_ref: r.provider_ref ?? null,
+      invoice_id: r.invoice_id ?? null,
+    })),
+  };
 }
 
-type ScopeRow = {
-  entity_type: string;
-  entity_id: string;
-  entity_name: string | null;
-  entity_status: string | null;
-  scope_role: string | null;
-  is_admin: boolean | null;
-  permissions: Record<string, any> | null;
-};
+async function loadClinicAnalytics(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  clinicId: string,
+  days: number,
+) {
+  const now = new Date();
+  const start = new Date(now);
+  start.setDate(start.getDate() - (Math.max(1, days) - 1));
+  start.setHours(0, 0, 0, 0);
 
-function hasPermission(scope: ScopeRow, key: string): boolean {
-  const perms = scope.permissions || {};
-  const v = perms[key];
-  return v === true;
-}
+  const prevStart = new Date(start);
+  prevStart.setDate(prevStart.getDate() - Math.max(1, days));
+  const prevEnd = new Date(start);
+  prevEnd.setMilliseconds(prevEnd.getMilliseconds() - 1);
 
-async function authorizeEntityAccess(params: {
-  url: string;
-  anon: string;
-  authHeader: string;
-  entityType: EntityType;
-  entityId: string;
-}): Promise<{ ok: true; userId: string; scope: ScopeRow } | { ok: false; status: number; error: string }> {
-  const { url, anon, authHeader, entityType, entityId } = params;
+  // Appointments (current period)
+  const { data: appts, error: apptErr } = await supabaseAdmin
+    .from("appointments")
+    .select("id, appointment_date, status, patient_id")
+    .eq("practice_id", clinicId)
+    .gte("appointment_date", ymd(start))
+    .lte("appointment_date", ymd(now));
+  if (apptErr) throw apptErr;
 
-  const supabaseUser = createClient(url, anon, {
-    global: { headers: { Authorization: authHeader } },
-  });
+  // Appointments (previous period)
+  const { data: prevAppts, error: prevApptErr } = await supabaseAdmin
+    .from("appointments")
+    .select("id, appointment_date, status, patient_id")
+    .eq("practice_id", clinicId)
+    .gte("appointment_date", ymd(prevStart))
+    .lte("appointment_date", ymd(prevEnd));
+  if (prevApptErr) throw prevApptErr;
 
-  const { data: userRes, error: userErr } = await supabaseUser.auth.getUser();
-  if (userErr || !userRes?.user) return { ok: false, status: 401, error: "Unauthorized" };
+  const total = (appts || []).length;
+  const completed = (appts || []).filter((a: any) => {
+    const s = String(a.status || "").toLowerCase();
+    return s === "completed" || s === "done";
+  }).length;
 
-  const { data: scopes, error: scopesErr } = await supabaseUser.rpc("get_my_entity_scopes");
-  if (scopesErr) return { ok: false, status: 500, error: scopesErr.message || "Failed to load scopes" };
+  const prevTotal = (prevAppts || []).length;
+  const prevCompleted = (prevAppts || []).filter((a: any) => {
+    const s = String(a.status || "").toLowerCase();
+    return s === "completed" || s === "done";
+  }).length;
 
-  const list = (scopes || []) as ScopeRow[];
-  const scope = list.find((s) => s.entity_type === entityType && String(s.entity_id) === entityId);
-  if (!scope) return { ok: false, status: 403, error: "Forbidden" };
+  const uniquePatients = new Set(
+    (appts || []).map((a: any) => a.patient_id).filter(Boolean),
+  ).size;
+  const prevUniquePatients = new Set(
+    (prevAppts || []).map((a: any) => a.patient_id).filter(Boolean),
+  ).size;
 
-  return { ok: true, userId: userRes.user.id, scope };
-}
+  const completionRatePct = total > 0 ? (completed / total) * 100 : 0;
+  const prevCompletionRatePct = prevTotal > 0
+    ? (prevCompleted / prevTotal) * 100
+    : 0;
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
-  if (req.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 405);
+  const pctChange = (cur: number, prev: number) => {
+    if (!Number.isFinite(cur) || !Number.isFinite(prev)) return 0;
+    if (prev === 0) return cur === 0 ? 0 : 100;
+    return ((cur - prev) / prev) * 100;
+  };
 
-  const authHeader = req.headers.get("authorization") || req.headers.get("Authorization") || "";
-  if (!authHeader) return json({ ok: false, error: "Missing Authorization" }, 401);
+  // Revenue from billing (current + prev) via the same data source as billing action
+  const billingNow = await loadClinicBilling(supabaseAdmin, clinicId, 1000);
+  const currentRevenue = safeNum((billingNow as any)?.summary?.net_cents, 0);
 
-  const env = requireEnv();
-  if (!env.ok) return json({ ok: false, error: env.error }, 500);
-
-  let body: ReqBody;
+  let prevRevenue = 0;
   try {
-    body = (await req.json()) as ReqBody;
+    // Attempt date-bounded revenue if billing table supports created_at filtering
+    const { data: txs, error } = await supabaseAdmin
+      .from("billing_transactions")
+      .select("status, transaction_type, amount_cents, created_at, entity_type, entity_id")
+      .eq("entity_type", "clinic")
+      .eq("entity_id", clinicId)
+      .gte("created_at", prevStart.toISOString())
+      .lte("created_at", prevEnd.toISOString())
+      .limit(2000);
+    if (!error) {
+      let paid = 0;
+      let refunded = 0;
+      for (const r of txs || []) {
+        const status = String((r as any).status || "").toLowerCase();
+        if (status !== "completed" && status !== "paid") continue;
+        const amt = safeNum((r as any).amount_cents, 0);
+        const type = String((r as any).transaction_type || "").toLowerCase();
+        if (type.includes("refund") || amt < 0) refunded += Math.abs(amt);
+        else paid += amt;
+      }
+      prevRevenue = paid - refunded;
+    }
   } catch {
-    return json({ ok: false, error: "Invalid JSON body" }, 400);
+    prevRevenue = 0;
   }
 
-  const action = (body as any)?.action as Action | undefined;
-  const entityType = (body as any)?.entityType as EntityType | undefined;
-  const entityId = String((body as any)?.entityId || "");
+  // Daily trend for appointments (and revenue best-effort)
+  const dayMap = new Map<string, { date: string; appointments: number; completed: number; uniquePatients: Set<string>; revenue_cents: number }>();
+  for (let i = 0; i < days; i++) {
+    const d = new Date(start);
+    d.setDate(d.getDate() + i);
+    const k = ymd(d);
+    dayMap.set(k, {
+      date: k,
+      appointments: 0,
+      completed: 0,
+      uniquePatients: new Set(),
+      revenue_cents: 0,
+    });
+  }
 
-  if (!action) return json({ ok: false, error: "Missing action" }, 400);
-  if (!entityType) return json({ ok: false, error: "Missing entityType" }, 400);
-  if (!entityId || !isUuid(entityId)) return json({ ok: false, error: "Invalid entityId" }, 400);
+  for (const a of appts || []) {
+    const k = String((a as any).appointment_date);
+    const row = dayMap.get(k);
+    if (!row) continue;
+    row.appointments += 1;
+    const s = String((a as any).status || "").toLowerCase();
+    if (s === "completed" || s === "done") row.completed += 1;
+    const pid = (a as any).patient_id;
+    if (pid) row.uniquePatients.add(String(pid));
+  }
 
-  const authz = await authorizeEntityAccess({
-    url: env.url,
-    anon: env.anon,
-    authHeader,
-    entityType,
-    entityId,
-  });
-  if (!authz.ok) return json({ ok: false, error: authz.error }, authz.status);
+  // Revenue per day (best-effort from billingNow transactions)
+  try {
+    const txs = (billingNow as any)?.transactions as any[] | undefined;
+    if (Array.isArray(txs)) {
+      for (const t of txs) {
+        const status = String(t.status || "").toLowerCase();
+        if (status !== "completed" && status !== "paid") continue;
+        const created = new Date(String(t.created_at));
+        const k = ymd(created);
+        const row = dayMap.get(k);
+        if (!row) continue;
 
-  // Service role for DB reads (RLS-bypassing), but only after manual scope checks above.
-  const admin = createClient(env.url, env.service, {
-    auth: { persistSession: false },
-    global: { headers: { "X-Client-Info": "entity-dashboard" } },
-  });
+        const amt = safeNum(t.amount_cents, 0);
+        const type = String(t.transaction_type || "").toLowerCase();
+        if (type.includes("refund") || amt < 0) row.revenue_cents -= Math.abs(amt);
+        else row.revenue_cents += amt;
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  const daily = Array.from(dayMap.values()).map((r) => ({
+    date: r.date,
+    appointments: r.appointments,
+    completed: r.completed,
+    uniquePatients: r.uniquePatients.size,
+    revenue_cents: r.revenue_cents,
+  }));
+
+  return {
+    ok: true,
+    range: {
+      days,
+      start_date: ymd(start),
+      end_date: ymd(now),
+    },
+    kpis: {
+      uniquePatients,
+      uniquePatientsChangePct: pctChange(uniquePatients, prevUniquePatients),
+      completionRatePct,
+      completionRateChangePct: pctChange(completionRatePct, prevCompletionRatePct),
+      revenueNetCents: currentRevenue,
+      revenueNetChangePct: pctChange(currentRevenue, prevRevenue),
+      appointmentsTotal: total,
+      appointmentsTotalChangePct: pctChange(total, prevTotal),
+    },
+    daily,
+  };
+}
+
+serve(async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
 
   try {
-    if (action === "billing") {
-      if (!authz.scope.is_admin && !hasPermission(authz.scope, "can_manage_billing")) {
-        return json({ ok: false, error: "Forbidden" }, 403);
-      }
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-      const limit = Math.max(5, Math.min(200, Number((body as any)?.limit ?? 50) || 50));
-
-      const [{ data: invoices, error: invErr }, { data: txs, error: txErr }] = await Promise.all([
-        admin
-          .from("billing_invoices")
-          .select(
-            "id, status, currency, amount_due_cents, amount_paid_cents, amount_remaining_cents, due_at, paid_at, created_at, hosted_invoice_url, invoice_pdf_url, metadata"
-          )
-          .eq("entity_type", entityType)
-          .eq("entity_id", entityId)
-          .order("created_at", { ascending: false })
-          .limit(limit),
-        admin
-          .from("billing_transactions")
-          .select("id, status, transaction_type, currency, amount_cents, provider, provider_ref, created_at, metadata, invoice_id")
-          .eq("entity_type", entityType)
-          .eq("entity_id", entityId)
-          .order("created_at", { ascending: false })
-          .limit(limit),
-      ]);
-
-      if (invErr) throw invErr;
-      if (txErr) throw txErr;
-
-      const inv = (invoices || []) as any[];
-      const tr = (txs || []) as any[];
-
-      const totalPaidCents = tr
-        .filter((t) => String(t.status || "").toLowerCase() === "completed" && String(t.transaction_type || "") === "charge")
-        .reduce((sum, t) => sum + Number(t.amount_cents || 0), 0);
-
-      const totalRefundedCents = tr
-        .filter((t) => String(t.status || "").toLowerCase() === "completed" && String(t.transaction_type || "") === "refund")
-        .reduce((sum, t) => sum + Number(t.amount_cents || 0), 0);
-
-      const outstandingCents = inv
-        .filter((i) => {
-          const s = String(i.status || "").toLowerCase();
-          return s !== "paid" && s !== "void" && s !== "uncollectible";
-        })
-        .reduce((sum, i) => sum + Number(i.amount_remaining_cents || 0), 0);
-
-      const openInvoiceCount = inv.filter((i) => String(i.status || "").toLowerCase() === "open").length;
-
-      return json({
-        ok: true,
-        entity: { entity_type: entityType, entity_id: entityId },
-        summary: {
-          total_paid_cents: totalPaidCents,
-          total_refunded_cents: totalRefundedCents,
-          outstanding_cents: outstandingCents,
-          open_invoice_count: openInvoiceCount,
-        },
-        invoices: inv,
-        transactions: tr,
-      });
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_ROLE_KEY) {
+      return jsonResponse(500, { ok: false, error: "missing_env" });
     }
 
-    if (action === "analytics") {
-      const days = Math.max(7, Math.min(365, Number((body as any)?.days ?? 30) || 30));
-      const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+    const token = parseAuthToken(req);
+    if (!token) return jsonResponse(401, { ok: false, error: "missing_auth" });
 
-      // Clinics: appointments-based analytics
-      if (entityType === "clinic") {
-        const [{ data: appts, error: apptErr }, { data: payments, error: payErr }] = await Promise.all([
-          admin
-            .from("appointments")
-            .select("id, status, appointment_date, created_at, appointment_type, total_amount")
-            .eq("practice_id", entityId)
-            .gte("created_at", since),
-          admin
-            .from("billing_transactions")
-            .select("id, status, transaction_type, amount_cents, created_at")
-            .eq("entity_type", "clinic")
-            .eq("entity_id", entityId)
-            .gte("created_at", since),
-        ]);
+    const supabaseAuth = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+      auth: { persistSession: false },
+    });
 
-        if (apptErr) throw apptErr;
-        if (payErr) throw payErr;
-
-        const a = (appts || []) as any[];
-        const p = (payments || []) as any[];
-
-        const totalAppointments = a.length;
-        const completedAppointments = a.filter((x) => String(x.status || "").toLowerCase() === "completed").length;
-        const canceledAppointments = a.filter((x) => String(x.status || "").toLowerCase() === "cancelled").length;
-
-        const revenueCents = p
-          .filter((t) => String(t.status || "").toLowerCase() === "completed" && String(t.transaction_type || "") === "charge")
-          .reduce((sum, t) => sum + Number(t.amount_cents || 0), 0);
-
-        const byDay: Record<string, { appointments: number; created: number; revenue_cents: number }> = {};
-        for (const x of a) {
-          const day = String(x.appointment_date || "").slice(0, 10) || String(x.created_at || "").slice(0, 10);
-          if (!day) continue;
-          byDay[day] ||= { appointments: 0, created: 0, revenue_cents: 0 };
-          byDay[day].appointments += 1;
-        }
-        for (const t of p) {
-          const day = String(t.created_at || "").slice(0, 10);
-          if (!day) continue;
-          byDay[day] ||= { appointments: 0, created: 0, revenue_cents: 0 };
-          if (String(t.status || "").toLowerCase() === "completed" && String(t.transaction_type || "") === "charge") {
-            byDay[day].revenue_cents += Number(t.amount_cents || 0);
-          }
-        }
-
-        const trend = Object.entries(byDay)
-          .sort((aa, bb) => aa[0].localeCompare(bb[0]))
-          .map(([date, v]) => ({ date, ...v }));
-
-        return json({
-          ok: true,
-          entity: { entity_type: entityType, entity_id: entityId },
-          window_days: days,
-          kpis: {
-            total_appointments: totalAppointments,
-            completed_appointments: completedAppointments,
-            cancelled_appointments: canceledAppointments,
-            revenue_cents: revenueCents,
-          },
-          trend,
-        });
-      }
-
-      // Facilities: referrals-based analytics (lab/imaging/pharmacy)
-      const { data: refs, error: refErr } = await admin
-        .from("referrals")
-        .select("id, status, created_at")
-        .eq("receiver_entity_type", entityType)
-        .eq("receiver_entity_id", entityId)
-        .gte("created_at", since);
-
-      if (refErr) throw refErr;
-
-      const r = (refs || []) as any[];
-      const totalReferrals = r.length;
-      const completedReferrals = r.filter((x) => String(x.status || "").toLowerCase() === "completed").length;
-      const pendingReferrals = r.filter((x) => {
-        const s = String(x.status || "").toLowerCase();
-        return s === "pending" || s === "assigned" || s === "in_progress";
-      }).length;
-
-      const byDay: Record<string, { referrals: number }> = {};
-      for (const x of r) {
-        const day = String(x.created_at || "").slice(0, 10);
-        if (!day) continue;
-        byDay[day] ||= { referrals: 0 };
-        byDay[day].referrals += 1;
-      }
-      const trend = Object.entries(byDay)
-        .sort((aa, bb) => aa[0].localeCompare(bb[0]))
-        .map(([date, v]) => ({ date, ...v }));
-
-      return json({
-        ok: true,
-        entity: { entity_type: entityType, entity_id: entityId },
-        window_days: days,
-        kpis: {
-          total_referrals: totalReferrals,
-          completed_referrals: completedReferrals,
-          pending_referrals: pendingReferrals,
-        },
-        trend,
-      });
+    const { data: userData, error: userErr } = await supabaseAuth.auth.getUser();
+    if (userErr || !userData?.user) {
+      return jsonResponse(401, { ok: false, error: "invalid_auth" });
     }
 
-    return json({ ok: false, error: "Unknown action" }, 400);
+    const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { persistSession: false },
+    });
+
+    const body = (await req.json().catch(() => null)) as ReqBody | null;
+    if (!body || !body.action || !body.entityType || !body.entityId) {
+      return jsonResponse(400, { ok: false, error: "invalid_body" });
+    }
+
+    if (body.entityType !== "clinic") {
+      return jsonResponse(400, { ok: false, error: "unsupported_entity_type" });
+    }
+
+    const userId = userData.user.id;
+    await assertClinicAccess(supabaseAdmin, userId, body.entityId);
+
+    if (body.action === "billing") {
+      const limit = Math.min(Math.max(body.limit ?? 200, 1), 1000);
+      const payload = await loadClinicBilling(supabaseAdmin, body.entityId, limit);
+      return jsonResponse(200, payload);
+    }
+
+    if (body.action === "analytics") {
+      const days = Math.min(Math.max(body.days ?? 30, 1), 365);
+      const payload = await loadClinicAnalytics(supabaseAdmin, body.entityId, days);
+      return jsonResponse(200, payload);
+    }
+
+    return jsonResponse(400, { ok: false, error: "unsupported_action" });
   } catch (e: any) {
-    console.error("entity-dashboard error:", e);
-    return json({ ok: false, error: e?.message || "Unknown error" }, 500);
+    const msg = String(e?.message || e || "");
+    if (msg === "forbidden") return jsonResponse(403, { ok: false, error: "forbidden" });
+    return jsonResponse(500, { ok: false, error: "server_error", detail: msg });
   }
 });
