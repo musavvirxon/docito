@@ -1,5 +1,6 @@
+// Path: src/pages/pharmacy/PharmacyDashboardPage.tsx
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { useAuth } from "@/contexts/AuthContext";
@@ -83,6 +84,7 @@ async function fetchMyPharmacy(userId: string): Promise<PharmacyRow | null> {
 }
 
 export default function PharmacyDashboardPage() {
+  const location = useLocation();
   const navigate = useNavigate();
   const { user, loading: authLoading, activeRole } = useAuth();
 
@@ -202,6 +204,35 @@ export default function PharmacyDashboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pharmacyId]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const raw = (params.get("tab") || params.get("section") || "").trim();
+    const hash = (location.hash || "").replace("#", "").trim();
+    const desired = (raw || hash).toLowerCase();
+
+    if (!desired) return;
+
+    const allowed = [
+      "overview",
+      "prescriptions",
+      "fulfillment",
+      "inventory",
+      "deliveries",
+      "referrals",
+      "analytics",
+      "claims",
+      "staff",
+      "settings",
+    ];
+    if (!allowed.includes(desired)) return;
+
+    if (activeTab !== desired) {
+      setActiveTab(desired);
+      if (desired === "overview") fetchOverview();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.hash, location.search, pharmacyId]);
+
   const statCards: StatCardProps[] = useMemo(
     () => [
       { label: "Prescriptions Today", value: stats.prescriptionsToday, icon: <Calendar className="h-6 w-6" /> },
@@ -280,6 +311,17 @@ export default function PharmacyDashboardPage() {
       activeItem={activeTab}
       onItemChange={(id) => {
         setActiveTab(id);
+
+        const params = new URLSearchParams(location.search);
+        params.set("tab", String(id));
+        navigate(
+          {
+            pathname: location.pathname,
+            search: params.toString() ? `?${params.toString()}` : "",
+          },
+          { replace: true },
+        );
+
         if (id === "overview") fetchOverview();
       }}
     >
