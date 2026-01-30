@@ -1,4 +1,4 @@
-// src/hooks/usePatientSettings.ts
+// Path: src/hooks/usePatientSettings.ts
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,9 +15,8 @@ export interface NotificationSettings {
 }
 
 export interface PrivacySettings {
-  profileVisibility: boolean;
-  shareAnalytics: boolean;
-  marketingCommunications: boolean;
+  shareProfile: boolean;
+  shareRecords: boolean;
 }
 
 export interface AccountSettings {
@@ -31,16 +30,21 @@ export interface AccountSettings {
   language: string;
 }
 
-type UserSettingsGetResponse = {
+type UserSettingsGetResp = {
   ok: boolean;
-  error?: string;
   settings?: Record<string, unknown>;
-  meta?: { created_at: string | null; updated_at: string | null };
+  meta?: { created_at?: string | null; updated_at?: string | null };
+  error?: string;
 };
 
-type UserSettingsUpsertResponse = UserSettingsGetResponse;
+type UserSettingsUpsertResp = {
+  ok: boolean;
+  settings?: Record<string, unknown>;
+  meta?: { created_at?: string | null; updated_at?: string | null };
+  error?: string;
+};
 
-const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
+const DEFAULT_NOTIFICATIONS: NotificationSettings = {
   emailBookings: true,
   emailReminders: true,
   emailCancellations: true,
@@ -50,23 +54,56 @@ const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   pushNotifications: true,
 };
 
-const DEFAULT_PRIVACY_SETTINGS: PrivacySettings = {
-  profileVisibility: true,
-  shareAnalytics: true,
-  marketingCommunications: false,
+const DEFAULT_PRIVACY: PrivacySettings = {
+  shareProfile: true,
+  shareRecords: true,
 };
 
-function isRecord(v: unknown): v is Record<string, unknown> {
-  return !!v && typeof v === "object" && !Array.isArray(v);
+function asObject(v: unknown): Record<string, unknown> {
+  if (v && typeof v === "object" && !Array.isArray(v)) return v as Record<string, unknown>;
+  return {};
+}
+
+function pickNotificationSettings(settings: Record<string, unknown>): NotificationSettings {
+  const raw =
+    (settings.notification_settings as any) ||
+    (settings.notificationSettings as any) ||
+    (settings.notifications as any) ||
+    null;
+
+  const obj = asObject(raw);
+
+  return {
+    emailBookings: Boolean(obj.emailBookings ?? DEFAULT_NOTIFICATIONS.emailBookings),
+    emailReminders: Boolean(obj.emailReminders ?? DEFAULT_NOTIFICATIONS.emailReminders),
+    emailCancellations: Boolean(obj.emailCancellations ?? DEFAULT_NOTIFICATIONS.emailCancellations),
+    smsBookings: Boolean(obj.smsBookings ?? DEFAULT_NOTIFICATIONS.smsBookings),
+    smsReminders: Boolean(obj.smsReminders ?? DEFAULT_NOTIFICATIONS.smsReminders),
+    smsCancellations: Boolean(obj.smsCancellations ?? DEFAULT_NOTIFICATIONS.smsCancellations),
+    pushNotifications: Boolean(obj.pushNotifications ?? DEFAULT_NOTIFICATIONS.pushNotifications),
+  };
+}
+
+function pickPrivacySettings(settings: Record<string, unknown>): PrivacySettings {
+  const raw =
+    (settings.privacy_settings as any) ||
+    (settings.privacySettings as any) ||
+    (settings.privacy as any) ||
+    null;
+
+  const obj = asObject(raw);
+
+  return {
+    shareProfile: Boolean(obj.shareProfile ?? DEFAULT_PRIVACY.shareProfile),
+    shareRecords: Boolean(obj.shareRecords ?? DEFAULT_PRIVACY.shareRecords),
+  };
 }
 
 export const usePatientSettings = () => {
   const { user, profile } = useAuth();
 
-  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>(
-    DEFAULT_NOTIFICATION_SETTINGS,
-  );
-  const [privacySettings, setPrivacySettings] = useState<PrivacySettings>(DEFAULT_PRIVACY_SETTINGS);
+  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATIONS);
+  const [privacySettings, setPrivacySettings] = useState<PrivacySettings>(DEFAULT_PRIVACY);
 
   const [accountSettings, setAccountSettings] = useState<AccountSettings>({
     full_name: "",
@@ -75,89 +112,51 @@ export const usePatientSettings = () => {
     date_of_birth: null,
     gender: null,
     address: null,
-    timezone: "UTC",
+    timezone: "America/New_York",
     language: "en",
   });
 
   const [loading, setLoading] = useState(true);
 
-  const profileDerivedAccount = useMemo(() => {
+  const profileAccount = useMemo(() => {
     return {
       full_name: profile?.full_name || "",
-      email: profile?.email || "",
-      phone: profile?.phone || null,
-      date_of_birth: profile?.date_of_birth || null,
-      gender: (profile?.gender as any) || null,
-      address: profile?.address || null,
-      timezone: profile?.timezone || "UTC",
-      language: profile?.language || "en",
-    } satisfies AccountSettings;
+      email: (profile as any)?.email || "",
+      phone: (profile as any)?.phone || null,
+      date_of_birth: (profile as any)?.date_of_birth || null,
+      gender: (profile as any)?.gender || null,
+      address: (profile as any)?.address || null,
+      timezone: (profile as any)?.timezone || "America/New_York",
+      language: (profile as any)?.language || "en",
+    } as AccountSettings;
   }, [profile]);
 
   const fetchSettings = async () => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
+    if (!user) return;
 
     try {
       setLoading(true);
 
-      // Account settings: still sourced from profile (RLS-protected)
-      setAccountSettings(profileDerivedAccount);
+      // Always reflect latest profile fields locally (account panel uses profiles)
+      setAccountSettings(profileAccount);
 
-      // Notifications + privacy: stored in public.user_settings via edge function
-      const { data, error } = await supabase.functions.invoke<UserSettingsGetResponse>("user-settings", {
+      const { data, error } = await supabase.functions.invoke<UserSettingsGetResp>("user-settings", {
         body: { action: "get" },
       });
 
       if (error) throw error;
       if (!data?.ok) throw new Error(data?.error || "Failed to load settings");
 
-      const settings = (data?.settings || {}) as Record<string, unknown>;
-
-      const notifRaw =
-        (isRecord(settings.notifications) && settings.notifications) ||
-        (isRecord(settings.notificationSettings) && settings.notificationSettings) ||
-        null;
-
-      const privacyRaw =
-        (isRecord(settings.privacy) && settings.privacy) ||
-        (isRecord(settings.privacySettings) && settings.privacySettings) ||
-        null;
-
-      if (notifRaw) {
-        setNotificationSettings({
-          ...DEFAULT_NOTIFICATION_SETTINGS,
-          ...(notifRaw as Partial<NotificationSettings>),
-        });
-      } else if (profile?.notification_settings && isRecord(profile.notification_settings)) {
-        // Back-compat fallback
-        setNotificationSettings({
-          ...DEFAULT_NOTIFICATION_SETTINGS,
-          ...(profile.notification_settings as Partial<NotificationSettings>),
-        });
-      } else {
-        setNotificationSettings(DEFAULT_NOTIFICATION_SETTINGS);
-      }
-
-      if (privacyRaw) {
-        setPrivacySettings({
-          ...DEFAULT_PRIVACY_SETTINGS,
-          ...(privacyRaw as Partial<PrivacySettings>),
-        });
-      } else if (profile?.privacy_settings && isRecord(profile.privacy_settings)) {
-        // Back-compat fallback
-        setPrivacySettings({
-          ...DEFAULT_PRIVACY_SETTINGS,
-          ...(profile.privacy_settings as Partial<PrivacySettings>),
-        });
-      } else {
-        setPrivacySettings(DEFAULT_PRIVACY_SETTINGS);
-      }
-    } catch (e: any) {
-      console.error("Error fetching settings:", e);
-      toast.error(e?.message || "Failed to load settings");
+      const settings = asObject(data.settings);
+      setNotificationSettings(pickNotificationSettings(settings));
+      setPrivacySettings(pickPrivacySettings(settings));
+    } catch (err: any) {
+      console.error("Error fetching patient settings:", err);
+      toast.error(err?.message || "Failed to load settings");
+      // Keep safe defaults on error
+      setNotificationSettings(DEFAULT_NOTIFICATIONS);
+      setPrivacySettings(DEFAULT_PRIVACY);
+      setAccountSettings(profileAccount);
     } finally {
       setLoading(false);
     }
@@ -167,26 +166,27 @@ export const usePatientSettings = () => {
     if (!user) return { error: "Not authenticated" };
 
     try {
-      const updatedSettings = { ...notificationSettings, ...settings };
+      const updatedSettings: NotificationSettings = { ...notificationSettings, ...settings };
 
-      const { data, error } = await supabase.functions.invoke<UserSettingsUpsertResponse>("user-settings", {
+      const { data, error } = await supabase.functions.invoke<UserSettingsUpsertResp>("user-settings", {
         body: {
           action: "upsert",
-          settings: { notifications: updatedSettings },
           merge: true,
+          settings: { notification_settings: updatedSettings },
         },
       });
 
       if (error) throw error;
       if (!data?.ok) throw new Error(data?.error || "Failed to update notification preferences");
 
-      setNotificationSettings(updatedSettings);
+      const next = pickNotificationSettings(asObject(data.settings));
+      setNotificationSettings(next);
       toast.success("Notification preferences updated");
       return { success: true };
-    } catch (e: any) {
-      console.error("Error updating notification settings:", e);
-      toast.error(e?.message || "Failed to update notification preferences");
-      return { error: e?.message || "Failed to update notification preferences" };
+    } catch (err: any) {
+      console.error("Error updating notification settings:", err);
+      toast.error(err?.message || "Failed to update notification preferences");
+      return { error: err?.message || "Failed to update notification preferences" };
     }
   };
 
@@ -194,26 +194,27 @@ export const usePatientSettings = () => {
     if (!user) return { error: "Not authenticated" };
 
     try {
-      const updatedSettings = { ...privacySettings, ...settings };
+      const updatedSettings: PrivacySettings = { ...privacySettings, ...settings };
 
-      const { data, error } = await supabase.functions.invoke<UserSettingsUpsertResponse>("user-settings", {
+      const { data, error } = await supabase.functions.invoke<UserSettingsUpsertResp>("user-settings", {
         body: {
           action: "upsert",
-          settings: { privacy: updatedSettings },
           merge: true,
+          settings: { privacy_settings: updatedSettings },
         },
       });
 
       if (error) throw error;
       if (!data?.ok) throw new Error(data?.error || "Failed to update privacy settings");
 
-      setPrivacySettings(updatedSettings);
+      const next = pickPrivacySettings(asObject(data.settings));
+      setPrivacySettings(next);
       toast.success("Privacy settings updated");
       return { success: true };
-    } catch (e: any) {
-      console.error("Error updating privacy settings:", e);
-      toast.error(e?.message || "Failed to update privacy settings");
-      return { error: e?.message || "Failed to update privacy settings" };
+    } catch (err: any) {
+      console.error("Error updating privacy settings:", err);
+      toast.error(err?.message || "Failed to update privacy settings");
+      return { error: err?.message || "Failed to update privacy settings" };
     }
   };
 
@@ -221,32 +222,30 @@ export const usePatientSettings = () => {
     if (!user) return { error: "Not authenticated" };
 
     try {
-      const { error } = await supabase.from("profiles").update(settings).eq("user_id", user.id);
+      const { error } = await supabase.from("profiles").update(settings as any).eq("user_id", user.id);
       if (error) throw error;
 
       setAccountSettings((prev) => ({ ...prev, ...settings }));
       toast.success("Account settings updated");
       return { success: true };
-    } catch (e: any) {
-      console.error("Error updating account settings:", e);
-      toast.error(e?.message || "Failed to update account settings");
-      return { error: e?.message || "Failed to update account settings" };
+    } catch (err: any) {
+      console.error("Error updating account settings:", err);
+      toast.error(err?.message || "Failed to update account settings");
+      return { error: err?.message || "Failed to update account settings" };
     }
   };
 
   const updatePassword = async (_currentPassword: string, newPassword: string) => {
-    if (!user) return { error: "Not authenticated" };
-
     try {
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
 
       toast.success("Password updated successfully");
       return { success: true };
-    } catch (e: any) {
-      console.error("Error updating password:", e);
-      toast.error(e?.message || "Failed to update password");
-      return { error: e?.message || "Failed to update password" };
+    } catch (err: any) {
+      console.error("Error updating password:", err);
+      toast.error(err?.message || "Failed to update password");
+      return { error: err?.message || "Failed to update password" };
     }
   };
 
@@ -256,10 +255,9 @@ export const usePatientSettings = () => {
   }, [user?.id]);
 
   useEffect(() => {
-    if (!user || !profile) return;
-    // Keep account settings synced to profile updates
-    setAccountSettings(profileDerivedAccount);
-  }, [user, profile, profileDerivedAccount]);
+    if (!user) return;
+    setAccountSettings(profileAccount);
+  }, [profileAccount, user]);
 
   return {
     notificationSettings,
