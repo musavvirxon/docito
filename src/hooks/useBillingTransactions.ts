@@ -104,8 +104,15 @@ async function fetchViaEdge(entityType: BillingEntityType, entityId: string): Pr
   return Array.isArray(data.transactions) ? data.transactions.map(normalizeTx) : [];
 }
 
-// Back-compat signature (older call sites passed userId, practiceId)
-export const useBillingTransactions = (_userId?: string, _practiceId?: string, filters?: BillingFilters) => {
+// Support both new object style and legacy positional args
+export const useBillingTransactions = (
+  arg1?: string | BillingFilters,
+  arg2?: string,
+  arg3?: BillingFilters
+) => {
+  // Detect call signature
+  const filters: BillingFilters | undefined =
+    typeof arg1 === "object" ? arg1 : arg3;
   const [transactions, setTransactions] = useState<BillingTransaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 

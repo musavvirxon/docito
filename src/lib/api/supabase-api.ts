@@ -375,10 +375,15 @@ export const appointmentApi = {
 
           if (!docErr && docRows) {
             docRows.forEach((d: any) => {
+              // Extract full_name from profiles for easier access
+              const profiles = Array.isArray(d.profiles) ? d.profiles[0] : d.profiles;
+              const fullName = profiles?.full_name || null;
+              
               doctorMap.set(d.id, {
                 id: d.id,
                 specialty: d.specialty,
-                profiles: d.profiles,
+                profiles: profiles,
+                full_name: fullName, // Add directly for easier access
               });
             });
           }
@@ -400,11 +405,16 @@ export const appointmentApi = {
           }
         }
 
-        const hydrated = (rows || []).map((apt: any) => ({
-          ...apt,
-          doctor: apt.doctor_id ? doctorMap.get(apt.doctor_id) : null,
-          practice: apt.practice_id ? practiceMap.get(apt.practice_id) : null,
-        }));
+        const hydrated = (rows || []).map((apt: any) => {
+          const doctor = apt.doctor_id ? doctorMap.get(apt.doctor_id) : null;
+          return {
+            ...apt,
+            doctor,
+            practice: apt.practice_id ? practiceMap.get(apt.practice_id) : null,
+            // Add doctor_full_name at the top level for fallback
+            doctor_full_name: doctor?.full_name || doctor?.profiles?.full_name || null,
+          };
+        });
 
         return { data: hydrated, success: true };
       } else {
