@@ -1,7 +1,7 @@
 // File: src/pages/AppointmentSession.tsx
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -65,11 +65,6 @@ function nowIso() {
   return new Date().toISOString();
 }
 
-async function getAccessToken(): Promise<string | null> {
-  const { data } = await supabase.auth.getSession();
-  return data.session?.access_token ?? null;
-}
-
 async function markAppointmentEnded(appointmentId: string) {
   // Best-effort update; non-blocking in UI
   try {
@@ -84,8 +79,12 @@ async function markAppointmentEnded(appointmentId: string) {
 
 export default function AppointmentSession() {
   const navigate = useNavigate();
+  const params = useParams<{ appointmentId?: string }>();
   const [searchParams] = useSearchParams();
-  const appointmentId = searchParams.get("appointmentId") || searchParams.get("id") || "";
+
+  const appointmentId =
+    params.appointmentId || searchParams.get("appointmentId") || searchParams.get("id") || "";
+
   const provider = searchParams.get("provider") || "video";
   const [loading, setLoading] = useState(true);
 
@@ -159,7 +158,6 @@ export default function AppointmentSession() {
       setAppointment(data);
 
       if (uid) {
-        // Determine role (best-effort)
         const isPatient = data.patient_id === uid;
         if (isPatient) setUserRole("patient");
         else setUserRole("doctor");
@@ -167,7 +165,6 @@ export default function AppointmentSession() {
         setUserRole("unknown");
       }
 
-      // If an end-flow was previously requested, surface it
       const endState = safeParse<{ requestedAt: string }>(safeGet(endFlowKey));
       if (endState?.requestedAt) {
         toast.message("End visit pending", {
@@ -195,20 +192,16 @@ export default function AppointmentSession() {
 
     setEnding(true);
     try {
-      // Persist "end requested" so refresh doesn't lose intent.
       safeSet(endFlowKey, { requestedAt: nowIso() });
 
-      // Best-effort server-side status update (non-blocking)
       await markAppointmentEnded(appointmentId);
 
       toast.success("Visit ended", {
         description: "Session will close. If the network is slow, status sync will complete when possible.",
       });
 
-      // Clear persisted UI state on end
       safeRemove(menuKey);
 
-      // Navigate away depending on role
       if (userRole === "doctor") {
         navigate("/doctor-dashboard?section=calendar");
       } else if (userRole === "patient") {
@@ -226,7 +219,6 @@ export default function AppointmentSession() {
   };
 
   const leaveSession = () => {
-    // Does not change appointment state; just leaves UI
     if (userRole === "doctor") navigate("/doctor-dashboard?section=calendar");
     else if (userRole === "patient") navigate("/patient-dashboard?section=appointments");
     else navigate("/");
@@ -234,10 +226,9 @@ export default function AppointmentSession() {
 
   const openProviderWindow = async () => {
     if (!appointmentId) return;
-    // Keep design minimal: open same route in new tab for provider integration, if needed.
-    const url = `${window.location.origin}/appointment-session?appointmentId=${encodeURIComponent(appointmentId)}&provider=${encodeURIComponent(
-      provider,
-    )}`;
+    const url = `${window.location.origin}/appointment-session/${encodeURIComponent(
+      appointmentId,
+    )}?provider=${encodeURIComponent(provider)}`;
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
