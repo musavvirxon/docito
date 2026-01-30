@@ -44,6 +44,33 @@ type InsuranceOrder = {
 type ProfileRow = { user_id: string; full_name: string | null; first_name: string | null; last_name: string | null; phone: string | null; email: string | null };
 type FacilityPatientRow = { id: string; full_name: string; phone: string; email: string | null };
 
+type FacilityBillingTx = {
+  id: string;
+  status: string | null;
+  transaction_type: string | null;
+  currency: string | null;
+  amount_cents: number | null;
+  provider: string | null;
+  provider_ref: string | null;
+  created_at: string;
+  metadata: Record<string, any> | null;
+  invoice_id: string | null;
+};
+
+type FacilityBillingResponse = {
+  ok: boolean;
+  currency?: string;
+  summary?: {
+    total_paid_cents?: number;
+    total_refunded_cents?: number;
+    outstanding_cents?: number;
+    open_invoice_count?: number;
+  };
+  invoices?: any[];
+  transactions?: FacilityBillingTx[];
+  error?: string;
+};
+
 function asName(p?: ProfileRow | null) {
   if (!p) return '';
   return p.full_name || [p.first_name, p.last_name].filter(Boolean).join(' ') || '';
@@ -75,6 +102,18 @@ function statusBadge(status: string | null | undefined) {
   }
 }
 
+function safeDescFromTx(tx: FacilityBillingTx) {
+  const md = tx.metadata || {};
+  const pieces = [
+    md?.description,
+    md?.reason,
+    md?.note,
+    tx.provider ? `${tx.provider}${tx.provider_ref ? ` • ${tx.provider_ref}` : ''}` : null,
+    tx.invoice_id ? `Invoice: ${tx.invoice_id}` : null,
+  ].filter(Boolean);
+  return pieces.length ? String(pieces[0]) : null;
+}
+
 export default function LabBillingInsurance({ labCenterId }: Props) {
   const [loading, setLoading] = useState(true);
   const [txLoading, setTxLoading] = useState(false);
@@ -89,17 +128,37 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
   const fetchTransactions = async () => {
     if (!labCenterId) return;
     setTxLoading(true);
+
     try {
-      const { data, error } = await (supabase.from as any)("billing_transactions")
-        .select("id,created_at,amount,currency,status,transaction_type,description")
-        .eq("entity_type", "lab_center")
-        .eq("entity_id", labCenterId)
-        .order("created_at", { ascending: false })
-        .limit(200);
+      const { data, error } = await supabase.functions.invoke<FacilityBillingResponse>('facility-billing', {
+        body: {
+          entityType: 'lab',
+          entityId: labCenterId,
+          limit: 200,
+        },
+      });
 
       if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || 'Failed to load billing');
 
-      setTransactions((data || []) as any);
+      const txs = (data.transactions || []) as FacilityBillingTx[];
+
+      const mapped: BillingTx[] = txs.map((t) => {
+        const cents = Number(t.amount_cents || 0);
+        const amount = cents / 100;
+
+        return {
+          id: t.id,
+          created_at: t.created_at,
+          amount,
+          currency: t.currency || data.currency || 'usd',
+          status: t.status || 'pending',
+          transaction_type: t.transaction_type || '',
+          description: safeDescFromTx(t),
+        };
+      });
+
+      setTransactions(mapped);
     } catch (e: any) {
       console.error(e);
       toast.error(e?.message || 'Failed to load transactions');
@@ -127,10 +186,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
 
       const [profilesRes, facilityRes, insuranceRes] = await Promise.all([
         patientIds.length
-          ? supabase
-              .from('profiles')
-              .select('user_id,full_name,first_name,last_name,phone,email')
-              .in('user_id', patientIds)
+          ? supabase.from('profiles').select('user_id,full_name,first_name,last_name,phone,email').in('user_id', patientIds)
           : Promise.resolve({ data: [], error: null } as any),
         facilityIds.length
           ? (supabase.from as any)('facility_patients').select('id,full_name,phone,email').in('id', facilityIds)
@@ -154,7 +210,6 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
       const facilityMap = new Map<string, FacilityPatientRow>();
       for (const fp of (facilityRes.data || []) as any[]) facilityMap.set(fp.id, fp);
 
-      // pick primary insurance first, otherwise first row
       const insuranceByPatient = new Map<string, { provider_name: string; member_id: string }>();
       for (const row of (insuranceRes.data || []) as any[]) {
         const pid = row.patient_id;
@@ -171,10 +226,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
         const facility = o.facility_patient_id ? facilityMap.get(o.facility_patient_id) || null : null;
         const ins = o.patient_id ? insuranceByPatient.get(o.patient_id) : null;
 
-        const patient_name =
-          facility?.full_name ||
-          asName(profile) ||
-          (o.patient_id ? 'Patient' : 'Walk-in');
+        const patient_name = facility?.full_name || asName(profile) || (o.patient_id ? 'Patient' : 'Walk-in');
 
         const provider = ins?.provider_name || '—';
         const memberId = ins?.member_id || '—';
@@ -247,15 +299,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
     const q = txSearch.trim().toLowerCase();
     if (!q) return transactions;
     return transactions.filter((t) => {
-      const hay = [
-        t.id,
-        t.transaction_type || '',
-        t.status || '',
-        t.currency || '',
-        t.description || '',
-      ]
-        .join(' ')
-        .toLowerCase();
+      const hay = [t.id, t.transaction_type || '', t.status || '', t.currency || '', t.description || ''].join(' ').toLowerCase();
       return hay.includes(q);
     });
   }, [transactions, txSearch]);
@@ -347,16 +391,12 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
           <Card>
             <CardHeader>
               <CardTitle>Transactions</CardTitle>
-              <CardDescription>Entity-scoped billing transactions from Supabase.</CardDescription>
+              <CardDescription>Facility billing transactions via Supabase Edge Function.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Search</Label>
-                <Input
-                  value={txSearch}
-                  onChange={(e) => setTxSearch(e.target.value)}
-                  placeholder="Search by status, type, description..."
-                />
+                <Input value={txSearch} onChange={(e) => setTxSearch(e.target.value)} placeholder="Search by status, type, description..." />
               </div>
 
               <div className="rounded-md border">
@@ -380,9 +420,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
                     ) : (
                       filteredTx.map((t) => (
                         <TableRow key={t.id}>
-                          <TableCell className="whitespace-nowrap">
-                            {t.created_at ? format(new Date(t.created_at), 'MMM d, yyyy') : '—'}
-                          </TableCell>
+                          <TableCell className="whitespace-nowrap">{t.created_at ? format(new Date(t.created_at), 'MMM d, yyyy') : '—'}</TableCell>
                           <TableCell className="font-mono text-xs">{t.transaction_type || '—'}</TableCell>
                           <TableCell>{statusBadge(t.status)}</TableCell>
                           <TableCell className="max-w-[420px] truncate">{t.description || '—'}</TableCell>
@@ -458,9 +496,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
                     ) : (
                       filteredInsurance.map((o) => (
                         <TableRow key={o.id}>
-                          <TableCell className="whitespace-nowrap">
-                            {o.created_at ? format(new Date(o.created_at), 'MMM d, yyyy') : '—'}
-                          </TableCell>
+                          <TableCell className="whitespace-nowrap">{o.created_at ? format(new Date(o.created_at), 'MMM d, yyyy') : '—'}</TableCell>
                           <TableCell className="font-mono text-xs">{o.order_number}</TableCell>
                           <TableCell className="font-medium">{o.patient_name}</TableCell>
                           <TableCell>{o.insurance_provider}</TableCell>
