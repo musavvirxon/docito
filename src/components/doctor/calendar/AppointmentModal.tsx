@@ -64,29 +64,60 @@ interface TreatmentPlan {
   created_at: string;
 }
 
-type ClinicalItemType = "procedure" | "medication" | "treatment_plan";
+type ClinicalItemType = "procedure" | "medication" | "treatment_plan" | "note";
 
 type ClinicalItem = {
   id: string;
   appointment_id: string;
-  doctor_id: string;
-  patient_id: string | null;
-  doctor_patient_id: string | null;
-  item_type: ClinicalItemType;
-  title: string;
-  details: any;
+  item_type: string;
+  title: string | null;
+  description: string | null;
+  status: string | null;
+  metadata: any;
   created_at: string;
-  updated_at: string;
+  updated_at: string | null;
+};
+
+type ProcedureTemplate = {
+  id: string;
+  name: string;
+  description: string | null;
+  duration_minutes: number | null;
+  price_cents: number | null;
+  metadata: any;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+type TreatmentPlanTemplate = {
+  id: string;
+  title: string;
+  description: string | null;
+  plan_json: any;
+  metadata: any;
+  created_at?: string | null;
+  updated_at?: string | null;
 };
 
 type ClinicalTemplate = {
   id: string;
-  doctor_id: string;
-  item_type: ClinicalItemType;
+  name: string;
+  description: string | null;
+  items_json: any;
+  metadata: any;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+type TemplateRow = {
+  id: string;
+  kind: "procedure" | "treatment_plan" | "clinical_template";
+  item_type: string;
   title: string;
+  created_at: string | null;
   details: any;
-  created_at: string;
-  updated_at: string;
+  raw: any;
+  editable: boolean;
 };
 
 interface AppointmentModalProps {
@@ -135,6 +166,70 @@ function safeJsonParse(text: string) {
   }
 }
 
+function normalizeTemplateRows(payload: {
+  procedures?: ProcedureTemplate[];
+  treatmentPlans?: TreatmentPlanTemplate[];
+  clinicalTemplates?: ClinicalTemplate[];
+}): TemplateRow[] {
+  const rows: TemplateRow[] = [];
+
+  const procedures = Array.isArray(payload.procedures) ? payload.procedures : [];
+  for (const p of procedures) {
+    rows.push({
+      id: p.id,
+      kind: "procedure",
+      item_type: "procedure",
+      title: p.name || "Procedure",
+      created_at: (p.updated_at ?? p.created_at ?? null) as any,
+      details: {
+        description: p.description ?? null,
+        duration_minutes: p.duration_minutes ?? null,
+        price_cents: p.price_cents ?? null,
+        metadata: p.metadata ?? {},
+      },
+      raw: p,
+      editable: false,
+    });
+  }
+
+  const plans = Array.isArray(payload.treatmentPlans) ? payload.treatmentPlans : [];
+  for (const tp of plans) {
+    rows.push({
+      id: tp.id,
+      kind: "treatment_plan",
+      item_type: "treatment_plan",
+      title: tp.title || "Treatment Plan",
+      created_at: (tp.updated_at ?? tp.created_at ?? null) as any,
+      details: {
+        description: tp.description ?? null,
+        plan_json: tp.plan_json ?? null,
+        metadata: tp.metadata ?? {},
+      },
+      raw: tp,
+      editable: false,
+    });
+  }
+
+  const clinical = Array.isArray(payload.clinicalTemplates) ? payload.clinicalTemplates : [];
+  for (const ct of clinical) {
+    const items = Array.isArray(ct.items_json) ? ct.items_json : [];
+    const single = items.length === 1 && items[0] && typeof items[0] === "object" ? (items[0] as any) : null;
+    rows.push({
+      id: ct.id,
+      kind: "clinical_template",
+      item_type: single?.item_type ? String(single.item_type) : "clinical_template",
+      title: ct.name || "Clinical Template",
+      created_at: (ct.updated_at ?? ct.created_at ?? null) as any,
+      details: single?.metadata ?? ct.items_json ?? [],
+      raw: ct,
+      editable: !!single,
+    });
+  }
+
+  rows.sort((a, b) => String(b.created_at ?? "").localeCompare(String(a.created_at ?? "")));
+  return rows;
+}
+
 const AppointmentModal = memo(
   ({
     appointment,
@@ -165,21 +260,24 @@ const AppointmentModal = memo(
     const [clinicalLoading, setClinicalLoading] = useState(false);
     const [templatesLoading, setTemplatesLoading] = useState(false);
     const [clinicalItems, setClinicalItems] = useState<ClinicalItem[]>([]);
-    const [templates, setTemplates] = useState<ClinicalTemplate[]>([]);
+    const [templateRows, setTemplateRows] = useState<TemplateRow[]>([]);
 
+    // New clinical item
     const [newItemType, setNewItemType] = useState<ClinicalItemType>("procedure");
     const [newItemTitle, setNewItemTitle] = useState("");
     const [newItemDetailsText, setNewItemDetailsText] = useState("{}");
 
+    // Create clinical template
     const [newTplType, setNewTplType] = useState<ClinicalItemType>("procedure");
     const [newTplTitle, setNewTplTitle] = useState("");
     const [newTplDetailsText, setNewTplDetailsText] = useState("{}");
 
+    // Edit clinical item
     const [editingItemId, setEditingItemId] = useState<string | null>(null);
-    const [editItemType, setEditItemType] = useState<ClinicalItemType>("procedure");
     const [editItemTitle, setEditItemTitle] = useState("");
     const [editItemDetailsText, setEditItemDetailsText] = useState("{}");
 
+    // Edit clinical template (single-item templates only)
     const [editingTplId, setEditingTplId] = useState<string | null>(null);
     const [editTplType, setEditTplType] = useState<ClinicalItemType>("procedure");
     const [editTplTitle, setEditTplTitle] = useState("");
@@ -208,13 +306,15 @@ const AppointmentModal = memo(
       async (body: any) => {
         const token = await getAccessToken();
         if (!token) throw new Error("Not authenticated");
+
         const { data, error } = await supabase.functions.invoke("appointment-clinical-items", {
           body,
           headers: { Authorization: `Bearer ${token}` },
         });
+
         if (error) throw error;
         if (!data?.ok) throw new Error(data?.error || "Request failed");
-        return data?.data;
+        return data;
       },
       [getAccessToken],
     );
@@ -223,8 +323,8 @@ const AppointmentModal = memo(
       if (!appointmentId) return;
       setClinicalLoading(true);
       try {
-        const data = await invokeClinical({ action: "list", appointment_id: appointmentId });
-        setClinicalItems((data ?? []) as ClinicalItem[]);
+        const res = await invokeClinical({ action: "list", appointmentId });
+        setClinicalItems((res?.items ?? []) as ClinicalItem[]);
       } catch (e: any) {
         console.error(e);
         toast.error(e?.message ?? "Failed to load clinical items");
@@ -235,18 +335,24 @@ const AppointmentModal = memo(
     }, [appointmentId, invokeClinical]);
 
     const refreshTemplates = useCallback(async () => {
+      if (!appointmentId) return;
       setTemplatesLoading(true);
       try {
-        const data = await invokeClinical({ action: "list_templates" });
-        setTemplates((data ?? []) as ClinicalTemplate[]);
+        const res = await invokeClinical({ action: "templates_list", appointmentId });
+        const rows = normalizeTemplateRows({
+          procedures: res?.procedures,
+          treatmentPlans: res?.treatmentPlans,
+          clinicalTemplates: res?.clinicalTemplates,
+        });
+        setTemplateRows(rows);
       } catch (e: any) {
         console.error(e);
         toast.error(e?.message ?? "Failed to load templates");
-        setTemplates([]);
+        setTemplateRows([]);
       } finally {
         setTemplatesLoading(false);
       }
-    }, [invokeClinical]);
+    }, [appointmentId, invokeClinical]);
 
     const resetNewItem = useCallback(() => {
       setNewItemType("procedure");
@@ -336,9 +442,10 @@ const AppointmentModal = memo(
     // Fetch clinical items + templates when modal opens
     useEffect(() => {
       if (!isOpen || !appointmentId) return;
+
       refreshClinical();
       refreshTemplates();
-      // reset edit state when opening
+
       setEditingItemId(null);
       setEditingTplId(null);
       setNewItemDetailsText("{}");
@@ -444,28 +551,20 @@ const AppointmentModal = memo(
       return list;
     }, [clinicalItems]);
 
-    const templatesSorted = useMemo(() => {
-      const list = Array.isArray(templates) ? templates.slice() : [];
-      list.sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""));
-      return list;
-    }, [templates]);
-
     const beginEditItem = useCallback((it: ClinicalItem) => {
       setEditingItemId(it.id);
-      setEditItemType(it.item_type);
       setEditItemTitle(it.title ?? "");
-      setEditItemDetailsText(safeJsonStringify(it.details));
+      setEditItemDetailsText(safeJsonStringify(it.metadata));
     }, []);
 
     const cancelEditItem = useCallback(() => {
       setEditingItemId(null);
-      setEditItemType("procedure");
       setEditItemTitle("");
       setEditItemDetailsText("{}");
     }, []);
 
     const saveEditItem = useCallback(async () => {
-      if (!editingItemId) return;
+      if (!editingItemId || !appointmentId) return;
 
       const parsed = safeJsonParse(editItemDetailsText);
       if (parsed === null) {
@@ -474,41 +573,46 @@ const AppointmentModal = memo(
       }
 
       try {
-        await invokeClinical({
+        const res = await invokeClinical({
           action: "update",
-          id: editingItemId,
-          item_type: editItemType,
-          title: editItemTitle.trim(),
-          details: parsed,
+          appointmentId,
+          itemId: editingItemId,
+          patch: {
+            title: editItemTitle.trim(),
+            metadata: parsed,
+          },
         });
+
+        setClinicalItems((res?.items ?? []) as ClinicalItem[]);
         toast.success("Clinical item updated");
         cancelEditItem();
-        await refreshClinical();
       } catch (e: any) {
         console.error(e);
         toast.error(e?.message ?? "Failed to update item");
       }
-    }, [editingItemId, editItemDetailsText, editItemTitle, editItemType, invokeClinical, cancelEditItem, refreshClinical]);
+    }, [appointmentId, editingItemId, editItemDetailsText, editItemTitle, invokeClinical, cancelEditItem]);
 
     const deleteItem = useCallback(
       async (id: string) => {
+        if (!appointmentId) return;
         const ok = window.confirm("Delete this clinical item?");
         if (!ok) return;
 
         try {
-          await invokeClinical({ action: "delete", id });
+          const res = await invokeClinical({ action: "delete", appointmentId, itemId: id });
+          setClinicalItems((res?.items ?? []) as ClinicalItem[]);
           toast.success("Clinical item deleted");
-          await refreshClinical();
         } catch (e: any) {
           console.error(e);
           toast.error(e?.message ?? "Failed to delete item");
         }
       },
-      [invokeClinical, refreshClinical],
+      [appointmentId, invokeClinical],
     );
 
     const createItem = useCallback(async () => {
       if (!appointmentId) return;
+
       const title = newItemTitle.trim();
       if (!title) {
         toast.error("Title is required");
@@ -522,31 +626,67 @@ const AppointmentModal = memo(
       }
 
       try {
-        await invokeClinical({
+        const res = await invokeClinical({
           action: "create",
-          appointment_id: appointmentId,
-          item_type: newItemType,
-          title,
-          details: parsed,
+          appointmentId,
+          item: {
+            item_type: newItemType,
+            title,
+            description: null,
+            status: "active",
+            metadata: parsed,
+          },
         });
+
+        setClinicalItems((res?.items ?? []) as ClinicalItem[]);
         toast.success("Clinical item added");
         resetNewItem();
-        await refreshClinical();
       } catch (e: any) {
         console.error(e);
         toast.error(e?.message ?? "Failed to add item");
       }
-    }, [appointmentId, newItemTitle, newItemDetailsText, newItemType, invokeClinical, resetNewItem, refreshClinical]);
+    }, [appointmentId, newItemTitle, newItemDetailsText, newItemType, invokeClinical, resetNewItem]);
 
-    const saveAsTemplate = useCallback(
-      async (itemId: string, defaultTitle: string) => {
-        const templateTitle = window.prompt("Template title (optional):", defaultTitle || "");
+    const copyItemJson = useCallback(async (it: ClinicalItem) => {
+      try {
+        await navigator.clipboard.writeText(safeJsonStringify(it.metadata));
+        toast.success("Copied details JSON");
+      } catch {
+        toast.error("Failed to copy");
+      }
+    }, []);
+
+    const saveAsClinicalTemplate = useCallback(
+      async (it: ClinicalItem) => {
         try {
-          await invokeClinical({
-            action: "save_as_template",
-            id: itemId,
-            template_title: templateTitle && templateTitle.trim() ? templateTitle.trim() : undefined,
-          });
+          const title = window.prompt("Template title (optional):", it.title || "") ?? "";
+          const name = title.trim() || it.title || "Clinical Template";
+
+          const { data: userRes, error: userErr } = await supabase.auth.getUser();
+          if (userErr || !userRes?.user?.id) throw new Error("Not authenticated");
+
+          const items_json = [
+            {
+              item_type: it.item_type || "note",
+              title: it.title ?? null,
+              description: it.description ?? null,
+              status: it.status ?? "active",
+              metadata: it.metadata ?? {},
+            },
+          ];
+
+          const { error } = await supabase
+            .from("appointment_clinical_templates")
+            .insert({
+              doctor_user_id: userRes.user.id,
+              name,
+              description: null,
+              items_json,
+              metadata: { source_item_id: it.id, appointment_id: it.appointment_id },
+            } as any);
+
+          if (error) throw error;
+
           toast.success("Saved as template");
           await refreshTemplates();
         } catch (e: any) {
@@ -554,14 +694,23 @@ const AppointmentModal = memo(
           toast.error(e?.message ?? "Failed to save template");
         }
       },
-      [invokeClinical, refreshTemplates],
+      [refreshTemplates],
     );
 
-    const beginEditTemplate = useCallback((tpl: ClinicalTemplate) => {
+    const beginEditTemplate = useCallback((tpl: TemplateRow) => {
+      if (tpl.kind !== "clinical_template" || !tpl.editable) {
+        toast.message("This template cannot be edited here");
+        return;
+      }
+
+      const raw = tpl.raw as ClinicalTemplate;
+      const items = Array.isArray(raw?.items_json) ? raw.items_json : [];
+      const single = items[0] && typeof items[0] === "object" ? (items[0] as any) : null;
+
       setEditingTplId(tpl.id);
-      setEditTplType(tpl.item_type);
+      setEditTplType((single?.item_type || "procedure") as ClinicalItemType);
       setEditTplTitle(tpl.title ?? "");
-      setEditTplDetailsText(safeJsonStringify(tpl.details));
+      setEditTplDetailsText(safeJsonStringify(single?.metadata ?? {}));
     }, []);
 
     const cancelEditTemplate = useCallback(() => {
@@ -581,13 +730,29 @@ const AppointmentModal = memo(
       }
 
       try {
-        await invokeClinical({
-          action: "update_template",
-          id: editingTplId,
-          item_type: editTplType,
-          title: editTplTitle.trim(),
-          details: parsed,
-        });
+        const { data: userRes, error: userErr } = await supabase.auth.getUser();
+        if (userErr || !userRes?.user?.id) throw new Error("Not authenticated");
+
+        const items_json = [
+          {
+            item_type: editTplType,
+            title: editTplTitle.trim(),
+            description: null,
+            status: "active",
+            metadata: parsed,
+          },
+        ];
+
+        const { error } = await supabase
+          .from("appointment_clinical_templates")
+          .update({
+            name: editTplTitle.trim() || "Clinical Template",
+            items_json,
+          } as any)
+          .eq("id", editingTplId);
+
+        if (error) throw error;
+
         toast.success("Template updated");
         cancelEditTemplate();
         await refreshTemplates();
@@ -595,15 +760,22 @@ const AppointmentModal = memo(
         console.error(e);
         toast.error(e?.message ?? "Failed to update template");
       }
-    }, [editingTplId, editTplDetailsText, editTplTitle, editTplType, invokeClinical, cancelEditTemplate, refreshTemplates]);
+    }, [editingTplId, editTplDetailsText, editTplTitle, editTplType, refreshTemplates]);
 
     const deleteTemplate = useCallback(
-      async (id: string) => {
+      async (tpl: TemplateRow) => {
+        if (tpl.kind !== "clinical_template") {
+          toast.message("This template cannot be deleted here");
+          return;
+        }
+
         const ok = window.confirm("Delete this template?");
         if (!ok) return;
 
         try {
-          await invokeClinical({ action: "delete_template", id });
+          const { error } = await supabase.from("appointment_clinical_templates").delete().eq("id", tpl.id);
+          if (error) throw error;
+
           toast.success("Template deleted");
           await refreshTemplates();
         } catch (e: any) {
@@ -611,7 +783,7 @@ const AppointmentModal = memo(
           toast.error(e?.message ?? "Failed to delete template");
         }
       },
-      [invokeClinical, refreshTemplates],
+      [refreshTemplates],
     );
 
     const createTemplate = useCallback(async () => {
@@ -628,12 +800,31 @@ const AppointmentModal = memo(
       }
 
       try {
-        await invokeClinical({
-          action: "create_template",
-          item_type: newTplType,
-          title,
-          details: parsed,
-        });
+        const { data: userRes, error: userErr } = await supabase.auth.getUser();
+        if (userErr || !userRes?.user?.id) throw new Error("Not authenticated");
+
+        const items_json = [
+          {
+            item_type: newTplType,
+            title,
+            description: null,
+            status: "active",
+            metadata: parsed,
+          },
+        ];
+
+        const { error } = await supabase
+          .from("appointment_clinical_templates")
+          .insert({
+            doctor_user_id: userRes.user.id,
+            name: title,
+            description: null,
+            items_json,
+            metadata: {},
+          } as any);
+
+        if (error) throw error;
+
         toast.success("Template created");
         resetNewTpl();
         await refreshTemplates();
@@ -641,28 +832,31 @@ const AppointmentModal = memo(
         console.error(e);
         toast.error(e?.message ?? "Failed to create template");
       }
-    }, [newTplTitle, newTplDetailsText, newTplType, invokeClinical, resetNewTpl, refreshTemplates]);
+    }, [newTplTitle, newTplDetailsText, newTplType, resetNewTpl, refreshTemplates]);
 
-    const useTemplateForAppointment = useCallback(
-      async (tpl: ClinicalTemplate) => {
+    const applyTemplate = useCallback(
+      async (tpl: TemplateRow) => {
         if (!appointmentId) return;
 
         try {
-          await invokeClinical({
-            action: "create",
-            appointment_id: appointmentId,
-            item_type: tpl.item_type,
-            title: tpl.title,
-            details: tpl.details ?? {},
+          const templateType =
+            tpl.kind === "procedure" ? "procedure" : tpl.kind === "treatment_plan" ? "treatment_plan" : "clinical_template";
+
+          const res = await invokeClinical({
+            action: "apply_template",
+            appointmentId,
+            templateType,
+            templateId: tpl.id,
           });
+
+          setClinicalItems((res?.items ?? []) as ClinicalItem[]);
           toast.success("Added from template");
-          await refreshClinical();
         } catch (e: any) {
           console.error(e);
           toast.error(e?.message ?? "Failed to add from template");
         }
       },
-      [appointmentId, invokeClinical, refreshClinical],
+      [appointmentId, invokeClinical],
     );
 
     if (!appointment) return null;
@@ -837,6 +1031,7 @@ const AppointmentModal = memo(
                             <SelectItem value="procedure">procedure</SelectItem>
                             <SelectItem value="medication">medication</SelectItem>
                             <SelectItem value="treatment_plan">treatment_plan</SelectItem>
+                            <SelectItem value="note">note</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -890,7 +1085,7 @@ const AppointmentModal = memo(
                                     <div className="flex items-center gap-2 flex-wrap">
                                       <div className="font-medium truncate">{it.title}</div>
                                       <Badge variant="secondary" className="capitalize">
-                                        {it.item_type}
+                                        {String(it.item_type || "note")}
                                       </Badge>
                                     </div>
                                     {!isEditing && (
@@ -905,10 +1100,20 @@ const AppointmentModal = memo(
                                       size="sm"
                                       variant="outline"
                                       className="gap-1.5"
-                                      onClick={() => saveAsTemplate(it.id, it.title)}
-                                      title="Save as template"
+                                      onClick={() => copyItemJson(it)}
+                                      title="Copy details JSON"
                                     >
                                       <Copy className="h-4 w-4" />
+                                    </Button>
+
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="gap-1.5"
+                                      onClick={() => saveAsClinicalTemplate(it)}
+                                      title="Save as template"
+                                    >
+                                      <Layers className="h-4 w-4" />
                                     </Button>
 
                                     {!isEditing ? (
@@ -935,21 +1140,7 @@ const AppointmentModal = memo(
                                 {isEditing ? (
                                   <div className="space-y-3">
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                      <div className="space-y-2">
-                                        <div className="text-sm text-muted-foreground">Type</div>
-                                        <Select value={editItemType} onValueChange={(v) => setEditItemType(v as ClinicalItemType)}>
-                                          <SelectTrigger>
-                                            <SelectValue />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            <SelectItem value="procedure">procedure</SelectItem>
-                                            <SelectItem value="medication">medication</SelectItem>
-                                            <SelectItem value="treatment_plan">treatment_plan</SelectItem>
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-
-                                      <div className="space-y-2 md:col-span-2">
+                                      <div className="space-y-2 md:col-span-3">
                                         <div className="text-sm text-muted-foreground">Title</div>
                                         <Input value={editItemTitle} onChange={(e) => setEditItemTitle(e.target.value)} />
                                       </div>
@@ -976,7 +1167,7 @@ const AppointmentModal = memo(
                                   </div>
                                 ) : (
                                   <pre className="text-xs text-muted-foreground whitespace-pre-wrap bg-muted/30 rounded-md p-2">
-                                    {safeJsonStringify(it.details)}
+                                    {safeJsonStringify(it.metadata)}
                                   </pre>
                                 )}
                               </div>
@@ -1013,6 +1204,7 @@ const AppointmentModal = memo(
                                 <SelectItem value="procedure">procedure</SelectItem>
                                 <SelectItem value="medication">medication</SelectItem>
                                 <SelectItem value="treatment_plan">treatment_plan</SelectItem>
+                                <SelectItem value="note">note</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
@@ -1043,12 +1235,13 @@ const AppointmentModal = memo(
 
                       {templatesLoading ? (
                         <div className="text-sm text-muted-foreground">Loading templates...</div>
-                      ) : templatesSorted.length === 0 ? (
+                      ) : templateRows.length === 0 ? (
                         <div className="text-sm text-muted-foreground py-4 text-center">No templates yet.</div>
                       ) : (
                         <div className="space-y-3">
-                          {templatesSorted.map((tpl) => {
+                          {templateRows.map((tpl) => {
                             const isEditing = editingTplId === tpl.id;
+                            const canEdit = tpl.kind === "clinical_template" && tpl.editable;
 
                             return (
                               <div key={tpl.id} className="rounded-lg border p-3 space-y-2">
@@ -1068,12 +1261,19 @@ const AppointmentModal = memo(
                                   </div>
 
                                   <div className="flex items-center gap-1 flex-shrink-0">
-                                    <Button size="sm" variant="outline" className="gap-1.5" onClick={() => useTemplateForAppointment(tpl)}>
+                                    <Button size="sm" variant="outline" className="gap-1.5" onClick={() => applyTemplate(tpl)}>
                                       <Plus className="h-4 w-4" />
                                     </Button>
 
                                     {!isEditing ? (
-                                      <Button size="sm" variant="outline" className="gap-1.5" onClick={() => beginEditTemplate(tpl)}>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="gap-1.5"
+                                        onClick={() => beginEditTemplate(tpl)}
+                                        disabled={!canEdit}
+                                        title={canEdit ? "Edit" : "Not editable here"}
+                                      >
                                         <Edit className="h-4 w-4" />
                                       </Button>
                                     ) : (
@@ -1086,7 +1286,9 @@ const AppointmentModal = memo(
                                       size="sm"
                                       variant="outline"
                                       className="gap-1.5 text-destructive hover:text-destructive"
-                                      onClick={() => deleteTemplate(tpl.id)}
+                                      onClick={() => deleteTemplate(tpl)}
+                                      disabled={tpl.kind !== "clinical_template"}
+                                      title={tpl.kind === "clinical_template" ? "Delete" : "Not deletable here"}
                                     >
                                       <Trash2 className="h-4 w-4" />
                                     </Button>
@@ -1106,6 +1308,7 @@ const AppointmentModal = memo(
                                             <SelectItem value="procedure">procedure</SelectItem>
                                             <SelectItem value="medication">medication</SelectItem>
                                             <SelectItem value="treatment_plan">treatment_plan</SelectItem>
+                                            <SelectItem value="note">note</SelectItem>
                                           </SelectContent>
                                         </Select>
                                       </div>
@@ -1201,49 +1404,29 @@ const AppointmentModal = memo(
                 {loadingPlans ? (
                   <div className="text-center py-8 text-muted-foreground">Loading treatment plans...</div>
                 ) : treatmentPlans.length === 0 ? (
-                  <div className="text-center py-8">
-                    <ClipboardList className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                    <p className="text-muted-foreground">No treatment plans for this patient</p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-4 gap-2"
-                      onClick={() => {
-                        navigate("/doctor-dashboard?section=treatment-planning");
-                        onClose();
-                      }}
-                    >
-                      <ClipboardList className="h-4 w-4" />
-                      Create Treatment Plan
-                    </Button>
-                  </div>
+                  <div className="text-center py-8 text-muted-foreground">No treatment plans found.</div>
                 ) : (
                   <div className="space-y-3">
-                    {treatmentPlans.map((plan) => (
-                      <Card
-                        key={plan.id}
-                        className="border-border/50 cursor-pointer hover:border-primary/30 transition-colors"
-                        onClick={() => {
-                          navigate(`/doctor-dashboard?section=treatment-planning&plan=${plan.id}`);
-                          onClose();
-                        }}
-                      >
+                    {treatmentPlans.map((tp) => (
+                      <Card key={tp.id} className="border-border/50">
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between">
                             <div className="space-y-1">
-                              <h4 className="font-medium">{plan.title}</h4>
-                              <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
-                                <Badge variant="outline" className={cn("text-xs capitalize", procedureStatusColors[plan.status || "draft"])}>
-                                  {plan.status || "draft"}
-                                </Badge>
-                                {plan.total_cost != null && (
-                                  <span className="flex items-center gap-1">
-                                    <DollarSign className="h-3.5 w-3.5" />
-                                    {formatCurrency(plan.total_cost)}
-                                  </span>
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-medium">{tp.title}</h4>
+                                {tp.status && (
+                                  <Badge variant="outline" className="text-xs capitalize">
+                                    {tp.status}
+                                  </Badge>
                                 )}
-                                <span>{format(new Date(plan.created_at), "MMM d, yyyy")}</span>
                               </div>
+                              {tp.total_cost != null && (
+                                <p className="text-sm text-muted-foreground flex items-center gap-1">
+                                  <DollarSign className="h-3.5 w-3.5" />
+                                  {formatCurrency(tp.total_cost)}
+                                </p>
+                              )}
+                              <div className="text-xs text-muted-foreground">{tp.created_at ? format(new Date(tp.created_at), "MMM d, yyyy") : ""}</div>
                             </div>
                           </div>
                         </CardContent>
