@@ -10,6 +10,16 @@ const corsHeaders: Record<string, string> = {
 
 type EntityType = "lab" | "imaging" | "pharmacy";
 
+type ScopeRow = {
+  entity_type: string;
+  entity_id: string;
+  entity_name: string | null;
+  entity_status: string | null;
+  scope_role: string | null;
+  is_admin: boolean | null;
+  permissions: Record<string, any> | null;
+};
+
 type ReqBody = {
   entityType: EntityType;
   entityId: string;
@@ -36,141 +46,192 @@ function requireEnv() {
   return { ok: true as const, url, anon, service };
 }
 
+function clampInt(v: unknown, min: number, max: number, fallback: number) {
+  const n = typeof v === "number" ? v : Number(v);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(min, Math.min(max, Math.trunc(n)));
+}
+
 function isUuid(v: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
 }
 
-type ScopeRow = {
-  entity_type: string;
-  entity_id: string;
-  entity_name: string | null;
-  entity_status: string | null;
-  scope_role: string | null;
-  is_admin: boolean | null;
-  permissions: Record<string, any> | null;
-};
-
 function hasPermission(scope: ScopeRow, key: string): boolean {
   const perms = scope.permissions || {};
-  const v = perms[key];
-  return v === true;
+  return perms[key] === true;
 }
 
-async function authorizeFacilityAccess(params: {
+async function authorizeFacilityAnalyticsAccess(params: {
   url: string;
   anon: string;
-  service: string;
-  authHeader: string | null;
+  authHeader: string;
   entityType: EntityType;
   entityId: string;
-  required: { anyOf: string[] };
-}) {
-  if (!params.authHeader) return { ok: false as const, error: "Missing Authorization header" };
+}): Promise<{ ok: true; userId: string; scope: ScopeRow } | { ok: false; status: number; error: string }> {
+  const { url, anon, authHeader, entityType, entityId } = params;
 
-  const userClient = createClient(params.url, params.anon, {
-    global: { headers: { Authorization: params.authHeader } },
+  const userClient = createClient(url, anon, {
+    global: { headers: { Authorization: authHeader } },
     auth: { persistSession: false },
   });
 
-  const { data: userData, error: userErr } = await userClient.auth.getUser();
-  if (userErr || !userData?.user) return { ok: false as const, error: "Unauthorized" };
+  const { data: userRes, error: userErr } = await userClient.auth.getUser();
+  if (userErr || !userRes?.user) return { ok: false, status: 401, error: "Unauthorized" };
 
-  const serviceClient = createClient(params.url, params.service, { auth: { persistSession: false } });
+  const { data: scopes, error: scopesErr } = await userClient.rpc("get_my_entity_scopes");
+  if (scopesErr) return { ok: false, status: 500, error: scopesErr.message || "Failed to load scopes" };
 
-  const { data: scopes, error: scopesErr } = await serviceClient.rpc("get_my_entity_scopes" as any, {});
-  if (scopesErr) return { ok: false as const, error: "Unable to authorize access" };
+  const list = (scopes || []) as ScopeRow[];
+  const scope = list.find((s) => s.entity_type === entityType && String(s.entity_id) === entityId);
+  if (!scope) return { ok: false, status: 403, error: "Forbidden" };
 
-  const wanted = (scopes as ScopeRow[] | null)?.find((s) => s.entity_type === params.entityType && s.entity_id === params.entityId) || null;
-  if (!wanted) return { ok: false as const, error: "Forbidden" };
+  const allowed =
+    Boolean(scope.is_admin) ||
+    hasPermission(scope, "can_view_analytics") ||
+    hasPermission(scope, "can_manage_billing");
 
-  const isAdmin = !!wanted.is_admin;
-  const okByPermission = params.required.anyOf.some((k) => hasPermission(wanted, k));
-  if (!isAdmin && !okByPermission) return { ok: false as const, error: "Forbidden" };
+  if (!allowed) return { ok: false, status: 403, error: "Forbidden" };
 
-  return { ok: true as const, userId: userData.user.id, scope: wanted, serviceClient };
+  return { ok: true, userId: userRes.user.id, scope };
+}
+
+function isoDay(d: Date) {
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 405);
+
+  const authHeader = req.headers.get("authorization") || req.headers.get("Authorization") || "";
+  if (!authHeader) return json({ ok: false, error: "Missing Authorization" }, 401);
+
+  const env = requireEnv();
+  if (!env.ok) return json({ ok: false, error: env.error }, 500);
+
+  let body: ReqBody;
+  try {
+    body = (await req.json()) as ReqBody;
+  } catch {
+    return json({ ok: false, error: "Invalid JSON body" }, 400);
+  }
+
+  const entityType = (body?.entityType || "") as EntityType;
+  const entityId = String(body?.entityId || "").trim();
+  if (!entityType || !["lab", "imaging", "pharmacy"].includes(entityType)) {
+    return json({ ok: false, error: "Invalid entityType" }, 400);
+  }
+  if (!entityId || !isUuid(entityId)) return json({ ok: false, error: "Invalid entityId" }, 400);
+
+  const days = clampInt(body?.days, 7, 365, 30);
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+  const authz = await authorizeFacilityAnalyticsAccess({
+    url: env.url,
+    anon: env.anon,
+    authHeader,
+    entityType,
+    entityId,
+  });
+  if (!authz.ok) return json({ ok: false, error: authz.error }, authz.status);
+
+  const admin = createClient(env.url, env.service, {
+    auth: { persistSession: false },
+    global: { "X-Client-Info": "facility-analytics" } as any,
+  });
 
   try {
-    const env = requireEnv();
-    if (!env.ok) return json(env, 500);
-
-    const authHeader = req.headers.get("authorization");
-    const body = (await req.json().catch(() => null)) as ReqBody | null;
-    if (!body) return json({ ok: false, error: "Invalid JSON body" }, 400);
-
-    const entityType = body.entityType;
-    const entityId = body.entityId;
-    if (!entityType || !entityId) return json({ ok: false, error: "Missing entityType/entityId" }, 400);
-    if (!isUuid(entityId)) return json({ ok: false, error: "Invalid entityId" }, 400);
-
-    const authz = await authorizeFacilityAccess({
-      url: env.url,
-      anon: env.anon,
-      service: env.service,
-      authHeader,
-      entityType,
-      entityId,
-      required: { anyOf: ["analytics:view", "analytics:manage"] },
-    });
-
-    if (!authz.ok) return json(authz, 403);
-
-    const days = Math.max(1, Math.min(365, body.days ?? 30));
-    const today = new Date();
-    const start = new Date(today);
-    start.setDate(start.getDate() - days);
-    const startIso = start.toISOString();
-
-    const { data: referrals, error: refErr } = await authz.serviceClient
+    const { data: refs, error: refErr } = await admin
       .from("referrals")
-      .select("id,created_at,status,reason,referral_type_enum")
-      .eq("referred_to_entity_type", entityType)
-      .eq("referred_to_entity_id", entityId)
-      .gte("created_at", startIso);
+      .select("id, status, created_at, completed_at")
+      .eq("receiver_entity_type", entityType)
+      .eq("receiver_entity_id", entityId)
+      .gte("created_at", since.toISOString())
+      .order("created_at", { ascending: true })
+      .limit(5000);
 
     if (refErr) throw refErr;
 
-    const list = (referrals || []) as Array<any>;
-    const total = list.length;
-    const completed = list.filter((r) => r.status === "completed").length;
-    const pending = list.filter((r) => r.status === "pending").length;
-    const cancelled = list.filter((r) => r.status === "cancelled").length;
+    const r = (refs || []) as any[];
 
-    const byDate = new Map<string, { date: string; referrals: number; completed: number; pending: number; cancelled: number }>();
-    for (let i = 0; i <= days; i++) {
-      const d = new Date(start);
-      d.setDate(d.getDate() + i);
-      const key = d.toISOString().slice(0, 10);
-      byDate.set(key, { date: key, referrals: 0, completed: 0, pending: 0, cancelled: 0 });
+    const total = r.length;
+
+    const completed = r.filter((x) => String(x.status || "").toLowerCase() === "completed").length;
+
+    const pending = r.filter((x) => {
+      const s = String(x.status || "").toLowerCase();
+      return s === "pending" || s === "assigned" || s === "in_progress";
+    }).length;
+
+    const cancelled = r.filter((x) => {
+      const s = String(x.status || "").toLowerCase();
+      return s === "cancelled" || s === "canceled" || s === "rejected";
+    }).length;
+
+    const completedDurationsHours: number[] = [];
+    for (const x of r) {
+      const s = String(x.status || "").toLowerCase();
+      if (s !== "completed") continue;
+
+      const createdAt = x.created_at ? new Date(x.created_at) : null;
+      const completedAt = x.completed_at ? new Date(x.completed_at) : null;
+      if (!createdAt || !completedAt) continue;
+
+      const diffMs = completedAt.getTime() - createdAt.getTime();
+      if (diffMs <= 0) continue;
+
+      completedDurationsHours.push(diffMs / (1000 * 60 * 60));
+    }
+    const avgTurnaroundHours =
+      completedDurationsHours.length > 0
+        ? Math.round((completedDurationsHours.reduce((a, b) => a + b, 0) / completedDurationsHours.length) * 10) / 10
+        : 0;
+
+    const dayMap = new Map<string, { referrals: number; completed: number }>();
+    const end = new Date();
+    const endUTC = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate()));
+    for (let i = 0; i < days; i++) {
+      const d = new Date(endUTC);
+      d.setUTCDate(d.getUTCDate() - (days - 1 - i));
+      dayMap.set(isoDay(d), { referrals: 0, completed: 0 });
     }
 
-    for (const r of list) {
-      const key = new Date(r.created_at).toISOString().slice(0, 10);
-      const row = byDate.get(key);
-      if (!row) continue;
-      row.referrals += 1;
-      if (r.status === "completed") row.completed += 1;
-      if (r.status === "pending") row.pending += 1;
-      if (r.status === "cancelled") row.cancelled += 1;
+    for (const x of r) {
+      const createdAt = x.created_at ? new Date(x.created_at) : null;
+      if (!createdAt) continue;
+
+      const day = isoDay(createdAt);
+      if (!dayMap.has(day)) continue;
+
+      const bucket = dayMap.get(day)!;
+      bucket.referrals += 1;
+
+      const s = String(x.status || "").toLowerCase();
+      if (s === "completed") bucket.completed += 1;
+
+      dayMap.set(day, bucket);
     }
 
-    const trend = Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date));
+    const trend = Array.from(dayMap.entries()).map(([date, v]) => ({ date, ...v }));
 
     return json({
       ok: true,
+      entity: { entity_type: entityType, entity_id: entityId },
       window_days: days,
       kpis: {
         total_referrals: total,
         completed_referrals: completed,
         pending_referrals: pending,
         cancelled_referrals: cancelled,
+        avg_turnaround_hours: avgTurnaroundHours,
       },
       trend,
     });
   } catch (e: any) {
-    return json({ ok: false, error: e?.message || "Server error" }, 500);
+    console.error("facility-analytics error:", e);
+    return json({ ok: false, error: e?.message || "Unknown error" }, 500);
   }
 });
