@@ -118,12 +118,21 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
     setBillingLoading(true);
     setBillingError(null);
     try {
-      const { data, error: fnErr } = await supabase.functions.invoke<BillingRes>("entity-dashboard", {
-        body: { action: "billing", entityType, entityId, limit: 50 },
-      });
-      if (fnErr) throw fnErr;
-      if (!data?.ok) throw new Error(data?.error || "Failed to load billing");
-      setBilling(data);
+      if (entityType === "clinic") {
+        const { data, error: fnErr } = await supabase.functions.invoke<BillingRes>("entity-dashboard", {
+          body: { action: "billing", entityType, entityId, limit: 50 },
+        });
+        if (fnErr) throw fnErr;
+        if (!data?.ok) throw new Error(data?.error || "Failed to load billing");
+        setBilling(data);
+      } else {
+        const { data, error: fnErr } = await supabase.functions.invoke<BillingRes>("facility-billing", {
+          body: { entityType, entityId, limit: 50 },
+        });
+        if (fnErr) throw fnErr;
+        if (!data?.ok) throw new Error(data?.error || "Failed to load billing");
+        setBilling(data);
+      }
     } catch (e: any) {
       setBilling(null);
       setBillingError(e?.message || "Failed to load billing");
@@ -136,18 +145,21 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
     setAnalyticsLoading(true);
     setAnalyticsError(null);
     try {
-      const normalizedType = (entityType === "practice" ? "clinic" : entityType) as Exclude<EntityType, "practice">;
-
-      const fnName = normalizedType === "clinic" ? "entity-dashboard" : "facility-analytics";
-      const body =
-        fnName === "entity-dashboard"
-          ? { action: "analytics", entityType: "clinic", entityId, days: 30 }
-          : { entityType: normalizedType, entityId, days: 30 };
-
-      const { data, error: fnErr } = await supabase.functions.invoke<AnalyticsRes>(fnName, { body });
-      if (fnErr) throw fnErr;
-      if (!data?.ok) throw new Error(data?.error || "Failed to load analytics");
-      setAnalytics(data);
+      if (entityType === "clinic") {
+        const { data, error: fnErr } = await supabase.functions.invoke<AnalyticsRes>("entity-dashboard", {
+          body: { action: "analytics", entityType, entityId, days: 30 },
+        });
+        if (fnErr) throw fnErr;
+        if (!data?.ok) throw new Error(data?.error || "Failed to load analytics");
+        setAnalytics(data);
+      } else {
+        const { data, error: fnErr } = await supabase.functions.invoke<AnalyticsRes>("facility-analytics", {
+          body: { entityType, entityId, days: 30 },
+        });
+        if (fnErr) throw fnErr;
+        if (!data?.ok) throw new Error(data?.error || "Failed to load analytics");
+        setAnalytics(data);
+      }
     } catch (e: any) {
       setAnalytics(null);
       setAnalyticsError(e?.message || "Failed to load analytics");
@@ -210,10 +222,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
             <CardContent className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label>Display name</Label>
-                <Input
-                  value={form.display_name || ""}
-                  onChange={(e) => setForm((p) => ({ ...p, display_name: e.target.value }))}
-                />
+                <Input value={form.display_name || ""} onChange={(e) => setForm((p) => ({ ...p, display_name: e.target.value }))} />
               </div>
 
               <div className="space-y-2">
@@ -228,18 +237,12 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
 
               <div className="space-y-2">
                 <Label>Website</Label>
-                <Input
-                  value={form.website || ""}
-                  onChange={(e) => setForm((p) => ({ ...p, website: e.target.value }))}
-                />
+                <Input value={form.website || ""} onChange={(e) => setForm((p) => ({ ...p, website: e.target.value }))} />
               </div>
 
               <div className="space-y-2 md:col-span-2">
                 <Label>Logo URL</Label>
-                <Input
-                  value={form.logo_url || ""}
-                  onChange={(e) => setForm((p) => ({ ...p, logo_url: e.target.value }))}
-                />
+                <Input value={form.logo_url || ""} onChange={(e) => setForm((p) => ({ ...p, logo_url: e.target.value }))} />
               </div>
 
               <div className="space-y-2 md:col-span-2">
@@ -256,9 +259,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
                     }
                   }}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Example: {"{ \"mon\": {\"open\": \"09:00\", \"close\": \"18:00\"} }"}
-                </p>
+                <p className="text-xs text-muted-foreground">Example: {"{ \"mon\": {\"open\": \"09:00\", \"close\": \"18:00\"} }"}</p>
               </div>
             </CardContent>
           </Card>
@@ -272,54 +273,33 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
             <CardContent className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2 md:col-span-2">
                 <Label>Address line 1</Label>
-                <Input
-                  value={form.address_line1 || ""}
-                  onChange={(e) => setForm((p) => ({ ...p, address_line1: e.target.value }))}
-                />
+                <Input value={form.address_line1 || ""} onChange={(e) => setForm((p) => ({ ...p, address_line1: e.target.value }))} />
               </div>
               <div className="space-y-2 md:col-span-2">
                 <Label>Address line 2</Label>
-                <Input
-                  value={form.address_line2 || ""}
-                  onChange={(e) => setForm((p) => ({ ...p, address_line2: e.target.value }))}
-                />
+                <Input value={form.address_line2 || ""} onChange={(e) => setForm((p) => ({ ...p, address_line2: e.target.value }))} />
               </div>
 
               <div className="space-y-2">
                 <Label>City</Label>
                 <Input value={form.city || ""} onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))} />
               </div>
-
               <div className="space-y-2">
                 <Label>Region</Label>
-                <Input
-                  value={form.region || ""}
-                  onChange={(e) => setForm((p) => ({ ...p, region: e.target.value }))}
-                />
+                <Input value={form.region || ""} onChange={(e) => setForm((p) => ({ ...p, region: e.target.value }))} />
               </div>
-
               <div className="space-y-2">
                 <Label>Postal code</Label>
-                <Input
-                  value={form.postal_code || ""}
-                  onChange={(e) => setForm((p) => ({ ...p, postal_code: e.target.value }))}
-                />
+                <Input value={form.postal_code || ""} onChange={(e) => setForm((p) => ({ ...p, postal_code: e.target.value }))} />
               </div>
-
               <div className="space-y-2">
                 <Label>Country</Label>
-                <Input
-                  value={form.country || ""}
-                  onChange={(e) => setForm((p) => ({ ...p, country: e.target.value }))}
-                />
+                <Input value={form.country || ""} onChange={(e) => setForm((p) => ({ ...p, country: e.target.value }))} />
               </div>
 
               <div className="space-y-2 md:col-span-2">
                 <Label>Timezone</Label>
-                <Input
-                  value={form.timezone || "UTC"}
-                  onChange={(e) => setForm((p) => ({ ...p, timezone: e.target.value }))}
-                />
+                <Input value={form.timezone || "UTC"} onChange={(e) => setForm((p) => ({ ...p, timezone: e.target.value }))} />
               </div>
             </CardContent>
           </Card>
@@ -353,11 +333,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
               <CardHeader className="flex flex-row items-center justify-between gap-2">
                 <CardTitle>Billing summary</CardTitle>
                 <Button variant="outline" size="sm" onClick={loadBilling} disabled={billingLoading}>
-                  {billingLoading ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <RefreshCcw className="h-4 w-4 mr-2" />
-                  )}
+                  {billingLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCcw className="h-4 w-4 mr-2" />}
                   Refresh
                 </Button>
               </CardHeader>
@@ -370,21 +346,15 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
                   <div className="grid gap-3 md:grid-cols-4">
                     <div className="rounded-lg border p-3">
                       <div className="text-xs text-muted-foreground">Total paid</div>
-                      <div className="text-lg font-semibold">
-                        {fmtMoney(billing.summary?.total_paid_cents || 0, "usd")}
-                      </div>
+                      <div className="text-lg font-semibold">{fmtMoney(billing.summary?.total_paid_cents || 0, "usd")}</div>
                     </div>
                     <div className="rounded-lg border p-3">
                       <div className="text-xs text-muted-foreground">Refunded</div>
-                      <div className="text-lg font-semibold">
-                        {fmtMoney(billing.summary?.total_refunded_cents || 0, "usd")}
-                      </div>
+                      <div className="text-lg font-semibold">{fmtMoney(billing.summary?.total_refunded_cents || 0, "usd")}</div>
                     </div>
                     <div className="rounded-lg border p-3">
                       <div className="text-xs text-muted-foreground">Outstanding</div>
-                      <div className="text-lg font-semibold">
-                        {fmtMoney(billing.summary?.outstanding_cents || 0, "usd")}
-                      </div>
+                      <div className="text-lg font-semibold">{fmtMoney(billing.summary?.outstanding_cents || 0, "usd")}</div>
                     </div>
                     <div className="rounded-lg border p-3">
                       <div className="text-xs text-muted-foreground">Open invoices</div>
@@ -412,15 +382,11 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
                       <div key={i.id} className="flex items-center justify-between gap-3 rounded-lg border p-3">
                         <div className="min-w-0">
                           <div className="text-sm font-medium truncate">Invoice • {i.status}</div>
-                          <div className="text-xs text-muted-foreground truncate">
-                            {new Date(i.created_at).toLocaleString()}
-                          </div>
+                          <div className="text-xs text-muted-foreground truncate">{new Date(i.created_at).toLocaleString()}</div>
                         </div>
                         <div className="text-right">
                           <div className="text-sm font-semibold">{fmtMoney(i.amount_due_cents, i.currency)}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {fmtMoney(i.amount_remaining_cents, i.currency)} remaining
-                          </div>
+                          <div className="text-xs text-muted-foreground">{fmtMoney(i.amount_remaining_cents, i.currency)} remaining</div>
                         </div>
                       </div>
                     ))}
@@ -448,9 +414,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
                           <div className="text-sm font-medium truncate">
                             {t.transaction_type} • {t.status}
                           </div>
-                          <div className="text-xs text-muted-foreground truncate">
-                            {new Date(t.created_at).toLocaleString()}
-                          </div>
+                          <div className="text-xs text-muted-foreground truncate">{new Date(t.created_at).toLocaleString()}</div>
                         </div>
                         <div className="text-right">
                           <div className="text-sm font-semibold">{fmtMoney(t.amount_cents, t.currency)}</div>
@@ -471,11 +435,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
               <CardHeader className="flex flex-row items-center justify-between gap-2">
                 <CardTitle>Analytics (last 30 days)</CardTitle>
                 <Button variant="outline" size="sm" onClick={loadAnalytics} disabled={analyticsLoading}>
-                  {analyticsLoading ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <RefreshCcw className="h-4 w-4 mr-2" />
-                  )}
+                  {analyticsLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCcw className="h-4 w-4 mr-2" />}
                   Refresh
                 </Button>
               </CardHeader>
