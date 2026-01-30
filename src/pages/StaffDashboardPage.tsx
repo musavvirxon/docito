@@ -1,6 +1,8 @@
+// Path: src/pages/StaffDashboardPage.tsx
 // File: src/pages/StaffDashboardPage.tsx
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useStaffDashboard } from "@/hooks/useStaffDashboard";
@@ -19,6 +21,9 @@ import SettingsSection from "@/components/staff/SettingsSection";
 type SectionId = "dashboard" | "today" | "patients" | "billing" | "analytics" | "settings" | "invites";
 
 export default function StaffDashboardPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const {
     permissions,
     practice,
@@ -57,6 +62,35 @@ export default function StaffDashboardPage() {
     permissions?.can_view_schedule,
     practice?.id,
   ]);
+
+  const setSectionAndUrl = (next: SectionId) => {
+    setSection(next);
+    const params = new URLSearchParams(location.search);
+    params.set("section", next);
+    navigate(
+      {
+        pathname: location.pathname,
+        search: params.toString() ? `?${params.toString()}` : "",
+      },
+      { replace: true },
+    );
+  };
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const raw = (params.get("section") || params.get("tab") || "").trim();
+    const hash = (location.hash || "").replace("#", "").trim();
+    const desired = (raw || hash).toLowerCase();
+
+    if (!desired) return;
+
+    const isVisible = availableSections.some((s) => s.id === (desired as SectionId));
+    if (!isVisible) return;
+
+    if (section !== (desired as SectionId)) {
+      setSection(desired as SectionId);
+    }
+  }, [availableSections, location.hash, location.search, section]);
 
   const handleStatusUpdate = async (appointmentId: string, status: string) => {
     if (!permissions?.practice_id) return false;
@@ -132,7 +166,7 @@ export default function StaffDashboardPage() {
 
   return (
     <div className="p-6">
-      <Tabs value={active} onValueChange={(v) => setSection(v as SectionId)}>
+      <Tabs value={active} onValueChange={(v) => setSectionAndUrl(v as SectionId)}>
         <TabsList className="flex flex-wrap justify-start">
           {availableSections.map((s) => (
             <TabsTrigger key={s.id} value={s.id}>
@@ -148,7 +182,7 @@ export default function StaffDashboardPage() {
             todaysAppointments={todaysAppointments}
             upcomingAppointments={upcomingAppointments}
             recentPayments={recentPayments}
-            onNavigate={(next) => setSection(next as SectionId)}
+            onNavigate={(next) => setSectionAndUrl(next as SectionId)}
           />
         </TabsContent>
 
