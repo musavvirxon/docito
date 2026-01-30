@@ -98,15 +98,37 @@ serve(async (req) => {
     };
 
     const fetchConsultationProcedure = async () => {
+      // Note: The is_consultation column doesn't exist in procedures table.
+      // Instead, we look for a procedure with name containing 'consultation' or type 'consultation'
       const { data, error } = await admin
         .from("procedures")
-        .select("id, default_cost, price, is_bookable, is_active, is_consultation")
+        .select("id, default_cost, price, is_bookable, is_active, name, category")
         .eq("dentist_id", doctorId)
-        .eq("is_consultation", true)
         .eq("is_active", true)
+        .ilike("name", "%consultation%")
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        // If no consultation procedure found, try to get the first active bookable procedure
+        const { data: fallbackData, error: fallbackError } = await admin
+          .from("procedures")
+          .select("id, default_cost, price, is_bookable, is_active")
+          .eq("dentist_id", doctorId)
+          .eq("is_active", true)
+          .eq("is_bookable", true)
+          .limit(1)
+          .maybeSingle();
+        
+        if (fallbackError) throw fallbackError;
+        
+        return fallbackData
+          ? {
+              id: String(fallbackData.id),
+              cost: fallbackData.default_cost == null ? null : Number(fallbackData.default_cost),
+              is_bookable: typeof fallbackData.is_bookable === "boolean" ? fallbackData.is_bookable : null,
+            }
+          : null;
+      }
 
       return data
         ? {

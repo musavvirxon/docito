@@ -206,14 +206,14 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
 
       if (sessionError && (sessionError as any).code === 'PGRST116') {
         // Session doesn't exist, create one
-        const { data: newSession, error: createError } = await supabase
+        const { data: newSession, error: createError } = await (supabase as any)
           .from('appointment_sessions')
           .insert({
             appointment_id: appointmentId,
             doctor_id: appt.doctor_id,
             patient_id: appt.patient_id,
             doctor_patient_id: appt.doctor_patient_id,
-            session_type: apptType,
+            session_type: apptType as any,
             session_status: 'active',
             started_at: new Date().toISOString(),
           })
@@ -584,7 +584,6 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
         <ResizablePanelGroup
           orientation="horizontal"
           className="min-h-[calc(100vh-8rem)]"
-          autoSaveId={appointmentId ? `appointment-session:${appointmentId}:layout` : 'appointment-session:layout'}
         >
           {/* Left Panel - Session Tools */}
           <ResizablePanel defaultSize={65} minSize={40}>
