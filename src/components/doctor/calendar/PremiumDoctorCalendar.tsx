@@ -1,6 +1,7 @@
 // Path: src/components/doctor/calendar/PremiumDoctorCalendar.tsx
 // File: src/components/doctor/calendar/PremiumDoctorCalendar.tsx
-import { useState, useCallback, useEffect, useRef } from 'react';
+// FILE: src/components/doctor/calendar/PremiumDoctorCalendar.tsx
+import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -52,8 +53,6 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
   const [followupOfAppointmentId, setFollowupOfAppointmentId] = useState<string | null>(null);
   const [preselectedPatient, setPreselectedPatient] = useState<Patient | null>(null);
 
-  const deepLinkHandledRef = useRef<string | null>(null);
-
   // Safety check
   useEffect(() => {
     if (profile?.role === 'doctor' && !doctorId) {
@@ -68,6 +67,7 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
     async function loadSpecialty() {
       if (!user?.id) return;
 
+      // If your doctors table has a "specialty" field, this will populate the dentist tooling.
       const { data, error } = await supabase
         .from('doctors')
         .select('specialty')
@@ -85,40 +85,56 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
   }, [user?.id]);
 
   // Deep-link follow-up booking:
-  // /doctor-dashboard?section=calendar&followupOf=<appointmentId>&patient=reg:<patientUserId>
-  // /doctor-dashboard?section=calendar&followupOf=<appointmentId>&patient=dp:<doctorPatientId>
-  // Back-compat also supports: &patient=<id>&patientType=registered|direct
+  // Supported formats:
+  // 1) /doctor-dashboard?section=calendar&followupOf=<appointmentId>&patient=<patientId>&patientType=registered|direct
+  // 2) /doctor-dashboard?section=calendar&followupOf=<appointmentId>&patient=reg:<patientId>
+  // 3) /doctor-dashboard?section=calendar&followupOf=<appointmentId>&patient=dp:<doctorPatientId>
   useEffect(() => {
     if (!doctorId) return;
-    if (!location.search) return;
-
-    if (deepLinkHandledRef.current === location.search) return;
 
     const sp = new URLSearchParams(location.search);
-    const followupOf = sp.get('followupOf') || sp.get('followup_of') || sp.get('followupOfAppointmentId');
+    const followupOf = sp.get('followupOf');
     const patientParam = sp.get('patient');
-    const patientTypeRaw = sp.get('patientType');
+    const patientTypeRaw = sp.get('patientType') || sp.get('type') || null;
 
     if (!followupOf || !patientParam) return;
 
-    let patientId = patientParam;
-    let patientSource: Patient['source'] = 'doctor_added';
+    const parsePatientParam = () => {
+      const raw = String(patientParam || '').trim();
+      if (!raw) return null as null | { id: string; source: Patient['source'] };
 
-    // Preferred: reg:<uuid> | dp:<uuid>
-    if (patientParam.includes(':')) {
-      const [prefix, id] = patientParam.split(':', 2);
-      if (!id) return;
+      // New format: reg:<uuid> or dp:<uuid>
+      if (raw.includes(':')) {
+        const [prefix, rest] = raw.split(':', 2);
+        const id = (rest || '').trim();
+        if (!id) return null;
 
-      patientId = id;
-      if (prefix === 'reg') patientSource = 'registered';
-      else patientSource = 'doctor_added';
-    } else {
-      // Back-compat
-      patientSource = patientTypeRaw === 'registered' ? 'registered' : 'doctor_added';
-    }
+        if (prefix === 'reg' || prefix === 'registered') {
+          return { id, source: 'registered' as const };
+        }
+        if (prefix === 'dp' || prefix === 'direct' || prefix === 'doctor_added') {
+          return { id, source: 'doctor_added' as const };
+        }
+      }
+
+      // Legacy: patient=<uuid>&patientType=registered|direct
+      const legacySource: Patient['source'] =
+        patientTypeRaw === 'registered' ? 'registered' : 'doctor_added';
+
+      return { id: raw, source: legacySource };
+    };
+
+    const parsed = parsePatientParam();
+    if (!parsed) return;
+
+    // Guard: avoid reopening if already in the same follow-up deep-link state
+    if (isBookModalOpen && followupOfAppointmentId === followupOf) return;
 
     const loadPatient = async () => {
       try {
+        const patientSource = parsed.source;
+        const patientId = parsed.id;
+
         if (patientSource === 'registered') {
           const { data, error } = await supabase
             .from('profiles')
@@ -139,7 +155,7 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
               source: 'registered',
             });
           } else {
-            setPreselectedPatient(null);
+            throw new Error('Patient not found');
           }
         } else {
           const { data, error } = await supabase
@@ -161,15 +177,13 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
               source: 'doctor_added',
             });
           } else {
-            setPreselectedPatient(null);
+            throw new Error('Patient not found');
           }
         }
 
         setFollowupOfAppointmentId(followupOf);
         setPrefilledTime(undefined);
         setIsBookModalOpen(true);
-
-        deepLinkHandledRef.current = location.search;
       } catch (e) {
         console.error('Failed to prefill follow-up booking:', e);
         toast.error('Failed to prefill follow-up booking');
@@ -211,13 +225,16 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
     (apt: CalendarAppointment) => {
       const type = (apt.appointment_type || 'in_person') as string;
 
+      // Start based on appointment type
       if (type === 'messaging' || type === 'chat') {
+        // Quick preview "Message" action handles navigation
         return;
       }
 
+      // For in_person / video / home_visit / follow_up
       navigate(`/appointment-session/${apt.id}`);
     },
-    [navigate],
+    [navigate]
   );
 
   const handleViewPatient = useCallback(
@@ -228,7 +245,7 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
       }
       navigate(`/doctor/patient/${patientId}?type=${patientType}`);
     },
-    [navigate, t],
+    [navigate, t]
   );
 
   const handleOpenFullModal = useCallback(() => {
