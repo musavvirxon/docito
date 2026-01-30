@@ -21,10 +21,11 @@ interface Props {
 type BillingTx = {
   id: string;
   created_at: string;
-  amount: number;
+  amount_cents: number | null;
   currency: string | null;
   status: string | null;
   transaction_type: string | null;
+  metadata?: Record<string, any> | null;
   description: string | null;
 };
 
@@ -41,34 +42,30 @@ type InsuranceOrder = {
   member_id: string;
 };
 
-type ProfileRow = { user_id: string; full_name: string | null; first_name: string | null; last_name: string | null; phone: string | null; email: string | null };
-type FacilityPatientRow = { id: string; full_name: string; phone: string; email: string | null };
-
-type FacilityBillingTx = {
-  id: string;
-  status: string | null;
-  transaction_type: string | null;
-  currency: string | null;
-  amount_cents: number | null;
-  provider: string | null;
-  provider_ref: string | null;
-  created_at: string;
-  metadata: Record<string, any> | null;
-  invoice_id: string | null;
+type ProfileRow = {
+  user_id: string;
+  full_name: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  phone: string | null;
+  email: string | null;
 };
 
-type FacilityBillingResponse = {
+type FacilityPatientRow = { id: string; full_name: string; phone: string; email: string | null };
+
+type FacilityBillingRes = {
   ok: boolean;
-  currency?: string;
-  summary?: {
-    total_paid_cents?: number;
-    total_refunded_cents?: number;
-    outstanding_cents?: number;
-    open_invoice_count?: number;
-  };
-  invoices?: any[];
-  transactions?: FacilityBillingTx[];
   error?: string;
+  currency?: string;
+  transactions?: Array<{
+    id: string;
+    created_at: string;
+    amount_cents: number | null;
+    currency: string | null;
+    status: string | null;
+    transaction_type: string | null;
+    metadata?: Record<string, any> | null;
+  }>;
 };
 
 function asName(p?: ProfileRow | null) {
@@ -80,6 +77,12 @@ function money(n: number) {
   const v = Number(n);
   if (!Number.isFinite(v)) return '$0.00';
   return `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function moneyFromCents(cents: number) {
+  const v = Number(cents);
+  if (!Number.isFinite(v)) return '$0.00';
+  return `$${(v / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 function statusBadge(status: string | null | undefined) {
@@ -102,22 +105,11 @@ function statusBadge(status: string | null | undefined) {
   }
 }
 
-function safeDescFromTx(tx: FacilityBillingTx) {
-  const md = tx.metadata || {};
-  const pieces = [
-    md?.description,
-    md?.reason,
-    md?.note,
-    tx.provider ? `${tx.provider}${tx.provider_ref ? ` • ${tx.provider_ref}` : ''}` : null,
-    tx.invoice_id ? `Invoice: ${tx.invoice_id}` : null,
-  ].filter(Boolean);
-  return pieces.length ? String(pieces[0]) : null;
-}
-
 export default function LabBillingInsurance({ labCenterId }: Props) {
   const [loading, setLoading] = useState(true);
   const [txLoading, setTxLoading] = useState(false);
 
+  const [currency, setCurrency] = useState('usd');
   const [transactions, setTransactions] = useState<BillingTx[]>([]);
   const [insuranceOrders, setInsuranceOrders] = useState<InsuranceOrder[]>([]);
 
@@ -128,37 +120,32 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
   const fetchTransactions = async () => {
     if (!labCenterId) return;
     setTxLoading(true);
-
     try {
-      const { data, error } = await supabase.functions.invoke<FacilityBillingResponse>('facility-billing', {
-        body: {
-          entityType: 'lab',
-          entityId: labCenterId,
-          limit: 200,
-        },
+      const { data, error } = await supabase.functions.invoke<FacilityBillingRes>('facility-billing', {
+        body: { entityType: 'lab', entityId: labCenterId, limit: 200 },
       });
 
       if (error) throw error;
-      if (!data?.ok) throw new Error(data?.error || 'Failed to load billing');
+      if (!data?.ok) throw new Error(data?.error || 'Failed to load transactions');
 
-      const txs = (data.transactions || []) as FacilityBillingTx[];
+      setCurrency((data.currency || 'usd').toLowerCase());
 
-      const mapped: BillingTx[] = txs.map((t) => {
-        const cents = Number(t.amount_cents || 0);
-        const amount = cents / 100;
-
+      const txs = (data.transactions || []).map((t) => {
+        const meta: any = t.metadata || null;
+        const description = typeof meta?.description === 'string' ? meta.description : null;
         return {
           id: t.id,
           created_at: t.created_at,
-          amount,
-          currency: t.currency || data.currency || 'usd',
-          status: t.status || 'pending',
-          transaction_type: t.transaction_type || '',
-          description: safeDescFromTx(t),
-        };
+          amount_cents: t.amount_cents,
+          currency: t.currency,
+          status: t.status,
+          transaction_type: t.transaction_type,
+          metadata: t.metadata || null,
+          description,
+        } as BillingTx;
       });
 
-      setTransactions(mapped);
+      setTransactions(txs);
     } catch (e: any) {
       console.error(e);
       toast.error(e?.message || 'Failed to load transactions');
@@ -210,6 +197,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
       const facilityMap = new Map<string, FacilityPatientRow>();
       for (const fp of (facilityRes.data || []) as any[]) facilityMap.set(fp.id, fp);
 
+      // pick primary insurance first, otherwise first row
       const insuranceByPatient = new Map<string, { provider_name: string; member_id: string }>();
       for (const row of (insuranceRes.data || []) as any[]) {
         const pid = row.patient_id;
@@ -267,30 +255,30 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
   }, [labCenterId]);
 
   const txSummary = useMemo(() => {
-    let total = 0;
-    let refunds = 0;
+    let grossCents = 0;
+    let refundCents = 0;
     let completed = 0;
 
     for (const t of transactions) {
       const status = (t.status || '').toLowerCase();
       if (status !== 'completed') continue;
 
-      const amt = Number(t.amount || 0);
+      const amt = Number(t.amount_cents || 0);
       const type = (t.transaction_type || '').toLowerCase();
 
       completed += 1;
 
       if (type.includes('refund') || amt < 0) {
-        refunds += Math.abs(amt);
+        refundCents += Math.abs(amt);
       } else {
-        total += amt;
+        grossCents += amt;
       }
     }
 
     return {
-      gross: total,
-      refunds,
-      net: total - refunds,
+      grossCents,
+      refundCents,
+      netCents: grossCents - refundCents,
       completed,
     };
   }, [transactions]);
@@ -344,7 +332,8 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Gross Revenue</p>
-                <p className="text-3xl font-bold">{money(txSummary.gross)}</p>
+                <p className="text-3xl font-bold">{moneyFromCents(txSummary.grossCents)}</p>
+                <p className="text-xs text-muted-foreground mt-1">{currency.toUpperCase()}</p>
               </div>
               <div className="p-3 bg-green-500/10 rounded-lg">
                 <CreditCard className="h-6 w-6 text-green-600" />
@@ -357,7 +346,8 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Refunds</p>
-                <p className="text-3xl font-bold">{money(txSummary.refunds)}</p>
+                <p className="text-3xl font-bold">{moneyFromCents(txSummary.refundCents)}</p>
+                <p className="text-xs text-muted-foreground mt-1">{currency.toUpperCase()}</p>
               </div>
               <div className="p-3 bg-gray-500/10 rounded-lg">
                 <CreditCard className="h-6 w-6 text-gray-600" />
@@ -370,7 +360,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Net Revenue</p>
-                <p className="text-3xl font-bold">{money(txSummary.net)}</p>
+                <p className="text-3xl font-bold">{moneyFromCents(txSummary.netCents)}</p>
                 <p className="text-xs text-muted-foreground mt-1">{txSummary.completed} completed transactions</p>
               </div>
               <div className="p-3 bg-primary/10 rounded-lg">
@@ -391,7 +381,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
           <Card>
             <CardHeader>
               <CardTitle>Transactions</CardTitle>
-              <CardDescription>Facility billing transactions via Supabase Edge Function.</CardDescription>
+              <CardDescription>Entity-scoped billing transactions from Supabase.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -425,7 +415,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
                           <TableCell>{statusBadge(t.status)}</TableCell>
                           <TableCell className="max-w-[420px] truncate">{t.description || '—'}</TableCell>
                           <TableCell className="text-right whitespace-nowrap">
-                            {money(Number(t.amount || 0))} {t.currency ? t.currency.toUpperCase() : ''}
+                            {moneyFromCents(Number(t.amount_cents || 0))} {t.currency ? t.currency.toUpperCase() : currency.toUpperCase()}
                           </TableCell>
                         </TableRow>
                       ))
@@ -450,11 +440,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Search</Label>
-                  <Input
-                    value={insuranceSearch}
-                    onChange={(e) => setInsuranceSearch(e.target.value)}
-                    placeholder="Search by patient, provider, member ID..."
-                  />
+                  <Input value={insuranceSearch} onChange={(e) => setInsuranceSearch(e.target.value)} placeholder="Search by patient, provider, member ID..." />
                 </div>
                 <div className="space-y-2">
                   <Label>Status</Label>
