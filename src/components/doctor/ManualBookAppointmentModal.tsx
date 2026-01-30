@@ -57,7 +57,9 @@ const ManualBookAppointmentModal = ({
   const [procedureId, setProcedureId] = useState<string>("");
   const [durationMinutes, setDurationMinutes] = useState<number>(30);
   const [notes, setNotes] = useState("");
-  const [appointmentType, setAppointmentType] = useState<string>(forceAppointmentType || (followupOfAppointmentId ? "follow_up" : "in_person"));
+  const [appointmentType, setAppointmentType] = useState<string>(
+    forceAppointmentType || (followupOfAppointmentId ? "follow_up" : "in_person")
+  );
   const [loading, setLoading] = useState(false);
 
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
@@ -222,12 +224,7 @@ const ManualBookAppointmentModal = ({
 
             <PatientSelector value={selectedPatient?.id} required onSelect={(p) => setSelectedPatient(p)} />
 
-            <Button
-              type="button"
-              variant="link"
-              className="p-0 h-auto text-primary"
-              onClick={() => setCreatePatientOpen(true)}
-            >
+            <Button type="button" variant="link" className="p-0 h-auto text-primary" onClick={() => setCreatePatientOpen(true)}>
               Add New Patient
             </Button>
 
@@ -270,17 +267,13 @@ const ManualBookAppointmentModal = ({
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               type="time"
               value={selectedTime}
-              min={format(selectedDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd") 
-                ? format(new Date(), "HH:mm") 
-                : undefined}
+              min={format(selectedDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd") ? format(new Date(), "HH:mm") : undefined}
               onChange={(e) => {
                 setSelectedTime(e.target.value);
               }}
             />
             {format(selectedDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd") && (
-              <p className="text-xs text-muted-foreground">
-                Cannot book in the past. Minimum time auto-adjusted for today
-              </p>
+              <p className="text-xs text-muted-foreground">Cannot book in the past. Minimum time auto-adjusted for today</p>
             )}
           </div>
 
@@ -347,12 +340,7 @@ const ManualBookAppointmentModal = ({
 
           <div className="space-y-2">
             <Label>Notes (optional)</Label>
-            <Textarea
-              placeholder="Add any notes for this appointment..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={4}
-            />
+            <Textarea placeholder="Add any notes for this appointment..." value={notes} onChange={(e) => setNotes(e.target.value)} rows={4} />
           </div>
 
           <div className="flex justify-end gap-2">
