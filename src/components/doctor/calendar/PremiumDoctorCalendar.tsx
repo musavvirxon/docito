@@ -84,26 +84,42 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
   }, [user?.id]);
 
   // Deep-link follow-up booking:
-  // /doctor-dashboard?section=calendar&followupOf=<appointmentId>&patient=<patientId>&patientType=registered|direct
+  // /doctor-dashboard?section=calendar&followupOf=<appointmentId>&patient=reg:<user_id> OR dp:<doctor_patient_id>
+  // Backward compat: patient=<id>&patientType=registered|direct
   useEffect(() => {
     if (!doctorId) return;
 
     const sp = new URLSearchParams(location.search);
-    const followupOf = sp.get("followupOf");
-    const patientId = sp.get("patient");
-    const patientTypeRaw = sp.get("patientType");
+    const followupOf = sp.get('followupOf');
+    const patientRaw = sp.get('patient');
+    const patientTypeRaw = sp.get('patientType'); // legacy
 
-    if (!followupOf || !patientId) return;
+    if (!followupOf || !patientRaw) return;
 
-    const patientSource: Patient["source"] = patientTypeRaw === "registered" ? "registered" : "doctor_added";
+    let patientId = patientRaw;
+    let patientSource: Patient['source'] | null = null;
+
+    // New format: reg:<uuid> or dp:<uuid>
+    if (patientRaw.includes(':')) {
+      const [prefix, id] = patientRaw.split(':');
+      patientId = id || patientRaw;
+
+      if (prefix === 'reg' || prefix === 'registered') patientSource = 'registered';
+      if (prefix === 'dp' || prefix === 'direct' || prefix === 'doctor_added') patientSource = 'doctor_added';
+    }
+
+    // Legacy format: patient=<uuid>&patientType=registered|direct
+    if (!patientSource) {
+      patientSource = patientTypeRaw === 'registered' ? 'registered' : 'doctor_added';
+    }
 
     const loadPatient = async () => {
       try {
-        if (patientSource === "registered") {
+        if (patientSource === 'registered') {
           const { data, error } = await supabase
-            .from("profiles")
-            .select("user_id, full_name, phone, email, date_of_birth, created_at")
-            .eq("user_id", patientId)
+            .from('profiles')
+            .select('user_id, full_name, phone, email, date_of_birth, created_at')
+            .eq('user_id', patientId)
             .maybeSingle();
 
           if (error) throw error;
@@ -111,19 +127,19 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
           if (data) {
             setPreselectedPatient({
               id: data.user_id,
-              name: data.full_name || "Patient",
+              name: data.full_name || 'Patient',
               phone: data.phone || undefined,
               email: data.email || undefined,
               date_of_birth: data.date_of_birth || undefined,
               created_at: data.created_at || undefined,
-              source: "registered",
+              source: 'registered',
             });
           }
         } else {
           const { data, error } = await supabase
-            .from("doctor_patients")
-            .select("id, full_name, phone, email, date_of_birth, created_at")
-            .eq("id", patientId)
+            .from('doctor_patients')
+            .select('id, full_name, phone, email, date_of_birth, created_at')
+            .eq('id', patientId)
             .maybeSingle();
 
           if (error) throw error;
@@ -131,12 +147,12 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
           if (data) {
             setPreselectedPatient({
               id: data.id,
-              name: data.full_name || "Patient",
+              name: data.full_name || 'Patient',
               phone: data.phone || undefined,
               email: data.email || undefined,
               date_of_birth: data.date_of_birth || undefined,
               created_at: data.created_at || undefined,
-              source: "doctor_added",
+              source: 'doctor_added',
             });
           }
         }
@@ -145,8 +161,8 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
         setPrefilledTime(undefined);
         setIsBookModalOpen(true);
       } catch (e) {
-        console.error("Failed to prefill follow-up booking:", e);
-        toast.error("Failed to prefill follow-up booking");
+        console.error('Failed to prefill follow-up booking:', e);
+        toast.error('Failed to prefill follow-up booking');
       }
     };
 
@@ -362,23 +378,23 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
 
       {/* Modals */}
       <ManualBookAppointmentModal
-            isOpen={isBookModalOpen}
-            onClose={() => {
-              setIsBookModalOpen(false);
-              setPrefilledTime(undefined);
-              setFollowupOfAppointmentId(null);
-              setPreselectedPatient(null);
-              if (location.search) navigate({ pathname: location.pathname }, { replace: true });
-            }}
-            doctorId={doctorId}
-            practiceId={practiceId}
-            onSuccess={refetch}
-            prefilledDate={selectedDate}
-            prefilledTime={prefilledTime}
-            preselectedPatient={preselectedPatient}
-            followupOfAppointmentId={followupOfAppointmentId}
-            forceAppointmentType={followupOfAppointmentId ? "follow_up" : undefined}
-          />
+        isOpen={isBookModalOpen}
+        onClose={() => {
+          setIsBookModalOpen(false);
+          setPrefilledTime(undefined);
+          setFollowupOfAppointmentId(null);
+          setPreselectedPatient(null);
+          if (location.search) navigate({ pathname: location.pathname }, { replace: true });
+        }}
+        doctorId={doctorId}
+        practiceId={practiceId}
+        onSuccess={refetch}
+        prefilledDate={selectedDate}
+        prefilledTime={prefilledTime}
+        preselectedPatient={preselectedPatient}
+        followupOfAppointmentId={followupOfAppointmentId}
+        forceAppointmentType={followupOfAppointmentId ? 'follow_up' : undefined}
+      />
 
       <BlockTimeModal
         isOpen={isBlockModalOpen}
