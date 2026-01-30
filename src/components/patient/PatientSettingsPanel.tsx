@@ -1,4 +1,4 @@
-// File: src/components/patient/PatientSettingsPanel.tsx
+// Path: src/components/patient/PatientSettingsPanel.tsx
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { usePatientSettings } from "@/hooks/usePatientSettings";
 import { Bell, Shield, User, Lock, Save } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 export const PatientSettingsPanel = () => {
   const { t } = useTranslation("dashboard");
@@ -38,7 +39,6 @@ export const PatientSettingsPanel = () => {
   const [hasPrivacyChanges, setHasPrivacyChanges] = useState(false);
   const [hasAccountChanges, setHasAccountChanges] = useState(false);
 
-  // Keep local state in sync once hook finishes loading defaults
   useEffect(() => setLocalNotifications(notificationSettings), [notificationSettings]);
   useEffect(() => setLocalPrivacy(privacySettings), [privacySettings]);
   useEffect(() => setLocalAccount(accountSettings), [accountSettings]);
@@ -75,8 +75,14 @@ export const PatientSettingsPanel = () => {
 
   const handleChangePassword = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error("Passwords do not match");
       return;
     }
+    if (!passwordData.newPassword) {
+      toast.error("Please enter a new password");
+      return;
+    }
+
     await updatePassword(passwordData.currentPassword, passwordData.newPassword);
     setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
   };
@@ -336,8 +342,8 @@ export const PatientSettingsPanel = () => {
                   </p>
                 </div>
                 <Switch
-                  checked={(localPrivacy as any).shareProfile ?? false}
-                  onCheckedChange={(value) => handlePrivacyChange("shareProfile" as any, value)}
+                  checked={localPrivacy.profileVisibility}
+                  onCheckedChange={(value) => handlePrivacyChange("profileVisibility", value)}
                 />
               </div>
 
@@ -353,8 +359,8 @@ export const PatientSettingsPanel = () => {
                   </p>
                 </div>
                 <Switch
-                  checked={(localPrivacy as any).shareRecords ?? false}
-                  onCheckedChange={(value) => handlePrivacyChange("shareRecords" as any, value)}
+                  checked={localPrivacy.shareAnalytics}
+                  onCheckedChange={(value) => handlePrivacyChange("shareAnalytics", value)}
                 />
               </div>
             </CardContent>
