@@ -1,5 +1,6 @@
+// Path: src/components/imaging/ImagingDashboard.tsx
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -62,6 +63,7 @@ type DashboardData = {
 };
 
 export default function ImagingDashboard() {
+  const location = useLocation();
   const navigate = useNavigate();
   const { user, loading: authLoading, activeRole } = useAuth();
   const { myImagingCenter, fetchMyImagingCenter, loading: centerLoading } = useImagingCenter();
@@ -110,6 +112,24 @@ export default function ImagingDashboard() {
     if (centerId) fetchOverview();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [centerId]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const raw = (params.get("tab") || params.get("section") || "").trim();
+    const hash = (location.hash || "").replace("#", "").trim();
+    const desired = (raw || hash).toLowerCase();
+
+    if (!desired) return;
+
+    const allowed = ["overview", "workflow", "reports", "equipment", "analytics", "billing", "staff", "referrals"];
+    if (!allowed.includes(desired)) return;
+
+    if (activeTab !== desired) {
+      setActiveTab(desired);
+      if (desired === "overview") fetchOverview();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.hash, location.search, centerId]);
 
   const stats: StatCardProps[] = useMemo(() => {
     const s = overview?.stats || { scheduledToday: 0, inProgress: 0, pendingReports: 0, completedToday: 0 };
@@ -179,6 +199,17 @@ export default function ImagingDashboard() {
       activeItem={activeTab}
       onItemChange={(id) => {
         setActiveTab(id);
+
+        const params = new URLSearchParams(location.search);
+        params.set("tab", String(id));
+        navigate(
+          {
+            pathname: location.pathname,
+            search: params.toString() ? `?${params.toString()}` : "",
+          },
+          { replace: true },
+        );
+
         if (id === "overview") fetchOverview();
       }}
     >
