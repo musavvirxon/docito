@@ -25,6 +25,33 @@ export interface BillingFilters {
   entityId?: string;
 }
 
+type EntityDashboardBillingResponse = {
+  ok: boolean;
+  error?: string;
+  summary?: {
+    total_paid_cents?: number;
+    total_refunded_cents?: number;
+    outstanding_cents?: number;
+    open_invoice_count?: number;
+  };
+  invoices?: any[];
+  transactions?: any[];
+};
+
+type FacilityBillingResponse = {
+  ok: boolean;
+  error?: string;
+  currency?: string;
+  summary?: {
+    total_paid_cents?: number;
+    total_refunded_cents?: number;
+    outstanding_cents?: number;
+    open_invoice_count?: number;
+  };
+  invoices?: any[];
+  transactions?: any[];
+};
+
 function asString(v: unknown) {
   return typeof v === "string" ? v : v == null ? "" : String(v);
 }
@@ -70,6 +97,38 @@ export const useBillingTransactions = (_userId?: string, _practiceId?: string, f
   const fetchTransactions = async () => {
     setIsLoading(true);
     try {
+      // Preferred path: use Edge Functions for entity-scoped billing (avoids RLS edge cases).
+      if (filters?.entityType && filters?.entityId) {
+        const entityType = filters.entityType;
+        const entityId = filters.entityId;
+        const limit = 200;
+
+        let rows: any[] = [];
+
+        if (entityType === "clinic") {
+          const { data, error } = await supabase.functions.invoke<EntityDashboardBillingResponse>("entity-dashboard", {
+            body: { action: "billing", entityType: "clinic", entityId, limit },
+          });
+          if (error) throw error;
+          if (!data?.ok) throw new Error(data?.error || "Failed to load clinic billing");
+          rows = Array.isArray(data.transactions) ? data.transactions : [];
+        } else {
+          const { data, error } = await supabase.functions.invoke<FacilityBillingResponse>("facility-billing", {
+            body: { entityType, entityId, limit },
+          });
+          if (error) throw error;
+          if (!data?.ok) throw new Error(data?.error || "Failed to load facility billing");
+          rows = Array.isArray(data.transactions) ? data.transactions : [];
+        }
+
+        let normalized = rows.map(normalizeTx);
+        if (filters?.status) normalized = normalized.filter((t) => t.status === filters.status);
+        if (filters?.transactionType) normalized = normalized.filter((t) => t.transaction_type === filters.transactionType);
+
+        setTransactions(normalized);
+        return;
+      }
+
       let query = (supabase.from as any)("billing_transactions")
         .select(
           "id, created_at, amount_cents, currency, status, transaction_type, description, invoice_id, provider, provider_ref, metadata",
