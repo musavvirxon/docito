@@ -40,31 +40,10 @@ export type BillingInvoice = {
   created_at: string;
 };
 
-type EntityDashboardBillingResponse = {
+type BillingFnRes = {
   ok: boolean;
   error?: string;
-  summary?: {
-    total_paid_cents?: number;
-    total_refunded_cents?: number;
-    outstanding_cents?: number;
-    open_invoice_count?: number;
-  };
-  invoices?: any[];
-  transactions?: any[];
-};
-
-type FacilityBillingResponse = {
-  ok: boolean;
-  error?: string;
-  currency?: string;
-  summary?: {
-    total_paid_cents?: number;
-    total_refunded_cents?: number;
-    outstanding_cents?: number;
-    open_invoice_count?: number;
-  };
-  invoices?: any[];
-  transactions?: any[];
+  invoices?: Array<Record<string, any>>;
 };
 
 function money(cents: number, currency = "USD") {
@@ -75,29 +54,22 @@ function money(cents: number, currency = "USD") {
   }).format((cents || 0) / 100);
 }
 
-function asString(v: unknown) {
-  return typeof v === "string" ? v : v == null ? "" : String(v);
-}
+async function fetchInvoicesViaFn(entityType: EntityType, entityId: string) {
+  if (entityType === "clinic") {
+    const { data, error } = await supabase.functions.invoke<BillingFnRes>("entity-dashboard", {
+      body: { action: "billing", entityType, entityId, limit: 25 },
+    });
+    if (error) throw error;
+    if (!data?.ok) throw new Error(data?.error || "Failed to load billing invoices");
+    return (data.invoices || []) as BillingInvoice[];
+  }
 
-function asNumber(v: unknown) {
-  const n = typeof v === "number" ? v : Number(v);
-  return Number.isFinite(n) ? n : 0;
-}
-
-function normalizeInvoice(row: any): BillingInvoice {
-  return {
-    id: asString(row?.id),
-    status: asString(row?.status || ""),
-    currency: asString(row?.currency || "usd") || "usd",
-    amount_due_cents: Math.trunc(asNumber(row?.amount_due_cents)),
-    amount_paid_cents: Math.trunc(asNumber(row?.amount_paid_cents)),
-    amount_remaining_cents: Math.trunc(asNumber(row?.amount_remaining_cents)),
-    due_at: row?.due_at ? asString(row.due_at) : null,
-    paid_at: row?.paid_at ? asString(row.paid_at) : null,
-    hosted_invoice_url: row?.hosted_invoice_url ? asString(row.hosted_invoice_url) : null,
-    invoice_pdf_url: row?.invoice_pdf_url ? asString(row.invoice_pdf_url) : null,
-    created_at: asString(row?.created_at),
-  };
+  const { data, error } = await supabase.functions.invoke<BillingFnRes>("facility-billing", {
+    body: { entityType, entityId, limit: 25 },
+  });
+  if (error) throw error;
+  if (!data?.ok) throw new Error(data?.error || "Failed to load billing invoices");
+  return (data.invoices || []) as BillingInvoice[];
 }
 
 export function useBilling(params: { entityType: EntityType; entityId: string | null }) {
@@ -122,7 +94,7 @@ export function useBilling(params: { entityType: EntityType; entityId: string | 
     setError(null);
 
     try {
-      const [plansRes, subRes, billingRes] = await Promise.all([
+      const [plansRes, subRes, invs] = await Promise.all([
         (supabase.from as any)("billing_plans")
           .select("id,code,name,description,interval,amount_cents,currency,is_active")
           .eq("is_active", true)
@@ -132,25 +104,7 @@ export function useBilling(params: { entityType: EntityType; entityId: string | 
           .eq("entity_type", entityType)
           .eq("entity_id", entityId)
           .maybeSingle(),
-        (async () => {
-          const limit = 25;
-
-          if (entityType === "clinic") {
-            const { data, error } = await supabase.functions.invoke<EntityDashboardBillingResponse>("entity-dashboard", {
-              body: { action: "billing", entityType: "clinic", entityId, limit },
-            });
-            if (error) throw error;
-            if (!data?.ok) throw new Error(data?.error || "Failed to load clinic billing");
-            return data;
-          }
-
-          const { data, error } = await supabase.functions.invoke<FacilityBillingResponse>("facility-billing", {
-            body: { entityType, entityId, limit },
-          });
-          if (error) throw error;
-          if (!data?.ok) throw new Error(data?.error || "Failed to load facility billing");
-          return data;
-        })(),
+        fetchInvoicesViaFn(entityType, entityId),
       ]);
 
       if (plansRes.error) throw plansRes.error;
@@ -158,9 +112,7 @@ export function useBilling(params: { entityType: EntityType; entityId: string | 
 
       setPlans((plansRes.data || []) as BillingPlan[]);
       setSubscription((subRes.data || null) as BillingSubscription | null);
-
-      const invRows = Array.isArray((billingRes as any)?.invoices) ? ((billingRes as any).invoices as any[]) : [];
-      setInvoices(invRows.map(normalizeInvoice));
+      setInvoices((invs || []) as BillingInvoice[]);
     } catch (e: any) {
       setError(e?.message || "Failed to load billing");
       setPlans([]);
