@@ -8,21 +8,9 @@ const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-type EntityType = "lab" | "imaging" | "pharmacy";
-
-type ScopeRow = {
-  entity_type: string;
-  entity_id: string;
-  entity_name: string | null;
-  entity_status: string | null;
-  scope_role: string | null;
-  is_admin: boolean | null;
-  permissions: Record<string, any> | null;
-};
-
 type ReqBody = {
-  entityType: EntityType;
-  entityId: string;
+  facilityId: string;
+  facilityType: "lab" | "imaging" | "pharmacy" | "facility";
   limit?: number;
 };
 
@@ -46,45 +34,50 @@ function requireEnv() {
   return { ok: true as const, url, anon, service };
 }
 
-function clampInt(v: unknown, min: number, max: number, fallback: number) {
-  const n = typeof v === "number" ? v : Number(v);
-  if (!Number.isFinite(n)) return fallback;
-  return Math.max(min, Math.min(max, Math.trunc(n)));
-}
-
 function isUuid(v: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
 }
 
+type ScopeRow = {
+  entity_type: string;
+  entity_id: string;
+  entity_name: string | null;
+  entity_status: string | null;
+  scope_role: string | null;
+  is_admin: boolean | null;
+  permissions: Record<string, any> | null;
+};
+
 function hasPermission(scope: ScopeRow, key: string): boolean {
   const perms = scope.permissions || {};
-  return perms[key] === true;
+  const v = perms[key];
+  return v === true;
 }
 
-async function authorizeFacilityBillingAccess(params: {
+async function authorizeFacilityAccess(params: {
   url: string;
   anon: string;
   authHeader: string;
-  entityType: EntityType;
-  entityId: string;
+  facilityType: string;
+  facilityId: string;
 }): Promise<{ ok: true; userId: string; scope: ScopeRow } | { ok: false; status: number; error: string }> {
-  const { url, anon, authHeader, entityType, entityId } = params;
+  const { url, anon, authHeader, facilityType, facilityId } = params;
 
-  const userClient = createClient(url, anon, {
+  const supabaseUser = createClient(url, anon, {
     global: { headers: { Authorization: authHeader } },
-    auth: { persistSession: false },
   });
 
-  const { data: userRes, error: userErr } = await userClient.auth.getUser();
+  const { data: userRes, error: userErr } = await supabaseUser.auth.getUser();
   if (userErr || !userRes?.user) return { ok: false, status: 401, error: "Unauthorized" };
 
-  const { data: scopes, error: scopesErr } = await userClient.rpc("get_my_entity_scopes");
+  const { data: scopes, error: scopesErr } = await supabaseUser.rpc("get_my_entity_scopes");
   if (scopesErr) return { ok: false, status: 500, error: scopesErr.message || "Failed to load scopes" };
 
   const list = (scopes || []) as ScopeRow[];
-  const scope = list.find((s) => s.entity_type === entityType && String(s.entity_id) === entityId);
+  const scope = list.find((s) => s.entity_type === facilityType && String(s.entity_id) === facilityId);
   if (!scope) return { ok: false, status: 403, error: "Forbidden" };
 
+  // billing permission
   if (!scope.is_admin && !hasPermission(scope, "can_manage_billing")) {
     return { ok: false, status: 403, error: "Forbidden" };
   }
@@ -109,38 +102,37 @@ serve(async (req) => {
     return json({ ok: false, error: "Invalid JSON body" }, 400);
   }
 
-  const entityType = (body?.entityType || "") as EntityType;
-  const entityId = String(body?.entityId || "").trim();
-  if (!entityType || !["lab", "imaging", "pharmacy"].includes(entityType)) {
-    return json({ ok: false, error: "Invalid entityType" }, 400);
-  }
-  if (!entityId || !isUuid(entityId)) return json({ ok: false, error: "Invalid entityId" }, 400);
+  const facilityId = String(body.facilityId || "");
+  const facilityType = String(body.facilityType || "");
 
-  const limit = clampInt(body?.limit, 1, 200, 50);
+  if (!facilityId || !isUuid(facilityId)) return json({ ok: false, error: "Invalid facilityId" }, 400);
+  if (!facilityType) return json({ ok: false, error: "Invalid facilityType" }, 400);
 
-  const authz = await authorizeFacilityBillingAccess({
+  const authz = await authorizeFacilityAccess({
     url: env.url,
     anon: env.anon,
     authHeader,
-    entityType,
-    entityId,
+    facilityType,
+    facilityId,
   });
   if (!authz.ok) return json({ ok: false, error: authz.error }, authz.status);
 
   const admin = createClient(env.url, env.service, {
     auth: { persistSession: false },
-    global: { "X-Client-Info": "facility-billing" } as any,
+    global: { headers: { "X-Client-Info": "facility-billing" } },
   });
 
   try {
+    const limit = Math.max(5, Math.min(200, Number(body.limit ?? 50) || 50));
+
     const [{ data: invoices, error: invErr }, { data: txs, error: txErr }] = await Promise.all([
       admin
         .from("billing_invoices")
         .select(
           "id, status, currency, amount_due_cents, amount_paid_cents, amount_remaining_cents, due_at, paid_at, created_at, hosted_invoice_url, invoice_pdf_url, metadata",
         )
-        .eq("entity_type", entityType)
-        .eq("entity_id", entityId)
+        .eq("entity_type", facilityType)
+        .eq("entity_id", facilityId)
         .order("created_at", { ascending: false })
         .limit(limit),
       admin
@@ -148,8 +140,8 @@ serve(async (req) => {
         .select(
           "id, status, transaction_type, currency, amount_cents, provider, provider_ref, created_at, metadata, invoice_id",
         )
-        .eq("entity_type", entityType)
-        .eq("entity_id", entityId)
+        .eq("entity_type", facilityType)
+        .eq("entity_id", facilityId)
         .order("created_at", { ascending: false })
         .limit(limit),
     ]);
@@ -161,12 +153,20 @@ serve(async (req) => {
     const tr = (txs || []) as any[];
 
     const totalPaidCents = tr
-      .filter((t) => String(t.status || "").toLowerCase() === "completed" && String(t.transaction_type || "") === "charge")
+      .filter(
+        (t) =>
+          String(t.status || "").toLowerCase() === "completed" &&
+          String(t.transaction_type || "") === "charge",
+      )
       .reduce((sum, t) => sum + Number(t.amount_cents || 0), 0);
 
     const totalRefundedCents = tr
-      .filter((t) => String(t.status || "").toLowerCase() === "completed" && String(t.transaction_type || "") === "refund")
-      .reduce((sum, t) => sum + Math.abs(Number(t.amount_cents || 0)), 0);
+      .filter(
+        (t) =>
+          String(t.status || "").toLowerCase() === "completed" &&
+          String(t.transaction_type || "") === "refund",
+      )
+      .reduce((sum, t) => sum + Number(t.amount_cents || 0), 0);
 
     const outstandingCents = inv
       .filter((i) => {
@@ -176,12 +176,10 @@ serve(async (req) => {
       .reduce((sum, i) => sum + Number(i.amount_remaining_cents || 0), 0);
 
     const openInvoiceCount = inv.filter((i) => String(i.status || "").toLowerCase() === "open").length;
-    const currency = inv.find((i) => i.currency)?.currency || tr.find((t) => t.currency)?.currency || "usd";
 
     return json({
       ok: true,
-      entity: { entity_type: entityType, entity_id: entityId },
-      currency,
+      facility: { facility_type: facilityType, facility_id: facilityId },
       summary: {
         total_paid_cents: totalPaidCents,
         total_refunded_cents: totalRefundedCents,
