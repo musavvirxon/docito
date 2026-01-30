@@ -40,12 +40,64 @@ export type BillingInvoice = {
   created_at: string;
 };
 
+type EntityDashboardBillingResponse = {
+  ok: boolean;
+  error?: string;
+  summary?: {
+    total_paid_cents?: number;
+    total_refunded_cents?: number;
+    outstanding_cents?: number;
+    open_invoice_count?: number;
+  };
+  invoices?: any[];
+  transactions?: any[];
+};
+
+type FacilityBillingResponse = {
+  ok: boolean;
+  error?: string;
+  currency?: string;
+  summary?: {
+    total_paid_cents?: number;
+    total_refunded_cents?: number;
+    outstanding_cents?: number;
+    open_invoice_count?: number;
+  };
+  invoices?: any[];
+  transactions?: any[];
+};
+
 function money(cents: number, currency = "USD") {
   return new Intl.NumberFormat(undefined, {
     style: "currency",
     currency: currency.toUpperCase(),
     maximumFractionDigits: 2,
   }).format((cents || 0) / 100);
+}
+
+function asString(v: unknown) {
+  return typeof v === "string" ? v : v == null ? "" : String(v);
+}
+
+function asNumber(v: unknown) {
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function normalizeInvoice(row: any): BillingInvoice {
+  return {
+    id: asString(row?.id),
+    status: asString(row?.status || ""),
+    currency: asString(row?.currency || "usd") || "usd",
+    amount_due_cents: Math.trunc(asNumber(row?.amount_due_cents)),
+    amount_paid_cents: Math.trunc(asNumber(row?.amount_paid_cents)),
+    amount_remaining_cents: Math.trunc(asNumber(row?.amount_remaining_cents)),
+    due_at: row?.due_at ? asString(row.due_at) : null,
+    paid_at: row?.paid_at ? asString(row.paid_at) : null,
+    hosted_invoice_url: row?.hosted_invoice_url ? asString(row.hosted_invoice_url) : null,
+    invoice_pdf_url: row?.invoice_pdf_url ? asString(row.invoice_pdf_url) : null,
+    created_at: asString(row?.created_at),
+  };
 }
 
 export function useBilling(params: { entityType: EntityType; entityId: string | null }) {
@@ -70,19 +122,45 @@ export function useBilling(params: { entityType: EntityType; entityId: string | 
     setError(null);
 
     try {
-      const [plansRes, subRes, invRes] = await Promise.all([
-        (supabase.from as any)("billing_plans").select("id,code,name,description,interval,amount_cents,currency,is_active").eq("is_active", true).order("amount_cents", { ascending: true }),
-        (supabase.from as any)("billing_subscriptions").select("id,entity_type,entity_id,plan_id,status,current_period_start,current_period_end,cancel_at_period_end").eq("entity_type", entityType).eq("entity_id", entityId).maybeSingle(),
-        (supabase.from as any)("billing_invoices").select("id,status,currency,amount_due_cents,amount_paid_cents,amount_remaining_cents,due_at,paid_at,hosted_invoice_url,invoice_pdf_url,created_at").eq("entity_type", entityType).eq("entity_id", entityId).order("created_at", { ascending: false }).limit(25),
+      const [plansRes, subRes, billingRes] = await Promise.all([
+        (supabase.from as any)("billing_plans")
+          .select("id,code,name,description,interval,amount_cents,currency,is_active")
+          .eq("is_active", true)
+          .order("amount_cents", { ascending: true }),
+        (supabase.from as any)("billing_subscriptions")
+          .select("id,entity_type,entity_id,plan_id,status,current_period_start,current_period_end,cancel_at_period_end")
+          .eq("entity_type", entityType)
+          .eq("entity_id", entityId)
+          .maybeSingle(),
+        (async () => {
+          const limit = 25;
+
+          if (entityType === "clinic") {
+            const { data, error } = await supabase.functions.invoke<EntityDashboardBillingResponse>("entity-dashboard", {
+              body: { action: "billing", entityType: "clinic", entityId, limit },
+            });
+            if (error) throw error;
+            if (!data?.ok) throw new Error(data?.error || "Failed to load clinic billing");
+            return data;
+          }
+
+          const { data, error } = await supabase.functions.invoke<FacilityBillingResponse>("facility-billing", {
+            body: { entityType, entityId, limit },
+          });
+          if (error) throw error;
+          if (!data?.ok) throw new Error(data?.error || "Failed to load facility billing");
+          return data;
+        })(),
       ]);
 
       if (plansRes.error) throw plansRes.error;
       if (subRes.error) throw subRes.error;
-      if (invRes.error) throw invRes.error;
 
       setPlans((plansRes.data || []) as BillingPlan[]);
       setSubscription((subRes.data || null) as BillingSubscription | null);
-      setInvoices((invRes.data || []) as BillingInvoice[]);
+
+      const invRows = Array.isArray((billingRes as any)?.invoices) ? ((billingRes as any).invoices as any[]) : [];
+      setInvoices(invRows.map(normalizeInvoice));
     } catch (e: any) {
       setError(e?.message || "Failed to load billing");
       setPlans([]);
