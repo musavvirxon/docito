@@ -17,87 +17,89 @@ export type ClinicAnalyticsKpis = {
   completionRatePct: number;
 };
 
-export type ClinicDailyTrend = {
+export type ClinicAnalyticsTrendPoint = {
   date: string;
   appointments: number;
   completed: number;
   revenue_cents: number;
 };
 
-type Resp = {
+export type ClinicAnalyticsData = {
+  currency: string;
+  kpis: ClinicAnalyticsKpis;
+  dailyTrend: ClinicAnalyticsTrendPoint[];
+};
+
+type EntityDashboardAnalyticsRes = {
   ok: boolean;
   error?: string;
   currency?: string;
-  kpis?: ClinicAnalyticsKpis;
-  dailyTrend?: ClinicDailyTrend[];
+  kpis?: Record<string, any>;
+  trend?: Array<Record<string, any>>;
+  dailyTrend?: Array<Record<string, any>>;
 };
 
-export function useClinicAnalytics(clinicId: string | null, timeRange: TimeRange) {
-  const [loading, setLoading] = useState(true);
+function daysFromRange(r: TimeRange) {
+  if (r === "30d") return 30;
+  if (r === "90d") return 90;
+  return 7;
+}
+
+export function useClinicAnalytics(clinicId: string | null, timeRange: TimeRange = "30d") {
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [currency, setCurrency] = useState<string>("usd");
-  const [kpis, setKpis] = useState<ClinicAnalyticsKpis>({
-    totalRevenueCents: 0,
-    totalAppointments: 0,
-    completedAppointments: 0,
-    canceledAppointments: 0,
-    uniquePatients: 0,
-    revenueChangePct: 0,
-    appointmentsChangePct: 0,
-    patientsChangePct: 0,
-    completionRatePct: 0,
-  });
-  const [dailyTrend, setDailyTrend] = useState<ClinicDailyTrend[]>([]);
+  const [data, setData] = useState<ClinicAnalyticsData | null>(null);
 
   const fetchAnalytics = useCallback(async () => {
-    if (!clinicId) {
-      setLoading(false);
-      setError(null);
-      setCurrency("usd");
-      setKpis({
-        totalRevenueCents: 0,
-        totalAppointments: 0,
-        completedAppointments: 0,
-        canceledAppointments: 0,
-        uniquePatients: 0,
-        revenueChangePct: 0,
-        appointmentsChangePct: 0,
-        patientsChangePct: 0,
-        completionRatePct: 0,
-      });
-      setDailyTrend([]);
-      return;
-    }
+    if (!clinicId) return;
 
     setLoading(true);
     setError(null);
 
     try {
-      const { data, error: fnErr } = await supabase.functions.invoke<Resp>("clinic-analytics", {
-        body: { clinicId, timeRange },
-      });
+      const days = daysFromRange(timeRange);
+      const { data: res, error: fnErr } = await supabase.functions.invoke<EntityDashboardAnalyticsRes>(
+        "entity-dashboard",
+        {
+          body: { action: "analytics", entityType: "clinic", entityId: clinicId, days },
+        }
+      );
 
       if (fnErr) throw fnErr;
-      if (!data?.ok) throw new Error(data?.error || "Failed to load analytics");
+      if (!res?.ok) throw new Error(res?.error || "Failed to load analytics");
 
-      setCurrency(data.currency || "usd");
-      setKpis(
-        data.kpis || {
-          totalRevenueCents: 0,
-          totalAppointments: 0,
-          completedAppointments: 0,
-          canceledAppointments: 0,
-          uniquePatients: 0,
-          revenueChangePct: 0,
-          appointmentsChangePct: 0,
-          patientsChangePct: 0,
-          completionRatePct: 0,
+      const k = (res.kpis || {}) as Record<string, any>;
+      const trendRaw = (res.trend || res.dailyTrend || []) as Array<Record<string, any>>;
+
+      const currency = String(res.currency || "usd");
+
+      const mapped: ClinicAnalyticsData = {
+        currency,
+        kpis: {
+          totalRevenueCents: Number(k.total_revenue_cents ?? k.revenue_cents ?? 0),
+          totalAppointments: Number(k.total_appointments ?? 0),
+          completedAppointments: Number(k.completed_appointments ?? 0),
+          canceledAppointments: Number(k.cancelled_appointments ?? k.canceled_appointments ?? 0),
+          uniquePatients: Number(k.unique_patients ?? 0),
+          revenueChangePct: Number(k.revenue_change_pct ?? 0),
+          appointmentsChangePct: Number(k.appointments_change_pct ?? 0),
+          patientsChangePct: Number(k.patients_change_pct ?? 0),
+          completionRatePct: Number(k.completion_rate_pct ?? 0),
         },
-      );
-      setDailyTrend(data.dailyTrend || []);
+        dailyTrend: trendRaw
+          .map((p) => ({
+            date: String(p.date || ""),
+            appointments: Number(p.appointments ?? 0),
+            completed: Number(p.completed ?? 0),
+            revenue_cents: Number(p.revenue_cents ?? 0),
+          }))
+          .filter((p) => Boolean(p.date)),
+      };
+
+      setData(mapped);
     } catch (e: any) {
+      setData(null);
       setError(e?.message || "Failed to load analytics");
-      setDailyTrend([]);
     } finally {
       setLoading(false);
     }
@@ -107,8 +109,14 @@ export function useClinicAnalytics(clinicId: string | null, timeRange: TimeRange
     fetchAnalytics();
   }, [fetchAnalytics]);
 
-  return useMemo(
-    () => ({ loading, error, currency, kpis, dailyTrend, refetch: fetchAnalytics }),
-    [currency, dailyTrend, error, fetchAnalytics, kpis, loading],
-  );
+  const resolved = useMemo(() => {
+    return {
+      loading,
+      error,
+      data,
+      refetch: fetchAnalytics,
+    };
+  }, [data, error, fetchAnalytics, loading]);
+
+  return resolved;
 }
