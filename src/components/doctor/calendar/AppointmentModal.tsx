@@ -1,5 +1,5 @@
-// File: src/components/doctor/calendar/AppointmentModal.tsx
-import { memo, useState, useCallback, useEffect, useMemo } from "react";
+// Path: src/components/doctor/calendar/AppointmentModal.tsx
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import {
@@ -24,8 +24,8 @@ import {
   Plus,
   Save,
   RefreshCw,
-  Copy,
   Layers,
+  ChevronsUpDown,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -39,6 +39,16 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -64,60 +74,54 @@ interface TreatmentPlan {
   created_at: string;
 }
 
-type ClinicalItemType = "procedure" | "medication" | "treatment_plan" | "note";
+type ClinicalItemType = "procedure" | "medication" | "treatment_plan";
 
 type ClinicalItem = {
   id: string;
   appointment_id: string;
-  item_type: string;
-  title: string | null;
-  description: string | null;
-  status: string | null;
-  metadata: any;
-  created_at: string;
-  updated_at: string | null;
-};
-
-type ProcedureTemplate = {
-  id: string;
+  doctor_id: string;
+  patient_id: string | null;
+  doctor_patient_id: string | null;
+  template_id: string | null;
+  type: ClinicalItemType;
   name: string;
   description: string | null;
-  duration_minutes: number | null;
-  price_cents: number | null;
-  metadata: any;
-  created_at?: string | null;
-  updated_at?: string | null;
-};
-
-type TreatmentPlanTemplate = {
-  id: string;
-  title: string;
-  description: string | null;
-  plan_json: any;
-  metadata: any;
-  created_at?: string | null;
-  updated_at?: string | null;
+  quantity: number | null;
+  dosage: string | null;
+  frequency: string | null;
+  duration: string | null;
+  cost: number | null;
+  created_at: string | null;
+  updated_at: string | null;
 };
 
 type ClinicalTemplate = {
   id: string;
+  doctor_id: string;
+  type: ClinicalItemType;
   name: string;
   description: string | null;
-  items_json: any;
-  metadata: any;
-  created_at?: string | null;
-  updated_at?: string | null;
+  default_cost: number | null;
+  is_active: boolean;
+  created_at: string | null;
+  updated_at: string | null;
 };
 
-type TemplateRow = {
+type CatalogProcedure = {
   id: string;
-  kind: "procedure" | "treatment_plan" | "clinical_template";
-  item_type: string;
+  name: string;
+  category: string | null;
+  cost: number | null;
+  duration_minutes: number | null;
+  active: boolean;
+};
+
+type CatalogTreatmentPlan = {
+  id: string;
   title: string;
+  status: string | null;
+  total_cost: number | null;
   created_at: string | null;
-  details: any;
-  raw: any;
-  editable: boolean;
 };
 
 interface AppointmentModalProps {
@@ -150,84 +154,81 @@ const procedureStatusColors: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
 };
 
-function safeJsonStringify(v: any) {
-  try {
-    return JSON.stringify(v ?? {}, null, 2);
-  } catch {
-    return "{}";
-  }
+function toNumberOrNull(v: string): number | null {
+  const trimmed = (v ?? "").trim();
+  if (!trimmed) return null;
+  const n = Number(trimmed);
+  if (Number.isNaN(n)) return null;
+  return n;
 }
 
-function safeJsonParse(text: string) {
-  try {
-    return JSON.parse(text);
-  } catch {
-    return null;
-  }
+function toIntOrNull(v: string): number | null {
+  const trimmed = (v ?? "").trim();
+  if (!trimmed) return null;
+  const n = Number(trimmed);
+  if (Number.isNaN(n)) return null;
+  return Math.trunc(n);
 }
 
-function normalizeTemplateRows(payload: {
-  procedures?: ProcedureTemplate[];
-  treatmentPlans?: TreatmentPlanTemplate[];
-  clinicalTemplates?: ClinicalTemplate[];
-}): TemplateRow[] {
-  const rows: TemplateRow[] = [];
+function asItemType(v: unknown): ClinicalItemType {
+  if (v === "procedure" || v === "medication" || v === "treatment_plan") return v;
+  return "procedure";
+}
 
-  const procedures = Array.isArray(payload.procedures) ? payload.procedures : [];
-  for (const p of procedures) {
-    rows.push({
-      id: p.id,
-      kind: "procedure",
-      item_type: "procedure",
-      title: p.name || "Procedure",
-      created_at: (p.updated_at ?? p.created_at ?? null) as any,
-      details: {
-        description: p.description ?? null,
-        duration_minutes: p.duration_minutes ?? null,
-        price_cents: p.price_cents ?? null,
-        metadata: p.metadata ?? {},
-      },
-      raw: p,
-      editable: false,
-    });
-  }
+function normalizeClinicalItem(row: any): ClinicalItem {
+  return {
+    id: String(row?.id ?? ""),
+    appointment_id: String(row?.appointment_id ?? ""),
+    doctor_id: String(row?.doctor_id ?? ""),
+    patient_id: row?.patient_id ? String(row.patient_id) : null,
+    doctor_patient_id: row?.doctor_patient_id ? String(row.doctor_patient_id) : null,
+    template_id: row?.template_id ? String(row.template_id) : null,
+    type: asItemType(row?.type ?? row?.item_type),
+    name: String(row?.name ?? row?.title ?? ""),
+    description: row?.description ?? null,
+    quantity: row?.quantity ?? null,
+    dosage: row?.dosage ?? null,
+    frequency: row?.frequency ?? null,
+    duration: row?.duration ?? null,
+    cost: row?.cost ?? null,
+    created_at: row?.created_at ?? null,
+    updated_at: row?.updated_at ?? null,
+  };
+}
 
-  const plans = Array.isArray(payload.treatmentPlans) ? payload.treatmentPlans : [];
-  for (const tp of plans) {
-    rows.push({
-      id: tp.id,
-      kind: "treatment_plan",
-      item_type: "treatment_plan",
-      title: tp.title || "Treatment Plan",
-      created_at: (tp.updated_at ?? tp.created_at ?? null) as any,
-      details: {
-        description: tp.description ?? null,
-        plan_json: tp.plan_json ?? null,
-        metadata: tp.metadata ?? {},
-      },
-      raw: tp,
-      editable: false,
-    });
-  }
+function normalizeTemplate(row: any): ClinicalTemplate {
+  return {
+    id: String(row?.id ?? ""),
+    doctor_id: String(row?.doctor_id ?? ""),
+    type: asItemType(row?.type ?? row?.item_type),
+    name: String(row?.name ?? row?.title ?? ""),
+    description: row?.description ?? null,
+    default_cost: row?.default_cost ?? null,
+    is_active: Boolean(row?.is_active ?? true),
+    created_at: row?.created_at ?? null,
+    updated_at: row?.updated_at ?? null,
+  };
+}
 
-  const clinical = Array.isArray(payload.clinicalTemplates) ? payload.clinicalTemplates : [];
-  for (const ct of clinical) {
-    const items = Array.isArray(ct.items_json) ? ct.items_json : [];
-    const single = items.length === 1 && items[0] && typeof items[0] === "object" ? (items[0] as any) : null;
-    rows.push({
-      id: ct.id,
-      kind: "clinical_template",
-      item_type: single?.item_type ? String(single.item_type) : "clinical_template",
-      title: ct.name || "Clinical Template",
-      created_at: (ct.updated_at ?? ct.created_at ?? null) as any,
-      details: single?.metadata ?? ct.items_json ?? [],
-      raw: ct,
-      editable: !!single,
-    });
-  }
+function normalizeCatalogProcedure(row: any): CatalogProcedure {
+  return {
+    id: String(row?.id ?? ""),
+    name: String(row?.name ?? ""),
+    category: row?.category ?? null,
+    cost: row?.cost ?? row?.price ?? null,
+    duration_minutes: row?.duration_minutes ?? row?.estimated_duration_minutes ?? null,
+    active: Boolean(row?.active ?? row?.is_active ?? true),
+  };
+}
 
-  rows.sort((a, b) => String(b.created_at ?? "").localeCompare(String(a.created_at ?? "")));
-  return rows;
+function normalizeCatalogPlan(row: any): CatalogTreatmentPlan {
+  return {
+    id: String(row?.id ?? ""),
+    title: String(row?.title ?? ""),
+    status: row?.status ?? null,
+    total_cost: row?.total_cost ?? null,
+    created_at: row?.created_at ?? null,
+  };
 }
 
 const AppointmentModal = memo(
@@ -250,38 +251,58 @@ const AppointmentModal = memo(
     const [isRescheduling] = useState(false);
     const isRTL = i18n.language === "ar";
 
-    // Procedures and treatment plans
+    // Existing appointment procedures + patient plans (non-edge, legacy views)
     const [appointmentProcedures, setAppointmentProcedures] = useState<AppointmentProcedure[]>([]);
     const [treatmentPlans, setTreatmentPlans] = useState<TreatmentPlan[]>([]);
     const [loadingProcedures, setLoadingProcedures] = useState(false);
     const [loadingPlans, setLoadingPlans] = useState(false);
 
-    // Clinical items + templates (Edge Function: appointment-clinical-items)
+    // Edge-backed clinical items (appointment) + templates + catalog
     const [clinicalLoading, setClinicalLoading] = useState(false);
     const [templatesLoading, setTemplatesLoading] = useState(false);
+    const [catalogLoading, setCatalogLoading] = useState(false);
+
     const [clinicalItems, setClinicalItems] = useState<ClinicalItem[]>([]);
-    const [templateRows, setTemplateRows] = useState<TemplateRow[]>([]);
+    const [templates, setTemplates] = useState<ClinicalTemplate[]>([]);
+    const [catalogProcedures, setCatalogProcedures] = useState<CatalogProcedure[]>([]);
+    const [catalogPlans, setCatalogPlans] = useState<CatalogTreatmentPlan[]>([]);
 
-    // New clinical item
-    const [newItemType, setNewItemType] = useState<ClinicalItemType>("procedure");
-    const [newItemTitle, setNewItemTitle] = useState("");
-    const [newItemDetailsText, setNewItemDetailsText] = useState("{}");
+    // Add UI (Catalog)
+    const [catalogMode, setCatalogMode] = useState<"procedure" | "treatment_plan">("procedure");
+    const [procedurePickerOpen, setProcedurePickerOpen] = useState(false);
+    const [planPickerOpen, setPlanPickerOpen] = useState(false);
+    const [selectedProcedureId, setSelectedProcedureId] = useState<string | null>(null);
+    const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+    const [catalogNotes, setCatalogNotes] = useState("");
+    const [catalogCost, setCatalogCost] = useState("");
 
-    // Create clinical template
-    const [newTplType, setNewTplType] = useState<ClinicalItemType>("procedure");
-    const [newTplTitle, setNewTplTitle] = useState("");
-    const [newTplDetailsText, setNewTplDetailsText] = useState("{}");
+    // Add UI (Custom)
+    const [customType, setCustomType] = useState<ClinicalItemType>("procedure");
+    const [customName, setCustomName] = useState("");
+    const [customDescription, setCustomDescription] = useState("");
+    const [customQuantity, setCustomQuantity] = useState("");
+    const [customDosage, setCustomDosage] = useState("");
+    const [customFrequency, setCustomFrequency] = useState("");
+    const [customDuration, setCustomDuration] = useState("");
+    const [customCost, setCustomCost] = useState("");
 
-    // Edit clinical item
-    const [editingItemId, setEditingItemId] = useState<string | null>(null);
-    const [editItemTitle, setEditItemTitle] = useState("");
-    const [editItemDetailsText, setEditItemDetailsText] = useState("{}");
+    const [saveAsTemplate, setSaveAsTemplate] = useState(false);
+    const [templateName, setTemplateName] = useState("");
 
-    // Edit clinical template (single-item templates only)
-    const [editingTplId, setEditingTplId] = useState<string | null>(null);
-    const [editTplType, setEditTplType] = useState<ClinicalItemType>("procedure");
-    const [editTplTitle, setEditTplTitle] = useState("");
-    const [editTplDetailsText, setEditTplDetailsText] = useState("{}");
+    // Templates apply UI
+    const [templateApplyOpen, setTemplateApplyOpen] = useState(false);
+    const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+
+    // Edit item UI
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editType, setEditType] = useState<ClinicalItemType>("procedure");
+    const [editName, setEditName] = useState("");
+    const [editDescription, setEditDescription] = useState("");
+    const [editQuantity, setEditQuantity] = useState("");
+    const [editDosage, setEditDosage] = useState("");
+    const [editFrequency, setEditFrequency] = useState("");
+    const [editDuration, setEditDuration] = useState("");
+    const [editCost, setEditCost] = useState("");
 
     const formatCurrency = (amount: number) =>
       new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
@@ -314,59 +335,73 @@ const AppointmentModal = memo(
 
         if (error) throw error;
         if (!data?.ok) throw new Error(data?.error || "Request failed");
-        return data;
+        return data as any;
       },
       [getAccessToken],
     );
 
-    const refreshClinical = useCallback(async () => {
+    const refreshClinicalItems = useCallback(async () => {
       if (!appointmentId) return;
-      setClinicalLoading(true);
-      try {
-        const res = await invokeClinical({ action: "list", appointmentId });
-        setClinicalItems((res?.items ?? []) as ClinicalItem[]);
-      } catch (e: any) {
-        console.error(e);
-        toast.error(e?.message ?? "Failed to load clinical items");
-        setClinicalItems([]);
-      } finally {
-        setClinicalLoading(false);
-      }
+      const res = await invokeClinical({ action: "list", appointment_id: appointmentId });
+      const items = Array.isArray(res?.items) ? res.items.map(normalizeClinicalItem) : [];
+      setClinicalItems(items);
     }, [appointmentId, invokeClinical]);
 
     const refreshTemplates = useCallback(async () => {
+      const res = await invokeClinical({ action: "templates_list" });
+      const list = Array.isArray(res?.templates) ? res.templates.map(normalizeTemplate) : [];
+      setTemplates(list);
+    }, [invokeClinical]);
+
+    const refreshCatalog = useCallback(async () => {
       if (!appointmentId) return;
-      setTemplatesLoading(true);
-      try {
-        const res = await invokeClinical({ action: "templates_list", appointmentId });
-        const rows = normalizeTemplateRows({
-          procedures: res?.procedures,
-          treatmentPlans: res?.treatmentPlans,
-          clinicalTemplates: res?.clinicalTemplates,
-        });
-        setTemplateRows(rows);
-      } catch (e: any) {
-        console.error(e);
-        toast.error(e?.message ?? "Failed to load templates");
-        setTemplateRows([]);
-      } finally {
-        setTemplatesLoading(false);
-      }
+      const res = await invokeClinical({ action: "catalog_list", appointment_id: appointmentId, include_inactive: false, limit: 500 });
+      const procedures = Array.isArray(res?.catalog?.procedures) ? res.catalog.procedures.map(normalizeCatalogProcedure) : [];
+      const plans = Array.isArray(res?.catalog?.treatment_plans) ? res.catalog.treatment_plans.map(normalizeCatalogPlan) : [];
+      setCatalogProcedures(procedures);
+      setCatalogPlans(plans);
     }, [appointmentId, invokeClinical]);
 
-    const resetNewItem = useCallback(() => {
-      setNewItemType("procedure");
-      setNewItemTitle("");
-      setNewItemDetailsText("{}");
+    const refreshAllClinical = useCallback(async () => {
+      if (!appointmentId) return;
+      setClinicalLoading(true);
+      setTemplatesLoading(true);
+      setCatalogLoading(true);
+
+      try {
+        await Promise.all([refreshClinicalItems(), refreshTemplates(), refreshCatalog()]);
+      } catch (e: any) {
+        console.error(e);
+        toast.error(e?.message ?? "Failed to load clinical data");
+      } finally {
+        setClinicalLoading(false);
+        setTemplatesLoading(false);
+        setCatalogLoading(false);
+      }
+    }, [appointmentId, refreshCatalog, refreshClinicalItems, refreshTemplates]);
+
+    const resetCustomForm = useCallback(() => {
+      setCustomType("procedure");
+      setCustomName("");
+      setCustomDescription("");
+      setCustomQuantity("");
+      setCustomDosage("");
+      setCustomFrequency("");
+      setCustomDuration("");
+      setCustomCost("");
+      setSaveAsTemplate(false);
+      setTemplateName("");
     }, []);
 
-    const resetNewTpl = useCallback(() => {
-      setNewTplType("procedure");
-      setNewTplTitle("");
-      setNewTplDetailsText("{}");
+    const resetCatalogForm = useCallback(() => {
+      setCatalogMode("procedure");
+      setSelectedProcedureId(null);
+      setSelectedPlanId(null);
+      setCatalogNotes("");
+      setCatalogCost("");
     }, []);
 
-    // Fetch procedures for this appointment
+    // Fetch procedures for this appointment (legacy)
     useEffect(() => {
       if (!appointment?.id || !isOpen) return;
 
@@ -377,13 +412,13 @@ const AppointmentModal = memo(
             .from("appointment_procedures")
             .select(
               `
-            id,
-            procedure_id,
-            status,
-            estimated_cost,
-            procedure_notes,
-            procedures:procedure_id(name, category)
-          `,
+                id,
+                procedure_id,
+                status,
+                estimated_cost,
+                procedure_notes,
+                procedures:procedure_id(name, category)
+              `,
             )
             .eq("appointment_id", appointment.id);
 
@@ -409,7 +444,7 @@ const AppointmentModal = memo(
       fetchProcedures();
     }, [appointment?.id, isOpen]);
 
-    // Fetch treatment plans for this patient
+    // Fetch treatment plans for this patient (legacy)
     useEffect(() => {
       if (!appointment || !isOpen) return;
 
@@ -439,22 +474,23 @@ const AppointmentModal = memo(
       fetchTreatmentPlans();
     }, [appointment, isOpen]);
 
-    // Fetch clinical items + templates when modal opens
+    // Fetch edge clinical data on open
     useEffect(() => {
       if (!isOpen || !appointmentId) return;
-
-      refreshClinical();
-      refreshTemplates();
-
-      setEditingItemId(null);
-      setEditingTplId(null);
-      setNewItemDetailsText("{}");
-      setNewTplDetailsText("{}");
-    }, [isOpen, appointmentId, refreshClinical, refreshTemplates]);
+      setEditingId(null);
+      resetCustomForm();
+      resetCatalogForm();
+      setSelectedTemplateId(null);
+      refreshAllClinical();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen, appointmentId]);
 
     const handleMarkProcedureDone = useCallback(async (procedureId: string) => {
       try {
-        const { error } = await (supabase as any).from("appointment_procedures").update({ status: "completed" }).eq("id", procedureId);
+        const { error } = await (supabase as any)
+          .from("appointment_procedures")
+          .update({ status: "completed" })
+          .eq("id", procedureId);
         if (error) throw error;
 
         setAppointmentProcedures((prev) => prev.map((p) => (p.id === procedureId ? { ...p, status: "completed" } : p)));
@@ -467,7 +503,9 @@ const AppointmentModal = memo(
     const handleBookFollowUp = useCallback(() => {
       if (!appointment) return;
       const patientKey = appointment.patient_id ? `reg:${appointment.patient_id}` : `dp:${appointment.doctor_patient_id}`;
-      navigate(`/doctor-dashboard?section=calendar&patient=${encodeURIComponent(patientKey)}&followupOf=${encodeURIComponent(appointment.id)}`);
+      navigate(
+        `/doctor-dashboard?section=calendar&patient=${encodeURIComponent(patientKey)}&followupOf=${encodeURIComponent(appointment.id)}`,
+      );
       onClose();
     }, [appointment, navigate, onClose]);
 
@@ -547,317 +585,261 @@ const AppointmentModal = memo(
 
     const clinicalItemsSorted = useMemo(() => {
       const list = Array.isArray(clinicalItems) ? clinicalItems.slice() : [];
-      list.sort((a, b) => (a.created_at || "").localeCompare(b.created_at || ""));
+      list.sort((a, b) => String(a.created_at || "").localeCompare(String(b.created_at || "")));
       return list;
     }, [clinicalItems]);
 
+    const templatesSorted = useMemo(() => {
+      const list = Array.isArray(templates) ? templates.slice() : [];
+      list.sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")));
+      return list;
+    }, [templates]);
+
+    const selectedProcedure = useMemo(
+      () => (selectedProcedureId ? catalogProcedures.find((p) => p.id === selectedProcedureId) || null : null),
+      [catalogProcedures, selectedProcedureId],
+    );
+
+    const selectedPlan = useMemo(
+      () => (selectedPlanId ? catalogPlans.find((p) => p.id === selectedPlanId) || null : null),
+      [catalogPlans, selectedPlanId],
+    );
+
+    const selectedTemplate = useMemo(
+      () => (selectedTemplateId ? templatesSorted.find((t) => t.id === selectedTemplateId) || null : null),
+      [templatesSorted, selectedTemplateId],
+    );
+
     const beginEditItem = useCallback((it: ClinicalItem) => {
-      setEditingItemId(it.id);
-      setEditItemTitle(it.title ?? "");
-      setEditItemDetailsText(safeJsonStringify(it.metadata));
+      setEditingId(it.id);
+      setEditType(it.type);
+      setEditName(it.name || "");
+      setEditDescription(it.description || "");
+      setEditQuantity(it.quantity != null ? String(it.quantity) : "");
+      setEditDosage(it.dosage || "");
+      setEditFrequency(it.frequency || "");
+      setEditDuration(it.duration || "");
+      setEditCost(it.cost != null ? String(it.cost) : "");
     }, []);
 
     const cancelEditItem = useCallback(() => {
-      setEditingItemId(null);
-      setEditItemTitle("");
-      setEditItemDetailsText("{}");
+      setEditingId(null);
+      setEditType("procedure");
+      setEditName("");
+      setEditDescription("");
+      setEditQuantity("");
+      setEditDosage("");
+      setEditFrequency("");
+      setEditDuration("");
+      setEditCost("");
     }, []);
 
     const saveEditItem = useCallback(async () => {
-      if (!editingItemId || !appointmentId) return;
+      if (!editingId || !appointmentId) return;
 
-      const parsed = safeJsonParse(editItemDetailsText);
-      if (parsed === null) {
-        toast.error("Invalid JSON in details");
+      const name = editName.trim();
+      if (!name) {
+        toast.error("Name is required");
         return;
       }
 
       try {
-        const res = await invokeClinical({
+        await invokeClinical({
           action: "update",
-          appointmentId,
-          itemId: editingItemId,
-          patch: {
-            title: editItemTitle.trim(),
-            metadata: parsed,
-          },
+          appointment_id: appointmentId,
+          item_id: editingId,
+          type: editType,
+          name,
+          description: editDescription.trim() || null,
+          quantity: toIntOrNull(editQuantity),
+          dosage: editDosage.trim() || null,
+          frequency: editFrequency.trim() || null,
+          duration: editDuration.trim() || null,
+          cost: toNumberOrNull(editCost),
         });
 
-        setClinicalItems((res?.items ?? []) as ClinicalItem[]);
         toast.success("Clinical item updated");
         cancelEditItem();
+        await refreshClinicalItems();
       } catch (e: any) {
         console.error(e);
         toast.error(e?.message ?? "Failed to update item");
       }
-    }, [appointmentId, editingItemId, editItemDetailsText, editItemTitle, invokeClinical, cancelEditItem]);
+    }, [
+      appointmentId,
+      cancelEditItem,
+      editCost,
+      editDescription,
+      editDosage,
+      editFrequency,
+      editDuration,
+      editName,
+      editQuantity,
+      editType,
+      editingId,
+      invokeClinical,
+      refreshClinicalItems,
+    ]);
 
     const deleteItem = useCallback(
-      async (id: string) => {
+      async (itemId: string) => {
         if (!appointmentId) return;
         const ok = window.confirm("Delete this clinical item?");
         if (!ok) return;
 
         try {
-          const res = await invokeClinical({ action: "delete", appointmentId, itemId: id });
-          setClinicalItems((res?.items ?? []) as ClinicalItem[]);
+          await invokeClinical({ action: "delete", appointment_id: appointmentId, item_id: itemId });
           toast.success("Clinical item deleted");
+          await refreshClinicalItems();
         } catch (e: any) {
           console.error(e);
           toast.error(e?.message ?? "Failed to delete item");
         }
       },
-      [appointmentId, invokeClinical],
+      [appointmentId, invokeClinical, refreshClinicalItems],
     );
 
-    const createItem = useCallback(async () => {
+    const createCustomItem = useCallback(async () => {
       if (!appointmentId) return;
-
-      const title = newItemTitle.trim();
-      if (!title) {
-        toast.error("Title is required");
-        return;
-      }
-
-      const parsed = safeJsonParse(newItemDetailsText);
-      if (parsed === null) {
-        toast.error("Invalid JSON in details");
+      const name = customName.trim();
+      if (!name) {
+        toast.error("Name is required");
         return;
       }
 
       try {
-        const res = await invokeClinical({
+        await invokeClinical({
           action: "create",
-          appointmentId,
-          item: {
-            item_type: newItemType,
-            title,
-            description: null,
-            status: "active",
-            metadata: parsed,
-          },
+          appointment_id: appointmentId,
+          type: customType,
+          name,
+          description: customDescription.trim() || null,
+          quantity: toIntOrNull(customQuantity),
+          dosage: customDosage.trim() || null,
+          frequency: customFrequency.trim() || null,
+          duration: customDuration.trim() || null,
+          cost: toNumberOrNull(customCost),
+          ...(saveAsTemplate
+            ? {
+                save_as_template: true,
+                template_name: templateName.trim() ? templateName.trim() : name,
+                template_description: customDescription.trim() || null,
+                template_default_cost: toNumberOrNull(customCost),
+              }
+            : {}),
         });
 
-        setClinicalItems((res?.items ?? []) as ClinicalItem[]);
-        toast.success("Clinical item added");
-        resetNewItem();
+        toast.success(saveAsTemplate ? "Item added and saved as template" : "Clinical item added");
+        resetCustomForm();
+        await Promise.all([refreshClinicalItems(), refreshTemplates()]);
       } catch (e: any) {
         console.error(e);
         toast.error(e?.message ?? "Failed to add item");
       }
-    }, [appointmentId, newItemTitle, newItemDetailsText, newItemType, invokeClinical, resetNewItem]);
+    }, [
+      appointmentId,
+      customCost,
+      customDescription,
+      customDosage,
+      customFrequency,
+      customDuration,
+      customName,
+      customQuantity,
+      customType,
+      invokeClinical,
+      refreshClinicalItems,
+      refreshTemplates,
+      resetCustomForm,
+      saveAsTemplate,
+      templateName,
+    ]);
 
-    const copyItemJson = useCallback(async (it: ClinicalItem) => {
-      try {
-        await navigator.clipboard.writeText(safeJsonStringify(it.metadata));
-        toast.success("Copied details JSON");
-      } catch {
-        toast.error("Failed to copy");
-      }
-    }, []);
-
-    const saveAsClinicalTemplate = useCallback(
-      async (it: ClinicalItem) => {
-        try {
-          const title = window.prompt("Template title (optional):", it.title || "") ?? "";
-          const name = title.trim() || it.title || "Clinical Template";
-
-          const { data: userRes, error: userErr } = await supabase.auth.getUser();
-          if (userErr || !userRes?.user?.id) throw new Error("Not authenticated");
-
-          const items_json = [
-            {
-              item_type: it.item_type || "note",
-              title: it.title ?? null,
-              description: it.description ?? null,
-              status: it.status ?? "active",
-              metadata: it.metadata ?? {},
-            },
-          ];
-
-          const { error } = await supabase
-            .from("appointment_clinical_templates")
-            .insert({
-              doctor_user_id: userRes.user.id,
-              name,
-              description: null,
-              items_json,
-              metadata: { source_item_id: it.id, appointment_id: it.appointment_id },
-            } as any);
-
-          if (error) throw error;
-
-          toast.success("Saved as template");
-          await refreshTemplates();
-        } catch (e: any) {
-          console.error(e);
-          toast.error(e?.message ?? "Failed to save template");
-        }
-      },
-      [refreshTemplates],
-    );
-
-    const beginEditTemplate = useCallback((tpl: TemplateRow) => {
-      if (tpl.kind !== "clinical_template" || !tpl.editable) {
-        toast.message("This template cannot be edited here");
-        return;
-      }
-
-      const raw = tpl.raw as ClinicalTemplate;
-      const items = Array.isArray(raw?.items_json) ? raw.items_json : [];
-      const single = items[0] && typeof items[0] === "object" ? (items[0] as any) : null;
-
-      setEditingTplId(tpl.id);
-      setEditTplType((single?.item_type || "procedure") as ClinicalItemType);
-      setEditTplTitle(tpl.title ?? "");
-      setEditTplDetailsText(safeJsonStringify(single?.metadata ?? {}));
-    }, []);
-
-    const cancelEditTemplate = useCallback(() => {
-      setEditingTplId(null);
-      setEditTplType("procedure");
-      setEditTplTitle("");
-      setEditTplDetailsText("{}");
-    }, []);
-
-    const saveEditTemplate = useCallback(async () => {
-      if (!editingTplId) return;
-
-      const parsed = safeJsonParse(editTplDetailsText);
-      if (parsed === null) {
-        toast.error("Invalid JSON in template details");
-        return;
-      }
+    const addFromCatalog = useCallback(async () => {
+      if (!appointmentId) return;
 
       try {
-        const { data: userRes, error: userErr } = await supabase.auth.getUser();
-        if (userErr || !userRes?.user?.id) throw new Error("Not authenticated");
+        if (catalogMode === "procedure") {
+          if (!selectedProcedure) {
+            toast.error("Select a procedure");
+            return;
+          }
 
-        const items_json = [
-          {
-            item_type: editTplType,
-            title: editTplTitle.trim(),
-            description: null,
-            status: "active",
-            metadata: parsed,
-          },
-        ];
+          const cost = toNumberOrNull(catalogCost) ?? selectedProcedure.cost ?? null;
+          const duration =
+            selectedProcedure.duration_minutes != null ? `${selectedProcedure.duration_minutes} min` : null;
 
-        const { error } = await supabase
-          .from("appointment_clinical_templates")
-          .update({
-            name: editTplTitle.trim() || "Clinical Template",
-            items_json,
-          } as any)
-          .eq("id", editingTplId);
+          await invokeClinical({
+            action: "create",
+            appointment_id: appointmentId,
+            type: "procedure",
+            name: selectedProcedure.name,
+            description: catalogNotes.trim() || null,
+            cost,
+            duration,
+          });
 
-        if (error) throw error;
-
-        toast.success("Template updated");
-        cancelEditTemplate();
-        await refreshTemplates();
-      } catch (e: any) {
-        console.error(e);
-        toast.error(e?.message ?? "Failed to update template");
-      }
-    }, [editingTplId, editTplDetailsText, editTplTitle, editTplType, refreshTemplates]);
-
-    const deleteTemplate = useCallback(
-      async (tpl: TemplateRow) => {
-        if (tpl.kind !== "clinical_template") {
-          toast.message("This template cannot be deleted here");
+          toast.success("Procedure added to appointment");
+          resetCatalogForm();
+          await refreshClinicalItems();
           return;
         }
 
-        const ok = window.confirm("Delete this template?");
-        if (!ok) return;
+        if (catalogMode === "treatment_plan") {
+          if (!selectedPlan) {
+            toast.error("Select a treatment plan");
+            return;
+          }
 
-        try {
-          const { error } = await supabase.from("appointment_clinical_templates").delete().eq("id", tpl.id);
-          if (error) throw error;
+          const cost = toNumberOrNull(catalogCost) ?? selectedPlan.total_cost ?? null;
+          const description = catalogNotes.trim() || null;
 
-          toast.success("Template deleted");
-          await refreshTemplates();
-        } catch (e: any) {
-          console.error(e);
-          toast.error(e?.message ?? "Failed to delete template");
+          await invokeClinical({
+            action: "create",
+            appointment_id: appointmentId,
+            type: "treatment_plan",
+            name: selectedPlan.title,
+            description,
+            cost,
+          });
+
+          toast.success("Treatment plan added to appointment");
+          resetCatalogForm();
+          await refreshClinicalItems();
         }
-      },
-      [refreshTemplates],
-    );
-
-    const createTemplate = useCallback(async () => {
-      const title = newTplTitle.trim();
-      if (!title) {
-        toast.error("Template title is required");
-        return;
+      } catch (e: any) {
+        console.error(e);
+        toast.error(e?.message ?? "Failed to add from catalog");
       }
+    }, [
+      appointmentId,
+      catalogCost,
+      catalogMode,
+      catalogNotes,
+      invokeClinical,
+      refreshClinicalItems,
+      resetCatalogForm,
+      selectedPlan,
+      selectedProcedure,
+    ]);
 
-      const parsed = safeJsonParse(newTplDetailsText);
-      if (parsed === null) {
-        toast.error("Invalid JSON in template details");
+    const applyTemplate = useCallback(async () => {
+      if (!appointmentId) return;
+      if (!selectedTemplate) {
+        toast.error("Select a template");
         return;
       }
 
       try {
-        const { data: userRes, error: userErr } = await supabase.auth.getUser();
-        if (userErr || !userRes?.user?.id) throw new Error("Not authenticated");
-
-        const items_json = [
-          {
-            item_type: newTplType,
-            title,
-            description: null,
-            status: "active",
-            metadata: parsed,
-          },
-        ];
-
-        const { error } = await supabase
-          .from("appointment_clinical_templates")
-          .insert({
-            doctor_user_id: userRes.user.id,
-            name: title,
-            description: null,
-            items_json,
-            metadata: {},
-          } as any);
-
-        if (error) throw error;
-
-        toast.success("Template created");
-        resetNewTpl();
-        await refreshTemplates();
+        await invokeClinical({ action: "apply_template", appointment_id: appointmentId, template_id: selectedTemplate.id });
+        toast.success("Template applied");
+        setSelectedTemplateId(null);
+        setTemplateApplyOpen(false);
+        await refreshClinicalItems();
       } catch (e: any) {
         console.error(e);
-        toast.error(e?.message ?? "Failed to create template");
+        toast.error(e?.message ?? "Failed to apply template");
       }
-    }, [newTplTitle, newTplDetailsText, newTplType, resetNewTpl, refreshTemplates]);
-
-    const applyTemplate = useCallback(
-      async (tpl: TemplateRow) => {
-        if (!appointmentId) return;
-
-        try {
-          const templateType =
-            tpl.kind === "procedure" ? "procedure" : tpl.kind === "treatment_plan" ? "treatment_plan" : "clinical_template";
-
-          const res = await invokeClinical({
-            action: "apply_template",
-            appointmentId,
-            templateType,
-            templateId: tpl.id,
-          });
-
-          setClinicalItems((res?.items ?? []) as ClinicalItem[]);
-          toast.success("Added from template");
-        } catch (e: any) {
-          console.error(e);
-          toast.error(e?.message ?? "Failed to add from template");
-        }
-      },
-      [appointmentId, invokeClinical],
-    );
+    }, [appointmentId, invokeClinical, refreshClinicalItems, selectedTemplate]);
 
     if (!appointment) return null;
 
@@ -1007,61 +989,414 @@ const AppointmentModal = memo(
               </TabsContent>
 
               <TabsContent value="clinical" className="mt-4 space-y-4">
-                <Card className="border-border/50">
-                  <CardContent className="p-4 space-y-3">
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <div className="font-medium flex items-center gap-2">
-                        <Plus className="h-4 w-4" />
-                        Add clinical item
-                      </div>
-                      <Button variant="outline" size="sm" className="gap-2" onClick={() => refreshClinical()} disabled={clinicalLoading}>
-                        <RefreshCw className={cn("h-4 w-4", clinicalLoading && "animate-spin")} />
-                        Refresh
-                      </Button>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <div className="space-y-2">
-                        <div className="text-sm text-muted-foreground">Type</div>
-                        <Select value={newItemType} onValueChange={(v) => setNewItemType(v as ClinicalItemType)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="procedure">procedure</SelectItem>
-                            <SelectItem value="medication">medication</SelectItem>
-                            <SelectItem value="treatment_plan">treatment_plan</SelectItem>
-                            <SelectItem value="note">note</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2 md:col-span-2">
-                        <div className="text-sm text-muted-foreground">Title</div>
-                        <Input value={newItemTitle} onChange={(e) => setNewItemTitle(e.target.value)} placeholder="e.g. Ibuprofen 200mg" />
-                      </div>
-
-                      <div className="space-y-2 md:col-span-3">
-                        <div className="text-sm text-muted-foreground">Details (JSON)</div>
-                        <Textarea
-                          value={newItemDetailsText}
-                          onChange={(e) => setNewItemDetailsText(e.target.value)}
-                          className="min-h-[100px] font-mono text-xs"
-                          placeholder='{"dose":"200mg","frequency":"BID"}'
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end">
-                      <Button className="gap-2" onClick={createItem} disabled={clinicalLoading}>
-                        <Plus className="h-4 w-4" />
-                        Add
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="font-medium flex items-center gap-2">
+                    <ClipboardList className="h-4 w-4" />
+                    Clinical Items
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => refreshAllClinical()}
+                    disabled={clinicalLoading || templatesLoading || catalogLoading}
+                  >
+                    <RefreshCw className={cn("h-4 w-4", (clinicalLoading || templatesLoading || catalogLoading) && "animate-spin")} />
+                    Refresh
+                  </Button>
+                </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {/* Add / Templates */}
+                  <Card className="border-border/50">
+                    <CardContent className="p-4 space-y-4">
+                      <Tabs defaultValue="catalog" className="space-y-4">
+                        <TabsList className="w-full grid grid-cols-3">
+                          <TabsTrigger value="catalog" className="gap-2">
+                            <Layers className="h-4 w-4" />
+                            Catalog
+                          </TabsTrigger>
+                          <TabsTrigger value="custom" className="gap-2">
+                            <Plus className="h-4 w-4" />
+                            Custom
+                          </TabsTrigger>
+                          <TabsTrigger value="templates" className="gap-2">
+                            <ClipboardList className="h-4 w-4" />
+                            Templates
+                          </TabsTrigger>
+                        </TabsList>
+
+                        {/* Catalog */}
+                        <TabsContent value="catalog" className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div className="text-sm text-muted-foreground">Add your own procedures / plans during the appointment</div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2">
+                            <Button
+                              type="button"
+                              variant={catalogMode === "procedure" ? "default" : "outline"}
+                              size="sm"
+                              className="gap-2"
+                              onClick={() => setCatalogMode("procedure")}
+                            >
+                              <Stethoscope className="h-4 w-4" />
+                              Procedures
+                            </Button>
+                            <Button
+                              type="button"
+                              variant={catalogMode === "treatment_plan" ? "default" : "outline"}
+                              size="sm"
+                              className="gap-2"
+                              onClick={() => setCatalogMode("treatment_plan")}
+                            >
+                              <ClipboardList className="h-4 w-4" />
+                              Treatment Plans
+                            </Button>
+                          </div>
+
+                          {catalogMode === "procedure" ? (
+                            <div className="space-y-3">
+                              <Popover open={procedurePickerOpen} onOpenChange={setProcedurePickerOpen}>
+                                <PopoverTrigger asChild>
+                                  <Button variant="outline" role="combobox" aria-expanded={procedurePickerOpen} className="w-full justify-between">
+                                    <span className="truncate">
+                                      {selectedProcedure ? selectedProcedure.name : catalogLoading ? "Loading procedures..." : "Select procedure"}
+                                    </span>
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-[420px] p-0" align="start">
+                                  <Command>
+                                    <CommandInput placeholder="Search procedures..." />
+                                    <CommandList>
+                                      <CommandEmpty>No procedure found.</CommandEmpty>
+                                      <CommandGroup heading="My Procedures">
+                                        {catalogProcedures
+                                          .filter((p) => p.active)
+                                          .map((p) => (
+                                            <CommandItem
+                                              key={p.id}
+                                              value={p.name}
+                                              onSelect={() => {
+                                                setSelectedProcedureId(p.id);
+                                                setProcedurePickerOpen(false);
+                                                setCatalogCost(p.cost != null ? String(p.cost) : "");
+                                              }}
+                                            >
+                                              <Check className={cn("mr-2 h-4 w-4", selectedProcedureId === p.id ? "opacity-100" : "opacity-0")} />
+                                              <div className="flex flex-col">
+                                                <span>{p.name}</span>
+                                                <span className="text-xs text-muted-foreground">
+                                                  {p.category ? `${p.category} • ` : ""}
+                                                  {p.duration_minutes != null ? `${p.duration_minutes} min` : "No duration"}
+                                                  {p.cost != null ? ` • ${formatCurrency(p.cost)}` : ""}
+                                                </span>
+                                              </div>
+                                            </CommandItem>
+                                          ))}
+                                      </CommandGroup>
+                                    </CommandList>
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
+
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-2">
+                                  <div className="text-sm text-muted-foreground">Cost (optional)</div>
+                                  <Input
+                                    value={catalogCost}
+                                    onChange={(e) => setCatalogCost(e.target.value)}
+                                    placeholder={selectedProcedure?.cost != null ? String(selectedProcedure.cost) : "e.g. 120"}
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <div className="text-sm text-muted-foreground">Duration</div>
+                                  <Input
+                                    value={selectedProcedure?.duration_minutes != null ? `${selectedProcedure.duration_minutes} min` : ""}
+                                    readOnly
+                                    placeholder="—"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="space-y-2">
+                                <div className="text-sm text-muted-foreground">Notes (optional)</div>
+                                <Textarea
+                                  value={catalogNotes}
+                                  onChange={(e) => setCatalogNotes(e.target.value)}
+                                  className="min-h-[90px]"
+                                  placeholder="Add any procedure notes..."
+                                />
+                              </div>
+
+                              <div className="flex justify-end">
+                                <Button size="sm" className="gap-2" onClick={addFromCatalog} disabled={clinicalLoading || catalogLoading}>
+                                  <Plus className="h-4 w-4" />
+                                  Add to Appointment
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              <Popover open={planPickerOpen} onOpenChange={setPlanPickerOpen}>
+                                <PopoverTrigger asChild>
+                                  <Button variant="outline" role="combobox" aria-expanded={planPickerOpen} className="w-full justify-between">
+                                    <span className="truncate">
+                                      {selectedPlan ? selectedPlan.title : catalogLoading ? "Loading plans..." : "Select treatment plan"}
+                                    </span>
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-[420px] p-0" align="start">
+                                  <Command>
+                                    <CommandInput placeholder="Search treatment plans..." />
+                                    <CommandList>
+                                      <CommandEmpty>No plan found.</CommandEmpty>
+                                      <CommandGroup heading="My Treatment Plans">
+                                        {catalogPlans.map((p) => (
+                                          <CommandItem
+                                            key={p.id}
+                                            value={p.title}
+                                            onSelect={() => {
+                                              setSelectedPlanId(p.id);
+                                              setPlanPickerOpen(false);
+                                              setCatalogCost(p.total_cost != null ? String(p.total_cost) : "");
+                                            }}
+                                          >
+                                            <Check className={cn("mr-2 h-4 w-4", selectedPlanId === p.id ? "opacity-100" : "opacity-0")} />
+                                            <div className="flex flex-col">
+                                              <span className="truncate">{p.title}</span>
+                                              <span className="text-xs text-muted-foreground">
+                                                {p.status ? `${p.status} • ` : ""}
+                                                {p.total_cost != null ? `${formatCurrency(p.total_cost)}` : "No cost"}
+                                              </span>
+                                            </div>
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                    </CommandList>
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
+
+                              <div className="space-y-2">
+                                <div className="text-sm text-muted-foreground">Cost (optional)</div>
+                                <Input
+                                  value={catalogCost}
+                                  onChange={(e) => setCatalogCost(e.target.value)}
+                                  placeholder={selectedPlan?.total_cost != null ? String(selectedPlan.total_cost) : "e.g. 900"}
+                                />
+                              </div>
+
+                              <div className="space-y-2">
+                                <div className="text-sm text-muted-foreground">Notes (optional)</div>
+                                <Textarea
+                                  value={catalogNotes}
+                                  onChange={(e) => setCatalogNotes(e.target.value)}
+                                  className="min-h-[90px]"
+                                  placeholder="Add any notes..."
+                                />
+                              </div>
+
+                              <div className="flex justify-end">
+                                <Button size="sm" className="gap-2" onClick={addFromCatalog} disabled={clinicalLoading || catalogLoading}>
+                                  <Plus className="h-4 w-4" />
+                                  Add to Appointment
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                        </TabsContent>
+
+                        {/* Custom */}
+                        <TabsContent value="custom" className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div className="space-y-2">
+                              <div className="text-sm text-muted-foreground">Type</div>
+                              <Select value={customType} onValueChange={(v) => setCustomType(v as ClinicalItemType)}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="procedure">procedure</SelectItem>
+                                  <SelectItem value="medication">medication</SelectItem>
+                                  <SelectItem value="treatment_plan">treatment_plan</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div className="space-y-2 md:col-span-2">
+                              <div className="text-sm text-muted-foreground">Name</div>
+                              <Input value={customName} onChange={(e) => setCustomName(e.target.value)} placeholder="e.g. Ibuprofen 200mg" />
+                            </div>
+
+                            <div className="space-y-2 md:col-span-3">
+                              <div className="text-sm text-muted-foreground">Description / Notes</div>
+                              <Textarea
+                                value={customDescription}
+                                onChange={(e) => setCustomDescription(e.target.value)}
+                                className="min-h-[90px]"
+                                placeholder="Optional notes..."
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <div className="text-sm text-muted-foreground">Cost (optional)</div>
+                              <Input value={customCost} onChange={(e) => setCustomCost(e.target.value)} placeholder="e.g. 120" />
+                            </div>
+
+                            {customType === "medication" && (
+                              <>
+                                <div className="space-y-2">
+                                  <div className="text-sm text-muted-foreground">Dosage</div>
+                                  <Input value={customDosage} onChange={(e) => setCustomDosage(e.target.value)} placeholder="e.g. 200mg" />
+                                </div>
+                                <div className="space-y-2">
+                                  <div className="text-sm text-muted-foreground">Frequency</div>
+                                  <Input value={customFrequency} onChange={(e) => setCustomFrequency(e.target.value)} placeholder="e.g. BID" />
+                                </div>
+                                <div className="space-y-2">
+                                  <div className="text-sm text-muted-foreground">Duration</div>
+                                  <Input value={customDuration} onChange={(e) => setCustomDuration(e.target.value)} placeholder="e.g. 7 days" />
+                                </div>
+                                <div className="space-y-2">
+                                  <div className="text-sm text-muted-foreground">Quantity</div>
+                                  <Input value={customQuantity} onChange={(e) => setCustomQuantity(e.target.value)} placeholder="e.g. 14" />
+                                </div>
+                              </>
+                            )}
+
+                            {customType === "procedure" && (
+                              <div className="space-y-2 md:col-span-2">
+                                <div className="text-sm text-muted-foreground">Duration (optional)</div>
+                                <Input
+                                  value={customDuration}
+                                  onChange={(e) => setCustomDuration(e.target.value)}
+                                  placeholder="e.g. 30 min"
+                                />
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex items-center justify-between gap-2 border rounded-lg p-3">
+                            <div className="flex items-center gap-2">
+                              <Checkbox
+                                id="saveAsTemplate"
+                                checked={saveAsTemplate}
+                                onCheckedChange={(v) => setSaveAsTemplate(Boolean(v))}
+                              />
+                              <label htmlFor="saveAsTemplate" className="text-sm cursor-pointer select-none">
+                                Save as template
+                              </label>
+                            </div>
+                            {saveAsTemplate && (
+                              <Input
+                                value={templateName}
+                                onChange={(e) => setTemplateName(e.target.value)}
+                                placeholder="Template name (optional)"
+                                className="max-w-[260px]"
+                              />
+                            )}
+                          </div>
+
+                          <div className="flex justify-end gap-2">
+                            <Button variant="outline" size="sm" onClick={resetCustomForm}>
+                              Reset
+                            </Button>
+                            <Button size="sm" className="gap-2" onClick={createCustomItem} disabled={clinicalLoading}>
+                              <Plus className="h-4 w-4" />
+                              Add
+                            </Button>
+                          </div>
+                        </TabsContent>
+
+                        {/* Templates */}
+                        <TabsContent value="templates" className="space-y-4">
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <div className="text-sm text-muted-foreground">Apply a saved template to this appointment</div>
+                            {templatesLoading && <div className="text-xs text-muted-foreground">Loading...</div>}
+                          </div>
+
+                          <Popover open={templateApplyOpen} onOpenChange={setTemplateApplyOpen}>
+                            <PopoverTrigger asChild>
+                              <Button variant="outline" role="combobox" aria-expanded={templateApplyOpen} className="w-full justify-between">
+                                <span className="truncate">
+                                  {selectedTemplate ? selectedTemplate.name : templatesLoading ? "Loading templates..." : "Select template"}
+                                </span>
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[420px] p-0" align="start">
+                              <Command>
+                                <CommandInput placeholder="Search templates..." />
+                                <CommandList>
+                                  <CommandEmpty>No template found.</CommandEmpty>
+                                  <CommandGroup heading="My Templates">
+                                    {templatesSorted
+                                      .filter((tpl) => tpl.is_active)
+                                      .map((tpl) => (
+                                        <CommandItem
+                                          key={tpl.id}
+                                          value={tpl.name}
+                                          onSelect={() => {
+                                            setSelectedTemplateId(tpl.id);
+                                            setTemplateApplyOpen(false);
+                                          }}
+                                        >
+                                          <Check className={cn("mr-2 h-4 w-4", selectedTemplateId === tpl.id ? "opacity-100" : "opacity-0")} />
+                                          <div className="flex flex-col">
+                                            <span>{tpl.name}</span>
+                                            <span className="text-xs text-muted-foreground">
+                                              {tpl.type}
+                                              {tpl.default_cost != null ? ` • ${formatCurrency(tpl.default_cost)}` : ""}
+                                            </span>
+                                          </div>
+                                        </CommandItem>
+                                      ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+
+                          {selectedTemplate && (
+                            <div className="rounded-lg border p-3 space-y-1">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="font-medium truncate">{selectedTemplate.name}</div>
+                                <Badge variant="secondary" className="capitalize">
+                                  {selectedTemplate.type}
+                                </Badge>
+                              </div>
+                              {selectedTemplate.description && (
+                                <div className="text-sm text-muted-foreground whitespace-pre-wrap">{selectedTemplate.description}</div>
+                              )}
+                              <div className="text-xs text-muted-foreground">
+                                {selectedTemplate.default_cost != null ? `Default: ${formatCurrency(selectedTemplate.default_cost)}` : "No default cost"}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setSelectedTemplateId(null)}
+                              disabled={!selectedTemplateId}
+                            >
+                              Clear
+                            </Button>
+                            <Button size="sm" className="gap-2" onClick={applyTemplate} disabled={!selectedTemplateId || clinicalLoading}>
+                              <Layers className="h-4 w-4" />
+                              Apply
+                            </Button>
+                          </div>
+                        </TabsContent>
+                      </Tabs>
+                    </CardContent>
+                  </Card>
+
+                  {/* Items List */}
                   <Card className="border-border/50">
                     <CardContent className="p-4 space-y-3">
                       <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -1069,7 +1404,9 @@ const AppointmentModal = memo(
                           <ClipboardList className="h-4 w-4" />
                           Items
                         </div>
-                        {clinicalLoading && <div className="text-xs text-muted-foreground">Loading...</div>}
+                        {(clinicalLoading || templatesLoading || catalogLoading) && (
+                          <div className="text-xs text-muted-foreground">Loading...</div>
+                        )}
                       </div>
 
                       {clinicalItemsSorted.length === 0 ? (
@@ -1077,16 +1414,22 @@ const AppointmentModal = memo(
                       ) : (
                         <div className="space-y-3">
                           {clinicalItemsSorted.map((it) => {
-                            const isEditing = editingItemId === it.id;
+                            const isEditing = editingId === it.id;
+
                             return (
                               <div key={it.id} className="rounded-lg border p-3 space-y-2">
                                 <div className="flex items-start justify-between gap-2">
                                   <div className="min-w-0">
                                     <div className="flex items-center gap-2 flex-wrap">
-                                      <div className="font-medium truncate">{it.title}</div>
+                                      <div className="font-medium truncate">{it.name}</div>
                                       <Badge variant="secondary" className="capitalize">
-                                        {String(it.item_type || "note")}
+                                        {it.type}
                                       </Badge>
+                                      {it.cost != null && (
+                                        <Badge variant="outline" className="text-xs">
+                                          {formatCurrency(it.cost)}
+                                        </Badge>
+                                      )}
                                     </div>
                                     {!isEditing && (
                                       <div className="text-xs text-muted-foreground mt-1">
@@ -1096,26 +1439,6 @@ const AppointmentModal = memo(
                                   </div>
 
                                   <div className="flex items-center gap-1 flex-shrink-0">
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      className="gap-1.5"
-                                      onClick={() => copyItemJson(it)}
-                                      title="Copy details JSON"
-                                    >
-                                      <Copy className="h-4 w-4" />
-                                    </Button>
-
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      className="gap-1.5"
-                                      onClick={() => saveAsClinicalTemplate(it)}
-                                      title="Save as template"
-                                    >
-                                      <Layers className="h-4 w-4" />
-                                    </Button>
-
                                     {!isEditing ? (
                                       <Button size="sm" variant="outline" className="gap-1.5" onClick={() => beginEditItem(it)}>
                                         <Edit className="h-4 w-4" />
@@ -1140,19 +1463,66 @@ const AppointmentModal = memo(
                                 {isEditing ? (
                                   <div className="space-y-3">
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                      <div className="space-y-2 md:col-span-3">
-                                        <div className="text-sm text-muted-foreground">Title</div>
-                                        <Input value={editItemTitle} onChange={(e) => setEditItemTitle(e.target.value)} />
+                                      <div className="space-y-2">
+                                        <div className="text-sm text-muted-foreground">Type</div>
+                                        <Select value={editType} onValueChange={(v) => setEditType(v as ClinicalItemType)}>
+                                          <SelectTrigger>
+                                            <SelectValue />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="procedure">procedure</SelectItem>
+                                            <SelectItem value="medication">medication</SelectItem>
+                                            <SelectItem value="treatment_plan">treatment_plan</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+
+                                      <div className="space-y-2 md:col-span-2">
+                                        <div className="text-sm text-muted-foreground">Name</div>
+                                        <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
                                       </div>
 
                                       <div className="space-y-2 md:col-span-3">
-                                        <div className="text-sm text-muted-foreground">Details (JSON)</div>
+                                        <div className="text-sm text-muted-foreground">Description / Notes</div>
                                         <Textarea
-                                          value={editItemDetailsText}
-                                          onChange={(e) => setEditItemDetailsText(e.target.value)}
-                                          className="min-h-[120px] font-mono text-xs"
+                                          value={editDescription}
+                                          onChange={(e) => setEditDescription(e.target.value)}
+                                          className="min-h-[90px]"
                                         />
                                       </div>
+
+                                      <div className="space-y-2">
+                                        <div className="text-sm text-muted-foreground">Cost</div>
+                                        <Input value={editCost} onChange={(e) => setEditCost(e.target.value)} placeholder="e.g. 120" />
+                                      </div>
+
+                                      {editType === "medication" && (
+                                        <>
+                                          <div className="space-y-2">
+                                            <div className="text-sm text-muted-foreground">Dosage</div>
+                                            <Input value={editDosage} onChange={(e) => setEditDosage(e.target.value)} />
+                                          </div>
+                                          <div className="space-y-2">
+                                            <div className="text-sm text-muted-foreground">Frequency</div>
+                                            <Input value={editFrequency} onChange={(e) => setEditFrequency(e.target.value)} />
+                                          </div>
+                                          <div className="space-y-2">
+                                            <div className="text-sm text-muted-foreground">Duration</div>
+                                            <Input value={editDuration} onChange={(e) => setEditDuration(e.target.value)} />
+                                          </div>
+                                          <div className="space-y-2">
+                                            <div className="text-sm text-muted-foreground">Quantity</div>
+                                            <Input value={editQuantity} onChange={(e) => setEditQuantity(e.target.value)} />
+                                          </div>
+                                        </>
+                                      )}
+
+                                      {editType === "procedure" && (
+                                        <div className="space-y-2 md:col-span-2">
+                                          <div className="text-sm text-muted-foreground">Duration</div>
+                                          <Input value={editDuration} onChange={(e) => setEditDuration(e.target.value)} placeholder="e.g. 30 min" />
+                                        </div>
+                                      )}
                                     </div>
 
                                     <div className="flex justify-end gap-2">
@@ -1166,182 +1536,17 @@ const AppointmentModal = memo(
                                     </div>
                                   </div>
                                 ) : (
-                                  <pre className="text-xs text-muted-foreground whitespace-pre-wrap bg-muted/30 rounded-md p-2">
-                                    {safeJsonStringify(it.metadata)}
-                                  </pre>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-border/50">
-                    <CardContent className="p-4 space-y-4">
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <div className="font-medium flex items-center gap-2">
-                          <Layers className="h-4 w-4" />
-                          Templates
-                        </div>
-                        <Button variant="outline" size="sm" className="gap-2" onClick={() => refreshTemplates()} disabled={templatesLoading}>
-                          <RefreshCw className={cn("h-4 w-4", templatesLoading && "animate-spin")} />
-                          Refresh
-                        </Button>
-                      </div>
-
-                      <div className="rounded-lg border p-3 space-y-3">
-                        <div className="font-medium text-sm">Create template</div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                          <div className="space-y-2">
-                            <div className="text-sm text-muted-foreground">Type</div>
-                            <Select value={newTplType} onValueChange={(v) => setNewTplType(v as ClinicalItemType)}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select type" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="procedure">procedure</SelectItem>
-                                <SelectItem value="medication">medication</SelectItem>
-                                <SelectItem value="treatment_plan">treatment_plan</SelectItem>
-                                <SelectItem value="note">note</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div className="space-y-2 md:col-span-2">
-                            <div className="text-sm text-muted-foreground">Title</div>
-                            <Input value={newTplTitle} onChange={(e) => setNewTplTitle(e.target.value)} placeholder="e.g. Standard post-op plan" />
-                          </div>
-
-                          <div className="space-y-2 md:col-span-3">
-                            <div className="text-sm text-muted-foreground">Details (JSON)</div>
-                            <Textarea
-                              value={newTplDetailsText}
-                              onChange={(e) => setNewTplDetailsText(e.target.value)}
-                              className="min-h-[100px] font-mono text-xs"
-                              placeholder='{"steps":["..."]}'
-                            />
-                          </div>
-                        </div>
-
-                        <div className="flex justify-end">
-                          <Button size="sm" className="gap-2" onClick={createTemplate} disabled={templatesLoading}>
-                            <Plus className="h-4 w-4" />
-                            Create
-                          </Button>
-                        </div>
-                      </div>
-
-                      {templatesLoading ? (
-                        <div className="text-sm text-muted-foreground">Loading templates...</div>
-                      ) : templateRows.length === 0 ? (
-                        <div className="text-sm text-muted-foreground py-4 text-center">No templates yet.</div>
-                      ) : (
-                        <div className="space-y-3">
-                          {templateRows.map((tpl) => {
-                            const isEditing = editingTplId === tpl.id;
-                            const canEdit = tpl.kind === "clinical_template" && tpl.editable;
-
-                            return (
-                              <div key={tpl.id} className="rounded-lg border p-3 space-y-2">
-                                <div className="flex items-start justify-between gap-2">
-                                  <div className="min-w-0">
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                      <div className="font-medium truncate">{tpl.title}</div>
-                                      <Badge variant="secondary" className="capitalize">
-                                        {tpl.item_type}
-                                      </Badge>
-                                    </div>
-                                    {!isEditing && (
-                                      <div className="text-xs text-muted-foreground mt-1">
-                                        {tpl.created_at ? format(new Date(tpl.created_at), "MMM d, yyyy") : ""}
+                                  <div className="text-sm text-muted-foreground space-y-1">
+                                    {it.description && <div className="whitespace-pre-wrap">{it.description}</div>}
+                                    {(it.dosage || it.frequency || it.duration || it.quantity != null) && (
+                                      <div className="text-xs text-muted-foreground">
+                                        {it.dosage ? `Dosage: ${it.dosage} ` : ""}
+                                        {it.frequency ? `• Frequency: ${it.frequency} ` : ""}
+                                        {it.duration ? `• Duration: ${it.duration} ` : ""}
+                                        {it.quantity != null ? `• Qty: ${it.quantity}` : ""}
                                       </div>
                                     )}
                                   </div>
-
-                                  <div className="flex items-center gap-1 flex-shrink-0">
-                                    <Button size="sm" variant="outline" className="gap-1.5" onClick={() => applyTemplate(tpl)}>
-                                      <Plus className="h-4 w-4" />
-                                    </Button>
-
-                                    {!isEditing ? (
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="gap-1.5"
-                                        onClick={() => beginEditTemplate(tpl)}
-                                        disabled={!canEdit}
-                                        title={canEdit ? "Edit" : "Not editable here"}
-                                      >
-                                        <Edit className="h-4 w-4" />
-                                      </Button>
-                                    ) : (
-                                      <Button size="sm" variant="outline" className="gap-1.5" onClick={saveEditTemplate}>
-                                        <Save className="h-4 w-4" />
-                                      </Button>
-                                    )}
-
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      className="gap-1.5 text-destructive hover:text-destructive"
-                                      onClick={() => deleteTemplate(tpl)}
-                                      disabled={tpl.kind !== "clinical_template"}
-                                      title={tpl.kind === "clinical_template" ? "Delete" : "Not deletable here"}
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                </div>
-
-                                {isEditing ? (
-                                  <div className="space-y-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                      <div className="space-y-2">
-                                        <div className="text-sm text-muted-foreground">Type</div>
-                                        <Select value={editTplType} onValueChange={(v) => setEditTplType(v as ClinicalItemType)}>
-                                          <SelectTrigger>
-                                            <SelectValue />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            <SelectItem value="procedure">procedure</SelectItem>
-                                            <SelectItem value="medication">medication</SelectItem>
-                                            <SelectItem value="treatment_plan">treatment_plan</SelectItem>
-                                            <SelectItem value="note">note</SelectItem>
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-
-                                      <div className="space-y-2 md:col-span-2">
-                                        <div className="text-sm text-muted-foreground">Title</div>
-                                        <Input value={editTplTitle} onChange={(e) => setEditTplTitle(e.target.value)} />
-                                      </div>
-
-                                      <div className="space-y-2 md:col-span-3">
-                                        <div className="text-sm text-muted-foreground">Details (JSON)</div>
-                                        <Textarea
-                                          value={editTplDetailsText}
-                                          onChange={(e) => setEditTplDetailsText(e.target.value)}
-                                          className="min-h-[120px] font-mono text-xs"
-                                        />
-                                      </div>
-                                    </div>
-
-                                    <div className="flex justify-end gap-2">
-                                      <Button variant="outline" size="sm" onClick={cancelEditTemplate}>
-                                        Cancel
-                                      </Button>
-                                      <Button size="sm" onClick={saveEditTemplate} className="gap-2">
-                                        <Save className="h-4 w-4" />
-                                        Save
-                                      </Button>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <pre className="text-xs text-muted-foreground whitespace-pre-wrap bg-muted/30 rounded-md p-2">
-                                    {safeJsonStringify(tpl.details)}
-                                  </pre>
                                 )}
                               </div>
                             );
@@ -1374,7 +1579,10 @@ const AppointmentModal = memo(
                             <div className="space-y-1">
                               <div className="flex items-center gap-2">
                                 <h4 className="font-medium">{proc.procedure_name}</h4>
-                                <Badge variant="outline" className={cn("text-xs capitalize", procedureStatusColors[proc.status || "pending"])}>
+                                <Badge
+                                  variant="outline"
+                                  className={cn("text-xs capitalize", procedureStatusColors[proc.status || "pending"])}
+                                >
                                   {proc.status || "pending"}
                                 </Badge>
                               </div>
@@ -1404,29 +1612,49 @@ const AppointmentModal = memo(
                 {loadingPlans ? (
                   <div className="text-center py-8 text-muted-foreground">Loading treatment plans...</div>
                 ) : treatmentPlans.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">No treatment plans found.</div>
+                  <div className="text-center py-8">
+                    <ClipboardList className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                    <p className="text-muted-foreground">No treatment plans for this patient</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-4 gap-2"
+                      onClick={() => {
+                        navigate("/doctor-dashboard?section=treatment-planning");
+                        onClose();
+                      }}
+                    >
+                      <ClipboardList className="h-4 w-4" />
+                      Create Treatment Plan
+                    </Button>
+                  </div>
                 ) : (
                   <div className="space-y-3">
-                    {treatmentPlans.map((tp) => (
-                      <Card key={tp.id} className="border-border/50">
+                    {treatmentPlans.map((plan) => (
+                      <Card
+                        key={plan.id}
+                        className="border-border/50 cursor-pointer hover:border-primary/30 transition-colors"
+                        onClick={() => {
+                          navigate(`/doctor-dashboard?section=treatment-planning&plan=${plan.id}`);
+                          onClose();
+                        }}
+                      >
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between">
                             <div className="space-y-1">
-                              <div className="flex items-center gap-2">
-                                <h4 className="font-medium">{tp.title}</h4>
-                                {tp.status && (
-                                  <Badge variant="outline" className="text-xs capitalize">
-                                    {tp.status}
-                                  </Badge>
+                              <h4 className="font-medium">{plan.title}</h4>
+                              <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
+                                <Badge variant="outline" className={cn("text-xs capitalize", procedureStatusColors[plan.status || "draft"])}>
+                                  {plan.status || "draft"}
+                                </Badge>
+                                {plan.total_cost != null && (
+                                  <span className="flex items-center gap-1">
+                                    <DollarSign className="h-3.5 w-3.5" />
+                                    {formatCurrency(plan.total_cost)}
+                                  </span>
                                 )}
+                                <span>{format(new Date(plan.created_at), "MMM d, yyyy")}</span>
                               </div>
-                              {tp.total_cost != null && (
-                                <p className="text-sm text-muted-foreground flex items-center gap-1">
-                                  <DollarSign className="h-3.5 w-3.5" />
-                                  {formatCurrency(tp.total_cost)}
-                                </p>
-                              )}
-                              <div className="text-xs text-muted-foreground">{tp.created_at ? format(new Date(tp.created_at), "MMM d, yyyy") : ""}</div>
                             </div>
                           </div>
                         </CardContent>
