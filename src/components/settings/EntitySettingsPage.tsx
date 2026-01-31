@@ -359,4 +359,87 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
         <TabsContent value="billing" className="mt-4">
           <div className="space-y-4">
             <Card>
-              <Card
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Billing Summary</CardTitle>
+                <Button variant="outline" size="sm" onClick={loadBilling} disabled={billingLoading}>
+                  <RefreshCcw className={`h-4 w-4 mr-2 ${billingLoading ? "animate-spin" : ""}`} />
+                  Refresh
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {billingLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  </div>
+                ) : billingError ? (
+                  <div className="text-center py-8 text-muted-foreground">{billingError}</div>
+                ) : billing?.summary ? (
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="rounded-lg border p-3">
+                      <p className="text-sm font-medium text-muted-foreground">Total Paid</p>
+                      <p className="text-xl font-semibold">
+                        {fmtMoney(billing.summary.total_paid_cents, billingCurrency)}
+                      </p>
+                    </div>
+                    <div className="rounded-lg border p-3">
+                      <p className="text-sm font-medium text-muted-foreground">Outstanding</p>
+                      <p className="text-xl font-semibold">
+                        {fmtMoney(billing.summary.outstanding_cents, billingCurrency)}
+                      </p>
+                    </div>
+                    <div className="rounded-lg border p-3">
+                      <p className="text-sm font-medium text-muted-foreground">Open Invoices</p>
+                      <p className="text-xl font-semibold">{billing.summary.open_invoice_count}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">No billing data available</div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="mt-4">
+          <div className="space-y-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Analytics</CardTitle>
+                <Button variant="outline" size="sm" onClick={loadAnalytics} disabled={analyticsLoading}>
+                  <RefreshCcw className={`h-4 w-4 mr-2 ${analyticsLoading ? "animate-spin" : ""}`} />
+                  Refresh
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {analyticsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  </div>
+                ) : analyticsError ? (
+                  <div className="text-center py-8 text-muted-foreground">{analyticsError}</div>
+                ) : analytics?.kpis ? (
+                  <div className="grid gap-4 md:grid-cols-3">
+                    {Object.entries(analytics.kpis).map(([key, value]) => (
+                      <div key={key} className="rounded-lg border p-3">
+                        <p className="text-sm font-medium text-muted-foreground capitalize">
+                          {key.replace(/_/g, " ")}
+                        </p>
+                        <p className="text-xl font-semibold">
+                          {typeof value === "number" && key.includes("revenue")
+                            ? fmtMoney(value, analyticsCurrency)
+                            : value}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">No analytics data available</div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
