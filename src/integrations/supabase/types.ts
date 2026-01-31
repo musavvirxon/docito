@@ -8114,31 +8114,18 @@ export type Database = {
           user_id: string
         }[]
       }
-      send_notification_to_user:
-        | {
-            Args: {
-              data?: Json
-              expires_at?: string
-              message: string
-              notification_type: string
-              recipient_user_id: string
-              sender_user_id?: string
-              title: string
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              data?: Json
-              expires_at?: string
-              message: string
-              notification_type: string
-              recipient_user_id: string
-              sender_user_id?: string
-              title: string
-            }
-            Returns: Json
-          }
+      send_notification_to_user: {
+        Args: {
+          p_data?: Json
+          p_expires_at?: string
+          p_message: string
+          p_notification_type: string
+          p_recipient_user_id: string
+          p_sender_user_id?: string
+          p_title: string
+        }
+        Returns: string
+      }
       send_patient_invitation_sms: {
         Args: {
           p_appointment_date: string

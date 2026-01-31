@@ -122,11 +122,15 @@ function asStringArray(v: unknown): string[] | null {
 }
 
 function normalizeRpcResults(payload: any): UnifiedSearchResults {
-  const doctorsRaw = Array.isArray(payload?.doctors) ? payload.doctors : [];
-  const clinicsRaw = Array.isArray(payload?.clinics) ? payload.clinics : [];
-  const pharmaciesRaw = Array.isArray(payload?.pharmacies) ? payload.pharmacies : [];
-  const labsRaw = Array.isArray(payload?.labs) ? payload.labs : [];
-  const imagingRaw = Array.isArray(payload?.imaging) ? payload.imaging : [];
+  // The RPC returns a flat array with 'type' field, not nested objects
+  const rawResults = Array.isArray(payload) ? payload : [];
+  
+  // Group by type
+  const doctorsRaw = rawResults.filter((r: any) => r?.type === 'doctor');
+  const clinicsRaw = rawResults.filter((r: any) => r?.type === 'clinic');
+  const pharmaciesRaw = rawResults.filter((r: any) => r?.type === 'pharmacy');
+  const labsRaw = rawResults.filter((r: any) => r?.type === 'lab');
+  const imagingRaw = rawResults.filter((r: any) => r?.type === 'imaging');
 
   const doctors: DoctorResult[] = doctorsRaw.map((d: any) => ({
     id: asString(d?.id),
@@ -136,7 +140,7 @@ function normalizeRpcResults(payload: any): UnifiedSearchResults {
     specialties: asStringArray(d?.specialties) ?? (d?.specialty ? [asString(d.specialty)] : []),
     rating: asNumber(d?.rating),
     reviewCount: Number(asNumber(d?.reviewCount) ?? 0),
-    image: d?.image ? asString(d.image) : null,
+    image: d?.image_url ? asString(d.image_url) : null,
     clinicAffiliation: d?.clinicAffiliation ? asString(d.clinicAffiliation) : null,
     location: d?.location ? asString(d.location) : null,
     consultationFee: asNumber(d?.consultationFee),
@@ -148,18 +152,18 @@ function normalizeRpcResults(payload: any): UnifiedSearchResults {
     id: asString(c?.id),
     type: "clinic" as const,
     name: asString(c?.name) || "Unknown",
-    image: c?.image ? asString(c.image) : null,
+    image: c?.image_url ? asString(c.image_url) : null,
     location: c?.location ? asString(c.location) : null,
     rating: asNumber(c?.rating),
     reviewCount: Number(asNumber(c?.reviewCount) ?? 0),
-    specialties: asStringArray(c?.specialties),
+    specialties: asStringArray(c?.specialties) ?? (c?.specialty ? [asString(c.specialty)] : null),
   }));
 
   const pharmacies: PharmacyResult[] = pharmaciesRaw.map((p: any) => ({
     id: asString(p?.id),
     type: "pharmacy" as const,
     name: asString(p?.name) || "Unknown",
-    image: p?.image ? asString(p.image) : null,
+    image: p?.image_url ? asString(p.image_url) : null,
     location: p?.location ? asString(p.location) : null,
     deliveryAvailable: asBool(p?.deliveryAvailable),
     acceptsInsurance: asBool(p?.acceptsInsurance),
@@ -171,7 +175,7 @@ function normalizeRpcResults(payload: any): UnifiedSearchResults {
     id: asString(l?.id),
     type: "lab" as const,
     name: asString(l?.name) || "Unknown",
-    image: l?.image ? asString(l.image) : null,
+    image: l?.image_url ? asString(l.image_url) : null,
     location: l?.location ? asString(l.location) : null,
     servicesOffered: asStringArray(l?.servicesOffered),
     turnaroundHours: asNumber(l?.turnaroundHours),
@@ -182,7 +186,7 @@ function normalizeRpcResults(payload: any): UnifiedSearchResults {
     id: asString(i?.id),
     type: "imaging" as const,
     name: asString(i?.name) || "Unknown",
-    image: i?.image ? asString(i.image) : null,
+    image: i?.image_url ? asString(i.image_url) : null,
     location: i?.location ? asString(i.location) : null,
     procedures: asStringArray(i?.procedures) ?? [],
     accreditations: asStringArray(i?.accreditations),
