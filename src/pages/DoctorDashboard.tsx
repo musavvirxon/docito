@@ -1,6 +1,6 @@
 // File: src/pages/DoctorDashboard.tsx
 import { useState, useEffect } from "react";
-import { Settings, User, Calendar, BarChart3, Search, Briefcase, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2, Sparkles, TrendingUp, Star, Activity } from "lucide-react";
+import { Settings, User, Calendar, BarChart3, Search, Briefcase, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2, Sparkles, TrendingUp, Star, Activity, ArrowRightLeft } from "lucide-react";
 import { DoctorDataProvider, useDoctorData } from "@/contexts/DoctorDataContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useTranslation } from "react-i18next";
@@ -23,6 +23,7 @@ import TreatmentPlanningSection from "@/components/doctor/TreatmentPlanningSecti
 import DoctorScheduleSettingsSection from "@/components/doctor/DoctorScheduleSettingsSection";
 import DoctorProcedureLibrarySection from "@/components/doctor/DoctorProcedureLibrarySection";
 import { DoctorFinancialStatsSection } from "@/components/doctor/DoctorFinancialStatsSection";
+import { DoctorReferralsSection } from "@/components/doctor/DoctorReferralsSection";
 import { UpcomingAppointmentCard } from "@/components/doctor/UpcomingAppointmentCard";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -154,6 +155,7 @@ const DoctorDashboardContent = () => {
     { id: "assigned-patients", label: t("doctor.navigation.myPatients"), icon: Users },
     { id: "calendar", label: t("doctor.navigation.calendar"), icon: Calendar },
     { id: "messages", label: t("doctor.navigation.messages"), icon: MessageSquare },
+    { id: "referrals", label: t("doctor.navigation.referrals", "Referrals"), icon: ArrowRightLeft },
     { id: "performance", label: t("doctor.navigation.performance"), icon: BarChart3 },
     { id: "financial-stats", label: t("doctor.navigation.financialStats"), icon: BarChart3 },
     { id: "clinic-finder", label: t("doctor.navigation.clinicFinder"), icon: Search },
@@ -168,6 +170,7 @@ const DoctorDashboardContent = () => {
     { id: "assigned-patients", label: t("doctor.navigation.myPatients"), icon: Users },
     { id: "calendar", label: t("doctor.navigation.calendar"), icon: Calendar },
     { id: "messages", label: t("doctor.navigation.messages"), icon: MessageSquare },
+    { id: "referrals", label: t("doctor.navigation.referrals", "Referrals"), icon: ArrowRightLeft },
     { id: "performance", label: t("doctor.navigation.performance"), icon: BarChart3 },
     { id: "financial-stats", label: t("doctor.navigation.financialStats"), icon: BarChart3 },
     { id: "settings", label: t("doctor.navigation.settings"), icon: Settings }
@@ -212,6 +215,8 @@ const DoctorDashboardContent = () => {
         return <TreatmentPlanningSection />;
       case "procedure-library":
         return <DoctorProcedureLibrarySection />;
+      case "referrals":
+        return <DoctorReferralsSection />;
       default:
         return (
           <div className="space-y-8">

@@ -133,12 +133,12 @@ export const usePracticeInvitations = (practiceId?: string) => {
 
       // If existing user, send in-app notification
       if (inviteType === 'existingUser' && invitedUserId) {
-        await supabase.rpc('send_notification_to_user', {
-          recipient_user_id: invitedUserId,
-          notification_type: 'practice_invitation',
-          title: 'Practice Invitation',
-          message: `You've been invited to join ${practice?.name} as a ${invitationData.role}`,
-          data: { invitation_id: (invitation as any).id, practice_id: practiceId },
+        await (supabase as any).rpc('send_notification_to_user', {
+          p_recipient_user_id: invitedUserId,
+          p_notification_type: 'practice_invitation',
+          p_title: 'Practice Invitation',
+          p_message: `You've been invited to join ${practice?.name} as a ${invitationData.role}`,
+          p_data: { invitation_id: (invitation as any).id, practice_id: practiceId },
         });
       }
 

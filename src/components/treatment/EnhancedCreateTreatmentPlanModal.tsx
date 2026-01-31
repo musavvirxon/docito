@@ -587,21 +587,19 @@ const EnhancedCreateTreatmentPlanModal = ({
 
       const { data: planData, error: planError } = await supabase
         .from("treatment_plans")
-        .insert([
-          {
-            doctor_id: doctorData.id,
-            patient_id: values.patient_id || null,
-            doctor_patient_id: values.doctor_patient_id || null,
-            title: values.title,
-            notes: values.description,
-            status: "draft",
-            total_cost: totalCost,
-            priority: values.priority ?? "medium",
-            expires_at: expiresAt,
-          },
-        ])
+        .insert({
+          doctor_id: doctorData.id,
+          patient_id: values.patient_id || null,
+          doctor_patient_id: values.doctor_patient_id || null,
+          title: values.title,
+          notes: values.description,
+          status: "draft",
+          total_cost: totalCost,
+          priority: values.priority ?? "medium",
+          expires_at: expiresAt,
+        })
         .select()
-        .maybeSingle();
+        .single();
 
       if (planError || !planData) throw planError;
 
@@ -702,12 +700,12 @@ ${procedureDetails}
 Please review and confirm the treatment plan in your dashboard.
         `.trim();
 
-        const { data: notifData, error: notifError } = await supabase.rpc("send_notification_to_user", {
-          recipient_user_id: values.patient_id,
-          notification_type: "treatment_plan",
-          title: "New Treatment Plan Created",
-          message: notificationMessage,
-          data: { treatment_plan_id: planData.id, total_cost: totalCost },
+        const { data: notifData, error: notifError } = await (supabase as any).rpc("send_notification_to_user", {
+          p_recipient_user_id: values.patient_id,
+          p_notification_type: "treatment_plan",
+          p_title: "New Treatment Plan Created",
+          p_message: notificationMessage,
+          p_data: { treatment_plan_id: planData.id, total_cost: totalCost },
         });
 
         if (notifError) throw notifError;
