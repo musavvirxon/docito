@@ -21,6 +21,7 @@ import HelpCenter from "@/pages/HelpCenter";
 import Support from "@/pages/Support";
 import Legal from "@/pages/Legal";
 import LegalDetail from "@/pages/LegalDetail";
+import TermsOfService from "@/pages/TermsOfService";
 import FeedbackCenter from "@/pages/FeedbackCenter";
 import NotFound from "@/pages/NotFound";
 
@@ -136,7 +137,10 @@ export default function App() {
                 {/* Booking */}
                 <Route path="/book/:doctorId" element={<AppointmentBooking />} />
                 <Route path="/book-appointment/:doctorId" element={<AppointmentBooking />} />
-                <Route path="/booking-confirmation/:appointmentId" element={<BookingConfirmation />} />
+                <Route
+                  path="/booking-confirmation/:appointmentId"
+                  element={<BookingConfirmation />}
+                />
 
                 {/* Info pages */}
                 <Route path="/about" element={<About />} />
@@ -149,6 +153,7 @@ export default function App() {
                 <Route path="/help-center" element={<HelpCenter />} />
                 <Route path="/support" element={<Support />} />
                 <Route path="/legal" element={<Legal />} />
+                <Route path="/legal/terms-of-service" element={<TermsOfService />} />
                 <Route path="/legal/:slug" element={<LegalDetail />} />
                 <Route path="/feedback" element={<FeedbackCenter />} />
               </Route>
@@ -201,7 +206,10 @@ export default function App() {
               <Route path="/billing" element={<BillingPage />} />
               <Route path="/video-call" element={<VideoCall />} />
               <Route path="/video/:roomId" element={<VideoCall />} />
-              <Route path="/appointment-session/:appointmentId" element={<AppointmentSession />} />
+              <Route
+                path="/appointment-session/:appointmentId"
+                element={<AppointmentSession />}
+              />
 
               <Route path="*" element={<NotFound />} />
             </Routes>
