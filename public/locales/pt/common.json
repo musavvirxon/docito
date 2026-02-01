@@ -1,31 +1,32 @@
+// public/locales/pt/common.json
 {
   "siteName": "Docito",
-  "tagline": "Encontre e agende consultas com os melhores médicos perto de você",
+  "tagline": "Encontre e agende os melhores médicos perto de você",
   "navigation": {
     "home": "Início",
     "doctors": "Médicos",
-    "practices": "Práticas Médicas",
+    "practices": "Clínicas",
     "specialties": "Especialidades",
-    "about": "Sobre Nós",
+    "about": "Sobre nós",
     "contact": "Contato",
     "login": "Entrar",
-    "register": "Registrar",
+    "register": "Cadastrar",
     "dashboard": "Painel",
     "logout": "Sair",
-    "findDoctors": "Encontrar Médicos",
+    "findDoctors": "Encontrar médicos",
     "features": "Recursos",
     "pricing": "Preços",
-    "scheduleDemo": "Agendar Demo",
-    "forDoctors": "Para Médicos",
-    "forPractices": "Para Consultórios Privados",
-    "myProfile": "Meu Perfil",
+    "scheduleDemo": "Agendar demonstração",
+    "forDoctors": "Para médicos",
+    "forPractices": "Para clínicas privadas",
+    "myProfile": "Meu perfil",
     "notifications": "Notificações",
     "settings": "Configurações"
   },
   "buttons": {
     "search": "Buscar",
-    "bookNow": "Agendar Agora",
-    "viewProfile": "Ver Perfil",
+    "bookNow": "Agendar agora",
+    "viewProfile": "Ver perfil",
     "save": "Salvar",
     "cancel": "Cancelar",
     "edit": "Editar",
@@ -40,7 +41,7 @@
   "form": {
     "email": "E-mail",
     "password": "Senha",
-    "confirmPassword": "Confirmar Senha",
+    "confirmPassword": "Confirmar senha",
     "name": "Nome",
     "phone": "Telefone",
     "address": "Endereço",
@@ -58,44 +59,60 @@
   "footer": {
     "platform": "Plataforma",
     "home": "Início",
-    "findDoctors": "Encontrar Médicos",
-    "practices": "Práticas",
-    "forProviders": "Para Provedores",
-    "joinProvider": "Junte-se como Provedor",
-    "registerPractice": "Registrar Prática",
+    "findDoctors": "Encontrar médicos",
+    "practices": "Clínicas",
+    "forProviders": "Para provedores",
+    "joinProvider": "Entrar como provedor",
+    "registerPractice": "Registrar clínica",
     "company": "Empresa",
-    "aboutUs": "Sobre Nós",
-    "legalCenter": "Centro Legal",
+    "aboutUs": "Sobre nós",
+    "legalCenter": "Central Legal",
     "contact": "Contato",
     "legal": "Legal",
-    "termsOfService": "Termos de Serviço",
-    "privacyPolicy": "Política de Privacidade",
-    "cookiePolicy": "Política de Cookies",
-    "disclaimer": "O conteúdo fornecido no Docito é apenas para fins informativos gerais. Não se destina como, e o Docito não fornece, aconselhamento médico, diagnóstico ou tratamento. Sempre entre em contato diretamente com seu provedor de saúde com quaisquer perguntas que você possa ter sobre sua saúde ou aconselhamento médico específico.",
-    "allRightsReserved": "Todos os Direitos Reservados",
+    "termsOfService": "Termos de serviço",
+    "privacyPolicy": "Política de privacidade",
+    "cookiePolicy": "Política de cookies",
+    "disclaimer": "O conteúdo fornecido na Docito é apenas para fins informativos gerais. Não se destina a ser, e a Docito não fornece, aconselhamento médico, diagnóstico ou tratamento. Sempre entre em contato diretamente com seu profissional de saúde para dúvidas sobre sua saúde ou aconselhamento médico específico.",
+    "allRightsReserved": "Todos os direitos reservados",
     "trademark": "Docito é uma marca registrada e marca da Artsy Developers Inc.",
     "patent": "Todos os serviços, recursos e propriedade intelectual são protegidos pelas leis de patentes aplicáveis."
   },
   "cookies": {
-    "title": "Valorizamos Sua Privacidade",
-    "description": "Usamos cookies para melhorar sua experiência de navegação, fornecer conteúdo personalizado e analisar nosso tráfego. Ao clicar em \"Aceitar Tudo\", você consente com nosso uso de cookies.",
-    "acceptAll": "Aceitar Tudo",
-    "essentialOnly": "Apenas Essenciais",
+    "title": "Valorizamos sua privacidade",
+    "description": "Usamos cookies para melhorar sua experiência de navegação, oferecer conteúdo personalizado e analisar nosso tráfego. Ao clicar em \"Aceitar tudo\", você concorda com nosso uso de cookies.",
+    "acceptAll": "Aceitar tudo",
+    "essentialOnly": "Somente essenciais",
     "customize": "Personalizar",
     "settings": {
-      "title": "Configurações de Cookies",
-      "description": "Personalize suas preferências de cookies abaixo. Cookies essenciais são necessários para o funcionamento da plataforma.",
-      "essential": "Cookies Essenciais",
-      "essentialDesc": "Necessários para login e funcionalidade principal",
-      "analytics": "Cookies de Análise",
-      "analyticsDesc": "Ajude-nos a melhorar a plataforma",
-      "marketing": "Cookies de Marketing",
+      "title": "Configurações de cookies",
+      "description": "Personalize suas preferências de cookies abaixo. Cookies essenciais são necessários para a plataforma funcionar.",
+      "essential": "Cookies essenciais",
+      "essentialDesc": "Necessários para login e funções principais",
+      "analytics": "Cookies de análise",
+      "analyticsDesc": "Ajudam a melhorar a plataforma",
+      "marketing": "Cookies de marketing",
       "marketingDesc": "Conteúdo e anúncios personalizados",
-      "savePreferences": "Salvar Preferências"
+      "savePreferences": "Salvar preferências"
     },
     "toast": {
       "saved": "Preferências de cookies salvas",
       "error": "Falha ao salvar preferências"
     }
+  },
+  "actions": {
+    "save": "Salvar",
+    "share": "Compartilhar",
+    "copied": "Copiado!"
+  },
+  "errors": {
+    "notFound": "Não encontrado",
+    "error": "Erro",
+    "copyFailed": "Falha ao copiar"
+  },
+  "nav": {
+    "doctors": "Médicos"
+  },
+  "language": {
+    "select": "Selecionar idioma"
   }
 }
