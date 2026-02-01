@@ -1,3 +1,4 @@
+// /src/components/SEOHead.tsx
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
@@ -28,21 +29,20 @@ const ogLocaleMap: Record<string, string> = {
   ko: 'ko_KR'
 };
 
-function normalizeLang(lng?: string): string {
+const normalizeLang = (lng?: string) => {
   if (!lng) return 'en';
   return lng.split('-')[0];
-}
+};
 
-function toAbsoluteUrl(baseUrl: string, url: string): string {
+const toAbsoluteUrl = (baseUrl: string, url: string) => {
   if (!url) return url;
   if (/^https?:\/\//i.test(url)) return url;
-  if (!baseUrl) return url;
   try {
     return new URL(url, baseUrl).toString();
   } catch {
     return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
   }
-}
+};
 
 export const SEOHead = ({
   title,
@@ -56,133 +56,164 @@ export const SEOHead = ({
   const { i18n } = useTranslation();
   const location = useLocation();
 
-  const baseUrl = 'https://docito.app';
-  const lang = normalizeLang(i18n.language || 'en');
-  const dir = lang === 'ar' ? 'rtl' : 'ltr';
+  const currentLang = normalizeLang(i18n.language || 'en');
+
+  const baseUrl =
+    typeof window !== 'undefined' && window.location?.origin
+      ? window.location.origin
+      : 'https://docito.app';
 
   useEffect(() => {
-    if (typeof document === 'undefined') return;
+    try {
+      if (typeof document === 'undefined') return;
 
-    if (title) document.title = title;
+      if (title) document.title = title;
 
-    if (description) {
-      let metaDesc = document.querySelector('meta[name="description"]');
-      if (!metaDesc) {
-        metaDesc = document.createElement('meta');
-        metaDesc.setAttribute('name', 'description');
-        document.head.appendChild(metaDesc);
+      if (description) {
+        let metaDesc = document.querySelector('meta[name="description"]');
+        if (!metaDesc) {
+          metaDesc = document.createElement('meta');
+          metaDesc.setAttribute('name', 'description');
+          document.head.appendChild(metaDesc);
+        }
+        metaDesc.setAttribute('content', String(description));
       }
-      metaDesc.setAttribute('content', description);
-    }
 
-    if (keywords) {
-      let metaKeywords = document.querySelector('meta[name="keywords"]');
-      if (!metaKeywords) {
-        metaKeywords = document.createElement('meta');
-        metaKeywords.setAttribute('name', 'keywords');
-        document.head.appendChild(metaKeywords);
+      if (keywords) {
+        let metaKeywords = document.querySelector('meta[name="keywords"]');
+        if (!metaKeywords) {
+          metaKeywords = document.createElement('meta');
+          metaKeywords.setAttribute('name', 'keywords');
+          document.head.appendChild(metaKeywords);
+        }
+        metaKeywords.setAttribute('content', String(keywords));
       }
-      metaKeywords.setAttribute('content', keywords);
-    }
 
-    const absImage = toAbsoluteUrl(baseUrl, image);
-    const canonicalUrl = `${baseUrl}${location.pathname}`;
-    const ogLocale = ogLocaleMap[lang] || ogLocaleMap.en;
+      // Ensure app/site name metadata (helps across platforms)
+      const ensureMeta = (selector: string, attrs: Record<string, string>) => {
+        let meta = document.querySelector(selector) as HTMLMetaElement | null;
+        if (!meta) {
+          meta = document.createElement('meta');
+          Object.entries(attrs).forEach(([k, v]) => meta!.setAttribute(k, v));
+          document.head.appendChild(meta);
+          return meta;
+        }
+        Object.entries(attrs).forEach(([k, v]) => meta!.setAttribute(k, v));
+        return meta;
+      };
 
-    const ogTags = [
-      { property: 'og:title', content: title },
-      { property: 'og:description', content: description },
-      { property: 'og:image', content: absImage },
-      { property: 'og:url', content: canonicalUrl },
-      { property: 'og:type', content: type },
-      { property: 'og:locale', content: ogLocale },
-      { property: 'og:site_name', content: 'Docito' }
-    ];
+      ensureMeta('meta[name="application-name"]', { name: 'application-name', content: 'Docito' });
+      ensureMeta('meta[name="apple-mobile-web-app-title"]', { name: 'apple-mobile-web-app-title', content: 'Docito' });
 
-    ogTags.forEach(({ property, content }) => {
-      if (!content) return;
-      let metaTag = document.querySelector(`meta[property="${property}"]`);
-      if (!metaTag) {
-        metaTag = document.createElement('meta');
-        metaTag.setAttribute('property', property);
-        document.head.appendChild(metaTag);
+      const canonicalUrl = `${baseUrl}${location.pathname}`;
+      const absImage = toAbsoluteUrl(baseUrl, image);
+      const ogLocale = ogLocaleMap[currentLang] || ogLocaleMap.en;
+
+      const ogTags = [
+        { property: 'og:site_name', content: 'Docito®' },
+        { property: 'og:title', content: title },
+        { property: 'og:description', content: description },
+        { property: 'og:image', content: absImage },
+        { property: 'og:url', content: canonicalUrl },
+        { property: 'og:type', content: type },
+        { property: 'og:locale', content: ogLocale }
+      ];
+
+      ogTags.forEach(({ property, content }) => {
+        if (!content) return;
+        let metaTag = document.querySelector(`meta[property="${property}"]`);
+        if (!metaTag) {
+          metaTag = document.createElement('meta');
+          metaTag.setAttribute('property', property);
+          document.head.appendChild(metaTag);
+        }
+        metaTag.setAttribute('content', String(content));
+      });
+
+      const twitterTags = [
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:title', content: title },
+        { name: 'twitter:description', content: description },
+        { name: 'twitter:image', content: absImage },
+        { name: 'twitter:site', content: '@docito' }
+      ];
+
+      twitterTags.forEach(({ name, content }) => {
+        if (!content) return;
+        let metaTag = document.querySelector(`meta[name="${name}"]`);
+        if (!metaTag) {
+          metaTag = document.createElement('meta');
+          metaTag.setAttribute('name', name);
+          document.head.appendChild(metaTag);
+        }
+        metaTag.setAttribute('content', String(content));
+      });
+
+      let canonical = document.querySelector('link[rel="canonical"]');
+      if (!canonical) {
+        canonical = document.createElement('link');
+        canonical.setAttribute('rel', 'canonical');
+        document.head.appendChild(canonical);
       }
-      metaTag.setAttribute('content', String(content));
-    });
+      canonical.setAttribute('href', canonicalUrl);
 
-    const twitterTags = [
-      { name: 'twitter:card', content: 'summary_large_image' },
-      { name: 'twitter:title', content: title },
-      { name: 'twitter:description', content: description },
-      { name: 'twitter:image', content: absImage },
-      { name: 'twitter:site', content: '@docito' }
-    ];
-
-    twitterTags.forEach(({ name, content }) => {
-      if (!content) return;
-      let metaTag = document.querySelector(`meta[name="${name}"]`);
-      if (!metaTag) {
-        metaTag = document.createElement('meta');
-        metaTag.setAttribute('name', name);
-        document.head.appendChild(metaTag);
+      let robotsMeta = document.querySelector('meta[name="robots"]');
+      if (!robotsMeta) {
+        robotsMeta = document.createElement('meta');
+        robotsMeta.setAttribute('name', 'robots');
+        document.head.appendChild(robotsMeta);
       }
-      metaTag.setAttribute('content', String(content));
-    });
+      robotsMeta.setAttribute('content', noindex ? 'noindex, nofollow' : 'index, follow');
 
-    let canonical = document.querySelector('link[rel="canonical"]');
-    if (!canonical) {
-      canonical = document.createElement('link');
-      canonical.setAttribute('rel', 'canonical');
-      document.head.appendChild(canonical);
+      // hreflang (never let SEO crash the UI)
+      const existingAlternates = document.querySelectorAll('link[rel="alternate"][hreflang]');
+      for (let i = 0; i < existingAlternates.length; i += 1) {
+        const node = existingAlternates[i];
+        if (node && node.parentNode) node.parentNode.removeChild(node);
+      }
+
+      const pathWithoutLangPrefix = location.pathname.replace(
+        /^\/(en|ru|uz|ar|tr|zh|es|pt|de|ja|ko)(\/|$)/,
+        '/'
+      );
+
+      const normalizedPath = pathWithoutLangPrefix === '' ? '/' : pathWithoutLangPrefix;
+      const suffix = normalizedPath === '/' ? '' : normalizedPath;
+
+      languages.forEach((lang) => {
+        const link = document.createElement('link');
+        link.setAttribute('rel', 'alternate');
+        link.setAttribute('hreflang', lang);
+        link.setAttribute('href', `${baseUrl}/${lang}${suffix}`);
+        document.head.appendChild(link);
+      });
+
+      const xDefault = document.createElement('link');
+      xDefault.setAttribute('rel', 'alternate');
+      xDefault.setAttribute('hreflang', 'x-default');
+      xDefault.setAttribute('href', `${baseUrl}/en${suffix}`);
+      document.head.appendChild(xDefault);
+
+      document.documentElement.lang = currentLang;
+      document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+
+      const existingScript = document.querySelector('script[type="application/ld+json"][data-seo="true"]');
+      if (existingScript && existingScript.parentNode) {
+        existingScript.parentNode.removeChild(existingScript);
+      }
+
+      if (structuredData) {
+        const script = document.createElement('script');
+        script.type = 'application/ld+json';
+        script.setAttribute('data-seo', 'true');
+        script.textContent = JSON.stringify(structuredData);
+        document.head.appendChild(script);
+      }
+    } catch (err) {
+      // SEO must never crash the app
+      console.error('[SEOHead] Failed to apply tags', err);
     }
-    canonical.setAttribute('href', canonicalUrl);
-
-    let robotsMeta = document.querySelector('meta[name="robots"]');
-    if (!robotsMeta) {
-      robotsMeta = document.createElement('meta');
-      robotsMeta.setAttribute('name', 'robots');
-      document.head.appendChild(robotsMeta);
-    }
-    robotsMeta.setAttribute('content', noindex ? 'noindex, nofollow' : 'index, follow');
-
-    // hreflang
-    document.querySelectorAll('link[rel="alternate"][hreflang]').forEach((link) => link.remove());
-
-    const pathWithoutLangPrefix = location.pathname.replace(
-      /^\/(en|ru|uz|ar|tr|zh|es|pt|de|ja|ko)(\/|$)/,
-      '/'
-    );
-
-    const normalizedPath = pathWithoutLangPrefix === '' ? '/' : pathWithoutLangPrefix;
-
-    languages.forEach((lng) => {
-      const link = document.createElement('link');
-      link.setAttribute('rel', 'alternate');
-      link.setAttribute('hreflang', lng);
-      link.setAttribute('href', `${baseUrl}/${lng}${normalizedPath === '/' ? '' : normalizedPath}`);
-      document.head.appendChild(link);
-    });
-
-    const xDefault = document.createElement('link');
-    xDefault.setAttribute('rel', 'alternate');
-    xDefault.setAttribute('hreflang', 'x-default');
-    xDefault.setAttribute('href', `${baseUrl}/en${normalizedPath === '/' ? '' : normalizedPath}`);
-    document.head.appendChild(xDefault);
-
-    document.documentElement.lang = lang;
-    document.documentElement.dir = dir;
-
-    const existingScript = document.querySelector('script[type="application/ld+json"][data-seo="true"]');
-    if (existingScript) existingScript.remove();
-
-    if (structuredData) {
-      const script = document.createElement('script');
-      script.type = 'application/ld+json';
-      script.setAttribute('data-seo', 'true');
-      script.textContent = JSON.stringify(structuredData);
-      document.head.appendChild(script);
-    }
-  }, [title, description, keywords, image, lang, dir, location.pathname, noindex, type, structuredData]);
+  }, [title, description, keywords, image, currentLang, location.pathname, noindex, type, structuredData, baseUrl]);
 
   return null;
 };
@@ -191,15 +222,20 @@ export const generateOrganizationSchema = () => ({
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'Docito',
+  alternateName: 'Docito®',
   url: 'https://docito.app',
   logo: 'https://docito.app/logos/docito-logo.png',
   description:
     'Unified healthcare management and booking platform connecting patients, doctors, clinics, labs, pharmacies, and imaging centers.',
-  sameAs: ['https://twitter.com/docito', 'https://facebook.com/docito', 'https://linkedin.com/company/docito'],
+  sameAs: [
+    'https://twitter.com/docito',
+    'https://facebook.com/docito',
+    'https://linkedin.com/company/docito'
+  ],
   contactPoint: {
     '@type': 'ContactPoint',
-    telephone: '+1-800-DOCITO',
     contactType: 'customer service',
+    email: 'support@docito.app',
     availableLanguage: [
       'English',
       'Russian',
@@ -220,6 +256,7 @@ export const generateMedicalWebsiteSchema = () => ({
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: 'Docito',
+  alternateName: 'Docito®',
   url: 'https://docito.app',
   description:
     'One platform connecting patients, doctors, clinics, labs, pharmacies, imaging centers, and insurance—secure scheduling, referrals, records, and analytics.',
