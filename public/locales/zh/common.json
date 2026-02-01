@@ -1,6 +1,7 @@
+// public/locales/zh/common.json
 {
   "siteName": "Docito",
-  "tagline": "查找并预约您附近的顶级医生",
+  "tagline": "查找并预约您附近的优质医生",
   "navigation": {
     "home": "首页",
     "doctors": "医生",
@@ -11,14 +12,14 @@
     "login": "登录",
     "register": "注册",
     "dashboard": "仪表板",
-    "logout": "退出",
-    "findDoctors": "查找医生",
+    "logout": "退出登录",
+    "findDoctors": "找医生",
     "features": "功能",
     "pricing": "价格",
-    "scheduleDemo": "安排演示",
-    "forDoctors": "医生专用",
-    "forPractices": "私人诊所专用",
-    "myProfile": "我的个人资料",
+    "scheduleDemo": "预约演示",
+    "forDoctors": "面向医生",
+    "forPractices": "面向私立诊所",
+    "myProfile": "我的资料",
     "notifications": "通知",
     "settings": "设置"
   },
@@ -38,7 +39,7 @@
     "confirm": "确认"
   },
   "form": {
-    "email": "电子邮件",
+    "email": "电子邮箱",
     "password": "密码",
     "confirmPassword": "确认密码",
     "name": "姓名",
@@ -47,7 +48,7 @@
     "city": "城市",
     "country": "国家",
     "specialty": "专科",
-    "message": "消息"
+    "message": "留言"
   },
   "status": {
     "pending": "待处理",
@@ -58,11 +59,11 @@
   "footer": {
     "platform": "平台",
     "home": "首页",
-    "findDoctors": "查找医生",
-    "practices": "诊所",
-    "forProviders": "医疗提供者",
-    "joinProvider": "作为提供者加入",
-    "registerPractice": "注册诊所",
+    "findDoctors": "找医生",
+    "practices": "机构",
+    "forProviders": "面向服务提供方",
+    "joinProvider": "作为服务提供方加入",
+    "registerPractice": "注册机构",
     "company": "公司",
     "aboutUs": "关于我们",
     "legalCenter": "法律中心",
@@ -70,32 +71,48 @@
     "legal": "法律",
     "termsOfService": "服务条款",
     "privacyPolicy": "隐私政策",
-    "cookiePolicy": "Cookie政策",
-    "disclaimer": "Docito上提供的内容仅用于一般信息目的。它不作为医疗建议、诊断或治疗，Docito也不提供这些服务。如有任何关于您的健康或特定医疗建议的问题，请始终直接联系您的医疗保健提供者。",
+    "cookiePolicy": "Cookie 政策",
+    "disclaimer": "Docito 提供的内容仅供一般信息参考。其不构成医疗建议、诊断或治疗，Docito 也不提供此类服务。如有任何健康问题或需要具体医疗建议，请直接联系您的医疗服务提供者。",
     "allRightsReserved": "保留所有权利",
-    "trademark": "Docito是Artsy Developers Inc.的注册商标和品牌。",
-    "patent": "所有服务、功能和知识产权均受适用专利法保护。"
+    "trademark": "Docito 是 Artsy Developers Inc. 的注册商标与品牌。",
+    "patent": "所有服务、功能和知识产权均受适用的专利法律保护。"
   },
   "cookies": {
     "title": "我们重视您的隐私",
-    "description": "我们使用Cookie来增强您的浏览体验，提供个性化内容并分析我们的流量。点击"全部接受"即表示您同意我们使用Cookie。",
-    "acceptAll": "全部接受",
-    "essentialOnly": "仅必需",
+    "description": "我们使用 Cookie 来提升浏览体验、提供个性化内容并分析流量。点击“接受全部”即表示您同意我们使用 Cookie。",
+    "acceptAll": "接受全部",
+    "essentialOnly": "仅必要",
     "customize": "自定义",
     "settings": {
-      "title": "Cookie设置",
-      "description": "在下方自定义您的Cookie偏好。平台运行需要必需的Cookie。",
-      "essential": "必需Cookie",
-      "essentialDesc": "登录和核心功能所需",
-      "analytics": "分析Cookie",
+      "title": "Cookie 设置",
+      "description": "在下方自定义您的 Cookie 偏好。平台运行需要必要的 Cookie。",
+      "essential": "必要 Cookie",
+      "essentialDesc": "登录与核心功能所必需",
+      "analytics": "分析 Cookie",
       "analyticsDesc": "帮助我们改进平台",
-      "marketing": "营销Cookie",
-      "marketingDesc": "个性化内容和广告",
+      "marketing": "营销 Cookie",
+      "marketingDesc": "个性化内容与广告",
       "savePreferences": "保存偏好"
     },
     "toast": {
-      "saved": "Cookie偏好已保存",
+      "saved": "Cookie 偏好已保存",
       "error": "保存偏好失败"
     }
+  },
+  "actions": {
+    "save": "保存",
+    "share": "分享",
+    "copied": "已复制！"
+  },
+  "errors": {
+    "notFound": "未找到",
+    "error": "错误",
+    "copyFailed": "复制失败"
+  },
+  "nav": {
+    "doctors": "医生"
+  },
+  "language": {
+    "select": "选择语言"
   }
 }
