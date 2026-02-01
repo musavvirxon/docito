@@ -1,23 +1,24 @@
+// public/locales/ko/common.json
 {
   "siteName": "Docito",
-  "tagline": "주변의 최고 의사를 찾고 예약하세요",
+  "tagline": "가까운 최고의 의사를 찾아 예약하세요",
   "navigation": {
     "home": "홈",
     "doctors": "의사",
-    "practices": "의료 기관",
-    "specialties": "전문 분야",
+    "practices": "의료기관",
+    "specialties": "전문과",
     "about": "회사 소개",
-    "contact": "문의하기",
+    "contact": "문의",
     "login": "로그인",
     "register": "회원가입",
     "dashboard": "대시보드",
     "logout": "로그아웃",
     "findDoctors": "의사 찾기",
     "features": "기능",
-    "pricing": "가격",
-    "scheduleDemo": "데모 일정 잡기",
+    "pricing": "요금",
+    "scheduleDemo": "데모 예약",
     "forDoctors": "의사용",
-    "forPractices": "민간 진료소용",
+    "forPractices": "개인 병원용",
     "myProfile": "내 프로필",
     "notifications": "알림",
     "settings": "설정"
@@ -28,7 +29,7 @@
     "viewProfile": "프로필 보기",
     "save": "저장",
     "cancel": "취소",
-    "edit": "수정",
+    "edit": "편집",
     "delete": "삭제",
     "submit": "제출",
     "back": "뒤로",
@@ -42,11 +43,11 @@
     "password": "비밀번호",
     "confirmPassword": "비밀번호 확인",
     "name": "이름",
-    "phone": "전화번호",
+    "phone": "전화",
     "address": "주소",
     "city": "도시",
     "country": "국가",
-    "specialty": "전문 분야",
+    "specialty": "전문과",
     "message": "메시지"
   },
   "status": {
@@ -59,43 +60,59 @@
     "platform": "플랫폼",
     "home": "홈",
     "findDoctors": "의사 찾기",
-    "practices": "진료소",
-    "forProviders": "의료 제공자용",
-    "joinProvider": "제공자로 가입",
-    "registerPractice": "진료소 등록",
+    "practices": "의료기관",
+    "forProviders": "제공자용",
+    "joinProvider": "제공자로 참여",
+    "registerPractice": "의료기관 등록",
     "company": "회사",
     "aboutUs": "회사 소개",
     "legalCenter": "법률 센터",
     "contact": "문의",
     "legal": "법률",
-    "termsOfService": "서비스 약관",
+    "termsOfService": "서비스 이용약관",
     "privacyPolicy": "개인정보 처리방침",
     "cookiePolicy": "쿠키 정책",
-    "disclaimer": "Docito에서 제공되는 콘텐츠는 일반 정보 제공 목적으로만 사용됩니다. 의학적 조언, 진단 또는 치료를 목적으로 하지 않으며 Docito는 이를 제공하지 않습니다. 건강이나 특정 의학적 조언에 관한 질문이 있는 경우 항상 의료 제공자에게 직접 문의하십시오.",
-    "allRightsReserved": "모든 권리 보유",
+    "disclaimer": "Docito에서 제공되는 콘텐츠는 일반적인 정보 제공 목적입니다. 의료 조언, 진단 또는 치료를 의미하지 않으며 Docito는 이를 제공하지 않습니다. 건강 관련 질문이나 구체적인 의료 조언은 반드시 의료 제공자에게 직접 문의하세요.",
+    "allRightsReserved": "All Rights Reserved",
     "trademark": "Docito는 Artsy Developers Inc.의 등록 상표 및 브랜드입니다.",
     "patent": "모든 서비스, 기능 및 지적 재산은 해당 특허법에 따라 보호됩니다."
   },
   "cookies": {
-    "title": "귀하의 개인정보를 소중히 여깁니다",
-    "description": "저희는 쿠키를 사용하여 브라우징 경험을 향상시키고, 맞춤형 콘텐츠를 제공하며, 트래픽을 분석합니다. \"모두 수락\"을 클릭하면 쿠키 사용에 동의하는 것입니다.",
-    "acceptAll": "모두 수락",
+    "title": "개인정보를 소중히 합니다",
+    "description": "쿠키를 사용하여 브라우징 경험을 개선하고 맞춤형 콘텐츠를 제공하며 트래픽을 분석합니다. \"모두 허용\"을 클릭하면 쿠키 사용에 동의하는 것입니다.",
+    "acceptAll": "모두 허용",
     "essentialOnly": "필수만",
-    "customize": "사용자 지정",
+    "customize": "맞춤 설정",
     "settings": {
       "title": "쿠키 설정",
-      "description": "아래에서 쿠키 기본 설정을 사용자 지정하세요. 플랫폼이 작동하려면 필수 쿠키가 필요합니다.",
+      "description": "아래에서 쿠키 선호도를 맞춤 설정하세요. 플랫폼 동작을 위해 필수 쿠키가 필요합니다.",
       "essential": "필수 쿠키",
       "essentialDesc": "로그인 및 핵심 기능에 필요",
       "analytics": "분석 쿠키",
-      "analyticsDesc": "플랫폼 개선에 도움을 주세요",
+      "analyticsDesc": "플랫폼 개선에 도움",
       "marketing": "마케팅 쿠키",
       "marketingDesc": "맞춤형 콘텐츠 및 광고",
-      "savePreferences": "설정 저장"
+      "savePreferences": "선호도 저장"
     },
     "toast": {
-      "saved": "쿠키 설정이 저장되었습니다",
-      "error": "설정 저장 실패"
+      "saved": "쿠키 선호도가 저장되었습니다",
+      "error": "선호도 저장에 실패했습니다"
     }
+  },
+  "actions": {
+    "save": "저장",
+    "share": "공유",
+    "copied": "복사됨!"
+  },
+  "errors": {
+    "notFound": "찾을 수 없음",
+    "error": "오류",
+    "copyFailed": "복사 실패"
+  },
+  "nav": {
+    "doctors": "의사"
+  },
+  "language": {
+    "select": "언어 선택"
   }
 }
