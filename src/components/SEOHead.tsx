@@ -1,4 +1,3 @@
-// src/components/SEOHead.tsx
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
@@ -15,6 +14,36 @@ interface SEOHeadProps {
 
 const languages = ['en', 'ru', 'uz', 'ar', 'tr', 'zh', 'es', 'pt', 'de', 'ja', 'ko'];
 
+const ogLocaleMap: Record<string, string> = {
+  en: 'en_US',
+  ru: 'ru_RU',
+  uz: 'uz_UZ',
+  ar: 'ar_AR',
+  tr: 'tr_TR',
+  zh: 'zh_CN',
+  es: 'es_ES',
+  pt: 'pt_BR',
+  de: 'de_DE',
+  ja: 'ja_JP',
+  ko: 'ko_KR'
+};
+
+function normalizeLang(lng?: string): string {
+  if (!lng) return 'en';
+  return lng.split('-')[0];
+}
+
+function toAbsoluteUrl(baseUrl: string, url: string): string {
+  if (!url) return url;
+  if (/^https?:\/\//i.test(url)) return url;
+  if (!baseUrl) return url;
+  try {
+    return new URL(url, baseUrl).toString();
+  } catch {
+    return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+  }
+}
+
 export const SEOHead = ({
   title,
   description,
@@ -26,10 +55,14 @@ export const SEOHead = ({
 }: SEOHeadProps) => {
   const { i18n } = useTranslation();
   const location = useLocation();
-  const currentLang = i18n.language || 'en';
+
   const baseUrl = 'https://docito.app';
+  const lang = normalizeLang(i18n.language || 'en');
+  const dir = lang === 'ar' ? 'rtl' : 'ltr';
 
   useEffect(() => {
+    if (typeof document === 'undefined') return;
+
     if (title) document.title = title;
 
     if (description) {
@@ -52,13 +85,17 @@ export const SEOHead = ({
       metaKeywords.setAttribute('content', keywords);
     }
 
+    const absImage = toAbsoluteUrl(baseUrl, image);
+    const canonicalUrl = `${baseUrl}${location.pathname}`;
+    const ogLocale = ogLocaleMap[lang] || ogLocaleMap.en;
+
     const ogTags = [
       { property: 'og:title', content: title },
       { property: 'og:description', content: description },
-      { property: 'og:image', content: `${baseUrl}${image}` },
-      { property: 'og:url', content: `${baseUrl}${location.pathname}` },
+      { property: 'og:image', content: absImage },
+      { property: 'og:url', content: canonicalUrl },
       { property: 'og:type', content: type },
-      { property: 'og:locale', content: currentLang === 'en' ? 'en_US' : `${currentLang}_${currentLang.toUpperCase()}` },
+      { property: 'og:locale', content: ogLocale },
       { property: 'og:site_name', content: 'Docito' }
     ];
 
@@ -70,14 +107,14 @@ export const SEOHead = ({
         metaTag.setAttribute('property', property);
         document.head.appendChild(metaTag);
       }
-      metaTag.setAttribute('content', content);
+      metaTag.setAttribute('content', String(content));
     });
 
     const twitterTags = [
       { name: 'twitter:card', content: 'summary_large_image' },
       { name: 'twitter:title', content: title },
       { name: 'twitter:description', content: description },
-      { name: 'twitter:image', content: `${baseUrl}${image}` },
+      { name: 'twitter:image', content: absImage },
       { name: 'twitter:site', content: '@docito' }
     ];
 
@@ -89,7 +126,7 @@ export const SEOHead = ({
         metaTag.setAttribute('name', name);
         document.head.appendChild(metaTag);
       }
-      metaTag.setAttribute('content', content);
+      metaTag.setAttribute('content', String(content));
     });
 
     let canonical = document.querySelector('link[rel="canonical"]');
@@ -98,7 +135,7 @@ export const SEOHead = ({
       canonical.setAttribute('rel', 'canonical');
       document.head.appendChild(canonical);
     }
-    canonical.setAttribute('href', `${baseUrl}${location.pathname}`);
+    canonical.setAttribute('href', canonicalUrl);
 
     let robotsMeta = document.querySelector('meta[name="robots"]');
     if (!robotsMeta) {
@@ -111,24 +148,29 @@ export const SEOHead = ({
     // hreflang
     document.querySelectorAll('link[rel="alternate"][hreflang]').forEach((link) => link.remove());
 
-    const pathWithoutLangPrefix = location.pathname.replace(/^\/(en|ru|uz|ar|tr|zh|es|pt|de|ja|ko)(\/|$)/, '/');
+    const pathWithoutLangPrefix = location.pathname.replace(
+      /^\/(en|ru|uz|ar|tr|zh|es|pt|de|ja|ko)(\/|$)/,
+      '/'
+    );
 
-    languages.forEach((lang) => {
+    const normalizedPath = pathWithoutLangPrefix === '' ? '/' : pathWithoutLangPrefix;
+
+    languages.forEach((lng) => {
       const link = document.createElement('link');
       link.setAttribute('rel', 'alternate');
-      link.setAttribute('hreflang', lang);
-      link.setAttribute('href', `${baseUrl}/${lang}${pathWithoutLangPrefix}`);
+      link.setAttribute('hreflang', lng);
+      link.setAttribute('href', `${baseUrl}/${lng}${normalizedPath === '/' ? '' : normalizedPath}`);
       document.head.appendChild(link);
     });
 
     const xDefault = document.createElement('link');
     xDefault.setAttribute('rel', 'alternate');
     xDefault.setAttribute('hreflang', 'x-default');
-    xDefault.setAttribute('href', `${baseUrl}/en${pathWithoutLangPrefix}`);
+    xDefault.setAttribute('href', `${baseUrl}/en${normalizedPath === '/' ? '' : normalizedPath}`);
     document.head.appendChild(xDefault);
 
-    document.documentElement.lang = currentLang;
-    document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = lang;
+    document.documentElement.dir = dir;
 
     const existingScript = document.querySelector('script[type="application/ld+json"][data-seo="true"]');
     if (existingScript) existingScript.remove();
@@ -140,7 +182,7 @@ export const SEOHead = ({
       script.textContent = JSON.stringify(structuredData);
       document.head.appendChild(script);
     }
-  }, [title, description, keywords, image, currentLang, location.pathname, noindex, type, structuredData]);
+  }, [title, description, keywords, image, lang, dir, location.pathname, noindex, type, structuredData]);
 
   return null;
 };
@@ -153,16 +195,24 @@ export const generateOrganizationSchema = () => ({
   logo: 'https://docito.app/logos/docito-logo.png',
   description:
     'Unified healthcare management and booking platform connecting patients, doctors, clinics, labs, pharmacies, and imaging centers.',
-  sameAs: [
-    'https://twitter.com/docito',
-    'https://facebook.com/docito',
-    'https://linkedin.com/company/docito'
-  ],
+  sameAs: ['https://twitter.com/docito', 'https://facebook.com/docito', 'https://linkedin.com/company/docito'],
   contactPoint: {
     '@type': 'ContactPoint',
     telephone: '+1-800-DOCITO',
     contactType: 'customer service',
-    availableLanguage: ['English', 'Russian', 'Uzbek', 'Arabic', 'Turkish', 'Chinese', 'Spanish', 'Portuguese', 'German', 'Japanese', 'Korean']
+    availableLanguage: [
+      'English',
+      'Russian',
+      'Uzbek',
+      'Arabic',
+      'Turkish',
+      'Chinese',
+      'Spanish',
+      'Portuguese',
+      'German',
+      'Japanese',
+      'Korean'
+    ]
   }
 });
 
