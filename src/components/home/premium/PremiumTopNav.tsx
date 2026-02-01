@@ -1,17 +1,29 @@
-// src/components/home/premium/PremiumTopNav.tsx
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import ProfileMenu from "@/components/dashboard/ProfileMenu";
+import { useLocalizedPath } from "@/hooks/useLocalizedPath";
+
+type NavKey =
+  | "doctors"
+  | "clinics"
+  | "labs"
+  | "pharmacies"
+  | "imaging"
+  | "hospitals"
+  | "pricing";
 
 const PremiumTopNav = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation("premium");
+  const { getLocalizedPath } = useLocalizedPath();
 
   const { user } = useAuth();
 
@@ -25,17 +37,42 @@ const PremiumTopNav = () => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
-  const navLinks = [
-    { name: "Doctors", href: "/doctor" },
-    { name: "Clinics", href: "/practice" },
-    { name: "Labs", href: "/lab" },
-    { name: "Pharmacies", href: "/pharmacy" },
-    { name: "Imaging", href: "/imaging-center" },
-    { name: "Hospitals", href: "/practice" },
-    { name: "Pricing", href: "/pricing" },
-  ];
+  const navLinks = useMemo(
+    () =>
+      [
+        { key: "doctors" as const, href: "/doctor" },
+        { key: "clinics" as const, href: "/practice" },
+        { key: "labs" as const, href: "/lab" },
+        { key: "pharmacies" as const, href: "/pharmacy" },
+        { key: "imaging" as const, href: "/imaging-center" },
+        { key: "hospitals" as const, href: "/practice" },
+        { key: "pricing" as const, href: "/pricing" },
+      ],
+    []
+  );
 
-  const isActive = (href: string) => location.pathname === href;
+  const isActive = (href: string) => {
+    const path = location.pathname;
+    return path === href || path.startsWith(`${href}/`);
+  };
+
+  const labelFor = (key: NavKey) =>
+    t(`topNav.links.${key}`, {
+      defaultValue:
+        key === "doctors"
+          ? "Doctors"
+          : key === "clinics"
+          ? "Clinics"
+          : key === "labs"
+          ? "Labs"
+          : key === "pharmacies"
+          ? "Pharmacies"
+          : key === "imaging"
+          ? "Imaging"
+          : key === "hospitals"
+          ? "Hospitals"
+          : "Pricing",
+    });
 
   return (
     <>
@@ -53,7 +90,7 @@ const PremiumTopNav = () => {
           <div className="flex items-center justify-between h-14">
             {/* Logo */}
             <Link
-              to="/"
+              to={getLocalizedPath("/")}
               className="flex items-center hover:opacity-70 transition-opacity duration-200 flex-shrink-0"
             >
               <img
@@ -66,19 +103,22 @@ const PremiumTopNav = () => {
             {/* Desktop Navigation - Horizontal */}
             <div className="hidden lg:flex items-center justify-center flex-1 mx-4">
               <div className="flex items-center gap-1">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.name}
-                    to={link.href}
-                    className={`px-3 py-1.5 text-[13px] font-medium rounded-full transition-all duration-200 whitespace-nowrap ${
-                      isActive(link.href)
-                        ? "text-primary bg-primary/10"
-                        : "text-foreground/70 hover:text-foreground hover:bg-accent/50"
-                    }`}
-                  >
-                    {link.name}
-                  </Link>
-                ))}
+                {navLinks.map((link) => {
+                  const href = getLocalizedPath(link.href);
+                  return (
+                    <Link
+                      key={link.key}
+                      to={href}
+                      className={`px-3 py-1.5 text-[13px] font-medium rounded-full transition-all duration-200 whitespace-nowrap ${
+                        isActive(href)
+                          ? "text-primary bg-primary/10"
+                          : "text-foreground/70 hover:text-foreground hover:bg-accent/50"
+                      }`}
+                    >
+                      {labelFor(link.key)}
+                    </Link>
+                  );
+                })}
               </div>
             </div>
 
@@ -94,14 +134,16 @@ const PremiumTopNav = () => {
                     size="sm"
                     className="h-8 px-4 text-xs font-medium"
                   >
-                    Sign In
+                    {t("topNav.actions.signIn", { defaultValue: "Sign In" })}
                   </Button>
                   <Button
                     onClick={() => navigate("/auth?mode=register")}
                     size="sm"
                     className="h-8 px-4 text-xs font-medium rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
                   >
-                    Join as Provider
+                    {t("topNav.actions.joinAsProvider", {
+                      defaultValue: "Join as Provider",
+                    })}
                   </Button>
                 </>
               )}
@@ -113,7 +155,11 @@ const PremiumTopNav = () => {
               <button
                 onClick={() => setIsMobileMenuOpen((v) => !v)}
                 className="p-2 rounded-lg hover:bg-accent/50 transition-colors"
-                aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+                aria-label={
+                  isMobileMenuOpen
+                    ? t("topNav.a11y.closeMenu", { defaultValue: "Close menu" })
+                    : t("topNav.a11y.openMenu", { defaultValue: "Open menu" })
+                }
               >
                 {isMobileMenuOpen ? (
                   <X className="w-5 h-5" />
@@ -137,26 +183,29 @@ const PremiumTopNav = () => {
             >
               <div className="max-w-[1400px] mx-auto px-4 py-6">
                 <div className="grid grid-cols-2 gap-2">
-                  {navLinks.map((link, index) => (
-                    <motion.div
-                      key={link.name}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.03 }}
-                    >
-                      <Link
-                        to={link.href}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className={`block py-3 px-4 text-sm font-medium rounded-xl transition-colors ${
-                          isActive(link.href)
-                            ? "text-primary bg-primary/10"
-                            : "text-foreground/80 hover:text-foreground hover:bg-accent/50"
-                        }`}
+                  {navLinks.map((link, index) => {
+                    const href = getLocalizedPath(link.href);
+                    return (
+                      <motion.div
+                        key={link.key}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.03 }}
                       >
-                        {link.name}
-                      </Link>
-                    </motion.div>
-                  ))}
+                        <Link
+                          to={href}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className={`block py-3 px-4 text-sm font-medium rounded-xl transition-colors ${
+                            isActive(href)
+                              ? "text-primary bg-primary/10"
+                              : "text-foreground/80 hover:text-foreground hover:bg-accent/50"
+                          }`}
+                        >
+                          {labelFor(link.key)}
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
                 </div>
 
                 {!user && (
@@ -174,7 +223,7 @@ const PremiumTopNav = () => {
                       variant="outline"
                       className="flex-1 h-12 text-sm font-medium rounded-xl"
                     >
-                      Sign In
+                      {t("topNav.actions.signIn", { defaultValue: "Sign In" })}
                     </Button>
                     <Button
                       onClick={() => {
@@ -183,7 +232,9 @@ const PremiumTopNav = () => {
                       }}
                       className="flex-1 h-12 text-sm font-medium rounded-xl bg-primary text-primary-foreground"
                     >
-                      Join as Provider
+                      {t("topNav.actions.joinAsProvider", {
+                        defaultValue: "Join as Provider",
+                      })}
                     </Button>
                   </motion.div>
                 )}
