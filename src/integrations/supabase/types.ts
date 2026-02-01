@@ -3150,6 +3150,8 @@ export type Database = {
       notifications: {
         Row: {
           created_at: string
+          entity_id: string | null
+          entity_type: string | null
           id: string
           is_read: boolean
           message: string
@@ -3161,6 +3163,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
           id?: string
           is_read?: boolean
           message: string
@@ -3172,6 +3176,8 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
           id?: string
           is_read?: boolean
           message?: string
@@ -8043,6 +8049,10 @@ export type Database = {
       inherit_clinic_insurance_to_doctor: {
         Args: { p_clinic_id: string; p_doctor_id: string }
         Returns: undefined
+      }
+      is_conversation_participant: {
+        Args: { p_conversation_id: string; p_user_id: string }
+        Returns: boolean
       }
       is_practice_staff: {
         Args: { p_practice_id: string; p_user_id: string }
