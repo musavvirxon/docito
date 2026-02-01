@@ -1,3 +1,4 @@
+// public/locales/tr/common.json
 {
   "siteName": "Docito",
   "tagline": "Yakınınızdaki en iyi doktorları bulun ve randevu alın",
@@ -8,24 +9,24 @@
     "specialties": "Uzmanlıklar",
     "about": "Hakkımızda",
     "contact": "İletişim",
-    "login": "Giriş Yap",
+    "login": "Giriş",
     "register": "Kayıt Ol",
     "dashboard": "Kontrol Paneli",
-    "logout": "Çıkış Yap",
+    "logout": "Çıkış",
     "findDoctors": "Doktor Bul",
     "features": "Özellikler",
     "pricing": "Fiyatlandırma",
     "scheduleDemo": "Demo Planla",
-    "forDoctors": "Doktorlar İçin",
-    "forPractices": "Özel Muayenehaneler İçin",
+    "forDoctors": "Doktorlar için",
+    "forPractices": "Özel Klinikler için",
     "myProfile": "Profilim",
     "notifications": "Bildirimler",
     "settings": "Ayarlar"
   },
   "buttons": {
     "search": "Ara",
-    "bookNow": "Şimdi Rezervasyon Yap",
-    "viewProfile": "Profili Görüntüle",
+    "bookNow": "Şimdi Randevu Al",
+    "viewProfile": "Profili Gör",
     "save": "Kaydet",
     "cancel": "İptal",
     "edit": "Düzenle",
@@ -53,40 +54,40 @@
     "pending": "Beklemede",
     "confirmed": "Onaylandı",
     "completed": "Tamamlandı",
-    "cancelled": "İptal Edildi"
+    "cancelled": "İptal edildi"
   },
   "footer": {
     "platform": "Platform",
     "home": "Ana Sayfa",
     "findDoctors": "Doktor Bul",
-    "practices": "Pratikler",
-    "forProviders": "Sağlayıcılar İçin",
-    "joinProvider": "Sağlayıcı Olarak Katıl",
-    "registerPractice": "Pratik Kaydet",
+    "practices": "Klinikler",
+    "forProviders": "Sağlayıcılar için",
+    "joinProvider": "Sağlayıcı olarak katıl",
+    "registerPractice": "Klinik kaydı",
     "company": "Şirket",
     "aboutUs": "Hakkımızda",
-    "legalCenter": "Hukuki Merkez",
+    "legalCenter": "Hukuk Merkezi",
     "contact": "İletişim",
     "legal": "Yasal",
-    "termsOfService": "Hizmet Şartları",
+    "termsOfService": "Kullanım Şartları",
     "privacyPolicy": "Gizlilik Politikası",
     "cookiePolicy": "Çerez Politikası",
-    "disclaimer": "Docito'da sağlanan içerik yalnızca genel bilgilendirme amaçlıdır. Tıbbi tavsiye, teşhis veya tedavi olarak amaçlanmamıştır ve Docito bunları sağlamaz. Sağlığınız veya belirli tıbbi tavsiyeler hakkında sahip olabileceğiniz sorularla ilgili olarak her zaman doğrudan sağlık hizmeti sağlayıcınıza başvurun.",
+    "disclaimer": "Docito üzerinde sunulan içerik yalnızca genel bilgilendirme amaçlıdır. Tıbbi tavsiye, teşhis veya tedavi değildir ve Docito bunları sağlamaz. Sağlığınızla ilgili sorularınız veya özel tıbbi tavsiye için her zaman doğrudan sağlık hizmeti sağlayıcınızla iletişime geçin.",
     "allRightsReserved": "Tüm Hakları Saklıdır",
-    "trademark": "Docito, Artsy Developers Inc.'in tescilli markası ve markasıdır.",
-    "patent": "Tüm hizmetler, özellikler ve fikri mülkiyet geçerli patent yasaları kapsamında korunmaktadır."
+    "trademark": "Docito, Artsy Developers Inc. şirketinin tescilli ticari markası ve markasıdır.",
+    "patent": "Tüm hizmetler, özellikler ve fikri mülkiyet yürürlükteki patent yasaları kapsamında korunmaktadır."
   },
   "cookies": {
     "title": "Gizliliğinize Değer Veriyoruz",
-    "description": "Tarayıcı deneyiminizi geliştirmek, kişiselleştirilmiş içerik sunmak ve trafiğimizi analiz etmek için çerezleri kullanıyoruz. \"Tümünü Kabul Et\" seçeneğine tıklayarak çerez kullanımımızı kabul etmiş olursunuz.",
+    "description": "Çerezleri tarama deneyiminizi geliştirmek, kişiselleştirilmiş içerik sunmak ve trafiğimizi analiz etmek için kullanırız. \"Tümünü Kabul Et\" seçeneğine tıklayarak çerez kullanımımıza onay verirsiniz.",
     "acceptAll": "Tümünü Kabul Et",
     "essentialOnly": "Yalnızca Gerekli",
     "customize": "Özelleştir",
     "settings": {
       "title": "Çerez Ayarları",
-      "description": "Çerez tercihlerinizi aşağıda özelleştirin. Temel çerezler platformun çalışması için gereklidir.",
-      "essential": "Temel Çerezler",
-      "essentialDesc": "Giriş ve temel işlevler için gereklidir",
+      "description": "Aşağıdan çerez tercihlerinizi özelleştirin. Platformun çalışması için gerekli çerezler zorunludur.",
+      "essential": "Gerekli Çerezler",
+      "essentialDesc": "Giriş ve temel işlevler için gerekli",
       "analytics": "Analitik Çerezler",
       "analyticsDesc": "Platformu geliştirmemize yardımcı olur",
       "marketing": "Pazarlama Çerezleri",
@@ -97,5 +98,21 @@
       "saved": "Çerez tercihleri kaydedildi",
       "error": "Tercihler kaydedilemedi"
     }
+  },
+  "actions": {
+    "save": "Kaydet",
+    "share": "Paylaş",
+    "copied": "Kopyalandı!"
+  },
+  "errors": {
+    "notFound": "Bulunamadı",
+    "error": "Hata",
+    "copyFailed": "Kopyalama başarısız"
+  },
+  "nav": {
+    "doctors": "Doktorlar"
+  },
+  "language": {
+    "select": "Dil seçin"
   }
 }
