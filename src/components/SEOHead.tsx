@@ -1,3 +1,4 @@
+// src/components/SEOHead.tsx
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
@@ -12,16 +13,16 @@ interface SEOHeadProps {
   structuredData?: object;
 }
 
-const languages = ['en', 'ru', 'uz', 'ar'];
+const languages = ['en', 'ru', 'uz', 'ar', 'tr', 'zh', 'es', 'pt', 'de', 'ja', 'ko'];
 
-export const SEOHead = ({ 
-  title, 
-  description, 
+export const SEOHead = ({
+  title,
+  description,
   keywords,
   image = '/logos/social/docito-og-image.png',
   noindex = false,
   type = 'website',
-  structuredData,
+  structuredData
 }: SEOHeadProps) => {
   const { i18n } = useTranslation();
   const location = useLocation();
@@ -29,12 +30,8 @@ export const SEOHead = ({
   const baseUrl = 'https://docito.app';
 
   useEffect(() => {
-    // Set title
-    if (title) {
-      document.title = title;
-    }
+    if (title) document.title = title;
 
-    // Set meta description
     if (description) {
       let metaDesc = document.querySelector('meta[name="description"]');
       if (!metaDesc) {
@@ -45,7 +42,6 @@ export const SEOHead = ({
       metaDesc.setAttribute('content', description);
     }
 
-    // Set meta keywords
     if (keywords) {
       let metaKeywords = document.querySelector('meta[name="keywords"]');
       if (!metaKeywords) {
@@ -56,7 +52,6 @@ export const SEOHead = ({
       metaKeywords.setAttribute('content', keywords);
     }
 
-    // Set Open Graph tags
     const ogTags = [
       { property: 'og:title', content: title },
       { property: 'og:description', content: description },
@@ -64,43 +59,39 @@ export const SEOHead = ({
       { property: 'og:url', content: `${baseUrl}${location.pathname}` },
       { property: 'og:type', content: type },
       { property: 'og:locale', content: currentLang === 'en' ? 'en_US' : `${currentLang}_${currentLang.toUpperCase()}` },
-      { property: 'og:site_name', content: 'Docito' },
+      { property: 'og:site_name', content: 'Docito' }
     ];
 
     ogTags.forEach(({ property, content }) => {
-      if (content) {
-        let metaTag = document.querySelector(`meta[property="${property}"]`);
-        if (!metaTag) {
-          metaTag = document.createElement('meta');
-          metaTag.setAttribute('property', property);
-          document.head.appendChild(metaTag);
-        }
-        metaTag.setAttribute('content', content);
+      if (!content) return;
+      let metaTag = document.querySelector(`meta[property="${property}"]`);
+      if (!metaTag) {
+        metaTag = document.createElement('meta');
+        metaTag.setAttribute('property', property);
+        document.head.appendChild(metaTag);
       }
+      metaTag.setAttribute('content', content);
     });
 
-    // Set Twitter Card tags
     const twitterTags = [
       { name: 'twitter:card', content: 'summary_large_image' },
       { name: 'twitter:title', content: title },
       { name: 'twitter:description', content: description },
       { name: 'twitter:image', content: `${baseUrl}${image}` },
-      { name: 'twitter:site', content: '@docito' },
+      { name: 'twitter:site', content: '@docito' }
     ];
 
     twitterTags.forEach(({ name, content }) => {
-      if (content) {
-        let metaTag = document.querySelector(`meta[name="${name}"]`);
-        if (!metaTag) {
-          metaTag = document.createElement('meta');
-          metaTag.setAttribute('name', name);
-          document.head.appendChild(metaTag);
-        }
-        metaTag.setAttribute('content', content);
+      if (!content) return;
+      let metaTag = document.querySelector(`meta[name="${name}"]`);
+      if (!metaTag) {
+        metaTag = document.createElement('meta');
+        metaTag.setAttribute('name', name);
+        document.head.appendChild(metaTag);
       }
+      metaTag.setAttribute('content', content);
     });
 
-    // Set canonical URL
     let canonical = document.querySelector('link[rel="canonical"]');
     if (!canonical) {
       canonical = document.createElement('link');
@@ -109,7 +100,6 @@ export const SEOHead = ({
     }
     canonical.setAttribute('href', `${baseUrl}${location.pathname}`);
 
-    // Set robots meta tag
     let robotsMeta = document.querySelector('meta[name="robots"]');
     if (!robotsMeta) {
       robotsMeta = document.createElement('meta');
@@ -118,32 +108,30 @@ export const SEOHead = ({
     }
     robotsMeta.setAttribute('content', noindex ? 'noindex, nofollow' : 'index, follow');
 
-    // Add hreflang tags
-    document.querySelectorAll('link[rel="alternate"][hreflang]').forEach(link => link.remove());
+    // hreflang
+    document.querySelectorAll('link[rel="alternate"][hreflang]').forEach((link) => link.remove());
 
-    languages.forEach(lang => {
+    const pathWithoutLangPrefix = location.pathname.replace(/^\/(en|ru|uz|ar|tr|zh|es|pt|de|ja|ko)(\/|$)/, '/');
+
+    languages.forEach((lang) => {
       const link = document.createElement('link');
       link.setAttribute('rel', 'alternate');
       link.setAttribute('hreflang', lang);
-      link.setAttribute('href', `${baseUrl}/${lang}${location.pathname.replace(/^\/(en|ru|uz|ar)/, '')}`);
+      link.setAttribute('href', `${baseUrl}/${lang}${pathWithoutLangPrefix}`);
       document.head.appendChild(link);
     });
 
     const xDefault = document.createElement('link');
     xDefault.setAttribute('rel', 'alternate');
     xDefault.setAttribute('hreflang', 'x-default');
-    xDefault.setAttribute('href', `${baseUrl}/en${location.pathname.replace(/^\/(en|ru|uz|ar)/, '')}`);
+    xDefault.setAttribute('href', `${baseUrl}/en${pathWithoutLangPrefix}`);
     document.head.appendChild(xDefault);
 
-    // Set lang attribute on html element
     document.documentElement.lang = currentLang;
     document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
 
-    // Add structured data (JSON-LD)
-    let existingScript = document.querySelector('script[type="application/ld+json"][data-seo="true"]');
-    if (existingScript) {
-      existingScript.remove();
-    }
+    const existingScript = document.querySelector('script[type="application/ld+json"][data-seo="true"]');
+    if (existingScript) existingScript.remove();
 
     if (structuredData) {
       const script = document.createElement('script');
@@ -152,13 +140,11 @@ export const SEOHead = ({
       script.textContent = JSON.stringify(structuredData);
       document.head.appendChild(script);
     }
-
   }, [title, description, keywords, image, currentLang, location.pathname, noindex, type, structuredData]);
 
   return null;
 };
 
-// Pre-built structured data generators
 export const generateOrganizationSchema = () => ({
   '@context': 'https://schema.org',
   '@type': 'Organization',
@@ -170,14 +156,14 @@ export const generateOrganizationSchema = () => ({
   sameAs: [
     'https://twitter.com/docito',
     'https://facebook.com/docito',
-    'https://linkedin.com/company/docito',
+    'https://linkedin.com/company/docito'
   ],
   contactPoint: {
     '@type': 'ContactPoint',
     telephone: '+1-800-DOCITO',
     contactType: 'customer service',
-    availableLanguage: ['English', 'Russian', 'Uzbek', 'Arabic'],
-  },
+    availableLanguage: ['English', 'Russian', 'Uzbek', 'Arabic', 'Turkish', 'Chinese', 'Spanish', 'Portuguese', 'German', 'Japanese', 'Korean']
+  }
 });
 
 export const generateMedicalWebsiteSchema = () => ({
@@ -191,10 +177,10 @@ export const generateMedicalWebsiteSchema = () => ({
     '@type': 'SearchAction',
     target: {
       '@type': 'EntryPoint',
-      urlTemplate: 'https://docito.app/search?q={search_term_string}',
+      urlTemplate: 'https://docito.app/search?q={search_term_string}'
     },
-    'query-input': 'required name=search_term_string',
-  },
+    'query-input': 'required name=search_term_string'
+  }
 });
 
 export const generateDoctorSchema = (doctor: {
@@ -210,28 +196,32 @@ export const generateDoctorSchema = (doctor: {
   name: doctor.name,
   medicalSpecialty: doctor.specialty,
   image: doctor.image,
-  aggregateRating: doctor.rating ? {
-    '@type': 'AggregateRating',
-    ratingValue: doctor.rating,
-    reviewCount: doctor.reviewCount || 0,
-  } : undefined,
-  address: doctor.address ? {
-    '@type': 'PostalAddress',
-    streetAddress: doctor.address,
-  } : undefined,
+  aggregateRating: doctor.rating
+    ? {
+        '@type': 'AggregateRating',
+        ratingValue: doctor.rating,
+        reviewCount: doctor.reviewCount || 0
+      }
+    : undefined,
+  address: doctor.address
+    ? {
+        '@type': 'PostalAddress',
+        streetAddress: doctor.address
+      }
+    : undefined
 });
 
 export const generateFAQSchema = (faqs: { question: string; answer: string }[]) => ({
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
-  mainEntity: faqs.map(faq => ({
+  mainEntity: faqs.map((faq) => ({
     '@type': 'Question',
     name: faq.question,
     acceptedAnswer: {
       '@type': 'Answer',
-      text: faq.answer,
-    },
-  })),
+      text: faq.answer
+    }
+  }))
 });
 
 export const generateBreadcrumbSchema = (items: { name: string; url: string }[]) => ({
@@ -241,6 +231,6 @@ export const generateBreadcrumbSchema = (items: { name: string; url: string }[])
     '@type': 'ListItem',
     position: index + 1,
     name: item.name,
-    item: item.url,
-  })),
+    item: item.url
+  }))
 });
