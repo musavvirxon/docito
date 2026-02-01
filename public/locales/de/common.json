@@ -1,52 +1,53 @@
+// public/locales/de/common.json
 {
   "siteName": "Docito",
-  "tagline": "Finden und buchen Sie die besten Ärzte in Ihrer Nähe",
+  "tagline": "Finden und buchen Sie Top-Ärzte in Ihrer Nähe",
   "navigation": {
     "home": "Startseite",
     "doctors": "Ärzte",
-    "practices": "Arztpraxen",
-    "specialties": "Fachrichtungen",
+    "practices": "Praxen",
+    "specialties": "Fachgebiete",
     "about": "Über uns",
     "contact": "Kontakt",
     "login": "Anmelden",
     "register": "Registrieren",
     "dashboard": "Dashboard",
     "logout": "Abmelden",
-    "findDoctors": "Ärzte Finden",
+    "findDoctors": "Ärzte finden",
     "features": "Funktionen",
     "pricing": "Preise",
-    "scheduleDemo": "Demo Planen",
+    "scheduleDemo": "Demo planen",
     "forDoctors": "Für Ärzte",
-    "forPractices": "Für Privatpraxen",
+    "forPractices": "Für private Praxen",
     "myProfile": "Mein Profil",
     "notifications": "Benachrichtigungen",
     "settings": "Einstellungen"
   },
   "buttons": {
     "search": "Suchen",
-    "bookNow": "Jetzt Buchen",
-    "viewProfile": "Profil Anzeigen",
+    "bookNow": "Jetzt buchen",
+    "viewProfile": "Profil ansehen",
     "save": "Speichern",
     "cancel": "Abbrechen",
     "edit": "Bearbeiten",
     "delete": "Löschen",
-    "submit": "Absenden",
+    "submit": "Senden",
     "back": "Zurück",
     "next": "Weiter",
-    "finish": "Fertig",
+    "finish": "Fertigstellen",
     "close": "Schließen",
     "confirm": "Bestätigen"
   },
   "form": {
     "email": "E-Mail",
     "password": "Passwort",
-    "confirmPassword": "Passwort Bestätigen",
+    "confirmPassword": "Passwort bestätigen",
     "name": "Name",
     "phone": "Telefon",
     "address": "Adresse",
     "city": "Stadt",
     "country": "Land",
-    "specialty": "Fachrichtung",
+    "specialty": "Fachgebiet",
     "message": "Nachricht"
   },
   "status": {
@@ -69,33 +70,49 @@
     "contact": "Kontakt",
     "legal": "Rechtliches",
     "termsOfService": "Nutzungsbedingungen",
-    "privacyPolicy": "Datenschutzrichtlinie",
+    "privacyPolicy": "Datenschutzerklärung",
     "cookiePolicy": "Cookie-Richtlinie",
-    "disclaimer": "Die auf Docito bereitgestellten Inhalte dienen nur allgemeinen Informationszwecken. Sie sind nicht als medizinischer Rat, Diagnose oder Behandlung gedacht, und Docito bietet diese nicht an. Wenden Sie sich bei Fragen zu Ihrer Gesundheit oder spezifischem medizinischen Rat immer direkt an Ihren Arzt.",
+    "disclaimer": "Die auf Docito bereitgestellten Inhalte dienen nur allgemeinen Informationszwecken. Sie stellen keine medizinische Beratung, Diagnose oder Behandlung dar und Docito bietet diese nicht an. Wenden Sie sich bei Fragen zu Ihrer Gesundheit oder für konkrete medizinische Beratung immer direkt an Ihren Gesundheitsdienstleister.",
     "allRightsReserved": "Alle Rechte vorbehalten",
-    "trademark": "Docito ist eine eingetragene Marke und Marke von Artsy Developers Inc.",
-    "patent": "Alle Dienste, Funktionen und geistiges Eigentum sind durch geltende Patentgesetze geschützt."
+    "trademark": "Docito ist eine eingetragene Marke und ein Brand von Artsy Developers Inc.",
+    "patent": "Alle Services, Funktionen und geistiges Eigentum sind durch geltendes Patentrecht geschützt."
   },
   "cookies": {
-    "title": "Wir Schätzen Ihre Privatsphäre",
-    "description": "Wir verwenden Cookies, um Ihr Browsing-Erlebnis zu verbessern, personalisierte Inhalte bereitzustellen und unseren Traffic zu analysieren. Durch Klicken auf \"Alle Akzeptieren\" stimmen Sie unserer Verwendung von Cookies zu.",
-    "acceptAll": "Alle Akzeptieren",
-    "essentialOnly": "Nur Essenzielle",
+    "title": "Wir schätzen Ihre Privatsphäre",
+    "description": "Wir verwenden Cookies, um Ihr Browsing-Erlebnis zu verbessern, personalisierte Inhalte bereitzustellen und unseren Traffic zu analysieren. Wenn Sie auf \"Alle akzeptieren\" klicken, stimmen Sie der Verwendung von Cookies zu.",
+    "acceptAll": "Alle akzeptieren",
+    "essentialOnly": "Nur notwendig",
     "customize": "Anpassen",
     "settings": {
       "title": "Cookie-Einstellungen",
-      "description": "Passen Sie Ihre Cookie-Präferenzen unten an. Essenzielle Cookies sind für die Funktionsweise der Plattform erforderlich.",
-      "essential": "Essenzielle Cookies",
-      "essentialDesc": "Erforderlich für Anmeldung und Kernfunktionalität",
+      "description": "Passen Sie Ihre Cookie-Einstellungen unten an. Notwendige Cookies sind erforderlich, damit die Plattform funktioniert.",
+      "essential": "Notwendige Cookies",
+      "essentialDesc": "Erforderlich für Login und Kernfunktionen",
       "analytics": "Analyse-Cookies",
-      "analyticsDesc": "Helfen Sie uns, die Plattform zu verbessern",
+      "analyticsDesc": "Helfen uns, die Plattform zu verbessern",
       "marketing": "Marketing-Cookies",
-      "marketingDesc": "Personalisierte Inhalte und Anzeigen",
-      "savePreferences": "Einstellungen Speichern"
+      "marketingDesc": "Personalisierte Inhalte und Werbung",
+      "savePreferences": "Einstellungen speichern"
     },
     "toast": {
       "saved": "Cookie-Einstellungen gespeichert",
-      "error": "Fehler beim Speichern der Einstellungen"
+      "error": "Einstellungen konnten nicht gespeichert werden"
     }
+  },
+  "actions": {
+    "save": "Speichern",
+    "share": "Teilen",
+    "copied": "Kopiert!"
+  },
+  "errors": {
+    "notFound": "Nicht gefunden",
+    "error": "Fehler",
+    "copyFailed": "Kopieren fehlgeschlagen"
+  },
+  "nav": {
+    "doctors": "Ärzte"
+  },
+  "language": {
+    "select": "Sprache auswählen"
   }
 }
