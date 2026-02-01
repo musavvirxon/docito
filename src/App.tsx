@@ -1,9 +1,11 @@
-import { Suspense } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Suspense, useEffect } from "react";
+import { Routes, Route, useParams } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { HelmetProvider } from "react-helmet-async";
+import { languages } from "@/i18n/config";
+import i18n from "@/i18n/config";
 
 // Layouts
 import PublicLayout from "@/layouts/PublicLayout";
@@ -89,6 +91,8 @@ import ImagingRegistration from "@/pages/imaging/ImagingRegistration";
 // Staff invitation
 import AcceptInvite from "@/pages/AcceptInvite";
 
+const supportedLangCodes = languages.map(l => l.code);
+
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
     <div className="animate-pulse flex flex-col items-center gap-4">
@@ -98,6 +102,132 @@ const PageLoader = () => (
   </div>
 );
 
+// Language wrapper component that sets the i18n language based on URL
+function LanguageWrapper({ children }: { children: React.ReactNode }) {
+  const { lang } = useParams<{ lang: string }>();
+  
+  useEffect(() => {
+    if (lang && supportedLangCodes.includes(lang) && i18n.language !== lang) {
+      i18n.changeLanguage(lang);
+    }
+  }, [lang]);
+
+  return <>{children}</>;
+}
+
+// Public routes component
+function PublicRoutes() {
+  return (
+    <Route element={<PublicLayout />}>
+      <Route index element={<PremiumHome />} />
+
+      <Route path="auth" element={<Auth />} />
+      <Route path="accept-invite" element={<AcceptInvite />} />
+
+      {/* Provider landing pages */}
+      <Route path="doctor" element={<DoctorLandingPage />} />
+      <Route path="doctors" element={<DoctorLandingPage />} />
+      <Route path="doctor/:slug" element={<DoctorPublicProfile />} />
+      <Route path="pharmacy" element={<PharmacyLandingPage />} />
+      <Route path="pharmacies" element={<PharmacyLandingPage />} />
+      <Route path="lab" element={<LabLandingPage />} />
+      <Route path="labs" element={<LabLandingPage />} />
+      <Route path="imaging" element={<ImagingLandingPage />} />
+      <Route path="imaging-center" element={<ImagingLandingPage />} />
+      <Route path="imaging-centers" element={<ImagingLandingPage />} />
+      <Route path="practice" element={<Practices />} />
+      <Route path="practices" element={<Practices />} />
+      <Route path="clinics" element={<Practices />} />
+
+      {/* Search & discovery */}
+      <Route path="find-doctors" element={<SearchDoctors />} />
+      <Route path="search-doctors" element={<SearchDoctors />} />
+      <Route path="find-practices" element={<FindPractices />} />
+      <Route path="specialties" element={<BrowseSpecialties />} />
+      <Route path="category/:category" element={<CategorySearch />} />
+
+      {/* Booking */}
+      <Route path="book/:doctorId" element={<AppointmentBooking />} />
+      <Route path="book-appointment/:doctorId" element={<AppointmentBooking />} />
+      <Route path="booking-confirmation/:appointmentId" element={<BookingConfirmation />} />
+
+      {/* Info pages */}
+      <Route path="about" element={<About />} />
+      <Route path="contact" element={<Contact />} />
+      <Route path="features" element={<Features />} />
+      <Route path="pricing" element={<Pricing />} />
+      <Route path="how-it-works" element={<HowItWorks />} />
+      <Route path="faqs" element={<FAQs />} />
+      <Route path="help" element={<HelpCenter />} />
+      <Route path="help-center" element={<HelpCenter />} />
+      <Route path="support" element={<Support />} />
+      <Route path="legal" element={<Legal />} />
+      <Route path="legal/:slug" element={<LegalDetail />} />
+      <Route path="cookies" element={<CookiePolicy />} />
+      <Route path="cookie-policy" element={<CookiePolicy />} />
+      <Route path="legal/cookie-policy" element={<CookiePolicy />} />
+      <Route path="feedback" element={<FeedbackCenter />} />
+    </Route>
+  );
+}
+
+// Dashboard routes component
+function DashboardRoutes() {
+  return (
+    <>
+      {/* Dashboards */}
+      <Route path="patient-dashboard" element={<PatientDashboard />} />
+      <Route path="patient/dashboard" element={<PatientDashboard />} />
+
+      <Route path="doctor-dashboard" element={<DoctorDashboard />} />
+      <Route path="doctor/dashboard" element={<DoctorDashboard />} />
+      <Route path="doctor/schedule" element={<DoctorScheduleSettings />} />
+      <Route path="doctor/treatment-planning" element={<TreatmentPlanning />} />
+      <Route path="doctor/procedures" element={<ProcedureLibrary />} />
+      <Route path="doctor/patient/:patientId" element={<DoctorPatientProfile />} />
+
+      <Route path="staff-dashboard" element={<StaffDashboard />} />
+      <Route path="staff/dashboard" element={<StaffDashboard />} />
+      <Route path="admin-dashboard" element={<AdminDashboard />} />
+      <Route path="admin/dashboard" element={<AdminDashboard />} />
+      <Route path="practices/dashboard" element={<AdminDashboard />} />
+      <Route path="super-admin-dashboard" element={<SuperAdminDashboard />} />
+      <Route path="super-admin/dashboard" element={<SuperAdminDashboard />} />
+
+      {/* Facility dashboards */}
+      <Route path="dashboard/labs" element={<LabDashboardPage />} />
+      <Route path="lab/dashboard" element={<LabDashboardPage />} />
+      <Route path="dashboard/pharmacies" element={<PharmacyDashboardPage />} />
+      <Route path="pharmacy/dashboard" element={<PharmacyDashboardPage />} />
+      <Route path="dashboard/imaging" element={<ImagingDashboardPage />} />
+      <Route path="imaging/dashboard" element={<ImagingDashboardPage />} />
+
+      {/* Registration & Verification */}
+      <Route path="register-practice" element={<RegisterPractice />} />
+      <Route path="practice-settings" element={<PracticeSettings />} />
+      <Route path="practice-verification" element={<PracticeVerification />} />
+
+      <Route path="doctor/verification" element={<DoctorVerification />} />
+      <Route path="lab/register" element={<LabRegistration />} />
+      <Route path="lab/verification" element={<LabVerification />} />
+      <Route path="pharmacy/register" element={<PharmacyRegistration />} />
+      <Route path="pharmacy/verification" element={<PharmacyVerification />} />
+      <Route path="imaging/register" element={<ImagingRegistration />} />
+      <Route path="imaging/verification" element={<ImagingVerification />} />
+
+      {/* Common authenticated pages */}
+      <Route path="profile" element={<ProfilePage />} />
+      <Route path="settings" element={<Settings />} />
+      <Route path="notifications" element={<Notifications />} />
+      <Route path="messages" element={<Messages />} />
+      <Route path="billing" element={<BillingPage />} />
+      <Route path="video-call" element={<VideoCall />} />
+      <Route path="video/:roomId" element={<VideoCall />} />
+      <Route path="appointment-session/:appointmentId" element={<AppointmentSession />} />
+    </>
+  );
+}
+
 export default function App() {
   return (
     <HelmetProvider>
@@ -105,107 +235,14 @@ export default function App() {
         <AuthProvider>
           <Suspense fallback={<PageLoader />}>
             <Routes>
-              {/* Public routes wrapped in PublicLayout */}
-              <Route element={<PublicLayout />}>
-                <Route path="/" element={<PremiumHome />} />
+              {/* Language-prefixed routes (e.g., /en/about, /ru/doctors) */}
+              {supportedLangCodes.map((lang) => (
+                <Route key={lang} path={`${lang}/*`} element={<LanguageWrapper><Routes><PublicRoutes /><DashboardRoutes /><Route path="*" element={<NotFound />} /></Routes></LanguageWrapper>} />
+              ))}
 
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/accept-invite" element={<AcceptInvite />} />
-
-                {/* Provider landing pages */}
-                <Route path="/doctor" element={<DoctorLandingPage />} />
-                <Route path="/doctors" element={<DoctorLandingPage />} />
-                <Route path="/doctor/:slug" element={<DoctorPublicProfile />} />
-                <Route path="/pharmacy" element={<PharmacyLandingPage />} />
-                <Route path="/pharmacies" element={<PharmacyLandingPage />} />
-                <Route path="/lab" element={<LabLandingPage />} />
-                <Route path="/labs" element={<LabLandingPage />} />
-                <Route path="/imaging" element={<ImagingLandingPage />} />
-                <Route path="/imaging-center" element={<ImagingLandingPage />} />
-                <Route path="/imaging-centers" element={<ImagingLandingPage />} />
-                <Route path="/practice" element={<Practices />} />
-                <Route path="/practices" element={<Practices />} />
-                <Route path="/clinics" element={<Practices />} />
-
-                {/* Search & discovery */}
-                <Route path="/find-doctors" element={<SearchDoctors />} />
-                <Route path="/search-doctors" element={<SearchDoctors />} />
-                <Route path="/find-practices" element={<FindPractices />} />
-                <Route path="/specialties" element={<BrowseSpecialties />} />
-                <Route path="/category/:category" element={<CategorySearch />} />
-
-                {/* Booking */}
-                <Route path="/book/:doctorId" element={<AppointmentBooking />} />
-                <Route path="/book-appointment/:doctorId" element={<AppointmentBooking />} />
-                <Route path="/booking-confirmation/:appointmentId" element={<BookingConfirmation />} />
-
-                {/* Info pages */}
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/features" element={<Features />} />
-                <Route path="/pricing" element={<Pricing />} />
-                <Route path="/how-it-works" element={<HowItWorks />} />
-                <Route path="/faqs" element={<FAQs />} />
-                <Route path="/help" element={<HelpCenter />} />
-                <Route path="/help-center" element={<HelpCenter />} />
-                <Route path="/support" element={<Support />} />
-                <Route path="/legal" element={<Legal />} />
-                <Route path="/legal/:slug" element={<LegalDetail />} />
-                <Route path="/cookies" element={<CookiePolicy />} />
-                <Route path="/cookie-policy" element={<CookiePolicy />} />
-                <Route path="/legal/cookie-policy" element={<CookiePolicy />} />
-                <Route path="/feedback" element={<FeedbackCenter />} />
-              </Route>
-
-              {/* Dashboards */}
-              <Route path="/patient-dashboard" element={<PatientDashboard />} />
-              <Route path="/patient/dashboard" element={<PatientDashboard />} />
-
-              <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
-              <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
-              <Route path="/doctor/schedule" element={<DoctorScheduleSettings />} />
-              <Route path="/doctor/treatment-planning" element={<TreatmentPlanning />} />
-              <Route path="/doctor/procedures" element={<ProcedureLibrary />} />
-              <Route path="/doctor/patient/:patientId" element={<DoctorPatientProfile />} />
-
-              <Route path="/staff-dashboard" element={<StaffDashboard />} />
-              <Route path="/staff/dashboard" element={<StaffDashboard />} />
-              <Route path="/admin-dashboard" element={<AdminDashboard />} />
-              <Route path="/admin/dashboard" element={<AdminDashboard />} />
-              <Route path="/practices/dashboard" element={<AdminDashboard />} />
-              <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
-              <Route path="/super-admin/dashboard" element={<SuperAdminDashboard />} />
-
-              {/* Facility dashboards */}
-              <Route path="/dashboard/labs" element={<LabDashboardPage />} />
-              <Route path="/lab/dashboard" element={<LabDashboardPage />} />
-              <Route path="/dashboard/pharmacies" element={<PharmacyDashboardPage />} />
-              <Route path="/pharmacy/dashboard" element={<PharmacyDashboardPage />} />
-              <Route path="/dashboard/imaging" element={<ImagingDashboardPage />} />
-              <Route path="/imaging/dashboard" element={<ImagingDashboardPage />} />
-
-              {/* Registration & Verification */}
-              <Route path="/register-practice" element={<RegisterPractice />} />
-              <Route path="/practice-settings" element={<PracticeSettings />} />
-              <Route path="/practice-verification" element={<PracticeVerification />} />
-
-              <Route path="/doctor/verification" element={<DoctorVerification />} />
-              <Route path="/lab/register" element={<LabRegistration />} />
-              <Route path="/lab/verification" element={<LabVerification />} />
-              <Route path="/pharmacy/register" element={<PharmacyRegistration />} />
-              <Route path="/pharmacy/verification" element={<PharmacyVerification />} />
-              <Route path="/imaging/register" element={<ImagingRegistration />} />
-              <Route path="/imaging/verification" element={<ImagingVerification />} />
-
-              {/* Common authenticated pages */}
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/notifications" element={<Notifications />} />
-              <Route path="/messages" element={<Messages />} />
-              <Route path="/billing" element={<BillingPage />} />
-              <Route path="/video-call" element={<VideoCall />} />
-              <Route path="/video/:roomId" element={<VideoCall />} />
-              <Route path="/appointment-session/:appointmentId" element={<AppointmentSession />} />
+              {/* Non-prefixed routes (default language) */}
+              <PublicRoutes />
+              <DashboardRoutes />
 
               <Route path="*" element={<NotFound />} />
             </Routes>

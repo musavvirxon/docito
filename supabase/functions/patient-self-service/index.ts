@@ -112,10 +112,12 @@ serve(async (req) => {
     }
 
     const action = requireString(body?.action, "action");
+    const payload = body?.payload ?? {};
 
+    console.log(`[patient-self-service] Action: ${action}, User: ${user.id}`);
+
+    // ===== ADD MEDICATION =====
     if (action === "add_medication") {
-      const payload = body?.payload ?? {};
-
       const name = requireString(payload?.name, "name");
       const dosage = requireString(payload?.dosage, "dosage");
       const frequency = requireString(payload?.frequency, "frequency");
@@ -173,9 +175,219 @@ serve(async (req) => {
       );
     }
 
+    // ===== ADD MEDICAL RECORD =====
+    if (action === "add_medical_record") {
+      const record_type = requireString(payload?.record_type ?? payload?.recordType, "record_type");
+      const title = requireString(payload?.title, "title");
+      const description = optionalString(payload?.description);
+      const record_date = optionalISODate(payload?.record_date ?? payload?.recordDate) ?? new Date().toISOString().split('T')[0];
+      const provider_name = optionalString(payload?.provider_name ?? payload?.providerName);
+      const notes = optionalString(payload?.notes);
+
+      const insertRow = {
+        patient_id: user.id,
+        record_type,
+        title,
+        description,
+        record_date,
+        provider_name,
+        notes,
+        created_by_patient: true,
+      };
+
+      const rlsAttempt = await userClient.from("medical_records").insert(insertRow as any).select("*").single();
+
+      if (!rlsAttempt.error) {
+        return jsonResponse({ ok: true, record: rlsAttempt.data }, { status: 200, origin });
+      }
+
+      if (!adminClient) {
+        return jsonResponse({ ok: false, error: rlsAttempt.error.message }, { status: 500, origin });
+      }
+
+      const adminAttempt = await adminClient.from("medical_records").insert(insertRow as any).select("*").single();
+
+      if (adminAttempt.error) {
+        return jsonResponse({ ok: false, error: adminAttempt.error.message }, { status: 500, origin });
+      }
+
+      return jsonResponse(
+        { ok: true, record: adminAttempt.data, warning: "rls_insert_failed_fallback_used" },
+        { status: 200, origin },
+      );
+    }
+
+    // ===== ADD TEST RESULT =====
+    if (action === "add_test_result") {
+      const test_type = requireString(payload?.test_type ?? payload?.testType, "test_type");
+      const test_name = requireString(payload?.test_name ?? payload?.testName, "test_name");
+      const result_value = optionalString(payload?.result_value ?? payload?.resultValue);
+      const result_unit = optionalString(payload?.result_unit ?? payload?.resultUnit);
+      const test_date = optionalISODate(payload?.test_date ?? payload?.testDate) ?? new Date().toISOString().split('T')[0];
+      const notes = optionalString(payload?.notes);
+      const lab_name = optionalString(payload?.lab_name ?? payload?.labName);
+
+      const insertRow = {
+        patient_id: user.id,
+        test_type,
+        test_name,
+        result_value,
+        result_unit,
+        test_date,
+        notes,
+        lab_name,
+        created_by_patient: true,
+      };
+
+      const rlsAttempt = await userClient.from("patient_test_results").insert(insertRow as any).select("*").single();
+
+      if (!rlsAttempt.error) {
+        return jsonResponse({ ok: true, test_result: rlsAttempt.data }, { status: 200, origin });
+      }
+
+      if (!adminClient) {
+        return jsonResponse({ ok: false, error: rlsAttempt.error.message }, { status: 500, origin });
+      }
+
+      const adminAttempt = await adminClient.from("patient_test_results").insert(insertRow as any).select("*").single();
+
+      if (adminAttempt.error) {
+        return jsonResponse({ ok: false, error: adminAttempt.error.message }, { status: 500, origin });
+      }
+
+      return jsonResponse(
+        { ok: true, test_result: adminAttempt.data, warning: "rls_insert_failed_fallback_used" },
+        { status: 200, origin },
+      );
+    }
+
+    // ===== UPDATE MEDICATION =====
+    if (action === "update_medication") {
+      const id = requireString(payload?.id, "id");
+      
+      const updateData: any = {};
+      if (payload?.name) updateData.name = requireString(payload.name, "name");
+      if (payload?.dosage) updateData.dosage = requireString(payload.dosage, "dosage");
+      if (payload?.frequency) updateData.frequency = requireString(payload.frequency, "frequency");
+      if (payload?.instructions !== undefined) updateData.instructions = optionalString(payload.instructions);
+      if (payload?.status) {
+        const statusRaw = optionalString(payload.status) ?? "active";
+        updateData.status = ["active", "completed", "discontinued", "paused"].includes(statusRaw) ? statusRaw : "active";
+      }
+      if (payload?.start_date || payload?.startDate) {
+        updateData.start_date = optionalISODate(payload.start_date ?? payload.startDate);
+      }
+      if (payload?.end_date || payload?.endDate) {
+        updateData.end_date = optionalISODate(payload.end_date ?? payload.endDate);
+      }
+
+      const rlsAttempt = await userClient
+        .from("medications")
+        .update(updateData)
+        .eq("id", id)
+        .eq("patient_id", user.id)
+        .select("*")
+        .single();
+
+      if (!rlsAttempt.error) {
+        return jsonResponse({ ok: true, medication: rlsAttempt.data }, { status: 200, origin });
+      }
+
+      if (!adminClient) {
+        return jsonResponse({ ok: false, error: rlsAttempt.error.message }, { status: 500, origin });
+      }
+
+      const adminAttempt = await adminClient
+        .from("medications")
+        .update(updateData)
+        .eq("id", id)
+        .eq("patient_id", user.id)
+        .select("*")
+        .single();
+
+      if (adminAttempt.error) {
+        return jsonResponse({ ok: false, error: adminAttempt.error.message }, { status: 500, origin });
+      }
+
+      return jsonResponse(
+        { ok: true, medication: adminAttempt.data, warning: "rls_update_failed_fallback_used" },
+        { status: 200, origin },
+      );
+    }
+
+    // ===== DELETE MEDICATION =====
+    if (action === "delete_medication") {
+      const id = requireString(payload?.id, "id");
+
+      const rlsAttempt = await userClient
+        .from("medications")
+        .delete()
+        .eq("id", id)
+        .eq("patient_id", user.id)
+        .eq("created_by_patient", true);
+
+      if (!rlsAttempt.error) {
+        return jsonResponse({ ok: true }, { status: 200, origin });
+      }
+
+      if (!adminClient) {
+        return jsonResponse({ ok: false, error: rlsAttempt.error.message }, { status: 500, origin });
+      }
+
+      const adminAttempt = await adminClient
+        .from("medications")
+        .delete()
+        .eq("id", id)
+        .eq("patient_id", user.id)
+        .eq("created_by_patient", true);
+
+      if (adminAttempt.error) {
+        return jsonResponse({ ok: false, error: adminAttempt.error.message }, { status: 500, origin });
+      }
+
+      return jsonResponse({ ok: true, warning: "rls_delete_failed_fallback_used" }, { status: 200, origin });
+    }
+
+    // ===== GET PATIENT DATA =====
+    if (action === "get_patient_data") {
+      const dataType = optionalString(payload?.data_type ?? payload?.dataType) ?? "all";
+
+      const result: any = {};
+
+      if (dataType === "all" || dataType === "medications") {
+        const { data: medications } = await userClient
+          .from("medications")
+          .select("*")
+          .eq("patient_id", user.id)
+          .order("created_at", { ascending: false });
+        result.medications = medications ?? [];
+      }
+
+      if (dataType === "all" || dataType === "medical_records") {
+        const { data: records } = await userClient
+          .from("medical_records")
+          .select("*")
+          .eq("patient_id", user.id)
+          .order("record_date", { ascending: false });
+        result.medical_records = records ?? [];
+      }
+
+      if (dataType === "all" || dataType === "test_results") {
+        const { data: tests } = await userClient
+          .from("patient_test_results")
+          .select("*")
+          .eq("patient_id", user.id)
+          .order("test_date", { ascending: false });
+        result.test_results = tests ?? [];
+      }
+
+      return jsonResponse({ ok: true, data: result }, { status: 200, origin });
+    }
+
     return jsonResponse({ ok: false, error: "unknown_action" }, { status: 400, origin });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "unknown_error";
+    console.error(`[patient-self-service] Error: ${msg}`);
     return jsonResponse({ ok: false, error: msg }, { status: 500, origin });
   }
 });
