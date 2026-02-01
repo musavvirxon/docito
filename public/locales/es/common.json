@@ -1,31 +1,32 @@
+// public/locales/es/common.json
 {
   "siteName": "Docito",
-  "tagline": "Encuentra y reserva los mejores médicos cerca de ti",
+  "tagline": "Encuentra y reserva a los mejores médicos cerca de ti",
   "navigation": {
     "home": "Inicio",
-    "doctors": "Médicos",
-    "practices": "Prácticas Médicas",
+    "doctors": "Doctores",
+    "practices": "Clínicas",
     "specialties": "Especialidades",
-    "about": "Acerca de",
+    "about": "Sobre nosotros",
     "contact": "Contacto",
-    "login": "Iniciar Sesión",
+    "login": "Iniciar sesión",
     "register": "Registrarse",
     "dashboard": "Panel",
-    "logout": "Cerrar Sesión",
-    "findDoctors": "Buscar Médicos",
-    "features": "Características",
+    "logout": "Cerrar sesión",
+    "findDoctors": "Encontrar médicos",
+    "features": "Funciones",
     "pricing": "Precios",
-    "scheduleDemo": "Agendar Demo",
-    "forDoctors": "Para Médicos",
-    "forPractices": "Para Consultorios Privados",
-    "myProfile": "Mi Perfil",
+    "scheduleDemo": "Agendar demo",
+    "forDoctors": "Para médicos",
+    "forPractices": "Para clínicas privadas",
+    "myProfile": "Mi perfil",
     "notifications": "Notificaciones",
     "settings": "Configuración"
   },
   "buttons": {
     "search": "Buscar",
-    "bookNow": "Reservar Ahora",
-    "viewProfile": "Ver Perfil",
+    "bookNow": "Reservar ahora",
+    "viewProfile": "Ver perfil",
     "save": "Guardar",
     "cancel": "Cancelar",
     "edit": "Editar",
@@ -38,9 +39,9 @@
     "confirm": "Confirmar"
   },
   "form": {
-    "email": "Correo Electrónico",
+    "email": "Correo electrónico",
     "password": "Contraseña",
-    "confirmPassword": "Confirmar Contraseña",
+    "confirmPassword": "Confirmar contraseña",
     "name": "Nombre",
     "phone": "Teléfono",
     "address": "Dirección",
@@ -58,44 +59,60 @@
   "footer": {
     "platform": "Plataforma",
     "home": "Inicio",
-    "findDoctors": "Buscar Doctores",
-    "practices": "Prácticas",
-    "forProviders": "Para Proveedores",
-    "joinProvider": "Únete como Proveedor",
-    "registerPractice": "Registrar Práctica",
-    "company": "Compañía",
-    "aboutUs": "Sobre Nosotros",
-    "legalCenter": "Centro Legal",
+    "findDoctors": "Encontrar médicos",
+    "practices": "Clínicas",
+    "forProviders": "Para proveedores",
+    "joinProvider": "Únete como proveedor",
+    "registerPractice": "Registrar clínica",
+    "company": "Empresa",
+    "aboutUs": "Sobre nosotros",
+    "legalCenter": "Centro legal",
     "contact": "Contacto",
     "legal": "Legal",
-    "termsOfService": "Términos de Servicio",
-    "privacyPolicy": "Política de Privacidad",
-    "cookiePolicy": "Política de Cookies",
-    "disclaimer": "El contenido proporcionado en Docito es solo con fines informativos generales. No está destinado como, y Docito no proporciona, asesoramiento médico, diagnóstico o tratamiento. Siempre contacte directamente a su proveedor de atención médica con cualquier pregunta que pueda tener sobre su salud o asesoramiento médico específico.",
-    "allRightsReserved": "Todos los Derechos Reservados",
+    "termsOfService": "Términos de servicio",
+    "privacyPolicy": "Política de privacidad",
+    "cookiePolicy": "Política de cookies",
+    "disclaimer": "El contenido proporcionado en Docito es solo para fines informativos generales. No pretende ser, y Docito no proporciona, asesoramiento médico, diagnóstico o tratamiento. Siempre contacta directamente a tu profesional de salud para cualquier pregunta sobre tu salud o asesoramiento médico específico.",
+    "allRightsReserved": "Todos los derechos reservados",
     "trademark": "Docito es una marca registrada y marca de Artsy Developers Inc.",
-    "patent": "Todos los servicios, características y propiedad intelectual están protegidos bajo las leyes de patentes aplicables."
+    "patent": "Todos los servicios, funciones y propiedad intelectual están protegidos por las leyes de patentes aplicables."
   },
   "cookies": {
-    "title": "Valoramos Tu Privacidad",
-    "description": "Utilizamos cookies para mejorar tu experiencia de navegación, proporcionar contenido personalizado y analizar nuestro tráfico. Al hacer clic en \"Aceptar Todo\", aceptas nuestro uso de cookies.",
-    "acceptAll": "Aceptar Todo",
-    "essentialOnly": "Solo Esenciales",
+    "title": "Valoramos tu privacidad",
+    "description": "Usamos cookies para mejorar tu experiencia de navegación, ofrecer contenido personalizado y analizar nuestro tráfico. Al hacer clic en \"Aceptar todo\", aceptas nuestro uso de cookies.",
+    "acceptAll": "Aceptar todo",
+    "essentialOnly": "Solo esenciales",
     "customize": "Personalizar",
     "settings": {
-      "title": "Configuración de Cookies",
+      "title": "Configuración de cookies",
       "description": "Personaliza tus preferencias de cookies a continuación. Las cookies esenciales son necesarias para que la plataforma funcione.",
-      "essential": "Cookies Esenciales",
-      "essentialDesc": "Requeridas para inicio de sesión y funcionalidad principal",
-      "analytics": "Cookies de Análisis",
-      "analyticsDesc": "Ayúdanos a mejorar la plataforma",
-      "marketing": "Cookies de Marketing",
+      "essential": "Cookies esenciales",
+      "essentialDesc": "Necesarias para iniciar sesión y funciones básicas",
+      "analytics": "Cookies de analítica",
+      "analyticsDesc": "Nos ayudan a mejorar la plataforma",
+      "marketing": "Cookies de marketing",
       "marketingDesc": "Contenido y anuncios personalizados",
-      "savePreferences": "Guardar Preferencias"
+      "savePreferences": "Guardar preferencias"
     },
     "toast": {
       "saved": "Preferencias de cookies guardadas",
-      "error": "Error al guardar preferencias"
+      "error": "No se pudieron guardar las preferencias"
     }
+  },
+  "actions": {
+    "save": "Guardar",
+    "share": "Compartir",
+    "copied": "¡Copiado!"
+  },
+  "errors": {
+    "notFound": "No encontrado",
+    "error": "Error",
+    "copyFailed": "Error al copiar"
+  },
+  "nav": {
+    "doctors": "Doctores"
+  },
+  "language": {
+    "select": "Seleccionar idioma"
   }
 }
