@@ -1,39 +1,39 @@
 {
-  "backHome": "Voltar para a página inicial",
-  "title": "Centro Jurídico e de Políticas",
-  "subtitle": "A Docito valoriza transparência, segurança e proteção de dados do paciente. Abaixo você encontra informações sobre nossas políticas e como protegemos seus dados.",
+  "title": "Central Legal",
+  "subtitle": "Acesse nossas políticas e termos. Mantemos o compromisso com transparência e proteção das suas informações.",
+  "backHome": "Voltar para início",
   "lastUpdated": "Última atualização",
   "aboutUs": {
-    "title": "Sobre nós",
-    "description": "Conheça nossa missão, visão e compromisso com a qualidade em saúde.",
-    "discover": "Saiba mais"
+    "title": "Sobre a Docito",
+    "description": "Saiba mais sobre nossa missão, valores e a equipe por trás da plataforma.",
+    "discover": "Descobrir mais"
   },
   "principles": {
-    "title": "Nossos princípios éticos",
-    "dataIntegrity": "<strong>Integridade de dados:</strong> Mantemos padrões elevados de precisão e segurança",
-    "transparency": "<strong>Transparência:</strong> Explicamos de forma clara como tratamos as informações",
-    "accountability": "<strong>Responsabilidade:</strong> Gestão responsável de dados de saúde"
+    "title": "Princípios Legais",
+    "dataIntegrity": "<strong>Integridade de dados</strong> - Priorizamos precisão e tratamento responsável de informações.",
+    "transparency": "<strong>Transparência</strong> - Explicamos claramente como a Docito funciona e como os dados são usados.",
+    "accountability": "<strong>Responsabilidade</strong> - Agimos para proteger usuários e manter confiança."
   },
   "contact": {
-    "text": "Para questões legais ou de conformidade, entre em contato:"
+    "text": "Se você tiver dúvidas legais, entre em contato em:"
   },
   "detail": {
-    "backToLegal": "Voltar ao Centro Jurídico",
+    "backToLegal": "Voltar ao Central Legal",
     "effectiveDate": "Data de vigência",
     "downloadPDF": "Baixar PDF",
-    "loadError": "Não foi possível carregar a página legal",
-    "acceptSuccess": "Política aceita",
-    "acceptError": "Não foi possível registrar a aceitação",
-    "pdfComingSoon": "Download de PDF em breve",
-    "acceptedTitle": "Você aceitou esta política",
-    "acceptedDescription": "Sua aceitação foi registrada e armazenada com segurança.",
-    "agreeToPolicy": "Eu li e concordo com {{policy}}",
-    "acceptButton": "Aceitar política",
-    "questions": "Dúvidas? Escreva para"
+    "pdfComingSoon": "O download em PDF estará disponível em breve.",
+    "questions": "Tem dúvidas? Escreva para",
+    "agreeToPolicy": "Concordo com {{policy}}",
+    "acceptButton": "Aceitar",
+    "acceptedTitle": "Aceito",
+    "acceptedDescription": "Você já aceitou esta política.",
+    "loadError": "Não foi possível carregar a página legal.",
+    "acceptSuccess": "Política aceita com sucesso.",
+    "acceptError": "Não foi possível aceitar a política."
   },
-  "termsOfService": {
+  "tos": {
     "seoTitle": "Termos de Serviço Docito®",
-    "seoDescription": "Termos que regem o acesso e o uso da plataforma Docito®.",
+    "seoDescription": "Termos que regem o uso da plataforma Docito®.",
     "title": "Termos de Serviço Docito®",
     "effectiveDate": "02.02.2026",
     "lastUpdated": "02.02.2026",
@@ -46,7 +46,7 @@
     "effectiveDate": "02.02.2026",
     "lastUpdated": "02.02.2026",
     "content": "# Política de Privacidade Docito®\n\nData de vigência: 02.02.2026\nÚltima atualização: 02.02.2026\n\nA Docito é uma plataforma global de gestão de saúde para pessoas buscando cuidados, profissionais e organizações. Recursos incluem agendamentos e reservas, fluxos de trabalho de equipe, mensagens, encaminhamentos, gestão de registros e arquivos, verificação, informações de seguro, análises e serviços relacionados.\n\nDocito® é uma marca registrada e marca comercial da Artsy Developers Inc.\n\nContato: support@docito.app\n\nEsta política explica como coletamos, usamos, compartilhamos e protegemos informações e quais escolhas você tem. Se você não concorda, não use os serviços.\n\n---\n\n## 1) Quem somos e como contatar\n\nEmpresa: Artsy Developers Inc.\nMarca: Docito®\nSuporte: support@docito.app\nContato de privacidade (opcional): privacy@docito.app\nEndereço: Global\n\nA Docito opera globalmente e cumpre requisitos locais aplicáveis.\n\n---\n\n## 2) Escopo\n\nEsta política se aplica a visitantes de páginas públicas e usuários da plataforma, incluindo pessoas buscando cuidados, profissionais, organizações, equipe, administradores e super administradores.\n\n---\n\n## 3) Informações que coletamos\n\nA) Fornecidas por você: conta e perfil, detalhes de agendamento, mensagens e pedidos de suporte, informações de seguro inseridas, arquivos e notas enviados, perfis de organizações, materiais de verificação quando fornecidos, configurações de equipe e permissões.\n\nB) Coletadas automaticamente: tipo de dispositivo e navegador, endereço IP e localização aproximada derivada do IP, páginas visitadas e interações, carimbos de tempo, métricas de desempenho e logs de erro.\n\nC) Terceiros (quando habilitado): status de pagamento e identificadores de transação, metadados de entrega de email ou SMS, status de verificação, sinais agregados de análise e monitoramento.\n\n---\n\n## 4) Dados de saúde, PHI e HIPAA\n\nA Docito não fornece serviços médicos. Nos EUA, algumas informações podem ser consideradas PHI em contextos regulados. Profissionais e organizações controlam as informações clínicas em seus fluxos e são responsáveis por suas obrigações.\n\nA Docito não faz uma afirmação geral de conformidade com a HIPAA. Usamos práticas com foco em privacidade e segurança e alinhadas à HIPAA. O suporte a BAA pode estar disponível mediante solicitação apenas sob um acordo escrito separado e apenas para organizações e configurações elegíveis.\n\n---\n\n## 5) Como usamos informações\n\nUsamos informações para fornecer serviços, gerenciar contas, operar recursos por função, enviar notificações, apoiar coordenação de mensagens e encaminhamentos, armazenar registros e arquivos, oferecer suporte, reforçar segurança e prevenção de fraude, processar pagamentos e assinaturas quando habilitado, melhorar desempenho e cumprir obrigações legais.\n\n---\n\n## 6) Compartilhamento\n\nAs informações podem ser compartilhadas entre usuários e organizações conforme permissões, e com provedores de serviço como hospedagem, armazenamento, email ou SMS, pagamentos, análise e monitoramento. Podemos divulgar por motivos legais, de segurança e para execução de acordos.\n\nNão vendemos informações pessoais no sentido tradicional.\n\n---\n\n## 7) Retenção, segurança e direitos\n\nRetemos dados pelo tempo necessário. Usamos medidas razoáveis como TLS, acesso baseado em função e monitoramento. Dependendo da sua localização, você pode ter direitos de acesso, correção, exclusão, exportação e restrição de processamento. Solicitações podem ser feitas em support@docito.app.\n\n---\n\n## 8) Contato\n\nDocito (Artsy Developers Inc.)\nSuporte: support@docito.app\nEndereço: Global\n"
-  }
+  },
   "cookiePolicy": {
     "seoTitle": "Política de Cookies da Docito®",
     "seoDescription": "Como a Docito® usa cookies e tecnologias semelhantes.",
