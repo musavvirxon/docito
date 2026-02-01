@@ -1,0 +1,28 @@
+// /public/site.webmanifest
+{
+  "name": "Docito",
+  "short_name": "Docito",
+  "description": "Unified healthcare management and booking platform for patients, providers, and facilities.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#0ea5e9",
+  "icons": [
+    {
+      "src": "/logos/icon/docito-logo-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "/logos/icon/docito-logo-256x256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "/logos/icon/docito-logo-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
