@@ -1,12 +1,13 @@
+// public/locales/ja/common.json
 {
   "siteName": "Docito",
-  "tagline": "お近くのトップドクターを検索して予約",
+  "tagline": "近くの優良な医師を見つけて予約",
   "navigation": {
     "home": "ホーム",
     "doctors": "医師",
     "practices": "医療機関",
     "specialties": "専門分野",
-    "about": "会社概要",
+    "about": "会社情報",
     "contact": "お問い合わせ",
     "login": "ログイン",
     "register": "登録",
@@ -17,8 +18,8 @@
     "pricing": "料金",
     "scheduleDemo": "デモを予約",
     "forDoctors": "医師向け",
-    "forPractices": "民間医療機関向け",
-    "myProfile": "マイプロフィール",
+    "forPractices": "個人クリニック向け",
+    "myProfile": "プロフィール",
     "notifications": "通知",
     "settings": "設定"
   },
@@ -38,7 +39,7 @@
     "confirm": "確認"
   },
   "form": {
-    "email": "メールアドレス",
+    "email": "メール",
     "password": "パスワード",
     "confirmPassword": "パスワード確認",
     "name": "名前",
@@ -53,49 +54,65 @@
     "pending": "保留中",
     "confirmed": "確認済み",
     "completed": "完了",
-    "cancelled": "キャンセル済み"
+    "cancelled": "キャンセル"
   },
   "footer": {
     "platform": "プラットフォーム",
     "home": "ホーム",
     "findDoctors": "医師を探す",
-    "practices": "診療所",
-    "forProviders": "医療提供者向け",
-    "joinProvider": "プロバイダーとして参加",
-    "registerPractice": "診療所を登録",
+    "practices": "医療機関",
+    "forProviders": "提供者向け",
+    "joinProvider": "提供者として参加",
+    "registerPractice": "医療機関を登録",
     "company": "会社",
-    "aboutUs": "会社概要",
-    "legalCenter": "法的センター",
+    "aboutUs": "会社情報",
+    "legalCenter": "法務センター",
     "contact": "お問い合わせ",
-    "legal": "法的情報",
+    "legal": "法務",
     "termsOfService": "利用規約",
     "privacyPolicy": "プライバシーポリシー",
-    "cookiePolicy": "クッキーポリシー",
-    "disclaimer": "Docitoで提供されるコンテンツは、一般的な情報提供のみを目的としています。医学的アドバイス、診断、または治療として意図されておらず、Docitoはこれらを提供しません。健康や特定の医学的アドバイスに関する質問がある場合は、常に直接医療提供者にお問い合わせください。",
-    "allRightsReserved": "無断複写・転載を禁じます",
-    "trademark": "DocitoはArtsy Developers Inc.の登録商標およびブランドです。",
-    "patent": "すべてのサービス、機能、知的財産は、適用される特許法により保護されています。"
+    "cookiePolicy": "Cookie ポリシー",
+    "disclaimer": "Docito に掲載されている内容は一般的な情報提供のみを目的としています。医療助言、診断、治療を意図するものではなく、Docito はそれらを提供しません。健康に関するご質問や具体的な医療助言については、必ず医療提供者に直接お問い合わせください。",
+    "allRightsReserved": "All Rights Reserved",
+    "trademark": "Docito は Artsy Developers Inc. の登録商標およびブランドです。",
+    "patent": "すべてのサービス、機能、知的財産は適用される特許法により保護されています。"
   },
   "cookies": {
-    "title": "プライバシーを大切にします",
-    "description": "当社はCookieを使用して、ブラウジング体験を向上させ、パーソナライズされたコンテンツを提供し、トラフィックを分析します。「すべて受け入れる」をクリックすると、Cookieの使用に同意したことになります。",
-    "acceptAll": "すべて受け入れる",
+    "title": "プライバシーを大切にしています",
+    "description": "当社は閲覧体験の向上、パーソナライズされたコンテンツの提供、トラフィック分析のために Cookie を使用します。「すべて許可」をクリックすると、Cookie の使用に同意したことになります。",
+    "acceptAll": "すべて許可",
     "essentialOnly": "必須のみ",
     "customize": "カスタマイズ",
     "settings": {
-      "title": "Cookie設定",
-      "description": "以下でCookieの設定をカスタマイズしてください。プラットフォームが機能するには、必須Cookieが必要です。",
-      "essential": "必須Cookie",
-      "essentialDesc": "ログインとコア機能に必要",
-      "analytics": "分析Cookie",
-      "analyticsDesc": "プラットフォームの改善にご協力ください",
-      "marketing": "マーケティングCookie",
+      "title": "Cookie 設定",
+      "description": "以下で Cookie の設定をカスタマイズできます。プラットフォームの動作には必須 Cookie が必要です。",
+      "essential": "必須 Cookie",
+      "essentialDesc": "ログインと主要機能に必要",
+      "analytics": "分析 Cookie",
+      "analyticsDesc": "プラットフォーム改善に役立ちます",
+      "marketing": "マーケティング Cookie",
       "marketingDesc": "パーソナライズされたコンテンツと広告",
       "savePreferences": "設定を保存"
     },
     "toast": {
-      "saved": "Cookie設定が保存されました",
+      "saved": "Cookie 設定を保存しました",
       "error": "設定の保存に失敗しました"
     }
+  },
+  "actions": {
+    "save": "保存",
+    "share": "共有",
+    "copied": "コピーしました！"
+  },
+  "errors": {
+    "notFound": "見つかりません",
+    "error": "エラー",
+    "copyFailed": "コピーに失敗しました"
+  },
+  "nav": {
+    "doctors": "医師"
+  },
+  "language": {
+    "select": "言語を選択"
   }
 }
