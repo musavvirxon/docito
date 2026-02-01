@@ -2,9 +2,8 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import { toast } from "sonner";
 import { SEOHead } from "@/components/SEOHead";
 
 const SUPPORT_EMAIL = "support@docito.app";
@@ -28,10 +27,6 @@ export default function PrivacyPolicy() {
   const contentRaw = t("legal:privacyPolicy.content", { returnObjects: true }) as unknown;
   const content = normalizeMarkdown(contentRaw);
 
-  const handleDownloadPDF = () => {
-    toast.info(t("legal:detail.pdfComingSoon"));
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       <SEOHead title={seoTitle} description={seoDescription} type="article" />
@@ -52,11 +47,6 @@ export default function PrivacyPolicy() {
                 {t("legal:detail.effectiveDate")}: {effectiveDate} • {t("legal:lastUpdated")}: {lastUpdated}
               </p>
             </div>
-
-            <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
-              <Download className="mr-2 h-4 w-4" />
-              {t("legal:detail.downloadPDF")}
-            </Button>
           </div>
         </div>
 
