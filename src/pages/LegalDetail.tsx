@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Download, Check } from 'lucide-react';
+import { ArrowLeft, Check } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
@@ -73,7 +73,6 @@ export default function LegalDetail() {
 
       setHasAccepted(!!data);
     } catch (error) {
-      // No acceptance found
       setHasAccepted(false);
     }
   };
@@ -83,15 +82,13 @@ export default function LegalDetail() {
 
     setIsAccepting(true);
     try {
-      const { error } = await supabase
-        .from('user_policy_acceptances')
-        .insert({
-          user_id: user.id,
-          policy_slug: page.slug,
-          policy_version: format(new Date(page.updated_at), 'yyyy-MM-dd'),
-          ip_address: null, // Would need server-side implementation
-          user_agent: navigator.userAgent,
-        });
+      const { error } = await supabase.from('user_policy_acceptances').insert({
+        user_id: user.id,
+        policy_slug: page.slug,
+        policy_version: format(new Date(page.updated_at), 'yyyy-MM-dd'),
+        ip_address: null,
+        user_agent: navigator.userAgent,
+      });
 
       if (error) throw error;
 
@@ -103,11 +100,6 @@ export default function LegalDetail() {
     } finally {
       setIsAccepting(false);
     }
-  };
-
-  const handleDownloadPDF = () => {
-    // In production, implement PDF generation
-    toast.info(t('legal:detail.pdfComingSoon'));
   };
 
   if (loading) {
@@ -140,10 +132,6 @@ export default function LegalDetail() {
                 {t('legal:detail.effectiveDate')}: {format(new Date(page.updated_at), 'MMMM d, yyyy')}
               </p>
             </div>
-            <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
-              <Download className="mr-2 h-4 w-4" />
-              {t('legal:detail.downloadPDF')}
-            </Button>
           </div>
         </div>
 
@@ -171,23 +159,12 @@ export default function LegalDetail() {
                   </>
                 ) : (
                   <>
-                    <Checkbox 
-                      id="accept-policy"
-                      disabled={isAccepting}
-                    />
+                    <Checkbox id="accept-policy" disabled={isAccepting} />
                     <div className="flex-1">
-                      <label 
-                        htmlFor="accept-policy" 
-                        className="text-sm font-medium cursor-pointer"
-                      >
+                      <label htmlFor="accept-policy" className="text-sm font-medium cursor-pointer">
                         {t('legal:detail.agreeToPolicy', { policy: getTranslatedField(page, 'title') })}
                       </label>
-                      <Button 
-                        onClick={handleAccept}
-                        disabled={isAccepting}
-                        className="mt-4"
-                        size="sm"
-                      >
+                      <Button onClick={handleAccept} disabled={isAccepting} className="mt-4" size="sm">
                         {t('legal:detail.acceptButton')}
                       </Button>
                     </div>
