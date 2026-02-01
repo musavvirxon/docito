@@ -174,7 +174,7 @@ export const generateOrganizationSchema = () => ({
   url: "https://docito.app",
   logo: "https://docito.app/logos/docito-logo.png",
   description:
-    "Unified healthcare management and booking platform connecting patients, doctors, clinics, labs, pharmacies, and imaging centers.",
+    "Unified healthcare management and booking platform connecting patients, doctors, clinics, labs, pharmacies, and imaging centers. All-in-One healthcare management app.",
   sameAs: ["https://twitter.com/docito", "https://facebook.com/docito", "https://linkedin.com/company/docito"],
   contactPoint: {
     "@type": "ContactPoint",
