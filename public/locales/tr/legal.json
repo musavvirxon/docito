@@ -1,39 +1,39 @@
 {
+  "title": "Hukuk Merkezi",
+  "subtitle": "Politika ve şartlarımıza erişin. Şeffaflık ve bilgilerinizin korunmasına bağlıyız.",
   "backHome": "Ana sayfaya dön",
-  "title": "Yasal ve Politika Merkezi",
-  "subtitle": "Docito’da şeffaflık, güvenlik ve hasta verilerinin korunmasına önem veriyoruz. Aşağıda politikalarımız ve bilgilerinizi nasıl koruduğumuz hakkında bilgi bulabilirsiniz.",
   "lastUpdated": "Son güncelleme",
   "aboutUs": {
-    "title": "Hakkımızda",
-    "description": "Misyonumuz, vizyonumuz ve sağlıkta kalite yaklaşımımız hakkında bilgi edinin.",
-    "discover": "Daha fazla öğrenin"
+    "title": "Docito Hakkında",
+    "description": "Misyonumuz, değerlerimiz ve platformun arkasındaki ekip hakkında daha fazla bilgi edinin.",
+    "discover": "Daha fazlasını keşfet"
   },
   "principles": {
-    "title": "Etik ilkelerimiz",
-    "dataIntegrity": "<strong>Veri bütünlüğü:</strong> Doğruluk ve güvenlik için yüksek standartlar uygularız",
-    "transparency": "<strong>Şeffaflık:</strong> Bilgileri nasıl ele aldığımızı açıkça anlatırız",
-    "accountability": "<strong>Hesap verebilirlik:</strong> Sağlık verilerini sorumlu şekilde yönetiriz"
+    "title": "Hukuki İlkeler",
+    "dataIntegrity": "<strong>Veri bütünlüğü</strong> - Doğruluğu ve bilgilerin sorumlu şekilde işlenmesini önceleriz.",
+    "transparency": "<strong>Şeffaflık</strong> - Docito’nun nasıl çalıştığını ve verilerin nasıl kullanıldığını açıkça anlatırız.",
+    "accountability": "<strong>Sorumluluk</strong> - Kullanıcıları korumak ve güveni sürdürmek için hareket ederiz."
   },
   "contact": {
-    "text": "Yasal veya uyumluluk soruları için bizimle iletişime geçin:"
+    "text": "Hukuki sorularınız için bizimle iletişime geçin:"
   },
   "detail": {
-    "backToLegal": "Yasal merkeze dön",
+    "backToLegal": "Hukuk Merkezine Dön",
     "effectiveDate": "Yürürlük tarihi",
     "downloadPDF": "PDF indir",
-    "loadError": "Yasal sayfa yüklenemedi",
-    "acceptSuccess": "Politika kabul edildi",
-    "acceptError": "Kabul kaydedilemedi",
-    "pdfComingSoon": "PDF indirme yakında",
-    "acceptedTitle": "Bu politikayı kabul ettiniz",
-    "acceptedDescription": "Kabulünüz kaydedildi ve güvenli şekilde saklanıyor.",
-    "agreeToPolicy": "{{policy}} okudum ve kabul ediyorum",
-    "acceptButton": "Politikayı kabul et",
-    "questions": "Sorularınız mı var? Şuraya yazın"
+    "pdfComingSoon": "PDF indirme yakında sunulacak.",
+    "questions": "Sorunuz mu var? Şuraya yazın",
+    "agreeToPolicy": "{{policy}} kabul ediyorum",
+    "acceptButton": "Kabul et",
+    "acceptedTitle": "Kabul edildi",
+    "acceptedDescription": "Bu politikayı zaten kabul ettiniz.",
+    "loadError": "Hukuki sayfa yüklenemedi.",
+    "acceptSuccess": "Politika başarıyla kabul edildi.",
+    "acceptError": "Politika kabul edilemedi."
   },
-  "termsOfService": {
+  "tos": {
     "seoTitle": "Docito® Kullanım Şartları",
-    "seoDescription": "Docito® platformuna erişim ve kullanım şartları.",
+    "seoDescription": "Docito® platformunu kullanımı yöneten şartlar.",
     "title": "Docito® Kullanım Şartları",
     "effectiveDate": "02.02.2026",
     "lastUpdated": "02.02.2026",
@@ -46,7 +46,7 @@
     "effectiveDate": "02.02.2026",
     "lastUpdated": "02.02.2026",
     "content": "# Docito® Gizlilik Politikası\n\nYürürlük Tarihi: 02.02.2026\nSon Güncelleme: 02.02.2026\n\nDocito bakım arayanlar, sağlık sağlayıcıları ve kuruluşlar için küresel bir sağlık yönetim platformudur. Özellikler: randevu ve rezervasyon, personel iş akışları, mesajlaşma, sevkler, kayıt ve dosya yönetimi, doğrulama, sigorta bilgileri, analitik ve ilgili hizmetler.\n\nDocito® Artsy Developers Inc. şirketinin tescilli ticari markası ve markasıdır.\n\nİletişim: support@docito.app\n\nBu politika, Docito’yu kullanırken bilgileri nasıl topladığımızı, kullandığımızı, paylaştığımızı ve koruduğumuzu açıklar. Kabul etmiyorsanız hizmetleri kullanmayın.\n\n---\n\n## 1) Biz kimiz ve iletişim\n\nŞirket: Artsy Developers Inc.\nMarka: Docito®\nDestek: support@docito.app\nGizlilik iletişimi (opsiyonel): privacy@docito.app\nAdres: Global\n\nDocito küresel olarak çalışır ve geçerli yerel gerekliliklere uyar.\n\n---\n\n## 2) Kapsam\n\nBu politika, kamu sayfalarını ziyaret edenleri ve platform kullanıcılarını kapsar: bakım arayanlar, sağlayıcılar, kuruluşlar, personel, admin ve süper-admin.\n\n---\n\n## 3) Topladığımız bilgiler\n\nA) Sizin sağladıklarınız: hesap ve profil, randevu detayları, mesajlar ve destek talepleri, girilen sigorta bilgileri, yüklenen dosyalar ve notlar, kuruluş profilleri, doğrulama materyalleri (sunarsanız), personel ve yetki ayarları.\n\nB) Otomatik: cihaz ve tarayıcı türü, IP adresi ve IP’den yaklaşık konum (şehir veya ülke), ziyaret edilen sayfalar ve etkileşimler, zaman damgaları, performans ölçümleri, hata günlükleri.\n\nC) Üçüncü taraflar (etkinse): ödeme durumu ve işlem kimliği, email/SMS teslimat metaverisi, doğrulama durumu, toplu analitik ve izleme sinyalleri.\n\n---\n\n## 4) Sağlık verileri, PHI ve HIPAA\n\nDocito tıbbi hizmet sunmaz. ABD’de bazı bilgiler düzenlenen bağlamlarda PHI sayılabilir. Sağlayıcılar ve kuruluşlar kendi klinik iş akışlarındaki veriler ve yasal yükümlülükleri için sorumludur.\n\nDocito genel bir HIPAA uyumluluğu iddiasında bulunmaz. Gizlilik öncelikli, güvenlik odaklı ve HIPAA ile uyumlu yaklaşımlar kullanırız. BAA desteği talep üzerine, yalnızca ayrı bir yazılı anlaşma kapsamında ve yalnızca uygun kuruluşlar ile yapılandırmalar için mümkün olabilir.\n\n---\n\n## 5) Bilgileri nasıl kullanırız\n\nBilgileri; hizmeti sunmak, hesap yönetmek, role göre özellikleri çalıştırmak, randevu ve bildirimler, mesaj ve sevk koordinasyonu, kayıt ve dosya depolama, destek, güvenlik ve dolandırıcılığı önleme, ödemeler ve abonelikler (etkinse), performans iyileştirme ve yasal yükümlülükler için kullanırız.\n\n---\n\n## 6) Paylaşım\n\nBilgiler, rol tabanlı paylaşım kapsamında kullanıcılar ve kuruluşlar arasında ve hizmet sağlayıcılarla (barındırma, depolama, email/SMS, ödeme, analitik ve izleme) paylaşılabilir. Hukuk, güvenlik ve sözleşme uygulaması için açıklama yapılabilir.\n\nKişisel bilgileri geleneksel anlamda satmayız.\n\n---\n\n## 7) Saklama, güvenlik ve haklar\n\nVerileri gerekli süre boyunca saklarız. TLS, rol tabanlı erişim ve izleme gibi makul güvenlik önlemleri kullanırız. Konumunuza bağlı olarak erişim, düzeltme, silme, dışa aktarma ve kısıtlama haklarınız olabilir. Talepler için support@docito.app adresine yazın.\n\n---\n\n## 8) İletişim\n\nDocito (Artsy Developers Inc.)\nDestek: support@docito.app\nAdres: Global\n"
-  }
+  },
   "cookiePolicy": {
     "seoTitle": "Docito® Çerez Politikası",
     "seoDescription": "Docito® çerezleri ve benzer teknolojileri nasıl kullanır.",
