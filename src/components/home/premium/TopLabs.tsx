@@ -51,7 +51,7 @@ export default function TopLabs() {
       try {
         const { data, error } = await (supabase as any)
           .from('lab_centers')
-          .select('id, name, city, country, accepts_insurance, average_turnaround_hours, lab_type')
+          .select('id, name, city, country, accepts_insurance, average_turnaround_hours, type')
           .eq('is_verified', true)
           .order('average_turnaround_hours', { ascending: true, nullsFirst: false })
           .limit(4);
@@ -66,7 +66,7 @@ export default function TopLabs() {
           country: r.country ?? null,
           accepts_insurance: typeof r.accepts_insurance === 'boolean' ? r.accepts_insurance : null,
           average_turnaround_hours: safeNum(r.average_turnaround_hours, null),
-          type: r.lab_type ?? null,
+          type: r.type ?? null,
         }));
 
         setLabs(normalized);

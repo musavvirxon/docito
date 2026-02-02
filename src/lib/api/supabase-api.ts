@@ -361,29 +361,22 @@ export const appointmentApi = {
 
         const doctorMap = new Map<string, any>();
         if (doctorIds.length > 0) {
+          // Use doctor_profiles_view which already has full_name joined
           const { data: docRows, error: docErr } = await (supabase as any)
-            .from('doctors')
-            .select(`
-              id, 
-              specialty,
-              profiles:user_id (
-                full_name,
-                avatar_url
-              )
-            `)
+            .from('doctor_profiles_view')
+            .select('id, specialty, full_name, avatar_url')
             .in('id', doctorIds);
 
           if (!docErr && docRows) {
             docRows.forEach((d: any) => {
-              // Extract full_name from profiles for easier access
-              const profiles = Array.isArray(d.profiles) ? d.profiles[0] : d.profiles;
-              const fullName = profiles?.full_name || null;
-              
               doctorMap.set(d.id, {
                 id: d.id,
                 specialty: d.specialty,
-                profiles: profiles,
-                full_name: fullName, // Add directly for easier access
+                full_name: d.full_name || null,
+                profiles: {
+                  full_name: d.full_name || null,
+                  avatar_url: d.avatar_url || null,
+                },
               });
             });
           }
