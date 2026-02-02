@@ -40,64 +40,93 @@ export const applyDirection = (langCode: string): void => {
   document.documentElement.setAttribute("lang", langCode);
 };
 
-i18n
-  .use(Backend)
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .init({
-    fallbackLng: "en",
-    debug: false,
-    supportedLngs: languages.map((l) => l.code),
+const safeJsonParse = (data: string) => {
+  try {
+    return JSON.parse(data);
+  } catch (err) {
+    // Prevent runtime crashes on invalid locale JSON
+    console.error("[i18n] Failed to parse locale JSON:", err);
+    return {};
+  }
+};
 
-    detection: {
-      order: ["localStorage", "navigator", "htmlTag"],
-      caches: ["localStorage"],
-      lookupLocalStorage: "i18nextLng",
-    },
+async function initI18n() {
+  try {
+    await i18n
+      .use(Backend)
+      .use(LanguageDetector)
+      .use(initReactI18next)
+      .init({
+        fallbackLng: "en",
+        debug: false,
+        supportedLngs: languages.map((l) => l.code),
+        nonExplicitSupportedLngs: true,
+        load: "languageOnly",
+        lowerCaseLng: true,
 
-    backend: {
-      loadPath: `/locales/{{lng}}/{{ns}}.json?v=${APP_VERSION}`,
-      requestOptions: {
-        cache: "default",
-        mode: "cors",
-      },
-    },
+        detection: {
+          order: ["localStorage", "navigator", "htmlTag"],
+          caches: ["localStorage"],
+          lookupLocalStorage: "i18nextLng",
+        },
 
-    interpolation: {
-      escapeValue: false,
-    },
+        backend: {
+          loadPath: `/locales/{{lng}}/{{ns}}.json?v=${APP_VERSION}`,
+          parse: safeJsonParse,
+          requestOptions: {
+            cache: "default",
+            mode: "cors",
+          },
+        },
 
-    ns: [
-      "common",
-      "home",
-      "howItWorks",
-      "doctors",
-      "patients",
-      "auth",
-      "dashboard",
-      "support",
-      "about",
-      "contact",
-      "faqs",
-      "features",
-      "help",
-      "legal",
-      "practices",
-      "specialties",
-      "lab",
-      "pharmacy",
-      "imaging",
-      "admin",
-      "popups",
-    ],
-    defaultNS: "common",
+        interpolation: {
+          escapeValue: false,
+        },
 
-    partialBundledLanguages: true,
+        ns: [
+          "common",
+          "home",
+          "howItWorks",
+          "doctors",
+          "patients",
+          "auth",
+          "dashboard",
+          "support",
+          "about",
+          "contact",
+          "faqs",
+          "features",
+          "help",
+          "legal",
+          "practices",
+          "specialties",
+          "lab",
+          "pharmacy",
+          "imaging",
+          "admin",
+          "popups",
+        ],
+        defaultNS: "common",
 
-    react: {
-      useSuspense: false,
-    },
-  });
+        partialBundledLanguages: true,
+
+        react: {
+          useSuspense: false,
+        },
+      });
+
+    applyDirection(i18n.language);
+  } catch (err) {
+    console.error("[i18n] Initialization failed:", err);
+    try {
+      applyDirection("en");
+    } catch {
+      // ignore
+    }
+  }
+}
+
+void initI18n();
 
 i18n.on("initialized", () => {
   applyDirection(i18n.language);
