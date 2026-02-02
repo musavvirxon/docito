@@ -59,7 +59,7 @@ export default function NearbyPharmacies() {
         const { data, error } = await (supabase as any)
           .from('pharmacies')
           .select('id, name, logo_url, city, country, delivery_available, accepts_insurance, average_rating, num_reviews')
-          .eq('is_verified', true)
+          .eq('verified', true)
           .order('num_reviews', { ascending: false })
           .order('average_rating', { ascending: false })
           .limit(4);

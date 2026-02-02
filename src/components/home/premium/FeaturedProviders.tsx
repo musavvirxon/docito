@@ -125,7 +125,7 @@ export default function FeaturedProviders() {
         const { data, error } = await (supabase as any)
           .from('practices')
           .select('id, name, logo_url, practice_type, average_rating, num_reviews, city, country, appointment_count')
-          .eq('is_verified', true)
+          .eq('verified', true)
           .order('num_reviews', { ascending: false })
           .order('average_rating', { ascending: false })
           .order('appointment_count', { ascending: false })
