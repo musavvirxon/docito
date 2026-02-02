@@ -1,7 +1,6 @@
-// public/locales/zh/common.json
 {
   "siteName": "Docito",
-  "tagline": "查找并预约您附近的优质医生",
+  "tagline": "查找并预约您附近的顶级医生",
   "navigation": {
     "home": "首页",
     "doctors": "医生",
@@ -13,9 +12,9 @@
     "register": "注册",
     "dashboard": "仪表板",
     "logout": "退出登录",
-    "findDoctors": "找医生",
+    "findDoctors": "查找医生",
     "features": "功能",
-    "pricing": "价格",
+    "pricing": "定价",
     "scheduleDemo": "预约演示",
     "forDoctors": "面向医生",
     "forPractices": "面向私立诊所",
@@ -39,7 +38,7 @@
     "confirm": "确认"
   },
   "form": {
-    "email": "电子邮箱",
+    "email": "邮箱",
     "password": "密码",
     "confirmPassword": "确认密码",
     "name": "姓名",
@@ -48,7 +47,7 @@
     "city": "城市",
     "country": "国家",
     "specialty": "专科",
-    "message": "留言"
+    "message": "消息"
   },
   "status": {
     "pending": "待处理",
@@ -59,11 +58,11 @@
   "footer": {
     "platform": "平台",
     "home": "首页",
-    "findDoctors": "找医生",
-    "practices": "机构",
-    "forProviders": "面向服务提供方",
-    "joinProvider": "作为服务提供方加入",
-    "registerPractice": "注册机构",
+    "findDoctors": "查找医生",
+    "practices": "诊所",
+    "forProviders": "面向医疗提供者",
+    "joinProvider": "作为提供者加入",
+    "registerPractice": "注册诊所",
     "company": "公司",
     "aboutUs": "关于我们",
     "legalCenter": "法律中心",
@@ -72,20 +71,20 @@
     "termsOfService": "服务条款",
     "privacyPolicy": "隐私政策",
     "cookiePolicy": "Cookie 政策",
-    "disclaimer": "Docito 提供的内容仅供一般信息参考。其不构成医疗建议、诊断或治疗，Docito 也不提供此类服务。如有任何健康问题或需要具体医疗建议，请直接联系您的医疗服务提供者。",
+    "disclaimer": "Docito 提供的内容仅用于一般信息参考。它不构成医疗建议、诊断或治疗，Docito 也不提供此类服务。如对健康或具体医疗建议有疑问，请直接联系您的医疗服务提供者。",
     "allRightsReserved": "保留所有权利",
     "trademark": "Docito 是 Artsy Developers Inc. 的注册商标与品牌。",
-    "patent": "所有服务、功能和知识产权均受适用的专利法律保护。"
+    "patent": "所有服务、功能与知识产权均受适用专利法保护。"
   },
   "cookies": {
     "title": "我们重视您的隐私",
-    "description": "我们使用 Cookie 来提升浏览体验、提供个性化内容并分析流量。点击“接受全部”即表示您同意我们使用 Cookie。",
-    "acceptAll": "接受全部",
+    "description": "我们使用 Cookie 来提升您的浏览体验、提供个性化内容并分析流量。点击“全部接受”即表示您同意我们使用 Cookie。",
+    "acceptAll": "全部接受",
     "essentialOnly": "仅必要",
     "customize": "自定义",
     "settings": {
       "title": "Cookie 设置",
-      "description": "在下方自定义您的 Cookie 偏好。平台运行需要必要的 Cookie。",
+      "description": "在下方自定义您的 Cookie 偏好。平台运行所需的必要 Cookie 无法关闭。",
       "essential": "必要 Cookie",
       "essentialDesc": "登录与核心功能所必需",
       "analytics": "分析 Cookie",
