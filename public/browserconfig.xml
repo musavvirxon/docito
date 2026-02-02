@@ -1,11 +1,8 @@
-<!-- /public/browserconfig.xml -->
 <?xml version="1.0" encoding="utf-8"?>
 <browserconfig>
   <msapplication>
     <tile>
-      <square70x70logo src="/logos/icon/docito-logo-64x64.png"/>
-      <square150x150logo src="/logos/icon/docito-logo-128x128.png"/>
-      <square310x310logo src="/logos/icon/docito-logo-256x256.png"/>
+      <square150x150logo src="/logos/icon/docito-logo-128x128.png" />
       <TileColor>#0ea5e9</TileColor>
     </tile>
   </msapplication>
