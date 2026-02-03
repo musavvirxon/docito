@@ -176,31 +176,34 @@ export default function SystemLogs() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filtered.map((l) => (
-                    <TableRow key={String(l.id)}>
-                      <TableCell className="text-sm text-foreground">{formatDate(l.created_at)}</TableCell>
-                      <TableCell>
-                        <span
-                          className={`inline-flex items-center rounded-full border px-2 py-1 text-xs font-medium ${actionBadgeClass(
-                            l.action_type || l.action
-                          )}`}
-                        >
-                          {l.action_type || l.action || "—"}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-sm text-foreground truncate">
-                        {(l.entity_type || "—") + (l.entity_id ? ` • ${shortId(l.entity_id)}` : "")}
-                      </TableCell>
-                      <TableCell className="text-sm text-foreground truncate">{shortId(l.user_id)}</TableCell>
-                      <TableCell className="text-sm text-foreground truncate">{l.ip_address || "—"}</TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="outline" size="sm" className="gap-2" onClick={() => openDetails(l)}>
-                          <Eye className="w-4 h-4" />
-                          View
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                  filtered.map((l) => {
+                    const action = l.action_type || l.action || "—";
+                    return (
+                      <TableRow key={String(l.id)}>
+                        <TableCell className="text-sm text-foreground">{formatDate(l.created_at)}</TableCell>
+                        <TableCell>
+                          <span
+                            className={`inline-flex items-center rounded-full border px-2 py-1 text-xs font-medium ${actionBadgeClass(
+                              action
+                            )}`}
+                          >
+                            {action}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-sm text-foreground truncate">
+                          {(l.entity_type || "—") + (l.entity_id ? ` • ${shortId(l.entity_id)}` : "")}
+                        </TableCell>
+                        <TableCell className="text-sm text-foreground truncate">{shortId(l.user_id)}</TableCell>
+                        <TableCell className="text-sm text-foreground truncate">{l.ip_address || "—"}</TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="outline" size="sm" className="gap-2" onClick={() => openDetails(l)}>
+                            <Eye className="w-4 h-4" />
+                            View
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 )}
               </TableBody>
             </Table>
