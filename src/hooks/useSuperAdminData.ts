@@ -1,5 +1,4 @@
 // src/hooks/useSuperAdminData.ts
-// src/hooks/useSuperAdminData.ts
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
