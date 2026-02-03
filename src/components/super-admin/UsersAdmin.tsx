@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Search, RefreshCw, UserCog, ShieldCheck, ShieldOff, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
-import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,15 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 
-type UserRow = {
-  user_id: string;
-  full_name: string | null;
-  email: string | null;
-  phone: string | null;
-  created_at: string | null;
-  updated_at: string | null;
-  roles: string[];
-};
+import { listUsers, setUserRoles, disableUser, enableUser, type UserRow } from "@/lib/superadminApi";
 
 type RolesMode = "replace" | "add" | "remove";
 
@@ -37,15 +28,6 @@ const ROLE_OPTIONS: Array<{ key: string; label: string }> = [
   { key: "imaging_admin", label: "Imaging Admin" },
   { key: "super_admin", label: "Super Admin" },
 ];
-
-async function invokeSuperadmin<T = any>(body: Record<string, any>): Promise<T> {
-  const { data, error } = await supabase.functions.invoke("superadmin", { body });
-  if (error) {
-    const msg = (error as any)?.context?.message || (error as any)?.message || "Request failed";
-    throw new Error(msg);
-  }
-  return data as T;
-}
 
 function formatDate(v?: string | null) {
   if (!v) return "—";
@@ -74,19 +56,15 @@ export default function UsersAdmin() {
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [mode, setMode] = useState<RolesMode>("replace");
 
-  const [disableOpen, setDisableOpen] = useState(false);
-  const [disableReason, setDisableReason] = useState("");
-  const [disableUser, setDisableUser] = useState<UserRow | null>(null);
-  const [disableAction, setDisableAction] = useState<"disable_user" | "enable_user">("disable_user");
+  const [toggleOpen, setToggleOpen] = useState(false);
+  const [toggleReason, setToggleReason] = useState("");
+  const [toggleUser, setToggleUser] = useState<UserRow | null>(null);
+  const [toggleAction, setToggleAction] = useState<"disable" | "enable">("disable");
 
   const fetchUsers = async (nextOffset = 0) => {
     setLoading(true);
     try {
-      const res = await invokeSuperadmin<{
-        data: UserRow[];
-        meta: { limit: number; offset: number; query?: string | null; role?: string | null };
-      }>({
-        action: "list_users",
+      const res = await listUsers({
         limit,
         offset: nextOffset,
         query: query.trim() || null,
@@ -109,6 +87,7 @@ export default function UsersAdmin() {
   }, []);
 
   const displayRows = useMemo(() => rows || [], [rows]);
+  const canNext = displayRows.length >= limit;
 
   const openEditRoles = (u: UserRow) => {
     setEditUser(u);
@@ -128,7 +107,6 @@ export default function UsersAdmin() {
 
   const saveRoles = async () => {
     if (!editUser) return;
-
     const roles = uniq(selectedRoles);
     if (roles.length === 0) {
       toast.error("User must have at least one role");
@@ -137,16 +115,13 @@ export default function UsersAdmin() {
 
     try {
       toast.loading("Saving roles...", { id: "save-roles" });
-      const res = await invokeSuperadmin<{ ok: boolean; user_id: string; roles: string[] }>({
-        action: "set_user_roles",
+      const res = await setUserRoles({
         user_id: editUser.user_id,
         mode,
         roles,
       });
-
       toast.success("Roles updated", { id: "save-roles" });
 
-      // Patch locally
       setRows((prev) =>
         prev.map((r) => (r.user_id === res.user_id ? { ...r, roles: uniq(res.roles || roles) } : r))
       );
@@ -159,38 +134,36 @@ export default function UsersAdmin() {
     }
   };
 
-  const openDisableDialog = (u: UserRow, action: "disable_user" | "enable_user") => {
-    setDisableUser(u);
-    setDisableAction(action);
-    setDisableReason("");
-    setDisableOpen(true);
+  const openToggleDialog = (u: UserRow, action: "disable" | "enable") => {
+    setToggleUser(u);
+    setToggleAction(action);
+    setToggleReason("");
+    setToggleOpen(true);
   };
 
-  const submitDisable = async () => {
-    if (!disableUser) return;
+  const submitToggle = async () => {
+    if (!toggleUser) return;
+    const reason = toggleReason.trim() || null;
 
-    const reason = disableReason.trim();
     try {
-      toast.loading(disableAction === "disable_user" ? "Disabling user..." : "Enabling user...", {
-        id: "toggle-user",
-      });
+      toast.loading(toggleAction === "disable" ? "Disabling user..." : "Enabling user...", { id: "toggle-user" });
 
-      await invokeSuperadmin({
-        action: disableAction,
-        user_id: disableUser.user_id,
-        reason: reason || null,
-      });
+      if (toggleAction === "disable") {
+        await disableUser({ user_id: toggleUser.user_id, reason });
+      } else {
+        await enableUser({ user_id: toggleUser.user_id, reason });
+      }
 
-      toast.success(disableAction === "disable_user" ? "User disabled" : "User enabled", { id: "toggle-user" });
-      setDisableOpen(false);
-      setDisableUser(null);
-      setDisableReason("");
+      toast.success(toggleAction === "disable" ? "User disabled" : "User enabled", { id: "toggle-user" });
+      setToggleOpen(false);
+      setToggleUser(null);
+      setToggleReason("");
+      // refresh list so UI stays accurate
+      fetchUsers(offset);
     } catch (e: any) {
       toast.error(e?.message || "Failed to update user status", { id: "toggle-user" });
     }
   };
-
-  const canNext = displayRows.length >= limit;
 
   return (
     <>
@@ -223,12 +196,7 @@ export default function UsersAdmin() {
                 className="w-full sm:w-[220px]"
               />
 
-              <Button
-                variant="outline"
-                className="gap-2"
-                disabled={loading}
-                onClick={() => fetchUsers(0)}
-              >
+              <Button variant="outline" className="gap-2" disabled={loading} onClick={() => fetchUsers(0)}>
                 <RefreshCw className={loading ? "w-4 h-4 animate-spin" : "w-4 h-4"} />
                 Search
               </Button>
@@ -241,20 +209,10 @@ export default function UsersAdmin() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={loading || offset === 0}
-                onClick={() => fetchUsers(Math.max(0, offset - limit))}
-              >
+              <Button variant="outline" size="sm" disabled={loading || offset === 0} onClick={() => fetchUsers(Math.max(0, offset - limit))}>
                 Prev
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={loading || !canNext}
-                onClick={() => fetchUsers(offset + limit)}
-              >
+              <Button variant="outline" size="sm" disabled={loading || !canNext} onClick={() => fetchUsers(offset + limit)}>
                 Next
               </Button>
             </div>
@@ -269,8 +227,8 @@ export default function UsersAdmin() {
                   <TableHead>User</TableHead>
                   <TableHead>Roles</TableHead>
                   <TableHead className="w-[220px]">Created</TableHead>
-                  <TableHead className="w-[220px]">Updated</TableHead>
-                  <TableHead className="w-[220px]" />
+                  <TableHead className="w-[240px]">Status</TableHead>
+                  <TableHead className="w-[240px]" />
                 </TableRow>
               </TableHeader>
 
@@ -316,7 +274,24 @@ export default function UsersAdmin() {
                       </TableCell>
 
                       <TableCell className="text-sm text-muted-foreground">{formatDate(u.created_at)}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{formatDate(u.updated_at)}</TableCell>
+
+                      <TableCell>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge variant={u.disabled ? "destructive" : "secondary"}>
+                            {u.disabled ? "Disabled" : "Active"}
+                          </Badge>
+                          {u.disabled_at ? (
+                            <span className="text-xs text-muted-foreground">
+                              since {formatDate(u.disabled_at)}
+                            </span>
+                          ) : null}
+                        </div>
+                        {u.disabled_reason ? (
+                          <div className="text-xs text-muted-foreground mt-1 truncate">
+                            Reason: {u.disabled_reason}
+                          </div>
+                        ) : null}
+                      </TableCell>
 
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
@@ -329,7 +304,7 @@ export default function UsersAdmin() {
                             variant="outline"
                             size="sm"
                             className="gap-2"
-                            onClick={() => openDisableDialog(u, "disable_user")}
+                            onClick={() => openToggleDialog(u, "disable")}
                           >
                             <ShieldOff className="w-4 h-4" />
                             Disable
@@ -339,7 +314,7 @@ export default function UsersAdmin() {
                             variant="outline"
                             size="sm"
                             className="gap-2"
-                            onClick={() => openDisableDialog(u, "enable_user")}
+                            onClick={() => openToggleDialog(u, "enable")}
                           >
                             <ShieldCheck className="w-4 h-4" />
                             Enable
@@ -387,25 +362,13 @@ export default function UsersAdmin() {
               <div className="space-y-2">
                 <Label>Mode</Label>
                 <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    variant={mode === "replace" ? "default" : "outline"}
-                    onClick={() => setMode("replace")}
-                  >
+                  <Button type="button" variant={mode === "replace" ? "default" : "outline"} onClick={() => setMode("replace")}>
                     Replace
                   </Button>
-                  <Button
-                    type="button"
-                    variant={mode === "add" ? "default" : "outline"}
-                    onClick={() => setMode("add")}
-                  >
+                  <Button type="button" variant={mode === "add" ? "default" : "outline"} onClick={() => setMode("add")}>
                     Add
                   </Button>
-                  <Button
-                    type="button"
-                    variant={mode === "remove" ? "default" : "outline"}
-                    onClick={() => setMode("remove")}
-                  >
+                  <Button type="button" variant={mode === "remove" ? "default" : "outline"} onClick={() => setMode("remove")}>
                     Remove
                   </Button>
                 </div>
@@ -422,10 +385,7 @@ export default function UsersAdmin() {
                       key={r.key}
                       className="flex items-center gap-3 rounded-xl border border-border/50 p-3 hover:bg-muted/30 cursor-pointer"
                     >
-                      <Checkbox
-                        checked={selectedRoles.includes(r.key)}
-                        onCheckedChange={() => toggleRole(r.key)}
-                      />
+                      <Checkbox checked={selectedRoles.includes(r.key)} onCheckedChange={() => toggleRole(r.key)} />
                       <span className="text-sm">{r.label}</span>
                       <span className="ml-auto text-xs text-muted-foreground">{r.key}</span>
                     </label>
@@ -459,22 +419,22 @@ export default function UsersAdmin() {
         </DialogContent>
       </Dialog>
 
-      {/* Disable/Enable Dialog */}
+      {/* Disable / Enable Dialog */}
       <Dialog
-        open={disableOpen}
+        open={toggleOpen}
         onOpenChange={(v) => {
-          setDisableOpen(v);
+          setToggleOpen(v);
           if (!v) {
-            setDisableUser(null);
-            setDisableReason("");
+            setToggleUser(null);
+            setToggleReason("");
           }
         }}
       >
         <DialogContent className="max-w-xl">
           <DialogHeader>
-            <DialogTitle>{disableAction === "disable_user" ? "Disable user" : "Enable user"}</DialogTitle>
+            <DialogTitle>{toggleAction === "disable" ? "Disable user" : "Enable user"}</DialogTitle>
             <DialogDescription>
-              {disableAction === "disable_user"
+              {toggleAction === "disable"
                 ? "This will ban the user from authenticating until re-enabled."
                 : "This will remove the ban and allow the user to authenticate again."}
             </DialogDescription>
@@ -482,31 +442,34 @@ export default function UsersAdmin() {
 
           <Separator />
 
-          {!disableUser ? (
+          {!toggleUser ? (
             <div className="py-10 text-sm text-muted-foreground text-center">No selection.</div>
           ) : (
             <div className="space-y-4">
               <div className="rounded-xl border border-border/50 p-3">
-                <div className="font-medium">{disableUser.full_name || "—"}</div>
-                <div className="text-xs text-muted-foreground">{disableUser.email || "—"}</div>
-                <div className="text-[11px] text-muted-foreground font-mono">{disableUser.user_id}</div>
+                <div className="font-medium">{toggleUser.full_name || "—"}</div>
+                <div className="text-xs text-muted-foreground">{toggleUser.email || "—"}</div>
+                <div className="text-[11px] text-muted-foreground font-mono">{toggleUser.user_id}</div>
               </div>
 
               <div className="space-y-2">
                 <Label>Reason (optional)</Label>
                 <Input
-                  value={disableReason}
-                  onChange={(e) => setDisableReason(e.target.value)}
+                  value={toggleReason}
+                  onChange={(e) => setToggleReason(e.target.value)}
                   placeholder="Reason for this action…"
                 />
               </div>
 
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setDisableOpen(false)}>
+                <Button variant="outline" onClick={() => setToggleOpen(false)}>
                   Cancel
                 </Button>
-                <Button variant={disableAction === "disable_user" ? "destructive" : "default"} onClick={submitDisable}>
-                  {disableAction === "disable_user" ? "Disable" : "Enable"}
+                <Button
+                  variant={toggleAction === "disable" ? "destructive" : "default"}
+                  onClick={submitToggle}
+                >
+                  {toggleAction === "disable" ? "Disable" : "Enable"}
                 </Button>
               </div>
             </div>
