@@ -13,6 +13,7 @@ type Json =
 type Action =
   | "ping"
   | "whoami"
+  | "list_users"
   | "list_doctor_verifications"
   | "get_doctor_verification"
   | "approve_doctor_verification"
@@ -42,14 +43,12 @@ function getIp(req: Request) {
 }
 
 async function assertSuperAdmin(authedClient: ReturnType<typeof createClient>) {
-  // Prefer RPC if available
   const rpc = await authedClient.rpc("is_super_admin");
   if (!rpc.error && typeof rpc.data === "boolean") {
     if (rpc.data) return true;
     throw new Error("forbidden");
   }
 
-  // Fallback: check roles table (if readable under RLS)
   const me = await authedClient.auth.getUser();
   const userId = me.data?.user?.id;
   if (!userId) throw new Error("unauthorized");
@@ -65,6 +64,10 @@ async function assertSuperAdmin(authedClient: ReturnType<typeof createClient>) {
   if (data && data.length > 0) return true;
 
   throw new Error("forbidden");
+}
+
+function uniq<T>(arr: T[]) {
+  return Array.from(new Set(arr));
 }
 
 serve(async (req) => {
@@ -95,54 +98,49 @@ serve(async (req) => {
       auth: { persistSession: false },
     });
 
-    // Who performed the action (for audit logs + whoami)
     const me = await authedClient.auth.getUser();
     const actorId = me.data?.user?.id || null;
 
-    // Parse request body early so ping/whoami can be debugged the same way as other actions
     const body = (await req.json().catch(() => null)) as
       | null
       | {
           action?: Action;
-          status?: string;
+          // shared
           limit?: number;
           offset?: number;
+
+          // list_users
+          query?: string;
+          role?: string;
+
+          // verifications
+          status?: string;
           id?: string;
           reason?: string;
         };
 
     const action = body?.action;
-    if (!action) {
-      return jsonResponse(400, { error: "Missing action" });
-    }
+    if (!action) return jsonResponse(400, { error: "Missing action" });
 
-    // ping: does NOT require super admin (useful for confirming auth + function availability)
+    // ping: no admin required
     if (action === "ping") {
-      return jsonResponse(200, {
-        ok: true,
-        now: new Date().toISOString(),
-      });
+      return jsonResponse(200, { ok: true, now: new Date().toISOString() });
     }
 
-    // whoami: requires valid auth, but NOT super admin (useful for debugging identity)
+    // whoami: auth required, no admin required
     if (action === "whoami") {
       if (!actorId) return jsonResponse(401, { error: "Unauthorized" });
-
-      const ip = getIp(req);
-      const userAgent = req.headers.get("user-agent") || null;
-
       return jsonResponse(200, {
         ok: true,
         user_id: actorId,
-        ip_address: ip,
-        user_agent: userAgent,
+        ip_address: getIp(req),
+        user_agent: req.headers.get("user-agent") || null,
       });
     }
 
-    // From here on: super admin only
+    // Super admin only from here
     await assertSuperAdmin(authedClient);
 
-    // Use service role for mutations/logging after authorization passes.
     const serviceClient = supabaseServiceRoleKey
       ? createClient(supabaseUrl, supabaseServiceRoleKey, {
           auth: { persistSession: false },
@@ -159,7 +157,6 @@ serve(async (req) => {
       details?: Json;
     }) => {
       if (!serviceClient || !actorId) return;
-
       await serviceClient.from("system_audit_logs").insert({
         user_id: actorId,
         action_type: entry.action_type,
@@ -170,6 +167,90 @@ serve(async (req) => {
         user_agent: userAgent,
       });
     };
+
+    // =========================================================
+    // B2) list_users (profiles + user_roles)
+    // =========================================================
+    if (action === "list_users") {
+      const limit = Math.min(Math.max(Number(body?.limit ?? 25), 1), 200);
+      const offset = Math.max(Number(body?.offset ?? 0), 0);
+      const q = String(body?.query ?? "").trim().toLowerCase();
+      const role = String(body?.role ?? "").trim().toLowerCase();
+
+      // NOTE: We do not rely on RLS for profiles here; we use service role for consistent admin access.
+      if (!serviceClient) return jsonResponse(500, { error: "Missing SUPABASE_SERVICE_ROLE_KEY secret" });
+
+      // 1) Fetch profiles (filter by query if provided)
+      let pQuery = serviceClient
+        .from("profiles")
+        .select("user_id, full_name, email, phone, created_at, updated_at")
+        .order("created_at", { ascending: false });
+
+      if (q) {
+        // Use OR matching on common fields (works if columns exist)
+        // If some fields don't exist in your schema, remove them.
+        pQuery = pQuery.or(
+          [
+            `email.ilike.%${q}%`,
+            `full_name.ilike.%${q}%`,
+            `phone.ilike.%${q}%`,
+            `user_id.ilike.%${q}%`,
+          ].join(",")
+        );
+      }
+
+      const { data: profiles, error: pErr } = await pQuery.range(offset, offset + limit - 1);
+      if (pErr) return jsonResponse(500, { error: pErr.message });
+
+      const userIds = (profiles || []).map((p) => p.user_id).filter(Boolean) as string[];
+      if (userIds.length === 0) {
+        await writeAudit({
+          action_type: "superadmin.list_users",
+          entity_type: "profiles",
+          details: { query: q || null, role: role || null, limit, offset },
+        });
+        return jsonResponse(200, { data: [], meta: { limit, offset, query: q || null, role: role || null } });
+      }
+
+      // 2) Fetch roles for those users
+      const { data: rolesRows, error: rErr } = await serviceClient
+        .from("user_roles")
+        .select("user_id, role")
+        .in("user_id", userIds);
+
+      if (rErr) return jsonResponse(500, { error: rErr.message });
+
+      const rolesByUser = new Map<string, string[]>();
+      for (const row of rolesRows || []) {
+        const uid = String((row as any).user_id);
+        const r = String((row as any).role || "");
+        if (!uid) continue;
+        if (!rolesByUser.has(uid)) rolesByUser.set(uid, []);
+        if (r) rolesByUser.get(uid)!.push(r);
+      }
+
+      // 3) Combine
+      let combined = (profiles || []).map((p) => ({
+        ...p,
+        roles: uniq((rolesByUser.get(p.user_id) || []).map((x) => String(x).toLowerCase())),
+      }));
+
+      // 4) Optional role filter (post-filter within page)
+      if (role) {
+        combined = combined.filter((u) => (u.roles || []).includes(role));
+      }
+
+      await writeAudit({
+        action_type: "superadmin.list_users",
+        entity_type: "profiles",
+        details: { query: q || null, role: role || null, limit, offset },
+      });
+
+      return jsonResponse(200, {
+        data: combined,
+        meta: { limit, offset, query: q || null, role: role || null },
+      });
+    }
 
     // =========================================================
     // Existing actions
