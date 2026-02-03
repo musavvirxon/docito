@@ -1,3 +1,4 @@
+// src/components/dashboard/ProfileMenu.tsx
 // File: src/components/dashboard/ProfileMenu.tsx
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
@@ -11,7 +12,15 @@ import {
   DropdownMenuTrigger,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, Settings, ArrowRightLeft, MessageSquareWarning, User, LayoutDashboard } from "lucide-react";
+import {
+  LogOut,
+  Settings,
+  ArrowRightLeft,
+  MessageSquareWarning,
+  User,
+  LayoutDashboard,
+  Shield,
+} from "lucide-react";
 import { DASHBOARD_ROUTES, getDashboardRoute, getUserRolesFromProfile, roleLabels, type AppRole } from "@/lib/rbac";
 
 interface ProfileMenuProps {
@@ -46,6 +55,14 @@ const ProfileMenu = ({ compact = false }: ProfileMenuProps) => {
     return "Dashboard";
   }, [roles]);
 
+  const superAdminRoute = useMemo(() => {
+    return DASHBOARD_ROUTES.super_admin || getDashboardRoute(["super_admin"]);
+  }, []);
+
+  const showSuperAdminLink = useMemo(() => {
+    return roles.includes("super_admin") && effectiveActiveRole !== "super_admin";
+  }, [roles, effectiveActiveRole]);
+
   const handleRoleSwitch = (role: AppRole) => {
     switchRole(role);
     navigate(DASHBOARD_ROUTES[role] || getDashboardRoute([role]));
@@ -76,6 +93,13 @@ const ProfileMenu = ({ compact = false }: ProfileMenuProps) => {
           <LayoutDashboard className="mr-2 h-4 w-4" />
           {dashboardLabel}
         </DropdownMenuItem>
+
+        {showSuperAdminLink ? (
+          <DropdownMenuItem onClick={() => handleRoleSwitch("super_admin")}>
+            <Shield className="mr-2 h-4 w-4" />
+            Super Admin
+          </DropdownMenuItem>
+        ) : null}
 
         <DropdownMenuItem onClick={() => navigate("/profile")}>
           <Settings className="mr-2 h-4 w-4" />
