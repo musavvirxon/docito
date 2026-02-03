@@ -1,5 +1,6 @@
+// src/App.tsx
 import { Suspense, useEffect } from "react";
-import { Routes, Route, useParams, Outlet } from "react-router-dom";
+import { Routes, Route, useParams, Outlet, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -23,7 +24,6 @@ import HelpCenter from "@/pages/HelpCenter";
 import Support from "@/pages/Support";
 import Legal from "@/pages/Legal";
 import LegalDetail from "@/pages/LegalDetail";
-import CookiePolicy from "@/pages/CookiePolicy";
 import FeedbackCenter from "@/pages/FeedbackCenter";
 import NotFound from "@/pages/NotFound";
 
@@ -91,7 +91,7 @@ import ImagingRegistration from "@/pages/imaging/ImagingRegistration";
 // Staff invitation
 import AcceptInvite from "@/pages/AcceptInvite";
 
-const supportedLangCodes = languages.map(l => l.code);
+const supportedLangCodes = languages.map((l) => l.code);
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
@@ -105,7 +105,7 @@ const PageLoader = () => (
 // Language wrapper component that sets the i18n language based on URL
 function LanguageWrapper() {
   const { lang } = useParams<{ lang: string }>();
-  
+
   useEffect(() => {
     if (lang && supportedLangCodes.includes(lang) && i18n.language !== lang) {
       i18n.changeLanguage(lang);
@@ -113,6 +113,12 @@ function LanguageWrapper() {
   }, [lang]);
 
   return <Outlet />;
+}
+
+function LangRedirect({ to }: { to: string }) {
+  const { lang } = useParams<{ lang: string }>();
+  const normalized = to.startsWith("/") ? to : `/${to}`;
+  return <Navigate to={lang ? `/${lang}${normalized}` : normalized} replace />;
 }
 
 export default function App() {
@@ -160,9 +166,13 @@ export default function App() {
                   <Route path="support" element={<Support />} />
                   <Route path="legal" element={<Legal />} />
                   <Route path="legal/:slug" element={<LegalDetail />} />
-                  <Route path="cookies" element={<CookiePolicy />} />
-                  <Route path="cookie-policy" element={<CookiePolicy />} />
-                  <Route path="legal/cookie-policy" element={<CookiePolicy />} />
+                  {/* Legacy/alias legal routes */}
+                  <Route path="privacy" element={<LangRedirect to="/legal/privacy-policy" />} />
+                  <Route path="terms" element={<LangRedirect to="/legal/terms-of-service" />} />
+                  <Route path="cookies" element={<LangRedirect to="/legal/cookies" />} />
+                  <Route path="cookie-policy" element={<LangRedirect to="/legal/cookies" />} />
+                  <Route path="hipaa" element={<LangRedirect to="/legal/hipaa" />} />
+                  <Route path="legal/cookie-policy" element={<LangRedirect to="/legal/cookies" />} />
                   <Route path="feedback" element={<FeedbackCenter />} />
                 </Route>
                 {/* Dashboard routes with language prefix */}
@@ -245,9 +255,13 @@ export default function App() {
                 <Route path="support" element={<Support />} />
                 <Route path="legal" element={<Legal />} />
                 <Route path="legal/:slug" element={<LegalDetail />} />
-                <Route path="cookies" element={<CookiePolicy />} />
-                <Route path="cookie-policy" element={<CookiePolicy />} />
-                <Route path="legal/cookie-policy" element={<CookiePolicy />} />
+                {/* Legacy/alias legal routes */}
+                <Route path="privacy" element={<Navigate to="/legal/privacy-policy" replace />} />
+                <Route path="terms" element={<Navigate to="/legal/terms-of-service" replace />} />
+                <Route path="cookies" element={<Navigate to="/legal/cookies" replace />} />
+                <Route path="cookie-policy" element={<Navigate to="/legal/cookies" replace />} />
+                <Route path="hipaa" element={<Navigate to="/legal/hipaa" replace />} />
+                <Route path="legal/cookie-policy" element={<Navigate to="/legal/cookies" replace />} />
                 <Route path="feedback" element={<FeedbackCenter />} />
               </Route>
 
