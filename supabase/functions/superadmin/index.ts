@@ -11,6 +11,8 @@ type Json =
   | Json[];
 
 type Action =
+  | "ping"
+  | "whoami"
   | "list_doctor_verifications"
   | "get_doctor_verification"
   | "approve_doctor_verification"
@@ -59,12 +61,9 @@ async function assertSuperAdmin(authedClient: ReturnType<typeof createClient>) {
     .eq("role", "super_admin")
     .limit(1);
 
-  if (error) {
-    // If we can't verify via RLS, treat as forbidden (do not elevate).
-    throw new Error("forbidden");
-  }
-
+  if (error) throw new Error("forbidden");
   if (data && data.length > 0) return true;
+
   throw new Error("forbidden");
 }
 
@@ -96,15 +95,11 @@ serve(async (req) => {
       auth: { persistSession: false },
     });
 
-    await assertSuperAdmin(authedClient);
+    // Who performed the action (for audit logs + whoami)
+    const me = await authedClient.auth.getUser();
+    const actorId = me.data?.user?.id || null;
 
-    // Use service role for mutations/logging after authorization passes.
-    const serviceClient = supabaseServiceRoleKey
-      ? createClient(supabaseUrl, supabaseServiceRoleKey, {
-          auth: { persistSession: false },
-        })
-      : null;
-
+    // Parse request body early so ping/whoami can be debugged the same way as other actions
     const body = (await req.json().catch(() => null)) as
       | null
       | {
@@ -121,12 +116,41 @@ serve(async (req) => {
       return jsonResponse(400, { error: "Missing action" });
     }
 
+    // ping: does NOT require super admin (useful for confirming auth + function availability)
+    if (action === "ping") {
+      return jsonResponse(200, {
+        ok: true,
+        now: new Date().toISOString(),
+      });
+    }
+
+    // whoami: requires valid auth, but NOT super admin (useful for debugging identity)
+    if (action === "whoami") {
+      if (!actorId) return jsonResponse(401, { error: "Unauthorized" });
+
+      const ip = getIp(req);
+      const userAgent = req.headers.get("user-agent") || null;
+
+      return jsonResponse(200, {
+        ok: true,
+        user_id: actorId,
+        ip_address: ip,
+        user_agent: userAgent,
+      });
+    }
+
+    // From here on: super admin only
+    await assertSuperAdmin(authedClient);
+
+    // Use service role for mutations/logging after authorization passes.
+    const serviceClient = supabaseServiceRoleKey
+      ? createClient(supabaseUrl, supabaseServiceRoleKey, {
+          auth: { persistSession: false },
+        })
+      : null;
+
     const ip = getIp(req);
     const userAgent = req.headers.get("user-agent") || null;
-
-    // Who performed the action (for audit logs)
-    const me = await authedClient.auth.getUser();
-    const actorId = me.data?.user?.id || null;
 
     const writeAudit = async (entry: {
       action_type: string;
@@ -148,7 +172,7 @@ serve(async (req) => {
     };
 
     // =========================================================
-    // Actions
+    // Existing actions
     // =========================================================
     if (action === "list_doctor_verifications") {
       const status = (body?.status || "pending").toLowerCase();
@@ -237,7 +261,6 @@ serve(async (req) => {
       const id = body?.id;
       if (!id) return jsonResponse(400, { error: "Missing id" });
 
-      // Ensure it exists
       const current = await serviceClient
         .from("doctor_verification")
         .select("id, doctor_id, status")
