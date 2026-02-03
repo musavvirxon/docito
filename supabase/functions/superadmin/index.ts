@@ -14,6 +14,7 @@ type Action =
   | "ping"
   | "whoami"
   | "list_users"
+  | "set_user_roles"
   | "list_doctor_verifications"
   | "get_doctor_verification"
   | "approve_doctor_verification"
@@ -70,6 +71,26 @@ function uniq<T>(arr: T[]) {
   return Array.from(new Set(arr));
 }
 
+function normalizeRole(input: unknown) {
+  return String(input ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "_")
+    .replace(/-+/g, "_");
+}
+
+const ALLOWED_ROLES = new Set([
+  "patient",
+  "doctor",
+  "admin",
+  "staff",
+  "super_admin",
+  "clinic_admin",
+  "pharmacy_admin",
+  "lab_admin",
+  "imaging_admin",
+]);
+
 serve(async (req) => {
   try {
     if (req.method === "OPTIONS") {
@@ -105,13 +126,19 @@ serve(async (req) => {
       | null
       | {
           action?: Action;
-          // shared
+
+          // shared pagination
           limit?: number;
           offset?: number;
 
           // list_users
           query?: string;
           role?: string;
+
+          // set_user_roles
+          user_id?: string;
+          mode?: "replace" | "add" | "remove";
+          roles?: string[];
 
           // verifications
           status?: string;
@@ -169,26 +196,22 @@ serve(async (req) => {
     };
 
     // =========================================================
-    // B2) list_users (profiles + user_roles)
+    // list_users (profiles + user_roles)
     // =========================================================
     if (action === "list_users") {
       const limit = Math.min(Math.max(Number(body?.limit ?? 25), 1), 200);
       const offset = Math.max(Number(body?.offset ?? 0), 0);
       const q = String(body?.query ?? "").trim().toLowerCase();
-      const role = String(body?.role ?? "").trim().toLowerCase();
+      const role = normalizeRole(body?.role ?? "");
 
-      // NOTE: We do not rely on RLS for profiles here; we use service role for consistent admin access.
       if (!serviceClient) return jsonResponse(500, { error: "Missing SUPABASE_SERVICE_ROLE_KEY secret" });
 
-      // 1) Fetch profiles (filter by query if provided)
       let pQuery = serviceClient
         .from("profiles")
         .select("user_id, full_name, email, phone, created_at, updated_at")
         .order("created_at", { ascending: false });
 
       if (q) {
-        // Use OR matching on common fields (works if columns exist)
-        // If some fields don't exist in your schema, remove them.
         pQuery = pQuery.or(
           [
             `email.ilike.%${q}%`,
@@ -212,7 +235,6 @@ serve(async (req) => {
         return jsonResponse(200, { data: [], meta: { limit, offset, query: q || null, role: role || null } });
       }
 
-      // 2) Fetch roles for those users
       const { data: rolesRows, error: rErr } = await serviceClient
         .from("user_roles")
         .select("user_id, role")
@@ -223,19 +245,17 @@ serve(async (req) => {
       const rolesByUser = new Map<string, string[]>();
       for (const row of rolesRows || []) {
         const uid = String((row as any).user_id);
-        const r = String((row as any).role || "");
+        const r = normalizeRole((row as any).role || "");
         if (!uid) continue;
         if (!rolesByUser.has(uid)) rolesByUser.set(uid, []);
         if (r) rolesByUser.get(uid)!.push(r);
       }
 
-      // 3) Combine
       let combined = (profiles || []).map((p) => ({
         ...p,
-        roles: uniq((rolesByUser.get(p.user_id) || []).map((x) => String(x).toLowerCase())),
+        roles: uniq((rolesByUser.get(p.user_id) || []).map((x) => normalizeRole(x))),
       }));
 
-      // 4) Optional role filter (post-filter within page)
       if (role) {
         combined = combined.filter((u) => (u.roles || []).includes(role));
       }
@@ -250,6 +270,101 @@ serve(async (req) => {
         data: combined,
         meta: { limit, offset, query: q || null, role: role || null },
       });
+    }
+
+    // =========================================================
+    // B3) set_user_roles (replace/add/remove) via service role
+    // =========================================================
+    if (action === "set_user_roles") {
+      if (!serviceClient) return jsonResponse(500, { error: "Missing SUPABASE_SERVICE_ROLE_KEY secret" });
+
+      const userId = String(body?.user_id || "").trim();
+      if (!userId) return jsonResponse(400, { error: "Missing user_id" });
+
+      const mode = (body?.mode || "replace") as "replace" | "add" | "remove";
+      const rolesIn = Array.isArray(body?.roles) ? body!.roles! : [];
+      const rolesNorm = uniq(rolesIn.map((r) => normalizeRole(r)).filter(Boolean));
+
+      // Validate
+      for (const r of rolesNorm) {
+        if (!ALLOWED_ROLES.has(r)) {
+          return jsonResponse(400, { error: `Invalid role: ${r}` });
+        }
+      }
+
+      // Load current roles
+      const { data: existingRows, error: exErr } = await serviceClient
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId);
+
+      if (exErr) return jsonResponse(500, { error: exErr.message });
+
+      const existing = uniq((existingRows || []).map((x: any) => normalizeRole(x.role)));
+      let next: string[] = existing;
+
+      if (mode === "replace") {
+        next = rolesNorm;
+      } else if (mode === "add") {
+        next = uniq([...existing, ...rolesNorm]);
+      } else if (mode === "remove") {
+        const removeSet = new Set(rolesNorm);
+        next = existing.filter((r) => !removeSet.has(r));
+      } else {
+        return jsonResponse(400, { error: "Invalid mode" });
+      }
+
+      // Ensure user keeps at least one role
+      if (next.length === 0) {
+        return jsonResponse(400, { error: "User must have at least one role" });
+      }
+
+      // Apply changes
+      // For replace: delete all then insert next.
+      // For add/remove: do minimal changes.
+      if (mode === "replace") {
+        const { error: delErr } = await serviceClient.from("user_roles").delete().eq("user_id", userId);
+        if (delErr) return jsonResponse(500, { error: delErr.message });
+
+        if (next.length > 0) {
+          const inserts = next.map((r) => ({ user_id: userId, role: r }));
+          const { error: insErr } = await serviceClient.from("user_roles").insert(inserts);
+          if (insErr) return jsonResponse(500, { error: insErr.message });
+        }
+      } else if (mode === "add") {
+        const addSet = new Set(rolesNorm);
+        const toInsert = Array.from(addSet).filter((r) => !existing.includes(r));
+        if (toInsert.length > 0) {
+          const inserts = toInsert.map((r) => ({ user_id: userId, role: r }));
+          const { error: insErr } = await serviceClient.from("user_roles").insert(inserts);
+          if (insErr) return jsonResponse(500, { error: insErr.message });
+        }
+      } else if (mode === "remove") {
+        const removeSet = new Set(rolesNorm);
+        const toRemove = existing.filter((r) => removeSet.has(r));
+        if (toRemove.length > 0) {
+          const { error: delErr } = await serviceClient
+            .from("user_roles")
+            .delete()
+            .eq("user_id", userId)
+            .in("role", toRemove);
+          if (delErr) return jsonResponse(500, { error: delErr.message });
+        }
+      }
+
+      await writeAudit({
+        action_type: "superadmin.set_user_roles",
+        entity_type: "user_roles",
+        entity_id: userId,
+        details: {
+          mode,
+          before: existing,
+          after: next,
+          requested: rolesNorm,
+        },
+      });
+
+      return jsonResponse(200, { ok: true, user_id: userId, roles: next });
     }
 
     // =========================================================
