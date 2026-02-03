@@ -25,8 +25,7 @@ export const roleLabels: Record<AppRole, string> = {
 /**
  * Dashboard route per "primary" role.
  * Facility admin roles MUST win over clinic_admin/admin so they land on their own dashboards.
- *
- * NOTE: These routes match App.tsx route paths.
+ * NOTE: These routes must exist in src/App.tsx (they do in this project).
  */
 export const DASHBOARD_ROUTES: Record<AppRole, string> = {
   patient: "/patient-dashboard",
@@ -53,15 +52,17 @@ const VALID_ROLES: AppRole[] = [
 ];
 
 export function normalizeRole(input: unknown): AppRole | null {
-  const s = String(input || "").trim().toLowerCase();
+  const raw = String(input ?? "").trim();
+  if (!raw) return null;
+
+  const s = raw.toLowerCase();
 
   // Common aliases / legacy values
-  if (s === "superadmin") return "super_admin";
-  if (s === "clinicadmin") return "clinic_admin";
-  if (s === "practice_admin") return "clinic_admin";
-  if (s === "labadmin") return "lab_admin";
-  if (s === "pharmacyadmin") return "pharmacy_admin";
-  if (s === "imagingadmin") return "imaging_admin";
+  if (s === "superadmin" || s === "super-admin") return "super_admin";
+  if (s === "clinicadmin" || s === "clinic-admin" || s === "practice_admin") return "clinic_admin";
+  if (s === "labadmin" || s === "lab-admin") return "lab_admin";
+  if (s === "pharmacyadmin" || s === "pharmacy-admin") return "pharmacy_admin";
+  if (s === "imagingadmin" || s === "imaging-admin") return "imaging_admin";
 
   if (VALID_ROLES.includes(s as AppRole)) return s as AppRole;
   return null;
@@ -74,8 +75,9 @@ export function getUserRolesFromProfile(profile: any): AppRole[] {
   const legacy = normalizeRole(profile?.role);
   if (legacy) out.push(legacy);
 
-  // profiles.roles could be string[] or CSV-like
+  // profiles.roles could be string[] or CSV-like string
   const rolesField = profile?.roles;
+
   if (Array.isArray(rolesField)) {
     for (const r of rolesField) {
       const nr = normalizeRole(r);
@@ -106,6 +108,7 @@ export function getPrimaryRole(roles: AppRole[]): AppRole {
     "doctor",
     "patient",
   ];
+
   for (const r of order) if (roles.includes(r)) return r;
   return roles[0] ?? "patient";
 }
@@ -121,7 +124,7 @@ export function getDashboardRoute(rolesOrRole: AppRole[] | AppRole | string[] | 
 
 export function hasAnyRole(userRoles: string[] | null | undefined, requiredRoles: AppRole[]): boolean {
   if (!userRoles || !Array.isArray(userRoles)) return false;
-  return userRoles.some((role) => requiredRoles.includes(role as AppRole));
+  return userRoles.some((role) => requiredRoles.includes(normalizeRole(role) as AppRole));
 }
 
 /**
