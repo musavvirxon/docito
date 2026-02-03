@@ -1,3 +1,4 @@
+// src/components/home/premium/PremiumTopNav.tsx
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -129,7 +130,7 @@ const PremiumTopNav = () => {
               ) : (
                 <>
                   <Button
-                    onClick={() => navigate("/auth")}
+                    onClick={() => navigate(getLocalizedPath("/auth"))}
                     variant="ghost"
                     size="sm"
                     className="h-8 px-4 text-xs font-medium"
@@ -137,13 +138,11 @@ const PremiumTopNav = () => {
                     {t("topNav.actions.signIn", { defaultValue: "Sign In" })}
                   </Button>
                   <Button
-                    onClick={() => navigate("/auth?mode=register")}
+                    onClick={() => navigate(getLocalizedPath("/auth?mode=register"))}
                     size="sm"
                     className="h-8 px-4 text-xs font-medium rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
                   >
-                    {t("topNav.actions.joinAsProvider", {
-                      defaultValue: "Join as Provider",
-                    })}
+                    {t("topNav.actions.register", { defaultValue: "Register" })}
                   </Button>
                 </>
               )}
@@ -217,7 +216,7 @@ const PremiumTopNav = () => {
                   >
                     <Button
                       onClick={() => {
-                        navigate("/auth");
+                        navigate(getLocalizedPath("/auth"));
                         setIsMobileMenuOpen(false);
                       }}
                       variant="outline"
@@ -227,14 +226,12 @@ const PremiumTopNav = () => {
                     </Button>
                     <Button
                       onClick={() => {
-                        navigate("/auth?mode=register");
+                        navigate(getLocalizedPath("/auth?mode=register"));
                         setIsMobileMenuOpen(false);
                       }}
                       className="flex-1 h-12 text-sm font-medium rounded-xl bg-primary text-primary-foreground"
                     >
-                      {t("topNav.actions.joinAsProvider", {
-                        defaultValue: "Join as Provider",
-                      })}
+                      {t("topNav.actions.register", { defaultValue: "Register" })}
                     </Button>
                   </motion.div>
                 )}
