@@ -3,6 +3,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { 
   ClipboardList, 
   Calendar, 
@@ -11,11 +14,27 @@ import {
   Clock,
   AlertCircle,
   ChevronRight,
-  User
+  User,
+  Download,
+  Eye
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
+interface TreatmentPlanProcedure {
+  id: string;
+  cost: number | null;
+  notes: string | null;
+  status: string;
+  procedure: {
+    name: string;
+    category: string;
+  } | null;
+}
 
 interface TreatmentPlan {
   id: string;
@@ -39,6 +58,9 @@ export const PatientTreatmentPlans = () => {
   const [plans, setPlans] = useState<TreatmentPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [viewPlan, setViewPlan] = useState<TreatmentPlan | null>(null);
+  const [planProcedures, setPlanProcedures] = useState<TreatmentPlanProcedure[]>([]);
+  const [loadingProcedures, setLoadingProcedures] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -64,6 +86,84 @@ export const PatientTreatmentPlans = () => {
       console.error('Error fetching treatment plans:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchProcedures = async (planId: string) => {
+    setLoadingProcedures(true);
+    try {
+      const { data, error } = await supabase
+        .from('treatment_plan_procedures')
+        .select(`
+          id,
+          cost,
+          notes,
+          status,
+          procedure:procedures(name, category)
+        `)
+        .eq('treatment_plan_id', planId)
+        .order('sequence_order');
+
+      if (error) throw error;
+      setPlanProcedures(data || []);
+    } catch (error) {
+      console.error('Error fetching procedures:', error);
+      toast.error('Failed to load procedures');
+    } finally {
+      setLoadingProcedures(false);
+    }
+  };
+
+  const handleViewPlan = async (plan: TreatmentPlan) => {
+    setViewPlan(plan);
+    await fetchProcedures(plan.id);
+  };
+
+  const handleDownloadPDF = (plan: TreatmentPlan) => {
+    try {
+      const doc = new jsPDF();
+      
+      // Title
+      doc.setFontSize(20);
+      doc.text(plan.title, 20, 20);
+      
+      // Status and Date
+      doc.setFontSize(12);
+      doc.text(`Status: ${plan.status}`, 20, 35);
+      doc.text(`Created: ${format(new Date(plan.created_at), 'MMM dd, yyyy')}`, 20, 45);
+      
+      if (plan.total_cost) {
+        doc.text(`Total Cost: $${plan.total_cost.toLocaleString()}`, 20, 55);
+      }
+      
+      if (plan.notes) {
+        doc.text('Notes:', 20, 70);
+        doc.setFontSize(10);
+        const splitNotes = doc.splitTextToSize(plan.notes, 170);
+        doc.text(splitNotes, 20, 80);
+      }
+      
+      // Procedures table
+      if (planProcedures.length > 0) {
+        const tableData = planProcedures.map(p => [
+          p.procedure?.name || 'N/A',
+          p.procedure?.category || 'N/A',
+          p.cost ? `$${p.cost.toLocaleString()}` : 'N/A',
+          p.status
+        ]);
+        
+        autoTable(doc, {
+          head: [['Procedure', 'Category', 'Cost', 'Status']],
+          body: tableData,
+          startY: plan.notes ? 100 : 70,
+        });
+      }
+      
+      doc.save(`treatment-plan-${plan.id.slice(0, 8)}.pdf`);
+      toast.success('PDF downloaded successfully');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error('Failed to generate PDF');
     }
   };
 
@@ -209,11 +309,23 @@ export const PatientTreatmentPlans = () => {
                     <div className="mt-6 pt-6 border-t space-y-4">
                       <h4 className="font-medium">Treatment Procedures</h4>
                       <p className="text-sm text-muted-foreground">
-                        Detailed procedure information will be displayed here
+                        Click "View Full Plan" to see all procedures and details
                       </p>
-                      <div className="flex gap-2">
-                        <Button size="sm">View Full Plan</Button>
-                        <Button variant="outline" size="sm">
+                      <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                        <Button size="sm" className="gap-2" onClick={() => handleViewPlan(plan)}>
+                          <Eye className="h-4 w-4" />
+                          View Full Plan
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="gap-2"
+                          onClick={async () => {
+                            await fetchProcedures(plan.id);
+                            handleDownloadPDF(plan);
+                          }}
+                        >
+                          <Download className="h-4 w-4" />
                           Download PDF
                         </Button>
                       </div>
@@ -225,6 +337,106 @@ export const PatientTreatmentPlans = () => {
           })}
         </div>
       )}
+
+      {/* Treatment Plan Detail Dialog */}
+      <Dialog open={!!viewPlan} onOpenChange={(open) => !open && setViewPlan(null)}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ClipboardList className="h-5 w-5" />
+              {viewPlan?.title}
+            </DialogTitle>
+            <DialogDescription>
+              View your treatment plan details and procedures
+            </DialogDescription>
+          </DialogHeader>
+
+          {viewPlan && (
+            <div className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="p-4 rounded-lg bg-muted">
+                  <p className="text-sm text-muted-foreground">Status</p>
+                  <Badge className="mt-1">{viewPlan.status}</Badge>
+                </div>
+                <div className="p-4 rounded-lg bg-muted">
+                  <p className="text-sm text-muted-foreground">Total Cost</p>
+                  <p className="font-semibold mt-1">
+                    {viewPlan.total_cost ? `$${viewPlan.total_cost.toLocaleString()}` : 'N/A'}
+                  </p>
+                </div>
+                <div className="p-4 rounded-lg bg-muted">
+                  <p className="text-sm text-muted-foreground">Created</p>
+                  <p className="font-semibold mt-1">
+                    {format(new Date(viewPlan.created_at), 'MMM dd, yyyy')}
+                  </p>
+                </div>
+              </div>
+
+              {viewPlan.notes && (
+                <div>
+                  <h4 className="font-medium mb-2">Notes</h4>
+                  <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
+                    {viewPlan.notes}
+                  </p>
+                </div>
+              )}
+
+              <div>
+                <h4 className="font-medium mb-3">Procedures</h4>
+                {loadingProcedures ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                ) : planProcedures.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No procedures in this plan</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Procedure</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Cost</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {planProcedures.map((proc) => (
+                        <TableRow key={proc.id}>
+                          <TableCell className="font-medium">
+                            {proc.procedure?.name || 'N/A'}
+                          </TableCell>
+                          <TableCell>{proc.procedure?.category || 'N/A'}</TableCell>
+                          <TableCell>
+                            {proc.cost ? `$${proc.cost.toLocaleString()}` : 'N/A'}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={proc.status === 'completed' ? 'default' : 'secondary'}>
+                              {proc.status}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4 border-t">
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleDownloadPDF(viewPlan)}
+                  className="gap-2"
+                >
+                  <Download className="h-4 w-4" />
+                  Download PDF
+                </Button>
+                <Button onClick={() => setViewPlan(null)}>Close</Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

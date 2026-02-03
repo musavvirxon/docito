@@ -7683,6 +7683,9 @@ export type Database = {
       patient_all_appointments: {
         Row: {
           appointment_date: string | null
+          appointment_type:
+            | Database["public"]["Enums"]["appointment_type"]
+            | null
           created_at: string | null
           doctor_id: string | null
           end_time: string | null
@@ -8058,7 +8061,7 @@ export type Database = {
         Returns: boolean
       }
       homepage_unified_search: {
-        Args: { search_location?: string; search_query?: string }
+        Args: { search_location: string; search_query: string }
         Returns: {
           id: string
           image_url: string
