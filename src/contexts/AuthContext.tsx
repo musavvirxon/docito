@@ -1,3 +1,4 @@
+// src/contexts/AuthContext.tsx
 // PATH: src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
@@ -176,11 +177,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchProfile = async (userId: string) => {
     try {
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", userId)
-        .single();
+      const { data: profileData, error: profileError } = await supabase.from("profiles").select("*").eq("user_id", userId).single();
 
       if (profileError) throw profileError;
 
@@ -256,6 +253,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const role = userData.role || "patient";
 
+      const marketing =
+        Boolean(
+          userData.marketing_communications ??
+            userData.marketingCommunications ??
+            userData.marketingOptIn ??
+            false,
+        ) || false;
+
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -263,6 +268,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           data: {
             full_name: userData.fullName || email,
             role,
+            marketing_communications: marketing,
           },
         },
       });
