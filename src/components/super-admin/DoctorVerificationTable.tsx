@@ -1,3 +1,4 @@
+// src/components/super-admin/DoctorVerificationTable.tsx
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -161,6 +162,15 @@ function getStatusBadge(statusRaw: string) {
   );
 }
 
+async function invokeSuperadmin<T = any>(body: Record<string, any>): Promise<T> {
+  const { data, error } = await supabase.functions.invoke("superadmin", { body });
+  if (error) {
+    const msg = (error as any)?.context?.message || (error as any)?.message || "Request failed";
+    throw new Error(msg);
+  }
+  return data as T;
+}
+
 export default function DoctorVerificationTable({
   title,
   status = "all",
@@ -171,7 +181,7 @@ export default function DoctorVerificationTable({
   const [selected, setSelected] = useState<VerificationRow | null>(null);
   const [docs, setDocs] = useState<DocRow[]>([]);
   const [viewOpen, setViewOpen] = useState(false);
-  
+
   // File preview state
   const [previewDoc, setPreviewDoc] = useState<FilePreview | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -212,7 +222,11 @@ export default function DoctorVerificationTable({
 
       if (effectiveFilter !== "all") {
         if (effectiveFilter === "pending") {
-          query = query.in("status", ["pending", "resubmitted"] as any);
+          query = query.in("status", ["pending", "resubmitted", "submitted"] as any);
+        } else if (effectiveFilter === "declined") {
+          query = query.in("status", ["declined", "rejected", "denied"] as any);
+        } else if (effectiveFilter === "verified") {
+          query = query.in("status", ["verified", "approved"] as any);
         } else {
           query = query.eq("status", effectiveFilter as any);
         }
@@ -288,30 +302,30 @@ export default function DoctorVerificationTable({
 
   // Determine mime type from file extension
   const getMimeType = (fileName: string): string => {
-    const ext = fileName.split('.').pop()?.toLowerCase() || '';
+    const ext = fileName.split(".").pop()?.toLowerCase() || "";
     const mimeTypes: Record<string, string> = {
-      'pdf': 'application/pdf',
-      'jpg': 'image/jpeg',
-      'jpeg': 'image/jpeg',
-      'png': 'image/png',
-      'gif': 'image/gif',
-      'webp': 'image/webp',
-      'svg': 'image/svg+xml',
-      'bmp': 'image/bmp',
-      'doc': 'application/msword',
-      'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'xls': 'application/vnd.ms-excel',
-      'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'txt': 'text/plain',
+      pdf: "application/pdf",
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      png: "image/png",
+      gif: "image/gif",
+      webp: "image/webp",
+      svg: "image/svg+xml",
+      bmp: "image/bmp",
+      doc: "application/msword",
+      docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      xls: "application/vnd.ms-excel",
+      xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      txt: "text/plain",
     };
-    return mimeTypes[ext] || 'application/octet-stream';
+    return mimeTypes[ext] || "application/octet-stream";
   };
 
-  const isImageType = (mimeType: string) => mimeType.startsWith('image/');
-  const isPdfType = (mimeType: string) => mimeType === 'application/pdf';
+  const isImageType = (mimeType: string) => mimeType.startsWith("image/");
+  const isPdfType = (mimeType: string) => mimeType === "application/pdf";
 
   const openFilePreview = async (doc: DocRow) => {
-    setPreviewDoc({ doc, url: '', mimeType: '', loading: true });
+    setPreviewDoc({ doc, url: "", mimeType: "", loading: true });
     setPreviewOpen(true);
 
     try {
@@ -327,7 +341,9 @@ export default function DoctorVerificationTable({
       setPreviewDoc({ doc, url: data.signedUrl, mimeType, loading: false });
     } catch (e: any) {
       console.error(e);
-      setPreviewDoc(prev => prev ? { ...prev, loading: false, error: e?.message || 'Failed to load file' } : null);
+      setPreviewDoc((prev) =>
+        prev ? { ...prev, loading: false, error: e?.message || "Failed to load file" } : null
+      );
     }
   };
 
@@ -390,11 +406,7 @@ export default function DoctorVerificationTable({
         <div className="flex flex-col items-center justify-center h-96 text-destructive">
           <XCircle className="w-12 h-12 mb-2" />
           <p>{previewDoc.error}</p>
-          <Button 
-            variant="outline" 
-            className="mt-4"
-            onClick={() => viewDocument(previewDoc.doc.file_path)}
-          >
+          <Button variant="outline" className="mt-4" onClick={() => viewDocument(previewDoc.doc.file_path)}>
             <ExternalLink className="w-4 h-4 mr-2" />
             Open in new tab
           </Button>
@@ -405,8 +417,8 @@ export default function DoctorVerificationTable({
     if (isImageType(previewDoc.mimeType)) {
       return (
         <div className="flex flex-col items-center justify-center p-4">
-          <img 
-            src={previewDoc.url} 
+          <img
+            src={previewDoc.url}
             alt={previewDoc.doc.file_name}
             className="max-w-full max-h-[70vh] object-contain rounded-lg shadow-lg"
           />
@@ -461,19 +473,65 @@ export default function DoctorVerificationTable({
   ) => {
     const newStatus = normalizeStatus(newStatusRaw);
 
+    // Verified / Declined MUST go through Edge Function (service role) so it always works under RLS.
+    if (newStatus === "verified") {
+      try {
+        toast.loading("Approving...", { id: "dv-approve" });
+        await invokeSuperadmin({ action: "approve_doctor_verification", id: verificationId });
+
+        // Best-effort: also mark doctor verified client-side (in case your function does not update doctors table).
+        await supabase.from("doctors").update({ verified: true }).eq("id", doctorId);
+
+        toast.success("Approved", { id: "dv-approve" });
+        setViewOpen(false);
+        setSelected(null);
+        setDocs([]);
+        setRejectionReason("");
+        await fetchData();
+      } catch (e: any) {
+        console.error(e);
+        toast.error(e?.message || "Failed to approve", { id: "dv-approve" });
+      }
+      return;
+    }
+
+    if (newStatus === "declined") {
+      const reason = rejectionReason.trim();
+      if (!reason) {
+        toast.error("Please provide a rejection reason");
+        return;
+      }
+
+      try {
+        toast.loading("Declining...", { id: "dv-decline" });
+        await invokeSuperadmin({ action: "reject_doctor_verification", id: verificationId, reason });
+
+        // Best-effort: mark doctor unverified.
+        await supabase.from("doctors").update({ verified: false }).eq("id", doctorId);
+
+        toast.success("Declined", { id: "dv-decline" });
+        setViewOpen(false);
+        setSelected(null);
+        setDocs([]);
+        setRejectionReason("");
+        await fetchData();
+      } catch (e: any) {
+        console.error(e);
+        toast.error(e?.message || "Failed to decline", { id: "dv-decline" });
+      }
+      return;
+    }
+
+    // Non-terminal statuses can be updated directly.
     try {
       const { data: auth } = await supabase.auth.getUser();
       const reviewerId = auth?.user?.id || null;
 
       const updatePayload: any = {
         status: newStatus,
-        reviewed_at:
-          newStatus === "pending" || newStatus === "resubmitted"
-            ? null
-            : new Date().toISOString(),
-        reviewed_by:
-          newStatus === "pending" || newStatus === "resubmitted" ? null : reviewerId,
-        rejection_reason: newStatus === "declined" ? (rejectionReason.trim() || null) : null,
+        reviewed_at: newStatus === "pending" || newStatus === "resubmitted" ? null : new Date().toISOString(),
+        reviewed_by: newStatus === "pending" || newStatus === "resubmitted" ? null : reviewerId,
+        rejection_reason: null,
         updated_at: new Date().toISOString(),
       };
 
@@ -484,11 +542,8 @@ export default function DoctorVerificationTable({
 
       if (vErr) throw vErr;
 
-      const { error: dErr } = await supabase
-        .from("doctors")
-        .update({ verified: newStatus === "verified" })
-        .eq("id", doctorId);
-
+      // For non-verified statuses, keep doctor.verified false.
+      const { error: dErr } = await supabase.from("doctors").update({ verified: false }).eq("id", doctorId);
       if (dErr) throw dErr;
 
       toast.success("Status updated");
@@ -520,9 +575,7 @@ export default function DoctorVerificationTable({
           .filter(Boolean) || [];
 
       if (paths.length) {
-        const { error: rmErr } = await supabase.storage
-          .from("verification-documents")
-          .remove(paths);
+        const { error: rmErr } = await supabase.storage.from("verification-documents").remove(paths);
         if (rmErr) console.warn("Storage remove error:", rmErr);
       }
 
@@ -619,9 +672,7 @@ export default function DoctorVerificationTable({
                     <TableRow key={row.id}>
                       <TableCell>
                         <div className="space-y-0.5">
-                          <div className="font-medium">
-                            {row.profile?.full_name || "Unknown doctor"}
-                          </div>
+                          <div className="font-medium">{row.profile?.full_name || "Unknown doctor"}</div>
                           <div className="text-xs text-muted-foreground">
                             {row.profile?.email || "—"}
                             {row.profile?.phone ? ` • ${row.profile.phone}` : ""}
@@ -630,13 +681,9 @@ export default function DoctorVerificationTable({
                       </TableCell>
 
                       <TableCell>{row.doctors?.specialty || row.specialty || "—"}</TableCell>
-                      <TableCell className="font-mono text-xs">
-                        {row.license_number || row.doctors?.license_number || "—"}
-                      </TableCell>
+                      <TableCell className="font-mono text-xs">{row.license_number || row.doctors?.license_number || "—"}</TableCell>
                       <TableCell>{getStatusBadge(row.status)}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {safeDate(row.submitted_at)}
-                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{safeDate(row.submitted_at)}</TableCell>
 
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
@@ -647,13 +694,7 @@ export default function DoctorVerificationTable({
 
                           <Button
                             size="sm"
-                            onClick={() =>
-                              handleUpdateStatus(
-                                row.id,
-                                row.doctors?.id || row.doctor_id,
-                                "verified"
-                              )
-                            }
+                            onClick={() => handleUpdateStatus(row.id, row.doctors?.id || row.doctor_id, "verified")}
                             disabled={normalizeStatus(row.status) === "verified"}
                           >
                             <CheckCircle className="w-4 h-4 mr-2" />
@@ -698,9 +739,7 @@ export default function DoctorVerificationTable({
               <div className="rounded-lg border p-4 space-y-2">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="font-medium truncate">
-                      {selected.profile?.full_name || "Unknown doctor"}
-                    </div>
+                    <div className="font-medium truncate">{selected.profile?.full_name || "Unknown doctor"}</div>
                     <div className="text-xs text-muted-foreground truncate">
                       {selected.profile?.email || "—"}
                       {selected.profile?.phone ? ` • ${selected.profile.phone}` : ""}
@@ -716,9 +755,7 @@ export default function DoctorVerificationTable({
                   </div>
                   <div>
                     <span className="text-muted-foreground">License #: </span>
-                    <span className="font-mono">
-                      {selected.license_number || selected.doctors?.license_number || "—"}
-                    </span>
+                    <span className="font-mono">{selected.license_number || selected.doctors?.license_number || "—"}</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Submitted: </span>
@@ -757,11 +794,14 @@ export default function DoctorVerificationTable({
                           </div>
                         </div>
                         <div className="flex gap-2 mt-1">
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
+                          <Button
+                            size="sm"
+                            variant="outline"
                             className="flex-1"
-                            onClick={(e) => { e.stopPropagation(); openFilePreview(d); }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openFilePreview(d);
+                            }}
                           >
                             <Eye className="w-3 h-3 mr-1" />
                             Preview
@@ -770,7 +810,10 @@ export default function DoctorVerificationTable({
                             size="sm"
                             variant="secondary"
                             className="flex-1"
-                            onClick={(e) => { e.stopPropagation(); downloadDocument(d.file_path, d.file_name); }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              downloadDocument(d.file_path, d.file_name);
+                            }}
                           >
                             <Download className="w-3 h-3 mr-1" />
                             Download
@@ -824,11 +867,7 @@ export default function DoctorVerificationTable({
                 <Button
                   variant="secondary"
                   onClick={() =>
-                    handleUpdateStatus(
-                      selected.id,
-                      selected.doctors?.id || selected.doctor_id,
-                      "under_review"
-                    )
+                    handleUpdateStatus(selected.id, selected.doctors?.id || selected.doctor_id, "under_review")
                   }
                   disabled={normalizeStatus(selected.status) === "under_review"}
                 >
@@ -837,13 +876,7 @@ export default function DoctorVerificationTable({
                 </Button>
 
                 <Button
-                  onClick={() =>
-                    handleUpdateStatus(
-                      selected.id,
-                      selected.doctors?.id || selected.doctor_id,
-                      "verified"
-                    )
-                  }
+                  onClick={() => handleUpdateStatus(selected.id, selected.doctors?.id || selected.doctor_id, "verified")}
                   disabled={normalizeStatus(selected.status) === "verified"}
                 >
                   <CheckCircle className="w-4 h-4 mr-2" />
@@ -852,17 +885,7 @@ export default function DoctorVerificationTable({
 
                 <Button
                   variant="destructive"
-                  onClick={() => {
-                    if (!rejectionReason.trim()) {
-                      toast.error("Please provide a rejection reason");
-                      return;
-                    }
-                    handleUpdateStatus(
-                      selected.id,
-                      selected.doctors?.id || selected.doctor_id,
-                      "declined"
-                    );
-                  }}
+                  onClick={() => handleUpdateStatus(selected.id, selected.doctors?.id || selected.doctor_id, "declined")}
                   disabled={normalizeStatus(selected.status) === "declined"}
                 >
                   <XCircle className="w-4 h-4 mr-2" />
@@ -875,30 +898,29 @@ export default function DoctorVerificationTable({
       </Dialog>
 
       {/* File Preview Dialog */}
-      <Dialog open={previewOpen} onOpenChange={(open) => {
-        setPreviewOpen(open);
-        if (!open) setPreviewDoc(null);
-      }}>
+      <Dialog
+        open={previewOpen}
+        onOpenChange={(open) => {
+          setPreviewOpen(open);
+          if (!open) setPreviewDoc(null);
+        }}
+      >
         <DialogContent className="max-w-4xl max-h-[90vh]">
           <UIDialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {previewDoc && getFileIcon(previewDoc.doc.file_name)}
-              <span className="truncate">{previewDoc?.doc.file_name || 'File Preview'}</span>
+              <span className="truncate">{previewDoc?.doc.file_name || "File Preview"}</span>
             </DialogTitle>
             <DialogDescription className="flex items-center justify-between">
-              <span>{previewDoc?.doc.document_type || 'Document'}</span>
+              <span>{previewDoc?.doc.document_type || "Document"}</span>
               {previewDoc && !previewDoc.loading && !previewDoc.error && (
                 <div className="flex gap-2">
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => viewDocument(previewDoc.doc.file_path)}
-                  >
+                  <Button size="sm" variant="outline" onClick={() => viewDocument(previewDoc.doc.file_path)}>
                     <ExternalLink className="w-3 h-3 mr-1" />
                     Open in new tab
                   </Button>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     variant="secondary"
                     onClick={() => downloadDocument(previewDoc.doc.file_path, previewDoc.doc.file_name)}
                   >
@@ -909,10 +931,8 @@ export default function DoctorVerificationTable({
               )}
             </DialogDescription>
           </UIDialogHeader>
-          
-          <ScrollArea className="max-h-[75vh]">
-            {renderFilePreview()}
-          </ScrollArea>
+
+          <ScrollArea className="max-h-[75vh]">{renderFilePreview()}</ScrollArea>
         </DialogContent>
       </Dialog>
     </>
