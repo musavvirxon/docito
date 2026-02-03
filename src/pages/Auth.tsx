@@ -1,44 +1,20 @@
+// src/pages/Auth.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import {
-  Loader2,
-  User,
-  Stethoscope,
-  Building2,
-  Pill,
-  FlaskConical,
-  Scan,
-} from "lucide-react";
+import { Loader2, User, Stethoscope, Building2, Pill, FlaskConical, Scan } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthIllustration } from "@/components/Visuals/illustrations";
-import {
-  DASHBOARD_ROUTES,
-  getDashboardRoute,
-  normalizeRole,
-  type AppRole,
-} from "@/lib/rbac";
+import { DASHBOARD_ROUTES, getDashboardRoute, normalizeRole, type AppRole } from "@/lib/rbac";
 
 type NameFieldCopy = {
   label: string;
@@ -108,6 +84,7 @@ const Auth = () => {
   const [signUpPassword, setSignUpPassword] = useState("");
   const [signUpFullName, setSignUpFullName] = useState("");
   const [signUpRole, setSignUpRole] = useState<string>("patient");
+  const [signUpMarketingOptIn, setSignUpMarketingOptIn] = useState<boolean>(true);
 
   const { signIn, signUp, user, profile, activeRole } = useAuth();
 
@@ -159,6 +136,7 @@ const Auth = () => {
         // For facility/practice admins this is the facility name shown in Profile.
         fullName: signUpFullName,
         role: signUpRole,
+        marketing_communications: signUpMarketingOptIn,
       });
     } catch (error) {
       console.error("Sign up error:", error);
@@ -352,6 +330,25 @@ const Auth = () => {
                       onChange={(e) => setSignUpPassword(e.target.value)}
                       required
                     />
+                  </div>
+
+                  <div className="pt-2">
+                    <div className="flex items-start space-x-2">
+                      <Checkbox
+                        id="signup-marketing-optin"
+                        checked={signUpMarketingOptIn}
+                        onCheckedChange={(checked) => setSignUpMarketingOptIn(Boolean(checked))}
+                      />
+                      <label
+                        htmlFor="signup-marketing-optin"
+                        className="text-sm leading-relaxed cursor-pointer text-muted-foreground"
+                      >
+                        {t(
+                          "auth.signUp.marketingOptIn",
+                          "I agree to receive updates, newsletters, and promotional communications",
+                        )}
+                      </label>
+                    </div>
                   </div>
                 </CardContent>
 
