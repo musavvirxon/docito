@@ -22,9 +22,7 @@ const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 max-w-5xl mx-auto">
           {/* Platform */}
           <div>
-            <h3 className="font-semibold mb-3 text-foreground">
-              {t("footer.platform.title", "Platform")}
-            </h3>
+            <h3 className="font-semibold mb-3 text-foreground">{t("footer.platform.title", "Platform")}</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/" className="text-muted-foreground hover:text-primary transition-colors">
@@ -51,9 +49,7 @@ const Footer = () => {
 
           {/* Support */}
           <div>
-            <h3 className="font-semibold mb-3 text-foreground">
-              {t("footer.support.title", "Support")}
-            </h3>
+            <h3 className="font-semibold mb-3 text-foreground">{t("footer.support.title", "Support")}</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/help" className="text-muted-foreground hover:text-primary transition-colors">
@@ -80,9 +76,7 @@ const Footer = () => {
 
           {/* Legal */}
           <div>
-            <h3 className="font-semibold mb-3 text-foreground">
-              {t("footer.legal.title", "Legal")}
-            </h3>
+            <h3 className="font-semibold mb-3 text-foreground">{t("footer.legal.title", "Legal")}</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">
@@ -90,17 +84,17 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/privacy" className="text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/legal/privacy-policy" className="text-muted-foreground hover:text-primary transition-colors">
                   {t("footer.legal.privacy", "Privacy Policy")}
                 </Link>
               </li>
               <li>
-                <Link to="/terms" className="text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/legal/terms-of-service" className="text-muted-foreground hover:text-primary transition-colors">
                   {t("footer.legal.terms", "Terms of Service")}
                 </Link>
               </li>
               <li>
-                <Link to="/cookies" className="text-muted-foreground hover:text-primary transition-colors">
+                <Link to="/legal/cookies" className="text-muted-foreground hover:text-primary transition-colors">
                   {t("footer.legal.cookies", "Cookie Policy")}
                 </Link>
               </li>
@@ -114,19 +108,11 @@ const Footer = () => {
 
           {/* Contact */}
           <div>
-            <h3 className="font-semibold mb-3 text-foreground">
-              {t("footer.support.contact", "Contact Us")}
-            </h3>
+            <h3 className="font-semibold mb-3 text-foreground">{t("footer.support.contact", "Contact Us")}</h3>
             <ul className="space-y-2 text-sm">
-              <li className="text-muted-foreground">
-                {t("footer.contact.email", "contact@docito.com")}
-              </li>
-              <li className="text-muted-foreground">
-                {t("footer.contact.phone", "+1 (555) 123-4567")}
-              </li>
-              <li className="text-muted-foreground">
-                {t("footer.contact.location", "San Francisco, CA")}
-              </li>
+              <li className="text-muted-foreground">{t("footer.contact.email", "contact@docito.com")}</li>
+              <li className="text-muted-foreground">{t("footer.contact.phone", "+1 (555) 123-4567")}</li>
+              <li className="text-muted-foreground">{t("footer.contact.location", "San Francisco, CA")}</li>
             </ul>
           </div>
         </div>
@@ -145,8 +131,8 @@ const Footer = () => {
         <div className="border-t border-border pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-center md:text-left">
             <p className="text-sm text-foreground font-medium mb-1">
-              © {currentYear} <span className="font-bold text-primary">Docito®</span>{" "}
-              — {t("footer.copyright", "All Rights Reserved")}
+              © {currentYear} <span className="font-bold text-primary">Docito®</span> —{" "}
+              {t("footer.copyright", "All Rights Reserved")}
             </p>
             <p className="text-xs text-muted-foreground">
               {t("footer.trademark", "Docito is a registered trademark and brand of")}{" "}
@@ -156,13 +142,13 @@ const Footer = () => {
 
           <div className="flex items-center gap-6">
             <div className="flex gap-6 text-sm">
-              <Link to="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link to="/legal/privacy-policy" className="text-muted-foreground hover:text-foreground transition-colors">
                 {t("footer.links.privacy", "Privacy")}
               </Link>
-              <Link to="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link to="/legal/terms-of-service" className="text-muted-foreground hover:text-foreground transition-colors">
                 {t("footer.links.terms", "Terms")}
               </Link>
-              <Link to="/cookies" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Link to="/legal/cookies" className="text-muted-foreground hover:text-foreground transition-colors">
                 {t("footer.links.cookies", "Cookies")}
               </Link>
               <Link to="/about" className="text-muted-foreground hover:text-foreground transition-colors">
