@@ -7,7 +7,6 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { HelmetProvider } from "react-helmet-async";
 import { languages } from "@/i18n/config";
 import i18n from "@/i18n/config";
-import ScrollToTop from "@/components/ScrollToTop";
 
 // Layouts
 import PublicLayout from "@/layouts/PublicLayout";
@@ -103,7 +102,6 @@ const PageLoader = () => (
   </div>
 );
 
-// Language wrapper component that sets the i18n language based on URL
 function LanguageWrapper() {
   const { lang } = useParams<{ lang: string }>();
 
@@ -128,10 +126,7 @@ export default function App() {
       <ThemeProvider>
         <AuthProvider>
           <Suspense fallback={<PageLoader />}>
-            <ScrollToTop />
-
             <Routes>
-              {/* Language-prefixed routes (e.g., /en/about, /ru/doctors) */}
               <Route path=":lang" element={<LanguageWrapper />}>
                 <Route element={<PublicLayout />}>
                   <Route index element={<PremiumHome />} />
@@ -175,13 +170,12 @@ export default function App() {
                   <Route path="terms" element={<LangRedirect to="/legal/terms-of-service" />} />
                   <Route path="cookies" element={<LangRedirect to="/legal/cookies" />} />
                   <Route path="cookie-policy" element={<LangRedirect to="/legal/cookies" />} />
-                  <Route path="hipaa" element={<LangRedirect to="/legal/hipaa" />} />
                   <Route path="legal/cookie-policy" element={<LangRedirect to="/legal/cookies" />} />
+                  <Route path="hipaa" element={<LangRedirect to="/legal/hipaa" />} />
 
                   <Route path="feedback" element={<FeedbackCenter />} />
                 </Route>
 
-                {/* Dashboard routes with language prefix */}
                 <Route path="patient-dashboard" element={<PatientDashboard />} />
                 <Route path="patient/dashboard" element={<PatientDashboard />} />
                 <Route path="doctor-dashboard" element={<DoctorDashboard />} />
@@ -210,7 +204,7 @@ export default function App() {
                 <Route path="lab/register" element={<LabRegistration />} />
                 <Route path="lab/verification" element={<LabVerification />} />
                 <Route path="pharmacy/register" element={<PharmacyRegistration />} />
-                <Route path="pharmacy/verification" element={<PharmacyVerification />} />
+                <Route path="pharmacy/verification" element={<ImagingVerification />} />
                 <Route path="imaging/register" element={<ImagingRegistration />} />
                 <Route path="imaging/verification" element={<ImagingVerification />} />
                 <Route path="profile" element={<ProfilePage />} />
@@ -224,7 +218,6 @@ export default function App() {
                 <Route path="*" element={<NotFound />} />
               </Route>
 
-              {/* Non-prefixed routes (default language) */}
               <Route element={<PublicLayout />}>
                 <Route index element={<PremiumHome />} />
                 <Route path="auth" element={<Auth />} />
@@ -267,13 +260,12 @@ export default function App() {
                 <Route path="terms" element={<Navigate to="/legal/terms-of-service" replace />} />
                 <Route path="cookies" element={<Navigate to="/legal/cookies" replace />} />
                 <Route path="cookie-policy" element={<Navigate to="/legal/cookies" replace />} />
-                <Route path="hipaa" element={<Navigate to="/legal/hipaa" replace />} />
                 <Route path="legal/cookie-policy" element={<Navigate to="/legal/cookies" replace />} />
+                <Route path="hipaa" element={<Navigate to="/legal/hipaa" replace />} />
 
                 <Route path="feedback" element={<FeedbackCenter />} />
               </Route>
 
-              {/* Dashboard routes without language prefix */}
               <Route path="patient-dashboard" element={<PatientDashboard />} />
               <Route path="patient/dashboard" element={<PatientDashboard />} />
               <Route path="doctor-dashboard" element={<DoctorDashboard />} />
