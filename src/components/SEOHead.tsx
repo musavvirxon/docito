@@ -1,5 +1,4 @@
-// /src/components/SEOHead.tsx
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 
@@ -10,7 +9,7 @@ interface SEOHeadProps {
   image?: string;
   noindex?: boolean;
   type?: 'website' | 'article' | 'product';
-  structuredData?: object;
+  structuredData?: object | object[];
 }
 
 const languages = ['en', 'ru', 'uz', 'ar', 'tr', 'zh', 'es', 'pt', 'de', 'ja', 'ko'];
@@ -34,11 +33,29 @@ const normalizeLang = (lng?: string) => {
   return lng.split('-')[0];
 };
 
+const normalizeBaseUrl = (raw: string) => raw.replace(/\/+$/, '');
+
+const getBaseUrl = () => {
+  const env =
+    (import.meta as any)?.env?.VITE_SITE_URL ||
+    (import.meta as any)?.env?.VITE_PUBLIC_SITE_URL ||
+    (import.meta as any)?.env?.VITE_APP_URL;
+
+  const fromEnv = typeof env === 'string' ? env.trim() : '';
+  if (fromEnv) return normalizeBaseUrl(fromEnv);
+
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return normalizeBaseUrl(window.location.origin);
+  }
+
+  return 'https://docito.com';
+};
+
 const toAbsoluteUrl = (baseUrl: string, url: string) => {
   if (!url) return url;
   if (/^https?:\/\//i.test(url)) return url;
   try {
-    return new URL(url, baseUrl).toString();
+    return new URL(url, `${baseUrl}/`).toString();
   } catch {
     return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
   }
@@ -57,11 +74,7 @@ export const SEOHead = ({
   const location = useLocation();
 
   const currentLang = normalizeLang(i18n.language || 'en');
-
-  const baseUrl =
-    typeof window !== 'undefined' && window.location?.origin
-      ? window.location.origin
-      : 'https://docito.app';
+  const baseUrl = useMemo(() => getBaseUrl(), []);
 
   useEffect(() => {
     try {
@@ -105,6 +118,7 @@ export const SEOHead = ({
       ensureMeta('meta[name="application-name"]', { name: 'application-name', content: 'Docito' });
       ensureMeta('meta[name="apple-mobile-web-app-title"]', { name: 'apple-mobile-web-app-title', content: 'Docito' });
 
+      // Canonical should be stable (no query/hash by default)
       const canonicalUrl = `${baseUrl}${location.pathname}`;
       const absImage = toAbsoluteUrl(baseUrl, image);
       const ogLocale = ogLocaleMap[currentLang] || ogLocaleMap.en;
@@ -197,74 +211,74 @@ export const SEOHead = ({
       document.documentElement.lang = currentLang;
       document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
 
+      // Always include Organization + WebSite schema (helps Google site name + logo)
+      const defaultSchemas = [
+        generateOrganizationSchema(baseUrl),
+        generateMedicalWebsiteSchema(baseUrl)
+      ];
+
+      const extra = structuredData
+        ? Array.isArray(structuredData)
+          ? structuredData
+          : [structuredData]
+        : [];
+
+      const combined = [...defaultSchemas, ...extra];
+
       const existingScript = document.querySelector('script[type="application/ld+json"][data-seo="true"]');
       if (existingScript && existingScript.parentNode) {
         existingScript.parentNode.removeChild(existingScript);
       }
 
-      if (structuredData) {
-        const script = document.createElement('script');
-        script.type = 'application/ld+json';
-        script.setAttribute('data-seo', 'true');
-        script.textContent = JSON.stringify(structuredData);
-        document.head.appendChild(script);
-      }
+      const script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.setAttribute('data-seo', 'true');
+      script.textContent = JSON.stringify(combined);
+      document.head.appendChild(script);
     } catch (err) {
       // SEO must never crash the app
       console.error('[SEOHead] Failed to apply tags', err);
     }
-  }, [title, description, keywords, image, currentLang, location.pathname, noindex, type, structuredData, baseUrl]);
+  }, [
+    title,
+    description,
+    keywords,
+    image,
+    currentLang,
+    location.pathname,
+    noindex,
+    type,
+    structuredData,
+    baseUrl
+  ]);
 
   return null;
 };
 
-export const generateOrganizationSchema = () => ({
+export const generateOrganizationSchema = (baseUrl: string) => ({
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'Docito',
   alternateName: 'Docito®',
-  url: 'https://docito.app',
-  logo: 'https://docito.app/logos/docito-logo.png',
+  url: `${baseUrl}/`,
+  logo: toAbsoluteUrl(baseUrl, '/logos/icon/docito-logo-512x512.png'),
   description:
-    'Unified healthcare management and booking platform connecting patients, doctors, clinics, labs, pharmacies, and imaging centers.',
-  sameAs: [
-    'https://twitter.com/docito',
-    'https://facebook.com/docito',
-    'https://linkedin.com/company/docito'
-  ],
-  contactPoint: {
-    '@type': 'ContactPoint',
-    contactType: 'customer service',
-    email: 'support@docito.app',
-    availableLanguage: [
-      'English',
-      'Russian',
-      'Uzbek',
-      'Arabic',
-      'Turkish',
-      'Chinese',
-      'Spanish',
-      'Portuguese',
-      'German',
-      'Japanese',
-      'Korean'
-    ]
-  }
+    'Unified healthcare management and booking platform connecting patients, doctors, clinics, labs, pharmacies, and imaging centers.'
 });
 
-export const generateMedicalWebsiteSchema = () => ({
+export const generateMedicalWebsiteSchema = (baseUrl: string) => ({
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: 'Docito',
   alternateName: 'Docito®',
-  url: 'https://docito.app',
+  url: `${baseUrl}/`,
   description:
     'One platform connecting patients, doctors, clinics, labs, pharmacies, imaging centers, and insurance—secure scheduling, referrals, records, and analytics.',
   potentialAction: {
     '@type': 'SearchAction',
     target: {
       '@type': 'EntryPoint',
-      urlTemplate: 'https://docito.app/search?q={search_term_string}'
+      urlTemplate: `${baseUrl}/search-doctors?q={search_term_string}`
     },
     'query-input': 'required name=search_term_string'
   }
