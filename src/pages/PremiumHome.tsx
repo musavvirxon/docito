@@ -50,18 +50,19 @@ export default function PremiumHome() {
       <main className="bg-background text-foreground antialiased">
         <PremiumHero />
 
-        {/* Move Platform Capabilities to be second below header */}
+        {/* Move Search to second below header */}
+        <SmartSearch />
+
+        {/* Keep Platform Capabilities near the top (now just below Search) */}
         <CapabilitiesGrid />
 
-        <SmartSearch />
         <ProviderCards />
         <PlatformPillars />
         <SpecialtiesCarousel />
         <FeaturedProviders />
-
         <TopLabs />
 
-        {/* Move Verified Top Pharmacies just below Top Labs */}
+        {/* Verified Top Pharmacies just below Top Labs */}
         <NearbyPharmacies />
 
         <DiagnosticsSection />
