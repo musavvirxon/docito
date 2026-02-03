@@ -58,18 +58,15 @@ function getUA(req: Request) {
   return req.headers.get("user-agent") || null;
 }
 
-async function assertSuperAdmin(authedClient: ReturnType<typeof createClient>) {
+async function isSuperAdmin(authedClient: ReturnType<typeof createClient>): Promise<boolean> {
   // Preferred: SECURITY DEFINER RPC
   const rpc = await authedClient.rpc("is_super_admin");
-  if (!rpc.error && typeof rpc.data === "boolean") {
-    if (rpc.data) return true;
-    throw new Error("forbidden");
-  }
+  if (!rpc.error && typeof rpc.data === "boolean") return rpc.data;
 
-  // Fallback: direct lookup (may be blocked if RLS disallows)
+  // Fallback: direct lookup (may fail if RLS disallows)
   const me = await authedClient.auth.getUser();
   const userId = me.data?.user?.id;
-  if (!userId) throw new Error("unauthorized");
+  if (!userId) return false;
 
   const { data, error } = await authedClient
     .from("user_roles")
@@ -78,13 +75,14 @@ async function assertSuperAdmin(authedClient: ReturnType<typeof createClient>) {
     .eq("role", "super_admin")
     .limit(1);
 
-  if (error) throw new Error("forbidden");
-  if (data && data.length > 0) return true;
-
-  throw new Error("forbidden");
+  if (error) return false;
+  return !!(data && data.length > 0);
 }
 
 serve(async (req) => {
+  const ip = getIp(req);
+  const userAgent = getUA(req);
+
   try {
     if (req.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: corsHeaders });
@@ -111,8 +109,31 @@ serve(async (req) => {
       auth: { persistSession: false },
     });
 
+    const serviceClient = supabaseServiceRoleKey
+      ? createClient(supabaseUrl, supabaseServiceRoleKey, { auth: { persistSession: false } })
+      : null;
+
     const me = await authedClient.auth.getUser();
     const actorId = me.data?.user?.id || null;
+
+    const writeAudit = async (entry: {
+      action_type: string;
+      entity_type?: string | null;
+      entity_id?: string | null;
+      details?: Json;
+    }) => {
+      if (!serviceClient || !actorId) return;
+      await serviceClient.from("system_audit_logs").insert({
+        user_id: actorId,
+        action_type: entry.action_type,
+        action: entry.action_type,
+        entity_type: entry.entity_type ?? null,
+        entity_id: entry.entity_id ?? null,
+        details: entry.details ?? null,
+        ip_address: ip,
+        user_agent: userAgent,
+      } as any);
+    };
 
     const body = (await req.json().catch(() => null)) as
       | null
@@ -135,9 +156,6 @@ serve(async (req) => {
           // enable/disable
           reason?: string | null;
 
-          // audit logs
-          action_type?: string | null;
-
           // verifications
           status?: string | null;
           id?: string | null;
@@ -146,49 +164,27 @@ serve(async (req) => {
     const action = body?.action;
     if (!action) return jsonResponse(400, { error: "Missing action" });
 
-    // Non-admin utility endpoints (still require auth)
+    // Auth-required utilities
+    if (!actorId) return jsonResponse(401, { error: "Unauthorized" });
+
     if (action === "ping") {
       return jsonResponse(200, { ok: true, now: new Date().toISOString() });
     }
 
     if (action === "whoami") {
-      if (!actorId) return jsonResponse(401, { error: "Unauthorized" });
-      return jsonResponse(200, {
-        ok: true,
-        user_id: actorId,
-        ip_address: getIp(req),
-        user_agent: getUA(req),
-      });
+      return jsonResponse(200, { ok: true, user_id: actorId, ip_address: ip, user_agent: userAgent });
     }
 
-    // Super admin required from here
-    await assertSuperAdmin(authedClient);
-
-    const serviceClient = supabaseServiceRoleKey
-      ? createClient(supabaseUrl, supabaseServiceRoleKey, { auth: { persistSession: false } })
-      : null;
-
-    const ip = getIp(req);
-    const userAgent = getUA(req);
-
-    const writeAudit = async (entry: {
-      action_type: string;
-      entity_type?: string | null;
-      entity_id?: string | null;
-      details?: Json;
-    }) => {
-      if (!serviceClient || !actorId) return;
-      await serviceClient.from("system_audit_logs").insert({
-        user_id: actorId,
-        action_type: entry.action_type,
-        action: entry.action_type, // keep legacy + new in sync
-        entity_type: entry.entity_type ?? null,
-        entity_id: entry.entity_id ?? null,
-        details: entry.details ?? null,
-        ip_address: ip,
-        user_agent: userAgent,
-      } as any);
-    };
+    // Super-admin gate
+    const allowed = await isSuperAdmin(authedClient);
+    if (!allowed) {
+      await writeAudit({
+        action_type: "superadmin.forbidden",
+        entity_type: "superadmin",
+        details: { attempted_action: action },
+      });
+      return jsonResponse(403, { error: "Forbidden" });
+    }
 
     // =========================================================
     // list_users (profiles + user_roles) via service role
@@ -276,7 +272,7 @@ serve(async (req) => {
 
       const mode = (body?.mode || "replace") as "replace" | "add" | "remove";
       const rolesIn = Array.isArray(body?.roles) ? body!.roles! : [];
-      const roles = uniq(rolesIn.map((r) => normalizeRole(r)).filter(Boolean));
+      const roles = uniq(rolesIn.map((r) => normalizeRole(r)).filter(Boolean)).slice(0, 50);
 
       const { data: existingRows, error: exErr } = await serviceClient
         .from("user_roles")
@@ -308,7 +304,6 @@ serve(async (req) => {
 
       if (mode === "add") {
         const inserts = roles.map((r) => ({ user_id: userId, role: r }));
-        // rely on unique index (user_id, role) + upsert to avoid errors
         const { error: upErr } = await serviceClient
           .from("user_roles")
           .upsert(inserts as any, { onConflict: "user_id,role", ignoreDuplicates: true } as any);
@@ -344,29 +339,24 @@ serve(async (req) => {
 
       const userId = String(body?.user_id || "").trim();
       if (!userId) return jsonResponse(400, { error: "Missing user_id" });
+      if (userId === actorId) return jsonResponse(400, { error: "You cannot disable/enable yourself from this panel" });
 
       const reason = String(body?.reason || "").trim() || null;
       const isDisable = action === "disable_user";
 
-      // Ban/unban in Auth
       const banDuration = isDisable ? "876000h" : "none"; // ~100 years
       const { data, error } = await serviceClient.auth.admin.updateUserById(userId, { ban_duration: banDuration });
       if (error) return jsonResponse(500, { error: error.message });
 
-      // Best-effort profile flags (ignore failures if columns don't exist)
       const nowIso = new Date().toISOString();
-      try {
-        await serviceClient
-          .from("profiles")
-          .update(
-            isDisable
-              ? ({ disabled: true, disabled_at: nowIso, disabled_reason: reason } as any)
-              : ({ disabled: false, disabled_at: null, disabled_reason: null } as any)
-          )
-          .eq("user_id", userId);
-      } catch {
-        // ignore
-      }
+      await serviceClient
+        .from("profiles")
+        .update(
+          isDisable
+            ? ({ disabled: true, disabled_at: nowIso, disabled_reason: reason } as any)
+            : ({ disabled: false, disabled_at: null, disabled_reason: null } as any)
+        )
+        .eq("user_id", userId);
 
       await writeAudit({
         action_type: isDisable ? "superadmin.disable_user" : "superadmin.enable_user",
@@ -379,7 +369,7 @@ serve(async (req) => {
     }
 
     // =========================================================
-    // list_audit_logs (RLS allows super admin)
+    // list_audit_logs (read via authed client; RLS allows super admin)
     // =========================================================
     if (action === "list_audit_logs") {
       const limit = Math.min(Math.max(Number(body?.limit ?? 100), 1), 200);
@@ -430,9 +420,7 @@ serve(async (req) => {
         .order("created_at", { ascending: false })
         .range(offset, offset + limit - 1);
 
-      if (status && status !== "all") {
-        q = q.eq("status", status);
-      }
+      if (status && status !== "all") q = q.eq("status", status);
 
       const { data, error } = await q;
       if (error) return jsonResponse(500, { error: error.message });
@@ -566,11 +554,15 @@ serve(async (req) => {
       return jsonResponse(200, { ok: true });
     }
 
+    await writeAudit({
+      action_type: "superadmin.unknown_action",
+      entity_type: "superadmin",
+      details: { attempted_action: action },
+    });
+
     return jsonResponse(400, { error: "Unknown action" });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Unexpected error";
-    if (msg === "unauthorized") return jsonResponse(401, { error: "Unauthorized" });
-    if (msg === "forbidden") return jsonResponse(403, { error: "Forbidden" });
     return jsonResponse(500, { error: msg });
   }
 });
