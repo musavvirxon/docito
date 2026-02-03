@@ -41,6 +41,8 @@ import GlobalStaffManagement from "@/components/super-admin/GlobalStaffManagemen
 import ReferralManagement from "@/components/super-admin/ReferralManagement";
 import FacilityVerificationRequestsTable from "@/components/super-admin/FacilityVerificationRequestsTable";
 import { useTranslation } from "react-i18next";
+import UsersAdmin from "@/components/super-admin/UsersAdmin";
+import SystemLogs from "@/components/super-admin/SystemLogs";
 
 const SuperAdminLogin = () => {
   const [email, setEmail] = useState("");
@@ -274,6 +276,25 @@ const SuperAdminDashboard = () => {
           </div>
         );
 
+      case "patients":
+        return <UsersAdmin />;
+
+      case "appointments":
+        return (
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Appointments</h1>
+              <p className="text-muted-foreground mt-1">
+                Review and manage recent appointments across the platform.
+              </p>
+            </div>
+            <ManagementTable title="Appointments" type="appointments" />
+          </div>
+        );
+
+      case "logs":
+        return <SystemLogs />;
+
       case "ecosystem":
         return <EcosystemOverview />;
 
@@ -303,53 +324,6 @@ const SuperAdminDashboard = () => {
 
       case "referrals":
         return <ReferralManagement />;
-
-      case "patients":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Patients</h1>
-              <p className="text-muted-foreground mt-1">
-                Manage patient accounts and review recent activity.
-              </p>
-            </div>
-            <ManagementTable title="Patients" type="patients" />
-          </div>
-        );
-
-      case "appointments":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Appointments</h1>
-              <p className="text-muted-foreground mt-1">
-                Review and manage recent appointments across the platform.
-              </p>
-            </div>
-            <ManagementTable title="Appointments" type="appointments" />
-          </div>
-        );
-
-      case "logs":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">System Logs</h1>
-              <p className="text-muted-foreground mt-1">
-                Recent system events and administrative actions.
-              </p>
-            </div>
-            <ActivityFeed showAll />
-          </div>
-        );
-
-      case "feedback":
-        return (
-          <div className="space-y-6">
-            <h1 className="text-3xl font-bold">Feedback Inbox</h1>
-            <p className="text-muted-foreground">Use the inbox link in the header.</p>
-          </div>
-        );
 
       case "pharmacies":
         return <EntityManagement entityType="pharmacy" />;
