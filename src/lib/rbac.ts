@@ -2,107 +2,159 @@
 export type AppRole =
   | "patient"
   | "doctor"
-  | "staff"
   | "admin"
+  | "staff"
+  | "super_admin"
   | "clinic_admin"
-  | "lab_admin"
   | "pharmacy_admin"
-  | "imaging_admin"
-  | "super_admin";
+  | "lab_admin"
+  | "imaging_admin";
 
-export const DASHBOARD_ROUTES: Record<AppRole, string> = {
-  patient: "/patient/dashboard",
-  doctor: "/doctor/dashboard",
-  staff: "/staff/dashboard",
-  admin: "/admin/dashboard",
-  clinic_admin: "/admin/dashboard",
-  lab_admin: "/lab/dashboard",
-  pharmacy_admin: "/pharmacy/dashboard",
-  imaging_admin: "/imaging/dashboard",
-  super_admin: "/super-admin/dashboard",
+export const roleLabels: Record<AppRole, string> = {
+  patient: "Patient",
+  doctor: "Doctor",
+  admin: "Admin",
+  staff: "Staff",
+  super_admin: "Super Admin",
+  clinic_admin: "Clinic Admin",
+  pharmacy_admin: "Pharmacy Admin",
+  lab_admin: "Lab Admin",
+  imaging_admin: "Imaging Admin",
 };
 
-const ROLE_PRIORITY: AppRole[] = [
-  "super_admin",
-  "lab_admin",
-  "pharmacy_admin",
-  "imaging_admin",
-  "clinic_admin",
-  "admin",
-  "doctor",
-  "staff",
+/**
+ * Dashboard route per "primary" role.
+ * Facility admin roles MUST win over clinic_admin/admin so they land on their own dashboards.
+ *
+ * NOTE: These routes match App.tsx route paths.
+ */
+export const DASHBOARD_ROUTES: Record<AppRole, string> = {
+  patient: "/patient-dashboard",
+  doctor: "/doctor-dashboard",
+  admin: "/admin-dashboard",
+  staff: "/staff-dashboard",
+  super_admin: "/super-admin-dashboard",
+  clinic_admin: "/practices/dashboard",
+  pharmacy_admin: "/dashboard/pharmacies",
+  lab_admin: "/dashboard/labs",
+  imaging_admin: "/dashboard/imaging",
+};
+
+const VALID_ROLES: AppRole[] = [
   "patient",
+  "doctor",
+  "admin",
+  "staff",
+  "super_admin",
+  "clinic_admin",
+  "pharmacy_admin",
+  "lab_admin",
+  "imaging_admin",
 ];
 
-export function normalizeRole(input?: string | null): AppRole | null {
-  if (!input) return null;
-  const v = String(input).trim().toLowerCase();
+export function normalizeRole(input: unknown): AppRole | null {
+  const s = String(input || "").trim().toLowerCase();
 
-  // Common aliases / legacy names
-  if (v === "practice_admin") return "clinic_admin";
-  if (v === "clinicadmin") return "clinic_admin";
-  if (v === "superadmin") return "super_admin";
-  if (v === "labadmin") return "lab_admin";
-  if (v === "pharmacyadmin") return "pharmacy_admin";
-  if (v === "imagingadmin") return "imaging_admin";
+  // Common aliases / legacy values
+  if (s === "superadmin") return "super_admin";
+  if (s === "clinicadmin") return "clinic_admin";
+  if (s === "practice_admin") return "clinic_admin";
+  if (s === "labadmin") return "lab_admin";
+  if (s === "pharmacyadmin") return "pharmacy_admin";
+  if (s === "imagingadmin") return "imaging_admin";
 
-  const allowed: Set<AppRole> = new Set([
-    "patient",
-    "doctor",
-    "staff",
-    "admin",
-    "clinic_admin",
-    "lab_admin",
-    "pharmacy_admin",
-    "imaging_admin",
-    "super_admin",
-  ]);
-
-  return allowed.has(v as AppRole) ? (v as AppRole) : null;
-}
-
-export function getPrimaryRole(roles: AppRole[]): AppRole {
-  if (!roles || roles.length === 0) return "patient";
-  for (const r of ROLE_PRIORITY) {
-    if (roles.includes(r)) return r;
-  }
-  return "patient";
-}
-
-export function getDashboardRoute(roles: Array<AppRole | string> | undefined | null): string {
-  const normalized = (roles ?? [])
-    .map((r) => normalizeRole(String(r)))
-    .filter(Boolean) as AppRole[];
-
-  const primary = getPrimaryRole(normalized);
-  return DASHBOARD_ROUTES[primary] || DASHBOARD_ROUTES.patient;
+  if (VALID_ROLES.includes(s as AppRole)) return s as AppRole;
+  return null;
 }
 
 export function getUserRolesFromProfile(profile: any): AppRole[] {
-  if (!profile) return [];
-
   const out: AppRole[] = [];
 
-  // New style: profile.roles can be array or string
-  const rolesField = profile.roles;
+  // Legacy single role field
+  const legacy = normalizeRole(profile?.role);
+  if (legacy) out.push(legacy);
+
+  // profiles.roles could be string[] or CSV-like
+  const rolesField = profile?.roles;
   if (Array.isArray(rolesField)) {
     for (const r of rolesField) {
-      const n = normalizeRole(r);
-      if (n) out.push(n);
+      const nr = normalizeRole(r);
+      if (nr) out.push(nr);
     }
-  } else if (typeof rolesField === "string" && rolesField.trim().length > 0) {
-    // Support CSV or single role string
-    const parts = rolesField.includes(",") ? rolesField.split(",") : [rolesField];
-    for (const p of parts) {
-      const n = normalizeRole(p);
-      if (n) out.push(n);
+  } else if (typeof rolesField === "string") {
+    for (const r of rolesField.split(",").map((x: string) => x.trim())) {
+      const nr = normalizeRole(r);
+      if (nr) out.push(nr);
     }
   }
 
-  // Legacy: profile.role single string (patient/doctor/staff/admin)
-  const legacy = normalizeRole(profile.role);
-  if (legacy) out.push(legacy);
-
-  // De-dup
+  // Dedup preserve order
   return Array.from(new Set(out));
+}
+
+export function getPrimaryRole(roles: AppRole[]): AppRole {
+  // Priority order if multiple roles:
+  // Facility admins MUST win over clinic_admin/admin.
+  const order: AppRole[] = [
+    "super_admin",
+    "lab_admin",
+    "pharmacy_admin",
+    "imaging_admin",
+    "clinic_admin",
+    "admin",
+    "staff",
+    "doctor",
+    "patient",
+  ];
+  for (const r of order) if (roles.includes(r)) return r;
+  return roles[0] ?? "patient";
+}
+
+export function getDashboardRoute(rolesOrRole: AppRole[] | AppRole | string[] | string): string {
+  const roles = Array.isArray(rolesOrRole)
+    ? (rolesOrRole.map((r) => normalizeRole(r)).filter(Boolean) as AppRole[])
+    : ([normalizeRole(rolesOrRole)].filter(Boolean) as AppRole[]);
+
+  const primary = getPrimaryRole(roles);
+  return DASHBOARD_ROUTES[primary] || "/dashboard";
+}
+
+export function hasAnyRole(userRoles: string[] | null | undefined, requiredRoles: AppRole[]): boolean {
+  if (!userRoles || !Array.isArray(userRoles)) return false;
+  return userRoles.some((role) => requiredRoles.includes(role as AppRole));
+}
+
+/**
+ * Used to infer role from current route (for nav + role syncing).
+ */
+export function inferRoleFromPathname(pathname: string): AppRole | null {
+  const p = (pathname || "").toLowerCase();
+
+  // Super admin
+  if (p.startsWith("/super-admin-dashboard") || p.startsWith("/super-admin/dashboard")) return "super_admin";
+
+  // Clinic admin
+  if (
+    p.startsWith("/practices/dashboard") ||
+    p.startsWith("/register-practice") ||
+    p.startsWith("/practice-settings") ||
+    p.startsWith("/practice-verification")
+  ) {
+    return "clinic_admin";
+  }
+
+  // Facility dashboards
+  if (p.startsWith("/dashboard/labs") || p.startsWith("/lab/dashboard")) return "lab_admin";
+  if (p.startsWith("/dashboard/pharmacies") || p.startsWith("/pharmacy/dashboard")) return "pharmacy_admin";
+  if (p.startsWith("/dashboard/imaging") || p.startsWith("/imaging/dashboard")) return "imaging_admin";
+
+  // Staff/Admin dashboards
+  if (p.startsWith("/staff-dashboard") || p.startsWith("/staff/dashboard")) return "staff";
+  if (p.startsWith("/admin-dashboard") || p.startsWith("/admin/dashboard")) return "admin";
+
+  // Provider + patient dashboards
+  if (p.startsWith("/doctor-dashboard") || p.startsWith("/doctor/dashboard")) return "doctor";
+  if (p.startsWith("/patient-dashboard") || p.startsWith("/patient/dashboard")) return "patient";
+
+  return null;
 }
