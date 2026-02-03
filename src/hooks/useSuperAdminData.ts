@@ -1,4 +1,5 @@
 // src/hooks/useSuperAdminData.ts
+// src/hooks/useSuperAdminData.ts
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -18,14 +19,21 @@ export interface DashboardStats {
 }
 
 export interface SystemLog {
-  id: string;
+  id: string | number;
   user_id: string | null;
-  action_type: string;
+
+  // Some environments use `action`, others use `action_type`
+  action?: string | null;
+  action_type?: string | null;
+
   entity_type: string | null;
   entity_id: string | null;
   details: any;
-  ip_address: string | null;
-  user_agent: string | null;
+
+  // Optional fields (may not exist in all schemas)
+  ip_address?: string | null;
+  user_agent?: string | null;
+
   created_at: string;
   profiles?: {
     full_name: string;
@@ -260,87 +268,8 @@ export function useRevenueData() {
         buckets[key].revenue += Number((p as any).amount || 0);
       }
 
-      return Object.values(buckets)
-        .sort((a, b) => a.sort - b.sort)
-        .map((b) => ({ month: b.label, revenue: Math.round(b.revenue) }));
+      return Object.values(buckets).sort((a, b) => a.sort - b.sort);
     },
-    staleTime: 60000,
-  });
-}
-
-export function useAppointmentVolumeData() {
-  return useQuery({
-    queryKey: ['appointment-volume'],
-    queryFn: async () => {
-      const start = new Date();
-      start.setDate(start.getDate() - 7);
-
-      const { data, error } = await supabase
-        .from('appointments')
-        .select('appointment_date, status')
-        .gte('appointment_date', start.toISOString().split('T')[0]);
-
-      if (error) throw error;
-
-      const dayData = (data || []).reduce((acc: any, apt: any) => {
-        const day = new Date(apt.appointment_date).toLocaleDateString('en-US', { weekday: 'short' });
-        if (!acc[day]) acc[day] = { day, appointments: 0 };
-        acc[day].appointments += 1;
-        return acc;
-      }, {});
-
-      const daysOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-      return daysOrder.map((day) => dayData[day] || { day, appointments: 0 });
-    },
-    staleTime: 60000,
-  });
-}
-
-export function useSignupData() {
-  return useQuery({
-    queryKey: ['signup-analytics'],
-    queryFn: async () => {
-      const start = new Date();
-      start.setDate(start.getDate() - 28);
-
-      const { data: doctors, error: docError } = await supabase
-        .from('doctors')
-        .select('created_at')
-        .gte('created_at', start.toISOString());
-
-      if (docError) throw docError;
-
-      const { data: patients, error: patError } = await supabase
-        .from('profiles')
-        .select('created_at')
-        .eq('role', 'patient')
-        .gte('created_at', start.toISOString());
-
-      if (patError) throw patError;
-
-      const weeks = [0, 1, 2, 3].map((i) => {
-        const weekStart = new Date(start);
-        weekStart.setDate(weekStart.getDate() + i * 7);
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekEnd.getDate() + 7);
-
-        const weekLabel = `Week ${i + 1}`;
-
-        const doctorCount = (doctors || []).filter((d: any) => {
-          const date = new Date(d.created_at);
-          return date >= weekStart && date < weekEnd;
-        }).length;
-
-        const patientCount = (patients || []).filter((p: any) => {
-          const date = new Date(p.created_at);
-          return date >= weekStart && date < weekEnd;
-        }).length;
-
-        return { week: weekLabel, doctors: doctorCount, patients: patientCount };
-      });
-
-      return weeks;
-    },
-    staleTime: 60000,
+    staleTime: 30000,
   });
 }
