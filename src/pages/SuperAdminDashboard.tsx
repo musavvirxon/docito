@@ -1,4 +1,5 @@
-// src/pages/SuperAdminDashboard.tsx
+// File: src/pages/SuperAdminDashboard.tsx
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
@@ -40,9 +41,8 @@ import EntityManagement from "@/components/super-admin/EntityManagement";
 import GlobalStaffManagement from "@/components/super-admin/GlobalStaffManagement";
 import ReferralManagement from "@/components/super-admin/ReferralManagement";
 import FacilityVerificationRequestsTable from "@/components/super-admin/FacilityVerificationRequestsTable";
-import { useTranslation } from "react-i18next";
-import UsersAdmin from "@/components/super-admin/UsersAdmin";
 import SystemLogs from "@/components/super-admin/SystemLogs";
+import { useTranslation } from "react-i18next";
 
 const SuperAdminLogin = () => {
   const [email, setEmail] = useState("");
@@ -277,23 +277,26 @@ const SuperAdminDashboard = () => {
         );
 
       case "patients":
-        return <UsersAdmin />;
+        return (
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Patients</h1>
+              <p className="text-muted-foreground mt-1">Recent patient accounts.</p>
+            </div>
+            <ManagementTable title="Patients" type="patients" />
+          </div>
+        );
 
       case "appointments":
         return (
           <div className="space-y-6">
             <div>
               <h1 className="text-3xl font-bold text-foreground">Appointments</h1>
-              <p className="text-muted-foreground mt-1">
-                Review and manage recent appointments across the platform.
-              </p>
+              <p className="text-muted-foreground mt-1">Recent bookings across the platform.</p>
             </div>
             <ManagementTable title="Appointments" type="appointments" />
           </div>
         );
-
-      case "logs":
-        return <SystemLogs />;
 
       case "ecosystem":
         return <EcosystemOverview />;
@@ -303,11 +306,20 @@ const SuperAdminDashboard = () => {
 
       case "payments":
         return (
-          <AdvancedFinancialMetrics
-            metrics={advancedMetrics}
-            revenue={stats?.totalRevenue || 0}
-            onUpdateInputs={refreshAdvancedMetrics}
-          />
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Payments</h1>
+              <p className="text-muted-foreground mt-1">Platform revenue and recent transactions.</p>
+            </div>
+
+            <AdvancedFinancialMetrics
+              metrics={advancedMetrics}
+              revenue={stats?.totalRevenue || 0}
+              onUpdateInputs={refreshAdvancedMetrics}
+            />
+
+            <ManagementTable title="Recent Payments" type="payments" />
+          </div>
         );
 
       case "translations":
@@ -319,11 +331,16 @@ const SuperAdminDashboard = () => {
       case "settings":
         return <SuperAdminSettingsPanel />;
 
-      case "staff":
-        return <GlobalStaffManagement />;
+      case "logs":
+        return <SystemLogs />;
 
-      case "referrals":
-        return <ReferralManagement />;
+      case "feedback":
+        return (
+          <div className="space-y-6">
+            <h1 className="text-3xl font-bold">Feedback Inbox</h1>
+            <p className="text-muted-foreground">Use the inbox link in the header.</p>
+          </div>
+        );
 
       case "pharmacies":
         return <EntityManagement entityType="pharmacy" />;
@@ -333,6 +350,12 @@ const SuperAdminDashboard = () => {
 
       case "imaging":
         return <EntityManagement entityType="imaging" />;
+
+      case "staff":
+        return <GlobalStaffManagement />;
+
+      case "referrals":
+        return <ReferralManagement />;
 
       default:
         return null;
