@@ -1,5 +1,3 @@
-// medicalbook-55/src/pages/Index.tsx
-
 import { Suspense, lazy, memo, useEffect } from "react";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import {
@@ -17,9 +15,7 @@ import ModernHeroSection from "@/components/home/ModernHeroSection";
 // Lazy load below-the-fold components for faster initial load
 const LiveCareMoment = lazy(() => import("@/components/home/LiveCareMoment"));
 const TrustIndicators = lazy(() => import("@/components/home/TrustIndicators"));
-const ValuePropositionSection = lazy(
-  () => import("@/components/home/ValuePropositionSection")
-);
+const ValuePropositionSection = lazy(() => import("@/components/home/ValuePropositionSection"));
 const TopSpecialties = lazy(() =>
   import("@/components/home/sections").then((m) => ({ default: m.TopSpecialties }))
 );
@@ -28,9 +24,6 @@ const TopClinics = lazy(() =>
 );
 const TopPharmacies = lazy(() =>
   import("@/components/home/sections").then((m) => ({ default: m.TopPharmacies }))
-);
-const MostBookedServices = lazy(() =>
-  import("@/components/home/sections").then((m) => ({ default: m.MostBookedServices }))
 );
 const HowItWorksSection = lazy(() => import("@/components/home/HowItWorksSection"));
 const FeaturesGrid = lazy(() => import("@/components/home/FeaturesGrid"));
@@ -138,10 +131,6 @@ const Index = () => {
           </Suspense>
 
           <Suspense fallback={<SectionSkeleton />}>
-            <MostBookedServices />
-          </Suspense>
-
-          <Suspense fallback={<SectionSkeleton />}>
             <HowItWorksSection />
           </Suspense>
 
@@ -162,8 +151,7 @@ const Index = () => {
           </Suspense>
         </main>
 
-        <Suspense fallback={<div className="h-64 bg-muted animate-pulse" />}>
-        </Suspense>
+        <Suspense fallback={<div className="h-64 bg-muted animate-pulse" />}></Suspense>
       </div>
     </ThemeProvider>
   );
