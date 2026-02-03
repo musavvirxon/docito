@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { HelmetProvider } from "react-helmet-async";
 import { languages } from "@/i18n/config";
 import i18n from "@/i18n/config";
+import ScrollToTop from "@/components/ScrollToTop";
 
 // Layouts
 import PublicLayout from "@/layouts/PublicLayout";
@@ -127,6 +128,8 @@ export default function App() {
       <ThemeProvider>
         <AuthProvider>
           <Suspense fallback={<PageLoader />}>
+            <ScrollToTop />
+
             <Routes>
               {/* Language-prefixed routes (e.g., /en/about, /ru/doctors) */}
               <Route path=":lang" element={<LanguageWrapper />}>
@@ -166,6 +169,7 @@ export default function App() {
                   <Route path="support" element={<Support />} />
                   <Route path="legal" element={<Legal />} />
                   <Route path="legal/:slug" element={<LegalDetail />} />
+
                   {/* Legacy/alias legal routes */}
                   <Route path="privacy" element={<LangRedirect to="/legal/privacy-policy" />} />
                   <Route path="terms" element={<LangRedirect to="/legal/terms-of-service" />} />
@@ -173,8 +177,10 @@ export default function App() {
                   <Route path="cookie-policy" element={<LangRedirect to="/legal/cookies" />} />
                   <Route path="hipaa" element={<LangRedirect to="/legal/hipaa" />} />
                   <Route path="legal/cookie-policy" element={<LangRedirect to="/legal/cookies" />} />
+
                   <Route path="feedback" element={<FeedbackCenter />} />
                 </Route>
+
                 {/* Dashboard routes with language prefix */}
                 <Route path="patient-dashboard" element={<PatientDashboard />} />
                 <Route path="patient/dashboard" element={<PatientDashboard />} />
@@ -255,6 +261,7 @@ export default function App() {
                 <Route path="support" element={<Support />} />
                 <Route path="legal" element={<Legal />} />
                 <Route path="legal/:slug" element={<LegalDetail />} />
+
                 {/* Legacy/alias legal routes */}
                 <Route path="privacy" element={<Navigate to="/legal/privacy-policy" replace />} />
                 <Route path="terms" element={<Navigate to="/legal/terms-of-service" replace />} />
@@ -262,6 +269,7 @@ export default function App() {
                 <Route path="cookie-policy" element={<Navigate to="/legal/cookies" replace />} />
                 <Route path="hipaa" element={<Navigate to="/legal/hipaa" replace />} />
                 <Route path="legal/cookie-policy" element={<Navigate to="/legal/cookies" replace />} />
+
                 <Route path="feedback" element={<FeedbackCenter />} />
               </Route>
 
