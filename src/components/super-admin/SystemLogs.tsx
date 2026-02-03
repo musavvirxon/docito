@@ -52,7 +52,7 @@ export default function SystemLogs() {
     setLoading(true);
     try {
       const res = await listAuditLogs({ limit, offset: nextOffset });
-      setLogs(res.data || []);
+      setLogs(res?.data ?? []);
       setOffset(nextOffset);
     } catch (e: any) {
       toast.error(e?.message || "Failed to load system logs");
@@ -72,7 +72,7 @@ export default function SystemLogs() {
     if (!q) return logs;
 
     return logs.filter((l) => {
-      const a = (l.action_type || "").toLowerCase();
+      const a = (l.action_type || l.action || "").toLowerCase();
       const e = (l.entity_type || "").toLowerCase();
       const id = (l.entity_id || "").toLowerCase();
       const u = (l.user_id || "").toLowerCase();
@@ -87,6 +87,8 @@ export default function SystemLogs() {
     setSelected(log);
     setOpen(true);
   };
+
+  const canNext = logs.length >= limit;
 
   return (
     <>
@@ -134,7 +136,12 @@ export default function SystemLogs() {
               >
                 Prev
               </Button>
-              <Button variant="outline" size="sm" disabled={loading || logs.length < limit} onClick={() => fetchLogs(offset + limit)}>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={loading || !canNext}
+                onClick={() => fetchLogs(offset + limit)}
+              >
                 Next
               </Button>
             </div>
@@ -170,11 +177,15 @@ export default function SystemLogs() {
                   </TableRow>
                 ) : (
                   filtered.map((l) => (
-                    <TableRow key={l.id}>
+                    <TableRow key={String(l.id)}>
                       <TableCell className="text-sm text-foreground">{formatDate(l.created_at)}</TableCell>
                       <TableCell>
-                        <span className={`inline-flex items-center rounded-full border px-2 py-1 text-xs font-medium ${actionBadgeClass(l.action_type)}`}>
-                          {l.action_type || "—"}
+                        <span
+                          className={`inline-flex items-center rounded-full border px-2 py-1 text-xs font-medium ${actionBadgeClass(
+                            l.action_type || l.action
+                          )}`}
+                        >
+                          {l.action_type || l.action || "—"}
                         </span>
                       </TableCell>
                       <TableCell className="text-sm text-foreground truncate">
@@ -224,7 +235,7 @@ export default function SystemLogs() {
 
                 <div className="rounded-xl border border-border/50 p-3">
                   <div className="text-xs text-muted-foreground mb-1">Action</div>
-                  <div className="text-foreground font-medium">{selected.action_type || "—"}</div>
+                  <div className="text-foreground font-medium">{selected.action_type || selected.action || "—"}</div>
                 </div>
 
                 <div className="rounded-xl border border-border/50 p-3">
