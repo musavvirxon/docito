@@ -1,5 +1,5 @@
 // src/components/home/premium/PremiumFooter.tsx
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Twitter, Facebook, Instagram, Linkedin, Youtube, Mail, Phone, MapPin, Globe } from "lucide-react";
 import { Logo } from "@/components/Logo";
@@ -107,7 +107,15 @@ function languageLabel(code: string) {
 
 export default function PremiumFooter() {
   const { t, i18n } = useTranslation(["home", "common"]);
+  const { lang } = useParams<{ lang?: string }>();
   const currentYear = new Date().getFullYear();
+
+  const supportedLangCodes = new Set(allLanguages.map((l) => l.code));
+  const langPrefix = lang && supportedLangCodes.has(lang) ? `/${lang}` : "";
+
+  const normalize = (href: string) => (href.startsWith("/") ? href : `/${href}`);
+  const withLang = (href: string) => (langPrefix ? `${langPrefix}${normalize(href)}` : normalize(href));
+  const homeHref = langPrefix || "/";
 
   const platformTitle = asString(t("home:footer.platform.title", { defaultValue: "Platform" }), "Platform");
   const supportTitle = asString(t("home:footer.support.title", { defaultValue: "Support" }), "Support");
@@ -119,7 +127,7 @@ export default function PremiumFooter() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 lg:gap-12">
           <div className="col-span-2">
-            <Link to="/" className="inline-block mb-6">
+            <Link to={homeHref} className="inline-block mb-6">
               <Logo className="h-8 w-auto" />
             </Link>
 
@@ -158,7 +166,10 @@ export default function PremiumFooter() {
                 const label = asString(t(`home:footer.links.${link.key}`, { defaultValue: fb }), fb);
                 return (
                   <li key={link.key}>
-                    <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    <Link
+                      to={withLang(link.href)}
+                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    >
                       {label}
                     </Link>
                   </li>
@@ -177,7 +188,10 @@ export default function PremiumFooter() {
                 const label = asString(t(`home:footer.links.${link.key}`, { defaultValue: fb }), fb);
                 return (
                   <li key={link.key}>
-                    <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    <Link
+                      to={withLang(link.href)}
+                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    >
                       {label}
                     </Link>
                   </li>
@@ -196,7 +210,10 @@ export default function PremiumFooter() {
                 const label = asString(t(`home:footer.links.${link.key}`, { defaultValue: fb }), fb);
                 return (
                   <li key={link.key}>
-                    <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    <Link
+                      to={withLang(link.href)}
+                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    >
                       {label}
                     </Link>
                   </li>
@@ -258,9 +275,9 @@ export default function PremiumFooter() {
                   aria-label={asString(t("common:language.select", { defaultValue: "Select Language" }), "Select Language")}
                   className="bg-background text-sm text-muted-foreground hover:text-foreground cursor-pointer focus:outline-none border border-border/50 rounded-lg px-2 py-1"
                 >
-                  {allLanguages.map((lang) => (
-                    <option key={lang.code} value={lang.code}>
-                      {languageLabel(lang.code)}
+                  {allLanguages.map((l) => (
+                    <option key={l.code} value={l.code}>
+                      {languageLabel(l.code)}
                     </option>
                   ))}
                 </select>
