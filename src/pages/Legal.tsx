@@ -1,3 +1,4 @@
+// src/pages/Legal.tsx
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -20,7 +21,8 @@ interface LegalPage {
 const iconMap: Record<string, any> = {
   'privacy-policy': Shield,
   'terms-of-service': FileText,
-  'cookie-policy': Cookie,
+  'cookies': Cookie,
+  'hipaa': Shield,
 };
 
 export default function Legal() {
@@ -31,7 +33,7 @@ export default function Legal() {
 
   useEffect(() => {
     fetchLegalPages();
-    
+
     // Subscribe to real-time updates
     const channel = supabase
       .channel('legal-pages-changes')
@@ -75,13 +77,11 @@ export default function Legal() {
                   {t('legal:backHome')}
                 </Button>
               </Link>
-              
+
               <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 {t('legal:title')}
               </h1>
-              <p className="text-lg text-muted-foreground max-w-xl">
-                {t('legal:subtitle')}
-              </p>
+              <p className="text-lg text-muted-foreground max-w-xl">{t('legal:subtitle')}</p>
             </div>
             <div className="hidden md:flex justify-center">
               <LegalIllustration className="w-full max-w-xs" />
@@ -91,7 +91,6 @@ export default function Legal() {
       </div>
 
       <div className="container mx-auto px-4 py-12 max-w-6xl">
-
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[1, 2, 3, 4].map((i) => (
@@ -147,16 +146,12 @@ export default function Legal() {
                         <CardTitle className="mb-2 group-hover:text-accent transition-colors">
                           {t('legal:aboutUs.title')}
                         </CardTitle>
-                        <CardDescription className="line-clamp-2">
-                          {t('legal:aboutUs.description')}
-                        </CardDescription>
+                        <CardDescription className="line-clamp-2">{t('legal:aboutUs.description')}</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground">
-                      {t('legal:aboutUs.discover')}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t('legal:aboutUs.discover')}</p>
                   </CardContent>
                 </Card>
               </Link>
@@ -185,9 +180,7 @@ export default function Legal() {
             </Card>
 
             <div className="mt-8 text-center">
-              <p className="text-sm text-muted-foreground mb-4">
-                {t('legal:contact.text')}
-              </p>
+              <p className="text-sm text-muted-foreground mb-4">{t('legal:contact.text')}</p>
               <Button variant="outline" asChild>
                 <a href="mailto:legal@docito.com">legal@docito.com</a>
               </Button>
