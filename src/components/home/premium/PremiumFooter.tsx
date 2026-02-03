@@ -1,4 +1,4 @@
-// File: src/components/home/premium/PremiumFooter.tsx
+// src/components/home/premium/PremiumFooter.tsx
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Twitter, Facebook, Instagram, Linkedin, Youtube, Mail, Phone, MapPin, Globe } from "lucide-react";
@@ -22,10 +22,10 @@ const footerLinks = {
     { key: "support", href: "/support" },
   ],
   legal: [
-    { key: "terms", href: "/terms" },
-    { key: "privacy", href: "/privacy" },
-    { key: "cookies", href: "/cookies" },
-    { key: "hipaa", href: "/hipaa" },
+    { key: "terms", href: "/legal/terms-of-service" },
+    { key: "privacy", href: "/legal/privacy-policy" },
+    { key: "cookies", href: "/legal/cookies" },
+    { key: "hipaa", href: "/legal/hipaa" },
   ],
 } as const;
 
@@ -155,10 +155,7 @@ export default function PremiumFooter() {
             <ul className="space-y-3">
               {footerLinks.platform.map((link) => {
                 const fb = fallbackFor(link.key);
-                const label = asString(
-                  t(`home:footer.links.${link.key}`, { defaultValue: fb }),
-                  fb
-                );
+                const label = asString(t(`home:footer.links.${link.key}`, { defaultValue: fb }), fb);
                 return (
                   <li key={link.key}>
                     <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -177,10 +174,7 @@ export default function PremiumFooter() {
             <ul className="space-y-3">
               {footerLinks.support.map((link) => {
                 const fb = fallbackFor(link.key);
-                const label = asString(
-                  t(`home:footer.links.${link.key}`, { defaultValue: fb }),
-                  fb
-                );
+                const label = asString(t(`home:footer.links.${link.key}`, { defaultValue: fb }), fb);
                 return (
                   <li key={link.key}>
                     <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -199,10 +193,7 @@ export default function PremiumFooter() {
             <ul className="space-y-3">
               {footerLinks.legal.map((link) => {
                 const fb = fallbackFor(link.key);
-                const label = asString(
-                  t(`home:footer.links.${link.key}`, { defaultValue: fb }),
-                  fb
-                );
+                const label = asString(t(`home:footer.links.${link.key}`, { defaultValue: fb }), fb);
                 return (
                   <li key={link.key}>
                     <Link to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
