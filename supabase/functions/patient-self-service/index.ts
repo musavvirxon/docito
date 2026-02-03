@@ -219,13 +219,16 @@ serve(async (req) => {
 
     // ===== ADD TEST RESULT =====
     if (action === "add_test_result") {
-      const test_type = requireString(payload?.test_type ?? payload?.testType, "test_type");
-      const test_name = requireString(payload?.test_name ?? payload?.testName, "test_name");
+      // Support both naming conventions from different client components
+      const test_type = optionalString(payload?.test_type ?? payload?.testType ?? payload?.category) || "lab";
+      const test_name = optionalString(payload?.test_name ?? payload?.testName ?? payload?.title) || "Test Result";
       const result_value = optionalString(payload?.result_value ?? payload?.resultValue);
       const result_unit = optionalString(payload?.result_unit ?? payload?.resultUnit);
       const test_date = optionalISODate(payload?.test_date ?? payload?.testDate) ?? new Date().toISOString().split('T')[0];
       const notes = optionalString(payload?.notes);
       const lab_name = optionalString(payload?.lab_name ?? payload?.labName);
+      const attachment_bucket = optionalString(payload?.attachment_bucket);
+      const attachment_paths = Array.isArray(payload?.attachment_paths) ? payload.attachment_paths : null;
 
       const insertRow = {
         patient_id: user.id,
@@ -236,6 +239,8 @@ serve(async (req) => {
         test_date,
         notes,
         lab_name,
+        attachment_bucket,
+        attachment_paths,
         created_by_patient: true,
       };
 
