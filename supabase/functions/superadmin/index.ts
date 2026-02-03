@@ -15,6 +15,8 @@ type Action =
   | "whoami"
   | "list_users"
   | "set_user_roles"
+  | "disable_user"
+  | "enable_user"
   | "list_doctor_verifications"
   | "get_doctor_verification"
   | "approve_doctor_verification"
@@ -140,10 +142,12 @@ serve(async (req) => {
           mode?: "replace" | "add" | "remove";
           roles?: string[];
 
+          // enable/disable user
+          reason?: string;
+
           // verifications
           status?: string;
           id?: string;
-          reason?: string;
         };
 
     const action = body?.action;
@@ -273,7 +277,7 @@ serve(async (req) => {
     }
 
     // =========================================================
-    // B3) set_user_roles (replace/add/remove) via service role
+    // set_user_roles (replace/add/remove) via service role
     // =========================================================
     if (action === "set_user_roles") {
       if (!serviceClient) return jsonResponse(500, { error: "Missing SUPABASE_SERVICE_ROLE_KEY secret" });
@@ -285,14 +289,10 @@ serve(async (req) => {
       const rolesIn = Array.isArray(body?.roles) ? body!.roles! : [];
       const rolesNorm = uniq(rolesIn.map((r) => normalizeRole(r)).filter(Boolean));
 
-      // Validate
       for (const r of rolesNorm) {
-        if (!ALLOWED_ROLES.has(r)) {
-          return jsonResponse(400, { error: `Invalid role: ${r}` });
-        }
+        if (!ALLOWED_ROLES.has(r)) return jsonResponse(400, { error: `Invalid role: ${r}` });
       }
 
-      // Load current roles
       const { data: existingRows, error: exErr } = await serviceClient
         .from("user_roles")
         .select("role")
@@ -314,14 +314,8 @@ serve(async (req) => {
         return jsonResponse(400, { error: "Invalid mode" });
       }
 
-      // Ensure user keeps at least one role
-      if (next.length === 0) {
-        return jsonResponse(400, { error: "User must have at least one role" });
-      }
+      if (next.length === 0) return jsonResponse(400, { error: "User must have at least one role" });
 
-      // Apply changes
-      // For replace: delete all then insert next.
-      // For add/remove: do minimal changes.
       if (mode === "replace") {
         const { error: delErr } = await serviceClient.from("user_roles").delete().eq("user_id", userId);
         if (delErr) return jsonResponse(500, { error: delErr.message });
@@ -356,15 +350,65 @@ serve(async (req) => {
         action_type: "superadmin.set_user_roles",
         entity_type: "user_roles",
         entity_id: userId,
-        details: {
-          mode,
-          before: existing,
-          after: next,
-          requested: rolesNorm,
-        },
+        details: { mode, before: existing, after: next, requested: rolesNorm },
       });
 
       return jsonResponse(200, { ok: true, user_id: userId, roles: next });
+    }
+
+    // =========================================================
+    // B4) enable_user / disable_user
+    // - We store a "disabled" flag on profiles if present (best-effort)
+    // - And also use auth.admin.updateUserById to ban (works with service role)
+    // =========================================================
+    if (action === "disable_user" || action === "enable_user") {
+      if (!serviceClient) return jsonResponse(500, { error: "Missing SUPABASE_SERVICE_ROLE_KEY secret" });
+
+      const userId = String(body?.user_id || "").trim();
+      if (!userId) return jsonResponse(400, { error: "Missing user_id" });
+
+      const reason = String(body?.reason || "").trim() || null;
+      const isDisable = action === "disable_user";
+
+      // Auth ban/unban:
+      // - Supabase accepts ban_duration like "none" or a duration string
+      // - We'll use a long ban for disable, and "none" for enable.
+      try {
+        const banDuration = isDisable ? "876000h" : "none"; // ~100 years
+        const { data, error } = await serviceClient.auth.admin.updateUserById(userId, {
+          ban_duration: banDuration,
+        });
+        if (error) return jsonResponse(500, { error: error.message });
+
+        // Best-effort profile update (only if column exists; ignore if it doesn't)
+        // Attempt 1: disabled boolean
+        await serviceClient.from("profiles").update({ disabled: isDisable } as any).eq("user_id", userId);
+        // Attempt 2: disabled_at + disabled_reason (optional columns; ignore failures)
+        const now = new Date().toISOString();
+        if (isDisable) {
+          await serviceClient
+            .from("profiles")
+            .update({ disabled_at: now, disabled_reason: reason } as any)
+            .eq("user_id", userId);
+        } else {
+          await serviceClient
+            .from("profiles")
+            .update({ disabled_at: null, disabled_reason: null } as any)
+            .eq("user_id", userId);
+        }
+
+        await writeAudit({
+          action_type: isDisable ? "superadmin.disable_user" : "superadmin.enable_user",
+          entity_type: "auth.users",
+          entity_id: userId,
+          details: { reason },
+        });
+
+        return jsonResponse(200, { ok: true, user_id: userId, disabled: isDisable, auth_user: data?.user ?? null });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Failed to update user";
+        return jsonResponse(500, { error: msg });
+      }
     }
 
     // =========================================================
@@ -492,7 +536,7 @@ serve(async (req) => {
       if (!serviceClient) return jsonResponse(500, { error: "Missing SUPABASE_SERVICE_ROLE_KEY secret" });
 
       const id = body?.id;
-      const reason = (body?.reason || "").trim();
+      const reason = String(body?.reason || "").trim();
       if (!id) return jsonResponse(400, { error: "Missing id" });
       if (!reason) return jsonResponse(400, { error: "Missing reason" });
 
