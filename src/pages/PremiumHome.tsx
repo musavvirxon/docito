@@ -1,3 +1,4 @@
+// src/pages/PremiumHome.tsx
 import { useEffect } from "react";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { SEOHead } from "@/components/SEOHead";
@@ -7,17 +8,15 @@ import PremiumHero from "@/components/home/premium/PremiumHero";
 import SmartSearch from "@/components/home/premium/SmartSearch";
 import ProviderCards from "@/components/home/premium/ProviderCards";
 import PlatformPillars from "@/components/home/premium/PlatformPillars";
-import LiveMetrics from "@/components/home/premium/LiveMetrics";
 import SpecialtiesCarousel from "@/components/home/premium/SpecialtiesCarousel";
 import FeaturedProviders from "@/components/home/premium/FeaturedProviders";
 import TopLabs from "@/components/home/premium/TopLabs";
+import NearbyPharmacies from "@/components/home/premium/NearbyPharmacies";
 import DiagnosticsSection from "@/components/home/premium/DiagnosticsSection";
 import BookingSteps from "@/components/home/premium/BookingSteps";
 import CapabilitiesGrid from "@/components/home/premium/CapabilitiesGrid";
 import DashboardDemo from "@/components/home/premium/DashboardDemo";
 import TeamCollaboration from "@/components/home/premium/TeamCollaboration";
-import TrendingServices from "@/components/home/premium/TrendingServices";
-import NearbyPharmacies from "@/components/home/premium/NearbyPharmacies";
 import InsuranceProviders from "@/components/home/premium/InsuranceProviders";
 import FAQ from "@/components/home/premium/FAQ";
 import GlobalTrust from "@/components/home/premium/GlobalTrust";
@@ -44,27 +43,29 @@ export default function PremiumHome() {
           "home:seo.description",
           "The complete healthcare operating system. Find doctors, clinics, labs, pharmacies, and imaging centers."
         )}
-        keywords={t(
-          "home:seo.keywords",
-          "healthcare, doctors, clinics, labs, pharmacies, medical appointments"
-        )}
+        keywords={t("home:seo.keywords", "healthcare, doctors, clinics, labs, pharmacies, medical appointments")}
       />
 
       {/* Navbar + Footer come from PublicLayout */}
       <main className="bg-background text-foreground antialiased">
         <PremiumHero />
+
+        {/* Move Platform Capabilities to be second below header */}
+        <CapabilitiesGrid />
+
         <SmartSearch />
         <ProviderCards />
         <PlatformPillars />
-        <LiveMetrics />
         <SpecialtiesCarousel />
         <FeaturedProviders />
+
         <TopLabs />
-        <DiagnosticsSection />
-        <TrendingServices />
+
+        {/* Move Verified Top Pharmacies just below Top Labs */}
         <NearbyPharmacies />
+
+        <DiagnosticsSection />
         <BookingSteps />
-        <CapabilitiesGrid />
         <DashboardDemo />
         <TeamCollaboration />
         <InsuranceProviders />
