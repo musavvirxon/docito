@@ -1,6 +1,8 @@
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState, lazy, Suspense } from "react";
 import HeroStaticFallback from "./HeroStaticFallback";
-import HeroOrb3D from "./HeroOrb3D";
+
+// Dynamically import the heavy 3D component - this prevents three.js from loading until needed
+const HeroOrb3D = lazy(() => import("./HeroOrb3D"));
 
 function LazyHeroOrb3D() {
   const [shouldLoad3D, setShouldLoad3D] = useState(false);
@@ -49,7 +51,11 @@ function LazyHeroOrb3D() {
     return <HeroStaticFallback onClick={handleFallbackClick} />;
   }
 
-  return <HeroOrb3D />;
+  return (
+    <Suspense fallback={<HeroStaticFallback onClick={handleFallbackClick} />}>
+      <HeroOrb3D />
+    </Suspense>
+  );
 }
 
 export default memo(LazyHeroOrb3D);
