@@ -18,6 +18,8 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
+    // Target modern browsers to avoid legacy polyfills (ES2020+)
+    target: 'esnext',
     rollupOptions: {
       output: {
         manualChunks: (id) => {
@@ -36,5 +38,9 @@ export default defineConfig(({ mode }) => ({
         },
       },
     },
+  },
+  // Avoid transpiling modern JS features that are baseline in all browsers
+  esbuild: {
+    target: 'esnext',
   },
 }));
