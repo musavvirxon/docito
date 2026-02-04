@@ -95,19 +95,27 @@ const PremiumTopNav = () => {
       >
         <div className="max-w-[1400px] mx-auto px-4 lg:px-6">
           <div className="flex items-center justify-between h-14">
-            {/* Logo */}
+            {/* Logo - use picture for WebP with PNG fallback */}
             <Link
               to={getLocalizedPath("/")}
               className="flex items-center hover:opacity-70 transition-opacity duration-200 flex-shrink-0"
             >
-              <img
-                src="/logos/horizontal/docito-horizontal-sm.png"
-                alt="Docito"
-                className="h-6"
-                width={80}
-                height={24}
-                fetchPriority="high"
-              />
+              <picture>
+                <source
+                  srcSet="/logos/horizontal/docito-horizontal-sm.webp"
+                  type="image/webp"
+                />
+                <img
+                  src="/logos/horizontal/docito-horizontal-sm.png"
+                  alt="Docito"
+                  className="h-6"
+                  width={80}
+                  height={24}
+                  fetchPriority="high"
+                  decoding="sync"
+                  loading="eager"
+                />
+              </picture>
             </Link>
 
             {/* Desktop Navigation - Horizontal */}
