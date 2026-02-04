@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            // Core React - highest priority
+            // Core React - keep minimal, load first
             if (id.includes('react-dom')) return 'vendor-react';
             if (id.includes('react-router')) return 'vendor-router';
             
@@ -32,15 +32,16 @@ export default defineConfig(({ mode }) => ({
             if (id.includes('@radix-ui') || id.includes('cmdk')) return 'vendor-ui';
             if (id.includes('lucide-react')) return 'vendor-icons';
             
-            // Animation - defer loading
+            // Animation - defer loading, separate chunks
             if (id.includes('framer-motion')) return 'vendor-framer';
             if (id.includes('gsap')) return 'vendor-gsap';
             
             // Heavy visualization - only load on interaction
             if (id.includes('three') || id.includes('@react-three')) return 'vendor-three';
-            if (id.includes('recharts') || id.includes('d3-')) return 'vendor-charts';
+            if (id.includes('recharts')) return 'vendor-recharts';
+            if (id.includes('d3-')) return 'vendor-d3';
             
-            // Data layer
+            // Data layer - separate chunks
             if (id.includes('@supabase')) return 'vendor-supabase';
             if (id.includes('@tanstack/react-query')) return 'vendor-query';
             
@@ -50,6 +51,9 @@ export default defineConfig(({ mode }) => ({
             // Utilities - separate chunks
             if (id.includes('date-fns')) return 'vendor-date';
             if (id.includes('i18next')) return 'vendor-i18n';
+            
+            // PDF/Excel - very heavy, only for dashboards
+            if (id.includes('jspdf') || id.includes('xlsx') || id.includes('html2canvas')) return 'vendor-export';
           }
         },
       },
