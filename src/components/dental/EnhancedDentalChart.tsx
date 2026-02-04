@@ -26,8 +26,10 @@ interface EnhancedDentalChartProps {
   patientId?: string;
   appointmentId?: string;
   isEditable?: boolean;
-  /** When true, chart is used only to select teeth (no Add Procedure / history section). */
+
+  /** ✅ When true: chart is only for tooth picking (no Add Procedure modal, no patient history section) */
   selectionOnly?: boolean;
+
   // Legacy props for compatibility
   teethData?: ToothData[];
   selectedTeeth?: number[];
@@ -188,19 +190,19 @@ export const EnhancedDentalChart = ({
     <motion.div className="space-y-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
       <div className="space-y-2">
         <div className="flex justify-center gap-4">
-          {renderQuadrant(PERMANENT_TEETH.upperRight, "permanent", "UR (18-11)", true)}
+          {renderQuadrant(PERMANENT_TEETH.upperRight, "permanent", "Q1 (UR)", true)}
           <div className="w-px bg-border self-stretch" />
-          {renderQuadrant(PERMANENT_TEETH.upperLeft, "permanent", "UL (21-28)")}
+          {renderQuadrant(PERMANENT_TEETH.upperLeft, "permanent", "Q2 (UL)")}
         </div>
       </div>
       <div className="flex justify-center">
-        <div className="w-3/5 h-px bg-border" />
+        <div className="w-4/5 h-px bg-border" />
       </div>
       <div className="space-y-2">
         <div className="flex justify-center gap-4">
-          {renderQuadrant(PERMANENT_TEETH.lowerRight, "permanent", "LR (48-41)", true)}
+          {renderQuadrant(PERMANENT_TEETH.lowerRight, "permanent", "Q4 (LR)", true)}
           <div className="w-px bg-border self-stretch" />
-          {renderQuadrant(PERMANENT_TEETH.lowerLeft, "permanent", "LL (31-38)")}
+          {renderQuadrant(PERMANENT_TEETH.lowerLeft, "permanent", "Q3 (LL)")}
         </div>
       </div>
     </motion.div>
@@ -256,6 +258,8 @@ export const EnhancedDentalChart = ({
     );
   }
 
+  const sortedSelectedTeeth = [...selectedTeeth].sort((a, b) => a - b);
+
   return (
     <div className="space-y-6">
       <Card className="overflow-hidden">
@@ -299,13 +303,7 @@ export const EnhancedDentalChart = ({
           <div className="space-y-8">
             <AnimatePresence mode="wait">
               {showBothCharts ? (
-                <motion.div
-                  key="both"
-                  className="space-y-8"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                >
+                <motion.div key="both" className="space-y-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                   <div>
                     <h4 className="text-sm font-medium text-center mb-4 flex items-center justify-center gap-2">
                       <Stethoscope className="w-4 h-4" />
@@ -347,14 +345,11 @@ export const EnhancedDentalChart = ({
                       {selectedTeeth.length} tooth{selectedTeeth.length > 1 ? "es" : ""} selected
                     </p>
                     <div className="flex flex-wrap gap-1">
-                      {selectedTeeth
-                        .slice()
-                        .sort((a, b) => a - b)
-                        .map((t) => (
-                          <Badge key={t} variant="secondary" className="text-xs">
-                            {t}
-                          </Badge>
-                        ))}
+                      {sortedSelectedTeeth.map((t) => (
+                        <Badge key={t} variant="secondary" className="text-xs">
+                          {t}
+                        </Badge>
+                      ))}
                     </div>
                   </div>
 
@@ -364,6 +359,7 @@ export const EnhancedDentalChart = ({
                         <RotateCcw className="w-4 h-4 mr-1" />
                         Clear
                       </Button>
+
                       {!selectionOnly && (
                         <Button size="sm" onClick={() => setProcedureModalOpen(true)}>
                           <Plus className="w-4 h-4 mr-1" />
@@ -379,11 +375,12 @@ export const EnhancedDentalChart = ({
         </CardContent>
       </Card>
 
-      {/* Treatment Plan Section - only show if using database */}
-      {!selectionOnly && patientId && procedureHistory.length > 0 && (
+      {/* ✅ Show dental history only in full mode */}
+      {patientId && procedureHistory.length > 0 && !selectionOnly && (
         <TreatmentPlanSection procedures={procedureHistory} isEditable={isEditable} onUpdateStatus={updateProcedureStatus} />
       )}
 
+      {/* ✅ Procedure modal only in full mode */}
       {!selectionOnly && (
         <ProcedureModal
           open={procedureModalOpen}
