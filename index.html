@@ -50,12 +50,12 @@
     <link rel="preconnect" href="https://gswwpjdtgsxzcsnrxutu.supabase.co" />
     <link rel="dns-prefetch" href="//gswwpjdtgsxzcsnrxutu.supabase.co" />
 
-    <!-- Preload critical LCP images -->
+    <!-- Preload critical LCP images - WebP for navbar (FCP), hero logo -->
     <link
       rel="preload"
-      href="/logos/horizontal/docito-horizontal-sm.png"
+      href="/logos/horizontal/docito-horizontal-sm.webp"
       as="image"
-      type="image/png"
+      type="image/webp"
       fetchpriority="high"
     />
     <link
@@ -63,13 +63,6 @@
       href="/logos/horizontal/docito-horizontal-2xl.webp"
       as="image"
       type="image/webp"
-      fetchpriority="high"
-    />
-    <link 
-      rel="preload" 
-      href="/logos/horizontal/docito-horizontal-2xl.png" 
-      as="image" 
-      type="image/png" 
       fetchpriority="high"
     />
 
@@ -214,13 +207,16 @@
 
     <!-- Instant visual feedback while React loads -->
     <div id="initial-loader" class="initial-loader">
-      <img
-        src="/logos/horizontal/docito-horizontal-sm.png"
-        alt="Loading Docito"
-        class="loader-logo"
-        width="120"
-        height="36"
-      />
+      <picture>
+        <source srcset="/logos/horizontal/docito-horizontal-sm.webp" type="image/webp" />
+        <img
+          src="/logos/horizontal/docito-horizontal-sm.png"
+          alt="Loading Docito"
+          class="loader-logo"
+          width="120"
+          height="36"
+        />
+      </picture>
     </div>
 
     <div id="root"></div>
