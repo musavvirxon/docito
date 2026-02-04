@@ -4,11 +4,17 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-type AppointmentType = "in_person" | "video" | "home_visit" | "messaging" | "follow_up";
+type AppointmentType =
+  | "in_person"
+  | "video"
+  | "home_visit"
+  | "messaging"
+  | "follow_up";
 
 type ReqBody = {
   hold_id: string;
@@ -47,15 +53,18 @@ function hhmmss(d: Date) {
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  if (req.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 405);
+  if (req.method !== "POST")
+    return json({ ok: false, error: "Method not allowed" }, 405);
 
   try {
     const supabaseUrl = requireEnv("SUPABASE_URL");
     const anonKey = requireEnv("SUPABASE_ANON_KEY");
     const serviceKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
 
-    const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
-    if (!authHeader) return json({ ok: false, error: "Missing Authorization header" }, 401);
+    const authHeader =
+      req.headers.get("authorization") || req.headers.get("Authorization");
+    if (!authHeader)
+      return json({ ok: false, error: "Missing Authorization header" }, 401);
 
     const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
@@ -78,13 +87,17 @@ serve(async (req) => {
 
     if (!body.hold_id) return json({ ok: false, error: "Missing hold_id" }, 400);
 
-    const service = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+    const service = createClient(supabaseUrl, serviceKey, {
+      auth: { persistSession: false },
+    });
 
     await service.rpc("cleanup_expired_appointment_holds").catch(() => {});
 
     const { data: hold, error: holdErr } = await service
       .from("appointment_holds")
-      .select("id, patient_id, doctor_patient_id, doctor_id, practice_id, start_at, end_at, appointment_type, notes, status, expires_at")
+      .select(
+        "id, patient_id, doctor_patient_id, doctor_id, practice_id, start_at, end_at, appointment_type, notes, status, expires_at, procedure_id",
+      )
       .eq("id", body.hold_id)
       .maybeSingle();
 
@@ -92,11 +105,18 @@ serve(async (req) => {
       console.error("Hold read error:", holdErr);
       return json({ ok: false, error: "Failed to load booking hold" }, 500);
     }
-    if (!hold) return json({ ok: false, error: "Booking hold not found", code: "HOLD_NOT_FOUND" }, 404);
+    if (!hold)
+      return json(
+        { ok: false, error: "Booking hold not found", code: "HOLD_NOT_FOUND" },
+        404,
+      );
 
     if (hold.status !== "pending") {
       await service.from("appointment_holds").delete().eq("id", hold.id);
-      return json({ ok: false, error: "Booking hold is no longer valid", code: "HOLD_INVALID" }, 409);
+      return json(
+        { ok: false, error: "Booking hold is no longer valid", code: "HOLD_INVALID" },
+        409,
+      );
     }
 
     if (!hold.patient_id || hold.patient_id !== user.id) {
@@ -106,7 +126,10 @@ serve(async (req) => {
     const expiresAt = new Date(hold.expires_at);
     if (expiresAt.getTime() < Date.now()) {
       await service.from("appointment_holds").delete().eq("id", hold.id);
-      return json({ ok: false, error: "Booking hold has expired", code: "HOLD_EXPIRED" }, 409);
+      return json(
+        { ok: false, error: "Booking hold has expired", code: "HOLD_EXPIRED" },
+        409,
+      );
     }
 
     const startAt = new Date(hold.start_at);
@@ -122,7 +145,9 @@ serve(async (req) => {
       .eq("appointment_date", appointmentDate)
       .eq("doctor_id", hold.doctor_id)
       .neq("status", "canceled")
-      .or(`and(start_time.lte.${startTime},end_time.gt.${startTime}),and(start_time.lt.${endTime},end_time.gte.${endTime})`);
+      .or(
+        `and(start_time.lte.${startTime},end_time.gt.${startTime}),and(start_time.lt.${endTime},end_time.gte.${endTime})`,
+      );
 
     if (conflictErr) {
       console.error("Conflict check error:", conflictErr);
@@ -131,7 +156,10 @@ serve(async (req) => {
 
     if (existingAppointments && existingAppointments.length > 0) {
       await service.from("appointment_holds").delete().eq("id", hold.id);
-      return json({ ok: false, error: "Slot is no longer available", code: "SLOT_TAKEN" }, 409);
+      return json(
+        { ok: false, error: "Slot is no longer available", code: "SLOT_TAKEN" },
+        409,
+      );
     }
 
     const { data: otherHolds, error: otherHoldErr } = await service
@@ -141,7 +169,9 @@ serve(async (req) => {
       .eq("status", "pending")
       .gt("expires_at", new Date().toISOString())
       .neq("id", hold.id)
-      .or(`and(start_at.lte.${hold.start_at},end_at.gt.${hold.start_at}),and(start_at.lt.${hold.end_at},end_at.gte.${hold.end_at})`);
+      .or(
+        `and(start_at.lte.${hold.start_at},end_at.gt.${hold.start_at}),and(start_at.lt.${hold.end_at},end_at.gte.${hold.end_at})`,
+      );
 
     if (otherHoldErr) {
       console.error("Other hold check error:", otherHoldErr);
@@ -150,7 +180,36 @@ serve(async (req) => {
 
     if (otherHolds && otherHolds.length > 0) {
       await service.from("appointment_holds").delete().eq("id", hold.id);
-      return json({ ok: false, error: "Slot is temporarily held by another patient", code: "SLOT_TAKEN" }, 409);
+      return json(
+        {
+          ok: false,
+          error: "Slot is temporarily held by another patient",
+          code: "SLOT_TAKEN",
+        },
+        409,
+      );
+    }
+
+    // ✅ Defense-in-depth: ensure the hold’s procedure belongs to the same doctor.
+    // We DO NOT block confirmation if the procedure is now inactive/bookable=false;
+    // we only ensure it’s not from another doctor.
+    let safeProcedureId: string | null = hold.procedure_id ?? null;
+
+    if (safeProcedureId) {
+      const { data: proc, error: procErr } = await service
+        .from("procedures")
+        .select("id, dentist_id")
+        .eq("id", safeProcedureId)
+        .maybeSingle();
+
+      if (procErr) {
+        console.error("Procedure check error:", procErr);
+        return json({ ok: false, error: "Failed to validate requested procedure" }, 500);
+      }
+
+      if (!proc || proc.dentist_id !== hold.doctor_id) {
+        safeProcedureId = null;
+      }
     }
 
     const { data: appointment, error: insertErr } = await service
@@ -167,8 +226,11 @@ serve(async (req) => {
         patient_id: hold.patient_id,
         doctor_patient_id: hold.doctor_patient_id,
         patient_confirmation_status: "confirmed",
+
+        // NEW
+        procedure_id: safeProcedureId,
       } as any)
-      .select("id, appointment_date, start_time, end_time, appointment_type")
+      .select("id, appointment_date, start_time, end_time, appointment_type, procedure_id")
       .single();
 
     if (insertErr || !appointment) {
