@@ -1,9 +1,8 @@
 // src/components/treatment/EnhancedCreateTreatmentPlanModal.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,17 +14,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-
-import { CalendarIcon, Plus, Trash2, Save, Send, Clock, DollarSign, Loader2 } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { CalendarIcon, Plus, Trash2, Save, Send, Clock, DollarSign, AlertTriangle, Info } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
-
 import { supabase } from "@/integrations/supabase/client";
-import type { Database } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
+import { useProcedures } from "@/hooks/useProcedures";
 import { useDoctorProfile } from "@/hooks/useDoctorProfile";
 import PatientSelector from "@/components/patient/PatientSelector";
-import { EnhancedDentalChart } from "@/components/dental";
+import ToothSelector from "@/components/procedure/ToothSelector";
 import { cn } from "@/lib/utils";
 
 const DURATION_OPTIONS_MINUTES = [10, 15, 20, 30, 45, 60, 75, 90, 105, 120, 150, 180];
@@ -39,14 +37,15 @@ const formatDuration = (minutes: number) => {
   return `${h}h ${m}m`;
 };
 
-type ProcedureRow = Database["public"]["Tables"]["procedures"]["Row"];
-
-interface AvailabilitySlot {
-  start_at: string; // "YYYY-MM-DDTHH:MM"
-  end_at: string;
-  available: boolean;
-  reason?: string;
-}
+const formatCurrency = (amount: number) => {
+  const n = Number(amount);
+  const safe = Number.isFinite(n) ? n : 0;
+  try {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(safe);
+  } catch {
+    return `$${safe.toFixed(2)}`;
+  }
+};
 
 const procedureFormSchema = z.object({
   procedure_id: z.string().min(1, "Select a procedure"),
@@ -56,6 +55,7 @@ const procedureFormSchema = z.object({
   priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
   notes: z.string().optional(),
   tooth_numbers: z.array(z.number()).optional(),
+  cost: z.number().optional(), // ✅ UNIT cost (per-tooth if tooth_based)
 });
 
 const formSchema = z.object({
@@ -92,6 +92,24 @@ interface ProcedureItem {
   priority?: "low" | "medium" | "high" | "urgent";
   notes?: string;
   tooth_numbers?: number[];
+  cost?: number; // ✅ UNIT cost override (per tooth if tooth_based)
+}
+
+interface AvailabilitySlot {
+  start_at: string; // "YYYY-MM-DDTHH:MM"
+  end_at: string;
+  available: boolean;
+  reason?: string;
+}
+
+/** ✅ Day meta to show working hours, breaks, blocked, holiday/day off */
+interface DayAvailabilityMeta {
+  date: string;
+  is_holiday: boolean;
+  is_working_day: boolean;
+  working_hours?: { start_time: string; end_time: string };
+  breaks: Array<{ start_time: string; end_time: string; name?: string }>;
+  blocked: Array<{ start_time: string; end_time: string; reason?: string }>;
 }
 
 const EnhancedCreateTreatmentPlanModal = ({
@@ -102,10 +120,8 @@ const EnhancedCreateTreatmentPlanModal = ({
   initialTemplateData,
 }: EnhancedCreateTreatmentPlanModalProps) => {
   const { user } = useAuth();
+  const { procedures } = useProcedures();
   const { profile } = useDoctorProfile();
-
-  const [procedures, setProcedures] = useState<ProcedureRow[]>([]);
-  const [loadingProcedures, setLoadingProcedures] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [saveAsTemplate, setSaveAsTemplate] = useState(false);
@@ -117,19 +133,27 @@ const EnhancedCreateTreatmentPlanModal = ({
     procedure_id: "",
     priority: "medium",
     duration_minutes: 30,
+    cost: undefined,
   });
 
   const [selectedTeeth, setSelectedTeeth] = useState<number[]>([]);
   const [totalCost, setTotalCost] = useState(0);
   const [totalDuration, setTotalDuration] = useState(0);
 
-  // Availability
+  const [selectedPatientName, setSelectedPatientName] = useState<string>("");
+  const [selectedPatientSource, setSelectedPatientSource] = useState<"registered" | "doctor_added" | null>(null);
+
+  // Backend-driven slots
   const [daySlots, setDaySlots] = useState<AvailabilitySlot[]>([]);
   const [loadingDaySlots, setLoadingDaySlots] = useState(false);
+
+  // ✅ NEW: day meta (breaks/blocked/day off)
+  const [dayMeta, setDayMeta] = useState<DayAvailabilityMeta | null>(null);
+
   const [holidayDates, setHolidayDates] = useState<Date[]>([]);
 
-  const isDentist =
-    (profile?.specialty || "").toLowerCase().includes("dent") || (profile?.specialty || "").toLowerCase().includes("oral");
+  const specialty = (profile?.specialty || "").toLowerCase();
+  const isDentist = specialty.includes("dent") || specialty.includes("oral");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -147,69 +171,103 @@ const EnhancedCreateTreatmentPlanModal = ({
   const watchedPatientId = form.watch("patient_id");
   const watchedDoctorPatientId = form.watch("doctor_patient_id");
 
-  const selectedProcedure = useMemo(() => {
-    if (!currentProcedure.procedure_id) return null;
-    return procedures.find((p) => p.id === currentProcedure.procedure_id) || null;
+  const getProcById = (procedureId: string) => procedures.find((p) => p.id === procedureId);
+
+  const currentSelectedProc = useMemo(() => {
+    return currentProcedure.procedure_id ? getProcById(currentProcedure.procedure_id) : undefined;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentProcedure.procedure_id, procedures]);
 
-  const currentIsToothBased = selectedProcedure?.type === "tooth_based";
+  const currentIsToothBased =
+    isDentist && String(currentSelectedProc?.type || "").toLowerCase() === "tooth_based";
 
-  const toggleTooth = (toothNumber: number) => {
-    setSelectedTeeth((prev) => (prev.includes(toothNumber) ? prev.filter((t) => t !== toothNumber) : [...prev, toothNumber]));
+  const currentUnitCost = useMemo(() => {
+    const fromState = currentProcedure.cost;
+    if (typeof fromState === "number" && Number.isFinite(fromState)) return fromState;
+    const fallback = Number(currentSelectedProc?.default_cost ?? currentSelectedProc?.price ?? 0);
+    return Number.isFinite(fallback) ? fallback : 0;
+  }, [currentProcedure.cost, currentSelectedProc?.default_cost, currentSelectedProc?.price]);
+
+  const currentQty = currentIsToothBased ? selectedTeeth.length : 1;
+  const currentLineTotal = currentIsToothBased ? currentUnitCost * Math.max(currentQty, 0) : currentUnitCost;
+
+  const getItemPricing = (item: ProcedureItem) => {
+    const proc = getProcById(item.procedure_id);
+    const toothBased = isDentist && String(proc?.type || "").toLowerCase() === "tooth_based";
+
+    const unit = Number(item.cost ?? proc?.default_cost ?? proc?.price ?? 0);
+    const unitSafe = Number.isFinite(unit) ? unit : 0;
+
+    const qty = toothBased ? Math.max(item.tooth_numbers?.length || 0, 1) : 1;
+    const lineTotal = toothBased ? unitSafe * qty : unitSafe;
+
+    return { proc, toothBased, unit: unitSafe, qty, lineTotal };
   };
 
-  // ✅ Load procedures for THIS doctor using dentist_id
   useEffect(() => {
-    const fetchDoctorProcedures = async () => {
-      if (!open || !profile?.id) {
-        setProcedures([]);
-        return;
+    if (preSelectedPatientId) {
+      form.setValue("patient_ref", preSelectedPatientId);
+      form.setValue("patient_id", preSelectedPatientId);
+      form.setValue("doctor_patient_id", "");
+      setSelectedPatientSource("registered");
+    }
+  }, [preSelectedPatientId, form]);
+
+  // Populate from template
+  useEffect(() => {
+    if (initialTemplateData && open) {
+      if (initialTemplateData.title) form.setValue("title", initialTemplateData.title);
+      if (initialTemplateData.description) form.setValue("description", initialTemplateData.description);
+      if (initialTemplateData.priority) form.setValue("priority", initialTemplateData.priority as any);
+
+      if (initialTemplateData.procedures && initialTemplateData.procedures.length > 0) {
+        const templateProcedures: ProcedureItem[] = initialTemplateData.procedures.map((p: any) => ({
+          procedure_id: p.procedure_id || p.procedure?.id || "",
+          priority: p.priority || "medium",
+          notes: p.notes || "",
+          tooth_numbers: p.tooth_numbers || [],
+          duration_minutes: Number(p.duration_minutes || 30),
+          cost: typeof p.cost === "number" ? Number(p.cost) : undefined,
+        }));
+
+        setProcedureItems(templateProcedures);
+
+        form.setValue(
+          "procedures",
+          templateProcedures.map((p) => ({
+            procedure_id: p.procedure_id,
+            appointment_date: p.appointment_date,
+            appointment_time: p.appointment_time,
+            duration_minutes: p.duration_minutes,
+            priority: p.priority,
+            notes: p.notes,
+            tooth_numbers: p.tooth_numbers,
+            cost: p.cost,
+          })) as any,
+          { shouldValidate: false, shouldDirty: false }
+        );
       }
+    }
+  }, [initialTemplateData, open, form]);
 
-      setLoadingProcedures(true);
-      try {
-        const tryQuery = async (ownerColumn: "dentist_id" | "doctor_id", activeColumn?: "is_active" | "active") => {
-          let q = supabase.from("procedures").select("*").eq(ownerColumn as any, profile.id).order("name");
-          if (activeColumn) q = q.eq(activeColumn as any, true);
-          const { data, error } = await q;
-          return { data: (data as any[]) || [], error };
-        };
+  // Reset when closing
+  useEffect(() => {
+    if (!open) {
+      form.reset();
+      setProcedureItems([]);
+      form.setValue("procedures", [] as any, { shouldValidate: false, shouldDirty: false });
+      setCurrentProcedure({ procedure_id: "", priority: "medium", duration_minutes: 30, cost: undefined });
+      setSelectedTeeth([]);
+      setSelectedPatientName("");
+      setSelectedPatientSource(null);
+      setDaySlots([]);
+      setLoadingDaySlots(false);
+      setHolidayDates([]);
+      setDayMeta(null);
+    }
+  }, [open, form]);
 
-        // dentist_id + is_active
-        let res = await tryQuery("dentist_id", "is_active");
-        // dentist_id + active (older)
-        if (res.error && String((res.error as any).message || "").toLowerCase().includes("is_active")) {
-          res = await tryQuery("dentist_id", "active");
-        }
-        // dentist_id without active filter
-        if (res.error) {
-          res = await tryQuery("dentist_id");
-        }
-        // legacy fallback doctor_id (if some environments still have it)
-        if (res.error && String((res.error as any).message || "").toLowerCase().includes("dentist_id")) {
-          res = await tryQuery("doctor_id", "is_active");
-          if (res.error && String((res.error as any).message || "").toLowerCase().includes("is_active")) {
-            res = await tryQuery("doctor_id", "active");
-          }
-          if (res.error) res = await tryQuery("doctor_id");
-        }
-
-        if (res.error) throw res.error;
-
-        const cleaned = res.data.filter((p) => (p as any).is_active !== false && (p as any).active !== false);
-        setProcedures(cleaned as any);
-      } catch (e: any) {
-        console.error("Failed to load procedures:", e);
-        setProcedures([]);
-      } finally {
-        setLoadingProcedures(false);
-      }
-    };
-
-    fetchDoctorProcedures();
-  }, [open, profile?.id]);
-
-  // Load holidays (optional)
+  // Load holidays (used to disable holiday days in calendar picker)
   useEffect(() => {
     const loadHolidays = async () => {
       if (!open || !profile?.id) {
@@ -236,23 +294,30 @@ const EnhancedCreateTreatmentPlanModal = ({
     loadHolidays();
   }, [open, profile?.id]);
 
-  // Availability for selected day (optional)
+  // ✅ Load availability + meta from backend (doctor hours + clinic hours + breaks + blocked + overrides)
   useEffect(() => {
     const loadDaySlots = async () => {
-      if (!open || saveAsTemplate) {
+      if (saveAsTemplate) {
         setDaySlots([]);
+        setDayMeta(null);
         return;
       }
+
       if (!profile?.id) {
         setDaySlots([]);
+        setDayMeta(null);
         return;
       }
+
       if (!currentProcedure.appointment_date) {
         setDaySlots([]);
+        setDayMeta(null);
         return;
       }
 
       setLoadingDaySlots(true);
+      setDayMeta(null);
+
       try {
         const dateStr = format(currentProcedure.appointment_date, "yyyy-MM-dd");
         const duration = Number(currentProcedure.duration_minutes || 30);
@@ -264,7 +329,7 @@ const EnhancedCreateTreatmentPlanModal = ({
             from: dateStr,
             to: dateStr,
             include_breaks: true,
-            return_meta: false,
+            return_meta: true,
             procedure_duration_minutes: duration,
           },
         });
@@ -274,23 +339,52 @@ const EnhancedCreateTreatmentPlanModal = ({
 
         const slots = ((data as any)?.slots ?? []) as AvailabilitySlot[];
         setDaySlots(slots);
+
+        const metaForDay = (data as any)?.meta?.[dateStr] as DayAvailabilityMeta | undefined;
+        setDayMeta(metaForDay ?? null);
       } catch (e: any) {
         console.error("Failed to load availability:", e);
         setDaySlots([]);
+        setDayMeta(null);
       } finally {
         setLoadingDaySlots(false);
       }
     };
 
     loadDaySlots();
-  }, [open, saveAsTemplate, profile?.id, profile?.practice_id, currentProcedure.appointment_date, currentProcedure.duration_minutes]);
+  }, [
+    saveAsTemplate,
+    profile?.id,
+    profile?.practice_id,
+    currentProcedure.appointment_date,
+    currentProcedure.duration_minutes,
+  ]);
 
+  // ✅ Totals (cost uses tooth multiplier; duration remains per procedure instance)
+  useEffect(() => {
+    let cost = 0;
+    let duration = 0;
+
+    procedureItems.forEach((item) => {
+      const { proc, toothBased, unit, qty, lineTotal } = getItemPricing(item);
+
+      cost += lineTotal;
+      duration += Number(item.duration_minutes ?? (proc as any)?.duration_minutes ?? 30);
+    });
+
+    setTotalCost(cost);
+    setTotalDuration(duration);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [procedureItems, procedures, isDentist]);
+
+  // ✅ derive times from backend slots only
   const timeOptions = useMemo(() => {
     if (!daySlots.length) return [];
+
     const seen = new Set<string>();
     return daySlots
       .map((s) => {
-        const time = s.start_at?.slice(11, 16);
+        const time = s.start_at?.slice(11, 16); // HH:MM
         if (!time || seen.has(time)) return null;
         seen.add(time);
         return { time, available: Boolean(s.available), reason: s.reason };
@@ -298,107 +392,37 @@ const EnhancedCreateTreatmentPlanModal = ({
       .filter(Boolean) as Array<{ time: string; available: boolean; reason?: string }>;
   }, [daySlots]);
 
-  // Apply template data
-  useEffect(() => {
-    if (!open) return;
-    if (!initialTemplateData) return;
-
-    if (initialTemplateData.title) form.setValue("title", initialTemplateData.title);
-    if (initialTemplateData.description) form.setValue("description", initialTemplateData.description);
-    if (initialTemplateData.priority) form.setValue("priority", initialTemplateData.priority as any);
-
-    if (Array.isArray(initialTemplateData.procedures) && initialTemplateData.procedures.length) {
-      const nextItems: ProcedureItem[] = initialTemplateData.procedures.map((p: any) => ({
-        procedure_id: p.procedure_id || p.procedure?.id || "",
-        priority: p.priority || "medium",
-        notes: p.notes || "",
-        tooth_numbers: Array.isArray(p.tooth_numbers) ? p.tooth_numbers : [],
-        duration_minutes: Number(p.duration_minutes || 30),
-      }));
-
-      setProcedureItems(nextItems);
-      form.setValue(
-        "procedures",
-        nextItems.map((it) => ({
-          procedure_id: it.procedure_id,
-          appointment_date: it.appointment_date,
-          appointment_time: it.appointment_time,
-          duration_minutes: it.duration_minutes,
-          priority: it.priority,
-          notes: it.notes,
-          tooth_numbers: it.tooth_numbers,
-        })) as any,
-        { shouldValidate: false, shouldDirty: false }
-      );
-    }
-  }, [open, initialTemplateData, form]);
-
-  // Reset when closing
-  useEffect(() => {
-    if (open) return;
-    form.reset();
-    setProcedureItems([]);
-    setCurrentProcedure({ procedure_id: "", priority: "medium", duration_minutes: 30 });
-    setSelectedTeeth([]);
-    setEditingProcedureIndex(null);
-    setSaveAsTemplate(false);
-    setDaySlots([]);
-    setLoadingDaySlots(false);
-    setHolidayDates([]);
-  }, [open, form]);
-
-  // Totals with tooth-based multiplier
-  useEffect(() => {
-    let cost = 0;
-    let duration = 0;
-
-    procedureItems.forEach((item) => {
-      const proc = procedures.find((p) => p.id === item.procedure_id);
-      if (!proc) return;
-
-      const unit = Number(proc.default_cost || 0);
-      const qty = proc.type === "tooth_based" ? Number(item.tooth_numbers?.length || 0) : 1;
-      cost += unit * (proc.type === "tooth_based" ? qty : 1);
-
-      duration += Number(item.duration_minutes ?? proc.duration_minutes ?? 30);
-    });
-
-    setTotalCost(cost);
-    setTotalDuration(duration);
-  }, [procedureItems, procedures]);
-
-  const getProcedureName = (procedureId: string) => procedures.find((p) => p.id === procedureId)?.name || "Unknown";
-  const getProcedureUnitCost = (procedureId: string) => Number(procedures.find((p) => p.id === procedureId)?.default_cost || 0);
-
-  const getProcedureLineCost = (item: ProcedureItem) => {
-    const proc = procedures.find((p) => p.id === item.procedure_id);
-    if (!proc) return 0;
-    const unit = Number(proc.default_cost || 0);
-    const qty = proc.type === "tooth_based" ? Number(item.tooth_numbers?.length || 0) : 1;
-    return unit * (proc.type === "tooth_based" ? qty : 1);
-  };
-
   const handleAddProcedure = () => {
     if (!currentProcedure.procedure_id) {
       toast.error("Please select a procedure");
       return;
     }
 
-    const proc = procedures.find((p) => p.id === currentProcedure.procedure_id);
-    const isToothBased = proc?.type === "tooth_based";
+    const selectedProc = getProcById(currentProcedure.procedure_id);
+    const isToothBased =
+      isDentist && String(selectedProc?.type || "").toLowerCase() === "tooth_based";
 
-    if (isDentist && isToothBased && selectedTeeth.length === 0) {
-      toast.error("Please select at least one tooth for this procedure");
+    if (isToothBased && selectedTeeth.length === 0) {
+      toast.error("Please select at least one tooth for this procedure.");
       return;
     }
+
+    const unit = Number(
+      currentProcedure.cost ??
+        selectedProc?.default_cost ??
+        selectedProc?.price ??
+        0
+    );
+    const unitSafe = Number.isFinite(unit) ? unit : 0;
 
     const procedureToAdd: ProcedureItem = {
       ...currentProcedure,
       duration_minutes: Number(currentProcedure.duration_minutes || 30),
-      tooth_numbers: isToothBased ? (selectedTeeth.length ? [...selectedTeeth] : undefined) : undefined,
+      cost: unitSafe, // ✅ store as UNIT
+      tooth_numbers: isToothBased ? (selectedTeeth.length ? selectedTeeth : []) : undefined,
     };
 
-    let nextItems: ProcedureItem[] = [];
+    let nextItems: ProcedureItem[];
 
     if (editingProcedureIndex !== null) {
       const updated = [...procedureItems];
@@ -411,6 +435,7 @@ const EnhancedCreateTreatmentPlanModal = ({
       setProcedureItems(nextItems);
     }
 
+    // Keep RHF in sync
     form.setValue(
       "procedures",
       nextItems.map((p) => ({
@@ -421,19 +446,21 @@ const EnhancedCreateTreatmentPlanModal = ({
         priority: p.priority,
         notes: p.notes,
         tooth_numbers: p.tooth_numbers,
+        cost: p.cost,
       })) as any,
       { shouldValidate: false, shouldDirty: true }
     );
 
-    setCurrentProcedure({ procedure_id: "", priority: "medium", duration_minutes: 30 });
+    setCurrentProcedure({ procedure_id: "", priority: "medium", duration_minutes: 30, cost: undefined });
     setSelectedTeeth([]);
     setDaySlots([]);
+    setDayMeta(null);
   };
 
   const handleEditProcedure = (index: number) => {
-    const item = procedureItems[index];
-    setCurrentProcedure(item);
-    setSelectedTeeth(item.tooth_numbers || []);
+    const proc = procedureItems[index];
+    setCurrentProcedure(proc);
+    setSelectedTeeth(proc.tooth_numbers || []);
     setEditingProcedureIndex(index);
   };
 
@@ -451,14 +478,20 @@ const EnhancedCreateTreatmentPlanModal = ({
         priority: p.priority,
         notes: p.notes,
         tooth_numbers: p.tooth_numbers,
+        cost: p.cost,
       })) as any,
       { shouldValidate: false, shouldDirty: true }
     );
   };
 
+  const getProcedureName = (procedureId: string) => getProcById(procedureId)?.name || "Unknown";
+
+  // --- Booking helpers (create appointment + link via appointment_id) ---
   const assertSlotAvailable = async (date: Date, timeHHMM: string, durationMinutes: number) => {
-    if (!profile?.id) return; // if profile isn't ready, skip strict check
+    if (!profile?.id) throw new Error("Doctor profile not loaded");
+
     const dateStr = format(date, "yyyy-MM-dd");
+    const duration = Number(durationMinutes || 30);
 
     const { data, error } = await supabase.functions.invoke("get-availability", {
       body: {
@@ -468,7 +501,7 @@ const EnhancedCreateTreatmentPlanModal = ({
         to: dateStr,
         include_breaks: true,
         return_meta: false,
-        procedure_duration_minutes: durationMinutes,
+        procedure_duration_minutes: duration,
       },
     });
 
@@ -477,22 +510,24 @@ const EnhancedCreateTreatmentPlanModal = ({
 
     const slots = ((data as any)?.slots ?? []) as AvailabilitySlot[];
     const matched = slots.find((s) => (s.start_at?.slice(11, 16) || "") === timeHHMM);
-    if (!matched) throw new Error("Selected time is not available for booking");
+
+    if (!matched) throw new Error("Selected time is not returned by availability (check working hours).");
     if (!matched.available) throw new Error(matched.reason || "Selected time is not available");
   };
 
-  const insertAppointment = async (payload: any) => {
+  const insertAppointmentWithFallback = async (payload: any) => {
     const { data, error } = await supabase.from("appointments").insert(payload).select("id").single();
     if (!error) return data.id as string;
 
-    // fallback if schema differs somewhere
     const msg = (error as any)?.message || "";
     const retry = { ...payload };
-    if (msg.includes("practice_id")) delete retry.practice_id;
+
     if (msg.includes("procedure_id")) delete retry.procedure_id;
+    if (msg.includes("practice_id")) delete retry.practice_id;
 
     const { data: data2, error: error2 } = await supabase.from("appointments").insert(retry).select("id").single();
     if (error2) throw error2;
+
     return data2.id as string;
   };
 
@@ -507,8 +542,17 @@ const EnhancedCreateTreatmentPlanModal = ({
     durationMinutes: number;
     treatmentPlanTitle: string;
   }) => {
-    const { doctorId, patient_id, doctor_patient_id, date, startTimeHHMM, procedureId, procedureName, durationMinutes, treatmentPlanTitle } =
-      args;
+    const {
+      doctorId,
+      patient_id,
+      doctor_patient_id,
+      date,
+      startTimeHHMM,
+      procedureId,
+      procedureName,
+      durationMinutes,
+      treatmentPlanTitle,
+    } = args;
 
     await assertSlotAvailable(date, startTimeHHMM, durationMinutes);
 
@@ -540,7 +584,7 @@ const EnhancedCreateTreatmentPlanModal = ({
       throw new Error("Missing patient reference for appointment");
     }
 
-    return await insertAppointment(payload);
+    return await insertAppointmentWithFallback(payload);
   };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -560,21 +604,22 @@ const EnhancedCreateTreatmentPlanModal = ({
     }
 
     setLoading(true);
+
     try {
       if (!user) throw new Error("User not authenticated");
 
-      // Use profile.id as doctor_id if available, else fetch from doctors table
-      let doctorId = profile?.id || null;
-      if (!doctorId) {
-        const { data, error } = await supabase.from("doctors").select("id").eq("user_id", user.id).single();
-        if (error || !data?.id) throw new Error("Doctor profile not found");
-        doctorId = data.id;
-      }
+      const { data: doctorData, error: doctorError } = await supabase
+        .from("doctors")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
 
-      // Template mode
+      if (doctorError || !doctorData) throw new Error("Doctor profile not found");
+
+      // Template save
       if (saveAsTemplate) {
-        const { error } = await supabase.from("treatment_plan_templates").insert({
-          doctor_id: doctorId,
+        const { error: templateError } = await supabase.from("treatment_plan_templates").insert({
+          doctor_id: doctorData.id,
           name: values.title,
           description: values.description,
           category: "custom",
@@ -586,12 +631,13 @@ const EnhancedCreateTreatmentPlanModal = ({
               notes: p.notes ?? "",
               tooth_numbers: p.tooth_numbers ?? [],
               duration_minutes: Number(p.duration_minutes || 30),
+              cost: typeof p.cost === "number" ? Number(p.cost) : undefined, // ✅ keep unit overrides
             })),
             priority: values.priority ?? "medium",
           },
         });
 
-        if (error) throw error;
+        if (templateError) throw templateError;
 
         toast.success("Template saved successfully");
         onSuccess?.();
@@ -599,18 +645,20 @@ const EnhancedCreateTreatmentPlanModal = ({
         return;
       }
 
-      const expiresAt = values.doctor_patient_id ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() : null;
+      const expiresAt = values.doctor_patient_id
+        ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+        : null;
 
       const { data: planData, error: planError } = await supabase
         .from("treatment_plans")
         .insert({
-          doctor_id: doctorId,
+          doctor_id: doctorData.id,
           patient_id: values.patient_id || null,
           doctor_patient_id: values.doctor_patient_id || null,
           title: values.title,
           notes: values.description,
           status: "draft",
-          total_cost: totalCost,
+          total_cost: totalCost, // ✅ includes tooth multipliers
           priority: values.priority ?? "medium",
           expires_at: expiresAt,
         })
@@ -626,7 +674,7 @@ const EnhancedCreateTreatmentPlanModal = ({
 
         for (let index = 0; index < procedureItems.length; index++) {
           const item = procedureItems[index];
-          const proc = procedures.find((p) => p.id === item.procedure_id);
+          const proc = getProcById(item.procedure_id);
 
           const hasDate = Boolean(item.appointment_date);
           const hasTime = Boolean(item.appointment_time);
@@ -637,16 +685,11 @@ const EnhancedCreateTreatmentPlanModal = ({
 
           const durationMinutes = Number(item.duration_minutes ?? proc?.duration_minutes ?? 30);
 
-          // ✅ Compute cost correctly (tooth_based multiplies by teeth count)
-          const unit = Number(proc?.default_cost || 0);
-          const qty = proc?.type === "tooth_based" ? Number(item.tooth_numbers?.length || 0) : 1;
-          const lineCost = unit * (proc?.type === "tooth_based" ? qty : 1);
-
           let appointmentId: string | null = null;
 
           if (hasDate && hasTime) {
             appointmentId = await createAppointmentFromPlan({
-              doctorId,
+              doctorId: doctorData.id,
               patient_id: values.patient_id || null,
               doctor_patient_id: values.doctor_patient_id || null,
               date: item.appointment_date as Date,
@@ -660,6 +703,9 @@ const EnhancedCreateTreatmentPlanModal = ({
             createdAppointmentIds.push(appointmentId);
           }
 
+          const unit = Number(item.cost ?? proc?.default_cost ?? proc?.price ?? 0);
+          const unitSafe = Number.isFinite(unit) ? unit : 0;
+
           proceduresToInsert.push({
             treatment_plan_id: planData.id,
             procedure_id: item.procedure_id,
@@ -670,10 +716,10 @@ const EnhancedCreateTreatmentPlanModal = ({
 
             status: "pending",
             notes: item.notes || null,
-            tooth_numbers: proc?.type === "tooth_based" ? (item.tooth_numbers ?? null) : null,
+            tooth_numbers: item.tooth_numbers ?? null,
 
-            // ✅ Correct pricing stored in DB
-            cost: lineCost,
+            // ✅ store UNIT cost; backend multiplies for tooth_based when computing plan totals
+            cost: unitSafe,
 
             priority: item.priority ?? "medium",
             appointment_id: appointmentId,
@@ -698,39 +744,45 @@ const EnhancedCreateTreatmentPlanModal = ({
       if (values.patient_id) {
         const procedureDetails = procedureItems
           .map((item) => {
-            const proc = procedures.find((p) => p.id === item.procedure_id);
-            const d = Number(item.duration_minutes ?? proc?.duration_minutes ?? 30);
+            const { proc, toothBased, unit, qty, lineTotal } = getItemPricing(item);
+            const d = Number(item.duration_minutes ?? (proc as any)?.duration_minutes ?? 30);
 
-            const unit = Number(proc?.default_cost || 0);
-            const qty = proc?.type === "tooth_based" ? Number(item.tooth_numbers?.length || 0) : 1;
-            const line = unit * (proc?.type === "tooth_based" ? qty : 1);
+            const toothStr =
+              toothBased && item.tooth_numbers?.length
+                ? ` (Teeth: ${item.tooth_numbers.join(", ")})`
+                : "";
 
-            const teethInfo =
-              proc?.type === "tooth_based" && item.tooth_numbers?.length ? ` (Teeth: ${item.tooth_numbers.join(", ")})` : "";
+            const costStr = toothBased
+              ? `${formatCurrency(unit)} × ${qty} = ${formatCurrency(lineTotal)}`
+              : `${formatCurrency(lineTotal)}`;
 
-            const scheduledInfo = item.appointment_date
+            const scheduleStr = item.appointment_date
               ? ` (Scheduled: ${format(item.appointment_date, "PPP")}${item.appointment_time ? ` at ${item.appointment_time}` : ""})`
               : "";
 
-            return `- ${proc?.name || "Procedure"}: $${line.toFixed(2)} (${formatDuration(d)})${teethInfo}${scheduledInfo}`;
+            return `- ${proc?.name || "Procedure"}${toothStr}: ${costStr} (${formatDuration(d)})${scheduleStr}`;
           })
           .join("\n");
 
-        const message = `
+        const notificationMessage = `
 A new treatment plan "${values.title}" has been created for you.
 
-Procedures:
+📋 Procedures:
 ${procedureDetails}
 
-Total Estimated Cost: $${totalCost.toFixed(2)}
-Total Duration: ${totalDuration} minutes
+💰 Total Estimated Cost: ${formatCurrency(totalCost)}
+⏱️ Total Duration: ${totalDuration} minutes
+
+⚠️ Important: Final costs may vary depending on findings during the procedure or if additional treatment is required.
+
+Please review and confirm the treatment plan in your dashboard.
         `.trim();
 
         const { data: notifData, error: notifError } = await (supabase as any).rpc("send_notification_to_user", {
           p_recipient_user_id: values.patient_id,
           p_notification_type: "treatment_plan",
           p_title: "New Treatment Plan Created",
-          p_message: message,
+          p_message: notificationMessage,
           p_data: { treatment_plan_id: planData.id, total_cost: totalCost },
         });
 
@@ -748,9 +800,9 @@ Total Duration: ${totalDuration} minutes
 
       handleClose();
       onSuccess?.();
-    } catch (e: any) {
-      console.error(e);
-      toast.error(e?.message || "Failed to create treatment plan");
+    } catch (error: any) {
+      console.error("Error creating treatment plan:", error);
+      toast.error(error.message || "Failed to create treatment plan");
     } finally {
       setLoading(false);
     }
@@ -760,22 +812,27 @@ Total Duration: ${totalDuration} minutes
     form.reset();
     setProcedureItems([]);
     form.setValue("procedures", [] as any, { shouldValidate: false, shouldDirty: false });
-    setCurrentProcedure({ procedure_id: "", priority: "medium", duration_minutes: 30 });
+    setCurrentProcedure({ procedure_id: "", priority: "medium", duration_minutes: 30, cost: undefined });
     setSelectedTeeth([]);
     setEditingProcedureIndex(null);
     setSaveAsTemplate(false);
+    setSelectedPatientName("");
+    setSelectedPatientSource(null);
     setDaySlots([]);
     setLoadingDaySlots(false);
     setHolidayDates([]);
+    setDayMeta(null);
     onOpenChange(false);
   };
 
   const priorityColors: Record<NonNullable<ProcedureItem["priority"]>, string> = {
     low: "bg-blue-500/10 text-blue-500",
-    medium: "bg-yellow-500/10 text-yellow-600",
-    high: "bg-orange-500/10 text-orange-600",
-    urgent: "bg-red-500/10 text-red-600",
+    medium: "bg-yellow-500/10 text-yellow-500",
+    high: "bg-orange-500/10 text-orange-500",
+    urgent: "bg-red-500/10 text-red-500",
   };
+
+  const isPatientSelected = Boolean(watchedPatientId || watchedDoctorPatientId);
 
   return (
     <Dialog
@@ -797,12 +854,17 @@ Total Duration: ${totalDuration} minutes
                 <Save className="w-4 h-4" />
                 <span className="text-sm font-medium">Save as Template</span>
               </div>
-              <Button type="button" variant={saveAsTemplate ? "default" : "outline"} size="sm" onClick={() => setSaveAsTemplate(!saveAsTemplate)}>
+              <Button
+                type="button"
+                variant={saveAsTemplate ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSaveAsTemplate(!saveAsTemplate)}
+              >
                 {saveAsTemplate ? "Template Mode" : "Plan Mode"}
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="title"
@@ -829,6 +891,8 @@ Total Duration: ${totalDuration} minutes
                           value={field.value}
                           onSelect={(patient) => {
                             field.onChange(patient.id);
+                            setSelectedPatientName(patient.name);
+                            setSelectedPatientSource(patient.source);
 
                             if (patient.source === "doctor_added") {
                               form.setValue("doctor_patient_id", patient.id);
@@ -842,12 +906,14 @@ Total Duration: ${totalDuration} minutes
                           required={!saveAsTemplate}
                         />
                       </FormControl>
-                      <FormMessage />
-                      {watchedDoctorPatientId ? (
+
+                      {selectedPatientSource === "doctor_added" && (
                         <p className="text-xs text-muted-foreground mt-1">
-                          Doctor-added patient: plan will be kept for <b>7 days</b>.
+                          This patient is not signed up yet. The treatment plan will be kept for <b>7 days</b>.
                         </p>
-                      ) : null}
+                      )}
+
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -876,21 +942,21 @@ Total Duration: ${totalDuration} minutes
                   </FormItem>
                 )}
               />
-
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem className="md:col-span-2">
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Additional details about the treatment plan..." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Additional details about the treatment plan..." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <Separator />
 
@@ -899,58 +965,39 @@ Total Duration: ${totalDuration} minutes
 
               <Card>
                 <CardContent className="pt-6 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Procedure/Service *</label>
                       <Select
                         value={currentProcedure.procedure_id}
                         onValueChange={(value) => {
-                          const proc = procedures.find((p) => p.id === value);
-                          const nextDuration = Number(currentProcedure.duration_minutes ?? proc?.duration_minutes ?? 30);
+                          const proc = getProcById(value);
+                          const defaultUnit = Number(proc?.default_cost ?? proc?.price ?? 0);
+                          const unitSafe = Number.isFinite(defaultUnit) ? defaultUnit : 0;
 
                           setCurrentProcedure((prev) => ({
                             ...prev,
                             procedure_id: value,
-                            duration_minutes: nextDuration,
+                            duration_minutes: Number(prev.duration_minutes ?? (proc as any)?.duration_minutes ?? 30),
+                            cost: unitSafe, // ✅ default unit cost
                           }));
 
-                          // Clear teeth if not tooth_based
-                          if (proc?.type !== "tooth_based") setSelectedTeeth([]);
-
-                          // Reset scheduling info when switching procedure
-                          setDaySlots([]);
+                          // Reset tooth selection when switching procedure
+                          setSelectedTeeth([]);
                         }}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder={loadingProcedures ? "Loading..." : "Select procedure"} />
+                          <SelectValue placeholder="Select procedure" />
                         </SelectTrigger>
                         <SelectContent>
-                          {loadingProcedures ? (
-                            <SelectItem value="__loading" disabled>
-                              Loading...
+                          {procedures.map((proc) => (
+                            <SelectItem key={proc.id} value={proc.id}>
+                              {proc.name} - {formatCurrency(Number(proc.default_cost ?? proc.price ?? 0))} •{" "}
+                              {formatDuration(Number((proc as any).duration_minutes || 30))}
                             </SelectItem>
-                          ) : procedures.length ? (
-                            procedures.map((proc) => (
-                              <SelectItem key={proc.id} value={proc.id}>
-                                {proc.name} • ${Number(proc.default_cost || 0).toFixed(2)} • {formatDuration(Number(proc.duration_minutes || 30))}
-                                {proc.type === "tooth_based" ? " • per tooth" : ""}
-                              </SelectItem>
-                            ))
-                          ) : (
-                            <SelectItem value="__none" disabled>
-                              No procedures found
-                            </SelectItem>
-                          )}
+                          ))}
                         </SelectContent>
                       </Select>
-
-                      {selectedProcedure ? (
-                        <div className="flex flex-wrap gap-2 pt-1">
-                          <Badge variant="secondary">{selectedProcedure.category || "general"}</Badge>
-                          {selectedProcedure.type ? <Badge variant="outline">{selectedProcedure.type}</Badge> : null}
-                          {selectedProcedure.type === "tooth_based" ? <Badge variant="outline">Tooth-based</Badge> : null}
-                        </div>
-                      ) : null}
                     </div>
 
                     <div className="space-y-2">
@@ -970,14 +1017,44 @@ Total Duration: ${totalDuration} minutes
                           ))}
                         </SelectContent>
                       </Select>
-                      <p className="text-xs text-muted-foreground">You can override the default duration for this plan.</p>
+                      <p className="text-xs text-muted-foreground">
+                        Defaults from procedure, but you can override for this plan.
+                      </p>
+                    </div>
+
+                    {/* ✅ Unit cost override */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">
+                        Unit Cost (USD)
+                        {currentIsToothBased ? (
+                          <span className="ml-2 text-xs text-muted-foreground">(per tooth)</span>
+                        ) : null}
+                      </label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={Number.isFinite(currentProcedure.cost as any) ? String(currentProcedure.cost) : String(currentUnitCost)}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          const n = v === "" ? undefined : Number(v);
+                          setCurrentProcedure((prev) => ({
+                            ...prev,
+                            cost: typeof n === "number" && Number.isFinite(n) ? n : undefined,
+                          }));
+                        }}
+                        placeholder="0.00"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Stored as <b>unit cost</b>. For tooth-based procedures, total = unit × number of teeth.
+                      </p>
                     </div>
 
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Priority</label>
                       <Select
                         value={currentProcedure.priority}
-                        onValueChange={(value: any) => setCurrentProcedure((prev) => ({ ...prev, priority: value }))}
+                        onValueChange={(value: any) => setCurrentProcedure({ ...currentProcedure, priority: value })}
                       >
                         <SelectTrigger>
                           <SelectValue />
@@ -993,7 +1070,7 @@ Total Duration: ${totalDuration} minutes
 
                     {!saveAsTemplate && (
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Schedule Date (optional)</label>
+                        <label className="text-sm font-medium">Schedule Date</label>
                         <Popover>
                           <PopoverTrigger asChild>
                             <Button
@@ -1004,7 +1081,11 @@ Total Duration: ${totalDuration} minutes
                               )}
                             >
                               <CalendarIcon className="mr-2 h-4 w-4" />
-                              {currentProcedure.appointment_date ? format(currentProcedure.appointment_date, "PPP") : <span>Pick a date</span>}
+                              {currentProcedure.appointment_date ? (
+                                format(currentProcedure.appointment_date, "PPP")
+                              ) : (
+                                <span>Pick a date</span>
+                              )}
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-0">
@@ -1012,14 +1093,15 @@ Total Duration: ${totalDuration} minutes
                               mode="single"
                               selected={currentProcedure.appointment_date}
                               onSelect={(date) => {
-                                setCurrentProcedure((prev) => ({
-                                  ...prev,
+                                setCurrentProcedure({
+                                  ...currentProcedure,
                                   appointment_date: date as Date,
                                   appointment_time: undefined,
-                                }));
+                                });
                               }}
                               disabled={(date) =>
-                                date < new Date() || holidayDates.some((h) => h.toDateString() === date.toDateString())
+                                date < new Date() ||
+                                holidayDates.some((h) => h.toDateString() === date.toDateString())
                               }
                               initialFocus
                             />
@@ -1030,10 +1112,10 @@ Total Duration: ${totalDuration} minutes
 
                     {!saveAsTemplate && currentProcedure.appointment_date && (
                       <div className="space-y-2">
-                        <label className="text-sm font-medium">Schedule Time (optional)</label>
+                        <label className="text-sm font-medium">Schedule Time</label>
                         <Select
                           value={currentProcedure.appointment_time}
-                          onValueChange={(value) => setCurrentProcedure((prev) => ({ ...prev, appointment_time: value }))}
+                          onValueChange={(value) => setCurrentProcedure({ ...currentProcedure, appointment_time: value })}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select time">
@@ -1047,6 +1129,7 @@ Total Duration: ${totalDuration} minutes
                               )}
                             </SelectValue>
                           </SelectTrigger>
+
                           <SelectContent>
                             {loadingDaySlots ? (
                               <SelectItem value="__loading" disabled>
@@ -1061,12 +1144,67 @@ Total Duration: ${totalDuration} minutes
                               ))
                             ) : (
                               <SelectItem value="__none" disabled>
-                                No available slots
+                                No available slots (check doctor + clinic working hours)
                               </SelectItem>
                             )}
                           </SelectContent>
                         </Select>
-                        <p className="text-xs text-muted-foreground">If you choose date+time, an appointment will be created automatically.</p>
+
+                        {/* ✅ Visible blocked/day off/breaks info */}
+                        <div className="mt-3 rounded-lg border p-3 bg-muted/30">
+                          {!dayMeta ? (
+                            <p className="text-sm text-muted-foreground">Loading day info…</p>
+                          ) : dayMeta.is_holiday ? (
+                            <p className="text-sm font-medium text-destructive">
+                              This day is a holiday. No appointments can be booked.
+                            </p>
+                          ) : !dayMeta.is_working_day ? (
+                            <p className="text-sm font-medium text-amber-700">
+                              Day off (not a working day). No appointments can be booked.
+                            </p>
+                          ) : (
+                            <div className="space-y-2">
+                              <div className="text-sm">
+                                <span className="font-medium">Working hours:</span>{" "}
+                                {dayMeta.working_hours?.start_time} – {dayMeta.working_hours?.end_time}
+                              </div>
+
+                              <div className="text-sm">
+                                <span className="font-medium">Breaks:</span>
+                                {dayMeta.breaks?.length ? (
+                                  <ul className="mt-1 space-y-1 text-muted-foreground">
+                                    {dayMeta.breaks.map((b, i) => (
+                                      <li key={i}>
+                                        • {b.start_time} – {b.end_time} {b.name ? `(${b.name})` : "(Break)"}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                ) : (
+                                  <span className="text-muted-foreground"> None</span>
+                                )}
+                              </div>
+
+                              <div className="text-sm">
+                                <span className="font-medium">Blocked:</span>
+                                {dayMeta.blocked?.length ? (
+                                  <ul className="mt-1 space-y-1 text-muted-foreground">
+                                    {dayMeta.blocked.map((b, i) => (
+                                      <li key={i}>
+                                        • {b.start_time} – {b.end_time} {b.reason ? `(${b.reason})` : "(Blocked)"}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                ) : (
+                                  <span className="text-muted-foreground"> None</span>
+                                )}
+                              </div>
+
+                              <p className="text-xs text-muted-foreground">
+                                Times inside breaks/blocked ranges appear in the time list as disabled with a reason.
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -1075,23 +1213,52 @@ Total Duration: ${totalDuration} minutes
                     <label className="text-sm font-medium">Notes</label>
                     <Textarea
                       value={currentProcedure.notes || ""}
-                      onChange={(e) => setCurrentProcedure((prev) => ({ ...prev, notes: e.target.value }))}
+                      onChange={(e) => setCurrentProcedure({ ...currentProcedure, notes: e.target.value })}
                       placeholder="Procedure-specific notes..."
                     />
                   </div>
 
-                  {/* ✅ Tooth selection only when needed */}
-                  {isDentist && currentIsToothBased && (
+                  {/* ✅ Teeth selection ONLY for tooth_based procedures */}
+                  {currentIsToothBased && (
                     <div className="space-y-2">
-                      <div className="text-sm font-medium">Select Teeth *</div>
-                      <EnhancedDentalChart selectionOnly isEditable selectedTeeth={selectedTeeth} onToothSelect={toggleTooth} />
-                      <div className="text-xs text-muted-foreground">
-                        Selected: {selectedTeeth.length ? [...selectedTeeth].sort((a, b) => a - b).join(", ") : "—"}
-                      </div>
+                      <label className="text-sm font-medium">Select Teeth *</label>
+                      <ToothSelector selectedTeeth={selectedTeeth} onSelectionChange={setSelectedTeeth} />
                     </div>
                   )}
 
-                  <Button type="button" onClick={handleAddProcedure} className="w-full" variant={editingProcedureIndex !== null ? "default" : "outline"}>
+                  {/* ✅ Pricing preview */}
+                  {currentProcedure.procedure_id && (
+                    <Card className="bg-primary/5 border-primary/20">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm text-muted-foreground">
+                            {currentIsToothBased ? (
+                              <>
+                                Unit {formatCurrency(currentUnitCost)} × Teeth {selectedTeeth.length}
+                              </>
+                            ) : (
+                              <>Unit {formatCurrency(currentUnitCost)}</>
+                            )}
+                          </div>
+                          <div className="font-bold text-primary">
+                            {currentIsToothBased ? formatCurrency(currentUnitCost * (selectedTeeth.length || 0)) : formatCurrency(currentUnitCost)}
+                          </div>
+                        </div>
+                        {currentIsToothBased && selectedTeeth.length === 0 && (
+                          <div className="text-xs text-amber-700 mt-2">
+                            Select at least one tooth to calculate total.
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  <Button
+                    type="button"
+                    onClick={handleAddProcedure}
+                    className="w-full"
+                    variant={editingProcedureIndex !== null ? "default" : "outline"}
+                  >
                     {editingProcedureIndex !== null ? (
                       <>Update Procedure</>
                     ) : (
@@ -1105,7 +1272,6 @@ Total Duration: ${totalDuration} minutes
               </Card>
             </div>
 
-            {/* Added procedures */}
             {procedureItems.length > 0 && (
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
@@ -1113,54 +1279,44 @@ Total Duration: ${totalDuration} minutes
                 </div>
 
                 {procedureItems.map((item, index) => {
-                  const proc = procedures.find((p) => p.id === item.procedure_id);
-                  const unit = getProcedureUnitCost(item.procedure_id);
-                  const qty = proc?.type === "tooth_based" ? Number(item.tooth_numbers?.length || 0) : 1;
-                  const line = getProcedureLineCost(item);
+                  const { toothBased, unit, qty, lineTotal } = getItemPricing(item);
 
                   return (
                     <Card key={index}>
                       <CardContent className="p-4">
-                        <div className="flex justify-between items-start gap-4">
+                        <div className="flex justify-between items-start">
                           <div className="flex-1">
-                            <div className="flex flex-wrap items-center gap-2 mb-2">
+                            <div className="flex items-center gap-2 mb-2 flex-wrap">
                               <span className="font-medium">{getProcedureName(item.procedure_id)}</span>
+
                               <Badge variant="outline">
-                                Unit: ${unit.toFixed(2)}
-                                {proc?.type === "tooth_based" ? " / tooth" : ""}
+                                {toothBased ? `${formatCurrency(unit)} × ${qty} = ${formatCurrency(lineTotal)}` : `${formatCurrency(lineTotal)}`}
                               </Badge>
-                              <Badge variant="secondary">{formatDuration(Number(item.duration_minutes || proc?.duration_minutes || 30))}</Badge>
-                              {item.priority ? <Badge className={priorityColors[item.priority]}>{item.priority}</Badge> : null}
-                              <Badge variant="default" className="ml-auto flex items-center gap-1">
-                                <DollarSign className="w-3 h-3" />
-                                ${line.toFixed(2)}
-                              </Badge>
+
+                              <Badge variant="secondary">{formatDuration(Number(item.duration_minutes || 30))}</Badge>
+                              {item.priority && <Badge className={priorityColors[item.priority]}>{item.priority}</Badge>}
                             </div>
 
-                            {proc?.type === "tooth_based" ? (
-                              <div className="text-sm text-muted-foreground">
-                                Quantity: <b>{qty}</b> tooth{qty === 1 ? "" : "es"}
-                                {item.tooth_numbers?.length ? ` • Teeth: ${[...item.tooth_numbers].sort((a, b) => a - b).join(", ")}` : ""}
-                              </div>
-                            ) : (
-                              <div className="text-sm text-muted-foreground">Quantity: 1</div>
+                            {item.appointment_date && (
+                              <p className="text-sm text-muted-foreground">
+                                📅 {format(item.appointment_date, "PPP")}
+                                {item.appointment_time && ` at ${item.appointment_time}`}
+                              </p>
                             )}
 
-                            {item.appointment_date && item.appointment_time ? (
-                              <div className="text-sm text-muted-foreground mt-1">
-                                Scheduled: <b>{format(item.appointment_date, "PPP")}</b> at <b>{item.appointment_time}</b>
-                              </div>
-                            ) : null}
+                            {item.tooth_numbers && item.tooth_numbers.length > 0 && (
+                              <p className="text-sm text-muted-foreground">🦷 Teeth: {item.tooth_numbers.join(", ")}</p>
+                            )}
 
-                            {item.notes ? <div className="text-sm mt-2 whitespace-pre-wrap">{item.notes}</div> : null}
+                            {item.notes && <p className="text-sm text-muted-foreground mt-1">{item.notes}</p>}
                           </div>
 
                           <div className="flex gap-2">
-                            <Button type="button" size="sm" variant="outline" onClick={() => handleEditProcedure(index)}>
+                            <Button type="button" variant="ghost" size="sm" onClick={() => handleEditProcedure(index)}>
                               Edit
                             </Button>
-                            <Button type="button" size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => handleRemoveProcedure(index)}>
-                              <Trash2 className="w-4 h-4" />
+                            <Button type="button" variant="ghost" size="sm" onClick={() => handleRemoveProcedure(index)}>
+                              <Trash2 className="w-4 h-4 text-destructive" />
                             </Button>
                           </div>
                         </div>
@@ -1169,41 +1325,61 @@ Total Duration: ${totalDuration} minutes
                   );
                 })}
 
-                <div className="rounded-lg border p-4 bg-muted/30">
-                  <div className="flex flex-wrap items-center gap-4">
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="w-4 h-4" />
-                      <span className="text-sm">
-                        Total Cost: <b>${totalCost.toFixed(2)}</b>
-                      </span>
+                <Card className="bg-primary/5 border-primary/20">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-5 h-5 text-muted-foreground" />
+                          <span className="text-sm">Total Duration:</span>
+                          <strong>{totalDuration} min</strong>
+                        </div>
+                        <Separator orientation="vertical" className="h-6" />
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="w-5 h-5 text-primary" />
+                          <span className="text-sm">Total Estimated Cost:</span>
+                          <strong className="text-lg text-primary">{formatCurrency(totalCost)}</strong>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      <span className="text-sm">
-                        Total Duration: <b>{totalDuration} min</b>
-                      </span>
-                    </div>
-                    <span className="text-xs text-muted-foreground ml-auto">
-                      Tooth-based items are calculated as unit × teeth count.
-                    </span>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
+
+                {!saveAsTemplate && (
+                  <Alert variant="default" className="border-amber-500/50 bg-amber-500/10">
+                    <AlertTriangle className="h-4 w-4 text-amber-600" />
+                    <AlertTitle className="text-amber-700">Cost Disclaimer</AlertTitle>
+                    <AlertDescription className="text-amber-600 text-sm">
+                      The total cost shown is an estimate. Final costs may vary based on findings during the procedure,
+                      additional treatments required, or changes in the treatment plan.
+                    </AlertDescription>
+                  </Alert>
+                )}
               </div>
             )}
 
-            <Separator />
+            {!saveAsTemplate && watchedPatientId && (
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertTitle>Patient Notification</AlertTitle>
+                <AlertDescription className="text-sm">
+                  {selectedPatientName || "The patient"} will receive a detailed notification including procedures,
+                  schedule (if set), total estimate and disclaimer.
+                </AlertDescription>
+              </Alert>
+            )}
 
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>
+            <div className="flex justify-end gap-3">
+              <Button type="button" variant="outline" onClick={handleClose}>
                 Cancel
               </Button>
 
-              <Button type="submit" disabled={loading || loadingProcedures || procedures.length === 0}>
+              <Button
+                type="submit"
+                disabled={loading || procedureItems.length === 0 || (!saveAsTemplate && !isPatientSelected)}
+              >
                 {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Saving...
-                  </>
+                  "Creating..."
                 ) : saveAsTemplate ? (
                   <>
                     <Save className="w-4 h-4 mr-2" />
@@ -1212,7 +1388,7 @@ Total Duration: ${totalDuration} minutes
                 ) : (
                   <>
                     <Send className="w-4 h-4 mr-2" />
-                    Create Plan
+                    Create & Send Plan
                   </>
                 )}
               </Button>
