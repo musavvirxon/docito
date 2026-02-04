@@ -4,546 +4,204 @@ import { Tables, Database } from '@/integrations/supabase/types';
 
 type ProcedureInsert = Database['public']['Tables']['procedures']['Insert'];
 type MedicalRecordInsert = Database['public']['Tables']['medical_records']['Insert'];
-import { toast } from 'sonner';
+type AppointmentInsert = Database['public']['Tables']['appointments']['Insert'];
+type TreatmentPlanInsert = Database['public']['Tables']['treatment_plans']['Insert'];
+type PrescriptionInsert = Database['public']['Tables']['prescriptions']['Insert'];
 
-// Types
-export type Doctor = {
-  id: string;
-  user_id?: string;
-  specialty?: string | null;
-  bio?: string | null;
-  languages?: string[] | null;
-  consultation_fee?: number | null;
-  accepts_new_patients?: boolean | null;
-  verified?: boolean | null;
-  weighted_rating?: number | null;
-  average_rating?: number | null;
-  num_reviews?: number | null;
-  appointment_count?: number | null;
-  license_number?: string | null;
-  profiles?: {
-    full_name?: string | null;
-    avatar_url?: string | null;
-    email?: string | null;
-    username?: string | null;
-  } | null;
-  practices?: {
-    id?: string | null;
-    name?: string | null;
-    city?: string | null;
-    country?: string | null;
-    logo_url?: string | null;
-  } | null;
-};
+export type Doctor = Tables<'doctors'>;
+export type Patient = Tables<'patients'>;
+export type Appointment = Tables<'appointments'>;
+export type Procedure = Tables<'procedures'>;
+export type TreatmentPlan = Tables<'treatment_plans'>;
+export type Prescription = Tables<'prescriptions'>;
+export type MedicalRecord = Tables<'medical_records'>;
 
-export type Appointment = Tables<'appointments'> & {
-  doctor?: any;
-  practice?: any;
-};
-
-export type TreatmentPlan = Tables<'treatment_plans'> & {
-  treatment_plan_procedures?: any[];
-  medications?: any[];
-};
-
-export type Procedure = Tables<'procedures'> & {
-  procedure_materials?: any[];
-  procedure_files?: any[];
-};
-
-// Error handler utility
 const handleApiError = (error: any, defaultMessage: string) => {
   console.error(defaultMessage, error);
-  const message = error?.message || defaultMessage;
-  toast.error(message);
-  return { error: message };
-};
 
-// Authentication API
-export const authApi = {
-  async signUp(email: string, password: string, userData: any = {}) {
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            full_name: userData.fullName || email,
-            role: userData.role || 'patient'
-          }
-        }
-      });
+  let message = defaultMessage;
+  if (error?.message) message = error.message;
+  if (error?.error_description) message = error.error_description;
 
-      if (error) throw error;
-      toast.success('Account created successfully! Please check your email to verify your account.');
-      return { success: true };
-    } catch (error: any) {
-      return handleApiError(error, 'Failed to create account');
-    }
-  },
-
-  async signIn(email: string, password: string) {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-      toast.success('Successfully signed in!');
-      return { success: true };
-    } catch (error: any) {
-      return handleApiError(error, 'Failed to sign in');
-    }
-  },
-
-  async signOut() {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      toast.success('Successfully signed out!');
-      return { success: true };
-    } catch (error: any) {
-      return handleApiError(error, 'Failed to sign out');
-    }
-  },
-
-  async resetPassword(email: string) {
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`
-      });
-
-      if (error) throw error;
-      toast.success('Password reset email sent!');
-      return { success: true };
-    } catch (error: any) {
-      return handleApiError(error, 'Failed to send password reset email');
-    }
-  }
+  return { error: message, success: false };
 };
 
 // Doctor API
 export const doctorApi = {
-  /**
-   * NOTE:
-   * - We use the doctors table with join to profiles for search/listing.
-   * - This ensures data is fetched from actual tables with proper structure.
-   */
-  async fetchDoctors() {
+  async fetchDoctorProfile(userId: string) {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('doctors')
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            avatar_url,
-            email,
-            username
-          ),
-          practices:practice_id (
-            id,
-            name,
-            city,
-            country,
-            logo_url
-          )
-        `)
-        .eq('accepts_new_patients', true)
-        .eq('verified', true)
-        .order('weighted_rating', { ascending: false, nullsFirst: false })
-        .order('appointment_count', { ascending: false, nullsFirst: false });
+        .select('*')
+        .eq('user_id', userId)
+        .single();
 
       if (error) throw error;
-
-      const mapped: Doctor[] = (data || []).map((row: any) => ({
-        id: row.id,
-        user_id: row.user_id,
-        specialty: row.specialty ?? null,
-        bio: row.bio ?? null,
-        languages: row.languages ?? null,
-        consultation_fee: row.consultation_fee ?? null,
-        accepts_new_patients: row.accepts_new_patients ?? null,
-        verified: row.verified ?? true,
-        weighted_rating: row.weighted_rating ?? null,
-        average_rating: row.average_rating ?? null,
-        num_reviews: row.num_reviews ?? null,
-        appointment_count: row.appointment_count ?? null,
-        license_number: row.license_number ?? null,
-        profiles: row.profiles ?? null,
-        practices: row.practices ?? null,
-      }));
-
-      return { data: mapped, success: true };
+      return { data, success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to fetch doctors');
+      return handleApiError(error, 'Failed to fetch doctor profile');
     }
   },
 
-  async fetchTopDoctorsBySpecialty(limit: number = 6) {
+  async updateDoctorProfile(doctorId: string, updates: Partial<Doctor>) {
     try {
-      const { data, error } = await (supabase as any)
-        .from('doctors')
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            avatar_url,
-            email,
-            username
-          ),
-          practices:practice_id (
-            id,
-            name,
-            city,
-            country,
-            logo_url
-          )
-        `)
-        .eq('accepts_new_patients', true)
-        .eq('verified', true)
-        .order('weighted_rating', { ascending: false, nullsFirst: false })
-        .order('appointment_count', { ascending: false, nullsFirst: false });
-
-      if (error) throw error;
-
-      const allDoctors: Doctor[] = (data || []).map((row: any) => ({
-        id: row.id,
-        user_id: row.user_id,
-        specialty: row.specialty ?? null,
-        bio: row.bio ?? null,
-        languages: row.languages ?? null,
-        consultation_fee: row.consultation_fee ?? null,
-        accepts_new_patients: row.accepts_new_patients ?? null,
-        verified: row.verified ?? true,
-        weighted_rating: row.weighted_rating ?? null,
-        average_rating: row.average_rating ?? null,
-        num_reviews: row.num_reviews ?? null,
-        appointment_count: row.appointment_count ?? null,
-        license_number: row.license_number ?? null,
-        profiles: row.profiles ?? null,
-        practices: row.practices ?? null,
-      }));
-
-      const specialtyMap = new Map<string, Doctor>();
-      allDoctors.forEach((doctor) => {
-        const specialty = (doctor.specialty || 'General').trim();
-        const existing = specialtyMap.get(specialty);
-        const existingRating = existing?.weighted_rating || 0;
-        const candidateRating = doctor.weighted_rating || 0;
-        if (!existing || candidateRating > existingRating) {
-          specialtyMap.set(specialty, doctor);
-        }
-      });
-
-      const diverseDoctors = Array.from(specialtyMap.values())
-        .sort((a, b) => (b.weighted_rating || 0) - (a.weighted_rating || 0))
-        .slice(0, limit);
-
-      return { data: diverseDoctors, success: true };
-    } catch (error: any) {
-      return handleApiError(error, 'Failed to fetch top doctors by specialty');
-    }
-  },
-
-  async searchDoctors(searchTerm: string, location?: string, specialty?: string) {
-    try {
-      let query = (supabase as any)
-        .from('doctors')
-        .select(`
-          *,
-          profiles:user_id (
-            full_name,
-            avatar_url,
-            email,
-            username
-          ),
-          practices:practice_id (
-            id,
-            name,
-            city,
-            country,
-            logo_url
-          )
-        `)
-        .eq('accepts_new_patients', true)
-        .eq('verified', true);
-
-      if (specialty) {
-        query = query.ilike('specialty', `%${specialty}%`);
-      }
-
-      if (searchTerm && !specialty) {
-        const cleanSearchTerm = searchTerm.replace(/[,()]/g, ' ').trim();
-        if (cleanSearchTerm) {
-          query = query.or(`specialty.ilike.%${cleanSearchTerm}%,bio.ilike.%${cleanSearchTerm}%`);
-        }
-      }
-
-      const { data, error } = await query
-        .order('weighted_rating', { ascending: false, nullsFirst: false })
-        .order('appointment_count', { ascending: false, nullsFirst: false });
-
-      if (error) throw error;
-
-      // Filter by location in JS if provided
-      let filteredData = data || [];
-      if (location) {
-        const cleanLoc = location.toLowerCase().replace(/[,()]/g, ' ').trim();
-        if (cleanLoc) {
-          filteredData = filteredData.filter((row: any) => {
-            const city = (row.practices?.city || '').toLowerCase();
-            const country = (row.practices?.country || '').toLowerCase();
-            return city.includes(cleanLoc) || country.includes(cleanLoc);
-          });
-        }
-      }
-
-      const mapped: Doctor[] = filteredData.map((row: any) => ({
-        id: row.id,
-        user_id: row.user_id,
-        specialty: row.specialty ?? null,
-        bio: row.bio ?? null,
-        languages: row.languages ?? null,
-        consultation_fee: row.consultation_fee ?? null,
-        accepts_new_patients: row.accepts_new_patients ?? null,
-        verified: row.verified ?? true,
-        weighted_rating: row.weighted_rating ?? null,
-        average_rating: row.average_rating ?? null,
-        num_reviews: row.num_reviews ?? null,
-        appointment_count: row.appointment_count ?? null,
-        license_number: row.license_number ?? null,
-        profiles: row.profiles ?? null,
-        practices: row.practices ?? null,
-      }));
-
-      return { data: mapped, success: true };
-    } catch (error: any) {
-      return handleApiError(error, 'Failed to search doctors');
-    }
-  },
-
-  async updateDoctorProfile(doctorId: string, updates: any) {
-    try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('doctors')
         .update(updates)
-        .eq('id', doctorId);
+        .eq('id', doctorId)
+        .select()
+        .single();
 
       if (error) throw error;
-      toast.success('Doctor profile updated successfully!');
-      return { success: true };
+      return { data, success: true };
     } catch (error: any) {
       return handleApiError(error, 'Failed to update doctor profile');
+    }
+  },
+
+  async fetchDoctorAppointments(doctorId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('*')
+        .eq('doctor_id', doctorId)
+        .order('appointment_date', { ascending: true });
+
+      if (error) throw error;
+      return { data: data || [], success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to fetch appointments');
+    }
+  }
+};
+
+// Patient API
+export const patientApi = {
+  async fetchPatientProfile(userId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('patients')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (error) throw error;
+      return { data, success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to fetch patient profile');
+    }
+  },
+
+  async updatePatientProfile(patientId: string, updates: Partial<Patient>) {
+    try {
+      const { data, error } = await supabase
+        .from('patients')
+        .update(updates)
+        .eq('id', patientId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { data, success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to update patient profile');
     }
   }
 };
 
 // Appointment API
 export const appointmentApi = {
-  async fetchAppointments(userId: string, userRole: 'patient' | 'doctor') {
+  async fetchAppointments(doctorId: string, startDate?: string, endDate?: string) {
     try {
-      if (userRole === 'patient') {
-        // Use patient_all_appointments view for patients
-        const { data: rows, error } = await (supabase as any)
-          .from('patient_all_appointments')
-          .select('*')
-          .order('appointment_date', { ascending: true })
-          .order('start_time', { ascending: true });
+      let query = supabase
+        .from('appointments')
+        .select(`
+          *,
+          patients (*),
+          doctor_patients (*),
+          procedures (*)
+        `)
+        .eq('doctor_id', doctorId);
 
-        if (error) throw error;
+      if (startDate) query = query.gte('appointment_date', startDate);
+      if (endDate) query = query.lte('appointment_date', endDate);
 
-        const doctorIds = Array.from(
-          new Set((rows || []).map((r: any) => r.doctor_id).filter(Boolean)),
-        ) as string[];
+      const { data, error } = await query.order('appointment_date', { ascending: true });
 
-        const doctorMap = new Map<string, any>();
-        if (doctorIds.length > 0) {
-          // Use doctor_profiles_view which already has full_name joined
-          const { data: docRows, error: docErr } = await (supabase as any)
-            .from('doctor_profiles_view')
-            .select('id, specialty, full_name, avatar_url')
-            .in('id', doctorIds);
-
-          if (!docErr && docRows) {
-            docRows.forEach((d: any) => {
-              doctorMap.set(d.id, {
-                id: d.id,
-                specialty: d.specialty,
-                full_name: d.full_name || null,
-                profiles: {
-                  full_name: d.full_name || null,
-                  avatar_url: d.avatar_url || null,
-                },
-              });
-            });
-          }
-        }
-
-        const practiceIds = Array.from(
-          new Set((rows || []).map((r: any) => r.practice_id).filter(Boolean)),
-        ) as string[];
-
-        const practiceMap = new Map<string, any>();
-        if (practiceIds.length > 0) {
-          const { data: pRows, error: pErr } = await supabase
-            .from('practices')
-            .select('id, name, address, phone, city, country')
-            .in('id', practiceIds);
-
-          if (!pErr && pRows) {
-            pRows.forEach((p: any) => practiceMap.set(p.id, p));
-          }
-        }
-
-        const hydrated = (rows || []).map((apt: any) => {
-          const doctor = apt.doctor_id ? doctorMap.get(apt.doctor_id) : null;
-          return {
-            ...apt,
-            doctor,
-            practice: apt.practice_id ? practiceMap.get(apt.practice_id) : null,
-            // Add doctor_full_name at the top level for fallback
-            doctor_full_name: doctor?.full_name || doctor?.profiles?.full_name || null,
-          };
-        });
-
-        return { data: hydrated, success: true };
-      } else {
-        // For doctors, use regular appointments table
-        const { data: doctorData } = await supabase
-          .from('doctors')
-          .select('id')
-          .eq('user_id', userId)
-          .single();
-
-        if (!doctorData) {
-          return { data: [], success: true };
-        }
-
-        const { data: rows, error } = await supabase
-          .from('appointments')
-          .select('*')
-          .eq('doctor_id', doctorData.id)
-          .order('appointment_date', { ascending: true })
-          .order('start_time', { ascending: true });
-
-        if (error) throw error;
-
-        const practiceIds = Array.from(
-          new Set((rows || []).map((r: any) => r.practice_id).filter(Boolean)),
-        ) as string[];
-
-        const practiceMap = new Map<string, any>();
-        if (practiceIds.length > 0) {
-          const { data: pRows, error: pErr } = await supabase
-            .from('practices')
-            .select('id, name, address, phone, city, country')
-            .in('id', practiceIds);
-
-          if (!pErr && pRows) {
-            pRows.forEach((p: any) => practiceMap.set(p.id, p));
-          }
-        }
-
-        const hydrated = (rows || []).map((apt: any) => ({
-          ...apt,
-          practice: apt.practice_id ? practiceMap.get(apt.practice_id) : null,
-        }));
-
-        return { data: hydrated, success: true };
-      }
+      if (error) throw error;
+      return { data: data || [], success: true };
     } catch (error: any) {
       return handleApiError(error, 'Failed to fetch appointments');
     }
   },
 
-  async bookAppointment(appointmentData: {
-    doctor_id: string;
-    patient_id: string;
-    practice_id?: string;
-    appointment_date: string;
-    start_time: string;
-    end_time: string;
-    notes?: string;
-  }) {
+  async createAppointment(appointmentData: AppointmentInsert) {
     try {
-      // Insert appointment directly
       const { data, error } = await supabase
         .from('appointments')
-        .insert({
-          doctor_id: appointmentData.doctor_id,
-          patient_id: appointmentData.patient_id,
-          practice_id: appointmentData.practice_id || null,
-          appointment_date: appointmentData.appointment_date,
-          start_time: appointmentData.start_time,
-          end_time: appointmentData.end_time,
-          notes: appointmentData.notes || null,
-          status: 'confirmed'
-        })
+        .insert(appointmentData)
         .select()
         .single();
 
       if (error) throw error;
-      toast.success('Appointment booked successfully!');
       return { data, success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to book appointment');
+      return handleApiError(error, 'Failed to create appointment');
     }
   },
 
-  async cancelAppointment(appointmentId: string) {
+  async updateAppointment(appointmentId: string, updates: Partial<Appointment>) {
+    try {
+      const { data, error } = await supabase
+        .from('appointments')
+        .update(updates)
+        .eq('id', appointmentId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { data, success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to update appointment');
+    }
+  },
+
+  async deleteAppointment(appointmentId: string) {
     try {
       const { error } = await supabase
         .from('appointments')
-        .update({ status: 'canceled' })
+        .delete()
         .eq('id', appointmentId);
 
       if (error) throw error;
-      toast.success('Appointment cancelled successfully!');
       return { success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to cancel appointment');
+      return handleApiError(error, 'Failed to delete appointment');
     }
   }
 };
 
 // Treatment Plan API
 export const treatmentPlanApi = {
-  async fetchTreatmentPlans(userId: string, userRole: 'patient' | 'doctor') {
+  async fetchTreatmentPlans(doctorId: string, patientId?: string) {
     try {
       let query = supabase
         .from('treatment_plans')
         .select(`
           *,
+          patients (*),
+          doctor_patients (*),
           treatment_plan_procedures (
             *,
-            procedures (
-              name,
-              description,
-              default_cost
-            )
-          ),
-          medications (*)
-        `);
+            procedures (*)
+          )
+        `)
+        .eq('doctor_id', doctorId)
+        .order('created_at', { ascending: false });
 
-      if (userRole === 'patient') {
-        query = query.eq('patient_id', userId);
-      } else {
-        // For doctors, find treatment plans where doctor_id matches their doctor record
-        const { data: doctorData } = await supabase
-          .from('doctors')
-          .select('id')
-          .eq('user_id', userId)
-          .single();
+      if (patientId) query = query.eq('patient_id', patientId);
 
-        if (doctorData) {
-          query = query.eq('doctor_id', doctorData.id);
-        }
-      }
-
-      const { data, error } = await query.order('created_at', { ascending: false });
+      const { data, error } = await query;
 
       if (error) throw error;
       return { data: data || [], success: true };
@@ -552,34 +210,25 @@ export const treatmentPlanApi = {
     }
   },
 
-  async createTreatmentPlan(planData: {
-    doctor_id: string;
-    patient_id: string;
-    title: string;
-    description?: string;
-    procedures?: Array<{
-      procedure_id: string;
-      cost?: number;
-    }>;
-    medications?: Array<{
-      name: string;
-      dosage: string;
-      frequency: string;
-      duration?: string;
-      instructions?: string;
-    }>;
-  }) {
+  async createTreatmentPlan(planData: any) {
     try {
-      // Create treatment plan
+      // Create treatment plan record
+      const planInsert: TreatmentPlanInsert = {
+        doctor_id: planData.doctor_id,
+        patient_id: planData.patient_id,
+        doctor_patient_id: planData.doctor_patient_id || null,
+        title: planData.title,
+        notes: planData.notes || null,
+        status: planData.status || 'draft',
+        total_cost: planData.total_cost || 0,
+        estimated_duration_weeks: planData.estimated_duration_weeks || null,
+        priority: planData.priority || 'medium',
+        expires_at: planData.expires_at || null,
+      };
+
       const { data: plan, error: planError } = await supabase
         .from('treatment_plans')
-        .insert({
-          doctor_id: planData.doctor_id,
-          patient_id: planData.patient_id,
-          title: planData.title,
-          description: planData.description || null,
-          status: 'draft' as const
-        })
+        .insert(planInsert)
         .select()
         .single();
 
@@ -587,13 +236,21 @@ export const treatmentPlanApi = {
 
       // Add procedures if provided
       if (planData.procedures && planData.procedures.length > 0) {
-        const proceduresData = planData.procedures.map(proc => ({
+        const proceduresData = planData.procedures.map((proc: any, index: number) => ({
           treatment_plan_id: plan.id,
           procedure_id: proc.procedure_id,
-          cost: proc.cost || null
+          status: proc.status || 'pending',
+          notes: proc.notes || null,
+          scheduled_date: proc.scheduled_date || null,
+          sequence_order: index + 1,
+          cost: proc.cost || proc.custom_cost || null,
+          appointment_id: proc.appointment_id || null,
+          duration_minutes: proc.duration_minutes || null,
+          tooth_numbers: proc.tooth_numbers || null,
+          priority: proc.priority || null,
         }));
 
-        const { error: procError } = await supabase
+        const { error: procError } = await (supabase as any)
           .from('treatment_plan_procedures')
           .insert(proceduresData);
 
@@ -603,7 +260,7 @@ export const treatmentPlanApi = {
       // Add medications if provided
       if (planData.medications && planData.medications.length > 0) {
         const today = new Date().toISOString().split('T')[0];
-        const medicationsData = planData.medications.map(med => ({
+        const medicationsData = planData.medications.map((med: any) => ({
           treatment_plan_id: plan.id,
           patient_id: planData.patient_id,
           name: med.name,
@@ -620,14 +277,24 @@ export const treatmentPlanApi = {
         if (medError) throw medError;
       }
 
-      toast.success('Treatment plan created successfully!');
       return { data: plan, success: true };
     } catch (error: any) {
       return handleApiError(error, 'Failed to create treatment plan');
     }
   },
 
-  async updateTreatmentPlanStatus(planId: string, status: 'draft' | 'published' | 'in_progress' | 'completed' | 'cancelled' | 'confirmed' | 'paused' | 'pending_confirmation') {
+  async updateTreatmentPlanStatus(
+    planId: string,
+    status:
+      | 'draft'
+      | 'published'
+      | 'in_progress'
+      | 'completed'
+      | 'cancelled'
+      | 'confirmed'
+      | 'paused'
+      | 'pending_confirmation'
+  ) {
     try {
       const { error } = await supabase
         .from('treatment_plans')
@@ -635,7 +302,6 @@ export const treatmentPlanApi = {
         .eq('id', planId);
 
       if (error) throw error;
-      toast.success('Treatment plan updated successfully!');
       return { success: true };
     } catch (error: any) {
       return handleApiError(error, 'Failed to update treatment plan');
@@ -647,19 +313,38 @@ export const treatmentPlanApi = {
 export const procedureApi = {
   async fetchProcedures(doctorId?: string) {
     try {
-      let query = (supabase as any)
-        .from('procedures')
-        .select(`
-          *,
-          procedure_materials (*),
-          procedure_files (*)
-        `);
+      const buildQuery = (ownerColumn: 'dentist_id' | 'doctor_id') => {
+        let q = (supabase as any)
+          .from('procedures')
+          .select(`
+            *,
+            procedure_materials (*),
+            procedure_files (*)
+          `);
 
-      if (doctorId) {
-        query = query.eq('doctor_id', doctorId);
+        if (doctorId) {
+          q = q.eq(ownerColumn, doctorId);
+        }
+
+        return q;
+      };
+
+      // ✅ New schema uses dentist_id. Try that first.
+      let query = buildQuery('dentist_id');
+      let { data, error } = await (query as any).order('created_at', { ascending: false });
+
+      // 🔁 Backward-compatible fallback for older DBs using doctor_id
+      if (error && doctorId) {
+        const msg = String((error as any)?.message || '').toLowerCase();
+        const missingDentistId =
+          msg.includes('dentist_id') &&
+          (msg.includes('does not exist') || msg.includes('column') || msg.includes('unknown') || msg.includes('schema'));
+
+        if (missingDentistId) {
+          query = buildQuery('doctor_id');
+          ({ data, error } = await (query as any).order('created_at', { ascending: false }));
+        }
       }
-
-      const { data, error } = await (query as any).order('created_at', { ascending: false });
 
       if (error) throw error;
       return { data: data || [], success: true };
@@ -677,7 +362,6 @@ export const procedureApi = {
         .single();
 
       if (error) throw error;
-      toast.success('Procedure created successfully!');
       return { data, success: true };
     } catch (error: any) {
       return handleApiError(error, 'Failed to create procedure');
@@ -692,7 +376,6 @@ export const procedureApi = {
         .eq('id', procedureId);
 
       if (error) throw error;
-      toast.success('Procedure updated successfully!');
       return { success: true };
     } catch (error: any) {
       return handleApiError(error, 'Failed to update procedure');
@@ -707,7 +390,6 @@ export const procedureApi = {
         .eq('id', procedureId);
 
       if (error) throw error;
-      toast.success('Procedure deleted successfully!');
       return { success: true };
     } catch (error: any) {
       return handleApiError(error, 'Failed to delete procedure');
@@ -741,293 +423,217 @@ export const medicalRecordsApi = {
         .single();
 
       if (error) throw error;
-      toast.success('Medical record created successfully!');
       return { data, success: true };
     } catch (error: any) {
       return handleApiError(error, 'Failed to create medical record');
     }
-  }
-};
-
-// File Storage API
-export const storageApi = {
-  async uploadFile(bucket: string, path: string, file: File) {
-    try {
-      const { error } = await supabase.storage
-        .from(bucket)
-        .upload(path, file);
-
-      if (error) throw error;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from(bucket)
-        .getPublicUrl(path);
-
-      return { data: publicUrl, success: true };
-    } catch (error: any) {
-      return handleApiError(error, 'Failed to upload file');
-    }
   },
 
-  async downloadFile(bucket: string, path: string) {
+  async updateMedicalRecord(recordId: string, updates: Partial<MedicalRecord>) {
     try {
-      const { data, error } = await supabase.storage
-        .from(bucket)
-        .download(path);
+      const { data, error } = await supabase
+        .from('medical_records')
+        .update(updates)
+        .eq('id', recordId)
+        .select()
+        .single();
 
       if (error) throw error;
       return { data, success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to download file');
+      return handleApiError(error, 'Failed to update medical record');
     }
   },
 
-  getPublicUrl(bucket: string, path: string) {
-    const { data: { publicUrl } } = supabase.storage
-      .from(bucket)
-      .getPublicUrl(path);
-    return publicUrl;
-  },
-
-  async deleteFile(bucket: string, path: string) {
+  async deleteMedicalRecord(recordId: string) {
     try {
-      const { error } = await supabase.storage
-        .from(bucket)
-        .remove([path]);
+      const { error } = await supabase
+        .from('medical_records')
+        .delete()
+        .eq('id', recordId);
 
       if (error) throw error;
-      toast.success('File deleted successfully!');
       return { success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to delete file');
+      return handleApiError(error, 'Failed to delete medical record');
     }
   }
 };
 
-// Doctor Dashboard Stats API
-export const doctorDashboardApi = {
-  async getDashboardStats(doctorId: string) {
-    try {
-      // Get appointments for today
-      const today = new Date().toISOString().split('T')[0];
-      const { data: todayAppointments, error: todayError } = await supabase
-        .from('appointments')
-        .select('*')
-        .eq('doctor_id', doctorId)
-        .eq('appointment_date', today);
-
-      if (todayError) throw todayError;
-
-      // Get total patients count
-      const { count: patientCount, error: patientError } = await supabase
-        .from('doctor_patients')
-        .select('*', { count: 'exact', head: true })
-        .eq('doctor_id', doctorId);
-
-      if (patientError) throw patientError;
-
-      // Get active treatment plans count
-      const { count: activePlans, error: plansError } = await supabase
-        .from('treatment_plans')
-        .select('*', { count: 'exact', head: true })
-        .eq('doctor_id', doctorId)
-        .eq('status', 'in_progress');
-
-      if (plansError) throw plansError;
-
-      return {
-        data: {
-          todayAppointments: todayAppointments?.length || 0,
-          totalPatients: patientCount || 0,
-          activeTreatmentPlans: activePlans || 0,
-        },
-        success: true
-      };
-    } catch (error: any) {
-      return handleApiError(error, 'Failed to fetch dashboard stats');
-    }
-  }
-};
-
-// Practice API
-export const practiceApi = {
-  async fetchPractices() {
+// Prescription API
+export const prescriptionApi = {
+  async fetchPrescriptions(patientId: string) {
     try {
       const { data, error } = await supabase
-        .from('practices')
-        .select('*')
-        .eq('verified', true)
-        .order('weighted_rating', { ascending: false });
-
-      if (error) throw error;
-      return { data: data || [], success: true };
-    } catch (error: any) {
-      return handleApiError(error, 'Failed to fetch practices');
-    }
-  },
-
-  async fetchTopPracticesByCountry(limit: number = 6) {
-    try {
-      const { data, error } = await supabase
-        .from('practices')
-        .select('*')
-        .eq('verified', true)
-        .order('weighted_rating', { ascending: false, nullsFirst: false })
-        .order('appointment_count', { ascending: false, nullsFirst: false })
-        .limit(limit);
-
-      if (error) throw error;
-      return { data: data || [], success: true };
-    } catch (error: any) {
-      return handleApiError(error, 'Failed to fetch top practices');
-    }
-  }
-};
-
-export const searchApi = {
-  async advancedDoctorSearch(params: {
-    query?: string;
-    specialty?: string;
-    location?: string;
-    minRating?: number;
-    minPrice?: number;
-    maxPrice?: number;
-    acceptsNewPatients?: boolean;
-    videoConsultation?: boolean;
-    acceptsInsurance?: boolean;
-    language?: string;
-    gender?: string;
-  }) {
-    try {
-      let q = (supabase as any)
-        .from('doctors')
+        .from('prescriptions')
         .select(`
           *,
-          profiles:user_id (
-            full_name,
-            avatar_url,
-            email,
-            username
-          ),
-          practices:practice_id (
-            id,
-            name,
-            city,
-            country,
-            logo_url
-          )
+          doctors (*),
+          patients (*),
+          doctor_patients (*)
         `)
-        .eq('verified', true);
-
-      if (params.query) {
-        const cleanQuery = params.query.replace(/[,()]/g, ' ').trim();
-        if (cleanQuery) {
-          q = q.or(`specialty.ilike.%${cleanQuery}%,bio.ilike.%${cleanQuery}%`);
-        }
-      }
-
-      if (params.specialty) {
-        q = q.ilike('specialty', `%${params.specialty}%`);
-      }
-
-      if (params.minRating) {
-        q = q.gte('weighted_rating', params.minRating);
-      }
-
-      if (params.minPrice !== undefined) {
-        q = q.gte('consultation_fee', params.minPrice);
-      }
-      if (params.maxPrice !== undefined) {
-        q = q.lte('consultation_fee', params.maxPrice);
-      }
-
-      if (params.acceptsNewPatients) {
-        q = q.eq('accepts_new_patients', true);
-      }
-
-      if (params.language) {
-        q = q.contains('languages', [params.language]);
-      }
-
-      const { data, error } = await q
-        .order('weighted_rating', { ascending: false, nullsFirst: false })
-        .order('appointment_count', { ascending: false, nullsFirst: false });
+        .eq('patient_id', patientId)
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
-
-      // Filter by location in JS if provided
-      let filteredData = data || [];
-      if (params.location) {
-        const cleanLoc = params.location.toLowerCase().replace(/[,()]/g, ' ').trim();
-        if (cleanLoc) {
-          filteredData = filteredData.filter((row: any) => {
-            const city = (row.practices?.city || '').toLowerCase();
-            const country = (row.practices?.country || '').toLowerCase();
-            return city.includes(cleanLoc) || country.includes(cleanLoc);
-          });
-        }
-      }
-
-      const normalized = filteredData.map((row: any) => ({
-        ...row,
-        average_rating: row.weighted_rating,
-      }));
-
-      return { data: normalized, success: true };
+      return { data: data || [], success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to search doctors');
+      return handleApiError(error, 'Failed to fetch prescriptions');
     }
   },
 
-  async advancedPracticeSearch(params: {
-    query?: string;
-    location?: string;
-    practiceType?: string;
-    minRating?: number;
-  }) {
+  async createPrescription(prescriptionData: PrescriptionInsert) {
     try {
-      let q = supabase
-        .from('practices')
-        .select('*')
-        .eq('verified', true);
-
-      if (params.query) {
-        const cleanQuery = params.query.replace(/[,()]/g, ' ').trim();
-        if (cleanQuery) {
-          q = q.or(`name.ilike.%${cleanQuery}%,description.ilike.%${cleanQuery}%`);
-        }
-      }
-
-      if (params.location) {
-        const cleanLoc = params.location.replace(/[,()]/g, ' ').trim();
-        if (cleanLoc) {
-          q = q.or(`city.ilike.%${cleanLoc}%,country.ilike.%${cleanLoc}%`);
-        }
-      }
-
-      if (params.practiceType && params.practiceType !== 'all') {
-        q = q.eq('practice_type', params.practiceType);
-      }
-
-      if (params.minRating) {
-        q = q.gte('weighted_rating', params.minRating);
-      }
-
-      const { data, error } = await q
-        .order('weighted_rating', { ascending: false, nullsFirst: false })
-        .order('appointment_count', { ascending: false, nullsFirst: false });
+      const { data, error } = await supabase
+        .from('prescriptions')
+        .insert(prescriptionData)
+        .select()
+        .single();
 
       if (error) throw error;
-
-      const normalized = (data || []).map((row: any) => ({
-        ...row,
-        average_rating: row.weighted_rating,
-        rating: row.weighted_rating,
-      }));
-
-      return { data: normalized, success: true };
+      return { data, success: true };
     } catch (error: any) {
-      return handleApiError(error, 'Failed to search practices');
+      return handleApiError(error, 'Failed to create prescription');
+    }
+  },
+
+  async updatePrescription(prescriptionId: string, updates: Partial<Prescription>) {
+    try {
+      const { data, error } = await supabase
+        .from('prescriptions')
+        .update(updates)
+        .eq('id', prescriptionId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { data, success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to update prescription');
+    }
+  },
+
+  async deletePrescription(prescriptionId: string) {
+    try {
+      const { error } = await supabase
+        .from('prescriptions')
+        .delete()
+        .eq('id', prescriptionId);
+
+      if (error) throw error;
+      return { success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to delete prescription');
     }
   }
+};
+
+// ----------------------------
+// Extra helpers / misc API
+// ----------------------------
+
+export const miscApi = {
+  async fetchDoctorPatients(doctorId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('doctor_patients')
+        .select('*')
+        .eq('doctor_id', doctorId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return { data: data || [], success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to fetch doctor patients');
+    }
+  },
+
+  async createDoctorPatient(payload: any) {
+    try {
+      const { data, error } = await supabase
+        .from('doctor_patients')
+        .insert(payload)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { data, success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to create doctor patient');
+    }
+  },
+
+  async updateDoctorPatient(id: string, updates: any) {
+    try {
+      const { data, error } = await supabase
+        .from('doctor_patients')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { data, success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to update doctor patient');
+    }
+  },
+
+  async deleteDoctorPatient(id: string) {
+    try {
+      const { error } = await supabase
+        .from('doctor_patients')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      return { success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to delete doctor patient');
+    }
+  }
+};
+
+// Notifications API (if you have RPCs or tables for it)
+export const notificationApi = {
+  async fetchNotifications(userId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('recipient_user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return { data: data || [], success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to fetch notifications');
+    }
+  },
+
+  async markNotificationRead(notificationId: string) {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('id', notificationId);
+
+      if (error) throw error;
+      return { success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to mark notification as read');
+    }
+  }
+};
+
+export default {
+  doctorApi,
+  patientApi,
+  appointmentApi,
+  treatmentPlanApi,
+  procedureApi,
+  medicalRecordsApi,
+  prescriptionApi,
+  miscApi,
+  notificationApi,
 };
