@@ -100,7 +100,14 @@ const Header = () => {
         <div className="max-w-[1200px] mx-auto px-6">
           <div className="flex items-center justify-between h-12">
             <Link to="/" className="flex items-center hover:opacity-70 transition-opacity duration-200">
-              <img src="/logos/horizontal/docito-horizontal-sm.png" alt="Docito" className="h-6" />
+              <img 
+                src="/logos/horizontal/docito-horizontal-sm.png" 
+                alt="Docito" 
+                className="h-6"
+                width={80}
+                height={24}
+                fetchPriority="high"
+              />
             </Link>
 
             <div className="hidden xl:flex items-center justify-center flex-1 mx-8">

@@ -98,6 +98,9 @@ const PremiumTopNav = () => {
                 src="/logos/horizontal/docito-horizontal-sm.png"
                 alt="Docito"
                 className="h-6"
+                width={80}
+                height={24}
+                fetchPriority="high"
               />
             </Link>
 
