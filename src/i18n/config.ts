@@ -83,13 +83,19 @@ async function initI18n() {
           escapeValue: false,
         },
 
+        // Only load essential namespaces initially - others will be loaded on demand
         ns: ["common", "home"],
         defaultNS: "common",
 
         partialBundledLanguages: true,
+        
+        // Don't preload other namespaces - load them lazily when needed
+        preload: false,
 
         react: {
           useSuspense: false,
+          // Don't bind i18n store to trigger re-renders for namespace loading
+          bindI18nStore: '',
         },
       });
 
