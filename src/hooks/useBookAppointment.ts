@@ -1,8 +1,8 @@
 // File: src/hooks/useBookAppointment.ts
-import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
+import { useState, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface BookingData {
   entityId?: string | null;
@@ -12,7 +12,7 @@ interface BookingData {
   appointmentType?: string;
   notes?: string;
 
-  // ✅ NEW: patient can request a specific procedure during booking (optional)
+  // NEW: requested procedure (optional)
   procedureId?: string | null;
 }
 
@@ -26,8 +26,8 @@ export interface BookingHoldResult {
   provider_id: string;
   entity_id: string | null;
 
-  // ✅ NEW
-  procedure_id: string | null;
+  // Optional (in case backend returns it later)
+  procedure_id?: string | null;
 }
 
 type BookAppointmentFnResponse =
@@ -41,6 +41,8 @@ type BookAppointmentFnResponse =
       appointment_type: string;
       provider_id: string;
       entity_id: string | null;
+
+      // Optional (future-proof)
       procedure_id?: string | null;
     }
   | { ok: false; error: string; code?: string };
@@ -56,9 +58,9 @@ export function useBookAppointment() {
     async (data: BookingData): Promise<BookingHoldResult | null> => {
       if (!user) {
         toast({
-          variant: 'destructive',
-          title: 'Authentication Required',
-          description: 'Please sign in to book an appointment',
+          variant: "destructive",
+          title: "Authentication Required",
+          description: "Please sign in to book an appointment",
         });
         return null;
       }
@@ -72,15 +74,15 @@ export function useBookAppointment() {
 
         if (!accessToken) {
           toast({
-            variant: 'destructive',
-            title: 'Authentication Error',
-            description: 'Your session has expired. Please sign in again.',
+            variant: "destructive",
+            title: "Authentication Error",
+            description: "Your session has expired. Please sign in again.",
           });
           return null;
         }
 
         const { data: fnData, error: fnError } = await supabase.functions.invoke<BookAppointmentFnResponse>(
-          'book-appointment',
+          "book-appointment",
           {
             body: {
               patient_id: user.id,
@@ -91,7 +93,7 @@ export function useBookAppointment() {
               appointment_type: data.appointmentType,
               notes: data.notes,
 
-              // ✅ NEW
+              // NEW: requested procedure id (optional)
               procedure_id: data.procedureId ?? null,
             },
             headers: {
@@ -103,16 +105,16 @@ export function useBookAppointment() {
         if (fnError) throw fnError;
 
         if (!fnData) {
-          throw new Error('No response from booking service');
+          throw new Error("No response from booking service");
         }
 
         if (!fnData.ok) {
           const errorData = fnData as { ok: false; error: string; code?: string };
-          const msg = errorData.error || 'Failed to create booking hold';
+          const msg = errorData.error || "Failed to create booking hold";
           setError(msg);
           toast({
-            variant: 'destructive',
-            title: 'Booking failed',
+            variant: "destructive",
+            title: "Booking failed",
             description: msg,
           });
           return null;
@@ -127,26 +129,24 @@ export function useBookAppointment() {
           appointment_type: fnData.appointment_type,
           provider_id: fnData.provider_id,
           entity_id: fnData.entity_id,
-
-          // ✅ NEW (fallback to null if server didn’t return it)
-          procedure_id: (fnData as any).procedure_id ?? null,
+          procedure_id: fnData.procedure_id ?? null,
         };
 
         setResult(hold);
 
         toast({
-          title: 'Almost there!',
-          description: 'Please confirm your appointment to finalize booking.',
+          title: "Almost there!",
+          description: "Please confirm your appointment to finalize booking.",
         });
 
         return hold;
       } catch (err: any) {
-        console.error('Booking error:', err);
-        const msg = err?.message || 'Failed to create booking hold';
+        console.error("Booking error:", err);
+        const msg = err?.message || "Failed to create booking hold";
         setError(msg);
         toast({
-          variant: 'destructive',
-          title: 'Booking failed',
+          variant: "destructive",
+          title: "Booking failed",
           description: msg,
         });
         return null;
