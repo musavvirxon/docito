@@ -18,8 +18,14 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    // Target modern browsers to avoid legacy polyfills (ES2020+)
+    // Target modern browsers to avoid legacy polyfills
     target: 'esnext',
+    // Disable modulepreload polyfill - all modern browsers support it natively
+    modulePreload: {
+      polyfill: false,
+    },
+    // Increase chunk size limit to reduce number of chunks
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks: (id) => {
@@ -28,11 +34,11 @@ export default defineConfig(({ mode }) => ({
             if (id.includes('react-dom')) return 'vendor-react';
             if (id.includes('react-router')) return 'vendor-router';
             
-            // UI libraries - defer loading
+            // UI libraries - separate chunk
             if (id.includes('@radix-ui') || id.includes('cmdk')) return 'vendor-ui';
             if (id.includes('lucide-react')) return 'vendor-icons';
             
-            // Animation - defer loading, separate chunks
+            // Animation - separate chunks, defer loading
             if (id.includes('framer-motion')) return 'vendor-framer';
             if (id.includes('gsap')) return 'vendor-gsap';
             
@@ -54,13 +60,20 @@ export default defineConfig(({ mode }) => ({
             
             // PDF/Excel - very heavy, only for dashboards
             if (id.includes('jspdf') || id.includes('xlsx') || id.includes('html2canvas')) return 'vendor-export';
+            
+            // React markdown - only for specific pages
+            if (id.includes('react-markdown') || id.includes('remark') || id.includes('rehype')) return 'vendor-markdown';
           }
         },
       },
     },
+    // Minification settings
+    minify: 'esbuild',
   },
   // Avoid transpiling modern JS features that are baseline in all browsers
   esbuild: {
     target: 'esnext',
+    // Drop console.log in production for smaller bundle
+    drop: mode === 'production' ? ['console', 'debugger'] : [],
   },
 }));
