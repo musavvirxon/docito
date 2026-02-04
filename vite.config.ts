@@ -24,16 +24,19 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            // Core React
+            // Core React - highest priority
             if (id.includes('react-dom')) return 'vendor-react';
             if (id.includes('react-router')) return 'vendor-router';
             
-            // UI libraries
+            // UI libraries - defer loading
             if (id.includes('@radix-ui') || id.includes('cmdk')) return 'vendor-ui';
             if (id.includes('lucide-react')) return 'vendor-icons';
-            if (id.includes('framer-motion')) return 'vendor-framer';
             
-            // Heavy visualization
+            // Animation - defer loading
+            if (id.includes('framer-motion')) return 'vendor-framer';
+            if (id.includes('gsap')) return 'vendor-gsap';
+            
+            // Heavy visualization - only load on interaction
             if (id.includes('three') || id.includes('@react-three')) return 'vendor-three';
             if (id.includes('recharts') || id.includes('d3-')) return 'vendor-charts';
             
@@ -44,10 +47,7 @@ export default defineConfig(({ mode }) => ({
             // Form handling
             if (id.includes('react-hook-form') || id.includes('zod') || id.includes('@hookform')) return 'vendor-forms';
             
-            // Animation
-            if (id.includes('gsap')) return 'vendor-gsap';
-            
-            // Utilities
+            // Utilities - separate chunks
             if (id.includes('date-fns')) return 'vendor-date';
             if (id.includes('i18next')) return 'vendor-i18n';
           }
