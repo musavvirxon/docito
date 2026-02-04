@@ -274,8 +274,8 @@ const AppointmentQuickPreview = memo(
                   <AvatarImage src={appointment.patient_avatar || ""} />
                   <AvatarFallback className="bg-primary/10 text-primary font-semibold">{initials}</AvatarFallback>
                 </Avatar>
-                <div>
-                  <DialogTitle className="text-lg font-semibold">{appointment.patient_name}</DialogTitle>
+                <div className="min-w-0">
+                  <DialogTitle className="text-lg font-semibold truncate">{appointment.patient_name}</DialogTitle>
                   <DialogDescription className="flex items-center gap-2 text-sm mt-0.5">
                     <TypeIcon className="h-3.5 w-3.5" />
                     {typeLabel}
@@ -302,6 +302,16 @@ const AppointmentQuickPreview = memo(
                 </span>
               </div>
             </div>
+
+            {/* ✅ Requested procedure visible here */}
+            {appointment.procedure_name && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Stethoscope className="h-4 w-4" />
+                <span className="truncate">
+                  Requested: <span className="font-medium text-foreground">{appointment.procedure_name}</span>
+                </span>
+              </div>
+            )}
 
             <div className="flex flex-wrap gap-3 text-sm">
               {appointment.patient_phone && (
