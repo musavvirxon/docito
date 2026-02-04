@@ -37,18 +37,32 @@ const medicalNodes: Omit<NodeData, 'position'>[] = [
   { id: 'patient', name: 'Patients', role: 'Care Recipients', description: 'Connected health monitoring', Icon: Users, color: '#f59e0b', orbitRadius: 2.4, orbitSpeed: 0.08, orbitOffset: Math.PI * 5 / 3, verticalOffset: -0.4 },
 ];
 
-// Scroll opacity hook
+// Scroll opacity hook - optimized to avoid forced reflow
 function useScrollOpacity() {
   const [opacity, setOpacity] = useState(1);
   
   useEffect(() => {
+    let rafId: number | null = null;
+    
     const handleScroll = () => {
-      const scrollY = window.scrollY;
-      const newOpacity = Math.max(0.3, 1 - scrollY / 600);
-      setOpacity(newOpacity);
+      // Batch scroll reads in rAF to avoid forced reflow
+      if (rafId !== null) return;
+      
+      rafId = requestAnimationFrame(() => {
+        const scrollY = window.scrollY;
+        const newOpacity = Math.max(0.3, 1 - scrollY / 600);
+        setOpacity(newOpacity);
+        rafId = null;
+      });
     };
+    
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+    };
   }, []);
   
   return opacity;
