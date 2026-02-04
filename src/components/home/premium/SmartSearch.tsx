@@ -1,12 +1,15 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, MapPin, Shield, Mic, Sparkles, Clock, TrendingUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import gsap from 'gsap';
 import { useUnifiedSearch } from '@/hooks/useUnifiedSearch';
 import { useAuth } from '@/contexts/AuthContext';
-import { SearchResultsContainer } from '@/components/search';
+
+// Lazy load heavy search results component
+const SearchResultsContainer = lazy(() => 
+  import('@/components/search').then(mod => ({ default: mod.SearchResultsContainer }))
+);
 
 const TRENDING_SEARCHES = [
   'General Practitioner',
@@ -38,13 +41,16 @@ export default function SmartSearch() {
     resetSearch
   } = useUnifiedSearch();
 
+  // Dynamic GSAP import to avoid blocking main thread
   useEffect(() => {
     if (containerRef.current) {
-      gsap.fromTo(
-        containerRef.current,
-        { opacity: 0, y: 30 },
-        { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }
-      );
+      import('gsap').then(({ default: gsap }) => {
+        gsap.fromTo(
+          containerRef.current,
+          { opacity: 0, y: 30 },
+          { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }
+        );
+      });
     }
   }, []);
 
@@ -232,14 +238,16 @@ export default function SmartSearch() {
           {/* Results (HIDDEN until user searches) */}
           {hasSearched && (
             <div className="relative px-6 lg:px-8 pb-6 lg:pb-8">
-              <SearchResultsContainer
-                results={results}
-                loading={loading}
-                error={error}
-                hasSearched={hasSearched}
-                onFilterChange={handleFilterChange}
-                filters={filters}
-              />
+              <Suspense fallback={<div className="py-8 text-center text-muted-foreground">Loading results...</div>}>
+                <SearchResultsContainer
+                  results={results}
+                  loading={loading}
+                  error={error}
+                  hasSearched={hasSearched}
+                  onFilterChange={handleFilterChange}
+                  filters={filters}
+                />
+              </Suspense>
             </div>
           )}
         </motion.div>
