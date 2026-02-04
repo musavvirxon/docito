@@ -802,3 +802,394 @@ export const treatmentPlanApi = {
     }
   }
 };
+// Procedure API
+export const procedureApi = {
+  /**
+   * Fetch procedures for a doctor.
+   * ✅ New schema uses `dentist_id`
+   * 🔁 Falls back to `doctor_id` for older deployments
+   */
+  async fetchProcedures(doctorId?: string) {
+    try {
+      const baseQuery = () =>
+        (supabase as any)
+          .from('procedures')
+          .select(`
+            *,
+            procedure_materials (*),
+            procedure_files (*)
+          `);
+
+      const tryOwner = async (ownerColumn: 'dentist_id' | 'doctor_id') => {
+        let q = baseQuery();
+        if (doctorId) q = q.eq(ownerColumn, doctorId);
+        const { data, error } = await (q as any).order('created_at', { ascending: false });
+        return { data, error };
+      };
+
+      // ✅ Try dentist_id first
+      let res = await tryOwner('dentist_id');
+
+      // 🔁 If dentist_id column doesn't exist (older schema), fallback to doctor_id
+      if (res.error && doctorId) {
+        const msg = String((res.error as any)?.message || '').toLowerCase();
+        const missingDentistId =
+          msg.includes('dentist_id') &&
+          (msg.includes('does not exist') ||
+            msg.includes('column') ||
+            msg.includes('unknown') ||
+            msg.includes('schema'));
+
+        if (missingDentistId) {
+          res = await tryOwner('doctor_id');
+        }
+      }
+
+      if (res.error) throw res.error;
+      return { data: res.data || [], success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to fetch procedures');
+    }
+  },
+
+  /**
+   * Create a procedure and automatically attach the current doctor's ID.
+   * - Prefers `dentist_id` (new schema)
+   * - Also writes `doctor_id` for legacy schema compatibility
+   *
+   * Backward compatible: existing calls can still call createProcedure(procedureData)
+   */
+  async createProcedure(procedureData: ProcedureInsert, doctorId?: string) {
+    try {
+      const payload: any = { ...(procedureData as any) };
+
+      // If caller provided doctorId, prefer it
+      if (doctorId) {
+        if (payload.dentist_id == null) payload.dentist_id = doctorId;
+        if (payload.doctor_id == null) payload.doctor_id = doctorId;
+      }
+
+      // If neither dentist_id nor doctor_id is present, derive from current auth user
+      if (payload.dentist_id == null && payload.doctor_id == null) {
+        const { data: authData, error: authErr } = await supabase.auth.getUser();
+        if (authErr) throw authErr;
+
+        const userId = authData?.user?.id;
+        if (userId) {
+          const { data: doc, error: docErr } = await (supabase as any)
+            .from('doctors')
+            .select('id')
+            .eq('user_id', userId)
+            .single();
+
+          if (!docErr && doc?.id) {
+            payload.dentist_id = doc.id;
+            payload.doctor_id = doc.id;
+          }
+        }
+      }
+
+      // Try insert with dentist_id first (new schema)
+      let { data, error } = await (supabase as any)
+        .from('procedures')
+        .insert(payload)
+        .select()
+        .single();
+
+      // If dentist_id column doesn't exist, retry without it (legacy schema)
+      if (error) {
+        const msg = String((error as any)?.message || '').toLowerCase();
+        const missingDentistId =
+          msg.includes('dentist_id') &&
+          (msg.includes('does not exist') ||
+            msg.includes('column') ||
+            msg.includes('unknown') ||
+            msg.includes('schema'));
+
+        if (missingDentistId) {
+          const retryPayload: any = { ...payload };
+          delete retryPayload.dentist_id;
+
+          if (retryPayload.doctor_id == null && payload.dentist_id != null) {
+            retryPayload.doctor_id = payload.dentist_id;
+          }
+
+          ({ data, error } = await (supabase as any)
+            .from('procedures')
+            .insert(retryPayload)
+            .select()
+            .single());
+        }
+      }
+
+      if (error) throw error;
+
+      toast.success('Procedure created successfully!');
+      return { data, success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to create procedure');
+    }
+  },
+
+  async updateProcedure(procedureId: string, updates: any) {
+    try {
+      const { error } = await (supabase as any)
+        .from('procedures')
+        .update(updates)
+        .eq('id', procedureId);
+
+      if (error) throw error;
+      toast.success('Procedure updated successfully!');
+      return { success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to update procedure');
+    }
+  },
+
+  async deleteProcedure(procedureId: string) {
+    try {
+      const { error } = await supabase
+        .from('procedures')
+        .delete()
+        .eq('id', procedureId);
+
+      if (error) throw error;
+      toast.success('Procedure deleted successfully!');
+      return { success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to delete procedure');
+    }
+  }
+};
+
+// Medical Records API
+export const medicalRecordsApi = {
+  async fetchMedicalRecords(patientId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('medical_records')
+        .select('*')
+        .eq('patient_id', patientId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return { data: data || [], success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to fetch medical records');
+    }
+  },
+
+  async createMedicalRecord(recordData: MedicalRecordInsert) {
+    try {
+      const { data, error } = await supabase
+        .from('medical_records')
+        .insert(recordData)
+        .select()
+        .single();
+
+      if (error) throw error;
+      toast.success('Medical record created successfully!');
+      return { data, success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to create medical record');
+    }
+  }
+};
+
+// File Storage API
+export const storageApi = {
+  async uploadFile(bucket: string, path: string, file: File) {
+    try {
+      const { error } = await supabase.storage
+        .from(bucket)
+        .upload(path, file);
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from(bucket)
+        .getPublicUrl(path);
+
+      return { data: publicUrl, success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to upload file');
+    }
+  },
+
+  async downloadFile(bucket: string, path: string) {
+    try {
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .download(path);
+
+      if (error) throw error;
+      return { data, success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to download file');
+    }
+  }
+};
+
+// Reviews API
+export const reviewApi = {
+  async createReview(reviewData: any) {
+    try {
+      const { data, error } = await (supabase as any)
+        .from('reviews')
+        .insert(reviewData)
+        .select()
+        .single();
+
+      if (error) throw error;
+      toast.success('Review submitted successfully!');
+      return { data, success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to submit review');
+    }
+  },
+
+  async fetchDoctorReviews(doctorId: string) {
+    try {
+      const { data, error } = await (supabase as any)
+        .from('reviews')
+        .select(`
+          *,
+          patient:patient_id (
+            *,
+            profiles:user_id (
+              full_name,
+              avatar_url
+            )
+          )
+        `)
+        .eq('doctor_id', doctorId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return { data: data || [], success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to fetch reviews');
+    }
+  }
+};
+
+// Payments API
+export const paymentApi = {
+  async createPayment(paymentData: any) {
+    try {
+      const { data, error } = await (supabase as any)
+        .from('payments')
+        .insert(paymentData)
+        .select()
+        .single();
+
+      if (error) throw error;
+      toast.success('Payment created successfully!');
+      return { data, success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to create payment');
+    }
+  },
+
+  async fetchDoctorPayments(doctorId: string) {
+    try {
+      const { data, error } = await (supabase as any)
+        .from('payments')
+        .select(`
+          *,
+          appointment:appointment_id (*),
+          patient:patient_id (
+            *,
+            profiles:user_id (
+              full_name,
+              avatar_url
+            )
+          )
+        `)
+        .eq('doctor_id', doctorId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return { data: data || [], success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to fetch payments');
+    }
+  }
+};
+
+// Notifications API
+export const notificationApi = {
+  async fetchNotifications(userId: string) {
+    try {
+      const { data, error } = await (supabase as any)
+        .from('notifications')
+        .select('*')
+        .eq('recipient_user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return { data: data || [], success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to fetch notifications');
+    }
+  },
+
+  async markNotificationRead(notificationId: string) {
+    try {
+      const { error } = await (supabase as any)
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('id', notificationId);
+
+      if (error) throw error;
+      return { success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to mark notification read');
+    }
+  }
+};
+
+// Practices API
+export const practiceApi = {
+  async searchPractices(params: { query?: string; location?: string; practiceType?: string; minRating?: number }) {
+    try {
+      let q = (supabase as any)
+        .from('practices')
+        .select('*');
+
+      const cleanQ = (params.query || '').trim();
+      if (cleanQ) {
+        q = q.or(`name.ilike.%${cleanQ}%,description.ilike.%${cleanQ}%`);
+      }
+
+      const cleanLoc = (params.location || '').trim();
+      if (cleanLoc) {
+        q = q.or(`city.ilike.%${cleanLoc}%,country.ilike.%${cleanLoc}%`);
+      }
+
+      if (params.practiceType && params.practiceType !== 'all') {
+        q = q.eq('practice_type', params.practiceType);
+      }
+
+      if (params.minRating) {
+        q = q.gte('weighted_rating', params.minRating);
+      }
+
+      const { data, error } = await q
+        .order('weighted_rating', { ascending: false, nullsFirst: false })
+        .order('appointment_count', { ascending: false, nullsFirst: false });
+
+      if (error) throw error;
+
+      const normalized = (data || []).map((row: any) => ({
+        ...row,
+        average_rating: row.weighted_rating,
+        rating: row.weighted_rating,
+      }));
+
+      return { data: normalized, success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to search practices');
+    }
+  }
+};
