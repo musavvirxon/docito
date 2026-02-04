@@ -11,6 +11,9 @@ interface BookingData {
   durationMinutes?: number;
   appointmentType?: string;
   notes?: string;
+
+  // NEW: optional requested procedure (must belong to the selected doctor)
+  procedureId?: string | null;
 }
 
 export interface BookingHoldResult {
@@ -25,7 +28,17 @@ export interface BookingHoldResult {
 }
 
 type BookAppointmentFnResponse =
-  | { ok: true; hold_id: string; expires_at: string; appointment_date: string; start_time: string; end_time: string; appointment_type: string; provider_id: string; entity_id: string | null }
+  | {
+      ok: true;
+      hold_id: string;
+      expires_at: string;
+      appointment_date: string;
+      start_time: string;
+      end_time: string;
+      appointment_type: string;
+      provider_id: string;
+      entity_id: string | null;
+    }
   | { ok: false; error: string; code?: string };
 
 export function useBookAppointment() {
@@ -62,23 +75,27 @@ export function useBookAppointment() {
           return null;
         }
 
-        const { data: fnData, error: fnError } = await supabase.functions.invoke<BookAppointmentFnResponse>(
-          'book-appointment',
-          {
-            body: {
-              patient_id: user.id,
-              entity_id: data.entityId ?? null,
-              provider_id: data.providerId,
-              slot_start: data.slotStart,
-              duration_minutes: data.durationMinutes ?? 30,
-              appointment_type: data.appointmentType,
-              notes: data.notes,
-            },
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
+        const { data: fnData, error: fnError } =
+          await supabase.functions.invoke<BookAppointmentFnResponse>(
+            'book-appointment',
+            {
+              body: {
+                patient_id: user.id,
+                entity_id: data.entityId ?? null,
+                provider_id: data.providerId,
+                slot_start: data.slotStart,
+                duration_minutes: data.durationMinutes ?? 30,
+                appointment_type: data.appointmentType,
+                notes: data.notes,
+
+                // NEW
+                procedure_id: data.procedureId ?? null,
+              },
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            }
+          );
 
         if (fnError) throw fnError;
 
