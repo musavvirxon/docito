@@ -1,5 +1,5 @@
 // src/App.tsx
-import { Suspense, useEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Routes, Route, useParams, Outlet } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -13,84 +13,86 @@ import PublicLayout from "@/layouts/PublicLayout";
 
 // Public pages
 import PremiumHome from "@/pages/PremiumHome";
-import Auth from "@/pages/Auth";
-import About from "@/pages/About";
-import Contact from "@/pages/Contact";
-import Features from "@/pages/Features";
-import Pricing from "@/pages/Pricing";
-import HowItWorks from "@/pages/HowItWorks";
-import FAQs from "@/pages/FAQs";
-import HelpCenter from "@/pages/HelpCenter";
-import Support from "@/pages/Support";
-import Legal from "@/pages/Legal";
-import LegalDetail from "@/pages/LegalDetail";
-import CookiePolicy from "@/pages/CookiePolicy";
-import FeedbackCenter from "@/pages/FeedbackCenter";
-import NotFound from "@/pages/NotFound";
+
+// Lazy load all other pages
+const Auth = lazy(() => import("@/pages/Auth"));
+const About = lazy(() => import("@/pages/About"));
+const Contact = lazy(() => import("@/pages/Contact"));
+const Features = lazy(() => import("@/pages/Features"));
+const Pricing = lazy(() => import("@/pages/Pricing"));
+const HowItWorks = lazy(() => import("@/pages/HowItWorks"));
+const FAQs = lazy(() => import("@/pages/FAQs"));
+const HelpCenter = lazy(() => import("@/pages/HelpCenter"));
+const Support = lazy(() => import("@/pages/Support"));
+const Legal = lazy(() => import("@/pages/Legal"));
+const LegalDetail = lazy(() => import("@/pages/LegalDetail"));
+const CookiePolicy = lazy(() => import("@/pages/CookiePolicy"));
+const FeedbackCenter = lazy(() => import("@/pages/FeedbackCenter"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
 
 // Provider landing pages
-import DoctorLandingPage from "@/pages/doctor/DoctorLandingPage";
-import DoctorPublicProfile from "@/pages/doctor/DoctorPublicProfile";
-import PharmacyLandingPage from "@/pages/pharmacy/PharmacyLandingPage";
-import LabLandingPage from "@/pages/lab/LabLandingPage";
-import ImagingLandingPage from "@/pages/imaging/ImagingLandingPage";
-import Practices from "@/pages/Practices";
-import FindPractices from "@/pages/FindPractices";
+const DoctorLandingPage = lazy(() => import("@/pages/doctor/DoctorLandingPage"));
+const DoctorPublicProfile = lazy(() => import("@/pages/doctor/DoctorPublicProfile"));
+const PharmacyLandingPage = lazy(() => import("@/pages/pharmacy/PharmacyLandingPage"));
+const LabLandingPage = lazy(() => import("@/pages/lab/LabLandingPage"));
+const ImagingLandingPage = lazy(() => import("@/pages/imaging/ImagingLandingPage"));
+const Practices = lazy(() => import("@/pages/Practices"));
+const FindPractices = lazy(() => import("@/pages/FindPractices"));
 
 // Search pages
-import SearchDoctors from "@/pages/SearchDoctors";
-import BrowseSpecialties from "@/pages/BrowseSpecialties";
-import CategorySearch from "@/pages/CategorySearch";
+const SearchDoctors = lazy(() => import("@/pages/SearchDoctors"));
+const BrowseSpecialties = lazy(() => import("@/pages/BrowseSpecialties"));
+const CategorySearch = lazy(() => import("@/pages/CategorySearch"));
 
 // Booking
-import AppointmentBooking from "@/pages/AppointmentBooking";
-import BookingConfirmation from "@/pages/BookingConfirmation";
+const AppointmentBooking = lazy(() => import("@/pages/AppointmentBooking"));
+const BookingConfirmation = lazy(() => import("@/pages/BookingConfirmation"));
 
 // Dashboards
-import PatientDashboard from "@/pages/PatientDashboard";
-import DoctorDashboard from "@/pages/DoctorDashboard";
-import AdminDashboard from "@/pages/AdminDashboard";
-import StaffDashboard from "@/pages/StaffDashboard";
-import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
+const PatientDashboard = lazy(() => import("@/pages/PatientDashboard"));
+const DoctorDashboard = lazy(() => import("@/pages/DoctorDashboard"));
+const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
+const StaffDashboard = lazy(() => import("@/pages/StaffDashboard"));
+const SuperAdminDashboard = lazy(() => import("@/pages/SuperAdminDashboard"));
 
 // Facility dashboards
-import LabDashboardPage from "@/pages/lab/LabDashboardPage";
-import PharmacyDashboardPage from "@/pages/pharmacy/PharmacyDashboardPage";
-import ImagingDashboardPage from "@/pages/imaging/ImagingDashboardPage";
+const LabDashboardPage = lazy(() => import("@/pages/lab/LabDashboardPage"));
+const PharmacyDashboardPage = lazy(() => import("@/pages/pharmacy/PharmacyDashboardPage"));
+const ImagingDashboardPage = lazy(() => import("@/pages/imaging/ImagingDashboardPage"));
 
 // Common authenticated pages
-import ProfilePage from "@/pages/ProfilePage";
-import Settings from "@/pages/Settings";
-import Notifications from "@/pages/Notifications";
-import Messages from "@/pages/Messages";
-import VideoCall from "@/pages/VideoCall";
-import AppointmentSession from "@/pages/AppointmentSession";
-import BillingPage from "@/pages/BillingPage";
+const ProfilePage = lazy(() => import("@/pages/ProfilePage"));
+const Settings = lazy(() => import("@/pages/Settings"));
+const Notifications = lazy(() => import("@/pages/Notifications"));
+const Messages = lazy(() => import("@/pages/Messages"));
+const VideoCall = lazy(() => import("@/pages/VideoCall"));
+const AppointmentSession = lazy(() => import("@/pages/AppointmentSession"));
+const BillingPage = lazy(() => import("@/pages/BillingPage"));
 
 // Doctor pages
-import DoctorScheduleSettings from "@/pages/DoctorScheduleSettings";
-import TreatmentPlanning from "@/pages/TreatmentPlanning";
-import ProcedureLibrary from "@/pages/ProcedureLibrary";
-import DoctorPatientProfile from "@/pages/doctor/DoctorPatientProfile";
+const DoctorScheduleSettings = lazy(() => import("@/pages/DoctorScheduleSettings"));
+const TreatmentPlanning = lazy(() => import("@/pages/TreatmentPlanning"));
+const ProcedureLibrary = lazy(() => import("@/pages/ProcedureLibrary"));
+const DoctorPatientProfile = lazy(() => import("@/pages/doctor/DoctorPatientProfile"));
 
 // Practice/Admin pages
-import RegisterPractice from "@/pages/RegisterPractice";
-import PracticeSettings from "@/pages/PracticeSettings";
-import PracticeVerification from "@/pages/PracticeVerification";
+const RegisterPractice = lazy(() => import("@/pages/RegisterPractice"));
+const PracticeSettings = lazy(() => import("@/pages/PracticeSettings"));
+const PracticeVerification = lazy(() => import("@/pages/PracticeVerification"));
 
 // Verification pages
-import DoctorVerification from "@/pages/doctor/DoctorVerification";
-import LabVerification from "@/pages/lab/LabVerification";
-import PharmacyVerification from "@/pages/pharmacy/PharmacyVerification";
-import ImagingVerification from "@/pages/imaging/ImagingVerification";
+const DoctorVerification = lazy(() => import("@/pages/doctor/DoctorVerification"));
+const LabVerification = lazy(() => import("@/pages/lab/LabVerification"));
+const PharmacyVerification = lazy(() => import("@/pages/pharmacy/PharmacyVerification"));
+const ImagingVerification = lazy(() => import("@/pages/imaging/ImagingVerification"));
 
 // Registration pages
-import LabRegistration from "@/pages/lab/LabRegistration";
-import PharmacyRegistration from "@/pages/pharmacy/PharmacyRegistration";
-import ImagingRegistration from "@/pages/imaging/ImagingRegistration";
+const LabRegistration = lazy(() => import("@/pages/lab/LabRegistration"));
+const PharmacyRegistration = lazy(() => import("@/pages/pharmacy/PharmacyRegistration"));
+const ImagingRegistration = lazy(() => import("@/pages/imaging/ImagingRegistration"));
 
 // Staff invitation
-import AcceptInvite from "@/pages/AcceptInvite";
+const AcceptInvite = lazy(() => import("@/pages/AcceptInvite"));
 
 const supportedLangCodes = languages.map((l) => l.code);
 
