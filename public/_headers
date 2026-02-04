@@ -1,11 +1,43 @@
-# Cache static assets with content hashes for 1 year
+# Cache hashed JS and CSS assets for 1 year (immutable - content hash changes on update)
+/assets/*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/*.css
+  Cache-Control: public, max-age=31536000, immutable
+
+# Cache all other assets for 1 year
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 
-# Cache logo images for 1 week
+# Cache logo images for 1 year (they rarely change)
 /logos/*
-  Cache-Control: public, max-age=604800
+  Cache-Control: public, max-age=31536000, immutable
 
-# Don't cache HTML
+/logos/**/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Cache all images in public folder for 1 year
+/*.png
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.webp
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.jpg
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.jpeg
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.svg
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.ico
+  Cache-Control: public, max-age=31536000, immutable
+
+# Don't cache HTML (allows updates to propagate immediately)
 /*.html
+  Cache-Control: no-cache
+
+/
   Cache-Control: no-cache
