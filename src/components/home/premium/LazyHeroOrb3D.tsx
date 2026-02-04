@@ -9,17 +9,24 @@ function LazyHeroOrb3D() {
   const [isMobile, setIsMobile] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
 
-  // Detect mobile on mount
+  // Detect mobile on mount using matchMedia (avoids forced reflow)
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768 || "ontouchstart" in window);
+    // Use matchMedia instead of window.innerWidth to avoid forced reflow
+    const mobileQuery = window.matchMedia("(max-width: 767px)");
+    const touchDevice = "ontouchstart" in window;
+    
+    const handleChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      setIsMobile(e.matches || touchDevice);
     };
 
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+    // Initial check
+    handleChange(mobileQuery);
+    
+    // Listen for changes
+    mobileQuery.addEventListener("change", handleChange);
+    return () => mobileQuery.removeEventListener("change", handleChange);
   }, []);
 
   useEffect(() => {

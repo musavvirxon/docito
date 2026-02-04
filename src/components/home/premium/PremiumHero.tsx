@@ -1,5 +1,4 @@
-import { useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import LazyHeroOrb3D from './LazyHeroOrb3D';
 
@@ -7,6 +6,16 @@ export default function PremiumHero() {
   const { t } = useTranslation(['home']);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  // Trigger CSS animations after mount
+  useEffect(() => {
+    // Small delay to ensure paint has completed
+    const timer = requestAnimationFrame(() => {
+      setIsVisible(true);
+    });
+    return () => cancelAnimationFrame(timer);
+  }, []);
 
   useEffect(() => {
     // Dynamically import GSAP to avoid blocking LCP
@@ -35,17 +44,17 @@ export default function PremiumHero() {
         {/* Left side - Text content */}
         <div className="relative z-10 w-full lg:w-1/2 py-20 lg:pr-8">
           <div className="text-left space-y-8">
-            {/* Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+            {/* Badge - CSS animation instead of framer-motion */}
+            <div
+              className={`transform transition-all duration-500 ease-out ${
+                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
+              }`}
             >
               <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 backdrop-blur-sm text-primary text-sm font-medium rounded-full border border-primary/20">
                 <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
                 {t('home:hero.badge', 'Professional Medical Platform')}
               </span>
-            </motion.div>
+            </div>
 
             {/* Title - NO opacity:0, visible immediately for LCP */}
             <h1
@@ -71,28 +80,23 @@ export default function PremiumHero() {
               )}
             </p>
 
-            {/* CTA Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-col sm:flex-row gap-4"
+            {/* CTA Buttons - CSS animation instead of framer-motion */}
+            <div
+              className={`flex flex-col sm:flex-row gap-4 transform transition-all duration-500 ease-out delay-300 ${
+                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'
+              }`}
             >
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="px-8 py-4 bg-primary text-primary-foreground font-medium rounded-full shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all"
+              <button
+                className="px-8 py-4 bg-primary text-primary-foreground font-medium rounded-full shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
                 {t('home:cta.scheduleDemo', 'Schedule Demo')}
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="px-8 py-4 bg-background/80 backdrop-blur-sm text-foreground font-medium rounded-full border border-border/50 hover:bg-background/90 transition-all"
+              </button>
+              <button
+                className="px-8 py-4 bg-background/80 backdrop-blur-sm text-foreground font-medium rounded-full border border-border/50 hover:bg-background/90 hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
                 {t('home:cta.learnMore', 'Learn More')}
-              </motion.button>
-            </motion.div>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -102,25 +106,16 @@ export default function PremiumHero() {
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10"
+      {/* Scroll indicator - CSS animation */}
+      <div
+        className={`absolute bottom-8 left-1/2 -translate-x-1/2 z-10 transition-opacity duration-500 delay-[1500ms] ${
+          isVisible ? 'opacity-100' : 'opacity-0'
+        }`}
       >
-        <motion.div
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="w-6 h-10 border-2 border-muted-foreground/30 rounded-full flex justify-center"
-        >
-          <motion.div
-            animate={{ y: [0, 12, 0], opacity: [1, 0.5, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="w-1.5 h-3 bg-muted-foreground/50 rounded-full mt-2"
-          />
-        </motion.div>
-      </motion.div>
+        <div className="w-6 h-10 border-2 border-muted-foreground/30 rounded-full flex justify-center animate-bounce">
+          <div className="w-1.5 h-3 bg-muted-foreground/50 rounded-full mt-2" />
+        </div>
+      </div>
     </section>
   );
 }
