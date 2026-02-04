@@ -102,20 +102,15 @@ const ModernHeroSection = () => {
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 py-20 flex-1">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.4 }}
           className="text-center space-y-8 max-w-5xl mx-auto"
         >
-          {/* Professional Logo */}
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="flex justify-center mb-8"
-          >
+          {/* Professional Logo - render immediately for LCP */}
+          <div className="flex justify-center mb-8">
             <Logo variant="horizontal" size="xl" />
-          </motion.div>
+          </div>
 
           {/* Search Bar - PROMINENT with animation */}
           <div className="relative">
@@ -139,19 +134,19 @@ const ModernHeroSection = () => {
               >
                 {/* Professional Badge */}
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6, duration: 0.5 }}
+                  transition={{ delay: 0.2, duration: 0.3 }}
                   className="inline-flex items-center space-x-2 bg-primary/10 dark:bg-primary/5 backdrop-blur-sm border-2 border-primary/30 dark:border-primary/30 rounded-full px-6 py-2"
                 >
                   <span className="text-primary dark:text-primary font-semibold">{t('hero.badge')}</span>
                 </motion.div>
 
-                {/* Main Headline */}
+                {/* Main Headline - Critical for LCP, reduce delay */}
                 <motion.h1
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.8, duration: 0.5 }}
+                  transition={{ delay: 0.1, duration: 0.3 }}
                   className="text-5xl md:text-7xl font-bold text-foreground leading-tight tracking-tight mt-6"
                 >
                   {t('hero.title1')}
@@ -163,9 +158,9 @@ const ModernHeroSection = () => {
 
                 {/* Description */}
                 <motion.p
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1.0, duration: 0.5 }}
+                  transition={{ delay: 0.3, duration: 0.3 }}
                   className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mt-6"
                 >
                   {t('hero.description')}
@@ -175,7 +170,7 @@ const ModernHeroSection = () => {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1.2, duration: 0.5 }}
+                  transition={{ delay: 0.4, duration: 0.3 }}
                   className="flex flex-wrap justify-center gap-4 mt-8"
                 >
                   {[
@@ -188,9 +183,9 @@ const ModernHeroSection = () => {
                     return (
                       <motion.div
                         key={feature.key}
-                        initial={{ opacity: 0, scale: 0.8 }}
+                        initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 1.2 + index * 0.1 }}
+                        transition={{ delay: 0.4 + index * 0.05 }}
                         className="flex items-center space-x-2 bg-card/80 dark:bg-card/80 backdrop-blur-sm border-2 border-input dark:border-border dark:hover:border-primary rounded-full px-6 py-3 transition-all duration-300 hover:shadow-lg dark:hover:shadow-glow-blue"
                       >
                         <Icon className="w-5 h-5 text-primary" />
@@ -253,9 +248,9 @@ const ModernHeroSection = () => {
         {/* Hero Illustration - Dashboard Preview (only show when no results) */}
         {!hasSearched && (
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
+            initial={prefersReducedMotion ? false : { opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.4, duration: 0.8 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
             className="mt-16 hidden lg:block"
           >
             <HeroIllustration />
@@ -265,13 +260,13 @@ const ModernHeroSection = () => {
         {/* Scroll Indicator (only show when no results) */}
         {!hasSearched && (
           <motion.div
-            initial={{ opacity: 0 }}
+            initial={prefersReducedMotion ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 2, duration: 0.5 }}
+            transition={{ delay: 0.8, duration: 0.3 }}
             className="flex justify-center pt-8"
           >
             <motion.div
-              animate={{ y: [0, 10, 0] }}
+              animate={prefersReducedMotion ? {} : { y: [0, 10, 0] }}
               transition={{ duration: 2, repeat: Infinity }}
               className="cursor-pointer"
             >
