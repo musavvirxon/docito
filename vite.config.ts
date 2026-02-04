@@ -29,6 +29,9 @@ export default defineConfig(({ mode }) => ({
             if (id.includes('react-dom')) return 'vendor-react';
             if (id.includes('@radix-ui') || id.includes('cmdk')) return 'vendor-ui';
             if (id.includes('i18next')) return 'vendor-i18n';
+            if (id.includes('gsap')) return 'vendor-gsap';
+            if (id.includes('date-fns')) return 'vendor-date';
+            if (id.includes('react-hook-form') || id.includes('zod') || id.includes('@hookform')) return 'vendor-forms';
           }
         },
       },
