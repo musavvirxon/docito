@@ -463,11 +463,19 @@ const ProblemSolutionCard = ({
   const rotateY = useSpring(useTransform(x, [-100, 100], [-5, 5]), smoothSpring);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    x.set(e.clientX - centerX);
-    y.set(e.clientY - centerY);
+    // Cache mouse position to avoid closure issues
+    const clientX = e.clientX;
+    const clientY = e.clientY;
+    const target = e.currentTarget;
+    
+    // Wrap getBoundingClientRect in rAF to avoid forced reflow
+    requestAnimationFrame(() => {
+      const rect = target.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      x.set(clientX - centerX);
+      y.set(clientY - centerY);
+    });
   };
 
   const handleMouseLeave = () => {

@@ -44,11 +44,8 @@ const getBaseUrl = () => {
   const fromEnv = typeof env === 'string' ? env.trim() : '';
   if (fromEnv) return normalizeBaseUrl(fromEnv);
 
-  if (typeof window !== 'undefined' && window.location?.origin) {
-    return normalizeBaseUrl(window.location.origin);
-  }
-
-  return 'https://docito.com';
+  // Use the published Lovable domain as default
+  return 'https://docito.lovable.app';
 };
 
 const toAbsoluteUrl = (baseUrl: string, url: string) => {

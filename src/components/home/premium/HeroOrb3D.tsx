@@ -12,6 +12,21 @@ import {
   type LucideIcon
 } from 'lucide-react';
 
+// Mobile detection hook - use matchMedia for best performance (no resize listener)
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 768px)');
+    setIsMobile(mql.matches);
+    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, []);
+  
+  return isMobile;
+}
+
 // Node data interface
 interface NodeData {
   id: string;
@@ -97,7 +112,7 @@ function FrameInvalidator({ isTabVisible }: { isTabVisible: boolean }) {
 }
 
 // Earth-like Globe
-function EarthGlobe({ opacity }: { opacity: number }) {
+function EarthGlobe({ opacity, isMobile }: { opacity: number; isMobile: boolean }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const cloudsRef = useRef<THREE.Mesh>(null);
   const atmosphereRef = useRef<THREE.Mesh>(null);
@@ -282,6 +297,9 @@ function EarthGlobe({ opacity }: { opacity: number }) {
   }, []);
 
   useFrame((state) => {
+    // Skip animations on mobile to improve performance
+    if (isMobile) return;
+    
     const time = state.clock.elapsedTime;
     if (meshRef.current) {
       meshRef.current.rotation.y = time * 0.08;
@@ -512,7 +530,7 @@ function FloatingNode({
 }
 
 // Particle system for holographic effect
-function HolographicParticles({ opacity }: { opacity: number }) {
+function HolographicParticles({ opacity, isMobile }: { opacity: number; isMobile: boolean }) {
   const particlesRef = useRef<THREE.Points>(null);
   const count = 100;
   
@@ -530,6 +548,9 @@ function HolographicParticles({ opacity }: { opacity: number }) {
   }, []);
 
   useFrame((state) => {
+    // Skip animations on mobile
+    if (isMobile) return;
+    
     if (particlesRef.current) {
       particlesRef.current.rotation.y = state.clock.elapsedTime * 0.05;
       particlesRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.1) * 0.1;
@@ -558,12 +579,15 @@ function HolographicParticles({ opacity }: { opacity: number }) {
 }
 
 // Orbiting rings
-function OrbitRings({ opacity }: { opacity: number }) {
+function OrbitRings({ opacity, isMobile }: { opacity: number; isMobile: boolean }) {
   const ring1Ref = useRef<THREE.Mesh>(null);
   const ring2Ref = useRef<THREE.Mesh>(null);
   const ring3Ref = useRef<THREE.Mesh>(null);
   
   useFrame((state) => {
+    // Skip animations on mobile
+    if (isMobile) return;
+    
     const time = state.clock.elapsedTime;
     if (ring1Ref.current) {
       ring1Ref.current.rotation.x = Math.PI / 2 + Math.sin(time * 0.3) * 0.1;
@@ -602,12 +626,14 @@ function Scene({
   opacity,
   hoveredNode,
   setHoveredNode,
-  setSelectedNode
+  setSelectedNode,
+  isMobile
 }: { 
   opacity: number;
   hoveredNode: string | null;
   setHoveredNode: (id: string | null) => void;
   setSelectedNode: (node: NodeData | null) => void;
+  isMobile: boolean;
 }) {
   // Create nodes with initial positions
   const nodes = useMemo<NodeData[]>(() => {
@@ -636,13 +662,13 @@ function Scene({
       <hemisphereLight args={['#87ceeb', '#1565c0', 0.3]} />
       
       {/* Earth Globe */}
-      <EarthGlobe opacity={opacity} />
+      <EarthGlobe opacity={opacity} isMobile={isMobile} />
       
       {/* Orbit rings */}
-      <OrbitRings opacity={opacity} />
+      <OrbitRings opacity={opacity} isMobile={isMobile} />
       
       {/* Particles inside orb */}
-      <HolographicParticles opacity={opacity} />
+      <HolographicParticles opacity={opacity} isMobile={isMobile} />
       
       {/* Medical nodes */}
       {nodes.map((node) => (
@@ -658,15 +684,16 @@ function Scene({
         />
       ))}
       
-      {/* Orbit controls for drag/rotate */}
+      {/* Orbit controls - disable interactions on mobile for better performance */}
       <OrbitControls
-        enableZoom={true}
+        enableZoom={!isMobile}
+        enableRotate={!isMobile}
         enablePan={false}
         minDistance={5}
         maxDistance={10}
         autoRotate
-        autoRotateSpeed={0.3}
-        enableDamping
+        autoRotateSpeed={isMobile ? 0.15 : 0.3}
+        enableDamping={!isMobile}
         dampingFactor={0.05}
         minPolarAngle={Math.PI / 4}
         maxPolarAngle={Math.PI * 3 / 4}
@@ -748,6 +775,7 @@ function NodeModal({
 export default function HeroOrb3D() {
   const opacity = useScrollOpacity();
   const isTabVisible = useTabVisibility();
+  const isMobile = useIsMobile();
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [selectedNode, setSelectedNode] = useState<NodeData | null>(null);
 
@@ -759,7 +787,7 @@ export default function HeroOrb3D() {
     >
       <Canvas
         camera={{ position: [0, 0, 6.5], fov: 45 }}
-        style={{ background: 'transparent' }}
+        style={{ background: 'transparent', touchAction: isMobile ? 'auto' : 'none' }}
         frameloop="demand"
         gl={{ 
           alpha: true, 
@@ -768,7 +796,7 @@ export default function HeroOrb3D() {
           stencil: false,
           depth: true,
         }}
-        dpr={[1, 1.2]} // Lower max DPR for better performance
+        dpr={isMobile ? [1, 1] : [1, 1.2]} // Lower DPR on mobile for better performance
       >
         <FrameInvalidator isTabVisible={isTabVisible} />
         <Scene 
@@ -776,18 +804,21 @@ export default function HeroOrb3D() {
           hoveredNode={hoveredNode}
           setHoveredNode={setHoveredNode}
           setSelectedNode={setSelectedNode}
+          isMobile={isMobile}
         />
       </Canvas>
       
       {/* Node detail modal */}
       <NodeModal node={selectedNode} onClose={() => setSelectedNode(null)} />
       
-      {/* Instructions hint */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-center pointer-events-none">
-        <p className="text-xs text-slate-400 opacity-60">
-          Drag to rotate • Scroll to zoom • Click nodes for details
-        </p>
-      </div>
+      {/* Instructions hint - hide on mobile since interactions are disabled */}
+      {!isMobile && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-center pointer-events-none">
+          <p className="text-xs text-slate-400 opacity-60">
+            Drag to rotate • Scroll to zoom • Click nodes for details
+          </p>
+        </div>
+      )}
     </div>
   );
 }

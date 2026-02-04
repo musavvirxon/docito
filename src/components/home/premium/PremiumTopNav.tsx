@@ -104,16 +104,19 @@ const PremiumTopNav = () => {
                 <source
                   srcSet="/logos/horizontal/docito-horizontal-sm.webp"
                   type="image/webp"
+                  width={80}
+                  height={24}
                 />
                 <img
                   src="/logos/horizontal/docito-horizontal-sm.png"
                   alt="Docito"
-                  className="h-6"
+                  className="h-6 w-auto"
                   width={80}
                   height={24}
                   fetchPriority="high"
                   decoding="sync"
                   loading="eager"
+                  style={{ aspectRatio: '80/24' }}
                 />
               </picture>
             </Link>
