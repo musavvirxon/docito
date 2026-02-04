@@ -28,14 +28,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
-type ProcedureInfo = {
-  id: string;
-  name: string;
-  category: string | null;
-  default_cost: number | null;
-  price: number | null;
-};
-
 type HoldDetails = {
   id: string;
   patient_id: string;
@@ -47,10 +39,6 @@ type HoldDetails = {
   notes: string | null;
   status: string;
   expires_at: string;
-
-  // ✅ NEW (nullable / optional for backward compatibility)
-  procedure_id?: string | null;
-  procedure?: ProcedureInfo | null;
 };
 
 type DoctorInfo = {
@@ -66,10 +54,7 @@ type ConfirmedAppointment = {
   start_time: string;
   end_time: string;
   appointment_type: string;
-
-  // ✅ NEW
-  procedure_id?: string | null;
-  procedure?: ProcedureInfo | null;
+  notes: string | null;
 };
 
 type ClinicalItem = {
@@ -82,16 +67,28 @@ type ClinicalItem = {
   updated_at: string;
 };
 
-function formatMoney(n: number) {
-  try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" }).format(n);
-  } catch {
-    return `$${n}`;
+function extractRequestedProcedure(notes: string | null | undefined): { requested: string | null; remaining: string | null } {
+  if (!notes) return { requested: null, remaining: null };
+
+  const lines = notes.split(/\r?\n/);
+  let requested: string | null = null;
+  const kept: string[] = [];
+
+  for (const line of lines) {
+    const m = line.match(/^Requested Procedure:\s*(.+)\s*$/i);
+    if (m && !requested) {
+      requested = (m[1] || "").trim() || null;
+      continue;
+    }
+    kept.push(line);
   }
+
+  const remaining = kept.join("\n").trim();
+  return { requested, remaining: remaining ? remaining : null };
 }
 
 export default function BookingConfirmation() {
-  const { appointmentId: holdId } = useParams(); // hold_id OR an appointment_id fallback
+  const { appointmentId: holdId } = useParams(); // This is actually a hold_id OR an appointment_id fallback
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -106,8 +103,6 @@ export default function BookingConfirmation() {
   const [clinicalLoading, setClinicalLoading] = useState(false);
   const [clinicalItems, setClinicalItems] = useState<ClinicalItem[]>([]);
 
-  const [requestedProcedure, setRequestedProcedure] = useState<ProcedureInfo | null>(null);
-
   // Load hold details (or confirmed appointment fallback)
   useEffect(() => {
     if (!holdId) return;
@@ -117,45 +112,17 @@ export default function BookingConfirmation() {
       setError(null);
 
       try {
-        // 1) Try to fetch as a HOLD including procedure (new schema)
-        let hold: any = null;
-
-        const q1 = await (supabase as any)
+        // First try to fetch as a hold
+        const { data: hold, error: holdErr } = await (supabase as any)
           .from("appointment_holds")
-          .select(
-            `
-            id,
-            patient_id,
-            doctor_id,
-            practice_id,
-            start_at,
-            end_at,
-            appointment_type,
-            notes,
-            status,
-            expires_at,
-            procedure_id,
-            procedure:procedure_id(id,name,category,default_cost,price)
-          `
-          )
+          .select("id, patient_id, doctor_id, practice_id, start_at, end_at, appointment_type, notes, status, expires_at")
           .eq("id", holdId)
           .maybeSingle();
 
-        if (!q1.error) {
-          hold = q1.data;
-        } else {
-          // fallback if procedure_id column doesn't exist yet
-          const q2 = await (supabase as any)
-            .from("appointment_holds")
-            .select("id, patient_id, doctor_id, practice_id, start_at, end_at, appointment_type, notes, status, expires_at")
-            .eq("id", holdId)
-            .maybeSingle();
-
-          if (q2.error) throw q2.error;
-          hold = q2.data;
-        }
+        if (holdErr) throw holdErr;
 
         if (hold) {
+          // Check if hold is still valid
           const expiresAt = new Date(hold.expires_at);
           if (expiresAt.getTime() < Date.now()) {
             setError({
@@ -173,42 +140,7 @@ export default function BookingConfirmation() {
             return;
           }
 
-          // Store hold
-          setHoldDetails(hold as HoldDetails);
-
-          // Store requested procedure (if present)
-          const procFromHold = (hold as any)?.procedure ?? null;
-          if (procFromHold?.id && procFromHold?.name) {
-            setRequestedProcedure({
-              id: String(procFromHold.id),
-              name: String(procFromHold.name),
-              category: procFromHold.category ?? null,
-              default_cost: procFromHold.default_cost == null ? null : Number(procFromHold.default_cost),
-              price: procFromHold.price == null ? null : Number(procFromHold.price),
-            });
-          } else if ((hold as any)?.procedure_id) {
-            // procedure_id exists but join not available -> fetch directly
-            const pid = String((hold as any).procedure_id);
-            const { data: p } = await supabase
-              .from("procedures")
-              .select("id,name,category,default_cost,price")
-              .eq("id", pid)
-              .maybeSingle();
-
-            if (p?.id && (p as any).name) {
-              setRequestedProcedure({
-                id: String((p as any).id),
-                name: String((p as any).name),
-                category: (p as any).category ?? null,
-                default_cost: (p as any).default_cost == null ? null : Number((p as any).default_cost),
-                price: (p as any).price == null ? null : Number((p as any).price),
-              });
-            } else {
-              setRequestedProcedure(null);
-            }
-          } else {
-            setRequestedProcedure(null);
-          }
+          setHoldDetails(hold);
 
           // Fetch doctor details
           const { data: doctor } = await supabase
@@ -219,45 +151,17 @@ export default function BookingConfirmation() {
               specialty,
               profiles:user_id(full_name),
               practices:practice_id(name,address,city,country)
-            `
+            `,
             )
             .eq("id", hold.doctor_id)
             .maybeSingle();
 
-          if (doctor) setDoctorInfo(doctor as any);
-          return;
-        }
-
-        // 2) Not a hold -> maybe already confirmed appointment
-        let appointment: any = null;
-
-        const a1 = await supabase
-          .from("appointments")
-          .select(
-            `
-            id,
-            appointment_date,
-            start_time,
-            end_time,
-            appointment_type,
-            procedure_id,
-            procedure:procedure_id(id,name,category,default_cost,price),
-            doctor:doctor_id(
-              id,
-              specialty,
-              profiles:user_id(full_name),
-              practices:practice_id(name,address,city,country)
-            )
-          `
-          )
-          .eq("id", holdId)
-          .maybeSingle();
-
-        if (!a1.error) {
-          appointment = a1.data;
+          if (doctor) {
+            setDoctorInfo(doctor as any);
+          }
         } else {
-          // fallback if procedure_id missing
-          const a2 = await supabase
+          // Maybe it was already confirmed - check appointments
+          const { data: appointment } = await supabase
             .from("appointments")
             .select(
               `
@@ -266,52 +170,35 @@ export default function BookingConfirmation() {
               start_time,
               end_time,
               appointment_type,
+              notes,
               doctor:doctor_id(
                 id,
                 specialty,
                 profiles:user_id(full_name),
                 practices:practice_id(name,address,city,country)
               )
-            `
+            `,
             )
             .eq("id", holdId)
             .maybeSingle();
 
-          if (a2.error) throw a2.error;
-          appointment = a2.data;
-        }
-
-        if (appointment) {
-          setConfirmed(true);
-          setConfirmedAppointment({
-            id: appointment.id,
-            appointment_date: appointment.appointment_date,
-            start_time: appointment.start_time,
-            end_time: appointment.end_time,
-            appointment_type: appointment.appointment_type,
-            procedure_id: (appointment as any)?.procedure_id ?? null,
-            procedure: (appointment as any)?.procedure ?? null,
-          });
-
-          setDoctorInfo((appointment as any).doctor ?? null);
-
-          const proc = (appointment as any)?.procedure ?? null;
-          if (proc?.id && proc?.name) {
-            setRequestedProcedure({
-              id: String(proc.id),
-              name: String(proc.name),
-              category: proc.category ?? null,
-              default_cost: proc.default_cost == null ? null : Number(proc.default_cost),
-              price: proc.price == null ? null : Number(proc.price),
+          if (appointment) {
+            setConfirmed(true);
+            setConfirmedAppointment({
+              id: appointment.id,
+              appointment_date: appointment.appointment_date,
+              start_time: appointment.start_time,
+              end_time: appointment.end_time,
+              appointment_type: appointment.appointment_type,
+              notes: (appointment as any).notes ?? null,
             });
+            setDoctorInfo((appointment as any).doctor);
           } else {
-            setRequestedProcedure(null);
+            setError({
+              title: "Booking Not Found",
+              message: "We couldn't find this booking. It may have expired or been canceled.",
+            });
           }
-        } else {
-          setError({
-            title: "Booking Not Found",
-            message: "We couldn't find this booking. It may have expired or been canceled.",
-          });
         }
       } catch (e: any) {
         console.error(e);
@@ -354,6 +241,7 @@ export default function BookingConfirmation() {
             title: "Slot No Longer Available",
             message: "Unfortunately, this time slot has been taken by another patient. Please choose a different time.",
           });
+          // Delete the hold automatically after showing error
           await (supabase as any).from("appointment_holds").delete().eq("id", holdId);
         } else if (code === "HOLD_EXPIRED") {
           setError({
@@ -373,29 +261,9 @@ export default function BookingConfirmation() {
         start_time: data.start_time,
         end_time: data.end_time,
         appointment_type: data.appointment_type,
+        // We don't get notes back from confirm fn; keep hold notes so we can show requested procedure
+        notes: holdDetails?.notes ?? null,
       });
-
-      // Fetch appointment to show procedure (if any)
-      try {
-        const { data: ap } = await supabase
-          .from("appointments")
-          .select("id, procedure_id, procedure:procedure_id(id,name,category,default_cost,price)")
-          .eq("id", data.appointment_id)
-          .maybeSingle();
-
-        const proc = (ap as any)?.procedure ?? null;
-        if (proc?.id && proc?.name) {
-          setRequestedProcedure({
-            id: String(proc.id),
-            name: String(proc.name),
-            category: proc.category ?? null,
-            default_cost: proc.default_cost == null ? null : Number(proc.default_cost),
-            price: proc.price == null ? null : Number(proc.price),
-          });
-        }
-      } catch {
-        // ignore
-      }
 
       toast.success("Appointment confirmed successfully!");
     } catch (e: any) {
@@ -407,7 +275,7 @@ export default function BookingConfirmation() {
     } finally {
       setConfirming(false);
     }
-  }, [holdId, user]);
+  }, [holdId, user, holdDetails?.notes]);
 
   // Fetch clinical items (confirmed appointment only)
   useEffect(() => {
@@ -432,9 +300,10 @@ export default function BookingConfirmation() {
         if (error) throw error;
         if (!data?.ok) throw new Error(data?.error || "Failed to load clinical items");
 
-        setClinicalItems((data.items ?? []) as ClinicalItem[]);
+        setClinicalItems((data.data ?? []) as ClinicalItem[]);
       } catch (e: any) {
         console.error(e);
+        // soft-fail: booking confirmation should still render
         setClinicalItems([]);
       } finally {
         setClinicalLoading(false);
@@ -449,13 +318,24 @@ export default function BookingConfirmation() {
     return [p?.name, p?.address, p?.city, p?.country].filter(Boolean).join(", ");
   }, [doctorInfo]);
 
+  const notesSource = useMemo(() => {
+    if (confirmed) return confirmedAppointment?.notes ?? holdDetails?.notes ?? null;
+    return holdDetails?.notes ?? null;
+  }, [confirmed, confirmedAppointment?.notes, holdDetails?.notes]);
+
+  const { requested: requestedProcedure, remaining: remainingNotes } = useMemo(() => {
+    return extractRequestedProcedure(notesSource);
+  }, [notesSource]);
+
   const handlePrint = () => window.print();
 
   const downloadIcs = () => {
     if (!confirmedAppointment) return;
     const start = new Date(`${confirmedAppointment.appointment_date}T${confirmedAppointment.start_time}`);
     const end = new Date(`${confirmedAppointment.appointment_date}T${confirmedAppointment.end_time}`);
-    const title = `Appointment - ${doctorInfo?.profiles?.full_name || "Doctor"}`;
+    const base = `Appointment - ${doctorInfo?.profiles?.full_name || "Doctor"}`;
+    const title = requestedProcedure ? `${base} (${requestedProcedure})` : base;
+
     const dt = (d: Date) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
     const ics = [
       "BEGIN:VCALENDAR",
@@ -483,6 +363,7 @@ export default function BookingConfirmation() {
     URL.revokeObjectURL(url);
   };
 
+  // Calculate time remaining for hold
   const timeRemaining = useMemo(() => {
     if (!holdDetails?.expires_at) return null;
     const expires = new Date(holdDetails.expires_at).getTime();
@@ -493,12 +374,6 @@ export default function BookingConfirmation() {
     const secs = Math.floor((diff % 60000) / 1000);
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   }, [holdDetails?.expires_at]);
-
-  const requestedProcedureCost = useMemo(() => {
-    if (!requestedProcedure) return null;
-    const c = requestedProcedure.default_cost ?? requestedProcedure.price;
-    return c == null ? null : Number(c);
-  }, [requestedProcedure]);
 
   if (loading) {
     return (
@@ -519,6 +394,7 @@ export default function BookingConfirmation() {
     );
   }
 
+  // Error state
   if (error) {
     return (
       <div className="min-h-screen bg-background">
@@ -597,24 +473,28 @@ export default function BookingConfirmation() {
                   )}
                 </div>
 
-                {/* ✅ NEW: requested procedure */}
-                <Separator />
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <ClipboardList className="h-4 w-4" />
-                    <span className="text-sm">Requested procedure</span>
-                  </div>
-                  {requestedProcedure ? (
-                    <div className="text-sm">
-                      <div className="font-medium">{requestedProcedure.name}</div>
-                      {requestedProcedureCost != null && (
-                        <div className="text-muted-foreground">{formatMoney(requestedProcedureCost)}</div>
-                      )}
+                {requestedProcedure && (
+                  <>
+                    <Separator />
+                    <div className="rounded-lg border p-3 bg-muted/30">
+                      <div className="font-medium flex items-center gap-2">
+                        <ClipboardList className="h-4 w-4" />
+                        Requested procedure
+                      </div>
+                      <div className="text-sm text-muted-foreground mt-1">{requestedProcedure}</div>
                     </div>
-                  ) : (
-                    <div className="text-sm text-muted-foreground">No specific procedure requested.</div>
-                  )}
-                </div>
+                  </>
+                )}
+
+                {remainingNotes && (
+                  <>
+                    <Separator />
+                    <div>
+                      <div className="font-medium mb-2">Notes</div>
+                      <pre className="whitespace-pre-wrap text-sm text-muted-foreground">{remainingNotes}</pre>
+                    </div>
+                  </>
+                )}
 
                 <Separator />
 
@@ -675,7 +555,7 @@ export default function BookingConfirmation() {
     );
   }
 
-  // Pending confirmation state
+  // Pending confirmation state - show hold details with confirm button
   if (holdDetails) {
     const startTime = parseISO(holdDetails.start_at);
     const endTime = parseISO(holdDetails.end_at);
@@ -691,8 +571,7 @@ export default function BookingConfirmation() {
               <AlertTriangle className="h-5 w-5" />
               <AlertTitle>Confirm Your Appointment</AlertTitle>
               <AlertDescription>
-                Please confirm your appointment within the time limit. Your slot is held for{" "}
-                {timeRemaining || "a limited time"}.
+                Please confirm your appointment within the time limit. Your slot is held for {timeRemaining || "a limited time"}.
               </AlertDescription>
             </Alert>
 
@@ -742,31 +621,25 @@ export default function BookingConfirmation() {
                   )}
                 </div>
 
-                {/* ✅ NEW: requested procedure */}
-                <Separator />
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <ClipboardList className="h-4 w-4" />
-                    <span className="text-sm">Requested procedure</span>
-                  </div>
-                  {requestedProcedure ? (
-                    <div className="text-sm">
-                      <div className="font-medium">{requestedProcedure.name}</div>
-                      {requestedProcedureCost != null && (
-                        <div className="text-muted-foreground">{formatMoney(requestedProcedureCost)}</div>
-                      )}
+                {requestedProcedure && (
+                  <>
+                    <Separator />
+                    <div className="rounded-lg border p-3 bg-muted/30">
+                      <div className="font-medium flex items-center gap-2">
+                        <ClipboardList className="h-4 w-4" />
+                        Requested procedure
+                      </div>
+                      <div className="text-sm text-muted-foreground mt-1">{requestedProcedure}</div>
                     </div>
-                  ) : (
-                    <div className="text-sm text-muted-foreground">No specific procedure requested.</div>
-                  )}
-                </div>
+                  </>
+                )}
 
-                {holdDetails.notes && (
+                {remainingNotes && (
                   <>
                     <Separator />
                     <div>
                       <div className="font-medium mb-2">Notes</div>
-                      <pre className="whitespace-pre-wrap text-sm text-muted-foreground">{holdDetails.notes}</pre>
+                      <pre className="whitespace-pre-wrap text-sm text-muted-foreground">{remainingNotes}</pre>
                     </div>
                   </>
                 )}
