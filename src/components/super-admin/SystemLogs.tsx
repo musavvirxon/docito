@@ -93,15 +93,26 @@ export default function SystemLogs() {
   const fetchLogs = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("system_audit_logs")
-        .select("id, user_id, action, entity_type, entity_id, details, created_at")
+      const { data, error } = await (supabase as any)
+        .from("entity_audit_logs")
+        .select("id, actor_id, action, entity_type, entity_id, metadata, created_at")
         .order("created_at", { ascending: false })
         .limit(250);
 
       if (error) throw error;
 
-      setLogs((data || []) as AuditLogRow[]);
+      // Map to expected shape
+      const mapped = (data || []).map((row: any) => ({
+        id: row.id,
+        user_id: row.actor_id,
+        action: row.action,
+        entity_type: row.entity_type,
+        entity_id: row.entity_id,
+        details: row.metadata,
+        created_at: row.created_at,
+      }));
+
+      setLogs(mapped as AuditLogRow[]);
     } catch (e: any) {
       console.error(e);
       toast.error(e?.message || "Failed to load system logs");

@@ -272,3 +272,83 @@ export function useRevenueData() {
     staleTime: 30000,
   });
 }
+
+export function useAppointmentVolumeData() {
+  return useQuery({
+    queryKey: ['appointment-volume-analytics'],
+    queryFn: async () => {
+      const start = new Date();
+      start.setDate(start.getDate() - 30);
+
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('appointment_date')
+        .gte('appointment_date', start.toISOString().split('T')[0]);
+
+      if (error) throw error;
+
+      const buckets: Record<string, { day: string; appointments: number }> = {};
+
+      for (const a of data || []) {
+        const dateStr = (a as any).appointment_date;
+        if (!buckets[dateStr]) {
+          const d = new Date(dateStr);
+          buckets[dateStr] = {
+            day: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            appointments: 0,
+          };
+        }
+        buckets[dateStr].appointments += 1;
+      }
+
+      return Object.entries(buckets)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([, v]) => v);
+    },
+    staleTime: 30000,
+  });
+}
+
+export function useSignupData() {
+  return useQuery({
+    queryKey: ['signup-analytics'],
+    queryFn: async () => {
+      const start = new Date();
+      start.setDate(start.getDate() - 56); // 8 weeks
+
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select('role, created_at')
+        .gte('created_at', start.toISOString());
+
+      if (error) throw error;
+
+      const buckets: Record<string, { week: string; doctors: number; patients: number; sort: number }> = {};
+
+      for (const p of profiles || []) {
+        const d = new Date((p as any).created_at);
+        const weekStart = new Date(d);
+        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+        const key = weekStart.toISOString().split('T')[0];
+
+        if (!buckets[key]) {
+          buckets[key] = {
+            week: weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            doctors: 0,
+            patients: 0,
+            sort: weekStart.getTime(),
+          };
+        }
+
+        if ((p as any).role === 'doctor') {
+          buckets[key].doctors += 1;
+        } else if ((p as any).role === 'patient') {
+          buckets[key].patients += 1;
+        }
+      }
+
+      return Object.values(buckets).sort((a, b) => a.sort - b.sort);
+    },
+    staleTime: 30000,
+  });
+}
