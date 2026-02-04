@@ -165,7 +165,59 @@
   </head>
 
   <body>
+    <!-- Critical CSS for instant content visibility before JS loads -->
+    <style>
+      #root { min-height: 100vh; }
+      .initial-loader {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fafafa;
+        z-index: 9999;
+        transition: opacity 0.3s;
+      }
+      @media (prefers-color-scheme: dark) {
+        .initial-loader { background: #0a0a0a; }
+      }
+      .initial-loader.hidden { opacity: 0; pointer-events: none; }
+      .loader-logo {
+        width: 120px;
+        height: auto;
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.7; transform: scale(0.98); }
+      }
+    </style>
+
+    <!-- Instant visual feedback while React loads -->
+    <div id="initial-loader" class="initial-loader">
+      <img
+        src="/logos/horizontal/docito-horizontal-sm.png"
+        alt="Loading Docito"
+        class="loader-logo"
+        width="120"
+        height="36"
+      />
+    </div>
+
     <div id="root"></div>
+
+    <script>
+      // Hide loader once React mounts
+      window.addEventListener('DOMContentLoaded', function() {
+        var loader = document.getElementById('initial-loader');
+        if (loader) {
+          setTimeout(function() {
+            loader.classList.add('hidden');
+            setTimeout(function() { loader.remove(); }, 300);
+          }, 100);
+        }
+      });
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

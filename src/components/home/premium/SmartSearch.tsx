@@ -1,8 +1,6 @@
 import { useState, useRef, useEffect, lazy, Suspense } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Search, MapPin, Shield, Mic, Sparkles, Clock, TrendingUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import { useUnifiedSearch } from '@/hooks/useUnifiedSearch';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -22,12 +20,12 @@ const TRENDING_SEARCHES = [
 
 export default function SmartSearch() {
   const { t } = useTranslation(['home']);
-  const navigate = useNavigate();
   const { user } = useAuth();
   const [focused, setFocused] = useState(false);
   const [query, setQuery] = useState('');
   const [location, setLocation] = useState('');
   const [insurance, setInsurance] = useState('');
+  const [isVisible, setIsVisible] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -41,17 +39,9 @@ export default function SmartSearch() {
     resetSearch
   } = useUnifiedSearch();
 
-  // Dynamic GSAP import to avoid blocking main thread
+  // Trigger CSS animation after mount (no GSAP needed for initial visibility)
   useEffect(() => {
-    if (containerRef.current) {
-      import('gsap').then(({ default: gsap }) => {
-        gsap.fromTo(
-          containerRef.current,
-          { opacity: 0, y: 30 },
-          { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }
-        );
-      });
-    }
+    requestAnimationFrame(() => setIsVisible(true));
   }, []);
 
   const handleSearch = () => {
@@ -84,15 +74,17 @@ export default function SmartSearch() {
   return (
     <section id="search" className="relative py-20 -mt-20 z-20 scroll-mt-24">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
+        {/* Container with CSS animation instead of framer-motion */}
+        <div
           ref={containerRef}
-          className={`relative bg-background/80 backdrop-blur-2xl border border-border/50 rounded-3xl shadow-2xl shadow-black/5 transition-all duration-500 ${
-            focused ? 'scale-[1.02] shadow-primary/10' : ''
-          }`}
+          className={`relative bg-background/80 backdrop-blur-2xl border border-border/50 rounded-3xl shadow-2xl shadow-black/5 transition-all duration-500 transform ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          } ${focused ? 'scale-[1.02] shadow-primary/10' : ''}`}
+          style={{ transitionTimingFunction: 'cubic-bezier(0.22, 1, 0.36, 1)' }}
         >
           {/* Glow effect */}
           <div
-            className={`absolute inset-0 rounded-3xl transition-opacity duration-500 ${
+            className={`absolute inset-0 rounded-3xl transition-opacity duration-500 pointer-events-none ${
               focused ? 'opacity-100' : 'opacity-0'
             }`}
           >
@@ -157,82 +149,69 @@ export default function SmartSearch() {
                 </div>
               </div>
 
-              {/* Centered Search Button */}
+              {/* Centered Search Button - CSS hover instead of framer-motion */}
               <div className="flex justify-center">
-                <motion.button
+                <button
                   onClick={handleSearch}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
                   disabled={loading}
-                  className="px-12 py-4 bg-primary text-primary-foreground font-medium rounded-2xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+                  className="px-12 py-4 bg-primary text-primary-foreground font-medium rounded-2xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-70"
                 >
                   <Search className="w-5 h-5" />
                   <span>{loading ? t('home:search.searching', 'Searching...') : t('home:search.button', 'Search')}</span>
-                </motion.button>
+                </button>
               </div>
             </div>
 
-            {/* Expanded Search Panel - Trending Searches */}
-            <AnimatePresence>
-              {focused && !hasSearched && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="mt-6 pt-6 border-t border-border/50"
-                >
-                  <div className="grid md:grid-cols-2 gap-8">
-                    {/* Recent Searches */}
-                    <div>
-                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-4">
-                        <Clock className="w-4 h-4" />
-                        <span>{t('home:search.recent', 'Recent Searches')}</span>
-                      </div>
-                      <div className="space-y-2">
-                        <p className="text-sm text-muted-foreground italic">No recent searches</p>
-                      </div>
+            {/* Expanded Search Panel - CSS animations instead of framer-motion */}
+            {focused && !hasSearched && (
+              <div
+                className="mt-6 pt-6 border-t border-border/50 animate-fade-in"
+              >
+                <div className="grid md:grid-cols-2 gap-8">
+                  {/* Recent Searches */}
+                  <div>
+                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-4">
+                      <Clock className="w-4 h-4" />
+                      <span>{t('home:search.recent', 'Recent Searches')}</span>
                     </div>
-
-                    {/* Trending */}
-                    <div>
-                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-4">
-                        <TrendingUp className="w-4 h-4" />
-                        <span>{t('home:search.trending', 'Popular Searches')}</span>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {TRENDING_SEARCHES.map((item, i) => (
-                          <motion.button
-                            key={i}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: i * 0.05 }}
-                            onClick={() => handleTrendingClick(item)}
-                            className="px-4 py-2 text-sm text-foreground bg-muted/50 hover:bg-muted rounded-full transition-colors"
-                          >
-                            {item}
-                          </motion.button>
-                        ))}
-                      </div>
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground italic">No recent searches</p>
                     </div>
                   </div>
 
-                  {/* AI Suggestion */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    onClick={() => handleTrendingClick('cardiologist')}
-                    className="mt-6 flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl cursor-pointer hover:from-primary/20 hover:to-accent/20 transition-colors"
-                  >
-                    <Sparkles className="w-5 h-5 text-primary" />
-                    <span className="text-sm text-foreground">
-                      {t('home:search.aiHint', 'Try: cardiologist near me')}
-                    </span>
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                  {/* Trending */}
+                  <div>
+                    <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-4">
+                      <TrendingUp className="w-4 h-4" />
+                      <span>{t('home:search.trending', 'Popular Searches')}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {TRENDING_SEARCHES.map((item, i) => (
+                        <button
+                          key={i}
+                          onClick={() => handleTrendingClick(item)}
+                          className="px-4 py-2 text-sm text-foreground bg-muted/50 hover:bg-muted rounded-full transition-colors"
+                          style={{ animationDelay: `${i * 50}ms` }}
+                        >
+                          {item}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* AI Suggestion */}
+                <div
+                  onClick={() => handleTrendingClick('cardiologist')}
+                  className="mt-6 flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl cursor-pointer hover:from-primary/20 hover:to-accent/20 transition-colors"
+                >
+                  <Sparkles className="w-5 h-5 text-primary" />
+                  <span className="text-sm text-foreground">
+                    {t('home:search.aiHint', 'Try: cardiologist near me')}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Results (HIDDEN until user searches) */}
@@ -250,7 +229,7 @@ export default function SmartSearch() {
               </Suspense>
             </div>
           )}
-        </motion.div>
+        </div>
       </div>
     </section>
   );
