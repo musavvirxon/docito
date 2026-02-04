@@ -16,6 +16,9 @@ import {
   Loader2,
   AlertTriangle,
   Calendar,
+  RefreshCw,
+  Tooth,
+  DollarSign,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -67,6 +70,18 @@ interface AppointmentData {
   patient_avatar?: string;
 }
 
+interface AppointmentDentalProcedureRow {
+  id: string;
+  procedure_name: string;
+  tooth_numbers: number[];
+  status: 'planned' | 'in_progress' | 'completed' | 'cancelled';
+  cost: number | null;
+  notes: string | null;
+  performed_at: string | null;
+  created_at: string;
+  doctor?: { full_name: string | null } | null;
+}
+
 type SessionTab = 'session' | 'video' | 'dental' | 'prescriptions' | 'notes';
 
 const VALID_TABS: SessionTab[] = ['session', 'video', 'dental', 'prescriptions', 'notes'];
@@ -89,6 +104,9 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   const [showVideoRoom, setShowVideoRoom] = useState(false);
   const [videoConsultation, setVideoConsultation] = useState<VideoConsultation | null>(null);
   const [videoEnded, setVideoEnded] = useState(false);
+
+  const [appointmentDentalProcedures, setAppointmentDentalProcedures] = useState<AppointmentDentalProcedureRow[]>([]);
+  const [loadingDentalProcedures, setLoadingDentalProcedures] = useState(false);
 
   const { createConsultation, joinAsDoctor, endConsultation } = useVideoConsultation();
 
@@ -130,123 +148,108 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
     [applyTabToUrl, persistTab]
   );
 
-  // Initialize tab from URL/localStorage
+  // Restore persisted UI state (tab)
   useEffect(() => {
-    if (!appointmentId) return;
-
-    const urlTab = searchParams.get('tab');
-    if (urlTab && VALID_TABS.includes(urlTab as SessionTab)) {
-      setActiveTab(urlTab as SessionTab);
-      return;
-    }
-
     if (!uiPersistKey) return;
     try {
       const raw = localStorage.getItem(uiPersistKey);
       if (!raw) return;
       const parsed = JSON.parse(raw);
-      const storedTab = parsed?.tab;
-      if (storedTab && VALID_TABS.includes(storedTab as SessionTab)) {
-        setActiveTab(storedTab as SessionTab);
+      if (parsed?.tab && VALID_TABS.includes(parsed.tab)) {
+        setActiveTab(parsed.tab);
       }
     } catch {
       // ignore
     }
+  }, [uiPersistKey]);
+
+  // Read tab from URL on load
+  useEffect(() => {
+    const urlTab = searchParams.get('tab');
+    if (urlTab && VALID_TABS.includes(urlTab as SessionTab)) {
+      setActiveTab(urlTab as SessionTab);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appointmentId]);
+  }, []);
 
   const fetchSessionData = useCallback(async () => {
     if (!appointmentId) return;
 
-    setLoading(true);
     try {
-      // Fetch appointment with patient info
-      const { data: appt, error: apptError } = await supabase
+      setLoading(true);
+
+      const { data: sessionData, error: sessionError } = await supabase
+        .from('appointment_sessions')
+        .select('*')
+        .eq('appointment_id', appointmentId)
+        .maybeSingle();
+
+      if (sessionError) throw sessionError;
+      if (!sessionData) throw new Error('Session not found');
+
+      setSession(sessionData as SessionData);
+      setSessionNotes(sessionData.notes || '');
+
+      const { data: appointmentData, error: apptError } = await supabase
         .from('appointments')
         .select(
           `
           *,
-          profiles:patient_id(full_name, phone, email, avatar_url),
-          doctor_patients:doctor_patient_id(full_name, phone, email)
+          doctor:doctors (
+            id,
+            specialty
+          ),
+          patient:profiles (
+            user_id,
+            full_name,
+            phone,
+            email,
+            avatar_url
+          ),
+          direct_patient:doctor_patients (
+            id,
+            full_name,
+            phone,
+            email
+          )
         `
         )
         .eq('id', appointmentId)
-        .single();
+        .maybeSingle();
 
       if (apptError) throw apptError;
+      if (!appointmentData) throw new Error('Appointment not found');
 
-      const patientProfile = (appt as any).profiles as any;
-      const doctorPatient = (appt as any).doctor_patients as any;
-
-      const apptType = ((appt as any).appointment_type || 'in_person') as string;
+      const patientName = appointmentData.patient?.full_name || appointmentData.direct_patient?.full_name || 'Patient';
+      const patientPhone = appointmentData.patient?.phone || appointmentData.direct_patient?.phone || '';
+      const patientEmail = appointmentData.patient?.email || appointmentData.direct_patient?.email || '';
+      const patientAvatar = appointmentData.patient?.avatar_url || '';
 
       setAppointment({
-        id: appt.id,
-        appointment_date: appt.appointment_date,
-        start_time: appt.start_time,
-        end_time: appt.end_time,
-        status: appt.status,
-        notes: appt.notes,
-        appointment_type: apptType,
-        patient_id: appt.patient_id,
-        doctor_patient_id: appt.doctor_patient_id,
-        doctor_id: appt.doctor_id,
-        patient_name: patientProfile?.full_name || doctorPatient?.full_name || 'Patient',
-        patient_phone: patientProfile?.phone || doctorPatient?.phone,
-        patient_email: patientProfile?.email || doctorPatient?.email,
-        patient_avatar: patientProfile?.avatar_url,
+        id: appointmentData.id,
+        appointment_date: appointmentData.appointment_date,
+        start_time: appointmentData.start_time,
+        end_time: appointmentData.end_time,
+        status: appointmentData.status,
+        notes: appointmentData.notes,
+        appointment_type: appointmentData.appointment_type,
+        patient_id: appointmentData.patient_id || undefined,
+        doctor_patient_id: appointmentData.doctor_patient_id || undefined,
+        doctor_id: appointmentData.doctor_id,
+        patient_name: patientName,
+        patient_phone: patientPhone,
+        patient_email: patientEmail,
+        patient_avatar: patientAvatar,
       });
 
-      // Fetch or create session
-      let { data: sessionData, error: sessionError } = await supabase
-        .from('appointment_sessions')
-        .select('*')
-        .eq('appointment_id', appointmentId)
-        .single();
+      setDoctorSpecialty(appointmentData.doctor?.specialty || '');
 
-      if (sessionError && (sessionError as any).code === 'PGRST116') {
-        // Session doesn't exist, create one
-        const { data: newSession, error: createError } = await (supabase as any)
-          .from('appointment_sessions')
-          .insert({
-            appointment_id: appointmentId,
-            doctor_id: appt.doctor_id,
-            patient_id: appt.patient_id,
-            doctor_patient_id: appt.doctor_patient_id,
-            session_type: apptType as any,
-            session_status: 'active',
-            started_at: new Date().toISOString(),
-          })
-          .select()
-          .single();
-
-        if (createError) throw createError;
-        sessionData = newSession as any;
-      } else if (sessionError) {
-        throw sessionError;
-      }
-
-      setSession(sessionData as any);
-      setSessionNotes((sessionData as any)?.specialty_data?.notes || appt.notes || '');
-
-      // Fetch doctor specialty
-      const { data: doctor } = await supabase
-        .from('doctors')
-        .select('specialty')
-        .eq('id', appt.doctor_id)
-        .single();
-
-      if (doctor) {
-        setDoctorSpecialty((doctor as any).specialty || '');
-      }
-
-      // For video appointments, fetch existing consultation (if any)
-      if (apptType === 'video') {
+      // If video appointment, preload existing consultation (if any)
+      if (appointmentData.appointment_type === 'video') {
         const { data: existingConsultation } = await supabase
           .from('video_consultations')
           .select('*')
           .eq('appointment_id', appointmentId)
-          .order('created_at', { ascending: false })
           .maybeSingle();
 
         if (existingConsultation) {
@@ -315,6 +318,82 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
     }
   }, [appointment, isVideoAppointment, isDentist, activeTab, handleTabChange]);
 
+  const formatMoney = useCallback((amount: number | null | undefined) => {
+    const n = Number(amount ?? 0);
+    const safe = Number.isFinite(n) ? n : 0;
+    try {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(safe);
+    } catch {
+      return `$${safe.toFixed(2)}`;
+    }
+  }, []);
+
+  const dentalStatusBadgeClass = useCallback((status: AppointmentDentalProcedureRow['status']) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300';
+      case 'in_progress':
+        return 'bg-blue-500/10 text-blue-700 dark:text-blue-300';
+      case 'cancelled':
+        return 'bg-red-500/10 text-red-700 dark:text-red-300';
+      case 'planned':
+      default:
+        return 'bg-muted text-muted-foreground';
+    }
+  }, []);
+
+  const fetchAppointmentDentalProcedures = useCallback(async () => {
+    if (!appointmentId) return;
+
+    setLoadingDentalProcedures(true);
+    try {
+      const { data, error } = await supabase
+        .from('tooth_procedure_history')
+        .select('id,procedure_name,tooth_numbers,status,cost,notes,performed_at,created_at,doctor:doctor_profiles_view(full_name)')
+        .eq('appointment_id', appointmentId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setAppointmentDentalProcedures((data as any) || []);
+    } catch (error: any) {
+      console.error('Error loading appointment dental procedures:', error);
+      toast.error(t('doctor.session.dentalProceduresLoadError', 'Failed to load dental procedures'));
+      setAppointmentDentalProcedures([]);
+    } finally {
+      setLoadingDentalProcedures(false);
+    }
+  }, [appointmentId, t]);
+
+  useEffect(() => {
+    if (!isDentist) return;
+    fetchAppointmentDentalProcedures();
+  }, [isDentist, fetchAppointmentDentalProcedures]);
+
+  const appointmentDentalSummary = useMemo(() => {
+    const counts = new Map<string, number>();
+    let totalCost = 0;
+
+    for (const row of appointmentDentalProcedures) {
+      const name = row.procedure_name || 'Procedure';
+      const toothCount = Array.isArray(row.tooth_numbers) && row.tooth_numbers.length ? row.tooth_numbers.length : 1;
+      counts.set(name, (counts.get(name) || 0) + toothCount);
+
+      if (typeof row.cost === 'number' && Number.isFinite(row.cost)) {
+        totalCost += row.cost;
+      }
+    }
+
+    const summaryParts = Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, qty]) => `${name} ×${qty}`);
+
+    return {
+      totalCost,
+      summaryParts,
+      entries: appointmentDentalProcedures.length,
+    };
+  }, [appointmentDentalProcedures]);
+
   const canJoinExistingVideo = useMemo(() => {
     if (!videoConsultation) return false;
     return ['scheduled', 'waiting', 'in_progress'].includes(videoConsultation.status);
@@ -340,113 +419,62 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
       }
 
       // Otherwise create a new consultation
-      const scheduledEnd = new Date();
-      scheduledEnd.setMinutes(scheduledEnd.getMinutes() + 30);
-
-      const consultation = await createConsultation({
-        appointment_id: appointment.id,
-        doctor_id: appointment.doctor_id,
-        patient_id: appointment.patient_id,
-        scheduled_start: new Date().toISOString(),
-        scheduled_end: scheduledEnd.toISOString(),
+      const consult = await createConsultation({
+        appointmentId: appointment.id,
+        doctorId: appointment.doctor_id,
+        patientId: appointment.patient_id,
       });
 
-      if (consultation) {
-        const joined = await joinAsDoctor(consultation.id);
-        setVideoConsultation((joined || consultation) as VideoConsultation);
+      if (consult) {
+        setVideoConsultation(consult);
         setShowVideoRoom(true);
         setVideoEnded(false);
         videoEndOnceRef.current = false;
         handleTabChange('video');
       }
     } catch (error) {
-      console.error('Error starting/joining video:', error);
-      toast.error(t('doctor.session.videoStartError', 'Failed to start video call'));
+      console.error('Error starting video consultation:', error);
+      toast.error(t('doctor.session.videoStartError', 'Failed to start video consultation'));
     }
-  }, [appointment, videoConsultation, canJoinExistingVideo, createConsultation, joinAsDoctor, handleTabChange, t]);
-
-  const handleSaveNotes = useCallback(async () => {
-    if (!session) return;
-
-    try {
-      await supabase
-        .from('appointment_sessions')
-        .update({
-          specialty_data: {
-            ...session.specialty_data,
-            notes: sessionNotes,
-          },
-        })
-        .eq('id', session.id);
-
-      toast.success(t('doctor.session.notesSaved', 'Notes saved'));
-    } catch (error) {
-      console.error('Error saving notes:', error);
-      toast.error(t('doctor.session.notesSaveError', 'Failed to save notes'));
-    }
-  }, [session, sessionNotes, t]);
+  }, [appointment, canJoinExistingVideo, createConsultation, handleTabChange, joinAsDoctor, t, videoConsultation]);
 
   const finalizeVideoIfNeeded = useCallback(
     async (notes?: string) => {
-      if (!videoConsultation) return;
-      if (
-        videoConsultation.status === 'completed' ||
-        videoConsultation.status === 'cancelled' ||
-        videoConsultation.status === 'no_show'
-      ) {
-        setVideoEnded(true);
-        return;
-      }
+      if (!videoConsultation?.id || videoEndOnceRef.current) return;
 
-      if (videoEndOnceRef.current) return;
       videoEndOnceRef.current = true;
-
       try {
-        const ended = await endConsultation(videoConsultation.id, notes || sessionNotes);
-        if (ended) setVideoConsultation(ended as VideoConsultation);
+        await endConsultation(videoConsultation.id, notes);
         setVideoEnded(true);
-      } catch (e) {
-        console.error('Error ending video consultation:', e);
-        setVideoEnded(true);
+        setShowVideoRoom(false);
+      } catch (err) {
+        console.error('Error ending video consultation:', err);
       }
     },
-    [videoConsultation, endConsultation, sessionNotes]
+    [endConsultation, videoConsultation?.id]
   );
 
   const handleEndSession = useCallback(async () => {
-    if (!session || !appointment) return;
-
-    setIsEnding(true);
+    if (!session?.id) return;
     try {
-      // If video was used, end the consultation first, but do NOT auto-complete session until user clicks End Session (this action)
-      if (videoConsultation && !videoEnded) {
-        await finalizeVideoIfNeeded(sessionNotes);
-      }
+      setIsEnding(true);
 
-      // Update session status
-      await supabase
+      const { error } = await supabase
         .from('appointment_sessions')
-        .update({
-          session_status: 'completed',
-          ended_at: new Date().toISOString(),
-          specialty_data: {
-            ...session.specialty_data,
-            notes: sessionNotes,
-          },
-        })
+        .update({ session_status: 'completed', ended_at: new Date().toISOString(), notes: sessionNotes })
         .eq('id', session.id);
 
-      // Update appointment status
-      await supabase
-        .from('appointments')
-        .update({
-          status: 'completed' as any,
-          completed_at: new Date().toISOString(),
-          notes: sessionNotes || appointment.notes,
-        })
-        .eq('id', appointment.id);
+      if (error) throw error;
 
-      toast.success(t('doctor.session.completed', 'Appointment completed successfully'));
+      // mark appointment completed if not already
+      if (appointment?.id) {
+        await supabase
+          .from('appointments')
+          .update({ status: 'completed', completed_at: new Date().toISOString() })
+          .eq('id', appointment.id);
+      }
+
+      toast.success(t('doctor.session.ended', 'Session ended'));
       navigate('/doctor-dashboard');
     } catch (error) {
       console.error('Error ending session:', error);
@@ -454,19 +482,23 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
     } finally {
       setIsEnding(false);
     }
-  }, [session, appointment, sessionNotes, navigate, videoConsultation, videoEnded, finalizeVideoIfNeeded, t]);
+  }, [appointment?.id, navigate, session?.id, sessionNotes, t]);
 
-  const handleLeaveVideo = useCallback(async () => {
-    // Leave video UI and finalize consultation, but do NOT end the appointment session.
-    setShowVideoRoom(false);
-    setActiveTab('session');
-    persistTab('session');
-    applyTabToUrl('session');
+  const handleSaveNotes = useCallback(async () => {
+    if (!session?.id) return;
+    try {
+      const { error } = await supabase
+        .from('appointment_sessions')
+        .update({ notes: sessionNotes })
+        .eq('id', session.id);
 
-    if (!videoConsultation) return;
-    await finalizeVideoIfNeeded(sessionNotes);
-    toast.info(t('doctor.session.videoEndedDeferred', 'Video call ended. You can end the session when ready.'));
-  }, [applyTabToUrl, finalizeVideoIfNeeded, persistTab, sessionNotes, videoConsultation, t]);
+      if (error) throw error;
+      toast.success(t('doctor.session.notesSaved', 'Notes saved'));
+    } catch (error) {
+      console.error('Error saving notes:', error);
+      toast.error(t('doctor.session.notesSaveError', 'Failed to save notes'));
+    }
+  }, [session?.id, sessionNotes, t]);
 
   const handleVideoEnd = useCallback(
     async (notes?: string) => {
@@ -558,17 +590,10 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
             )}
 
             {isVideoAppointment && showVideoRoom && (
-              <Button variant="outline" onClick={handleLeaveVideo} className="gap-2">
+              <Button variant="outline" onClick={() => handleVideoEnd(sessionNotes)} className="gap-2">
                 <XCircle className="h-4 w-4" />
-                Leave Video
+                End Video
               </Button>
-            )}
-
-            {isVideoAppointment && videoEnded && (
-              <Badge variant="secondary" className="gap-2">
-                <CheckCircle className="h-4 w-4" />
-                Video Completed
-              </Badge>
             )}
 
             <Button variant="destructive" onClick={handleEndSession} disabled={isEnding} className="gap-2">
@@ -579,74 +604,64 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* Content */}
       <main className="container py-6">
-        <ResizablePanelGroup
-          orientation="horizontal"
-          className="min-h-[calc(100vh-8rem)]"
-        >
-          {/* Left Panel - Session Tools */}
-          <ResizablePanel defaultSize={65} minSize={40}>
+        <ResizablePanelGroup direction="horizontal" className="min-h-[calc(100vh-8rem)]">
+          <ResizablePanel defaultSize={65} minSize={50}>
             <div className="pr-4 h-full">
               <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full flex flex-col">
-                <TabsList className="w-full justify-start">
-                  {isVideoAppointment && (
-                    <TabsTrigger value="video" className="gap-2">
-                      <Video className="h-4 w-4" />
-                      Video Call
-                    </TabsTrigger>
-                  )}
+                <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-4">
                   <TabsTrigger value="session" className="gap-2">
                     <Activity className="h-4 w-4" />
                     Session
                   </TabsTrigger>
+
+                  {isVideoAppointment && (
+                    <TabsTrigger value="video" className="gap-2">
+                      <Video className="h-4 w-4" />
+                      Video
+                    </TabsTrigger>
+                  )}
+
                   {isDentist && (
                     <TabsTrigger value="dental" className="gap-2">
                       <Stethoscope className="h-4 w-4" />
-                      Dental Chart
+                      Dental
                     </TabsTrigger>
                   )}
+
                   <TabsTrigger value="prescriptions" className="gap-2">
                     <Pill className="h-4 w-4" />
-                    Prescriptions
+                    Rx
                   </TabsTrigger>
+
                   <TabsTrigger value="notes" className="gap-2">
                     <FileText className="h-4 w-4" />
                     Notes
                   </TabsTrigger>
                 </TabsList>
 
-                <ScrollArea className="flex-1 mt-4">
-                  {/* Video Tab Content */}
+                <ScrollArea className="flex-1 pr-2">
                   {isVideoAppointment && (
-                    <TabsContent value="video" className="mt-0 h-[calc(100vh-16rem)]">
+                    <TabsContent value="video" className="mt-0 space-y-4">
                       {showVideoRoom && videoConsultation ? (
-                        <Card className="h-full">
-                          <CardContent className="p-0 h-full">
-                            <VideoRoom
-                              consultation={videoConsultation}
-                              userName="Doctor"
-                              userRole="doctor"
-                              onEnd={handleVideoEnd}
-                              onLeave={handleLeaveVideo}
-                            />
-                          </CardContent>
-                        </Card>
+                        <VideoRoom
+                          consultationId={videoConsultation.id}
+                          appointmentId={appointment.id}
+                          onEnd={handleVideoEnd}
+                          role="doctor"
+                        />
                       ) : (
-                        <Card className="h-full">
-                          <CardContent className="h-full flex flex-col items-center justify-center text-center p-6">
-                            <Video className="h-12 w-12 text-muted-foreground mb-4" />
-                            <h3 className="text-lg font-semibold mb-2">Video Call</h3>
-                            <p className="text-sm text-muted-foreground max-w-md">
-                              {videoEnded
-                                ? 'The video call has been completed. You can continue documentation and end the session when ready.'
-                                : videoConsultation && canJoinExistingVideo
-                                ? 'A video consultation already exists for this appointment. Join when you are ready.'
-                                : 'Start the video call when you are ready.'}
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm">Video Consultation</CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            <p className="text-sm text-muted-foreground">
+                              Start or join the video call for this appointment.
                             </p>
-
-                            {!videoEnded && (
-                              <Button onClick={startOrJoinVideo} className="gap-2 mt-4">
+                            {isVideoAppointment && !videoEnded && (
+                              <Button onClick={startOrJoinVideo} className="gap-2">
                                 <Video className="h-4 w-4" />
                                 {videoConsultation && canJoinExistingVideo ? 'Join Video' : 'Start Video'}
                               </Button>
@@ -719,7 +734,102 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                   </TabsContent>
 
                   {isDentist && (
-                    <TabsContent value="dental" className="mt-0">
+                    <TabsContent value="dental" className="mt-0 space-y-4">
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm flex items-center justify-between">
+                            <span className="flex items-center gap-2">
+                              <Tooth className="h-4 w-4" />
+                              Dental Procedures (This Appointment)
+                            </span>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="gap-2"
+                              onClick={fetchAppointmentDentalProcedures}
+                              disabled={loadingDentalProcedures}
+                            >
+                              <RefreshCw className={`h-4 w-4 ${loadingDentalProcedures ? 'animate-spin' : ''}`} />
+                              Refresh
+                            </Button>
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <div className="text-sm text-muted-foreground">
+                              {appointmentDentalSummary.summaryParts.length
+                                ? appointmentDentalSummary.summaryParts.join(' • ')
+                                : 'No dental procedures recorded for this appointment yet.'}
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <DollarSign className="h-4 w-4 text-primary" />
+                              <span className="text-muted-foreground">Total:</span>
+                              <span className="font-semibold">{formatMoney(appointmentDentalSummary.totalCost)}</span>
+                            </div>
+                          </div>
+
+                          {loadingDentalProcedures && appointmentDentalProcedures.length === 0 && (
+                            <div className="text-sm text-muted-foreground flex items-center gap-2">
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Loading procedures...
+                            </div>
+                          )}
+
+                          {appointmentDentalProcedures.length > 0 && (
+                            <div className="space-y-2">
+                              {appointmentDentalProcedures.map((row) => {
+                                const when = row.performed_at || row.created_at;
+                                const dateLabel = when ? format(new Date(when), 'MMM d, yyyy • HH:mm') : '';
+                                const teeth = Array.isArray(row.tooth_numbers)
+                                  ? row.tooth_numbers.slice().sort((a, b) => a - b)
+                                  : [];
+
+                                return (
+                                  <div
+                                    key={row.id}
+                                    className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 p-3 rounded-lg bg-muted/40 hover:bg-muted transition-colors"
+                                  >
+                                    <div className="min-w-0">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="font-medium text-sm">{row.procedure_name}</span>
+                                        <Badge className={dentalStatusBadgeClass(row.status)}>
+                                          {row.status.replace('_', ' ')}
+                                        </Badge>
+                                        {teeth.length > 0 && (
+                                          <Badge variant="outline" className="text-xs">
+                                            Teeth: {teeth.join(', ')}
+                                          </Badge>
+                                        )}
+                                      </div>
+
+                                      <div className="text-xs text-muted-foreground mt-1 flex flex-wrap items-center gap-2">
+                                        {dateLabel && <span>{dateLabel}</span>}
+                                        {row.doctor?.full_name && <span>• Dr. {row.doctor.full_name}</span>}
+                                      </div>
+
+                                      {row.notes && (
+                                        <div className="text-xs text-muted-foreground mt-1">
+                                          {row.notes}
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    <div className="shrink-0 text-sm font-semibold">
+                                      {formatMoney(row.cost)}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          <div className="text-xs text-muted-foreground">
+                            Tip: each entry’s cost is stored as total (unit cost × number of selected teeth).
+                          </div>
+                        </CardContent>
+                      </Card>
+
                       <EnhancedDentalChart patientId={patientId} appointmentId={appointment.id} isEditable={true} />
                     </TabsContent>
                   )}
