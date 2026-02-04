@@ -11,8 +11,8 @@ import i18n from "@/i18n/config";
 // Layouts
 import PublicLayout from "@/layouts/PublicLayout";
 
-// Public pages
-import PremiumHome from "@/pages/PremiumHome";
+// Public pages - lazy load home page for better code splitting
+const PremiumHome = lazy(() => import("@/pages/PremiumHome"));
 
 // Lazy load all other pages
 const Auth = lazy(() => import("@/pages/Auth"));
