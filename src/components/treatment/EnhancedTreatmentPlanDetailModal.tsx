@@ -1,5 +1,15 @@
-import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, CheckCircle, Clock, DollarSign, FileText, Calendar, Pill, UserCheck, Send, Save } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import {
+  Plus,
+  Trash2,
+  CheckCircle,
+  DollarSign,
+  FileText,
+  Calendar,
+  Pill,
+  Send,
+  Save,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -9,8 +19,20 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -38,19 +60,20 @@ interface TreatmentPlanProcedure {
   id: string;
   treatment_plan_id: string;
   procedure_id: string;
-  tooth_numbers?: number[];
-  cost?: number;
-  notes?: string;
+  tooth_numbers?: number[] | null;
+  cost?: number | null; // ✅ unit cost for tooth_based
+  notes?: string | null;
   status: string;
-  sequence_order?: number;
-  scheduled_date?: string;
+  sequence_order?: number | null;
+  scheduled_date?: string | null;
   created_at: string;
   procedure: {
     name: string;
-    category: string;
-    type: string;
-    default_cost?: number;
-    notes?: string;
+    category: string | null;
+    type: string | null; // 'tooth_based' | 'oral_cavity_region' | etc
+    default_cost?: number | null;
+    price?: number | null;
+    notes?: string | null;
   };
 }
 
@@ -72,15 +95,19 @@ interface EnhancedTreatmentPlanDetailModalProps {
   onUpdate: () => void;
 }
 
-const EnhancedTreatmentPlanDetailModal = ({ 
-  open, 
-  onOpenChange, 
-  treatmentPlan, 
-  onUpdate 
+const toNumber = (v: any) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+};
+
+const EnhancedTreatmentPlanDetailModal = ({
+  open,
+  onOpenChange,
+  treatmentPlan,
+  onUpdate,
 }: EnhancedTreatmentPlanDetailModalProps) => {
   const [procedures, setProcedures] = useState<TreatmentPlanProcedure[]>([]);
   const [medications, setMedications] = useState<Medication[]>([]);
-  const [loading, setLoading] = useState(false);
   const [showAddProcedureModal, setShowAddProcedureModal] = useState(false);
   const [showMedicationModal, setShowMedicationModal] = useState(false);
   const [showTemplatesModal, setShowTemplatesModal] = useState(false);
@@ -90,21 +117,25 @@ const EnhancedTreatmentPlanDetailModal = ({
       fetchProcedures();
       fetchMedications();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, treatmentPlan.id]);
 
   const fetchProcedures = async () => {
     try {
+      // ✅ include price too (fallback)
       const { data, error } = await supabase
         .from("treatment_plan_procedures")
-        .select(`
+        .select(
+          `
           *,
-          procedure:procedures(name, category, type, default_cost)
-        `)
+          procedure:procedures(name, category, type, default_cost, price)
+        `
+        )
         .eq("treatment_plan_id", treatmentPlan.id)
-        .order("sequence_order");
+        .order("sequence_order", { ascending: true });
 
       if (error) throw error;
-      setProcedures(data || []);
+      setProcedures((data || []) as any);
     } catch (error: any) {
       toast.error("Failed to load procedures: " + error.message);
     }
@@ -119,7 +150,7 @@ const EnhancedTreatmentPlanDetailModal = ({
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setMedications(data || []);
+      setMedications((data || []) as any);
     } catch (error: any) {
       toast.error("Failed to load medications: " + error.message);
     }
@@ -128,7 +159,7 @@ const EnhancedTreatmentPlanDetailModal = ({
   const handleStatusChange = async (newStatus: string) => {
     try {
       const updateData: any = { status: newStatus };
-      
+
       if (newStatus === "in_progress" && treatmentPlan.status === "confirmed") {
         updateData.started_at = new Date().toISOString();
       } else if (newStatus === "completed") {
@@ -141,7 +172,7 @@ const EnhancedTreatmentPlanDetailModal = ({
         .eq("id", treatmentPlan.id);
 
       if (error) throw error;
-      
+
       toast.success(`Treatment plan status updated to ${newStatus}`);
       onUpdate();
     } catch (error: any) {
@@ -150,7 +181,6 @@ const EnhancedTreatmentPlanDetailModal = ({
   };
 
   const handlePublishPlan = async () => {
-    // Check if all required consents are signed
     const hasUnsignedConsents = await checkConsentStatus();
     if (hasUnsignedConsents) {
       toast.error("All required consent forms must be signed before publishing");
@@ -160,14 +190,14 @@ const EnhancedTreatmentPlanDetailModal = ({
     try {
       const { error } = await supabase
         .from("treatment_plans")
-        .update({ 
+        .update({
           status: "published",
-          published_at: new Date().toISOString()
+          published_at: new Date().toISOString(),
         })
         .eq("id", treatmentPlan.id);
 
       if (error) throw error;
-      
+
       toast.success("Treatment plan published successfully!");
       onUpdate();
     } catch (error: any) {
@@ -196,34 +226,69 @@ const EnhancedTreatmentPlanDetailModal = ({
       low: "bg-gray-100 text-gray-800",
       normal: "bg-blue-100 text-blue-800",
       high: "bg-orange-100 text-orange-800",
-      urgent: "bg-red-100 text-red-800"
+      urgent: "bg-red-100 text-red-800",
     };
     return colors[priority as keyof typeof colors] || colors.normal;
   };
 
   const getStatusColor = (status: string) => {
-    const colors = {
+    // ✅ cover both plan-status + procedure-status
+    const colors: Record<string, string> = {
+      // plan
       draft: "bg-gray-100 text-gray-800",
       published: "bg-blue-100 text-blue-800",
       in_progress: "bg-orange-100 text-orange-800",
       completed: "bg-green-100 text-green-800",
       paused: "bg-yellow-100 text-yellow-800",
-      cancelled: "bg-red-100 text-red-800"
+      cancelled: "bg-red-100 text-red-800",
+
+      // procedure
+      pending: "bg-gray-100 text-gray-800",
+      scheduled: "bg-blue-100 text-blue-800",
+      done: "bg-green-100 text-green-800",
+      canceled: "bg-red-100 text-red-800",
+      no_show: "bg-red-100 text-red-800",
     };
-    return colors[status as keyof typeof colors] || colors.draft;
+
+    return colors[status] || "bg-gray-100 text-gray-800";
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
+    try {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+      }).format(amount);
+    } catch {
+      return `$${amount.toFixed(2)}`;
+    }
   };
 
-  const totalCost = procedures.reduce((sum, proc) => {
-    const cost = proc.cost || proc.procedure.default_cost || 0;
-    return sum + cost;
-  }, 0);
+  const getUnitCost = (proc: TreatmentPlanProcedure) => {
+    return toNumber(proc.cost ?? proc.procedure?.default_cost ?? proc.procedure?.price ?? 0);
+  };
+
+  const isToothBased = (proc: TreatmentPlanProcedure) =>
+    String(proc.procedure?.type || "").toLowerCase() === "tooth_based";
+
+  const getQty = (proc: TreatmentPlanProcedure) => {
+    if (!isToothBased(proc)) return 1;
+    const len = Array.isArray(proc.tooth_numbers) ? proc.tooth_numbers.length : 0;
+    // For tooth_based, qty should be #teeth; if somehow missing, treat as 1 to avoid 0 totals
+    return Math.max(len, 1);
+  };
+
+  const getLineTotal = (proc: TreatmentPlanProcedure) => {
+    const unit = getUnitCost(proc);
+    const qty = getQty(proc);
+    return isToothBased(proc) ? unit * qty : unit;
+  };
+
+  // ✅ total cost uses tooth multiplier logic
+  const totalCost = useMemo(() => {
+    return procedures.reduce((sum, proc) => sum + getLineTotal(proc), 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [procedures]);
 
   return (
     <>
@@ -332,6 +397,7 @@ const EnhancedTreatmentPlanDetailModal = ({
                       {medications.length > 0 &&
                         ` + ${medications.length} medication${medications.length !== 1 ? "s" : ""}`}
                     </p>
+
                     <div className="mt-4 space-y-2">
                       <div className="flex justify-between text-sm">
                         <span>Procedures:</span>
@@ -342,6 +408,14 @@ const EnhancedTreatmentPlanDetailModal = ({
                         <span>Separate billing</span>
                       </div>
                     </div>
+
+                    {/* Optional: show DB total_cost vs computed totalCost */}
+                    {typeof treatmentPlan.total_cost === "number" && (
+                      <div className="mt-3 text-xs text-muted-foreground">
+                        Stored total: {formatCurrency(toNumber(treatmentPlan.total_cost))} • Computed total:{" "}
+                        {formatCurrency(totalCost)}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>
@@ -423,65 +497,108 @@ const EnhancedTreatmentPlanDetailModal = ({
                           <TableHead>Procedure</TableHead>
                           <TableHead>Teeth</TableHead>
                           <TableHead>Scheduled</TableHead>
-                          <TableHead>Cost</TableHead>
+                          <TableHead className="text-right">Cost</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead>Actions</TableHead>
                         </TableRow>
                       </TableHeader>
+
                       <TableBody>
-                        {procedures.map((proc, index) => (
-                          <TableRow key={proc.id}>
-                            <TableCell className="font-medium">#{index + 1}</TableCell>
-                            <TableCell>
-                              <div>
-                                <p className="font-medium">{proc.procedure.name}</p>
-                                <p className="text-sm text-muted-foreground">{proc.procedure.category}</p>
-                                {proc.notes && (
-                                  <p className="text-sm text-muted-foreground mt-1">{proc.notes}</p>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {proc.tooth_numbers && proc.tooth_numbers.length > 0 ? (
-                                <div className="text-sm">{proc.tooth_numbers.join(", ")}</div>
-                              ) : (
-                                <span className="text-muted-foreground">All teeth</span>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              {proc.scheduled_date ? (
-                                <div className="flex items-center gap-1 text-sm">
-                                  <Calendar className="w-3 h-3" />
-                                  {format(new Date(proc.scheduled_date), "MMM d")}
+                        {procedures.map((proc, index) => {
+                          const toothBased = isToothBased(proc);
+                          const unit = getUnitCost(proc);
+                          const qty = getQty(proc);
+                          const lineTotal = getLineTotal(proc);
+
+                          return (
+                            <TableRow key={proc.id}>
+                              <TableCell className="font-medium">#{index + 1}</TableCell>
+
+                              <TableCell>
+                                <div>
+                                  <p className="font-medium">{proc.procedure?.name || "Procedure"}</p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {proc.procedure?.category || "—"}
+                                  </p>
+                                  {proc.notes && (
+                                    <p className="text-sm text-muted-foreground mt-1">{proc.notes}</p>
+                                  )}
                                 </div>
-                              ) : (
-                                <Button variant="outline" size="sm">
-                                  Schedule
-                                </Button>
-                              )}
-                            </TableCell>
-                            <TableCell className="font-medium">
-                              {formatCurrency(proc.cost || proc.procedure.default_cost || 0)}
-                            </TableCell>
-                            <TableCell>
-                              <Badge className={getStatusColor(proc.status)}>{proc.status}</Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Button variant="ghost" size="sm" className="text-green-600">
-                                  <CheckCircle className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="text-destructive hover:text-destructive"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                              </TableCell>
+
+                              <TableCell>
+                                {toothBased ? (
+                                  proc.tooth_numbers && proc.tooth_numbers.length > 0 ? (
+                                    <div className="text-sm">
+                                      {proc.tooth_numbers.join(", ")}{" "}
+                                      <span className="text-xs text-muted-foreground">
+                                        (× {proc.tooth_numbers.length})
+                                      </span>
+                                    </div>
+                                  ) : (
+                                    <span className="text-muted-foreground text-sm">—</span>
+                                  )
+                                ) : (
+                                  <span className="text-muted-foreground text-sm">N/A</span>
+                                )}
+                              </TableCell>
+
+                              <TableCell>
+                                {proc.scheduled_date ? (
+                                  <div className="flex items-center gap-1 text-sm">
+                                    <Calendar className="w-3 h-3" />
+                                    {format(new Date(proc.scheduled_date), "MMM d")}
+                                  </div>
+                                ) : (
+                                  <Button variant="outline" size="sm">
+                                    Schedule
+                                  </Button>
+                                )}
+                              </TableCell>
+
+                              <TableCell className="text-right">
+                                <div className="font-medium">{formatCurrency(lineTotal)}</div>
+                                {toothBased ? (
+                                  <div className="text-xs text-muted-foreground">
+                                    {formatCurrency(unit)} × {qty}
+                                  </div>
+                                ) : (
+                                  <div className="text-xs text-muted-foreground">Unit</div>
+                                )}
+                              </TableCell>
+
+                              <TableCell>
+                                <Badge className={getStatusColor(proc.status)}>{proc.status}</Badge>
+                              </TableCell>
+
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Button variant="ghost" size="sm" className="text-green-600">
+                                    <CheckCircle className="w-4 h-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-destructive hover:text-destructive"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+
+                        {/* Total row */}
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-right font-semibold">
+                            Total
+                          </TableCell>
+                          <TableCell className="text-right font-bold text-primary">
+                            {formatCurrency(totalCost)}
+                          </TableCell>
+                          <TableCell colSpan={2} />
+                        </TableRow>
                       </TableBody>
                     </Table>
                   )}
@@ -529,13 +646,19 @@ const EnhancedTreatmentPlanDetailModal = ({
                                 <p className="text-sm mt-1">{medication.instructions}</p>
                               )}
                               <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                                <span>Start: {format(new Date(medication.start_date), "MMM d, yyyy")}</span>
+                                <span>
+                                  Start: {format(new Date(medication.start_date), "MMM d, yyyy")}
+                                </span>
                                 {medication.end_date && (
-                                  <span>End: {format(new Date(medication.end_date), "MMM d, yyyy")}</span>
+                                  <span>
+                                    End: {format(new Date(medication.end_date), "MMM d, yyyy")}
+                                  </span>
                                 )}
                               </div>
                             </div>
-                            <Badge className={getStatusColor(medication.status)}>{medication.status}</Badge>
+                            <Badge className={getStatusColor(medication.status)}>
+                              {medication.status}
+                            </Badge>
                           </div>
                         </Card>
                       ))}
@@ -547,7 +670,7 @@ const EnhancedTreatmentPlanDetailModal = ({
 
             {/* Files Tab */}
             <TabsContent value="files">
-              <FileAttachmentSection 
+              <FileAttachmentSection
                 treatmentPlanId={treatmentPlan.id}
                 title="Treatment Plan Files & Documents"
               />
@@ -584,6 +707,7 @@ const EnhancedTreatmentPlanDetailModal = ({
         onSuccess={() => {
           setShowAddProcedureModal(false);
           fetchProcedures();
+          onUpdate();
         }}
       />
 
