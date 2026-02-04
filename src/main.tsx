@@ -17,12 +17,12 @@ const queryClient = new QueryClient({
   },
 });
 
-(function installChunkLoadRecovery() {
+// Defer chunk load recovery to avoid blocking main thread
+requestIdleCallback(() => {
   const ATTEMPTS_KEY = "__chunk_reload_attempts__";
   const LAST_TS_KEY = "__chunk_reload_last_ts__";
-
   const MAX_ATTEMPTS = 8;
-  const WINDOW_MS = 10 * 60_000; // 10 minutes
+  const WINDOW_MS = 10 * 60_000;
 
   const shouldReloadFor = (msg: string) => {
     const m = msg.toLowerCase();
@@ -39,28 +39,16 @@ const queryClient = new QueryClient({
     const now = Date.now();
     let attempts = 0;
     let lastTs = 0;
-
     try {
       attempts = Number(window.sessionStorage.getItem(ATTEMPTS_KEY) || "0");
       lastTs = Number(window.sessionStorage.getItem(LAST_TS_KEY) || "0");
-    } catch {
-      // ignore
-    }
-
-    // Reset attempts if outside window
-    if (!lastTs || now - lastTs > WINDOW_MS) {
-      attempts = 0;
-    }
-
+    } catch { /* ignore */ }
+    if (!lastTs || now - lastTs > WINDOW_MS) attempts = 0;
     attempts += 1;
-
     try {
       window.sessionStorage.setItem(ATTEMPTS_KEY, String(attempts));
       window.sessionStorage.setItem(LAST_TS_KEY, String(now));
-    } catch {
-      // ignore
-    }
-
+    } catch { /* ignore */ }
     return attempts;
   };
 
@@ -69,9 +57,7 @@ const queryClient = new QueryClient({
       if (!("serviceWorker" in navigator)) return;
       const regs = await navigator.serviceWorker.getRegistrations();
       await Promise.all(regs.map((r) => r.unregister()));
-    } catch {
-      // ignore
-    }
+    } catch { /* ignore */ }
   };
 
   const clearCaches = async () => {
@@ -79,71 +65,50 @@ const queryClient = new QueryClient({
       if (!("caches" in window)) return;
       const keys = await caches.keys();
       await Promise.all(keys.map((k) => caches.delete(k)));
-    } catch {
-      // ignore
-    }
+    } catch { /* ignore */ }
   };
 
   const cacheBustReload = async () => {
     const attempt = bumpAttempt();
     if (attempt > MAX_ATTEMPTS) return;
-
     await unregisterServiceWorkers();
     await clearCaches();
-
     const url = new URL(window.location.href);
     url.searchParams.set("__v", String(Date.now()));
     window.location.replace(url.toString());
   };
 
-  const extractMessage = (reason: any) => {
+  const extractMessage = (reason: unknown) => {
     if (!reason) return "";
     if (typeof reason === "string") return reason;
-    if (typeof reason?.message === "string") return reason.message;
-    try {
-      return String(reason);
-    } catch {
-      return "";
-    }
+    if (typeof (reason as { message?: string })?.message === "string") return (reason as { message: string }).message;
+    try { return String(reason); } catch { return ""; }
   };
 
   window.addEventListener("unhandledrejection", (event) => {
-    const reason = (event as PromiseRejectionEvent).reason;
-    const msg = extractMessage(reason);
-    if (msg && shouldReloadFor(msg)) {
-      void cacheBustReload();
-    }
+    const msg = extractMessage((event as PromiseRejectionEvent).reason);
+    if (msg && shouldReloadFor(msg)) void cacheBustReload();
   });
 
   window.addEventListener("error", (event) => {
-    const e = event as ErrorEvent;
-    const msg = e?.message ? String(e.message) : "";
-    if (msg && shouldReloadFor(msg)) {
-      void cacheBustReload();
-    }
+    const msg = (event as ErrorEvent)?.message ? String((event as ErrorEvent).message) : "";
+    if (msg && shouldReloadFor(msg)) void cacheBustReload();
   });
 
-  // If we made it this far and the app booted, clear recovery counters shortly after.
-  // This prevents getting "stuck" after a successful load.
   window.setTimeout(() => {
     try {
       window.sessionStorage.removeItem(ATTEMPTS_KEY);
       window.sessionStorage.removeItem(LAST_TS_KEY);
-    } catch {
-      // ignore
-    }
+    } catch { /* ignore */ }
   }, 12_000);
-})();
 
-// Proactively unregister any Service Worker that might cache old assets/index.html
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker
-    .getRegistrations()
-    .then((regs) => regs.forEach((r) => r.unregister()))
-    .catch(() => {
-      // ignore
-    });
-}
+  // Unregister service workers
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.getRegistrations()
+      .then((regs) => regs.forEach((r) => r.unregister()))
+      .catch(() => { /* ignore */ });
+  }
+}, { timeout: 2000 });
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
