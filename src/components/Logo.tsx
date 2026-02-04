@@ -129,7 +129,8 @@ export const Logo = ({
 
   const webpPath = getWebPPath();
   
-  const isLCP = size === 'xl';
+  // LCP optimization: xl size logos are likely LCP elements
+  const isLCP = size === 'xl' || size === 'lg';
   
   return (
     <picture>
