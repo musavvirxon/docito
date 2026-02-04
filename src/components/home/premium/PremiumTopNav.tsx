@@ -1,13 +1,15 @@
 // src/components/home/premium/PremiumTopNav.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, lazy, Suspense } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Menu, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import ProfileMenu from "@/components/dashboard/ProfileMenu";
 import { useLocalizedPath } from "@/hooks/useLocalizedPath";
+
+// Lazy load mobile menu to avoid loading framer-motion on initial render
+const MobileMenu = lazy(() => import("./MobileMenu"));
 
 type NavKey =
   | "doctors"
@@ -21,6 +23,7 @@ type NavKey =
 const PremiumTopNav = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [navVisible, setNavVisible] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation("premium");
@@ -29,6 +32,9 @@ const PremiumTopNav = () => {
   const { user } = useAuth();
 
   useEffect(() => {
+    // Trigger CSS animation after mount
+    requestAnimationFrame(() => setNavVisible(true));
+    
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -77,15 +83,15 @@ const PremiumTopNav = () => {
 
   return (
     <>
-      <motion.nav
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+          navVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
+        } ${
           isScrolled
             ? "bg-background/80 backdrop-blur-2xl border-b border-border/40 shadow-sm"
             : "bg-transparent"
         }`}
+        style={{ transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)" }}
       >
         <div className="max-w-[1400px] mx-auto px-4 lg:px-6">
           <div className="flex items-center justify-between h-14">
@@ -173,76 +179,21 @@ const PremiumTopNav = () => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="lg:hidden bg-background/95 backdrop-blur-2xl border-t border-border/40 overflow-hidden"
-            >
-              <div className="max-w-[1400px] mx-auto px-4 py-6">
-                <div className="grid grid-cols-2 gap-2">
-                  {navLinks.map((link, index) => {
-                    const href = getLocalizedPath(link.href);
-                    return (
-                      <motion.div
-                        key={link.key}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.03 }}
-                      >
-                        <Link
-                          to={href}
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className={`block py-3 px-4 text-sm font-medium rounded-xl transition-colors ${
-                            isActive(href)
-                              ? "text-primary bg-primary/10"
-                              : "text-foreground/80 hover:text-foreground hover:bg-accent/50"
-                          }`}
-                        >
-                          {labelFor(link.key)}
-                        </Link>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-
-                {!user && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="mt-6 pt-6 border-t border-border/40 flex gap-3"
-                  >
-                    <Button
-                      onClick={() => {
-                        navigate(getLocalizedPath("/auth"));
-                        setIsMobileMenuOpen(false);
-                      }}
-                      variant="outline"
-                      className="flex-1 h-12 text-sm font-medium rounded-xl"
-                    >
-                      {t("topNav.actions.signIn", { defaultValue: "Sign In" })}
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        navigate(getLocalizedPath("/auth?mode=register"));
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="flex-1 h-12 text-sm font-medium rounded-xl bg-primary text-primary-foreground"
-                    >
-                      {t("topNav.actions.register", { defaultValue: "Register" })}
-                    </Button>
-                  </motion.div>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.nav>
+        {/* Mobile Menu - Lazy loaded */}
+        {isMobileMenuOpen && (
+          <Suspense fallback={null}>
+            <MobileMenu
+              navLinks={navLinks}
+              labelFor={labelFor}
+              isActive={isActive}
+              user={user}
+              onClose={() => setIsMobileMenuOpen(false)}
+              getLocalizedPath={getLocalizedPath}
+              t={t}
+            />
+          </Suspense>
+        )}
+      </nav>
 
       {/* Spacer to prevent content from hiding under fixed nav */}
       <div className="h-14" />
