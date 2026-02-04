@@ -71,7 +71,7 @@ export const useDentalChart = (patientId?: string) => {
           .select("id")
           .eq("user_id", user.id)
           .single();
-        
+
         if (doctorData) {
           setDoctorId(doctorData.id);
         }
@@ -190,7 +190,7 @@ export const useDentalChart = (patientId?: string) => {
         if (error) throw error;
         data = inserted;
       }
-      
+
       await fetchToothRecords();
       return data;
     } catch (err: any) {
@@ -226,7 +226,9 @@ export const useDentalChart = (patientId?: string) => {
           procedure_name: procedureName,
           tooth_numbers: toothNumbers,
           status,
-          cost,
+          // NOTE: cost is expected to be the TOTAL cost for the row.
+          // If undefined, we store NULL.
+          cost: typeof cost === "number" ? cost : null,
           notes,
           performed_at: status === "completed" ? new Date().toISOString() : null,
         })
@@ -234,7 +236,7 @@ export const useDentalChart = (patientId?: string) => {
         .single();
 
       if (error) throw error;
-      
+
       toast.success(`${procedureName} added to ${toothNumbers.length} tooth${toothNumbers.length > 1 ? "es" : ""}`);
       await fetchProcedureHistory();
       await fetchToothRecords(); // Refresh as trigger may have updated status
@@ -261,7 +263,7 @@ export const useDentalChart = (patientId?: string) => {
         .eq("id", procedureHistoryId);
 
       if (error) throw error;
-      
+
       toast.success(`Procedure ${status}`);
       await fetchProcedureHistory();
       await fetchToothRecords();
