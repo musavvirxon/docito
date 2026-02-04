@@ -151,7 +151,7 @@ export default function RoleEditorDialog(props: {
                 ) : (
                   selected.map((r) => (
                     <Badge key={r} variant="outline" className="capitalize">
-                      {r.replaceAll("_", " ")}
+                      {r.split("_").join(" ")}
                     </Badge>
                   ))
                 )}

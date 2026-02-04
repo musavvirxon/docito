@@ -266,7 +266,7 @@ export default function UsersAdmin() {
                           ) : (
                             (u.roles || []).map((r) => (
                               <Badge key={r} variant="outline" className="capitalize">
-                                {r.replaceAll("_", " ")}
+                                {r.split("_").join(" ")}
                               </Badge>
                             ))
                           )}
@@ -401,7 +401,7 @@ export default function UsersAdmin() {
                   ) : (
                     selectedRoles.map((r) => (
                       <Badge key={r} variant="outline" className="capitalize">
-                        {r.replaceAll("_", " ")}
+                        {r.split("_").join(" ")}
                       </Badge>
                     ))
                   )}

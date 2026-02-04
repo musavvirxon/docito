@@ -59,11 +59,12 @@ const Index = () => {
   }, [i18n.language]);
 
   // Combined structured data for the homepage
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://docito.app';
   const structuredData = {
     "@context": "https://schema.org",
     "@graph": [
-      generateOrganizationSchema(),
-      generateMedicalWebsiteSchema(),
+      generateOrganizationSchema(baseUrl),
+      generateMedicalWebsiteSchema(baseUrl),
       {
         "@type": "WebPage",
         "@id": "https://docito.app/#webpage",
