@@ -1,7 +1,10 @@
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Heart,
   Stethoscope,
@@ -11,8 +14,12 @@ import {
   Bone,
   FileText,
   Calendar,
+  Tooth,
+  DollarSign,
+  Loader2,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 interface MedicalHistoryItem {
   id: string;
@@ -38,17 +45,105 @@ interface DiagnosisLog {
   notes?: string;
 }
 
+type DentalProcedureStatus = "planned" | "in_progress" | "completed" | "cancelled";
+
+interface DentalProcedureHistoryRow {
+  id: string;
+  procedure_name: string;
+  tooth_numbers: number[];
+  status: DentalProcedureStatus;
+  cost: number | null;
+  notes: string | null;
+  performed_at: string | null;
+  created_at: string;
+  doctor?: { full_name: string | null } | null;
+  appointment?: { appointment_date: string; start_time: string } | null;
+}
+
 interface HistoryTabProps {
   medicalHistory: MedicalHistoryItem[];
   dentalHistory: DentalHistoryItem[];
   diagnosesLog: DiagnosisLog[];
 }
 
-const HistoryTab = ({
-  medicalHistory,
-  dentalHistory,
-  diagnosesLog,
-}: HistoryTabProps) => {
+const HistoryTab = ({ medicalHistory, dentalHistory, diagnosesLog }: HistoryTabProps) => {
+  const { user } = useAuth();
+  const [dentalProcedures, setDentalProcedures] = useState<DentalProcedureHistoryRow[]>([]);
+  const [loadingDentalProcedures, setLoadingDentalProcedures] = useState(false);
+
+  useEffect(() => {
+    const run = async () => {
+      if (!user?.id) return;
+
+      setLoadingDentalProcedures(true);
+      try {
+        const { data, error } = await supabase
+          .from("tooth_procedure_history")
+          .select(
+            "id,procedure_name,tooth_numbers,status,cost,notes,performed_at,created_at,doctor:doctor_profiles_view(full_name),appointment:appointments(appointment_date,start_time)"
+          )
+          .eq("patient_id", user.id)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+        setDentalProcedures((data as any) || []);
+      } catch (err: any) {
+        console.error("Error loading dental procedures:", err);
+        toast.error("Failed to load dental procedure history");
+        setDentalProcedures([]);
+      } finally {
+        setLoadingDentalProcedures(false);
+      }
+    };
+
+    run();
+  }, [user?.id]);
+
+  const formatMoney = (amount: number | null | undefined) => {
+    const n = Number(amount ?? 0);
+    const safe = Number.isFinite(n) ? n : 0;
+    try {
+      return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(safe);
+    } catch {
+      return `$${safe.toFixed(2)}`;
+    }
+  };
+
+  const dentalStatusBadgeClass = (status: DentalProcedureStatus) => {
+    switch (status) {
+      case "completed":
+        return "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
+      case "in_progress":
+        return "bg-blue-500/10 text-blue-700 dark:text-blue-300";
+      case "cancelled":
+        return "bg-red-500/10 text-red-700 dark:text-red-300";
+      case "planned":
+      default:
+        return "bg-muted text-muted-foreground";
+    }
+  };
+
+  const dentalProcedureSummary = useMemo(() => {
+    const counts = new Map<string, number>();
+    let totalCost = 0;
+
+    for (const row of dentalProcedures) {
+      const name = row.procedure_name || "Procedure";
+      const toothCount = Array.isArray(row.tooth_numbers) && row.tooth_numbers.length ? row.tooth_numbers.length : 1;
+      counts.set(name, (counts.get(name) || 0) + toothCount);
+
+      if (typeof row.cost === "number" && Number.isFinite(row.cost)) {
+        totalCost += row.cost;
+      }
+    }
+
+    const summaryParts = Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, qty]) => `${name} ×${qty}`);
+
+    return { totalCost, summaryParts, entries: dentalProcedures.length };
+  }, [dentalProcedures]);
+
   const getMedicalIcon = (type: MedicalHistoryItem["type"]) => {
     switch (type) {
       case "disease":
@@ -83,8 +178,6 @@ const HistoryTab = ({
     }
   };
 
-  const getDentalIcon = () => Bone;
-
   const Section = ({
     title,
     icon: Icon,
@@ -109,9 +202,7 @@ const HistoryTab = ({
         {empty ? (
           <div className="text-center py-6">
             <Icon className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
-            <p className="text-sm text-muted-foreground">
-              {emptyText || "No records found"}
-            </p>
+            <p className="text-sm text-muted-foreground">{emptyText || "No records found"}</p>
           </div>
         ) : (
           children
@@ -121,11 +212,7 @@ const HistoryTab = ({
   );
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-6"
-    >
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Medical History */}
         <Section
@@ -158,11 +245,7 @@ const HistoryTab = ({
                           {new Date(item.date).toLocaleDateString()}
                         </p>
                       )}
-                      {item.notes && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {item.notes}
-                        </p>
-                      )}
+                      {item.notes && <p className="text-xs text-muted-foreground mt-1">{item.notes}</p>}
                     </div>
                   </div>
                 );
@@ -171,55 +254,150 @@ const HistoryTab = ({
           </ScrollArea>
         </Section>
 
-        {/* Dental History */}
+        {/* Dental History (Procedures + Notes) */}
         <Section
           title="Dental History"
-          icon={Bone}
-          empty={dentalHistory.length === 0}
-          emptyText="No dental history recorded"
+          icon={Tooth}
+          empty={!loadingDentalProcedures && dentalProcedures.length === 0 && dentalHistory.length === 0}
+          emptyText="No dental procedures recorded yet"
         >
-          <ScrollArea className="h-[300px] pr-4">
-            <div className="space-y-3">
-              {dentalHistory.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-                >
-                  <div className="p-2 rounded-lg bg-accent/10 text-accent">
-                    <Bone className="w-4 h-4" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="font-medium text-sm">{item.title}</p>
-                      <Badge variant="outline" className="text-xs shrink-0 capitalize">
-                        {item.type.replace("_", " ")}
-                      </Badge>
-                    </div>
-                    {item.details && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {item.details}
-                      </p>
-                    )}
-                    {item.date && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(item.date).toLocaleDateString()}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
+          <div className="space-y-4">
+            {/* Procedures */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-medium flex items-center gap-2">
+                  <Tooth className="w-4 h-4 text-primary" />
+                  Procedures
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {dentalProcedureSummary.summaryParts.length
+                    ? dentalProcedureSummary.summaryParts.join(" • ")
+                    : "No procedures yet."}
+                </p>
+              </div>
+
+              <div className="shrink-0 text-right">
+                <p className="text-xs text-muted-foreground flex items-center justify-end gap-1">
+                  <DollarSign className="w-3.5 h-3.5" />
+                  Total
+                </p>
+                <p className="font-semibold text-sm">{formatMoney(dentalProcedureSummary.totalCost)}</p>
+              </div>
             </div>
-          </ScrollArea>
+
+            {loadingDentalProcedures && (
+              <div className="text-sm text-muted-foreground flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading procedure history...
+              </div>
+            )}
+
+            {!loadingDentalProcedures && dentalProcedures.length > 0 && (
+              <ScrollArea className="h-[220px] pr-4">
+                <div className="space-y-3">
+                  {dentalProcedures.map((row) => {
+                    const when = row.performed_at || row.created_at;
+                    const dateLabel = when ? new Date(when).toLocaleDateString() : "";
+                    const teeth = Array.isArray(row.tooth_numbers)
+                      ? row.tooth_numbers.slice().sort((a, b) => a - b)
+                      : [];
+
+                    const apptLabel =
+                      row.appointment?.appointment_date && row.appointment?.start_time
+                        ? `${new Date(row.appointment.appointment_date).toLocaleDateString()} • ${row.appointment.start_time}`
+                        : null;
+
+                    return (
+                      <div
+                        key={row.id}
+                        className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                      >
+                        <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                          <Tooth className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="font-medium text-sm">{row.procedure_name}</p>
+                            <span className="text-sm font-semibold">{formatMoney(row.cost)}</span>
+                          </div>
+
+                          <div className="mt-1 flex flex-wrap items-center gap-2">
+                            <Badge className={dentalStatusBadgeClass(row.status)}>
+                              {row.status.replace("_", " ")}
+                            </Badge>
+                            {teeth.length > 0 && (
+                              <Badge variant="outline" className="text-xs">
+                                Teeth: {teeth.join(", ")}
+                              </Badge>
+                            )}
+                          </div>
+
+                          <div className="text-xs text-muted-foreground mt-1 flex flex-wrap items-center gap-2">
+                            {dateLabel && <span>{dateLabel}</span>}
+                            {row.doctor?.full_name && <span>• Dr. {row.doctor.full_name}</span>}
+                            {apptLabel && <span>• {apptLabel}</span>}
+                          </div>
+
+                          {row.notes && <p className="text-xs text-muted-foreground mt-1">{row.notes}</p>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            )}
+
+            {/* Optional: legacy dental history notes */}
+            {dentalHistory.length > 0 && (
+              <>
+                <Separator />
+                <div>
+                  <p className="text-sm font-medium flex items-center gap-2">
+                    <Bone className="w-4 h-4 text-primary" />
+                    Notes
+                  </p>
+
+                  <ScrollArea className="h-[180px] pr-4 mt-2">
+                    <div className="space-y-3">
+                      {dentalHistory.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                        >
+                          <div className="p-2 rounded-lg bg-accent/10 text-accent">
+                            <Bone className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="font-medium text-sm">{item.title}</p>
+                              <Badge variant="outline" className="text-xs shrink-0 capitalize">
+                                {item.type.replace("_", " ")}
+                              </Badge>
+                            </div>
+                            {item.details && <p className="text-xs text-muted-foreground mt-1">{item.details}</p>}
+                            {item.date && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {new Date(item.date).toLocaleDateString()}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </div>
+              </>
+            )}
+
+            <p className="text-xs text-muted-foreground">
+              Note: patients can view procedure history, but not the full dental chart.
+            </p>
+          </div>
         </Section>
       </div>
 
       {/* Diagnoses Log */}
-      <Section
-        title="Diagnoses Log"
-        icon={Stethoscope}
-        empty={diagnosesLog.length === 0}
-        emptyText="No diagnoses recorded"
-      >
+      <Section title="Diagnoses Log" icon={Stethoscope} empty={diagnosesLog.length === 0} emptyText="No diagnoses recorded">
         <ScrollArea className="h-[400px] pr-4">
           <div className="relative">
             <div className="absolute left-4 top-0 bottom-0 w-px bg-border" />
@@ -242,16 +420,8 @@ const HistoryTab = ({
                         {new Date(diagnosis.date).toLocaleDateString()}
                       </span>
                     </div>
-                    {diagnosis.doctor_name && (
-                      <p className="text-xs text-muted-foreground">
-                        Dr. {diagnosis.doctor_name}
-                      </p>
-                    )}
-                    {diagnosis.notes && (
-                      <p className="text-sm text-muted-foreground mt-2">
-                        {diagnosis.notes}
-                      </p>
-                    )}
+                    {diagnosis.doctor_name && <p className="text-xs text-muted-foreground">Dr. {diagnosis.doctor_name}</p>}
+                    {diagnosis.notes && <p className="text-sm text-muted-foreground mt-2">{diagnosis.notes}</p>}
                   </div>
                 </motion.div>
               ))}
