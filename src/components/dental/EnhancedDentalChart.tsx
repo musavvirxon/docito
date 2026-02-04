@@ -105,24 +105,32 @@ export const EnhancedDentalChart = ({
   };
 
   const handleAssignProcedure = async (procedure: Omit<ToothProcedure, "id">) => {
-    if (patientId && addProcedureToTeeth) {
-      // Use database
-      const selectedProcedure = procedures.find(p => p.code === procedure.code || p.name === procedure.name);
-      await addProcedureToTeeth(
-        selectedTeeth,
-        selectedProcedure?.id || null,
-        procedure.name,
-        procedure.status === "cancelled" ? "planned" : procedure.status,
-        selectedProcedure?.default_cost || undefined,
-        procedure.notes,
-        appointmentId
-      );
-      handleClearSelection();
-    } else if (externalOnAssignProcedure) {
-      // Legacy mode
-      externalOnAssignProcedure(selectedTeeth, procedure);
-    }
-  };
+  if (patientId && addProcedureToTeeth) {
+    // Database mode
+    const selectedProcedure = procedures.find(
+      (p) => p.code === procedure.code || p.name === procedure.name
+    );
+
+    const unitCost = selectedProcedure?.default_cost ?? null;
+    const toothCount = Math.max(1, selectedTeeth.length);
+    const totalCost = unitCost != null ? unitCost * toothCount : undefined;
+
+    await addProcedureToTeeth(
+      selectedTeeth,
+      selectedProcedure?.id || null,
+      procedure.name,
+      procedure.status === "cancelled" ? "planned" : procedure.status,
+      totalCost,
+      procedure.notes,
+      appointmentId
+    );
+    handleClearSelection();
+  } else if (externalOnAssignProcedure) {
+    // Legacy mode
+    externalOnAssignProcedure(selectedTeeth, procedure);
+  }
+};
+
 
   const renderQuadrant = (
     teeth: number[], 
