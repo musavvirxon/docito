@@ -73,6 +73,15 @@
       fetchpriority="high"
     />
 
+    <!-- Preload critical i18n locale file for faster LCP -->
+    <link
+      rel="preload"
+      href="/locales/en/home.json"
+      as="fetch"
+      type="application/json"
+      crossorigin="anonymous"
+    />
+
     <!-- Load fonts async -->
     <link
       rel="preload"
