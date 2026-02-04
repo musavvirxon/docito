@@ -3,6 +3,9 @@ import react from "@vitejs/plugin-react";
 import path from "node:path";
 import { componentTagger } from "lovable-tagger";
 
+// Modern browser targets - no legacy polyfills needed
+const MODERN_BROWSERS = ['chrome>=90', 'firefox>=90', 'safari>=15', 'edge>=90'];
+
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
@@ -17,9 +20,15 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // Optimize dependencies for modern browsers
+  optimizeDeps: {
+    esbuildOptions: {
+      target: MODERN_BROWSERS,
+    },
+  },
   build: {
     // Target modern browsers to avoid legacy polyfills
-    target: 'esnext',
+    target: MODERN_BROWSERS,
     // Disable modulepreload polyfill - all modern browsers support it natively
     modulePreload: {
       polyfill: false,
@@ -69,11 +78,15 @@ export default defineConfig(({ mode }) => ({
     },
     // Minification settings
     minify: 'esbuild',
+    // Skip CSS code splitting for smaller initial payload
+    cssCodeSplit: true,
   },
   // Avoid transpiling modern JS features that are baseline in all browsers
   esbuild: {
-    target: 'esnext',
+    target: MODERN_BROWSERS,
     // Drop console.log in production for smaller bundle
     drop: mode === 'production' ? ['console', 'debugger'] : [],
+    // Ensure no legacy class transforms
+    keepNames: false,
   },
 }));
