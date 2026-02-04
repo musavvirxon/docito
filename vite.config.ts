@@ -20,8 +20,17 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       output: {
-        inlineDynamicImports: true,
-        manualChunks: undefined,
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (id.includes('framer-motion')) return 'vendor-framer';
+            if (id.includes('three') || id.includes('@react-three')) return 'vendor-three';
+            if (id.includes('recharts') || id.includes('d3-')) return 'vendor-charts';
+            if (id.includes('@supabase')) return 'vendor-supabase';
+            if (id.includes('react-dom')) return 'vendor-react';
+            if (id.includes('@radix-ui') || id.includes('cmdk')) return 'vendor-ui';
+            if (id.includes('i18next')) return 'vendor-i18n';
+          }
+        },
       },
     },
   },
