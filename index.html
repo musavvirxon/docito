@@ -162,11 +162,28 @@
         ]
       }
     </script>
+    <!-- Async CSS loading helper -->
+    <script>
+      // Helper function to load CSS asynchronously
+      window.__loadCSS = function(href) {
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        link.media = 'print';
+        link.onload = function() { this.media = 'all'; };
+        document.head.appendChild(link);
+      };
+    </script>
   </head>
 
   <body>
     <!-- Critical CSS for instant content visibility before JS loads -->
     <style>
+      /* Critical CSS - inlined to avoid render-blocking */
+      *, *::before, *::after { box-sizing: border-box; margin: 0; }
+      html { line-height: 1.5; -webkit-text-size-adjust: 100%; font-family: Inter, system-ui, -apple-system, sans-serif; }
+      body { min-height: 100vh; background: #fafafa; color: #0a0a0a; }
+      @media (prefers-color-scheme: dark) { body { background: #0a0a0a; color: #fafafa; } }
       #root { min-height: 100vh; }
       .initial-loader {
         position: fixed;
@@ -191,6 +208,8 @@
         0%, 100% { opacity: 1; transform: scale(1); }
         50% { opacity: 0.7; transform: scale(0.98); }
       }
+      /* Prevent FOUC for nav and hero */
+      nav { min-height: 56px; }
     </style>
 
     <!-- Instant visual feedback while React loads -->
