@@ -1,10 +1,27 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 export const useSmoothScroll = (speed: number = 0.15) => {
+  // Cache dimensions to avoid forced reflow on every wheel event
+  const cachedMaxScrollRef = useRef(0);
+
   useEffect(() => {
     let targetScroll = window.scrollY;
     let currentScroll = window.scrollY;
     let animationId: number | null = null;
+
+    // Cache max scroll on mount and resize - avoids forced reflow in wheel handler
+    const updateCachedMaxScroll = () => {
+      cachedMaxScrollRef.current = document.documentElement.scrollHeight - window.innerHeight;
+    };
+
+    // Initial cache
+    updateCachedMaxScroll();
+
+    // Update cache on resize using matchMedia-style approach
+    const resizeObserver = new ResizeObserver(() => {
+      updateCachedMaxScroll();
+    });
+    resizeObserver.observe(document.documentElement);
 
     const smoothScroll = () => {
       const diff = targetScroll - currentScroll;
@@ -26,7 +43,8 @@ export const useSmoothScroll = (speed: number = 0.15) => {
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       
-      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      // Use cached value instead of reading window.innerHeight (avoids forced reflow)
+      const maxScroll = cachedMaxScrollRef.current;
       targetScroll = Math.max(0, Math.min(targetScroll + e.deltaY, maxScroll));
       
       if (!animationId) {
@@ -47,6 +65,7 @@ export const useSmoothScroll = (speed: number = 0.15) => {
     return () => {
       window.removeEventListener('wheel', handleWheel);
       window.removeEventListener('scroll', syncScroll);
+      resizeObserver.disconnect();
       if (animationId) {
         cancelAnimationFrame(animationId);
       }
