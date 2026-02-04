@@ -1,28 +1,45 @@
 // src/pages/PremiumHome.tsx
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { SEOHead } from "@/components/SEOHead";
 import { useTranslation } from "react-i18next";
 
+// Critical above-the-fold components (load immediately)
 import PremiumHero from "@/components/home/premium/PremiumHero";
 import SmartSearch from "@/components/home/premium/SmartSearch";
-import ProviderCards from "@/components/home/premium/ProviderCards";
-import PlatformPillars from "@/components/home/premium/PlatformPillars";
-import SpecialtiesCarousel from "@/components/home/premium/SpecialtiesCarousel";
-import FeaturedProviders from "@/components/home/premium/FeaturedProviders";
-import TopLabs from "@/components/home/premium/TopLabs";
-import NearbyPharmacies from "@/components/home/premium/NearbyPharmacies";
-import DiagnosticsSection from "@/components/home/premium/DiagnosticsSection";
-import BookingSteps from "@/components/home/premium/BookingSteps";
-import CapabilitiesGrid from "@/components/home/premium/CapabilitiesGrid";
-import DashboardDemo from "@/components/home/premium/DashboardDemo";
-import TeamCollaboration from "@/components/home/premium/TeamCollaboration";
-import InsuranceProviders from "@/components/home/premium/InsuranceProviders";
-import FAQ from "@/components/home/premium/FAQ";
-import GlobalTrust from "@/components/home/premium/GlobalTrust";
-import FinalCTA from "@/components/home/premium/FinalCTA";
-import MobileAppShowcase from "@/components/home/premium/MobileAppShowcase";
-import ScrollToTop from "@/components/home/premium/ScrollToTop";
+
+// Lazy load below-the-fold sections to reduce TBT
+const ProviderCards = lazy(() => import("@/components/home/premium/ProviderCards"));
+const PlatformPillars = lazy(() => import("@/components/home/premium/PlatformPillars"));
+const SpecialtiesCarousel = lazy(() => import("@/components/home/premium/SpecialtiesCarousel"));
+const FeaturedProviders = lazy(() => import("@/components/home/premium/FeaturedProviders"));
+const TopLabs = lazy(() => import("@/components/home/premium/TopLabs"));
+const NearbyPharmacies = lazy(() => import("@/components/home/premium/NearbyPharmacies"));
+const DiagnosticsSection = lazy(() => import("@/components/home/premium/DiagnosticsSection"));
+const BookingSteps = lazy(() => import("@/components/home/premium/BookingSteps"));
+const CapabilitiesGrid = lazy(() => import("@/components/home/premium/CapabilitiesGrid"));
+const DashboardDemo = lazy(() => import("@/components/home/premium/DashboardDemo"));
+const TeamCollaboration = lazy(() => import("@/components/home/premium/TeamCollaboration"));
+const InsuranceProviders = lazy(() => import("@/components/home/premium/InsuranceProviders"));
+const FAQ = lazy(() => import("@/components/home/premium/FAQ"));
+const GlobalTrust = lazy(() => import("@/components/home/premium/GlobalTrust"));
+const FinalCTA = lazy(() => import("@/components/home/premium/FinalCTA"));
+const MobileAppShowcase = lazy(() => import("@/components/home/premium/MobileAppShowcase"));
+const ScrollToTop = lazy(() => import("@/components/home/premium/ScrollToTop"));
+
+// Lightweight skeleton for lazy sections
+const SectionSkeleton = () => (
+  <div className="w-full py-16 flex items-center justify-center">
+    <div className="animate-pulse w-full max-w-6xl mx-auto px-4">
+      <div className="h-8 w-48 bg-muted rounded mb-6 mx-auto" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="h-32 bg-muted rounded" />
+        <div className="h-32 bg-muted rounded" />
+        <div className="h-32 bg-muted rounded" />
+      </div>
+    </div>
+  </div>
+);
 
 export default function PremiumHome() {
   const { t } = useTranslation(["home", "common"]);
@@ -48,34 +65,78 @@ export default function PremiumHome() {
 
       {/* Navbar + Footer come from PublicLayout */}
       <main className="bg-background text-foreground antialiased">
+        {/* Critical above-the-fold content */}
         <PremiumHero />
-
-        {/* Move Search to second below header */}
         <SmartSearch />
 
-        {/* Keep Platform Capabilities near the top (now just below Search) */}
-        <CapabilitiesGrid />
+        {/* Lazy-loaded below-the-fold sections */}
+        <Suspense fallback={<SectionSkeleton />}>
+          <CapabilitiesGrid />
+        </Suspense>
 
-        <ProviderCards />
-        <PlatformPillars />
-        <SpecialtiesCarousel />
-        <FeaturedProviders />
-        <TopLabs />
+        <Suspense fallback={<SectionSkeleton />}>
+          <ProviderCards />
+        </Suspense>
 
-        {/* Verified Top Pharmacies just below Top Labs */}
-        <NearbyPharmacies />
+        <Suspense fallback={<SectionSkeleton />}>
+          <PlatformPillars />
+        </Suspense>
 
-        <DiagnosticsSection />
-        <BookingSteps />
-        <DashboardDemo />
-        <TeamCollaboration />
-        <InsuranceProviders />
-        <FAQ />
-        <GlobalTrust />
-        <MobileAppShowcase />
-        <FinalCTA />
+        <Suspense fallback={<SectionSkeleton />}>
+          <SpecialtiesCarousel />
+        </Suspense>
 
-        <ScrollToTop />
+        <Suspense fallback={<SectionSkeleton />}>
+          <FeaturedProviders />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <TopLabs />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <NearbyPharmacies />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <DiagnosticsSection />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <BookingSteps />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <DashboardDemo />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <TeamCollaboration />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <InsuranceProviders />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <FAQ />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <GlobalTrust />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <MobileAppShowcase />
+        </Suspense>
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <FinalCTA />
+        </Suspense>
+
+        <Suspense fallback={null}>
+          <ScrollToTop />
+        </Suspense>
       </main>
     </ThemeProvider>
   );
