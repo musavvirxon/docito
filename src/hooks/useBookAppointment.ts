@@ -12,7 +12,7 @@ interface BookingData {
   appointmentType?: string;
   notes?: string;
 
-  // NEW: optional requested procedure (must belong to the selected doctor)
+  // ✅ NEW: patient can request a specific procedure during booking (optional)
   procedureId?: string | null;
 }
 
@@ -25,6 +25,9 @@ export interface BookingHoldResult {
   appointment_type: string;
   provider_id: string;
   entity_id: string | null;
+
+  // ✅ NEW
+  procedure_id: string | null;
 }
 
 type BookAppointmentFnResponse =
@@ -38,6 +41,7 @@ type BookAppointmentFnResponse =
       appointment_type: string;
       provider_id: string;
       entity_id: string | null;
+      procedure_id?: string | null;
     }
   | { ok: false; error: string; code?: string };
 
@@ -75,27 +79,26 @@ export function useBookAppointment() {
           return null;
         }
 
-        const { data: fnData, error: fnError } =
-          await supabase.functions.invoke<BookAppointmentFnResponse>(
-            'book-appointment',
-            {
-              body: {
-                patient_id: user.id,
-                entity_id: data.entityId ?? null,
-                provider_id: data.providerId,
-                slot_start: data.slotStart,
-                duration_minutes: data.durationMinutes ?? 30,
-                appointment_type: data.appointmentType,
-                notes: data.notes,
+        const { data: fnData, error: fnError } = await supabase.functions.invoke<BookAppointmentFnResponse>(
+          'book-appointment',
+          {
+            body: {
+              patient_id: user.id,
+              entity_id: data.entityId ?? null,
+              provider_id: data.providerId,
+              slot_start: data.slotStart,
+              duration_minutes: data.durationMinutes ?? 30,
+              appointment_type: data.appointmentType,
+              notes: data.notes,
 
-                // NEW
-                procedure_id: data.procedureId ?? null,
-              },
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-              },
-            }
-          );
+              // ✅ NEW
+              procedure_id: data.procedureId ?? null,
+            },
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
 
         if (fnError) throw fnError;
 
@@ -124,6 +127,9 @@ export function useBookAppointment() {
           appointment_type: fnData.appointment_type,
           provider_id: fnData.provider_id,
           entity_id: fnData.entity_id,
+
+          // ✅ NEW (fallback to null if server didn’t return it)
+          procedure_id: (fnData as any).procedure_id ?? null,
         };
 
         setResult(hold);
