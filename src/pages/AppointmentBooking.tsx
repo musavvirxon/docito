@@ -13,6 +13,7 @@ import {
   MapPin,
   MessageSquare,
   Video,
+  ClipboardList,
 } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -49,6 +50,16 @@ type AvailabilitySlot = {
 
 type AppointmentType = "video" | "messaging" | "in-person";
 
+type DoctorProcedure = {
+  id: string;
+  name: string;
+  category: string | null;
+  default_cost: number | null;
+  price: number | null;
+  duration_minutes: number | null;
+  estimated_duration_minutes: number | null;
+};
+
 const DURATION_OPTIONS_MINUTES = [15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180];
 
 function formatDuration(minutes: number) {
@@ -59,10 +70,37 @@ function formatDuration(minutes: number) {
   return `${h}h ${m}m`;
 }
 
+function formatMoney(n: number) {
+  try {
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" }).format(n);
+  } catch {
+    return `$${n}`;
+  }
+}
+
 const isSameMinuteOrPast = (isoLocal: string, nowMs: number) => {
   const t = parseISO(isoLocal).getTime();
   return Number.isFinite(t) ? t <= nowMs : true;
 };
+
+function isMissingColumnError(err: any, col: string) {
+  const msg = String(err?.message || "").toLowerCase();
+  return msg.includes(col.toLowerCase()) && (msg.includes("does not exist") || msg.includes("schema cache") || msg.includes("column"));
+}
+
+function nearestDurationOption(m: number) {
+  const clamped = Math.max(15, Math.min(180, Math.round(m / 15) * 15));
+  let best = DURATION_OPTIONS_MINUTES[0];
+  let bestDiff = Math.abs(best - clamped);
+  for (const opt of DURATION_OPTIONS_MINUTES) {
+    const d = Math.abs(opt - clamped);
+    if (d < bestDiff) {
+      best = opt;
+      bestDiff = d;
+    }
+  }
+  return best;
+}
 
 export default function AppointmentBooking() {
   const { doctorId } = useParams();
@@ -81,6 +119,12 @@ export default function AppointmentBooking() {
   const [selectedSlotStart, setSelectedSlotStart] = useState<string>("");
   const [appointmentType, setAppointmentType] = useState<AppointmentType>("video");
 
+  // ✅ NEW: procedure request (no dental chart shown)
+  const [proceduresLoading, setProceduresLoading] = useState(false);
+  const [proceduresError, setProceduresError] = useState<string | null>(null);
+  const [doctorProcedures, setDoctorProcedures] = useState<DoctorProcedure[]>([]);
+  const [selectedProcedureId, setSelectedProcedureId] = useState<string | null>(null);
+
   // Patient details
   const [patientPhone, setPatientPhone] = useState<string>("");
   const [patientName, setPatientName] = useState<string>("");
@@ -88,6 +132,16 @@ export default function AppointmentBooking() {
   const [notes, setNotes] = useState<string>("");
 
   const today = useMemo(() => startOfDay(new Date()), []);
+
+  const isDentalSpecialty = useMemo(() => {
+    const s = (doctor?.specialty || "").toLowerCase();
+    return s.includes("dent") || s.includes("dental");
+  }, [doctor?.specialty]);
+
+  const selectedProcedure = useMemo(() => {
+    if (!selectedProcedureId) return null;
+    return doctorProcedures.find((p) => p.id === selectedProcedureId) || null;
+  }, [doctorProcedures, selectedProcedureId]);
 
   // Prefill email/phone
   useEffect(() => {
@@ -173,6 +227,79 @@ export default function AppointmentBooking() {
     loadDoctor();
   }, [doctorId]);
 
+  // ✅ NEW: load doctor procedures (dentist_id first; fallback doctor_id)
+  useEffect(() => {
+    const loadProcedures = async () => {
+      if (!doctorId) return;
+      if (!isDentalSpecialty) {
+        setDoctorProcedures([]);
+        setSelectedProcedureId(null);
+        return;
+      }
+
+      setProceduresLoading(true);
+      setProceduresError(null);
+
+      try {
+        const baseSelect =
+          "id,name,category,default_cost,price,duration_minutes,estimated_duration_minutes,is_active,is_bookable,dentist_id,doctor_id";
+
+        // Try dentist_id
+        let { data, error } = await (supabase as any)
+          .from("procedures")
+          .select(baseSelect)
+          .eq("dentist_id", doctorId)
+          .eq("is_active", true)
+          .or("is_bookable.is.null,is_bookable.eq.true")
+          .order("name", { ascending: true });
+
+        // Fallback to doctor_id if dentist_id column missing
+        if (error && isMissingColumnError(error, "dentist_id")) {
+          ({ data, error } = await (supabase as any)
+            .from("procedures")
+            .select(baseSelect)
+            .eq("doctor_id", doctorId)
+            .eq("is_active", true)
+            .or("is_bookable.is.null,is_bookable.eq.true")
+            .order("name", { ascending: true }));
+        }
+
+        if (error) throw error;
+
+        const list: DoctorProcedure[] = (Array.isArray(data) ? data : []).map((r: any) => ({
+          id: String(r.id),
+          name: String(r.name ?? ""),
+          category: r.category ?? null,
+          default_cost: r.default_cost == null ? null : Number(r.default_cost),
+          price: r.price == null ? null : Number(r.price),
+          duration_minutes: r.duration_minutes == null ? null : Number(r.duration_minutes),
+          estimated_duration_minutes: r.estimated_duration_minutes == null ? null : Number(r.estimated_duration_minutes),
+        }));
+
+        setDoctorProcedures(list);
+        setSelectedProcedureId((prev) => (prev && list.some((p) => p.id === prev) ? prev : null));
+      } catch (e: any) {
+        console.error(e);
+        setDoctorProcedures([]);
+        setSelectedProcedureId(null);
+        setProceduresError(e?.message || "Failed to load procedures");
+      } finally {
+        setProceduresLoading(false);
+      }
+    };
+
+    loadProcedures();
+  }, [doctorId, isDentalSpecialty]);
+
+  // Optional: when selecting a procedure, auto-set duration to procedure duration (nearest option)
+  useEffect(() => {
+    if (!selectedProcedure) return;
+    const d = selectedProcedure.estimated_duration_minutes ?? selectedProcedure.duration_minutes;
+    if (d && Number.isFinite(d) && d > 0) {
+      setDurationMinutes(nearestDurationOption(Number(d)));
+    }
+  }, [selectedProcedureId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Load slots
   useEffect(() => {
     const loadSlots = async () => {
@@ -200,7 +327,7 @@ export default function AppointmentBooking() {
         setSlots(newSlots);
 
         const stillAvailable = newSlots.some(
-          (s) => s.available && s.start_at === selectedSlotStart && !isSameMinuteOrPast(s.start_at, Date.now() + 60_000),
+          (s) => s.available && s.start_at === selectedSlotStart && !isSameMinuteOrPast(s.start_at, Date.now() + 60_000)
         );
         if (selectedSlotStart && !stillAvailable) setSelectedSlotStart("");
       } catch (e: any) {
@@ -222,7 +349,7 @@ export default function AppointmentBooking() {
 
     return slots
       .filter((s) => s.available)
-      .filter((s) => !isSameMinuteOrPast(s.start_at, bufferNow)) // ✅ lock old times
+      .filter((s) => !isSameMinuteOrPast(s.start_at, bufferNow))
       .filter((s) => {
         if (seen.has(s.start_at)) return false;
         seen.add(s.start_at);
@@ -275,6 +402,7 @@ export default function AppointmentBooking() {
         phone ? `Phone: ${phone}` : null,
         patientName.trim() ? `Name: ${patientName.trim()}` : null,
         patientEmail.trim() ? `Email: ${patientEmail.trim()}` : null,
+        selectedProcedure?.name ? `Requested Procedure: ${selectedProcedure.name}` : null,
         notes.trim() ? notes.trim() : null,
       ]
         .filter(Boolean)
@@ -289,20 +417,21 @@ export default function AppointmentBooking() {
           duration_minutes: durationMinutes,
           notes: combinedNotes || undefined,
           appointment_type: appointmentType,
+
+          // ✅ NEW: request procedure
+          procedure_id: selectedProcedureId ?? null,
         },
       });
 
       if (error) throw error;
       if (!data?.ok) throw new Error(data?.error || "Failed to book appointment");
 
-      // ✅ New flow: hold-based pending confirmation
       if (data?.hold_id) {
         toast.success("Slot held. Please confirm your appointment.");
         navigate(`/booking-confirmation/${data.hold_id}?mode=pending`);
         return;
       }
 
-      // Backwards compatibility (if any older server returns appointment_id / id)
       const appointmentId = data?.appointment_id || data?.id;
       if (appointmentId) {
         toast.success("Appointment booked!");
@@ -350,7 +479,9 @@ export default function AppointmentBooking() {
       <div className="space-y-6">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold">Book an appointment</h1>
-          <p className="text-muted-foreground">Choose a date, a start time, and the appointment duration. Only phone is required.</p>
+          <p className="text-muted-foreground">
+            Choose a date, a start time, and the appointment duration. Only phone is required.
+          </p>
         </div>
 
         {!doctor.practice_id && (
@@ -358,8 +489,8 @@ export default function AppointmentBooking() {
             <AlertTriangle className="h-4 w-4 text-amber-600" />
             <AlertTitle className="text-amber-700 dark:text-amber-400">Independent Practitioner</AlertTitle>
             <AlertDescription className="text-amber-600 dark:text-amber-300">
-              This doctor has not yet confirmed a clinic or practice location. Only <strong>video call</strong> and <strong>messaging</strong>{" "}
-              appointments are available.
+              This doctor has not yet confirmed a clinic or practice location. Only <strong>video call</strong> and{" "}
+              <strong>messaging</strong> appointments are available.
               <span className="block mt-2 font-medium">
                 ⚠️ Do not visit any physical location the doctor may suggest until they have verified their practice affiliation.
               </span>
@@ -448,13 +579,54 @@ export default function AppointmentBooking() {
               </label>
             </RadioGroup>
 
-            {!doctor.practice_id && (
-              <div className="text-sm text-muted-foreground">
-                In-person appointments require a verified practice location.
-              </div>
-            )}
+            {!doctor.practice_id && <div className="text-sm text-muted-foreground">In-person appointments require a verified practice location.</div>}
           </CardContent>
         </Card>
+
+        {/* ✅ NEW: Procedure request (only for dental specialties) */}
+        {isDentalSpecialty && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ClipboardList className="h-5 w-5" />
+                Requested procedure (optional)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="space-y-2">
+                <Label>Choose a procedure from this doctor</Label>
+                <Select
+                  value={selectedProcedureId ?? "none"}
+                  onValueChange={(v) => setSelectedProcedureId(v === "none" ? null : v)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={proceduresLoading ? "Loading procedures..." : "Select a procedure"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No specific procedure</SelectItem>
+                    {doctorProcedures.map((p) => {
+                      const cost = p.default_cost ?? p.price;
+                      return (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.name}
+                          {cost != null ? ` • ${formatMoney(Number(cost))}` : ""}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+
+                {proceduresError ? (
+                  <div className="text-xs text-destructive">{proceduresError}</div>
+                ) : (
+                  <div className="text-xs text-muted-foreground">
+                    You can request a procedure here. The doctor confirms the final treatment plan and pricing.
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
@@ -558,7 +730,12 @@ export default function AppointmentBooking() {
 
             <div className="space-y-2">
               <Label htmlFor="notes">Notes</Label>
-              <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional: describe your symptoms, history, or questions" />
+              <Textarea
+                id="notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Optional: describe your symptoms, history, or questions"
+              />
             </div>
 
             <div className="flex justify-end">
