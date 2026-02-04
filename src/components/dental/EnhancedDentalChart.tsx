@@ -10,17 +10,24 @@ import { ToothSVG } from "./ToothSVG";
 import { DentalChartLegend } from "./DentalChartLegend";
 import { ProcedureModal } from "./ProcedureModal";
 import { TreatmentPlanSection } from "./TreatmentPlanSection";
-import { 
-  ToothData, ToothType, ToothStatus, ToothProcedure,
-  PERMANENT_TEETH, PRIMARY_TEETH, TOOTH_STATUS_CONFIG 
+import {
+  ToothData,
+  ToothType,
+  ToothStatus,
+  ToothProcedure,
+  PERMANENT_TEETH,
+  PRIMARY_TEETH,
+  TOOTH_STATUS_CONFIG,
 } from "./types";
-import { useDentalChart, ToothRecord, ToothProcedureHistory } from "@/hooks/useDentalChart";
+import { useDentalChart } from "@/hooks/useDentalChart";
 import { Stethoscope, Baby, RotateCcw, Plus, AlertCircle, Loader2 } from "lucide-react";
 
 interface EnhancedDentalChartProps {
   patientId?: string;
   appointmentId?: string;
   isEditable?: boolean;
+  /** When true, chart is used only to select teeth (no Add Procedure / history section). */
+  selectionOnly?: boolean;
   // Legacy props for compatibility
   teethData?: ToothData[];
   selectedTeeth?: number[];
@@ -33,6 +40,7 @@ export const EnhancedDentalChart = ({
   patientId,
   appointmentId,
   isEditable = true,
+  selectionOnly = false,
   teethData = [],
   selectedTeeth: externalSelectedTeeth,
   onToothSelect: externalOnToothSelect,
@@ -56,45 +64,44 @@ export const EnhancedDentalChart = ({
 
   // Determine which selected teeth to use
   const selectedTeeth = externalSelectedTeeth ?? internalSelectedTeeth;
-  const onToothSelect = externalOnToothSelect ?? ((num: number) => {
-    setInternalSelectedTeeth(prev => 
-      prev.includes(num) ? prev.filter(t => t !== num) : [...prev, num]
-    );
-  });
+  const onToothSelect =
+    externalOnToothSelect ??
+    ((num: number) => {
+      setInternalSelectedTeeth((prev) => (prev.includes(num) ? prev.filter((t) => t !== num) : [...prev, num]));
+    });
 
   // Convert database records to ToothData format
-  const getToothData = useCallback((num: number, type: ToothType): ToothData | undefined => {
-    // First check database records
-    const dbRecord = toothRecords.find(
-      (t) => t.tooth_number === num && t.tooth_type === type
-    );
-    
-    if (dbRecord) {
-      const toothProcedures = procedureHistory.filter(
-        p => p.tooth_numbers.includes(num)
-      );
-      
-      return {
-        toothNumber: dbRecord.tooth_number,
-        toothType: dbRecord.tooth_type as ToothType,
-        status: dbRecord.status as ToothStatus,
-        diagnoses: [],
-        treatments: [],
-        procedures: toothProcedures.map(p => ({
-          id: p.id,
-          name: p.procedure_name,
-          code: p.procedure_id || undefined,
-          status: p.status,
-          date: p.performed_at || p.created_at,
-          notes: p.notes || undefined,
-        })),
-        notes: dbRecord.notes || undefined,
-      };
-    }
-    
-    // Fallback to legacy teethData
-    return teethData.find((t) => t.toothNumber === num && t.toothType === type);
-  }, [toothRecords, procedureHistory, teethData]);
+  const getToothData = useCallback(
+    (num: number, type: ToothType): ToothData | undefined => {
+      // First check database records
+      const dbRecord = toothRecords.find((t) => t.tooth_number === num && t.tooth_type === type);
+
+      if (dbRecord) {
+        const toothProcedures = procedureHistory.filter((p) => p.tooth_numbers.includes(num));
+
+        return {
+          toothNumber: dbRecord.tooth_number,
+          toothType: dbRecord.tooth_type as ToothType,
+          status: dbRecord.status as ToothStatus,
+          diagnoses: [],
+          treatments: [],
+          procedures: toothProcedures.map((p) => ({
+            id: p.id,
+            name: p.procedure_name,
+            code: p.procedure_id || undefined,
+            status: p.status,
+            date: p.performed_at || p.created_at,
+            notes: p.notes || undefined,
+          })),
+          notes: dbRecord.notes || undefined,
+        };
+      }
+
+      // Fallback to legacy teethData
+      return teethData.find((t) => t.toothNumber === num && t.toothType === type);
+    },
+    [toothRecords, procedureHistory, teethData]
+  );
 
   const handleClearSelection = () => {
     if (externalOnToothSelect) {
@@ -105,41 +112,28 @@ export const EnhancedDentalChart = ({
   };
 
   const handleAssignProcedure = async (procedure: Omit<ToothProcedure, "id">) => {
-  if (patientId && addProcedureToTeeth) {
-    // Database mode
-    const selectedProcedure = procedures.find(
-      (p) => p.code === procedure.code || p.name === procedure.name
-    );
+    if (patientId && addProcedureToTeeth) {
+      // Use database
+      const selectedProcedure = procedures.find((p) => p.code === procedure.code || p.name === procedure.name);
+      await addProcedureToTeeth(
+        selectedTeeth,
+        selectedProcedure?.id || null,
+        procedure.name,
+        procedure.status === "cancelled" ? "planned" : procedure.status,
+        selectedProcedure?.default_cost || undefined,
+        procedure.notes,
+        appointmentId
+      );
+      handleClearSelection();
+    } else if (externalOnAssignProcedure) {
+      // Legacy mode
+      externalOnAssignProcedure(selectedTeeth, procedure);
+    }
+  };
 
-    const unitCost = selectedProcedure?.default_cost ?? null;
-    const toothCount = Math.max(1, selectedTeeth.length);
-    const totalCost = unitCost != null ? unitCost * toothCount : undefined;
-
-    await addProcedureToTeeth(
-      selectedTeeth,
-      selectedProcedure?.id || null,
-      procedure.name,
-      procedure.status === "cancelled" ? "planned" : procedure.status,
-      totalCost,
-      procedure.notes,
-      appointmentId
-    );
-    handleClearSelection();
-  } else if (externalOnAssignProcedure) {
-    // Legacy mode
-    externalOnAssignProcedure(selectedTeeth, procedure);
-  }
-};
-
-
-  const renderQuadrant = (
-    teeth: number[], 
-    toothType: ToothType, 
-    label: string,
-    reverse = false
-  ) => {
+  const renderQuadrant = (teeth: number[], toothType: ToothType, label: string, reverse = false) => {
     const orderedTeeth = reverse ? [...teeth].reverse() : teeth;
-    
+
     return (
       <div className="space-y-1">
         <span className="text-xs text-muted-foreground font-medium">{label}</span>
@@ -154,11 +148,7 @@ export const EnhancedDentalChart = ({
               <TooltipProvider key={num}>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.03 }}
-                    >
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.03 }}>
                       <ToothSVG
                         number={num}
                         toothType={toothType}
@@ -174,16 +164,13 @@ export const EnhancedDentalChart = ({
                     <div className="space-y-1">
                       <p className="font-semibold">Tooth {num}</p>
                       <p className="text-xs capitalize flex items-center gap-1">
-                        <span 
-                          className="w-2 h-2 rounded-full" 
-                          style={{ backgroundColor: TOOTH_STATUS_CONFIG[status].color }}
-                        />
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TOOTH_STATUS_CONFIG[status].color }} />
                         {TOOTH_STATUS_CONFIG[status].label}
                       </p>
                       {data?.procedures?.length ? (
                         <div className="text-xs">
                           <span className="text-muted-foreground">Procedures: </span>
-                          {data.procedures.map(p => p.name).join(", ")}
+                          {data.procedures.map((p) => p.name).join(", ")}
                         </div>
                       ) : null}
                     </div>
@@ -198,39 +185,29 @@ export const EnhancedDentalChart = ({
   };
 
   const renderPermanentChart = () => (
-    <motion.div 
-      className="space-y-6"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
+    <motion.div className="space-y-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
       <div className="space-y-2">
         <div className="flex justify-center gap-4">
-          {renderQuadrant(PERMANENT_TEETH.upperRight, "permanent", "Q1 (UR)", true)}
+          {renderQuadrant(PERMANENT_TEETH.upperRight, "permanent", "UR (18-11)", true)}
           <div className="w-px bg-border self-stretch" />
-          {renderQuadrant(PERMANENT_TEETH.upperLeft, "permanent", "Q2 (UL)")}
+          {renderQuadrant(PERMANENT_TEETH.upperLeft, "permanent", "UL (21-28)")}
         </div>
       </div>
       <div className="flex justify-center">
-        <div className="w-4/5 h-px bg-border" />
+        <div className="w-3/5 h-px bg-border" />
       </div>
       <div className="space-y-2">
         <div className="flex justify-center gap-4">
-          {renderQuadrant(PERMANENT_TEETH.lowerRight, "permanent", "Q4 (LR)", true)}
+          {renderQuadrant(PERMANENT_TEETH.lowerRight, "permanent", "LR (48-41)", true)}
           <div className="w-px bg-border self-stretch" />
-          {renderQuadrant(PERMANENT_TEETH.lowerLeft, "permanent", "Q3 (LL)")}
+          {renderQuadrant(PERMANENT_TEETH.lowerLeft, "permanent", "LL (31-38)")}
         </div>
       </div>
     </motion.div>
   );
 
   const renderPrimaryChart = () => (
-    <motion.div 
-      className="space-y-6"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
+    <motion.div className="space-y-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
       <div className="space-y-2">
         <div className="flex justify-center gap-4">
           {renderQuadrant(PRIMARY_TEETH.upperRight, "primary", "UR (55-51)", true)}
@@ -259,9 +236,7 @@ export const EnhancedDentalChart = ({
           <div className="text-center text-muted-foreground">
             <AlertCircle className="w-12 h-12 mx-auto mb-3 text-amber-500" />
             <p className="font-medium">Access Restricted</p>
-            <p className="text-sm mt-1">
-              Only verified dentists can access the dental chart.
-            </p>
+            <p className="text-sm mt-1">Only verified dentists can access the dental chart.</p>
           </div>
         </CardContent>
       </Card>
@@ -296,8 +271,8 @@ export const EnhancedDentalChart = ({
             <div className="flex items-center gap-4 flex-wrap">
               <div className="flex items-center gap-2">
                 <Stethoscope className="w-4 h-4 text-muted-foreground" />
-                <Switch 
-                  id="teeth-toggle" 
+                <Switch
+                  id="teeth-toggle"
                   checked={showPrimaryTeeth}
                   onCheckedChange={(checked) => {
                     setShowPrimaryTeeth(checked);
@@ -311,11 +286,7 @@ export const EnhancedDentalChart = ({
               </div>
 
               <div className="flex items-center gap-2">
-                <Switch 
-                  id="both-toggle" 
-                  checked={showBothCharts}
-                  onCheckedChange={setShowBothCharts}
-                />
+                <Switch id="both-toggle" checked={showBothCharts} onCheckedChange={setShowBothCharts} />
                 <Label htmlFor="both-toggle" className="text-sm cursor-pointer">
                   Show Both
                 </Label>
@@ -328,7 +299,7 @@ export const EnhancedDentalChart = ({
           <div className="space-y-8">
             <AnimatePresence mode="wait">
               {showBothCharts ? (
-                <motion.div 
+                <motion.div
                   key="both"
                   className="space-y-8"
                   initial={{ opacity: 0 }}
@@ -351,13 +322,9 @@ export const EnhancedDentalChart = ({
                   </div>
                 </motion.div>
               ) : showPrimaryTeeth ? (
-                <motion.div key="primary">
-                  {renderPrimaryChart()}
-                </motion.div>
+                <motion.div key="primary">{renderPrimaryChart()}</motion.div>
               ) : (
-                <motion.div key="permanent">
-                  {renderPermanentChart()}
-                </motion.div>
+                <motion.div key="permanent">{renderPermanentChart()}</motion.div>
               )}
             </AnimatePresence>
           </div>
@@ -380,31 +347,29 @@ export const EnhancedDentalChart = ({
                       {selectedTeeth.length} tooth{selectedTeeth.length > 1 ? "es" : ""} selected
                     </p>
                     <div className="flex flex-wrap gap-1">
-                      {selectedTeeth.sort((a, b) => a - b).map((t) => (
-                        <Badge key={t} variant="secondary" className="text-xs">
-                          {t}
-                        </Badge>
-                      ))}
+                      {selectedTeeth
+                        .slice()
+                        .sort((a, b) => a - b)
+                        .map((t) => (
+                          <Badge key={t} variant="secondary" className="text-xs">
+                            {t}
+                          </Badge>
+                        ))}
                     </div>
                   </div>
 
                   {isEditable && (
                     <div className="flex gap-2">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={handleClearSelection}
-                      >
+                      <Button size="sm" variant="outline" onClick={handleClearSelection}>
                         <RotateCcw className="w-4 h-4 mr-1" />
                         Clear
                       </Button>
-                      <Button 
-                        size="sm"
-                        onClick={() => setProcedureModalOpen(true)}
-                      >
-                        <Plus className="w-4 h-4 mr-1" />
-                        Add Procedure
-                      </Button>
+                      {!selectionOnly && (
+                        <Button size="sm" onClick={() => setProcedureModalOpen(true)}>
+                          <Plus className="w-4 h-4 mr-1" />
+                          Add Procedure
+                        </Button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -415,21 +380,19 @@ export const EnhancedDentalChart = ({
       </Card>
 
       {/* Treatment Plan Section - only show if using database */}
-      {patientId && procedureHistory.length > 0 && (
-        <TreatmentPlanSection
-          procedures={procedureHistory}
-          isEditable={isEditable}
-          onUpdateStatus={updateProcedureStatus}
-        />
+      {!selectionOnly && patientId && procedureHistory.length > 0 && (
+        <TreatmentPlanSection procedures={procedureHistory} isEditable={isEditable} onUpdateStatus={updateProcedureStatus} />
       )}
 
-      <ProcedureModal
-        open={procedureModalOpen}
-        onOpenChange={setProcedureModalOpen}
-        selectedTeeth={selectedTeeth}
-        onAssignProcedure={handleAssignProcedure}
-        dbProcedures={procedures}
-      />
+      {!selectionOnly && (
+        <ProcedureModal
+          open={procedureModalOpen}
+          onOpenChange={setProcedureModalOpen}
+          selectedTeeth={selectedTeeth}
+          onAssignProcedure={handleAssignProcedure}
+          dbProcedures={procedures}
+        />
+      )}
     </div>
   );
 };
