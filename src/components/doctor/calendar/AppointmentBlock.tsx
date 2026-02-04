@@ -1,6 +1,17 @@
 import { memo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Video, Home, MessageSquare, User, Clock, Phone, Mail, FileText, ArrowRightLeft } from 'lucide-react';
+import {
+  Video,
+  Home,
+  MessageSquare,
+  User,
+  Clock,
+  Phone,
+  Mail,
+  FileText,
+  ArrowRightLeft,
+  Stethoscope,
+} from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
@@ -11,26 +22,28 @@ interface AppointmentBlockProps {
   appointment: CalendarAppointment;
   compact?: boolean;
   onClick?: () => void;
-  className?: string; // ✅ added
+  className?: string;
 }
 
 const typeIcons: Record<AppointmentType, typeof Video> = {
   'in-person': User,
-  'in_person': User,
-  'video': Video,
-  'home': Home,
-  'home_visit': Home,
-  'chat': MessageSquare,
-  'messaging': MessageSquare,
-  'follow_up': User,
+  in_person: User,
+  video: Video,
+  home: Home,
+  home_visit: Home,
+  chat: MessageSquare,
+  messaging: MessageSquare,
+  follow_up: User,
 };
 
 const statusColors: Record<string, string> = {
+  scheduled: 'bg-muted text-muted-foreground border-border',
   pending: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800',
-  confirmed: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
+  confirmed:
+    'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
   completed: 'bg-muted text-muted-foreground border-border',
   canceled: 'bg-destructive/10 text-destructive border-destructive/20',
-  'no_show': 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800',
+  no_show: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800',
 };
 
 const AppointmentBlock = memo(({ appointment, compact = false, onClick, className }: AppointmentBlockProps) => {
@@ -38,11 +51,14 @@ const AppointmentBlock = memo(({ appointment, compact = false, onClick, classNam
   const TypeIcon = typeIcons[appointment.appointment_type || 'in-person'];
   const statusColor = statusColors[appointment.status] || statusColors.scheduled;
 
-  const initials = appointment.patient_name
-    ?.split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase() || 'P';
+  const initials =
+    appointment.patient_name
+      ?.split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase() || 'P';
+
+  const procedureText = appointment.procedure_name ? String(appointment.procedure_name) : '';
 
   return (
     <HoverCard openDelay={300} closeDelay={100}>
@@ -60,7 +76,7 @@ const AppointmentBlock = memo(({ appointment, compact = false, onClick, classNam
             'bg-card hover:shadow-lg hover:shadow-primary/5',
             statusColor,
             compact ? 'p-2' : 'p-3',
-            className // ✅ added
+            className
           )}
         >
           <div className="flex items-start gap-3">
@@ -84,24 +100,36 @@ const AppointmentBlock = memo(({ appointment, compact = false, onClick, classNam
               </div>
 
               <div className="flex items-center gap-2 mt-0.5">
-                <span className={cn('text-muted-foreground flex items-center gap-1', compact ? 'text-[10px]' : 'text-xs')}>
+                <span
+                  className={cn(
+                    'text-muted-foreground flex items-center gap-1',
+                    compact ? 'text-[10px]' : 'text-xs'
+                  )}
+                >
                   <Clock className="h-3 w-3" />
                   {appointment.start_time} - {appointment.end_time}
                 </span>
                 <TypeIcon className="h-3 w-3 text-muted-foreground" />
               </div>
 
-              {!compact && appointment.procedure_name && (
-                <Badge variant="outline" className="mt-1.5 text-[10px] h-5">
-                  {appointment.procedure_name}
-                </Badge>
+              {/* ✅ Show procedure in BOTH compact and non-compact */}
+              {procedureText && (
+                <>
+                  {!compact ? (
+                    <Badge variant="outline" className="mt-1.5 text-[10px] h-5 w-fit max-w-full">
+                      <span className="truncate block max-w-[220px]">{procedureText}</span>
+                    </Badge>
+                  ) : (
+                    <div className="mt-1 flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <Stethoscope className="h-3 w-3 shrink-0" />
+                      <span className="truncate">{procedureText}</span>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
-            <Badge
-              variant="outline"
-              className={cn('capitalize shrink-0 text-[10px] h-5', compact && 'hidden')}
-            >
+            <Badge variant="outline" className={cn('capitalize shrink-0 text-[10px] h-5', compact && 'hidden')}>
               {appointment.status}
             </Badge>
           </div>
@@ -123,8 +151,8 @@ const AppointmentBlock = memo(({ appointment, compact = false, onClick, classNam
                 {initials}
               </AvatarFallback>
             </Avatar>
-            <div>
-              <h4 className="font-semibold">{appointment.patient_name}</h4>
+            <div className="min-w-0">
+              <h4 className="font-semibold truncate">{appointment.patient_name}</h4>
               <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
                 {appointment.patient_phone && (
                   <span className="flex items-center gap-1">
@@ -145,8 +173,11 @@ const AppointmentBlock = memo(({ appointment, compact = false, onClick, classNam
           <div className="space-y-2 text-sm">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Time</span>
-              <span className="font-medium">{appointment.start_time} - {appointment.end_time}</span>
+              <span className="font-medium">
+                {appointment.start_time} - {appointment.end_time}
+              </span>
             </div>
+
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Type</span>
               <span className="capitalize flex items-center gap-1.5">
@@ -154,10 +185,21 @@ const AppointmentBlock = memo(({ appointment, compact = false, onClick, classNam
                 {appointment.appointment_type || 'In-Person'}
               </span>
             </div>
+
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Status</span>
-              <Badge variant="outline" className="capitalize">{appointment.status}</Badge>
+              <Badge variant="outline" className="capitalize">
+                {appointment.status}
+              </Badge>
             </div>
+
+            {procedureText && (
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-muted-foreground">Requested</span>
+                <span className="font-medium truncate">{procedureText}</span>
+              </div>
+            )}
+
             {appointment.source === 'referral' && (
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Source</span>
@@ -175,9 +217,7 @@ const AppointmentBlock = memo(({ appointment, compact = false, onClick, classNam
                 <FileText className="h-3 w-3" />
                 Notes
               </div>
-              <p className="text-sm text-muted-foreground line-clamp-2">
-                {appointment.notes}
-              </p>
+              <p className="text-sm text-muted-foreground line-clamp-2">{appointment.notes}</p>
             </div>
           )}
         </div>
