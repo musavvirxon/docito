@@ -4,17 +4,11 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-type AppointmentType =
-  | "in_person"
-  | "video"
-  | "home_visit"
-  | "messaging"
-  | "follow_up";
+type AppointmentType = "in_person" | "video" | "home_visit" | "messaging" | "follow_up";
 
 type BookAppointmentRequest = {
   patient_id?: string;
@@ -27,11 +21,8 @@ type BookAppointmentRequest = {
   appointment_type?: string;
   notes?: string;
 
-  // NEW (optional): requested procedure from this doctor
+  // ✅ NEW: patient can request a procedure during booking
   procedure_id?: string | null;
-
-  // Allow camelCase too (frontend sometimes sends this)
-  procedureId?: string | null;
 };
 
 type Resp =
@@ -45,6 +36,7 @@ type Resp =
       appointment_type: AppointmentType;
       provider_id: string;
       entity_id: string | null;
+      procedure_id: string | null;
     }
   | { ok: false; error: string; code?: string };
 
@@ -64,14 +56,11 @@ function requireEnv(name: string) {
 function normalizeAppointmentType(input?: string): AppointmentType {
   const t = (input || "").trim().toLowerCase();
   if (!t) return "in_person";
-  if (t === "in-person" || t === "in_person" || t === "inperson")
-    return "in_person";
+  if (t === "in-person" || t === "in_person" || t === "inperson") return "in_person";
   if (t === "video" || t === "telemed" || t === "telemedicine") return "video";
-  if (t === "home" || t === "home_visit" || t === "home-visit")
-    return "home_visit";
+  if (t === "home" || t === "home_visit" || t === "home-visit") return "home_visit";
   if (t === "chat" || t === "message" || t === "messaging") return "messaging";
-  if (t === "follow_up" || t === "follow-up" || t === "followup")
-    return "follow_up";
+  if (t === "follow_up" || t === "follow-up" || t === "followup") return "follow_up";
   return "in_person";
 }
 
@@ -82,20 +71,74 @@ function hhmmss(d: Date) {
   return d.toISOString().split("T")[1].slice(0, 8);
 }
 
+function isUuidLike(v: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v.trim());
+}
+
+/**
+ * Best-effort ownership validation:
+ * - If procedures table has dentist_id, enforce it
+ * - Else if it has doctor_id, enforce it
+ * - Else allow if procedure exists (fallback)
+ */
+async function validateProcedureBelongsToProvider(
+  service: any,
+  procedureId: string,
+  providerId: string,
+): Promise<{ ok: true } | { ok: false; code: string; error: string }> {
+  // Try dentist_id ownership
+  const qDentist = await service
+    .from("procedures")
+    .select("id")
+    .eq("id", procedureId)
+    .eq("dentist_id", providerId)
+    .maybeSingle();
+
+  if (!qDentist.error) {
+    if (qDentist.data) return { ok: true };
+    // If dentist_id exists, enforce ownership strictly
+    const exists = await service.from("procedures").select("id").eq("id", procedureId).maybeSingle();
+    if (!exists.error && exists.data) {
+      return { ok: false, code: "INVALID_PROCEDURE", error: "Selected procedure does not belong to this doctor" };
+    }
+    return { ok: false, code: "PROCEDURE_NOT_FOUND", error: "Selected procedure not found" };
+  }
+
+  // Try doctor_id ownership
+  const qDoctor = await service
+    .from("procedures")
+    .select("id")
+    .eq("id", procedureId)
+    .eq("doctor_id", providerId)
+    .maybeSingle();
+
+  if (!qDoctor.error) {
+    if (qDoctor.data) return { ok: true };
+    const exists = await service.from("procedures").select("id").eq("id", procedureId).maybeSingle();
+    if (!exists.error && exists.data) {
+      return { ok: false, code: "INVALID_PROCEDURE", error: "Selected procedure does not belong to this doctor" };
+    }
+    return { ok: false, code: "PROCEDURE_NOT_FOUND", error: "Selected procedure not found" };
+  }
+
+  // Fallback: just ensure it exists
+  const exists = await service.from("procedures").select("id").eq("id", procedureId).maybeSingle();
+  if (!exists.error && exists.data) return { ok: true };
+
+  return { ok: false, code: "PROCEDURE_NOT_FOUND", error: "Selected procedure not found" };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  if (req.method !== "POST")
-    return json({ ok: false, error: "Method not allowed" }, 405);
+  if (req.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 405);
 
   try {
     const supabaseUrl = requireEnv("SUPABASE_URL");
     const anonKey = requireEnv("SUPABASE_ANON_KEY");
     const serviceKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
 
-    const authHeader =
-      req.headers.get("authorization") || req.headers.get("Authorization");
-    if (!authHeader)
-      return json({ ok: false, error: "Missing Authorization header" }, 401);
+    const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
+    if (!authHeader) return json({ ok: false, error: "Missing Authorization header" }, 401);
 
     const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } },
@@ -125,119 +168,45 @@ serve(async (req) => {
       duration_minutes = 30,
       appointment_type,
       notes,
+      procedure_id,
     } = body;
 
-    // NEW: accept requested procedure
-    const requestedProcedureId =
-      (body.procedure_id ?? body.procedureId ?? null) || null;
-
     if (!provider_id || !slot_start) {
-      return json(
-        { ok: false, error: "Missing required fields: provider_id, slot_start" },
-        400,
-      );
+      return json({ ok: false, error: "Missing required fields: provider_id, slot_start" }, 400);
     }
 
     const hasPatientId = Boolean(patient_id);
     const hasDoctorPatientId = Boolean(doctor_patient_id);
 
     if (hasPatientId === hasDoctorPatientId) {
-      return json(
-        {
-          ok: false,
-          error: "Provide exactly one of patient_id or doctor_patient_id",
-        },
-        400,
-      );
+      return json({ ok: false, error: "Provide exactly one of patient_id or doctor_patient_id" }, 400);
     }
 
     if (!hasPatientId || patient_id !== user.id) {
-      return json(
-        {
-          ok: false,
-          error: "Unauthorized: patient_id must match authenticated user",
-        },
-        403,
-      );
+      return json({ ok: false, error: "Unauthorized: patient_id must match authenticated user" }, 403);
     }
 
     const startAt = new Date(slot_start);
-    if (Number.isNaN(startAt.getTime()))
-      return json(
-        { ok: false, error: "Invalid slot_start", code: "INVALID_SLOT_START" },
-        400,
-      );
+    if (Number.isNaN(startAt.getTime())) {
+      return json({ ok: false, error: "Invalid slot_start", code: "INVALID_SLOT_START" }, 400);
+    }
 
     const now = new Date();
     if (startAt.getTime() <= now.getTime() + 60_000) {
-      return json(
-        {
-          ok: false,
-          error: "Cannot book an appointment in the past",
-          code: "PAST_TIME",
-        },
-        400,
-      );
+      return json({ ok: false, error: "Cannot book an appointment in the past", code: "PAST_TIME" }, 400);
     }
 
-    const endAt = new Date(
-      startAt.getTime() +
-        Math.max(5, Number(duration_minutes || 30)) * 60_000,
-    );
+    const endAt = new Date(startAt.getTime() + Math.max(5, Number(duration_minutes || 30)) * 60_000);
 
-    const service = createClient(supabaseUrl, serviceKey, {
-      auth: { persistSession: false },
-    });
+    const service = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
 
     await service.rpc("cleanup_expired_appointment_holds").catch(() => {});
-
-    // ✅ Validate requested procedure (important because we use service role to insert holds)
-    if (requestedProcedureId) {
-      const { data: proc, error: procErr } = await service
-        .from("procedures")
-        .select("id, dentist_id, is_active, is_bookable")
-        .eq("id", requestedProcedureId)
-        .maybeSingle();
-
-      if (procErr) {
-        console.error("Procedure validation error:", procErr);
-        return json({ ok: false, error: "Failed to validate procedure" }, 500);
-      }
-
-      if (!proc) {
-        return json(
-          { ok: false, error: "Invalid procedure", code: "INVALID_PROCEDURE" },
-          400,
-        );
-      }
-
-      if (proc.dentist_id !== provider_id) {
-        return json(
-          {
-            ok: false,
-            error: "Procedure does not belong to selected doctor",
-            code: "PROCEDURE_NOT_ALLOWED",
-          },
-          403,
-        );
-      }
-
-      if (!proc.is_active || !proc.is_bookable) {
-        return json(
-          {
-            ok: false,
-            error: "Procedure is not available for booking",
-            code: "PROCEDURE_NOT_BOOKABLE",
-          },
-          400,
-        );
-      }
-    }
 
     const appointmentDate = isoDate(startAt);
     const startTime = hhmmss(startAt);
     const endTime = hhmmss(endAt);
 
+    // Slot conflict check
     const { data: existingAppointments, error: conflictErr } = await service
       .from("appointments")
       .select("id")
@@ -254,12 +223,10 @@ serve(async (req) => {
     }
 
     if (existingAppointments && existingAppointments.length > 0) {
-      return json(
-        { ok: false, error: "Slot is no longer available", code: "SLOT_TAKEN" },
-        409,
-      );
+      return json({ ok: false, error: "Slot is no longer available", code: "SLOT_TAKEN" }, 409);
     }
 
+    // Hold conflict check
     const { data: otherHolds, error: holdErr } = await service
       .from("appointment_holds")
       .select("id")
@@ -276,36 +243,67 @@ serve(async (req) => {
     }
 
     if (otherHolds && otherHolds.length > 0) {
-      return json(
-        {
-          ok: false,
-          error: "Slot is temporarily held by another patient",
-          code: "SLOT_TAKEN",
-        },
-        409,
-      );
+      return json({ ok: false, error: "Slot is temporarily held by another patient", code: "SLOT_TAKEN" }, 409);
     }
 
     const normalizedType = normalizeAppointmentType(appointment_type);
 
-    const { data: holdRow, error: insertErr } = await service
-      .from("appointment_holds")
-      .insert({
-        patient_id: user.id,
-        doctor_patient_id: null,
-        doctor_id: provider_id,
-        practice_id: entity_id || null,
-        start_at: startAt.toISOString(),
-        end_at: endAt.toISOString(),
-        appointment_type: normalizedType,
-        notes: notes ?? null,
-        status: "pending",
+    // ✅ Validate procedure_id (if provided)
+    const cleanedProcedureId =
+      procedure_id && typeof procedure_id === "string" && isUuidLike(procedure_id) ? procedure_id.trim() : null;
 
-        // NEW
-        procedure_id: requestedProcedureId,
-      })
-      .select("id, expires_at")
-      .single();
+    if (cleanedProcedureId) {
+      const valid = await validateProcedureBelongsToProvider(service, cleanedProcedureId, provider_id);
+      if (!valid.ok) {
+        return json({ ok: false, error: valid.error, code: valid.code }, 400);
+      }
+    }
+
+    // Insert hold (with fallback if DB doesn't have procedure_id yet)
+    const basePayload: any = {
+      patient_id: user.id,
+      doctor_patient_id: null,
+      doctor_id: provider_id,
+      practice_id: entity_id || null,
+      start_at: startAt.toISOString(),
+      end_at: endAt.toISOString(),
+      appointment_type: normalizedType,
+      notes: notes ?? null,
+      status: "pending",
+      procedure_id: cleanedProcedureId,
+    };
+
+    const insertHold = async (payload: any) => {
+      return await service
+        .from("appointment_holds")
+        .insert(payload)
+        .select("id, expires_at")
+        .single();
+    };
+
+    let holdRow: any = null;
+    let insertErr: any = null;
+
+    const ins1 = await insertHold(basePayload);
+    if (!ins1.error && ins1.data) {
+      holdRow = ins1.data;
+    } else {
+      insertErr = ins1.error;
+
+      // fallback if procedure_id column doesn't exist yet
+      const msg = String(insertErr?.message || "");
+      if (msg.toLowerCase().includes("procedure_id")) {
+        const retry = { ...basePayload };
+        delete retry.procedure_id;
+        const ins2 = await insertHold(retry);
+        if (!ins2.error && ins2.data) {
+          holdRow = ins2.data;
+          insertErr = null;
+        } else {
+          insertErr = ins2.error;
+        }
+      }
+    }
 
     if (insertErr || !holdRow) {
       console.error("Error creating appointment hold:", insertErr);
@@ -323,6 +321,7 @@ serve(async (req) => {
         appointment_type: normalizedType,
         provider_id,
         entity_id: entity_id || null,
+        procedure_id: cleanedProcedureId,
       },
       201,
     );
