@@ -15,6 +15,13 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Loader2,
   Calendar as CalendarIcon,
   Clock,
@@ -65,6 +72,38 @@ export function AppointmentBookingPopup({
   const [blockedDates, setBlockedDates] = useState<Date[]>([]);
   const [workingDays, setWorkingDays] = useState<Record<string, boolean>>({});
 
+  type BookableProcedure = {
+    id: string;
+    name: string;
+    category: string | null;
+    price: number | null;
+    default_cost: number | null;
+    estimated_duration_minutes: number | null;
+    duration_minutes: number | null;
+  };
+
+  const [bookableProcedures, setBookableProcedures] = useState<BookableProcedure[]>([]);
+  const [proceduresLoading, setProceduresLoading] = useState(false);
+  const [proceduresError, setProceduresError] = useState<string | null>(null);
+  const [selectedProcedureId, setSelectedProcedureId] = useState<string | null>(null);
+
+  const selectedProcedure = useMemo(() => {
+    if (!selectedProcedureId) return null;
+    return bookableProcedures.find((p) => p.id === selectedProcedureId) || null;
+  }, [bookableProcedures, selectedProcedureId]);
+
+  const formatAmount = (amount: number | null | undefined) => {
+    if (amount == null) return null;
+    try {
+      return new Intl.NumberFormat(undefined, {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      }).format(amount);
+    } catch {
+      return String(amount);
+    }
+  };
+
   const { loading: slotsLoading, fetchAvailability, getAvailableSlotsForDate, slots } = useAvailability({
     entityId,
     providerId,
@@ -77,6 +116,13 @@ export function AppointmentBookingPopup({
   useEffect(() => {
     setResolvedProviderName(providerName || "");
   }, [providerName]);
+
+  // Reset selection when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setSelectedProcedureId(null);
+    }
+  }, [open]);
 
   // If providerName isn't provided, fetch it using providerId (doctor -> profiles full_name)
   useEffect(() => {
@@ -104,6 +150,40 @@ export function AppointmentBookingPopup({
     run().catch(() => undefined);
   }, [open, providerId, resolvedProviderName]);
 
+  // Fetch doctor's bookable procedures for patient request (NO dental chart here)
+  useEffect(() => {
+    const run = async () => {
+      if (!open) return;
+      if (!providerId) return;
+
+      setProceduresLoading(true);
+      setProceduresError(null);
+
+      try {
+        const { data, error } = await supabase
+          .from("procedures")
+          .select("id, name, category, price, default_cost, estimated_duration_minutes, duration_minutes")
+          .eq("dentist_id", providerId)
+          .eq("is_active", true)
+          .eq("is_bookable", true)
+          .order("category", { ascending: true })
+          .order("name", { ascending: true });
+
+        if (error) throw error;
+
+        setBookableProcedures((data as any) || []);
+      } catch (e: any) {
+        console.error(e);
+        setBookableProcedures([]);
+        setProceduresError(e?.message || "Failed to load procedures");
+      } finally {
+        setProceduresLoading(false);
+      }
+    };
+
+    run();
+  }, [open, providerId]);
+
   // Fetch availability when date range changes
   useEffect(() => {
     if (open && selectedDate) {
@@ -113,78 +193,96 @@ export function AppointmentBookingPopup({
     }
   }, [open, selectedDate, fetchAvailability]);
 
-  // Fetch blocked times and working days for the doctor
+  // Fetch blocked dates and working days for calendar UI
   useEffect(() => {
-    if (!open || !providerId) return;
+    const run = async () => {
+      if (!open) return;
+      if (!providerId) return;
 
-    const fetchScheduleData = async () => {
       try {
-        // Fetch blocked times
-        const { data: blocked } = await supabase
-          .from("blocked_times")
-          .select("blocked_date")
-          .eq("doctor_id", providerId)
-          .gte("blocked_date", format(todayStart, "yyyy-MM-dd"));
-
-        if (blocked) {
-          setBlockedDates(blocked.map(b => new Date(b.blocked_date + "T00:00:00")));
-        }
-
-        // Fetch schedule settings for working days
+        // Working days
         const { data: scheduleData } = await supabase
-          .from("schedule_settings")
+          .from("doctor_schedule_settings")
           .select("working_days")
           .eq("doctor_id", providerId)
           .maybeSingle();
 
-        if (scheduleData?.working_days) {
-          const wd = scheduleData.working_days as Record<string, { enabled: boolean }>;
-          const days: Record<string, boolean> = {};
-          Object.keys(wd).forEach(day => {
-            days[day.toLowerCase()] = wd[day]?.enabled || false;
-          });
-          setWorkingDays(days);
+        if ((scheduleData as any)?.working_days) {
+          setWorkingDays((scheduleData as any).working_days as Record<string, boolean>);
         }
-      } catch (err) {
-        console.error("Failed to fetch schedule data:", err);
+
+        // Blocked times -> blocked dates
+        const { data: blocked } = await supabase
+          .from("blocked_times")
+          .select("blocked_date")
+          .eq("doctor_id", providerId);
+
+        const uniqueDates = Array.from(
+          new Set((blocked || []).map((b: any) => b.blocked_date).filter(Boolean))
+        ).map((d) => startOfDay(parseISO(String(d))));
+
+        setBlockedDates(uniqueDates);
+      } catch (e) {
+        console.error(e);
       }
     };
 
-    fetchScheduleData();
-  }, [open, providerId, todayStart]);
+    run();
+  }, [open, providerId]);
 
-  // Compute which dates have available slots
-  const datesWithAvailability = useMemo(() => {
-    const dates = new Set<string>();
-    slots.forEach(slot => {
-      if (slot.available) {
-        const dateStr = slot.start_at.split("T")[0];
-        dates.add(dateStr);
-      }
-    });
-    return dates;
-  }, [slots]);
-
-  // Reset state when popup closes
+  // Reset steps when opening
   useEffect(() => {
-    if (!open) {
-      setSelectedSlot(null);
-      setNotes("");
+    if (open) {
       setStep("date");
       setSelectedDate(todayStart);
+      setSelectedSlot(null);
+      setNotes("");
     }
-  }, [open, todayStart]);
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleDateSelect = (date: Date | undefined) => {
-    if (!date) return;
-    const d = startOfDay(date);
-    setSelectedDate(d);
-    setSelectedSlot(null);
+  const availableSlotsForSelectedDate = useMemo(() => {
+    if (!selectedDate) return [];
+    return getAvailableSlotsForDate(selectedDate);
+  }, [selectedDate, getAvailableSlotsForDate, slots]);
+
+  const isDateBlocked = (date: Date) => {
+    return blockedDates.some((d) => isSameDay(d, date));
+  };
+
+  const isNonWorkingDay = (date: Date) => {
+    const day = format(date, "EEEE").toLowerCase();
+    if (!workingDays || Object.keys(workingDays).length === 0) return false;
+    return workingDays[day] === false;
+  };
+
+  const hasSlots = (date: Date) => {
+    const key = format(date, "yyyy-MM-dd");
+    return Boolean((slots as any)?.[key]?.length);
+  };
+
+  const dateDisabled = (date: Date) => {
+    // Past
+    if (isBefore(date, todayStart)) return true;
+    // Blocked
+    if (isDateBlocked(date)) return true;
+    // Non-working
+    if (isNonWorkingDay(date)) return true;
+    // No slots
+    if (!hasSlots(date)) return true;
+    return false;
+  };
+
+  const handleContinueFromDate = () => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    if (!selectedDate) return;
     setStep("time");
   };
 
-  const handleSlotSelect = (slot: string) => {
-    setSelectedSlot(slot);
+  const handleSelectTime = (slotIso: string) => {
+    setSelectedSlot(slotIso);
     setStep("confirm");
   };
 
@@ -197,6 +295,7 @@ export function AppointmentBookingPopup({
       slotStart: selectedSlot,
       appointmentType,
       notes: notes.trim() || undefined,
+      procedureId: selectedProcedureId,
     });
 
     if (res) {
@@ -205,50 +304,11 @@ export function AppointmentBookingPopup({
     }
   };
 
-  const handleLoginRedirect = () => {
-    onOpenChange(false);
-    navigate("/auth?redirect=" + encodeURIComponent(window.location.pathname));
-  };
-
-  // Get available slots for selected date
-  const availableSlots = selectedDate
-    ? getAvailableSlotsForDate(format(selectedDate, "yyyy-MM-dd"))
-    : [];
-
-  const nowWithBufferMs = Date.now() + 60_000; // 1 minute buffer
-  const isSlotPast = (iso: string) => {
-    const t = parseISO(iso).getTime();
-    return !Number.isFinite(t) || t <= nowWithBufferMs;
-  };
-
-  // Check if user is logged in
-  if (!user && open) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Sign In Required</DialogTitle>
-            <DialogDescription>
-              Please sign in to book an appointment{" "}
-              {resolvedProviderName ? `with Dr. ${resolvedProviderName}` : ""} at {entityName}.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-4 mt-4">
-            <Button onClick={handleLoginRedirect}>Sign In to Continue</Button>
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-hidden">
+      <DialogContent className="sm:max-w-[520px]">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
             {step === "success" ? "Appointment Confirmed!" : "Book Appointment"}
           </DialogTitle>
           <DialogDescription>
@@ -271,7 +331,7 @@ export function AppointmentBookingPopup({
         {step === "date" && (
           <div className="py-4 space-y-4">
             <Label className="text-sm font-medium mb-3 block">Select a Date</Label>
-            
+
             {/* Legend */}
             <div className="flex flex-wrap gap-3 text-xs mb-2">
               <div className="flex items-center gap-1.5">
@@ -283,124 +343,87 @@ export function AppointmentBookingPopup({
                 <span>Available</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-muted-foreground/30" />
-                <span>Past/Unavailable</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-amber-500" />
-                <span>Day Off</span>
+                <span className="w-3 h-3 rounded-full bg-muted" />
+                <span>Unavailable</span>
               </div>
             </div>
-            
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={handleDateSelect}
-              weekStartsOn={1}
-              disabled={(date) => {
-                const d = startOfDay(date);
-                // Past dates
-                if (isBefore(d, todayStart)) return true;
-                // Blocked dates
-                if (blockedDates.some(bd => isSameDay(bd, d))) return true;
-                // Non-working days (if schedule configured)
-                if (Object.keys(workingDays).length > 0) {
-                  const dayName = format(d, "EEEE").toLowerCase();
-                  if (!workingDays[dayName]) return true;
-                }
-                return false;
-              }}
-              modifiers={{
-                today: (date) => isToday(date),
-                available: (date) => {
-                  const dateStr = format(date, "yyyy-MM-dd");
-                  return datesWithAvailability.has(dateStr) && !isBefore(startOfDay(date), todayStart);
-                },
-                blocked: (date) => blockedDates.some(bd => isSameDay(bd, date)),
-                dayOff: (date) => {
-                  if (Object.keys(workingDays).length === 0) return false;
-                  const dayName = format(date, "EEEE").toLowerCase();
-                  return !workingDays[dayName] && !isBefore(startOfDay(date), todayStart);
-                },
-                past: (date) => isBefore(startOfDay(date), todayStart),
-              }}
-              modifiersClassNames={{
-                today: "!bg-primary !text-primary-foreground font-bold",
-                available: "!bg-emerald-100 dark:!bg-emerald-900/30 !text-emerald-700 dark:!text-emerald-300 hover:!bg-emerald-200 dark:hover:!bg-emerald-900/50",
-                blocked: "!bg-destructive/20 !text-destructive line-through",
-                dayOff: "!bg-amber-100 dark:!bg-amber-900/30 !text-amber-600 dark:!text-amber-400",
-                past: "!bg-muted !text-muted-foreground opacity-50",
-              }}
-              className="rounded-md border mx-auto pointer-events-auto"
-            />
+
+            <div className="rounded-lg border p-2">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={setSelectedDate}
+                disabled={dateDisabled}
+                className={cn("w-full")}
+                modifiers={{
+                  today: (date) => isToday(date),
+                  available: (date) => !dateDisabled(date),
+                }}
+                modifiersClassNames={{
+                  today: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
+                  available:
+                    "bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/20 dark:text-emerald-300",
+                }}
+              />
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button className="flex-1" onClick={handleContinueFromDate} disabled={!selectedDate}>
+                Continue
+              </Button>
+            </div>
+
+            {!user && (
+              <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/40 border rounded-md p-3">
+                <Lock className="h-4 w-4 mt-0.5" />
+                <span>
+                  You must be signed in to request an appointment. You’ll be redirected to sign in.
+                </span>
+              </div>
+            )}
           </div>
         )}
 
         {step === "time" && selectedDate && (
-          <div className="py-4">
-            <div className="flex items-center gap-2 mb-4">
-              <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">
-                {format(selectedDate, "EEEE, MMMM d, yyyy")}
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setStep("date")}
-                className="ml-auto"
-              >
-                Change
+          <div className="py-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium">Select a Time</div>
+                <div className="text-xs text-muted-foreground">{format(selectedDate, "EEEE, MMM d")}</div>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => setStep("date")}>
+                Change date
               </Button>
             </div>
 
             {slotsLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                <span className="ml-2 text-muted-foreground">
-                  Loading available times...
-                </span>
+              <div className="flex items-center justify-center py-8 text-muted-foreground">
+                <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                Loading availability...
               </div>
-            ) : availableSlots.length === 0 ? (
-              <div className="text-center py-8">
-                <AlertCircle className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
-                <p className="text-muted-foreground">
-                  No available slots for this date
-                </p>
-                <Button
-                  variant="outline"
-                  onClick={() => setStep("date")}
-                  className="mt-4"
-                >
-                  Select Another Date
-                </Button>
+            ) : availableSlotsForSelectedDate.length === 0 ? (
+              <div className="rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground flex items-start gap-2">
+                <AlertCircle className="h-4 w-4 mt-0.5" />
+                No available slots for this date. Please select another date.
               </div>
             ) : (
-              <ScrollArea className="h-64">
-                <div className="grid grid-cols-3 gap-2 pr-2">
-                  {availableSlots.map((slot) => {
-                    const time = parseISO(slot.start_at);
-                    const locked = isSlotPast(slot.start_at);
-
+              <ScrollArea className="h-[260px] pr-2">
+                <div className="grid grid-cols-2 gap-2">
+                  {availableSlotsForSelectedDate.map((slot: any) => {
+                    const t = parseISO(String(slot.start_time));
+                    const iso = slot.start_time;
                     return (
                       <Button
-                        key={slot.start_at}
-                        variant={selectedSlot === slot.start_at ? "default" : "outline"}
-                        size="sm"
-                        className="justify-center"
-                        onClick={() => handleSlotSelect(slot.start_at)}
-                        disabled={locked} // ✅ Old times locked (not bookable)
+                        key={iso}
+                        variant="outline"
+                        className="justify-start"
+                        onClick={() => handleSelectTime(iso)}
                       >
-                        {locked ? (
-                          <span className="inline-flex items-center gap-2">
-                            <Lock className="h-3.5 w-3.5" />
-                            {format(time, "h:mm a")}
-                          </span>
-                        ) : (
-                          <>
-                            <Clock className="h-3 w-3 mr-1" />
-                            {format(time, "h:mm a")}
-                          </>
-                        )}
+                        <Clock className="h-4 w-4 mr-2" />
+                        {format(t, "h:mm a")}
                       </Button>
                     );
                   })}
@@ -415,9 +438,7 @@ export function AppointmentBookingPopup({
             <div className="bg-muted/50 rounded-lg p-4 space-y-2">
               <div className="flex items-center gap-2">
                 <CalendarIcon className="h-4 w-4 text-primary" />
-                <span className="font-medium">
-                  {format(selectedDate, "EEEE, MMMM d, yyyy")}
-                </span>
+                <span className="font-medium">{format(selectedDate, "EEEE, MMMM d, yyyy")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-primary" />
@@ -440,6 +461,64 @@ export function AppointmentBookingPopup({
             </div>
 
             <div className="space-y-2">
+              <Label>Requested procedure (optional)</Label>
+
+              {proceduresError ? (
+                <div className="text-sm text-destructive">{proceduresError}</div>
+              ) : (
+                <Select
+                  value={selectedProcedureId ?? "none"}
+                  onValueChange={(v) => setSelectedProcedureId(v === "none" ? null : v)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={proceduresLoading ? "Loading procedures..." : "Select a procedure"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No preference</SelectItem>
+
+                    {proceduresLoading ? (
+                      <SelectItem value="loading" disabled>
+                        Loading...
+                      </SelectItem>
+                    ) : bookableProcedures.length === 0 ? (
+                      <SelectItem value="empty" disabled>
+                        No bookable procedures
+                      </SelectItem>
+                    ) : (
+                      bookableProcedures.map((p) => {
+                        const price = p.price ?? p.default_cost;
+                        const duration = p.estimated_duration_minutes ?? p.duration_minutes;
+                        const meta = [
+                          p.category ? String(p.category) : null,
+                          duration ? `${duration} min` : null,
+                          price != null ? formatAmount(price) : null,
+                        ].filter(Boolean);
+
+                        return (
+                          <SelectItem key={p.id} value={p.id}>
+                            <div className="flex flex-col">
+                              <span className="font-medium">{p.name}</span>
+                              {meta.length > 0 && (
+                                <span className="text-xs text-muted-foreground">{meta.join(" • ")}</span>
+                              )}
+                            </div>
+                          </SelectItem>
+                        );
+                      })
+                    )}
+                  </SelectContent>
+                </Select>
+              )}
+
+              {selectedProcedure && (
+                <div className="text-xs text-muted-foreground">
+                  Requested:{" "}
+                  <span className="font-medium text-foreground">{selectedProcedure.name}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="notes">Notes (optional)</Label>
               <Textarea
                 id="notes"
@@ -459,11 +538,7 @@ export function AppointmentBookingPopup({
               >
                 Back
               </Button>
-              <Button
-                className="flex-1"
-                onClick={handleConfirmBooking}
-                disabled={bookingLoading}
-              >
+              <Button className="flex-1" onClick={handleConfirmBooking} disabled={bookingLoading}>
                 {bookingLoading ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -480,35 +555,18 @@ export function AppointmentBookingPopup({
         {step === "success" && result && (
           <div className="py-8 text-center">
             <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Clock className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+              <CheckCircle className="h-8 w-8 text-amber-600" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">
-              Almost there!
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              Your slot is reserved for{" "}
-              {format(
-                parseISO(`${result.appointment_date}T${result.start_time}`),
-                "EEEE, MMMM d"
-              )}{" "}
-              at{" "}
-              {format(
-                parseISO(`${result.appointment_date}T${result.start_time}`),
-                "h:mm a"
-              )}
-              . Please confirm to finalize your appointment.
-            </p>
-            <div className="flex gap-2 justify-center">
-              <Button variant="outline" onClick={() => onOpenChange(false)}>
-                Cancel
-              </Button>
+            <div className="text-lg font-semibold">Booking Hold Created</div>
+            <div className="text-sm text-muted-foreground mt-1">
+              Please confirm your appointment to finalize booking.
+            </div>
+
+            <div className="pt-6">
               <Button
-                onClick={() =>
-                  navigate(`/booking-confirmation/${result.hold_id}`)
-                }
+                onClick={() => navigate(`/booking-confirmation/${result.hold_id}`)}
               >
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Confirm Appointment
+                Continue to Confirmation
               </Button>
             </div>
           </div>
@@ -517,5 +575,3 @@ export function AppointmentBookingPopup({
     </Dialog>
   );
 }
-
-export default AppointmentBookingPopup;
