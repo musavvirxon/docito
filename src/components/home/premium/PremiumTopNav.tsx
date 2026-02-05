@@ -153,7 +153,7 @@ const PremiumTopNav = () => {
                     onClick={() => navigate(getLocalizedPath("/auth"))}
                     variant="ghost"
                     size="sm"
-                    className="h-8 px-4 text-xs font-medium"
+                    className="h-8 px-4 text-xs font-medium text-foreground"
                   >
                     {t("topNav.actions.signIn", { defaultValue: "Sign In" })}
                   </Button>
