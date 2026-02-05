@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+// Path: src/contexts/AuthContext.tsx
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -6,6 +7,7 @@ import { useInactivityTimer } from "@/hooks/useInactivityTimer";
 import { InactivityWarningModal } from "@/components/InactivityWarningModal";
 import { getPrimaryRole, getUserRolesFromProfile, type AppRole } from "@/lib/rbac";
 import { getBrowserTimezone } from "@/lib/timezone";
+import { detectProfileTimezone } from "@/lib/timezoneApi";
 
 interface Profile {
   id: string;
@@ -22,6 +24,9 @@ interface Profile {
   notification_settings?: any;
   privacy_settings?: any;
   timezone?: string;
+  timezone_source?: string;
+  timezone_locked?: boolean;
+  timezone_updated_at?: string;
   language?: string;
   created_at: string;
   updated_at: string;
@@ -59,12 +64,37 @@ export const useAuth = () => {
 };
 
 const ACTIVE_ROLE_KEY = "docito.activeRole";
+const PENDING_TZ_KEY = "docito.pendingTimezone";
 
 const FACILITY_ADMIN_ROLES: AppRole[] = ["lab_admin", "pharmacy_admin", "imaging_admin"];
 const GENERIC_ROLES: AppRole[] = ["patient", "doctor", "staff", "admin", "clinic_admin"];
 
 const isFacilityAdmin = (role: AppRole) => FACILITY_ADMIN_ROLES.includes(role);
 const isGenericRole = (role: AppRole) => GENERIC_ROLES.includes(role);
+
+function safeLocalStorageGet(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function safeLocalStorageSet(key: string, value: string) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // ignore
+  }
+}
+
+function safeLocalStorageRemove(key: string) {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // ignore
+  }
+}
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -74,6 +104,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [activeRole, _setActiveRole] = useState<AppRole>("patient");
   const [roleStatus, setRoleStatus] = useState<Partial<Record<AppRole, RoleVerificationStatus>>>({});
+
+  const ensuredTimezoneForUserRef = useRef<string | null>(null);
+  const ensuringTimezoneRef = useRef<boolean>(false);
 
   const allRoles: AppRole[] = useMemo(() => {
     if (!profile) return [];
@@ -97,6 +130,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     toast.success(`Switched to ${role.replace("_", " ")}`);
   };
 
+  const maybeEnsureProfileTimezone = async (p: Profile | null, userId: string) => {
+    if (!p) return;
+    if (ensuringTimezoneRef.current) return;
+
+    if (ensuredTimezoneForUserRef.current === userId) return;
+
+    // Never override manual selection
+    if (p.timezone_source === "manual" && typeof p.timezone === "string" && p.timezone.trim()) {
+      ensuredTimezoneForUserRef.current = userId;
+      safeLocalStorageRemove(PENDING_TZ_KEY);
+      return;
+    }
+
+    const pending = safeLocalStorageGet(PENDING_TZ_KEY);
+    const candidate = (pending && pending.trim()) ? pending.trim() : getBrowserTimezone();
+
+    // If timezone already looks valid and not defaulted, skip.
+    // We still allow detect if timezone is missing or UTC (common default).
+    const currentTz = typeof p.timezone === "string" ? p.timezone.trim() : "";
+    const shouldDetect = !currentTz || currentTz === "UTC";
+
+    if (!shouldDetect && !pending) {
+      ensuredTimezoneForUserRef.current = userId;
+      return;
+    }
+
+    ensuringTimezoneRef.current = true;
+    try {
+      await detectProfileTimezone(candidate);
+      safeLocalStorageRemove(PENDING_TZ_KEY);
+    } catch (e) {
+      // Best-effort; do not block auth UX
+      console.warn("Failed to ensure timezone:", e);
+    } finally {
+      ensuringTimezoneRef.current = false;
+      ensuredTimezoneForUserRef.current = userId;
+    }
+  };
+
   const fetchProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase.from("profiles").select("*").eq("user_id", userId).maybeSingle();
@@ -108,7 +180,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const roles = getUserRolesFromProfile(p);
       const primary = getPrimaryRole(roles);
 
-      // restore last active role if still valid
       let stored: AppRole | null = null;
       try {
         stored = (localStorage.getItem(ACTIVE_ROLE_KEY) as AppRole) || null;
@@ -125,8 +196,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       _setActiveRole(nextRole);
 
-      // Role verification statuses are maintained elsewhere; keep existing behavior
       setRoleStatus({});
+
+      // Step 5: Ensure timezone (browser/IP fallback) after profile loads
+      await maybeEnsureProfileTimezone(p, userId);
     } catch (e) {
       console.error("Failed to fetch profile:", e);
       setProfile(null);
@@ -148,13 +221,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
       setUser(s?.user ?? null);
+
       if (s?.user?.id) {
         setTimeout(() => fetchProfile(s.user.id), 0);
       } else {
+        ensuredTimezoneForUserRef.current = null;
+        ensuringTimezoneRef.current = false;
+
         setProfile(null);
         _setActiveRole("patient");
         setRoleStatus({});
       }
+
       setLoading(false);
     });
 
@@ -192,9 +270,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             false,
         ) || false;
 
-      const tz = userData.timezone || getBrowserTimezone();
+      const tz = (userData.timezone && String(userData.timezone).trim()) ? String(userData.timezone).trim() : getBrowserTimezone();
 
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -210,6 +288,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) throw error;
 
+      // If email confirmation is enabled, session may be null.
+      // Store timezone to apply after user is authenticated.
+      if (!data?.session) {
+        safeLocalStorageSet(PENDING_TZ_KEY, tz);
+      } else {
+        // Best-effort: ensure profile timezone (will prefer browser tz)
+        try {
+          await detectProfileTimezone(tz);
+        } catch {
+          // ignore; profile fetch will retry best-effort after auth state resolves
+        }
+      }
+
       toast.success("Account created successfully!");
       return {};
     } catch (error: any) {
@@ -223,6 +314,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
+      safeLocalStorageRemove(PENDING_TZ_KEY);
+      ensuredTimezoneForUserRef.current = null;
+      ensuringTimezoneRef.current = false;
       toast.success("Signed out");
     } catch (e: any) {
       toast.error(e?.message || "Failed to sign out");
@@ -235,13 +329,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const patch: Record<string, any> = { ...updates };
 
-      if (typeof (updates as any).timezone === "string" && (updates as any).timezone.length) {
-        patch.timezone_source = "manual";
-        patch.timezone_updated_at = new Date().toISOString();
-      }
-
-      const { error } = await supabase.from("profiles").update(patch).eq("user_id", user.id);
+      const { error } = await supabase.from("profiles").update(patch as any).eq("user_id", user.id);
       if (error) throw error;
+
       await fetchProfile(user.id);
       toast.success("Profile updated successfully!");
       return {};
