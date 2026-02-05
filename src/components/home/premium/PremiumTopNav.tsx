@@ -26,7 +26,7 @@ const PremiumTopNav = () => {
   const [navVisible, setNavVisible] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useTranslation("premium");
+  const { t } = useTranslation("common");
   const { getLocalizedPath } = useLocalizedPath();
 
   const { user } = useAuth();
