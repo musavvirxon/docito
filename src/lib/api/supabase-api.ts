@@ -608,6 +608,14 @@ export const appointmentApi = {
     } catch (error: any) {
       return handleApiError(error, 'Failed to delete appointment');
     }
+  },
+
+  async fetchAppointments(userId: string, role: 'patient' | 'doctor') {
+    if (role === 'doctor') {
+      return this.fetchDoctorAppointments(userId);
+    } else {
+      return this.fetchPatientAppointments(userId);
+    }
   }
 };
 
@@ -1027,6 +1035,11 @@ export const storageApi = {
     } catch (error: any) {
       return handleApiError(error, 'Failed to download file');
     }
+  },
+
+  getPublicUrl(bucket: string, path: string) {
+    const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+    return data.publicUrl;
   }
 };
 
@@ -1151,6 +1164,24 @@ export const notificationApi = {
 
 // Practices API
 export const practiceApi = {
+  async fetchTopPracticesByCountry(limit: number = 6) {
+    try {
+      const { data, error } = await (supabase as any)
+        .from('practices')
+        .select('*')
+        .eq('verified', true)
+        .order('num_reviews', { ascending: false, nullsFirst: false })
+        .order('average_rating', { ascending: false, nullsFirst: false })
+        .order('appointment_count', { ascending: false, nullsFirst: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return { data: data || [], success: true };
+    } catch (error: any) {
+      return handleApiError(error, 'Failed to fetch top practices');
+    }
+  },
+
   async searchPractices(params: { query?: string; location?: string; practiceType?: string; minRating?: number }) {
     try {
       let q = (supabase as any)
@@ -1191,5 +1222,27 @@ export const practiceApi = {
     } catch (error: any) {
       return handleApiError(error, 'Failed to search practices');
     }
+  }
+};
+
+// Search API for advanced searching
+export const searchApi = {
+  async advancedPracticeSearch(params: { 
+    query?: string; 
+    location?: string; 
+    practiceType?: string; 
+    minRating?: number;
+    limit?: number;
+  }) {
+    return practiceApi.searchPractices(params);
+  },
+
+  async advancedDoctorSearch(params: {
+    query?: string;
+    location?: string;
+    specialty?: string;
+    minRating?: number;
+  }) {
+    return doctorApi.searchDoctors(params.query || '', params.location, params.specialty);
   }
 };

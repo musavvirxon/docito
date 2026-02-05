@@ -17,7 +17,7 @@ import {
   AlertTriangle,
   Calendar,
   RefreshCw,
-  Tooth,
+  CircleDot,
   DollarSign,
 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -188,7 +188,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
       if (!sessionData) throw new Error('Session not found');
 
       setSession(sessionData as SessionData);
-      setSessionNotes(sessionData.notes || '');
+      setSessionNotes(typeof sessionData.notes === 'string' ? sessionData.notes : '');
 
       const { data: appointmentData, error: apptError } = await supabase
         .from('appointments')
@@ -420,9 +420,11 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
 
       // Otherwise create a new consultation
       const consult = await createConsultation({
-        appointmentId: appointment.id,
-        doctorId: appointment.doctor_id,
-        patientId: appointment.patient_id,
+        appointment_id: appointment.id,
+        doctor_id: appointment.doctor_id,
+        patient_id: appointment.patient_id,
+        scheduled_start: new Date().toISOString(),
+        scheduled_end: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
       });
 
       if (consult) {
@@ -606,7 +608,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
 
       {/* Content */}
       <main className="container py-6">
-        <ResizablePanelGroup direction="horizontal" className="min-h-[calc(100vh-8rem)]">
+        <ResizablePanelGroup orientation="horizontal" className="min-h-[calc(100vh-8rem)]">
           <ResizablePanel defaultSize={65} minSize={50}>
             <div className="pr-4 h-full">
               <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full flex flex-col">
@@ -646,10 +648,11 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     <TabsContent value="video" className="mt-0 space-y-4">
                       {showVideoRoom && videoConsultation ? (
                         <VideoRoom
-                          consultationId={videoConsultation.id}
-                          appointmentId={appointment.id}
+                          consultation={videoConsultation}
+                          userName="Doctor"
+                          userRole="doctor"
                           onEnd={handleVideoEnd}
-                          role="doctor"
+                          onLeave={() => setShowVideoRoom(false)}
                         />
                       ) : (
                         <Card>
@@ -739,7 +742,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                         <CardHeader className="pb-2">
                           <CardTitle className="text-sm flex items-center justify-between">
                             <span className="flex items-center gap-2">
-                              <Tooth className="h-4 w-4" />
+                              <CircleDot className="h-4 w-4" />
                               Dental Procedures (This Appointment)
                             </span>
                             <Button
