@@ -3,6 +3,7 @@ import { format, addDays, subDays, addWeeks, subWeeks, addMonths, subMonths } fr
 import { ChevronLeft, ChevronRight, Calendar, Search, Filter, Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +11,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { TimezoneNotice } from '@/components/time/TimezoneNotice';
+import { getEffectiveTimeZone } from '@/lib/timezone';
 import type { CalendarView, CalendarFilters, AppointmentType, AppointmentStatus } from './types';
 
 interface CalendarHeaderProps {
@@ -54,6 +57,8 @@ const CalendarHeader = memo(({
   onSetAvailability,
 }: CalendarHeaderProps) => {
   const { t } = useTranslation('dashboard');
+  const { profile } = useAuth();
+  const timezone = getEffectiveTimeZone(profile?.timezone);
 
   const navigatePrev = () => {
     switch (view) {
@@ -132,6 +137,9 @@ const CalendarHeader = memo(({
               className="min-w-[200px] text-center"
             >
               <h2 className="text-lg font-semibold tracking-tight">{getDateLabel()}</h2>
+              <div className="mt-1 flex justify-center">
+                <TimezoneNotice timezone={timezone} />
+              </div>
             </motion.div>
           </AnimatePresence>
 
@@ -255,7 +263,7 @@ const CalendarHeader = memo(({
                   <Checkbox
                     id="show-buffers"
                     checked={filters.showBuffers}
-                    onCheckedChange={(checked) => 
+                    onCheckedChange={(checked) =>
                       onFiltersChange({ ...filters, showBuffers: !!checked })
                     }
                   />
