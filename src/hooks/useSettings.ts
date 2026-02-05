@@ -1,3 +1,5 @@
+// File: src/hooks/useSettings.ts
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -40,7 +42,7 @@ export const useSettings = () => {
   const [accountSettings, setAccountSettings] = useState<AccountSettings>({
     email: '',
     phone: '',
-    timezone: 'America/New_York',
+    timezone: 'UTC',
     language: 'en'
   });
 
@@ -74,7 +76,6 @@ export const useSettings = () => {
       try {
         setLoading(true);
 
-        // Fetch fresh profile data with settings
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
@@ -83,25 +84,21 @@ export const useSettings = () => {
 
         if (profileError) throw profileError;
 
-        // Load account settings from profile
         setAccountSettings({
           email: profileData.email || '',
           phone: profileData.phone || '',
-          timezone: profileData.timezone || 'America/New_York',
+          timezone: profileData.timezone || 'UTC',
           language: profileData.language || 'en'
         });
 
-        // Load notification settings
         if (profileData.notification_settings) {
           setNotifications(profileData.notification_settings as unknown as NotificationSettings);
         }
 
-        // Load privacy settings
         if (profileData.privacy_settings) {
           setPrivacySettings(profileData.privacy_settings as unknown as PrivacySettings);
         }
 
-        // Load calendar sync status (only if user is a doctor)
         if (profile.role === 'doctor') {
           const { data: doctorData } = await supabase
             .from('doctors')
@@ -124,7 +121,6 @@ export const useSettings = () => {
             }
           }
         }
-
       } catch (error: any) {
         console.error('Error loading settings:', error);
         toast.error('Failed to load settings');
@@ -143,15 +139,22 @@ export const useSettings = () => {
     try {
       setSaving(true);
 
+      const patch: any = {
+        email: newSettings.email,
+        phone: newSettings.phone,
+        timezone: newSettings.timezone,
+        language: newSettings.language,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (typeof newSettings.timezone === "string" && newSettings.timezone.length) {
+        patch.timezone_source = "manual";
+        patch.timezone_updated_at = new Date().toISOString();
+      }
+
       const { error } = await supabase
         .from('profiles')
-        .update({
-          email: newSettings.email,
-          phone: newSettings.phone,
-          timezone: newSettings.timezone,
-          language: newSettings.language,
-          updated_at: new Date().toISOString()
-        } as any)
+        .update(patch)
         .eq('user_id', user.id);
 
       if (error) throw error;
@@ -202,7 +205,6 @@ export const useSettings = () => {
     try {
       setSaving(true);
 
-      // Get doctor ID
       const { data: doctorData } = await supabase
         .from('doctors')
         .select('id')
@@ -262,28 +264,6 @@ export const useSettings = () => {
     }
   };
 
-  // Change password
-  const changePassword = async (currentPassword: string, newPassword: string) => {
-    try {
-      setSaving(true);
-
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
-      });
-
-      if (error) throw error;
-
-      toast.success('Password changed successfully');
-      return { success: true };
-    } catch (error: any) {
-      console.error('Error changing password:', error);
-      toast.error('Failed to change password: ' + error.message);
-      return { success: false, error: error.message };
-    } finally {
-      setSaving(false);
-    }
-  };
-
   return {
     loading,
     saving,
@@ -295,6 +275,5 @@ export const useSettings = () => {
     updateNotificationSettings,
     updateCalendarSync,
     updatePrivacySettings,
-    changePassword
   };
 };
