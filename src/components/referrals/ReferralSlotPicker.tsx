@@ -1,5 +1,7 @@
-import { useState } from 'react';
-import { format, addDays, isSameDay, parseISO } from 'date-fns';
+// File: src/components/referrals/ReferralSlotPicker.tsx
+
+import { useEffect, useMemo, useState } from 'react';
+import { format, isSameDay, parseISO } from 'date-fns';
 import { Calendar as CalendarIcon, Clock, Check, Loader2 } from 'lucide-react';
 import {
   Dialog,
@@ -12,7 +14,16 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { TimezoneNotice } from '@/components/time/TimezoneNotice';
 import { cn } from '@/lib/utils';
+import {
+  formatFullDateInTimeZone,
+  formatTimeInTimeZone,
+  getEffectiveTimeZone,
+  zonedLocalToUtcDate,
+} from '@/lib/timezone';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import type { ReferralSlot, Referral } from '@/hooks/useReferrals';
 
 interface ReferralSlotPickerProps {
@@ -21,12 +32,22 @@ interface ReferralSlotPickerProps {
   referral: Referral;
   slots: ReferralSlot[];
   loading: boolean;
-  onBookSlot: (slotId: string, appointmentData: {
-    appointment_date: string;
-    start_time: string;
-    end_time: string;
-  }) => Promise<void>;
+  onBookSlot: (
+    slotId: string,
+    appointmentData: {
+      appointment_date: string;
+      start_time: string;
+      end_time: string;
+    }
+  ) => Promise<void>;
 }
+
+const receiverEntityTypeMap: Record<string, string> = {
+  clinic: 'clinic',
+  lab: 'lab',
+  imaging_center: 'imaging',
+  pharmacy: 'pharmacy',
+};
 
 export const ReferralSlotPicker = ({
   open,
@@ -34,40 +55,120 @@ export const ReferralSlotPicker = ({
   referral,
   slots,
   loading,
-  onBookSlot
+  onBookSlot,
 }: ReferralSlotPickerProps) => {
+  const { profile } = useAuth();
+  const viewerTimezone = getEffectiveTimeZone(profile?.timezone);
+
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     referral.preferred_date ? parseISO(referral.preferred_date) : undefined
   );
   const [selectedSlot, setSelectedSlot] = useState<ReferralSlot | null>(null);
   const [isBooking, setIsBooking] = useState(false);
 
-  // Get unique dates that have available slots
-  const availableDates = [...new Set(
-    slots
-      .filter(s => s.is_available && !s.is_reserved)
-      .map(s => s.slot_date)
-  )];
+  const [receiverTimezone, setReceiverTimezone] = useState<string>('UTC');
+  const [receiverTzLoading, setReceiverTzLoading] = useState(false);
 
-  // Get slots for selected date
-  const slotsForDate = selectedDate
-    ? slots.filter(s => 
-        s.is_available && 
-        !s.is_reserved && 
-        isSameDay(parseISO(s.slot_date), selectedDate)
-      )
-    : [];
+  useEffect(() => {
+    let cancelled = false;
 
-  // Check if a date has available slots
+    const loadReceiverTimezone = async () => {
+      setReceiverTzLoading(true);
+      try {
+        let tz: string | null | undefined;
+
+        if (referral.receiver_type === 'doctor' && referral.receiver_entity_id) {
+          const { data: doctorRow, error: doctorErr } = await supabase
+            .from('doctors')
+            .select('user_id')
+            .eq('id', referral.receiver_entity_id)
+            .maybeSingle();
+          if (doctorErr) throw doctorErr;
+
+          if (doctorRow?.user_id) {
+            const { data: profRow, error: profErr } = await supabase
+              .from('profiles')
+              .select('timezone')
+              .eq('user_id', doctorRow.user_id)
+              .maybeSingle();
+            if (profErr) throw profErr;
+            tz = profRow?.timezone;
+          }
+        } else if (referral.receiver_entity_id) {
+          const mapped = receiverEntityTypeMap[referral.receiver_type];
+          if (mapped) {
+            const { data: entityRow, error: entityErr } = await supabase
+              .from('entity_settings')
+              .select('timezone')
+              .eq('entity_type', mapped)
+              .eq('entity_id', referral.receiver_entity_id)
+              .maybeSingle();
+            if (entityErr) throw entityErr;
+            tz = entityRow?.timezone;
+          }
+        }
+
+        if (!cancelled) setReceiverTimezone(getEffectiveTimeZone(tz));
+      } catch (e) {
+        console.warn('Failed to resolve receiver timezone, defaulting to UTC.', e);
+        if (!cancelled) setReceiverTimezone('UTC');
+      } finally {
+        if (!cancelled) setReceiverTzLoading(false);
+      }
+    };
+
+    if (open) loadReceiverTimezone();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, referral.receiver_type, referral.receiver_entity_id]);
+
+  const availableDates = useMemo(() => {
+    return [
+      ...new Set(
+        slots
+          .filter((s) => s.is_available && !s.is_reserved)
+          .map((s) => s.slot_date)
+      ),
+    ];
+  }, [slots]);
+
+  const slotsForDate = useMemo(() => {
+    if (!selectedDate) return [];
+    return slots.filter(
+      (s) => s.is_available && !s.is_reserved && isSameDay(parseISO(s.slot_date), selectedDate)
+    );
+  }, [slots, selectedDate]);
+
   const hasSlots = (date: Date) => {
-    return availableDates.some(d => isSameDay(parseISO(d), date));
+    return availableDates.some((d) => isSameDay(parseISO(d), date));
   };
 
-  // Check if date is within validity window
   const isWithinValidity = (date: Date) => {
     const validFrom = parseISO(referral.valid_from);
     const validUntil = parseISO(referral.valid_until);
     return date >= validFrom && date <= validUntil;
+  };
+
+  const formatSlotRange = (slot: ReferralSlot) => {
+    if (!receiverTimezone || receiverTzLoading) {
+      return `${slot.start_time.slice(0, 5)} - ${slot.end_time.slice(0, 5)}`;
+    }
+
+    const startUtc = zonedLocalToUtcDate(slot.slot_date, slot.start_time, receiverTimezone);
+    let endUtc = zonedLocalToUtcDate(slot.slot_date, slot.end_time, receiverTimezone);
+
+    if (endUtc.getTime() <= startUtc.getTime()) {
+      endUtc = new Date(endUtc.getTime() + 24 * 60 * 60 * 1000);
+    }
+
+    return `${formatTimeInTimeZone(startUtc, viewerTimezone)} - ${formatTimeInTimeZone(endUtc, viewerTimezone)}`;
+  };
+
+  const getSelectedSlotStartUtc = () => {
+    if (!selectedSlot || receiverTzLoading) return null;
+    return zonedLocalToUtcDate(selectedSlot.slot_date, selectedSlot.start_time, receiverTimezone);
   };
 
   const handleBook = async () => {
@@ -78,7 +179,7 @@ export const ReferralSlotPicker = ({
       await onBookSlot(selectedSlot.id, {
         appointment_date: selectedSlot.slot_date,
         start_time: selectedSlot.start_time,
-        end_time: selectedSlot.end_time
+        end_time: selectedSlot.end_time,
       });
       onOpenChange(false);
     } catch (error) {
@@ -88,6 +189,8 @@ export const ReferralSlotPicker = ({
     }
   };
 
+  const selectedStartUtc = getSelectedSlotStartUtc();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
@@ -96,10 +199,12 @@ export const ReferralSlotPicker = ({
           <DialogDescription>
             Select an available time slot for your referral appointment
           </DialogDescription>
+          <div className="pt-2">
+            <TimezoneNotice timezone={viewerTimezone} />
+          </div>
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Referral Info */}
           <div className="bg-muted/50 rounded-lg p-4 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Referral</span>
@@ -108,9 +213,7 @@ export const ReferralSlotPicker = ({
             <p className="font-medium">{referral.reason}</p>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <CalendarIcon className="h-4 w-4" />
-              <span>
-                Valid until {format(parseISO(referral.valid_until), 'MMMM d, yyyy')}
-              </span>
+              <span>Valid until {format(parseISO(referral.valid_until), 'MMMM d, yyyy')}</span>
             </div>
           </div>
 
@@ -126,7 +229,6 @@ export const ReferralSlotPicker = ({
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Calendar */}
               <div>
                 <p className="text-sm font-medium mb-2">Select Date</p>
                 <Calendar
@@ -138,29 +240,28 @@ export const ReferralSlotPicker = ({
                   }}
                   disabled={(date) => !hasSlots(date) || !isWithinValidity(date)}
                   modifiers={{
-                    hasSlots: (date) => hasSlots(date) && isWithinValidity(date)
+                    hasSlots: (date) => hasSlots(date) && isWithinValidity(date),
                   }}
                   modifiersStyles={{
                     hasSlots: {
                       backgroundColor: 'hsl(var(--primary) / 0.1)',
-                      fontWeight: 'bold'
-                    }
+                      fontWeight: 'bold',
+                    },
                   }}
                   className="rounded-md border"
                 />
               </div>
 
-              {/* Time Slots */}
               <div>
                 <p className="text-sm font-medium mb-2">
-                  {selectedDate 
+                  {selectedDate
                     ? `Available Times for ${format(selectedDate, 'MMM d')}`
                     : 'Select a date first'}
                 </p>
                 <ScrollArea className="h-[280px] border rounded-md">
                   {slotsForDate.length === 0 ? (
                     <div className="p-4 text-center text-muted-foreground text-sm">
-                      {selectedDate 
+                      {selectedDate
                         ? 'No slots available for this date'
                         : 'Please select a date to see available times'}
                     </div>
@@ -171,17 +272,15 @@ export const ReferralSlotPicker = ({
                           key={slot.id}
                           onClick={() => setSelectedSlot(slot)}
                           className={cn(
-                            "w-full flex items-center justify-between p-3 rounded-md border transition-colors",
+                            'w-full flex items-center justify-between p-3 rounded-md border transition-colors',
                             selectedSlot?.id === slot.id
-                              ? "border-primary bg-primary/10"
-                              : "hover:bg-muted/50"
+                              ? 'border-primary bg-primary/10'
+                              : 'hover:bg-muted/50'
                           )}
                         >
                           <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4 text-muted-foreground" />
-                            <span className="font-medium">
-                              {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
-                            </span>
+                            <span className="font-medium">{formatSlotRange(slot)}</span>
                           </div>
                           {selectedSlot?.id === slot.id && (
                             <Check className="h-4 w-4 text-primary" />
@@ -195,13 +294,14 @@ export const ReferralSlotPicker = ({
             </div>
           )}
 
-          {/* Selected Summary & Book Button */}
           {selectedSlot && (
             <div className="flex items-center justify-between pt-4 border-t">
               <div className="text-sm">
                 <span className="text-muted-foreground">Selected: </span>
                 <span className="font-medium">
-                  {format(parseISO(selectedSlot.slot_date), 'MMMM d, yyyy')} at {selectedSlot.start_time.slice(0, 5)}
+                  {selectedStartUtc
+                    ? `${formatFullDateInTimeZone(selectedStartUtc, viewerTimezone)} at ${formatTimeInTimeZone(selectedStartUtc, viewerTimezone)}`
+                    : `${format(parseISO(selectedSlot.slot_date), 'MMMM d, yyyy')} at ${selectedSlot.start_time.slice(0, 5)}`}
                 </span>
               </div>
               <Button onClick={handleBook} disabled={isBooking}>
