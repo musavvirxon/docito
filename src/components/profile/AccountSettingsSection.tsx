@@ -1,4 +1,4 @@
-// File: src/components/profile/AccountSettingsSection.tsx
+// Path: src/components/profile/AccountSettingsSection.tsx
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2, RefreshCw, Save } from "lucide-react";
 import { toast } from "sonner";
+import { TimezoneCombobox } from "@/components/profile/TimezoneCombobox";
+import { updateProfileTimezone } from "@/lib/timezoneApi";
 
 type Settings = {
   theme?: "system" | "light" | "dark";
@@ -16,19 +18,6 @@ type Settings = {
   timezone?: string;
   language?: string;
 };
-
-const timezones = [
-  "UTC",
-  "Europe/London",
-  "Europe/Paris",
-  "Asia/Tashkent",
-  "Asia/Dubai",
-  "Asia/Tokyo",
-  "America/New_York",
-  "America/Chicago",
-  "America/Denver",
-  "America/Los_Angeles",
-];
 
 const languages = [
   { code: "en", label: "English" },
@@ -99,17 +88,23 @@ export default function AccountSettingsSection() {
         language: effectiveLanguage,
       };
 
+      // Step 6: timezone updates go through timezone-update Edge Function
+      if (effectiveTimezone && effectiveTimezone !== (profile?.timezone || "")) {
+        await updateProfileTimezone(effectiveTimezone, "manual");
+      }
+
+      // Keep existing settings blob in sync (theme/reduce_motion/language/timezone)
       const { data, error } = await supabase.functions.invoke("account-dashboard", {
         body: { action: "update_settings", settings: payload },
       });
       if (error) throw error;
       if (data?.ok === false) throw new Error(data?.error || "Failed to save settings");
 
-      // Keep profiles table in sync for existing app reads
+      // Keep profiles reads in sync for app UI (also refreshes auth context)
       await updateProfile({
         timezone: effectiveTimezone,
         language: effectiveLanguage,
-      });
+      } as any);
 
       toast.success("Settings saved");
     } catch (e: any) {
@@ -180,18 +175,8 @@ export default function AccountSettingsSection() {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label>Timezone</Label>
-              <Select value={effectiveTimezone} onValueChange={(v) => setSettings((p) => ({ ...p, timezone: v }))}>
-                <SelectTrigger className="rounded-xl">
-                  <SelectValue placeholder="Select timezone" />
-                </SelectTrigger>
-                <SelectContent>
-                  {timezones.map((tz) => (
-                    <SelectItem key={tz} value={tz}>
-                      {tz}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <TimezoneCombobox value={effectiveTimezone} onValueChange={(v) => setSettings((p) => ({ ...p, timezone: v }))} />
+              <p className="text-xs text-muted-foreground">Calendar + referrals will display times in this timezone.</p>
             </div>
 
             <div className="space-y-2">
