@@ -1,3 +1,5 @@
+// File: src/App.tsx
+
 // src/App.tsx
 import { Suspense, lazy, useEffect } from "react";
 import { Routes, Route, useParams, Outlet } from "react-router-dom";
@@ -7,6 +9,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { HelmetProvider } from "react-helmet-async";
 import { languages } from "@/i18n/config";
 import i18n from "@/i18n/config";
+import TimezoneBootstrapper from "@/components/time/TimezoneBootstrapper";
 
 // Layouts
 import PublicLayout from "@/layouts/PublicLayout";
@@ -123,6 +126,7 @@ export default function App() {
     <HelmetProvider>
       <ThemeProvider>
         <AuthProvider>
+          <TimezoneBootstrapper />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Language-prefixed routes (e.g., /en/about, /ru/doctors) */}
@@ -210,6 +214,7 @@ export default function App() {
                 <Route path="video-call" element={<VideoCall />} />
                 <Route path="video/:roomId" element={<VideoCall />} />
                 <Route path="appointment-session/:appointmentId" element={<AppointmentSession />} />
+
                 <Route path="*" element={<NotFound />} />
               </Route>
 
