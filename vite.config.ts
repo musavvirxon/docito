@@ -26,6 +26,8 @@ export default defineConfig(({ mode }) => ({
   build: {
     // Target modern browsers to avoid legacy polyfills
     target: 'esnext',
+    // Generate source maps for debugging in production
+    sourcemap: true,
     // Disable modulepreload polyfill - all modern browsers support it natively
     modulePreload: {
       polyfill: false,
