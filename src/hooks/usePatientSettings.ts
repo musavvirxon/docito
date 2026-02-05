@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { updateProfileTimezone } from "@/lib/timezoneApi";
 
 export interface NotificationSettings {
   emailBookings: boolean;
@@ -112,7 +113,7 @@ export const usePatientSettings = () => {
     date_of_birth: null,
     gender: null,
     address: null,
-    timezone: "America/New_York",
+    timezone: "UTC",
     language: "en",
   });
 
@@ -120,13 +121,13 @@ export const usePatientSettings = () => {
 
   const profileAccount = useMemo(() => {
     return {
-      full_name: profile?.full_name || "",
+      full_name: (profile as any)?.full_name || "",
       email: (profile as any)?.email || "",
       phone: (profile as any)?.phone || null,
       date_of_birth: (profile as any)?.date_of_birth || null,
       gender: (profile as any)?.gender || null,
       address: (profile as any)?.address || null,
-      timezone: (profile as any)?.timezone || "America/New_York",
+      timezone: (profile as any)?.timezone || "UTC",
       language: (profile as any)?.language || "en",
     } as AccountSettings;
   }, [profile]);
@@ -222,10 +223,32 @@ export const usePatientSettings = () => {
     if (!user) return { error: "Not authenticated" };
 
     try {
-      const { error } = await supabase.from("profiles").update(settings as any).eq("user_id", user.id);
-      if (error) throw error;
+      const patch: Record<string, any> = { ...(settings as any) };
 
-      setAccountSettings((prev) => ({ ...prev, ...settings }));
+      // Step 6: Timezone must be updated via Edge Function (timezone-update)
+      let tzUpdated: string | null = null;
+      if (typeof settings.timezone === "string" && settings.timezone.trim()) {
+        const next = settings.timezone.trim();
+        const current = (accountSettings.timezone || "").trim();
+        if (next && next !== current) {
+          const res = await updateProfileTimezone(next, "manual");
+          tzUpdated = res.timezone;
+        }
+        delete patch.timezone;
+      }
+
+      // Other fields update directly
+      if (Object.keys(patch).length > 0) {
+        const { error } = await supabase.from("profiles").update(patch as any).eq("user_id", user.id);
+        if (error) throw error;
+      }
+
+      setAccountSettings((prev) => ({
+        ...prev,
+        ...settings,
+        ...(tzUpdated ? { timezone: tzUpdated } : {}),
+      }));
+
       toast.success("Account settings updated");
       return { success: true };
     } catch (err: any) {
