@@ -1,13 +1,13 @@
 import { memo, useMemo } from 'react';
-import {
-  format,
-  startOfMonth,
-  endOfMonth,
-  eachDayOfInterval,
-  isSameMonth,
-  isToday,
+import { 
+  format, 
+  startOfMonth, 
+  endOfMonth, 
+  eachDayOfInterval, 
+  isSameMonth, 
+  isToday, 
   startOfWeek,
-  endOfWeek,
+  endOfWeek 
 } from 'date-fns';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -46,13 +46,6 @@ const MonthView = memo(({
     return eachDayOfInterval({ start: calendarStart, end: calendarEnd });
   }, [selectedDate]);
 
-  const shortProcedure = (name: string) => {
-    const trimmed = (name || '').trim();
-    if (!trimmed) return '';
-    const firstWord = trimmed.split(/\s+/)[0] || trimmed;
-    return firstWord.length > 12 ? `${firstWord.slice(0, 11)}…` : firstWord;
-  };
-
   // Get appointments for a specific day
   const getAppointmentsForDay = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
@@ -63,7 +56,8 @@ const MonthView = memo(({
       result = result.filter(a =>
         a.patient_name?.toLowerCase().includes(query) ||
         a.notes?.toLowerCase().includes(query) ||
-        a.procedure_name?.toLowerCase().includes(query)
+        a.procedure_name?.toLowerCase().includes(query) ||
+        a.procedure_category?.toLowerCase().includes(query)
       );
     }
 
@@ -78,7 +72,7 @@ const MonthView = memo(({
 
   // Get appointment type indicators
   const getTypeIndicators = (dayAppts: CalendarAppointment[]) => {
-    const types = new Set(dayAppts.map(a => a.appointment_type || 'in-person'));
+    const types = new Set(dayAppts.map(a => a.appointment_type || 'in_person'));
     return Array.from(types);
   };
 
@@ -139,25 +133,20 @@ const MonthView = memo(({
             >
               {/* Day Number */}
               <div className="flex items-center justify-between mb-2">
-                <span
-                  className={cn(
-                    'text-sm font-medium',
-                    !isCurrentMonth && 'text-muted-foreground',
-                    isToday(day) && 'text-primary'
-                  )}
-                >
+                <span className={cn(
+                  'text-sm font-medium',
+                  !isCurrentMonth && 'text-muted-foreground',
+                  isToday(day) && 'text-primary'
+                )}>
                   {format(day, 'd')}
                 </span>
-
                 {isCurrentMonth && isWorking && dayAppts.length > 0 && (
-                  <span
-                    className={cn(
-                      'text-xs font-medium px-1.5 py-0.5 rounded-full',
-                      health.status === 'fully-booked' && 'bg-emerald-500/10 text-emerald-600',
-                      health.status === 'balanced' && 'bg-blue-500/10 text-blue-600',
-                      health.status === 'many-openings' && 'bg-amber-500/10 text-amber-600'
-                    )}
-                  >
+                  <span className={cn(
+                    'text-xs font-medium px-1.5 py-0.5 rounded-full',
+                    health.status === 'fully-booked' && 'bg-emerald-500/10 text-emerald-600',
+                    health.status === 'balanced' && 'bg-blue-500/10 text-blue-600',
+                    health.status === 'many-openings' && 'bg-amber-500/10 text-amber-600'
+                  )}>
                     {dayAppts.length}
                   </span>
                 )}
@@ -166,31 +155,21 @@ const MonthView = memo(({
               {/* Appointment indicators */}
               {isCurrentMonth && isWorking && (
                 <div className="space-y-1">
-                  {dayAppts.slice(0, 3).map((apt) => {
-                    const firstName = (apt.patient_name || '').split(' ')[0] || 'Patient';
-                    const proc = apt.procedure_name ? ` • ${shortProcedure(apt.procedure_name)}` : '';
-                    const title = apt.procedure_name
-                      ? `${apt.start_time} ${apt.patient_name || ''} — ${apt.procedure_name}`
-                      : `${apt.start_time} ${apt.patient_name || ''}`;
-
-                    return (
-                      <div
-                        key={apt.id}
-                        title={title}
-                        className={cn(
-                          'text-[10px] truncate px-1.5 py-0.5 rounded',
-                          apt.status === 'confirmed' && 'bg-emerald-500/10 text-emerald-700',
-                          apt.status === 'pending' && 'bg-amber-500/10 text-amber-700',
-                          apt.status === 'completed' && 'bg-muted text-muted-foreground',
-                          apt.status === 'no_show' && 'bg-red-500/10 text-red-700'
-                        )}
-                      >
-                        {apt.start_time} {firstName}
-                        {proc}
-                      </div>
-                    );
-                  })}
-
+                  {dayAppts.slice(0, 3).map((apt) => (
+                    <div
+                      key={apt.id}
+                      className={cn(
+                        'text-[10px] truncate px-1.5 py-0.5 rounded',
+                        apt.status === 'confirmed' && 'bg-emerald-500/10 text-emerald-700',
+                        apt.status === 'pending' && 'bg-amber-500/10 text-amber-700',
+                        apt.status === 'completed' && 'bg-muted text-muted-foreground',
+                        apt.status === 'no_show' && 'bg-red-500/10 text-red-700'
+                      )}
+                      title={apt.procedure_name ? `${apt.start_time} ${apt.patient_name} • ${apt.procedure_name}` : `${apt.start_time} ${apt.patient_name}`}
+                    >
+                      {`${apt.start_time} ${apt.patient_name?.split(' ')[0] || ''}${apt.procedure_name ? ` • ${apt.procedure_name}` : ''}`}
+                    </div>
+                  ))}
                   {dayAppts.length > 3 && (
                     <div className="text-[10px] text-muted-foreground text-center">
                       +{dayAppts.length - 3} more
@@ -207,10 +186,10 @@ const MonthView = memo(({
                       key={type}
                       className={cn(
                         'w-1.5 h-1.5 rounded-full',
-                        type === 'in-person' && 'bg-primary',
+                        (type === 'in-person' || type === 'in_person') && 'bg-primary',
                         type === 'video' && 'bg-emerald-500',
-                        type === 'home' && 'bg-amber-500',
-                        type === 'chat' && 'bg-purple-500'
+                        (type === 'home' || type === 'home_visit') && 'bg-amber-500',
+                        (type === 'chat' || type === 'messaging') && 'bg-purple-500'
                       )}
                     />
                   ))}
