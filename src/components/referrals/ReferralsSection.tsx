@@ -1,3 +1,5 @@
+// File: src/components/referrals/ReferralsSection.tsx
+
 import { useState } from 'react';
 import { Plus, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -25,6 +27,8 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { TimezoneNotice } from '@/components/time/TimezoneNotice';
+import { getEffectiveTimeZone } from '@/lib/timezone';
 import { canCreateReferrals } from '@/lib/referrals/permissions';
 
 interface ReferralsSectionProps {
@@ -48,7 +52,8 @@ export const ReferralsSection = ({
   title = 'Referrals',
   description,
 }: ReferralsSectionProps) => {
-  const { allRoles } = useAuth();
+  const { allRoles, profile } = useAuth();
+  const timezone = getEffectiveTimeZone(profile?.timezone);
 
   const { referrals, loading, refetch } = useReferrals({
     role,
@@ -167,6 +172,9 @@ export const ReferralsSection = ({
               {title}
             </CardTitle>
             {description && <CardDescription>{description}</CardDescription>}
+            <div className="mt-2">
+              <TimezoneNotice timezone={timezone} />
+            </div>
           </div>
 
           {uiCanCreate && (
