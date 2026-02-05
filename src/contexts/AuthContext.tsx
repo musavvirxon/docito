@@ -1,13 +1,11 @@
-// Path: src/contexts/AuthContext.tsx
-import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useInactivityTimer } from "@/hooks/useInactivityTimer";
 import { InactivityWarningModal } from "@/components/InactivityWarningModal";
 import { getPrimaryRole, getUserRolesFromProfile, type AppRole } from "@/lib/rbac";
-import { getBrowserTimezone } from "@/lib/timezone";
-import { detectProfileTimezone } from "@/lib/timezoneApi";
+import { getBrowserTimeZone } from "@/lib/timezone";
 
 interface Profile {
   id: string;
@@ -25,7 +23,6 @@ interface Profile {
   privacy_settings?: any;
   timezone?: string;
   timezone_source?: string;
-  timezone_locked?: boolean;
   timezone_updated_at?: string;
   language?: string;
   created_at: string;
@@ -64,37 +61,12 @@ export const useAuth = () => {
 };
 
 const ACTIVE_ROLE_KEY = "docito.activeRole";
-const PENDING_TZ_KEY = "docito.pendingTimezone";
 
 const FACILITY_ADMIN_ROLES: AppRole[] = ["lab_admin", "pharmacy_admin", "imaging_admin"];
 const GENERIC_ROLES: AppRole[] = ["patient", "doctor", "staff", "admin", "clinic_admin"];
 
 const isFacilityAdmin = (role: AppRole) => FACILITY_ADMIN_ROLES.includes(role);
 const isGenericRole = (role: AppRole) => GENERIC_ROLES.includes(role);
-
-function safeLocalStorageGet(key: string): string | null {
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-function safeLocalStorageSet(key: string, value: string) {
-  try {
-    localStorage.setItem(key, value);
-  } catch {
-    // ignore
-  }
-}
-
-function safeLocalStorageRemove(key: string) {
-  try {
-    localStorage.removeItem(key);
-  } catch {
-    // ignore
-  }
-}
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -105,15 +77,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [activeRole, _setActiveRole] = useState<AppRole>("patient");
   const [roleStatus, setRoleStatus] = useState<Partial<Record<AppRole, RoleVerificationStatus>>>({});
 
-  const ensuredTimezoneForUserRef = useRef<string | null>(null);
-  const ensuringTimezoneRef = useRef<boolean>(false);
-
   const allRoles: AppRole[] = useMemo(() => {
     if (!profile) return [];
     const roles = getUserRolesFromProfile(profile as any);
-    const primary = getPrimaryRole(roles);
-    const normalized = Array.from(new Set([...(roles || []), primary].filter(Boolean))) as AppRole[];
-    return normalized;
+    return (roles || []) as AppRole[];
   }, [profile]);
 
   const setActiveRoleSilently = (role: AppRole) => {
@@ -130,81 +97,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     toast.success(`Switched to ${role.replace("_", " ")}`);
   };
 
-  const maybeEnsureProfileTimezone = async (p: Profile | null, userId: string) => {
-    if (!p) return;
-    if (ensuringTimezoneRef.current) return;
-
-    if (ensuredTimezoneForUserRef.current === userId) return;
-
-    // Never override manual selection
-    if (p.timezone_source === "manual" && typeof p.timezone === "string" && p.timezone.trim()) {
-      ensuredTimezoneForUserRef.current = userId;
-      safeLocalStorageRemove(PENDING_TZ_KEY);
-      return;
-    }
-
-    const pending = safeLocalStorageGet(PENDING_TZ_KEY);
-    const candidate = (pending && pending.trim()) ? pending.trim() : getBrowserTimezone();
-
-    // If timezone already looks valid and not defaulted, skip.
-    // We still allow detect if timezone is missing or UTC (common default).
-    const currentTz = typeof p.timezone === "string" ? p.timezone.trim() : "";
-    const shouldDetect = !currentTz || currentTz === "UTC";
-
-    if (!shouldDetect && !pending) {
-      ensuredTimezoneForUserRef.current = userId;
-      return;
-    }
-
-    ensuringTimezoneRef.current = true;
-    try {
-      await detectProfileTimezone(candidate);
-      safeLocalStorageRemove(PENDING_TZ_KEY);
-    } catch (e) {
-      // Best-effort; do not block auth UX
-      console.warn("Failed to ensure timezone:", e);
-    } finally {
-      ensuringTimezoneRef.current = false;
-      ensuredTimezoneForUserRef.current = userId;
-    }
-  };
-
   const fetchProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase.from("profiles").select("*").eq("user_id", userId).maybeSingle();
-      if (error) throw error;
+    const { data, error } = await supabase.from("profiles").select("*").eq("user_id", userId).single();
+    if (error) throw error;
+    setProfile(data as any);
 
-      const p = (data as any) || null;
-      setProfile(p);
-
-      const roles = getUserRolesFromProfile(p);
-      const primary = getPrimaryRole(roles);
-
-      let stored: AppRole | null = null;
+    const inferredRoles = getUserRolesFromProfile(data as any) as AppRole[];
+    const stored = (() => {
       try {
-        stored = (localStorage.getItem(ACTIVE_ROLE_KEY) as AppRole) || null;
+        return (localStorage.getItem(ACTIVE_ROLE_KEY) as AppRole | null) ?? null;
       } catch {
-        stored = null;
+        return null;
       }
+    })();
 
-      const available = Array.from(new Set([...(roles || []), primary].filter(Boolean))) as AppRole[];
-      let nextRole: AppRole = primary || "patient";
-
-      if (stored && (available.includes(stored) || isGenericRole(stored) || isFacilityAdmin(stored))) {
-        nextRole = stored;
+    if (stored && inferredRoles.includes(stored)) {
+      _setActiveRole(stored);
+    } else {
+      const primary = getPrimaryRole(inferredRoles);
+      _setActiveRole(primary);
+      try {
+        localStorage.setItem(ACTIVE_ROLE_KEY, primary);
+      } catch {
+        // ignore
       }
-
-      _setActiveRole(nextRole);
-
-      setRoleStatus({});
-
-      // Step 5: Ensure timezone (browser/IP fallback) after profile loads
-      await maybeEnsureProfileTimezone(p, userId);
-    } catch (e) {
-      console.error("Failed to fetch profile:", e);
-      setProfile(null);
-      _setActiveRole("patient");
-      setRoleStatus({});
     }
   };
 
@@ -213,38 +129,86 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await fetchProfile(user.id);
   };
 
-  const { showWarning, countdown, stayLoggedIn } = useInactivityTimer(session);
+  const fetchRoleStatus = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("role_verifications")
+        .select("role,status")
+        .eq("user_id", userId);
+      if (error) return;
+
+      const next: Partial<Record<AppRole, RoleVerificationStatus>> = {};
+      for (const row of data as any[]) {
+        if (row?.role) next[row.role as AppRole] = (row.status as RoleVerificationStatus) || "unverified";
+      }
+      setRoleStatus(next);
+    } catch {
+      // ignore
+    }
+  };
+
+  // Inactivity timer (kept as-is)
+  const { showWarning, countdown, stayLoggedIn } = useInactivityTimer({
+    enabled: Boolean(session),
+    warningSeconds: 60,
+    timeoutSeconds: 15 * 60,
+    onTimeout: async () => {
+      await supabase.auth.signOut();
+      toast.info("Signed out due to inactivity.");
+    },
+  });
 
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, s) => {
-      setSession(s);
-      setUser(s?.user ?? null);
+    const init = async () => {
+      setLoading(true);
+      const { data } = await supabase.auth.getSession();
+      setSession(data.session);
+      setUser(data.session?.user ?? null);
 
-      if (s?.user?.id) {
-        setTimeout(() => fetchProfile(s.user.id), 0);
-      } else {
-        ensuredTimezoneForUserRef.current = null;
-        ensuringTimezoneRef.current = false;
-
-        setProfile(null);
-        _setActiveRole("patient");
-        setRoleStatus({});
+      if (data.session?.user?.id) {
+        try {
+          await fetchProfile(data.session.user.id);
+          await fetchRoleStatus(data.session.user.id);
+        } catch {
+          // ignore
+        }
       }
-
       setLoading(false);
+    };
+
+    void init();
+
+    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, nextSession) => {
+      setSession(nextSession);
+      setUser(nextSession?.user ?? null);
+
+      if (nextSession?.user?.id) {
+        try {
+          await fetchProfile(nextSession.user.id);
+          await fetchRoleStatus(nextSession.user.id);
+        } catch {
+          // ignore
+        }
+      } else {
+        setProfile(null);
+        setRoleStatus({});
+        _setActiveRole("patient");
+        try {
+          localStorage.removeItem(ACTIVE_ROLE_KEY);
+        } catch {
+          // ignore
+        }
+      }
     });
 
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      setSession(s);
-      setUser(s?.user ?? null);
-      if (s?.user?.id) setTimeout(() => fetchProfile(s.user.id), 0);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    return () => sub.subscription.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    toast.success("Signed out");
+  };
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -261,6 +225,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, userData: any = {}) => {
     try {
       const role = userData.role || "patient";
+      const signupTz = String(userData.timezone || getBrowserTimeZone() || "").trim() || "UTC";
 
       const marketing =
         Boolean(
@@ -270,9 +235,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             false,
         ) || false;
 
-      const tz = (userData.timezone && String(userData.timezone).trim()) ? String(userData.timezone).trim() : getBrowserTimezone();
-
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -280,26 +243,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             full_name: userData.fullName || email,
             role,
             marketing_communications: marketing,
-            timezone: tz,
-            timezone_source: "browser",
+            timezone: signupTz,
           },
         },
       });
 
       if (error) throw error;
-
-      // If email confirmation is enabled, session may be null.
-      // Store timezone to apply after user is authenticated.
-      if (!data?.session) {
-        safeLocalStorageSet(PENDING_TZ_KEY, tz);
-      } else {
-        // Best-effort: ensure profile timezone (will prefer browser tz)
-        try {
-          await detectProfileTimezone(tz);
-        } catch {
-          // ignore; profile fetch will retry best-effort after auth state resolves
-        }
-      }
 
       toast.success("Account created successfully!");
       return {};
@@ -311,27 +260,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      safeLocalStorageRemove(PENDING_TZ_KEY);
-      ensuredTimezoneForUserRef.current = null;
-      ensuringTimezoneRef.current = false;
-      toast.success("Signed out");
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to sign out");
-    }
-  };
-
   const updateProfile = async (updates: Partial<Profile>) => {
     try {
       if (!user) throw new Error("No user logged in");
-
-      const patch: Record<string, any> = { ...updates };
-
-      const { error } = await supabase.from("profiles").update(patch as any).eq("user_id", user.id);
+      const { error } = await supabase.from("profiles").update(updates).eq("user_id", user.id);
       if (error) throw error;
-
       await fetchProfile(user.id);
       toast.success("Profile updated successfully!");
       return {};
