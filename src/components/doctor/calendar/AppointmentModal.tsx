@@ -154,6 +154,22 @@ const procedureStatusColors: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
 };
 
+
+function extractRequestedProcedureName(notes?: string | null): string | null {
+  if (!notes) return null;
+  const lines = notes.split(/\r?\n/);
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const line = String(lines[i] || "").trim();
+    const m = line.match(/^Requested\s+Procedure:\s*(.+)\s*$/i);
+    if (m && m[1]) {
+      const v = m[1].trim();
+      return v ? v : null;
+    }
+  }
+  return null;
+}
+
+
 function toNumberOrNull(v: string): number | null {
   const trimmed = (v ?? "").trim();
   if (!trimmed) return null;
@@ -317,6 +333,13 @@ const AppointmentModal = memo(
         : false;
 
     const appointmentId = appointment?.id ?? "";
+
+
+const requestedProcedureName = useMemo(() => {
+  if (!appointment) return null;
+  return appointment.procedure_name || extractRequestedProcedureName(appointment.notes ?? null);
+}, [appointment]);
+
 
     const getAccessToken = useCallback(async () => {
       const { data } = await supabase.auth.getSession();
@@ -873,6 +896,20 @@ const AppointmentModal = memo(
                       {appointment.start_time} - {appointment.end_time}
                     </span>
                   </div>
+
+{requestedProcedureName && (
+  <div className="mt-2 flex items-center gap-2">
+    <Badge
+      variant="outline"
+      className="text-xs max-w-[520px] flex items-center gap-1.5"
+      title={requestedProcedureName}
+    >
+      <Stethoscope className="h-3.5 w-3.5" />
+      <span className="truncate">{requestedProcedureName}</span>
+    </Badge>
+  </div>
+)}
+
                 </div>
               </div>
               <Badge variant="outline" className={cn("capitalize text-sm", statusColors[appointment.status] || "")}>
@@ -950,10 +987,10 @@ const AppointmentModal = memo(
                     </p>
                   </div>
 
-                  {appointment.procedure_name && (
+                  {requestedProcedureName && (
                     <div className="space-y-1">
                       <span className="text-sm text-muted-foreground">{t("doctor.calendar.procedure", "Procedure")}</span>
-                      <p className="font-medium">{appointment.procedure_name}</p>
+                      <p className="font-medium">{requestedProcedureName}</p>
                       {appointment.procedure_cost != null && (
                         <p className="text-sm text-muted-foreground flex items-center gap-1">
                           <DollarSign className="h-3.5 w-3.5" />
