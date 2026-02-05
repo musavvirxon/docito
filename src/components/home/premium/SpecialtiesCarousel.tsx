@@ -1,6 +1,6 @@
 // src/components/home/premium/SpecialtiesCarousel.tsx
 import { useRef, useEffect } from 'react';
- import { motion, useReducedMotion } from 'framer-motion';
+ import { useReducedMotion } from 'framer-motion';
 import {
   Heart,
   Brain,
@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import FadeIn from '@/components/howItWorks/FadeIn';
 
 const specialties = [
   { icon: Heart, name: 'Cardiology', color: 'from-rose-500 to-pink-500' },
@@ -119,31 +120,25 @@ export default function SpecialtiesCarousel() {
 
     return () => {
       cancelAnimationFrame(animationId);
-       cancelAnimationFrame(initRafId);
+      cancelAnimationFrame(initRafId);
       resizeObserver.disconnect();
       scrollContainer.removeEventListener('mouseenter', handleMouseEnter);
       scrollContainer.removeEventListener('mouseleave', handleMouseLeave);
       scrollContainer.removeEventListener('wheel', handleWheel);
     };
-   }, [prefersReducedMotion]);
+  }, [prefersReducedMotion]);
 
   const allSpecialties = [...specialties, ...specialties];
 
   return (
     <section className="py-24 bg-gradient-to-b from-background to-muted/30 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center"
-        >
+        <FadeIn className="text-center">
           <h2 className="text-4xl md:text-5xl font-extralight tracking-tight text-foreground mb-4">Medical Specialties</h2>
           <p className="text-lg text-muted-foreground font-light max-w-2xl mx-auto">
             {t('home:specialtiesSubtitle', 'Find specialists across all medical disciplines')}
           </p>
-        </motion.div>
+        </FadeIn>
       </div>
 
       <div
@@ -152,14 +147,9 @@ export default function SpecialtiesCarousel() {
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {allSpecialties.map((specialty, index) => (
-          <motion.div
+          <div
             key={`${specialty.name}-${index}`}
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: (index % 18) * 0.02 }}
-            whileHover={{ scale: 1.05, y: -5 }}
-            className="flex-shrink-0 snap-center"
+            className="flex-shrink-0 snap-center transition-transform duration-300 hover:scale-105 hover:-translate-y-1"
           >
             <button
               type="button"
@@ -176,7 +166,7 @@ export default function SpecialtiesCarousel() {
                 <span className="text-sm font-medium text-foreground text-center leading-tight">{specialty.name}</span>
               </div>
             </button>
-          </motion.div>
+          </div>
         ))}
       </div>
     </section>
