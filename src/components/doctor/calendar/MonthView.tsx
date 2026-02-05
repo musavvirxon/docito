@@ -15,6 +15,17 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import type { CalendarAppointment, ScheduleHealth, CalendarFilters } from './types';
 
+function extractRequestedProcedureName(notes?: string | null): string | null {
+  if (!notes) return null;
+  const lines = notes.split(/\r?\n/);
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const line = String(lines[i] || "").trim();
+    const m = line.match(/^Requested\s+Procedure:\s*(.+)\s*$/i);
+    if (m && m[1]) return m[1].trim() || null;
+  }
+  return null;
+}
+
 interface MonthViewProps {
   selectedDate: Date;
   appointments: CalendarAppointment[];
@@ -72,7 +83,7 @@ const MonthView = memo(({
 
   // Get appointment type indicators
   const getTypeIndicators = (dayAppts: CalendarAppointment[]) => {
-    const types = new Set(dayAppts.map(a => a.appointment_type || 'in_person'));
+    const types = new Set(dayAppts.map(a => a.appointment_type || 'in-person'));
     return Array.from(types);
   };
 
@@ -155,7 +166,7 @@ const MonthView = memo(({
               {/* Appointment indicators */}
               {isCurrentMonth && isWorking && (
                 <div className="space-y-1">
-                  {dayAppts.slice(0, 3).map((apt) => (
+                  {dayAppts.slice(0, 3).map((apt, i) => (
                     <div
                       key={apt.id}
                       className={cn(
@@ -165,9 +176,11 @@ const MonthView = memo(({
                         apt.status === 'completed' && 'bg-muted text-muted-foreground',
                         apt.status === 'no_show' && 'bg-red-500/10 text-red-700'
                       )}
-                      title={apt.procedure_name ? `${apt.start_time} ${apt.patient_name} • ${apt.procedure_name}` : `${apt.start_time} ${apt.patient_name}`}
                     >
-                      {`${apt.start_time} ${apt.patient_name?.split(' ')[0] || ''}${apt.procedure_name ? ` • ${apt.procedure_name}` : ''}`}
+                      {(() => {
+                        const proc = apt.procedure_name || extractRequestedProcedureName(apt.notes ?? null);
+                        return `${apt.start_time} ${apt.patient_name?.split(' ')[0] || ''}${proc ? ` • ${proc}` : ''}`;
+                      })()}
                     </div>
                   ))}
                   {dayAppts.length > 3 && (
@@ -186,10 +199,10 @@ const MonthView = memo(({
                       key={type}
                       className={cn(
                         'w-1.5 h-1.5 rounded-full',
-                        (type === 'in-person' || type === 'in_person') && 'bg-primary',
+                        type === 'in-person' && 'bg-primary',
                         type === 'video' && 'bg-emerald-500',
-                        (type === 'home' || type === 'home_visit') && 'bg-amber-500',
-                        (type === 'chat' || type === 'messaging') && 'bg-purple-500'
+                        type === 'home' && 'bg-amber-500',
+                        type === 'chat' && 'bg-purple-500'
                       )}
                     />
                   ))}
