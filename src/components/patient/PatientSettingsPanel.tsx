@@ -1,5 +1,4 @@
 // Path: src/components/patient/PatientSettingsPanel.tsx
-// File: src/components/patient/PatientSettingsPanel.tsx
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,9 +8,25 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePatientSettings } from "@/hooks/usePatientSettings";
 import { Bell, Shield, User, Lock, Save } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { TimezoneCombobox } from "@/components/profile/TimezoneCombobox";
+
+const languages = [
+  { code: "en", label: "English" },
+  { code: "ru", label: "Русский" },
+  { code: "uz", label: "O'zbek" },
+  { code: "ar", label: "العربية" },
+  { code: "tr", label: "Türkçe" },
+  { code: "es", label: "Español" },
+  { code: "de", label: "Deutsch" },
+  { code: "zh", label: "中文" },
+  { code: "pt", label: "Português" },
+  { code: "ja", label: "日本語" },
+  { code: "ko", label: "한국어" },
+];
 
 export const PatientSettingsPanel = () => {
   const { t } = useTranslation("dashboard");
@@ -55,7 +70,7 @@ export const PatientSettingsPanel = () => {
   };
 
   const handleAccountChange = (key: keyof typeof accountSettings, value: string) => {
-    setLocalAccount({ ...localAccount, [key]: value });
+    setLocalAccount({ ...localAccount, [key]: value } as any);
     setHasAccountChanges(true);
   };
 
@@ -160,7 +175,7 @@ export const PatientSettingsPanel = () => {
                   <Input
                     id="phone"
                     value={localAccount.phone || ""}
-                    onChange={(e) => handleAccountChange("phone", e.target.value)}
+                    onChange={(e) => handleAccountChange("phone" as any, e.target.value)}
                   />
                 </div>
 
@@ -172,7 +187,7 @@ export const PatientSettingsPanel = () => {
                     id="date_of_birth"
                     type="date"
                     value={localAccount.date_of_birth || ""}
-                    onChange={(e) => handleAccountChange("date_of_birth", e.target.value)}
+                    onChange={(e) => handleAccountChange("date_of_birth" as any, e.target.value)}
                   />
                 </div>
               </div>
@@ -182,8 +197,46 @@ export const PatientSettingsPanel = () => {
                 <Input
                   id="address"
                   value={localAccount.address || ""}
-                  onChange={(e) => handleAccountChange("address", e.target.value)}
+                  onChange={(e) => handleAccountChange("address" as any, e.target.value)}
                 />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>
+                    {t("patient.settings.account.timezone", { defaultValue: "Timezone" })}
+                  </Label>
+                  <TimezoneCombobox
+                    value={localAccount.timezone || "UTC"}
+                    onValueChange={(tz) => handleAccountChange("timezone" as any, tz)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t("patient.settings.account.timezoneHint", {
+                      defaultValue: "Your calendar and referrals will display times in this timezone.",
+                    })}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>
+                    {t("patient.settings.account.language", { defaultValue: "Language" })}
+                  </Label>
+                  <Select
+                    value={localAccount.language || "en"}
+                    onValueChange={(v) => handleAccountChange("language" as any, v)}
+                  >
+                    <SelectTrigger className="rounded-xl">
+                      <SelectValue placeholder={t("patient.settings.account.selectLanguage", { defaultValue: "Select language" })} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {languages.map((l) => (
+                        <SelectItem key={l.code} value={l.code}>
+                          {l.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               {hasAccountChanges && (
@@ -249,11 +302,11 @@ export const PatientSettingsPanel = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <Label>
-                    {t("patient.settings.notifications.cancellationNotices", { defaultValue: "Cancellation Notices" })}
+                    {t("patient.settings.notifications.cancellations", { defaultValue: "Cancellations" })}
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    {t("patient.settings.notifications.cancellationNoticesDesc", {
-                      defaultValue: "Receive cancellation confirmations",
+                    {t("patient.settings.notifications.cancellationsDesc", {
+                      defaultValue: "Be notified when appointments are cancelled",
                     })}
                   </p>
                 </div>
@@ -262,26 +315,54 @@ export const PatientSettingsPanel = () => {
                   onCheckedChange={(value) => handleNotificationChange("emailCancellations", value)}
                 />
               </div>
+
+              {hasNotificationChanges && (
+                <Button onClick={handleSaveNotifications} className="mt-4">
+                  <Save className="w-4 h-4 mr-2" />
+                  {t("patient.settings.notifications.saveChanges", { defaultValue: "Save Changes" })}
+                </Button>
+              )}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>{t("patient.settings.notifications.smsTitle", { defaultValue: "SMS Notifications" })}</CardTitle>
+              <CardTitle>
+                {t("patient.settings.notifications.smsTitle", { defaultValue: "SMS Notifications" })}
+              </CardTitle>
               <CardDescription>
-                {t("patient.settings.notifications.smsDescription", {
-                  defaultValue: "Manage your SMS notification preferences",
-                })}
+                {t("patient.settings.notifications.smsDescription", { defaultValue: "Manage your SMS preferences." })}
               </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>{t("patient.settings.notifications.smsReminders", { defaultValue: "SMS Reminders" })}</Label>
+                  <Label>
+                    {t("patient.settings.notifications.smsBookings", { defaultValue: "Booking Confirmations" })}
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    {t("patient.settings.notifications.smsBookingsDesc", {
+                      defaultValue: "Receive SMS when appointments are booked",
+                    })}
+                  </p>
+                </div>
+                <Switch
+                  checked={localNotifications.smsBookings}
+                  onCheckedChange={(value) => handleNotificationChange("smsBookings", value)}
+                />
+              </div>
+
+              <Separator />
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>
+                    {t("patient.settings.notifications.smsReminders", { defaultValue: "Appointment Reminders" })}
+                  </Label>
                   <p className="text-sm text-muted-foreground">
                     {t("patient.settings.notifications.smsRemindersDesc", {
-                      defaultValue: "Get text reminders before appointments",
+                      defaultValue: "Get SMS reminders before your appointments",
                     })}
                   </p>
                 </div>
@@ -295,10 +376,49 @@ export const PatientSettingsPanel = () => {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>{t("patient.settings.notifications.pushNotifications", { defaultValue: "Push Notifications" })}</Label>
+                  <Label>
+                    {t("patient.settings.notifications.smsCancellations", { defaultValue: "Cancellations" })}
+                  </Label>
                   <p className="text-sm text-muted-foreground">
-                    {t("patient.settings.notifications.pushNotificationsDesc", {
-                      defaultValue: "Receive in-app notifications",
+                    {t("patient.settings.notifications.smsCancellationsDesc", {
+                      defaultValue: "Receive SMS when appointments are cancelled",
+                    })}
+                  </p>
+                </div>
+                <Switch
+                  checked={localNotifications.smsCancellations}
+                  onCheckedChange={(value) => handleNotificationChange("smsCancellations", value)}
+                />
+              </div>
+
+              {hasNotificationChanges && (
+                <Button onClick={handleSaveNotifications} className="mt-4">
+                  <Save className="w-4 h-4 mr-2" />
+                  {t("patient.settings.notifications.saveChanges", { defaultValue: "Save Changes" })}
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                {t("patient.settings.notifications.pushTitle", { defaultValue: "Push Notifications" })}
+              </CardTitle>
+              <CardDescription>
+                {t("patient.settings.notifications.pushDescription", { defaultValue: "Manage your push notifications." })}
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label>
+                    {t("patient.settings.notifications.pushEnabled", { defaultValue: "Enable Push Notifications" })}
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    {t("patient.settings.notifications.pushEnabledDesc", {
+                      defaultValue: "Receive push notifications on this device",
                     })}
                   </p>
                 </div>
@@ -307,29 +427,34 @@ export const PatientSettingsPanel = () => {
                   onCheckedChange={(value) => handleNotificationChange("pushNotifications", value)}
                 />
               </div>
+
+              {hasNotificationChanges && (
+                <Button onClick={handleSaveNotifications} className="mt-4">
+                  <Save className="w-4 h-4 mr-2" />
+                  {t("patient.settings.notifications.saveChanges", { defaultValue: "Save Changes" })}
+                </Button>
+              )}
             </CardContent>
           </Card>
-
-          {hasNotificationChanges && (
-            <Button onClick={handleSaveNotifications}>
-              <Save className="w-4 h-4 mr-2" />
-              {t("patient.settings.notifications.save", { defaultValue: "Save Notification Settings" })}
-            </Button>
-          )}
         </TabsContent>
 
         <TabsContent value="privacy" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>{t("patient.settings.privacy.title", { defaultValue: "Privacy Settings" })}</CardTitle>
+              <CardTitle>
+                {t("patient.settings.privacy.title", { defaultValue: "Privacy Settings" })}
+              </CardTitle>
               <CardDescription>
-                {t("patient.settings.privacy.description", { defaultValue: "Control your privacy preferences" })}
+                {t("patient.settings.privacy.description", { defaultValue: "Control how your data is shared." })}
               </CardDescription>
             </CardHeader>
+
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>{t("patient.settings.privacy.shareProfile", { defaultValue: "Share Profile" })}</Label>
+                  <Label>
+                    {t("patient.settings.privacy.shareProfile", { defaultValue: "Share Profile" })}
+                  </Label>
                   <p className="text-sm text-muted-foreground">
                     {t("patient.settings.privacy.shareProfileDesc", {
                       defaultValue: "Allow doctors to view your profile details",
@@ -346,10 +471,12 @@ export const PatientSettingsPanel = () => {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>{t("patient.settings.privacy.shareRecords", { defaultValue: "Share Records" })}</Label>
+                  <Label>
+                    {t("patient.settings.privacy.shareRecords", { defaultValue: "Share Medical Records" })}
+                  </Label>
                   <p className="text-sm text-muted-foreground">
                     {t("patient.settings.privacy.shareRecordsDesc", {
-                      defaultValue: "Allow doctors to view your medical records",
+                      defaultValue: "Allow doctors to access your records when needed",
                     })}
                   </p>
                 </div>
@@ -358,23 +485,25 @@ export const PatientSettingsPanel = () => {
                   onCheckedChange={(value) => handlePrivacyChange("shareRecords", value)}
                 />
               </div>
+
+              {hasPrivacyChanges && (
+                <Button onClick={handleSavePrivacy} className="mt-4">
+                  <Save className="w-4 h-4 mr-2" />
+                  {t("patient.settings.privacy.saveChanges", { defaultValue: "Save Changes" })}
+                </Button>
+              )}
             </CardContent>
           </Card>
-
-          {hasPrivacyChanges && (
-            <Button onClick={handleSavePrivacy}>
-              <Save className="w-4 h-4 mr-2" />
-              {t("patient.settings.privacy.save", { defaultValue: "Save Privacy Settings" })}
-            </Button>
-          )}
         </TabsContent>
 
         <TabsContent value="security" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>{t("patient.settings.security.title", { defaultValue: "Change Password" })}</CardTitle>
+              <CardTitle>
+                {t("patient.settings.security.title", { defaultValue: "Security" })}
+              </CardTitle>
               <CardDescription>
-                {t("patient.settings.security.description", { defaultValue: "Update your password to keep your account secure." })}
+                {t("patient.settings.security.description", { defaultValue: "Update your password." })}
               </CardDescription>
             </CardHeader>
 
@@ -415,7 +544,7 @@ export const PatientSettingsPanel = () => {
                 />
               </div>
 
-              <Button onClick={handleChangePassword}>
+              <Button onClick={handleChangePassword} className="mt-4">
                 <Save className="w-4 h-4 mr-2" />
                 {t("patient.settings.security.updatePassword", { defaultValue: "Update Password" })}
               </Button>
