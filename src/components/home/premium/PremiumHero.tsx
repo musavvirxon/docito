@@ -1,11 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import LazyHeroOrb3D from './LazyHeroOrb3D';
 
 export default function PremiumHero() {
   const { t } = useTranslation(['home']);
-  const titleRef = useRef<HTMLHeadingElement>(null);
-  const subtitleRef = useRef<HTMLParagraphElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
   // Trigger CSS animations after mount
@@ -15,27 +13,6 @@ export default function PremiumHero() {
       setIsVisible(true);
     });
     return () => cancelAnimationFrame(timer);
-  }, []);
-
-  useEffect(() => {
-    // Dynamically import GSAP to avoid blocking LCP
-    import('gsap').then(({ default: gsap }) => {
-      // Only animate if already visible (progressive enhancement)
-      if (titleRef.current) {
-        gsap.fromTo(
-          titleRef.current,
-          { y: 30 },
-          { y: 0, duration: 0.8, ease: 'power3.out' }
-        );
-      }
-      if (subtitleRef.current) {
-        gsap.fromTo(
-          subtitleRef.current,
-          { y: 20 },
-          { y: 0, duration: 0.8, ease: 'power3.out', delay: 0.1 }
-        );
-      }
-    });
   }, []);
 
   return (
@@ -56,10 +33,11 @@ export default function PremiumHero() {
               </span>
             </div>
 
-            {/* Title - NO opacity:0, visible immediately for LCP */}
+            {/* Title - visible immediately for LCP, CSS animation for enhancement */}
             <h1
-              ref={titleRef}
-              className="text-4xl sm:text-5xl lg:text-6xl font-light tracking-tight text-foreground"
+              className={`text-4xl sm:text-5xl lg:text-6xl font-light tracking-tight text-foreground transform transition-all duration-700 ease-out delay-100 ${
+                isVisible ? 'opacity-100 translate-y-0' : 'opacity-100 translate-y-6'
+              }`}
             >
               <span className="block">
                 {t('home:hero.title1', 'Complete Healthcare')}
@@ -69,10 +47,11 @@ export default function PremiumHero() {
               </span>
             </h1>
 
-            {/* Subtitle - visible immediately */}
+            {/* Subtitle - CSS animation */}
             <p
-              ref={subtitleRef}
-              className="text-lg sm:text-xl text-muted-foreground max-w-xl font-light leading-relaxed"
+              className={`text-lg sm:text-xl text-muted-foreground max-w-xl font-light leading-relaxed transform transition-all duration-700 ease-out delay-200 ${
+                isVisible ? 'opacity-100 translate-y-0' : 'opacity-100 translate-y-4'
+              }`}
             >
               {t(
                 'home:hero.description',
