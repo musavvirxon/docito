@@ -1,12 +1,27 @@
-// File: supabase/functions/book-appointment/index.ts
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+ /**
+  * Book Appointment Edge Function
+  * 
+  * Security features:
+  * - Rate limiting: 30 bookings per 5 minutes per user
+  * - Strict input validation with UUID checks
+  * - Authentication required
+  * - Patient can only book for themselves
+  * - Slot conflict validation
+  */
+ 
+ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders: Record<string, string> = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+ import {
+   secureHandler,
+   jsonResponse,
+   errorResponse,
+   corsHeaders,
+ } from "../_shared/security-middleware.ts";
+ import {
+   validateUUID,
+   sanitizeString,
+   MAX_LENGTHS,
+ } from "../_shared/input-validator.ts";
 
 type AppointmentType = "in_person" | "video" | "home_visit" | "messaging" | "follow_up";
 
@@ -44,11 +59,55 @@ type Resp =
     }
   | { ok: false; error: string; code?: string };
 
-function json(data: Resp, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { "Content-Type": "application/json", ...corsHeaders },
-  });
+ // ============= VALIDATION SCHEMA =============
+ 
+ const bookingSchema = {
+   patient_id: {
+     type: 'uuid' as const,
+     required: false,
+   },
+   doctor_patient_id: {
+     type: 'uuid' as const,
+     required: false,
+   },
+   entity_id: {
+     type: 'uuid' as const,
+     required: false,
+   },
+   provider_id: {
+     type: 'uuid' as const,
+     required: true,
+   },
+   slot_start: {
+     type: 'string' as const,
+     required: true,
+     maxLength: 30,
+   },
+   duration_minutes: {
+     type: 'number' as const,
+     required: false,
+     min: 5,
+     max: 480, // 8 hours max
+   },
+   appointment_type: {
+     type: 'string' as const,
+     required: false,
+     maxLength: 50,
+   },
+   procedure_id: {
+     type: 'uuid' as const,
+     required: false,
+   },
+   notes: {
+     type: 'string' as const,
+     required: false,
+     maxLength: MAX_LENGTHS.notes,
+     sanitize: true,
+   },
+ };
+ 
+ function json(data: Resp, status = 200) {
+   return jsonResponse(data, status);
 }
 
 function requireEnv(name: string) {
@@ -58,7 +117,8 @@ function requireEnv(name: string) {
 }
 
 function normalizeAppointmentType(input?: string): AppointmentType {
-  const t = (input || "").trim().toLowerCase();
+   // Sanitize input before processing
+   const t = sanitizeString(input || "", 50).toLowerCase();
   if (!t) return "in_person";
   if (t === "in-person" || t === "in_person" || t === "inperson") return "in_person";
   if (t === "video" || t === "telemed" || t === "telemedicine") return "video";
@@ -110,35 +170,24 @@ async function insertHoldWithFallback(
 }
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  if (req.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 405);
-
-  try {
-    const supabaseUrl = requireEnv("SUPABASE_URL");
-    const anonKey = requireEnv("SUPABASE_ANON_KEY");
-    const serviceKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
-
-    const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
-    if (!authHeader) return json({ ok: false, error: "Missing Authorization header" }, 401);
-
-    const userClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-      auth: { persistSession: false },
-    });
-
-    const {
-      data: { user },
-      error: userErr,
-    } = await userClient.auth.getUser();
-
-    if (userErr || !user) return json({ ok: false, error: "Unauthorized" }, 401);
-
-    let body: BookAppointmentRequest;
-    try {
-      body = (await req.json()) as BookAppointmentRequest;
-    } catch {
-      return json({ ok: false, error: "Invalid JSON body" }, 400);
-    }
+   // Apply security middleware with rate limiting
+   const { response, context, validatedBody } = await secureHandler(req, 'book-appointment', {
+     rateLimit: 'booking', // 30 requests per 5 minutes
+     requireAuth: true,
+     allowedMethods: ['POST', 'OPTIONS'],
+     validationSchema: bookingSchema,
+     logRequests: true,
+   });
+   
+   // Return early if middleware returned a response
+   if (response) return response;
+   if (!context || !validatedBody) {
+     return json({ ok: false, error: 'Internal server error' }, 500);
+   }
+   
+   try {
+     const { user, serviceClient: service, ip } = context;
+     const body = validatedBody as BookAppointmentRequest;
 
     const {
       patient_id,
@@ -150,7 +199,20 @@ serve(async (req) => {
       appointment_type,
       procedure_id,
       notes,
-    } = body;
+     } = body;
+ 
+     // Validate UUIDs explicitly
+     if (provider_id && !validateUUID(provider_id)) {
+       return json({ ok: false, error: "Invalid provider_id format" }, 400);
+     }
+ 
+     if (entity_id && !validateUUID(entity_id)) {
+       return json({ ok: false, error: "Invalid entity_id format" }, 400);
+     }
+ 
+     if (procedure_id && !validateUUID(procedure_id)) {
+       return json({ ok: false, error: "Invalid procedure_id format" }, 400);
+     }
 
     if (!provider_id || !slot_start) {
       return json({ ok: false, error: "Missing required fields: provider_id, slot_start" }, 400);
@@ -163,7 +225,7 @@ serve(async (req) => {
       return json({ ok: false, error: "Provide exactly one of patient_id or doctor_patient_id" }, 400);
     }
 
-    if (!hasPatientId || patient_id !== user.id) {
+     if (!hasPatientId || patient_id !== user!.id) {
       return json({ ok: false, error: "Unauthorized: patient_id must match authenticated user" }, 403);
     }
 
@@ -178,8 +240,8 @@ serve(async (req) => {
     }
 
     const endAt = new Date(startAt.getTime() + Math.max(5, Number(duration_minutes || 30)) * 60_000);
-
-    const service = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+     // Sanitize notes before storing
+     const sanitizedNotes = notes ? sanitizeString(notes, MAX_LENGTHS.notes) : undefined;
 
     await service.rpc("cleanup_expired_appointment_holds").catch(() => {});
 
@@ -272,12 +334,12 @@ serve(async (req) => {
 
     // Put procedure info into notes so it’s visible even if DB column isn’t present yet
     const merged = mergeNotes(notes, [
-      procedureName ? `Requested Procedure: ${procedureName}` : "",
-      procedureId ? `Requested Procedure ID: ${procedureId}` : "",
+       procedureName ? `Requested Procedure: ${sanitizeString(procedureName, 200)}` : "",
+       procedureId ? `Requested Procedure ID: ${procedureId}` : "", 
     ]);
 
     const holdPayload: Record<string, unknown> = {
-      patient_id: user.id,
+       patient_id: user!.id,
       doctor_patient_id: null,
       doctor_id: provider_id,
       practice_id: entity_id || null,
@@ -298,6 +360,8 @@ serve(async (req) => {
       return json({ ok: false, error: "Failed to create booking hold" }, 500);
     }
 
+     console.log(`Appointment booked: patient=${user!.id}, provider=${provider_id}, date=${appointmentDate}, ip=${ip}`);
+ 
     return json(
       {
         ok: true,
