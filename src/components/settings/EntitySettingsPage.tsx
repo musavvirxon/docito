@@ -1,15 +1,17 @@
-// Path: src/components/settings/EntitySettingsPage.tsx
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Save, RefreshCcw } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Save, RefreshCcw, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { useEntitySettings, type EntityType } from "@/hooks/useEntitySettings";
 import { supabase } from "@/integrations/supabase/client";
+import { COMMON_TIMEZONES } from "@/data/timezones";
 
 type Props = {
   entityType: EntityType;
@@ -76,6 +78,12 @@ function fmtMoney(cents: number, currency: string) {
   }
 }
 
+function isVerifiedFromStatus(verified: unknown, status: unknown) {
+  const v = Boolean(verified);
+  const s = String(status || "").toLowerCase().trim();
+  return v || s === "verified";
+}
+
 export default function EntitySettingsPage({ entityType, entityId, heading }: Props) {
   const { loading, saving, error, settings, saveSettings } = useEntitySettings(entityType, entityId);
 
@@ -89,6 +97,8 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [analyticsError, setAnalyticsError] = useState<string | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsRes | null>(null);
+
+  const [verified, setVerified] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (!settings) return;
@@ -112,6 +122,82 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
       integrations: settings.integrations ?? {},
     });
   }, [settings]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadVerification = async () => {
+      try {
+        setVerified(null);
+
+        if (entityType === "practice" || entityType === "clinic") {
+          const { data, error } = await supabase
+            .from("practices")
+            .select("verified,verification_status")
+            .eq("id", entityId)
+            .maybeSingle();
+          if (error) throw error;
+          if (cancelled) return;
+          setVerified(isVerifiedFromStatus(data?.verified, data?.verification_status));
+          return;
+        }
+
+        if (entityType === "lab") {
+          const { data, error } = await supabase
+            .from("lab_centers")
+            .select("is_verified")
+            .eq("id", entityId)
+            .maybeSingle();
+          if (error) throw error;
+          if (cancelled) return;
+          setVerified(Boolean(data?.is_verified));
+          return;
+        }
+
+        if (entityType === "imaging") {
+          const { data, error } = await supabase
+            .from("imaging_centers")
+            .select("is_verified")
+            .eq("id", entityId)
+            .maybeSingle();
+          if (error) throw error;
+          if (cancelled) return;
+          setVerified(Boolean(data?.is_verified));
+          return;
+        }
+
+        if (entityType === "pharmacy") {
+          const { data, error } = await supabase
+            .from("pharmacies")
+            .select("verified,verification_status")
+            .eq("id", entityId)
+            .maybeSingle();
+          if (error) throw error;
+          if (cancelled) return;
+          setVerified(isVerifiedFromStatus(data?.verified, data?.verification_status));
+          return;
+        }
+
+        if (!cancelled) setVerified(null);
+      } catch (e) {
+        if (!cancelled) setVerified(null);
+      }
+    };
+
+    void loadVerification();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [entityId, entityType]);
+
+  const timezoneLocked = useMemo(() => verified === true, [verified]);
+
+  const timezoneOptions = useMemo(() => {
+    const current = String(form.timezone || "UTC");
+    if (!COMMON_TIMEZONES.includes(current as any)) return [current, ...COMMON_TIMEZONES];
+    return [...COMMON_TIMEZONES];
+  }, [form.timezone]);
 
   const canSave = useMemo(() => !loading && !!settings && !saving, [loading, saving, settings]);
 
@@ -142,7 +228,12 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
       await saveSettings(form);
       toast.success("Settings saved");
     } catch (e: any) {
-      toast.error(e?.message || "Failed to save settings");
+      const msg = String(e?.message || "Failed to save settings");
+      if (msg.toLowerCase().includes("timezone locked")) {
+        toast.error("Timezone is locked after verification.");
+      } else {
+        toast.error(msg);
+      }
     }
   };
 
@@ -230,7 +321,15 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <h2 className="text-2xl font-bold">{heading || "Settings"}</h2>
+        <div className="flex items-center gap-3 flex-wrap">
+          <h2 className="text-2xl font-bold">{heading || "Settings"}</h2>
+          {verified === true ? (
+            <Badge className="bg-green-500/10 text-green-600 border-green-500/30">
+              <Shield className="h-3 w-3 mr-1" />
+              Verified
+            </Badge>
+          ) : null}
+        </div>
         <Button onClick={onSave} disabled={!canSave}>
           {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
           Save
@@ -274,6 +373,32 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
                   onChange={(e) => setForm((p) => ({ ...p, website: e.target.value }))}
                 />
               </div>
+
+              <div className="space-y-2">
+                <Label>Timezone</Label>
+                <Select
+                  value={String(form.timezone || "UTC")}
+                  onValueChange={(v) => setForm((p) => ({ ...p, timezone: v }))}
+                  disabled={timezoneLocked}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select timezone" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {timezoneOptions.map((tz) => (
+                      <SelectItem key={tz} value={tz}>
+                        {tz}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {timezoneLocked
+                    ? "Timezone is locked after verification."
+                    : "Timezone is used for calendars and referral times shown to your staff and patients."}
+                </p>
+              </div>
+
               <div className="space-y-2 md:col-span-2">
                 <Label>Logo URL</Label>
                 <Input
@@ -377,15 +502,11 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
                   <div className="grid gap-4 md:grid-cols-3">
                     <div className="rounded-lg border p-3">
                       <p className="text-sm font-medium text-muted-foreground">Total Paid</p>
-                      <p className="text-xl font-semibold">
-                        {fmtMoney(billing.summary.total_paid_cents, billingCurrency)}
-                      </p>
+                      <p className="text-xl font-semibold">{fmtMoney(billing.summary.total_paid_cents, billingCurrency)}</p>
                     </div>
                     <div className="rounded-lg border p-3">
                       <p className="text-sm font-medium text-muted-foreground">Outstanding</p>
-                      <p className="text-xl font-semibold">
-                        {fmtMoney(billing.summary.outstanding_cents, billingCurrency)}
-                      </p>
+                      <p className="text-xl font-semibold">{fmtMoney(billing.summary.outstanding_cents, billingCurrency)}</p>
                     </div>
                     <div className="rounded-lg border p-3">
                       <p className="text-sm font-medium text-muted-foreground">Open Invoices</p>
@@ -418,19 +539,22 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
                 ) : analyticsError ? (
                   <div className="text-center py-8 text-muted-foreground">{analyticsError}</div>
                 ) : analytics?.kpis ? (
-                  <div className="grid gap-4 md:grid-cols-3">
-                    {Object.entries(analytics.kpis).map(([key, value]) => (
-                      <div key={key} className="rounded-lg border p-3">
-                        <p className="text-sm font-medium text-muted-foreground capitalize">
-                          {key.replace(/_/g, " ")}
-                        </p>
-                        <p className="text-xl font-semibold">
-                          {typeof value === "number" && key.includes("revenue")
-                            ? fmtMoney(value, analyticsCurrency)
-                            : value}
-                        </p>
-                      </div>
-                    ))}
+                  <div className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-3">
+                      {Object.entries(analytics.kpis).map(([k, v]) => (
+                        <div key={k} className="rounded-lg border p-3">
+                          <p className="text-sm font-medium text-muted-foreground">{k}</p>
+                          <p className="text-xl font-semibold">
+                            {k.toLowerCase().includes("revenue") || k.toLowerCase().includes("amount")
+                              ? fmtMoney(Number(v) * 100, analyticsCurrency)
+                              : String(v)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Window: {analytics.window_days ?? 30} days
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">No analytics data available</div>
