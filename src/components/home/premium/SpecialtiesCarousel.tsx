@@ -1,6 +1,6 @@
 // src/components/home/premium/SpecialtiesCarousel.tsx
 import { useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
+ import { motion, useReducedMotion } from 'framer-motion';
 import {
   Heart,
   Brain,
@@ -48,6 +48,7 @@ const specialties = [
 export default function SpecialtiesCarousel() {
   const { t } = useTranslation(['home']);
   const navigate = useNavigate();
+   const prefersReducedMotion = useReducedMotion();
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const isPausedRef = useRef(false);
@@ -57,8 +58,12 @@ export default function SpecialtiesCarousel() {
   useEffect(() => {
     const scrollContainer = scrollRef.current;
     if (!scrollContainer) return;
+     
+     // Skip auto-scroll animation if user prefers reduced motion
+     if (prefersReducedMotion) return;
 
     let animationId: number;
+     let initRafId: number;
     const speed = 0.15;
 
     // Cache scrollWidth to avoid forced reflow on every frame
@@ -67,8 +72,12 @@ export default function SpecialtiesCarousel() {
         cachedScrollWidthRef.current = scrollContainer.scrollWidth;
       }
     };
-    cacheScrollWidth();
-    scrollPosRef.current = scrollContainer.scrollLeft;
+     
+     // Defer initial layout read to next frame to avoid forced reflow during render
+     initRafId = requestAnimationFrame(() => {
+       cacheScrollWidth();
+       scrollPosRef.current = scrollContainer.scrollLeft;
+     });
 
     const smoothAutoScroll = () => {
       if (scrollContainer && !isPausedRef.current) {
@@ -110,12 +119,13 @@ export default function SpecialtiesCarousel() {
 
     return () => {
       cancelAnimationFrame(animationId);
+       cancelAnimationFrame(initRafId);
       resizeObserver.disconnect();
       scrollContainer.removeEventListener('mouseenter', handleMouseEnter);
       scrollContainer.removeEventListener('mouseleave', handleMouseLeave);
       scrollContainer.removeEventListener('wheel', handleWheel);
     };
-  }, []);
+   }, [prefersReducedMotion]);
 
   const allSpecialties = [...specialties, ...specialties];
 
