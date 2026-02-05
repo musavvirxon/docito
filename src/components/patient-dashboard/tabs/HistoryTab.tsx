@@ -14,7 +14,7 @@ import {
   Bone,
   FileText,
   Calendar,
-  Tooth,
+  CircleDot,
   DollarSign,
   Loader2,
 } from "lucide-react";
@@ -257,7 +257,7 @@ const HistoryTab = ({ medicalHistory, dentalHistory, diagnosesLog }: HistoryTabP
         {/* Dental History (Procedures + Notes) */}
         <Section
           title="Dental History"
-          icon={Tooth}
+          icon={CircleDot}
           empty={!loadingDentalProcedures && dentalProcedures.length === 0 && dentalHistory.length === 0}
           emptyText="No dental procedures recorded yet"
         >
@@ -266,7 +266,7 @@ const HistoryTab = ({ medicalHistory, dentalHistory, diagnosesLog }: HistoryTabP
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-sm font-medium flex items-center gap-2">
-                  <Tooth className="w-4 h-4 text-primary" />
+                  <CircleDot className="w-4 h-4 text-primary" />
                   Procedures
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
@@ -313,7 +313,7 @@ const HistoryTab = ({ medicalHistory, dentalHistory, diagnosesLog }: HistoryTabP
                         className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
                       >
                         <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                          <Tooth className="w-4 h-4" />
+                          <CircleDot className="w-4 h-4" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">

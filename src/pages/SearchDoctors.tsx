@@ -139,13 +139,6 @@ export default function SearchDoctors() {
         specialty: specialty || undefined,
         location: location || undefined,
         minRating: filters.minRating,
-        minPrice: filters.minPrice,
-        maxPrice: filters.maxPrice,
-        acceptsNewPatients: filters.acceptsNewPatients,
-        videoConsultation: filters.videoConsultation,
-        acceptsInsurance: filters.acceptsInsurance,
-        language: filters.language,
-        gender: filters.gender,
       });
 
       if ('success' in result && result.success) {
