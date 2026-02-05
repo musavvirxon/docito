@@ -5183,6 +5183,33 @@ export type Database = {
           },
         ]
       }
+      rate_limits: {
+        Row: {
+          created_at: string
+          endpoint: string
+          id: string
+          ip_address: unknown
+          key: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          endpoint: string
+          id?: string
+          ip_address?: unknown
+          key: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          endpoint?: string
+          id?: string
+          ip_address?: unknown
+          key?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       real_time_notifications: {
         Row: {
           created_at: string
@@ -7853,6 +7880,7 @@ export type Database = {
         }[]
       }
       cleanup_expired_appointment_holds: { Args: never; Returns: undefined }
+      cleanup_rate_limits: { Args: never; Returns: undefined }
       create_appointment_hold: {
         Args: {
           p_amount: number
