@@ -51,20 +51,31 @@ export default function SpecialtiesCarousel() {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const isPausedRef = useRef(false);
+  const cachedScrollWidthRef = useRef(0);
+  const scrollPosRef = useRef(0);
 
   useEffect(() => {
     const scrollContainer = scrollRef.current;
     if (!scrollContainer) return;
 
     let animationId: number;
-    let scrollPos = scrollContainer.scrollLeft;
     const speed = 0.15;
+
+    // Cache scrollWidth to avoid forced reflow on every frame
+    const cacheScrollWidth = () => {
+      if (scrollContainer) {
+        cachedScrollWidthRef.current = scrollContainer.scrollWidth;
+      }
+    };
+    cacheScrollWidth();
+    scrollPosRef.current = scrollContainer.scrollLeft;
 
     const smoothAutoScroll = () => {
       if (scrollContainer && !isPausedRef.current) {
-        scrollPos += speed;
-        if (scrollPos >= scrollContainer.scrollWidth / 2) scrollPos = 0;
-        scrollContainer.scrollLeft = scrollPos;
+        scrollPosRef.current += speed;
+        const halfWidth = cachedScrollWidthRef.current / 2;
+        if (scrollPosRef.current >= halfWidth) scrollPosRef.current = 0;
+        scrollContainer.scrollLeft = scrollPosRef.current;
       }
       animationId = requestAnimationFrame(smoothAutoScroll);
     };
@@ -74,7 +85,7 @@ export default function SpecialtiesCarousel() {
     };
 
     const handleMouseLeave = () => {
-      scrollPos = scrollContainer.scrollLeft;
+      scrollPosRef.current = scrollContainer.scrollLeft;
       isPausedRef.current = false;
     };
 
@@ -82,9 +93,15 @@ export default function SpecialtiesCarousel() {
       if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
         e.preventDefault();
         scrollContainer.scrollLeft += e.deltaY;
-        scrollPos = scrollContainer.scrollLeft;
+        scrollPosRef.current = scrollContainer.scrollLeft;
       }
     };
+
+    // Use ResizeObserver to update cached width on resize
+    const resizeObserver = new ResizeObserver(() => {
+      cacheScrollWidth();
+    });
+    resizeObserver.observe(scrollContainer);
 
     scrollContainer.addEventListener('mouseenter', handleMouseEnter);
     scrollContainer.addEventListener('mouseleave', handleMouseLeave);
@@ -93,6 +110,7 @@ export default function SpecialtiesCarousel() {
 
     return () => {
       cancelAnimationFrame(animationId);
+      resizeObserver.disconnect();
       scrollContainer.removeEventListener('mouseenter', handleMouseEnter);
       scrollContainer.removeEventListener('mouseleave', handleMouseLeave);
       scrollContainer.removeEventListener('wheel', handleWheel);
