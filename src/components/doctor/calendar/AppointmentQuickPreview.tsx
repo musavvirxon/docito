@@ -17,8 +17,6 @@ import {
   ArrowRight,
   Stethoscope,
   Activity,
-  ClipboardList,
-  DollarSign,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -71,6 +69,24 @@ const statusColors: Record<string, string> = {
   in_progress: "bg-green-500/10 text-green-600 border-green-200",
 };
 
+function extractRequestedProcedureName(notes?: string | null): string | null {
+  if (!notes) return null;
+  const m = notes.match(/requested\s+procedure\s*:\s*(.+)$/gim);
+  if (!m || m.length === 0) return null;
+  // take last match, strip "Requested Procedure:"
+  const last = m[m.length - 1];
+  const cleaned = last.replace(/requested\s+procedure\s*:\s*/i, "").trim();
+  return cleaned || null;
+}
+
+function formatMoney(v: number): string {
+  try {
+    return v.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  } catch {
+    return String(v);
+  }
+}
+
 const AppointmentQuickPreview = memo(
   ({
     appointment,
@@ -85,14 +101,6 @@ const AppointmentQuickPreview = memo(
     const navigate = useNavigate();
     const [isStarting, setIsStarting] = useState(false);
     const isRTL = i18n.language === "ar";
-
-    const formatCurrency = (n: number) => {
-      try {
-        return new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" }).format(n);
-      } catch {
-        return `$${n}`;
-      }
-    };
 
     const patientId = useMemo(() => {
       if (!appointment) return "";
@@ -112,12 +120,10 @@ const AppointmentQuickPreview = memo(
       const doctorRequested = Boolean(appointment?.start_requested_by_doctor);
       const patientRequested = Boolean(appointment?.start_requested_by_patient);
 
-      // registered patient must accept; direct patients treated as accepted
       const patientAccepted = appointment?.patient_id
         ? appointment?.patient_confirmation_status === "confirmed" || appointment?.status === "confirmed"
         : true;
 
-      // for registered patients: need both; for direct patients: doctor request is enough
       const bothRequested = appointment?.patient_id ? doctorRequested && patientRequested : doctorRequested;
 
       return {
@@ -149,7 +155,6 @@ const AppointmentQuickPreview = memo(
       return dt;
     }, [appointment]);
 
-    // Interactions allowed: appointment day, starting 15 minutes before start
     const canInteractNow = useMemo(() => {
       if (!appointment || !appointmentTime) return false;
       const now = new Date();
@@ -174,6 +179,11 @@ const AppointmentQuickPreview = memo(
       return "Ready to start.";
     }, [appointment, startState]);
 
+    const requestedProcedureName = useMemo(() => {
+      if (!appointment) return null;
+      return appointment.procedure_name || extractRequestedProcedureName(appointment.notes || null);
+    }, [appointment]);
+
     const handleRequestOrStart = useCallback(async () => {
       if (!appointment) return;
 
@@ -186,7 +196,6 @@ const AppointmentQuickPreview = memo(
         if (error) throw error;
 
         if (data?.can_start) {
-          // If video consultation, auto-route to video room if available
           if ((appointment.appointment_type || "in_person") === "video") {
             const room = data?.consultation?.room_id || data?.consultation?.room_url;
             if (room) {
@@ -249,23 +258,17 @@ const AppointmentQuickPreview = memo(
           return;
         }
 
-        const { data: created, error: e2 } = await supabase
-          .from("conversations")
-          .insert({
-            context_type: "visit",
-            context_id: appointment.id,
-            title: `Visit with ${appointment.patient_name || "Patient"}`,
-          })
-          .select("id")
-          .single();
+        const { data: conversationId, error } = await supabase.rpc("create_direct_conversation" as any, {
+          target_user_id: appointment.patient_id,
+        } as any);
 
-        if (e2) throw e2;
+        if (error) throw error;
 
-        navigate(`/messages?c=${created.id}`);
+        navigate(`/messages?c=${conversationId}`);
         onClose();
-      } catch (err: any) {
-        console.error("Error opening messages:", err);
-        toast.error(err?.message ?? "Failed to open messages");
+      } catch (error) {
+        console.error("Error starting conversation:", error);
+        toast.error("Failed to start conversation");
       }
     }, [appointment, navigate, onClose]);
 
@@ -290,8 +293,8 @@ const AppointmentQuickPreview = memo(
                   <AvatarImage src={appointment.patient_avatar || ""} />
                   <AvatarFallback className="bg-primary/10 text-primary font-semibold">{initials}</AvatarFallback>
                 </Avatar>
-                <div>
-                  <DialogTitle className="text-lg font-semibold">{appointment.patient_name}</DialogTitle>
+                <div className="min-w-0">
+                  <DialogTitle className="text-lg font-semibold truncate">{appointment.patient_name}</DialogTitle>
                   <DialogDescription className="flex items-center gap-2 text-sm mt-0.5">
                     <TypeIcon className="h-3.5 w-3.5" />
                     {typeLabel}
@@ -319,26 +322,22 @@ const AppointmentQuickPreview = memo(
               </div>
             </div>
 
-            {/* ✅ NEW: requested procedure visible to doctor */}
-            {appointment.procedure_name && (
-              <div className="flex items-start justify-between gap-3 p-3 rounded-lg bg-muted/30 border border-border">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <ClipboardList className="h-3.5 w-3.5" />
-                    <span>Requested procedure</span>
-                  </div>
-                  <div className="mt-1 font-medium text-sm truncate">{appointment.procedure_name}</div>
-                  {appointment.procedure_category && (
-                    <div className="text-xs text-muted-foreground mt-0.5">{appointment.procedure_category}</div>
-                  )}
-                </div>
+            {/* ✅ Requested procedure visible in quick preview */}
+            {requestedProcedureName && (
+              <div className="p-3 rounded-lg bg-muted/30 border border-border">
+                <div className="flex items-start gap-2">
+                  <Stethoscope className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs text-muted-foreground">Requested procedure</div>
+                    <div className="text-sm font-medium truncate">{requestedProcedureName}</div>
 
-                {appointment.procedure_cost != null && (
-                  <div className="text-xs text-muted-foreground flex items-center gap-1 shrink-0">
-                    <DollarSign className="h-3.5 w-3.5" />
-                    <span className="font-medium text-foreground">{formatCurrency(appointment.procedure_cost)}</span>
+                    {appointment.procedure_cost != null && !Number.isNaN(Number(appointment.procedure_cost)) && (
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        Est. cost: {formatMoney(Number(appointment.procedure_cost))}
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             )}
 
