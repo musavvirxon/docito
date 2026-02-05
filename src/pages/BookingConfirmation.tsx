@@ -1,221 +1,114 @@
 // File: src/pages/BookingConfirmation.tsx
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { format, parseISO } from "date-fns";
+import { parseISO } from "date-fns";
 import {
   Calendar,
   CheckCircle,
   Clock,
   Download,
-  MapPin,
-  Printer,
-  User,
-  AlertTriangle,
+  FileText,
   Loader2,
+  MapPin,
+  RefreshCw,
   XCircle,
-  ClipboardList,
 } from "lucide-react";
-
-import PremiumTopNav from "@/components/home/premium/PremiumTopNav";
-import PremiumFooter from "@/components/home/premium/PremiumFooter";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
+import { TimezoneNotice } from "@/components/time/TimezoneNotice";
+import { formatAppointmentForViewer, getAppointmentUtcRange } from "@/lib/appointmentTime";
+import { formatDateInTimeZone, formatTimeInTimeZone, getEffectiveTimeZone } from "@/lib/timezone";
+import { supabase } from "@/integrations/supabase/client";
 
 type HoldDetails = {
   id: string;
-  patient_id: string;
   doctor_id: string;
   practice_id: string | null;
-  start_at: string;
-  end_at: string;
-  appointment_type: string;
-  notes: string | null;
-  status: string;
-  expires_at: string;
-};
-
-type DoctorInfo = {
-  id: string;
-  specialty: string | null;
-  profiles?: { full_name: string | null } | null;
-  practices?: { name: string | null; address: string | null; city: string | null; country: string | null } | null;
+  appointment_type: "clinic" | "lab" | "imaging" | "pharmacy";
+  start_at: string; // timestamptz
+  end_at: string; // timestamptz
+  expires_at: string; // timestamptz
+  status: "active" | "expired" | "confirmed" | "cancelled";
+  notes?: string | null;
 };
 
 type ConfirmedAppointment = {
   id: string;
-  appointment_date: string;
-  start_time: string;
-  end_time: string;
-  appointment_type: string;
-  notes: string | null;
+  doctor_id: string;
+  practice_id: string | null;
+  appointment_type: "clinic" | "lab" | "imaging" | "pharmacy";
+  appointment_date: string; // date
+  start_time: string; // time
+  end_time: string; // time
+  notes?: string | null;
+};
+
+type DoctorInfo = {
+  id: string;
+  specialty?: string | null;
+  profiles?: { full_name: string | null; timezone?: string | null } | null;
+  practices?: {
+    name?: string | null;
+    address?: string | null;
+    city?: string | null;
+    country?: string | null;
+  } | null;
 };
 
 type ClinicalItem = {
   id: string;
-  appointment_id: string;
-  item_type: string;
+  item_type: "diagnosis" | "treatment" | "note" | "procedure";
   title: string;
-  details: any;
-  created_at: string;
-  updated_at: string;
+  details?: string | null;
 };
 
-function extractRequestedProcedure(notes: string | null | undefined): { requested: string | null; remaining: string | null } {
-  if (!notes) return { requested: null, remaining: null };
+const escapeIcs = (str: string) => str.replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/,/g, "\\,").replace(/;/g, "\\;");
 
-  const lines = notes.split(/\r?\n/);
-  let requested: string | null = null;
-  const kept: string[] = [];
+function extractRequestedProcedure(notes?: string | null) {
+  if (!notes) return { requested: null as string | null, remaining: null as string | null };
 
-  for (const line of lines) {
-    const m = line.match(/^Requested Procedure:\s*(.+)\s*$/i);
-    if (m && !requested) {
-      requested = (m[1] || "").trim() || null;
-      continue;
-    }
-    kept.push(line);
-  }
+  const lines = notes.split("\n");
+  const idx = lines.findIndex((l) => l.toLowerCase().startsWith("requested procedure:"));
+  if (idx === -1) return { requested: null, remaining: notes };
 
-  const remaining = kept.join("\n").trim();
-  return { requested, remaining: remaining ? remaining : null };
+  const requested = lines[idx].split(":").slice(1).join(":").trim() || null;
+  const remaining = [...lines.slice(0, idx), ...lines.slice(idx + 1)].join("\n").trim() || null;
+
+  return { requested, remaining };
 }
 
 export default function BookingConfirmation() {
-  const { appointmentId: holdId } = useParams(); // This is actually a hold_id OR an appointment_id fallback
+  const { holdId } = useParams<{ holdId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+
+  const viewerTimeZone = useMemo(() => getEffectiveTimeZone((profile as any)?.timezone), [profile]);
 
   const [loading, setLoading] = useState(true);
-  const [confirming, setConfirming] = useState(false);
+  const [error, setError] = useState<{ title: string; message: string } | null>(null);
   const [holdDetails, setHoldDetails] = useState<HoldDetails | null>(null);
   const [doctorInfo, setDoctorInfo] = useState<DoctorInfo | null>(null);
-  const [confirmed, setConfirmed] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+
   const [confirmedAppointment, setConfirmedAppointment] = useState<ConfirmedAppointment | null>(null);
-  const [error, setError] = useState<{ title: string; message: string } | null>(null);
-
-  const [clinicalLoading, setClinicalLoading] = useState(false);
   const [clinicalItems, setClinicalItems] = useState<ClinicalItem[]>([]);
+  const [clinicalLoading, setClinicalLoading] = useState(false);
 
-  // Load hold details (or confirmed appointment fallback)
-  useEffect(() => {
+  const [patientNotes, setPatientNotes] = useState<string>("");
+
+  const confirmed = Boolean(confirmedAppointment);
+
+  const loadHold = useCallback(async () => {
     if (!holdId) return;
 
-    (async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        // First try to fetch as a hold
-        const { data: hold, error: holdErr } = await (supabase as any)
-          .from("appointment_holds")
-          .select("id, patient_id, doctor_id, practice_id, start_at, end_at, appointment_type, notes, status, expires_at")
-          .eq("id", holdId)
-          .maybeSingle();
-
-        if (holdErr) throw holdErr;
-
-        if (hold) {
-          // Check if hold is still valid
-          const expiresAt = new Date(hold.expires_at);
-          if (expiresAt.getTime() < Date.now()) {
-            setError({
-              title: "Booking Expired",
-              message: "Your booking hold has expired. Please try booking again.",
-            });
-            return;
-          }
-
-          if (hold.status !== "pending") {
-            setError({
-              title: "Booking Already Processed",
-              message: "This booking has already been confirmed or canceled.",
-            });
-            return;
-          }
-
-          setHoldDetails(hold);
-
-          // Fetch doctor details
-          const { data: doctor } = await supabase
-            .from("doctors")
-            .select(
-              `
-              id,
-              specialty,
-              profiles:user_id(full_name),
-              practices:practice_id(name,address,city,country)
-            `,
-            )
-            .eq("id", hold.doctor_id)
-            .maybeSingle();
-
-          if (doctor) {
-            setDoctorInfo(doctor as any);
-          }
-        } else {
-          // Maybe it was already confirmed - check appointments
-          const { data: appointment } = await supabase
-            .from("appointments")
-            .select(
-              `
-              id,
-              appointment_date,
-              start_time,
-              end_time,
-              appointment_type,
-              notes,
-              doctor:doctor_id(
-                id,
-                specialty,
-                profiles:user_id(full_name),
-                practices:practice_id(name,address,city,country)
-              )
-            `,
-            )
-            .eq("id", holdId)
-            .maybeSingle();
-
-          if (appointment) {
-            setConfirmed(true);
-            setConfirmedAppointment({
-              id: appointment.id,
-              appointment_date: appointment.appointment_date,
-              start_time: appointment.start_time,
-              end_time: appointment.end_time,
-              appointment_type: appointment.appointment_type,
-              notes: (appointment as any).notes ?? null,
-            });
-            setDoctorInfo((appointment as any).doctor);
-          } else {
-            setError({
-              title: "Booking Not Found",
-              message: "We couldn't find this booking. It may have expired or been canceled.",
-            });
-          }
-        }
-      } catch (e: any) {
-        console.error(e);
-        setError({
-          title: "Error Loading Booking",
-          message: e?.message || "Failed to load booking details. Please try again.",
-        });
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [holdId]);
-
-  const confirmAppointment = useCallback(async () => {
-    if (!holdId || !user) return;
-
-    setConfirming(true);
+    setLoading(true);
     setError(null);
 
     try {
@@ -223,45 +116,137 @@ export default function BookingConfirmation() {
       const accessToken = session.session?.access_token;
 
       if (!accessToken) {
-        toast.error("Please sign in to confirm your appointment");
-        return;
+        throw new Error("You must be signed in to view booking details.");
       }
 
-      const { data, error: fnError } = await supabase.functions.invoke("confirm-appointment", {
-        body: { hold_id: holdId },
+      const { data, error: fnErr } = await supabase.functions.invoke("appointment-hold", {
+        body: { action: "get", hold_id: holdId },
         headers: { Authorization: `Bearer ${accessToken}` },
       });
 
-      if (fnError) throw fnError;
+      if (fnErr) throw fnErr;
+      if (!data?.ok) throw new Error(data?.error || "Failed to load booking hold.");
 
-      if (!data?.ok) {
-        const code = data?.code;
-        if (code === "SLOT_TAKEN") {
-          setError({
-            title: "Slot No Longer Available",
-            message: "Unfortunately, this time slot has been taken by another patient. Please choose a different time.",
+      const hold = data.data as HoldDetails;
+      setHoldDetails(hold);
+      setPatientNotes(hold.notes ?? "");
+
+      const { data: doc, error: docErr } = await supabase
+        .from("doctors")
+        .select(
+          `
+          id,
+          specialty,
+          profiles:user_id(full_name,timezone),
+          practices:practice_id(name,address,city,country)
+        `,
+        )
+        .eq("id", hold.doctor_id)
+        .maybeSingle();
+
+      if (docErr) throw docErr;
+      setDoctorInfo((doc ?? null) as any);
+    } catch (e: any) {
+      console.error(e);
+      setError({
+        title: "Unable to Load Booking",
+        message: e?.message || "Something went wrong loading your booking. Please try again.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [holdId]);
+
+  useEffect(() => {
+    loadHold();
+  }, [loadHold]);
+
+  // If hold already confirmed (e.g., refresh after confirm), try to load appointment record
+  useEffect(() => {
+    const run = async () => {
+      if (!holdDetails) return;
+      if (holdDetails.status !== "confirmed") return;
+
+      try {
+        const { data, error: apptErr } = await supabase
+          .from("appointments")
+          .select(
+            `
+            id,
+            doctor_id,
+            practice_id,
+            appointment_type,
+            appointment_date,
+            start_time,
+            end_time,
+            notes,
+            doctor:doctor_id(
+              id,
+              specialty,
+              profiles:user_id(full_name,timezone),
+              practices:practice_id(name,address,city,country)
+            )
+          `,
+          )
+          .eq("id", holdDetails.id)
+          .maybeSingle();
+
+        if (apptErr) throw apptErr;
+
+        if (data) {
+          const appt = data as any;
+
+          setConfirmedAppointment({
+            id: appt.id,
+            doctor_id: appt.doctor_id,
+            practice_id: appt.practice_id,
+            appointment_type: appt.appointment_type,
+            appointment_date: appt.appointment_date,
+            start_time: appt.start_time,
+            end_time: appt.end_time,
+            notes: appt.notes ?? holdDetails.notes ?? null,
           });
-          // Delete the hold automatically after showing error
-          await (supabase as any).from("appointment_holds").delete().eq("id", holdId);
-        } else if (code === "HOLD_EXPIRED") {
-          setError({
-            title: "Booking Expired",
-            message: "Your booking hold has expired. Please try booking again.",
-          });
-        } else {
-          throw new Error(data?.error || "Failed to confirm appointment");
+
+          if (appt.doctor) setDoctorInfo(appt.doctor as any);
         }
-        return;
+      } catch (e) {
+        // soft-fail; still show hold info
       }
+    };
 
-      setConfirmed(true);
+    run();
+  }, [holdDetails]);
+
+  const confirmAppointment = useCallback(async () => {
+    if (!holdId) return;
+    if (!user) {
+      toast.error("You must be signed in to confirm your booking.");
+      return;
+    }
+
+    setConfirming(true);
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      const accessToken = session.session?.access_token;
+
+      if (!accessToken) throw new Error("Missing session token");
+
+      const { data, error } = await supabase.functions.invoke("confirm-appointment", {
+        body: { hold_id: holdId, notes: patientNotes || null },
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      if (error) throw error;
+      if (!data?.ok) throw new Error(data?.error || "Failed to confirm your appointment.");
+
       setConfirmedAppointment({
         id: data.appointment_id,
+        doctor_id: data.doctor_id,
+        practice_id: data.practice_id,
+        appointment_type: data.appointment_type,
         appointment_date: data.appointment_date,
         start_time: data.start_time,
         end_time: data.end_time,
-        appointment_type: data.appointment_type,
-        // We don't get notes back from confirm fn; keep hold notes so we can show requested procedure
         notes: holdDetails?.notes ?? null,
       });
 
@@ -275,7 +260,7 @@ export default function BookingConfirmation() {
     } finally {
       setConfirming(false);
     }
-  }, [holdId, user, holdDetails?.notes]);
+  }, [holdId, user, patientNotes, holdDetails?.notes]);
 
   // Fetch clinical items (confirmed appointment only)
   useEffect(() => {
@@ -303,7 +288,6 @@ export default function BookingConfirmation() {
         setClinicalItems((data.data ?? []) as ClinicalItem[]);
       } catch (e: any) {
         console.error(e);
-        // soft-fail: booking confirmation should still render
         setClinicalItems([]);
       } finally {
         setClinicalLoading(false);
@@ -331,8 +315,11 @@ export default function BookingConfirmation() {
 
   const downloadIcs = () => {
     if (!confirmedAppointment) return;
-    const start = new Date(`${confirmedAppointment.appointment_date}T${confirmedAppointment.start_time}`);
-    const end = new Date(`${confirmedAppointment.appointment_date}T${confirmedAppointment.end_time}`);
+
+    const sourceTimeZone = getEffectiveTimeZone((doctorInfo as any)?.profiles?.timezone || "");
+    const { startUtc, endUtc } = getAppointmentUtcRange(confirmedAppointment as any, sourceTimeZone);
+    const safeEndUtc = endUtc ?? new Date(startUtc.getTime() + 30 * 60 * 1000);
+
     const base = `Appointment - ${doctorInfo?.profiles?.full_name || "Doctor"}`;
     const title = requestedProcedure ? `${base} (${requestedProcedure})` : base;
 
@@ -344,8 +331,8 @@ export default function BookingConfirmation() {
       "BEGIN:VEVENT",
       `UID:${confirmedAppointment.id}@medicalbook`,
       `DTSTAMP:${dt(new Date())}`,
-      `DTSTART:${dt(start)}`,
-      `DTEND:${dt(end)}`,
+      `DTSTART:${dt(startUtc)}`,
+      `DTEND:${dt(safeEndUtc)}`,
       `SUMMARY:${escapeIcs(title)}`,
       location ? `LOCATION:${escapeIcs(location)}` : "",
       "END:VEVENT",
@@ -378,211 +365,79 @@ export default function BookingConfirmation() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <PremiumTopNav />
-        <div className="container mx-auto px-4 pt-24 pb-12">
-          <div className="max-w-2xl mx-auto">
-            <Card>
-              <CardContent className="p-8 flex items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin mr-2" />
+        <div className="container max-w-3xl py-12">
+          <Card>
+            <CardContent className="flex items-center justify-center py-12">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Loader2 className="h-5 w-5 animate-spin" />
                 Loading booking details...
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-        <PremiumFooter />
       </div>
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div className="min-h-screen bg-background">
-        <PremiumTopNav />
-        <div className="container mx-auto px-4 pt-24 pb-12">
-          <div className="max-w-2xl mx-auto space-y-6">
-            <Alert variant="destructive">
-              <XCircle className="h-5 w-5" />
-              <AlertTitle>{error.title}</AlertTitle>
-              <AlertDescription>{error.message}</AlertDescription>
-            </Alert>
-            <div className="flex gap-3 justify-center">
-              <Button variant="outline" onClick={() => navigate(-1)}>
-                Go Back
-              </Button>
-              <Link to="/">
-                <Button>Return Home</Button>
-              </Link>
-            </div>
+        <div className="container max-w-3xl py-12 space-y-6">
+          <Alert variant="destructive">
+            <XCircle className="h-4 w-4" />
+            <AlertTitle>{error.title}</AlertTitle>
+            <AlertDescription>{error.message}</AlertDescription>
+          </Alert>
+
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={loadHold}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Retry
+            </Button>
+            <Button onClick={() => navigate("/patient/dashboard")}>Go to Dashboard</Button>
           </div>
         </div>
-        <PremiumFooter />
       </div>
     );
   }
 
-  // Confirmed state
-  if (confirmed && confirmedAppointment) {
-    const doctorName = doctorInfo?.profiles?.full_name || "Doctor";
-    const specialty = doctorInfo?.specialty || "";
-
+  if (!holdDetails) {
     return (
       <div className="min-h-screen bg-background">
-        <PremiumTopNav />
-        <div className="container mx-auto px-4 pt-24 pb-12">
-          <div className="max-w-2xl mx-auto space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CheckCircle className="h-6 w-6 text-green-600" />
-                  Appointment Confirmed!
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="secondary">Confirmed</Badge>
-                  <Badge variant="outline">{confirmedAppointment.appointment_type}</Badge>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <div className="font-medium">Dr. {doctorName}</div>
-                      {specialty && <div className="text-sm text-muted-foreground">{specialty}</div>}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span>{format(new Date(confirmedAppointment.appointment_date), "EEEE, MMMM d, yyyy")}</span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <span>
-                      {confirmedAppointment.start_time.slice(0, 5)} – {confirmedAppointment.end_time.slice(0, 5)}
-                    </span>
-                  </div>
-
-                  {location && (
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <span>{location}</span>
-                    </div>
-                  )}
-                </div>
-
-                {requestedProcedure && (
-                  <>
-                    <Separator />
-                    <div className="rounded-lg border p-3 bg-muted/30">
-                      <div className="font-medium flex items-center gap-2">
-                        <ClipboardList className="h-4 w-4" />
-                        Requested procedure
-                      </div>
-                      <div className="text-sm text-muted-foreground mt-1">{requestedProcedure}</div>
-                    </div>
-                  </>
-                )}
-
-                {remainingNotes && (
-                  <>
-                    <Separator />
-                    <div>
-                      <div className="font-medium mb-2">Notes</div>
-                      <pre className="whitespace-pre-wrap text-sm text-muted-foreground">{remainingNotes}</pre>
-                    </div>
-                  </>
-                )}
-
-                <Separator />
-
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" onClick={handlePrint}>
-                    <Printer className="h-4 w-4 mr-2" />
-                    Print
-                  </Button>
-                  <Button variant="outline" onClick={downloadIcs}>
-                    <Download className="h-4 w-4 mr-2" />
-                    Download .ics
-                  </Button>
-                  <Link to="/patient/dashboard">
-                    <Button>Go to Dashboard</Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ClipboardList className="h-5 w-5" />
-                  Clinical items
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {clinicalLoading ? (
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Loading clinical items...
-                  </div>
-                ) : clinicalItems.length === 0 ? (
-                  <div className="text-sm text-muted-foreground">No clinical items have been added yet.</div>
-                ) : (
-                  <div className="space-y-3">
-                    {clinicalItems.map((it) => (
-                      <div key={it.id} className="rounded-lg border p-3">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <div className="font-medium">{it.title}</div>
-                          <Badge variant="secondary">{it.item_type}</Badge>
-                        </div>
-                        {it.details && Object.keys(it.details || {}).length > 0 && (
-                          <pre className="mt-2 text-xs whitespace-pre-wrap text-muted-foreground">
-                            {JSON.stringify(it.details, null, 2)}
-                          </pre>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+        <div className="container max-w-3xl py-12">
+          <Alert>
+            <AlertTitle>Not Found</AlertTitle>
+            <AlertDescription>The booking you requested could not be found.</AlertDescription>
+          </Alert>
         </div>
-        <PremiumFooter />
       </div>
     );
   }
 
-  // Pending confirmation state - show hold details with confirm button
-  if (holdDetails) {
+  // HOLD VIEW
+  if (!confirmed) {
     const startTime = parseISO(holdDetails.start_at);
     const endTime = parseISO(holdDetails.end_at);
-    const doctorName = doctorInfo?.profiles?.full_name || "Doctor";
-    const specialty = doctorInfo?.specialty || "";
 
     return (
       <div className="min-h-screen bg-background">
-        <PremiumTopNav />
-        <div className="container mx-auto px-4 pt-24 pb-12">
-          <div className="max-w-2xl mx-auto space-y-6">
-            <Alert>
-              <AlertTriangle className="h-5 w-5" />
-              <AlertTitle>Confirm Your Appointment</AlertTitle>
-              <AlertDescription>
-                Please confirm your appointment within the time limit. Your slot is held for {timeRemaining || "a limited time"}.
-              </AlertDescription>
-            </Alert>
+        <div className="container max-w-3xl py-12 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                Confirm Your Booking
+              </CardTitle>
+            </CardHeader>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-6 w-6 text-amber-600" />
-                  Pending Confirmation
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
+            <CardContent className="space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <p className="text-lg font-semibold">{doctorInfo?.profiles?.full_name || "Doctor"}</p>
+                  {doctorInfo?.specialty && (
+                    <p className="text-sm text-muted-foreground">{doctorInfo.specialty}</p>
+                  )}
+                </div>
                 <div className="flex flex-wrap gap-2">
                   <Badge variant="secondary">{holdDetails.appointment_type}</Badge>
                   {timeRemaining && (
@@ -592,105 +447,240 @@ export default function BookingConfirmation() {
                   )}
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <div className="font-medium">Dr. {doctorName}</div>
-                      {specialty && <div className="text-sm text-muted-foreground">{specialty}</div>}
-                    </div>
-                  </div>
+                <TimezoneNotice timeZone={viewerTimeZone} />
+              </div>
 
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span>{format(startTime, "EEEE, MMMM d, yyyy")}</span>
-                  </div>
+              <Separator />
 
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <span>
-                      {format(startTime, "h:mm a")} – {format(endTime, "h:mm a")}
-                    </span>
-                  </div>
-
-                  {location && (
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <span>{location}</span>
-                    </div>
-                  )}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span>{formatDateInTimeZone(startTime, viewerTimeZone)}</span>
                 </div>
+
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span>
+                    {formatTimeInTimeZone(startTime, viewerTimeZone)} – {formatTimeInTimeZone(endTime, viewerTimeZone)}
+                  </span>
+                </div>
+
+                {location && (
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <span>{location}</span>
+                  </div>
+                )}
+              </div>
+
+              <Separator />
+
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <p className="font-medium">Notes</p>
+                    <p className="text-sm text-muted-foreground">
+                      Add any details for the provider (optional).
+                    </p>
+                  </div>
+                </div>
+
+                <Textarea
+                  value={patientNotes}
+                  onChange={(e) => setPatientNotes(e.target.value)}
+                  placeholder="e.g., reason for visit, symptoms, requested procedure..."
+                  className="min-h-[120px]"
+                />
 
                 {requestedProcedure && (
-                  <>
-                    <Separator />
-                    <div className="rounded-lg border p-3 bg-muted/30">
-                      <div className="font-medium flex items-center gap-2">
-                        <ClipboardList className="h-4 w-4" />
-                        Requested procedure
-                      </div>
-                      <div className="text-sm text-muted-foreground mt-1">{requestedProcedure}</div>
-                    </div>
-                  </>
+                  <div className="text-sm">
+                    <span className="font-medium">Requested procedure:</span>{" "}
+                    <span className="text-muted-foreground">{requestedProcedure}</span>
+                  </div>
                 )}
+              </div>
 
-                {remainingNotes && (
-                  <>
-                    <Separator />
-                    <div>
-                      <div className="font-medium mb-2">Notes</div>
-                      <pre className="whitespace-pre-wrap text-sm text-muted-foreground">{remainingNotes}</pre>
-                    </div>
-                  </>
-                )}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button onClick={confirmAppointment} disabled={confirming} className="flex-1">
+                  {confirming ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Confirming...
+                    </>
+                  ) : (
+                    "Confirm Appointment"
+                  )}
+                </Button>
+                <Button variant="outline" onClick={() => navigate("/patient/dashboard")} className="flex-1">
+                  Cancel
+                </Button>
+              </div>
 
-                <Separator />
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" onClick={() => navigate(-1)} disabled={confirming}>
-                    Cancel
-                  </Button>
-                  <Button onClick={confirmAppointment} disabled={confirming} className="flex-1">
-                    {confirming ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Confirming...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Confirm Appointment
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ClipboardList className="h-5 w-5" />
-                  Clinical items
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                Clinical items will appear here after your appointment is confirmed.
-              </CardContent>
-            </Card>
-          </div>
+              <p className="text-xs text-muted-foreground">
+                By confirming, you agree to the clinic’s policies. Your hold will expire automatically if not confirmed
+                in time.
+              </p>
+            </CardContent>
+          </Card>
         </div>
-        <PremiumFooter />
       </div>
     );
   }
 
-  return null;
-}
+  // CONFIRMED VIEW
+  if (!confirmedAppointment) return null;
 
-function escapeIcs(value: string) {
-  return (value || "")
-    .replace(/\\/g, "\\\\")
-    .replace(/\n/g, "\\n")
-    .replace(/,/g, "\\,")
-    .replace(/;/g, "\\;");
+  const renderClinicalItems = () => {
+    if (clinicalLoading) {
+      return (
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Loading clinical details...
+        </div>
+      );
+    }
+
+    if (clinicalItems.length === 0) {
+      return <p className="text-sm text-muted-foreground">No clinical items recorded.</p>;
+    }
+
+    return (
+      <div className="space-y-3">
+        {clinicalItems.map((item) => (
+          <div key={item.id} className="p-3 rounded-md border border-border/60">
+            <div className="flex items-center justify-between gap-2">
+              <p className="font-medium">{item.title}</p>
+              <Badge variant="outline" className="capitalize">
+                {item.item_type}
+              </Badge>
+            </div>
+            {item.details && <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{item.details}</p>}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderConfirmed = () => {
+    const doctorName = doctorInfo?.profiles?.full_name || "Doctor";
+    const specialty = doctorInfo?.specialty || "";
+    const sourceTimeZone = getEffectiveTimeZone((doctorInfo as any)?.profiles?.timezone || "");
+    const { dateLabel, timeLabel } = formatAppointmentForViewer({
+      appt: confirmedAppointment,
+      sourceTimeZone,
+      viewerTimeZone,
+      includeEnd: true,
+    });
+
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container max-w-3xl py-12 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+                Booking Confirmed
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent className="space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <p className="text-lg font-semibold">{doctorName}</p>
+                  {specialty && <p className="text-sm text-muted-foreground">{specialty}</p>}
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary">Confirmed</Badge>
+                  <Badge variant="outline">{confirmedAppointment.appointment_type}</Badge>
+                </div>
+
+                <TimezoneNotice timeZone={viewerTimeZone} />
+              </div>
+
+              <Separator />
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span>{dateLabel}</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span>{timeLabel}</span>
+                </div>
+
+                {location && (
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <span>{location}</span>
+                  </div>
+                )}
+              </div>
+
+              {(requestedProcedure || remainingNotes) && (
+                <>
+                  <Separator />
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                      <p className="font-medium">Notes</p>
+                    </div>
+
+                    {requestedProcedure && (
+                      <div className="text-sm">
+                        <span className="font-medium">Requested procedure:</span>{" "}
+                        <span className="text-muted-foreground">{requestedProcedure}</span>
+                      </div>
+                    )}
+
+                    {remainingNotes && (
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">{remainingNotes}</p>
+                    )}
+                  </div>
+                </>
+              )}
+
+              <Separator />
+
+              <div className="space-y-2">
+                <p className="font-medium">Clinical Items</p>
+                {renderClinicalItems()}
+              </div>
+
+              <Separator />
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button variant="outline" onClick={downloadIcs} className="flex-1">
+                  <Download className="h-4 w-4 mr-2" />
+                  Add to Calendar (.ics)
+                </Button>
+
+                <Button variant="outline" onClick={handlePrint} className="flex-1">
+                  Print
+                </Button>
+
+                <Button onClick={() => navigate("/patient/dashboard")} className="flex-1">
+                  Go to Dashboard
+                </Button>
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                Need to make changes? Please contact the clinic directly.
+              </p>
+            </CardContent>
+          </Card>
+
+          <div className="text-center">
+            <Link to="/find-doctors" className="text-sm text-primary hover:underline">
+              Book another appointment
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return renderConfirmed();
 }
