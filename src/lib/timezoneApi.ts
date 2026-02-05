@@ -17,6 +17,15 @@ type TimezoneUpdateResponse =
     }
   | { ok: false; error: string; code?: string };
 
+type TimezoneDetectResponse =
+  | {
+      ok: true;
+      timezone: string;
+      timezone_source: "browser" | "ip" | "manual" | "verification" | "admin" | "signup";
+      updated: boolean;
+    }
+  | { ok: false; error: string; code?: string };
+
 export async function updateProfileTimezone(timezone: string, source: Source = "manual") {
   const { data, error } = await supabase.functions.invoke<TimezoneUpdateResponse>("timezone-update", {
     body: { action: "set", target: "profile", timezone, source },
@@ -39,5 +48,15 @@ export async function updateEntityTimezone(
 
   if (error) throw error;
   if (!data?.ok) throw new Error((data as any)?.error || "Failed to update entity timezone");
+  return data;
+}
+
+export async function detectProfileTimezone(candidateTimezone?: string) {
+  const { data, error } = await supabase.functions.invoke<TimezoneDetectResponse>("timezone-detect", {
+    body: { action: "detect", target: "profile", timezone: candidateTimezone },
+  });
+
+  if (error) throw error;
+  if (!data?.ok) throw new Error((data as any)?.error || "Failed to detect timezone");
   return data;
 }
