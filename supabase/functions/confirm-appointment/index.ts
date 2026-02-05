@@ -22,6 +22,10 @@ type Resp =
       start_time: string;
       end_time: string;
       appointment_type: AppointmentType;
+
+      // NEW: echoed back if we found one
+      procedure_id: string | null;
+      procedure_name: string | null;
     }
   | { ok: false; error: string; code?: string };
 
@@ -43,6 +47,51 @@ function isoDate(d: Date) {
 }
 function hhmmss(d: Date) {
   return d.toISOString().split("T")[1].slice(0, 8);
+}
+
+function extractRequestedProcedureId(notes: string | null | undefined): string | null {
+  if (!notes) return null;
+  const m = notes.match(/requested\s+procedure\s+id\s*:\s*([0-9a-fA-F-]{36})/i);
+  return m?.[1] ? String(m[1]) : null;
+}
+
+async function fetchHold(service: ReturnType<typeof createClient>, holdId: string) {
+  const baseFields =
+    "id, patient_id, doctor_patient_id, doctor_id, practice_id, start_at, end_at, appointment_type, notes, status, expires_at";
+  const withProc = `${baseFields}, procedure_id`;
+
+  // Try selecting with procedure_id first; fallback if column doesn't exist.
+  let res = await service.from("appointment_holds").select(withProc).eq("id", holdId).maybeSingle();
+  if (res.error && String(res.error.message || "").toLowerCase().includes("procedure_id")) {
+    res = await service.from("appointment_holds").select(baseFields).eq("id", holdId).maybeSingle();
+  }
+  return res;
+}
+
+async function insertAppointmentWithFallback(
+  service: ReturnType<typeof createClient>,
+  payload: Record<string, unknown>,
+) {
+  // Try with payload as-is (may include procedure_id)
+  let res = await service
+    .from("appointments")
+    .insert(payload as any)
+    .select("id, appointment_date, start_time, end_time, appointment_type")
+    .single();
+
+  // If procedure_id column doesn't exist, retry without it
+  if (res.error && String(res.error.message || "").toLowerCase().includes("procedure_id")) {
+    const p2 = { ...payload };
+    delete (p2 as any).procedure_id;
+
+    res = await service
+      .from("appointments")
+      .insert(p2 as any)
+      .select("id, appointment_date, start_time, end_time, appointment_type")
+      .single();
+  }
+
+  return res;
 }
 
 serve(async (req) => {
@@ -82,30 +131,7 @@ serve(async (req) => {
 
     await service.rpc("cleanup_expired_appointment_holds").catch(() => {});
 
-    // Try select with procedure_id; fallback without if DB not migrated yet
-    let hold: any = null;
-    let holdErr: any = null;
-
-    const q1 = await service
-      .from("appointment_holds")
-      .select(
-        "id, patient_id, doctor_patient_id, doctor_id, practice_id, start_at, end_at, appointment_type, notes, status, expires_at, procedure_id",
-      )
-      .eq("id", body.hold_id)
-      .maybeSingle();
-
-    if (!q1.error) {
-      hold = q1.data;
-    } else {
-      const q2 = await service
-        .from("appointment_holds")
-        .select("id, patient_id, doctor_patient_id, doctor_id, practice_id, start_at, end_at, appointment_type, notes, status, expires_at")
-        .eq("id", body.hold_id)
-        .maybeSingle();
-
-      hold = q2.data;
-      holdErr = q2.error || q1.error;
-    }
+    const { data: hold, error: holdErr } = await fetchHold(service, body.hold_id);
 
     if (holdErr) {
       console.error("Hold read error:", holdErr);
@@ -135,6 +161,7 @@ serve(async (req) => {
     const startTime = hhmmss(startAt);
     const endTime = hhmmss(endAt);
 
+    // Conflict check: existing appointments
     const { data: existingAppointments, error: conflictErr } = await service
       .from("appointments")
       .select("id")
@@ -155,6 +182,7 @@ serve(async (req) => {
       return json({ ok: false, error: "Slot is no longer available", code: "SLOT_TAKEN" }, 409);
     }
 
+    // Conflict check: other holds
     const { data: otherHolds, error: otherHoldErr } = await service
       .from("appointment_holds")
       .select("id")
@@ -162,7 +190,9 @@ serve(async (req) => {
       .eq("status", "pending")
       .gt("expires_at", new Date().toISOString())
       .neq("id", hold.id)
-      .or(`and(start_at.lte.${hold.start_at},end_at.gt.${hold.start_at}),and(start_at.lt.${hold.end_at},end_at.gte.${hold.end_at})`);
+      .or(
+        `and(start_at.lte.${hold.start_at},end_at.gt.${hold.start_at}),and(start_at.lt.${hold.end_at},end_at.gte.${hold.end_at})`,
+      );
 
     if (otherHoldErr) {
       console.error("Other hold check error:", otherHoldErr);
@@ -174,10 +204,42 @@ serve(async (req) => {
       return json({ ok: false, error: "Slot is temporarily held by another patient", code: "SLOT_TAKEN" }, 409);
     }
 
-    const procedureId = (hold as any)?.procedure_id ?? null;
+    // NEW: get procedure_id from hold (if column exists) OR from notes line
+    const holdProcedureId =
+      (hold as any).procedure_id ? String((hold as any).procedure_id) : extractRequestedProcedureId(hold.notes ?? null);
 
-    // Insert appointment (procedure_id already exists on appointments table in your schema)
-    const payload: any = {
+    let procedureName: string | null = null;
+
+    // Validate procedure belongs to this doctor (if present) and fetch name/cost for appointment_procedures
+    let validatedProcedureId: string | null = null;
+    let estimatedCost: number | null = null;
+
+    if (holdProcedureId) {
+      const { data: proc, error: procErr } = await service
+        .from("procedures")
+        .select("id, name, dentist_id, default_cost, price, is_active, is_bookable")
+        .eq("id", holdProcedureId)
+        .maybeSingle();
+
+      if (procErr) {
+        console.error("Procedure lookup error:", procErr);
+        // do not hard-fail appointment confirm; just don't attach procedure
+      } else if (proc?.id && String((proc as any).dentist_id) === String(hold.doctor_id)) {
+        if ((proc as any).is_active === false || (proc as any).is_bookable === false) {
+          // still allow appointment confirm, but do not attach procedure
+          validatedProcedureId = null;
+        } else {
+          validatedProcedureId = String(proc.id);
+          procedureName = proc.name ? String(proc.name) : null;
+
+          const p = (proc as any).price ?? (proc as any).default_cost;
+          estimatedCost = p == null ? null : Number(p);
+          if (Number.isNaN(estimatedCost as any)) estimatedCost = null;
+        }
+      }
+    }
+
+    const appointmentPayload: Record<string, unknown> = {
       doctor_id: hold.doctor_id,
       practice_id: hold.practice_id,
       appointment_date: appointmentDate,
@@ -189,43 +251,34 @@ serve(async (req) => {
       patient_id: hold.patient_id,
       doctor_patient_id: hold.doctor_patient_id,
       patient_confirmation_status: "confirmed",
-      procedure_id: procedureId,
     };
 
-    const tryInsert = async (p: any) => {
-      return await service
-        .from("appointments")
-        .insert(p as any)
-        .select("id, appointment_date, start_time, end_time, appointment_type")
-        .single();
-    };
+    // If appointments has procedure_id column, store it too.
+    if (validatedProcedureId) appointmentPayload.procedure_id = validatedProcedureId;
 
-    let appointment: any = null;
-    let insertErr: any = null;
-
-    const ins1 = await tryInsert(payload);
-    if (!ins1.error && ins1.data) {
-      appointment = ins1.data;
-    } else {
-      insertErr = ins1.error;
-      const msg = String(insertErr?.message || "");
-      // fallback if DB somehow lacks procedure_id
-      if (msg.toLowerCase().includes("procedure_id")) {
-        const retry = { ...payload };
-        delete retry.procedure_id;
-        const ins2 = await tryInsert(retry);
-        if (!ins2.error && ins2.data) {
-          appointment = ins2.data;
-          insertErr = null;
-        } else {
-          insertErr = ins2.error;
-        }
-      }
-    }
+    const { data: appointment, error: insertErr } = await insertAppointmentWithFallback(service, appointmentPayload);
 
     if (insertErr || !appointment) {
       console.error("Appointment insert error:", insertErr);
       return json({ ok: false, error: "Failed to confirm appointment" }, 500);
+    }
+
+    // NEW: Create appointment_procedures row so doctor calendar/details can show requested procedure
+    if (validatedProcedureId) {
+      await service
+        .from("appointment_procedures")
+        .insert({
+          appointment_id: appointment.id,
+          procedure_id: validatedProcedureId,
+          prescribed_by: user.id, // patient requested; still record requester
+          patient_consent_status: "pending",
+          procedure_notes: "Requested during booking",
+          estimated_cost: estimatedCost,
+          status: "scheduled",
+        } as any)
+        .catch((e) => {
+          console.error("Failed to create appointment_procedures:", e);
+        });
     }
 
     await service.from("appointment_holds").delete().eq("id", hold.id);
@@ -238,7 +291,7 @@ serve(async (req) => {
         action: "create",
         actor_id: user.id,
         new_values: appointment,
-        metadata: { confirmed_from_hold: hold.id },
+        metadata: { confirmed_from_hold: hold.id, requested_procedure_id: validatedProcedureId ?? null },
       })
       .catch(() => {});
 
@@ -250,6 +303,8 @@ serve(async (req) => {
         start_time: appointment.start_time,
         end_time: appointment.end_time,
         appointment_type: appointment.appointment_type as AppointmentType,
+        procedure_id: validatedProcedureId,
+        procedure_name: procedureName,
       },
       201,
     );
