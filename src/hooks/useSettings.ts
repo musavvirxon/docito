@@ -1,9 +1,9 @@
-// File: src/hooks/useSettings.ts
-
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+// Path: src/hooks/useSettings.ts
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { updateProfileTimezone } from "@/lib/timezoneApi";
 
 interface NotificationSettings {
   emailBookings: boolean;
@@ -40,10 +40,10 @@ export const useSettings = () => {
   const [saving, setSaving] = useState(false);
 
   const [accountSettings, setAccountSettings] = useState<AccountSettings>({
-    email: '',
-    phone: '',
-    timezone: 'UTC',
-    language: 'en'
+    email: "",
+    phone: "",
+    timezone: "America/New_York",
+    language: "en",
   });
 
   const [notifications, setNotifications] = useState<NotificationSettings>({
@@ -53,19 +53,19 @@ export const useSettings = () => {
     smsBookings: false,
     smsReminders: true,
     smsCancellations: true,
-    pushNotifications: true
+    pushNotifications: true,
   });
 
   const [calendarSync, setCalendarSync] = useState<CalendarSyncSettings>({
     googleCalendar: false,
     outlookCalendar: false,
-    appleCalendar: false
+    appleCalendar: false,
   });
 
   const [privacySettings, setPrivacySettings] = useState<PrivacySettings>({
     profileVisibility: true,
     shareAnalytics: true,
-    marketingCommunications: false
+    marketingCommunications: false,
   });
 
   // Load settings from backend
@@ -77,18 +77,18 @@ export const useSettings = () => {
         setLoading(true);
 
         const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', user.id)
+          .from("profiles")
+          .select("*")
+          .eq("user_id", user.id)
           .single();
 
         if (profileError) throw profileError;
 
         setAccountSettings({
-          email: profileData.email || '',
-          phone: profileData.phone || '',
-          timezone: profileData.timezone || 'UTC',
-          language: profileData.language || 'en'
+          email: profileData.email || "",
+          phone: profileData.phone || "",
+          timezone: profileData.timezone || "America/New_York",
+          language: profileData.language || "en",
         });
 
         if (profileData.notification_settings) {
@@ -99,31 +99,27 @@ export const useSettings = () => {
           setPrivacySettings(profileData.privacy_settings as unknown as PrivacySettings);
         }
 
-        if (profile.role === 'doctor') {
-          const { data: doctorData } = await supabase
-            .from('doctors')
-            .select('id')
-            .eq('user_id', user.id)
-            .single();
+        if (profile.role === "doctor") {
+          const { data: doctorData } = await supabase.from("doctors").select("id").eq("user_id", user.id).single();
 
           if (doctorData) {
             const { data: calendarData } = await supabase
-              .from('google_calendar_sync')
-              .select('sync_enabled')
-              .eq('doctor_id', doctorData.id)
+              .from("google_calendar_sync")
+              .select("sync_enabled")
+              .eq("doctor_id", doctorData.id)
               .maybeSingle();
 
             if (calendarData) {
-              setCalendarSync(prev => ({
+              setCalendarSync((prev) => ({
                 ...prev,
-                googleCalendar: calendarData.sync_enabled
+                googleCalendar: calendarData.sync_enabled,
               }));
             }
           }
         }
       } catch (error: any) {
-        console.error('Error loading settings:', error);
-        toast.error('Failed to load settings');
+        console.error("Error loading settings:", error);
+        toast.error("Failed to load settings");
       } finally {
         setLoading(false);
       }
@@ -139,31 +135,33 @@ export const useSettings = () => {
     try {
       setSaving(true);
 
-      const patch: any = {
-        email: newSettings.email,
-        phone: newSettings.phone,
-        timezone: newSettings.timezone,
-        language: newSettings.language,
+      const nextState: AccountSettings = { ...accountSettings, ...newSettings };
+
+      // 1) Update timezone via Edge Function (required for timezone system)
+      if (typeof newSettings.timezone === "string" && newSettings.timezone.trim() !== "" && newSettings.timezone !== accountSettings.timezone) {
+        const res = await updateProfileTimezone(newSettings.timezone, "manual");
+        nextState.timezone = res.timezone;
+      }
+
+      // 2) Update other fields directly
+      const updates: Record<string, any> = {
         updated_at: new Date().toISOString(),
       };
 
-      if (typeof newSettings.timezone === "string" && newSettings.timezone.length) {
-        patch.timezone_source = "manual";
-        patch.timezone_updated_at = new Date().toISOString();
+      if (typeof newSettings.email === "string") updates.email = newSettings.email;
+      if (typeof newSettings.phone === "string") updates.phone = newSettings.phone;
+      if (typeof newSettings.language === "string") updates.language = newSettings.language;
+
+      if (Object.keys(updates).length > 1) {
+        const { error } = await supabase.from("profiles").update(updates as any).eq("user_id", user.id);
+        if (error) throw error;
       }
 
-      const { error } = await supabase
-        .from('profiles')
-        .update(patch)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
-      setAccountSettings(prev => ({ ...prev, ...newSettings }));
-      toast.success('Account settings updated successfully');
+      setAccountSettings(nextState);
+      toast.success("Account settings updated successfully");
     } catch (error: any) {
-      console.error('Error updating account settings:', error);
-      toast.error('Failed to update account settings');
+      console.error("Error updating account settings:", error);
+      toast.error(error?.message || "Failed to update account settings");
     } finally {
       setSaving(false);
     }
@@ -179,20 +177,20 @@ export const useSettings = () => {
       const updatedNotifications = { ...notifications, ...newSettings };
 
       const { error } = await supabase
-        .from('profiles')
+        .from("profiles")
         .update({
           notification_settings: updatedNotifications,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         } as any)
-        .eq('user_id', user.id);
+        .eq("user_id", user.id);
 
       if (error) throw error;
 
       setNotifications(updatedNotifications);
-      toast.success('Notification preferences updated');
+      toast.success("Notification preferences updated");
     } catch (error: any) {
-      console.error('Error updating notifications:', error);
-      toast.error('Failed to update notification preferences');
+      console.error("Error updating notifications:", error);
+      toast.error("Failed to update notification preferences");
     } finally {
       setSaving(false);
     }
@@ -205,31 +203,26 @@ export const useSettings = () => {
     try {
       setSaving(true);
 
-      const { data: doctorData } = await supabase
-        .from('doctors')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
+      const { data: doctorData } = await supabase.from("doctors").select("id").eq("user_id", user.id).single();
+      if (!doctorData) throw new Error("Doctor profile not found");
 
-      if (!doctorData) throw new Error('Doctor profile not found');
-
-      if (service === 'googleCalendar') {
+      if (service === "googleCalendar") {
         const { error } = await supabase
-          .from('google_calendar_sync')
+          .from("google_calendar_sync")
           .upsert({
             doctor_id: doctorData.id,
             sync_enabled: enabled,
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           } as any);
 
         if (error) throw error;
       }
 
-      setCalendarSync(prev => ({ ...prev, [service]: enabled }));
-      toast.success(`${service} sync ${enabled ? 'enabled' : 'disabled'}`);
+      setCalendarSync((prev) => ({ ...prev, [service]: enabled }));
+      toast.success(`${service} sync ${enabled ? "enabled" : "disabled"}`);
     } catch (error: any) {
-      console.error('Error updating calendar sync:', error);
-      toast.error('Failed to update calendar sync');
+      console.error("Error updating calendar sync:", error);
+      toast.error("Failed to update calendar sync");
     } finally {
       setSaving(false);
     }
@@ -245,20 +238,42 @@ export const useSettings = () => {
       const updatedPrivacy = { ...privacySettings, ...newSettings };
 
       const { error } = await supabase
-        .from('profiles')
+        .from("profiles")
         .update({
           privacy_settings: updatedPrivacy,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         } as any)
-        .eq('user_id', user.id);
+        .eq("user_id", user.id);
 
       if (error) throw error;
 
       setPrivacySettings(updatedPrivacy);
-      toast.success('Privacy settings updated');
+      toast.success("Privacy settings updated");
     } catch (error: any) {
-      console.error('Error updating privacy settings:', error);
-      toast.error('Failed to update privacy settings');
+      console.error("Error updating privacy:", error);
+      toast.error("Failed to update privacy settings");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Change password
+  const changePassword = async (_currentPassword: string, newPassword: string) => {
+    try {
+      setSaving(true);
+
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) throw error;
+
+      toast.success("Password changed successfully");
+      return { success: true };
+    } catch (error: any) {
+      console.error("Error changing password:", error);
+      toast.error("Failed to change password: " + error.message);
+      return { success: false, error: error.message };
     } finally {
       setSaving(false);
     }
@@ -275,5 +290,6 @@ export const useSettings = () => {
     updateNotificationSettings,
     updateCalendarSync,
     updatePrivacySettings,
+    changePassword,
   };
 };
