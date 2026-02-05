@@ -53,9 +53,9 @@
     <!-- Preload critical LCP images - WebP for navbar (FCP), hero logo -->
     <link
       rel="preload"
-      href="/logos/horizontal/docito-horizontal-sm.webp"
+      href="/logos/horizontal/docito-horizontal-md.png"
       as="image"
-      type="image/webp"
+      type="image/png"
       fetchpriority="high"
     />
     <link
@@ -209,16 +209,15 @@
 
     <!-- Instant visual feedback while React loads -->
     <div id="initial-loader" class="initial-loader">
-      <picture>
-        <source srcset="/logos/horizontal/docito-horizontal-sm.webp" type="image/webp" />
         <img
-          src="/logos/horizontal/docito-horizontal-sm.png"
+          src="/logos/horizontal/docito-horizontal-md.png"
           alt="Loading Docito"
           class="loader-logo"
           width="120"
           height="36"
+          fetchpriority="high"
+          decoding="async"
         />
-      </picture>
     </div>
 
     <div id="root"></div>
