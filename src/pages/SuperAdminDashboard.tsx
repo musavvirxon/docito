@@ -42,6 +42,7 @@ import GlobalStaffManagement from "@/components/super-admin/GlobalStaffManagemen
 import ReferralManagement from "@/components/super-admin/ReferralManagement";
 import FacilityVerificationRequestsTable from "@/components/super-admin/FacilityVerificationRequestsTable";
 import SystemLogs from "@/components/super-admin/SystemLogs";
+import DocumentVerificationLookup from "@/components/super-admin/DocumentVerificationLookup";
 import { useTranslation } from "react-i18next";
 
 const SuperAdminLogin = () => {
@@ -255,6 +256,9 @@ const SuperAdminDashboard = () => {
             <FacilityVerificationRequestsTable />
           </div>
         );
+
+      case "documentVerification":
+        return <DocumentVerificationLookup />;
 
       case "doctors":
         return (
