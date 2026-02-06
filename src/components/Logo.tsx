@@ -112,12 +112,12 @@ export const Logo = ({
     height: height || getDefaultDimensions().height
   };
   
-  // Only certain files have webp versions available
+  // For horizontal variant use the md version (300x90) as it's much smaller
+  // than the oversized sm.webp (1920x544). WebP path for 2xl only.
   const getWebPPath = (): string | null => {
     const pngPath = getLogoPath();
-    // Available webp files: horizontal sm, 2xl; icon sizes
+    // Only 2xl horizontal and icon variants have optimized webp
     const webpAvailable = [
-      '/logos/horizontal/docito-horizontal-sm.webp',
       '/logos/horizontal/docito-horizontal-2xl.webp',
     ];
     const webpPath = pngPath.replace('.png', '.webp');

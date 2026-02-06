@@ -49,12 +49,12 @@
     <link rel="preconnect" href="https://gswwpjdtgsxzcsnrxutu.supabase.co" />
     <link rel="preconnect" href="https://gswwpjdtgsxzcsnrxutu.supabase.co" crossorigin />
 
-    <!-- Preload critical LCP images - WebP for navbar (FCP), hero logo -->
+    <!-- Preload critical LCP images - use 2xl WebP for loader (smaller file, same quality) -->
     <link
       rel="preload"
-      href="/logos/horizontal/docito-horizontal-md.png"
+      href="/logos/horizontal/docito-horizontal-2xl.webp"
       as="image"
-      type="image/png"
+      type="image/webp"
       fetchpriority="high"
     />
 
@@ -207,15 +207,22 @@
 
     <!-- Instant visual feedback while React loads -->
     <div id="initial-loader" class="initial-loader">
-        <img
-          src="/logos/horizontal/docito-horizontal-md.png"
-          alt="Loading Docito"
-          class="loader-logo"
-          width="120"
-          height="36"
-          fetchpriority="high"
-          decoding="async"
-        />
+        <picture>
+          <source
+            srcset="/logos/horizontal/docito-horizontal-2xl.webp"
+            type="image/webp"
+            media="(min-width: 1px)"
+          />
+          <img
+            src="/logos/horizontal/docito-horizontal-md.png"
+            alt="Loading Docito"
+            class="loader-logo"
+            width="120"
+            height="36"
+            fetchpriority="high"
+            decoding="async"
+          />
+        </picture>
     </div>
 
     <div id="root"></div>
