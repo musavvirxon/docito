@@ -36,9 +36,9 @@ export const NotificationDropdown = () => {
     // Best-effort mark read (do not block navigation)
     void markRead(notification.id);
 
-    // If an action_url exists, always honor it (works for referrals + other deep links)
-    if (notification.action_url) {
-      openUrl(notification.action_url);
+    // If a related_id exists, use it as a navigation target
+    if (notification.related_id) {
+      openUrl(notification.related_id);
       return;
     }
 
@@ -85,20 +85,20 @@ export const NotificationDropdown = () => {
               <DropdownMenuItem
                 key={notification.id}
                 className={`flex flex-col items-start p-3 cursor-pointer ${
-                  !notification.read_at ? "bg-muted/50" : ""
+                  !notification.is_read ? "bg-muted/50" : ""
                 }`}
                 onClick={() => handleNotificationClick(notification)}
               >
                 <div className="flex items-start justify-between w-full">
                   <div className="flex-1">
                     <p className="font-medium text-sm">{notification.title}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{notification.body}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{notification.message}</p>
                     <p className="text-xs text-muted-foreground mt-1">
                       {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                     </p>
                   </div>
 
-                  {!notification.read_at ? <div className="w-2 h-2 bg-primary rounded-full ml-2 mt-1" /> : null}
+                  {!notification.is_read ? <div className="w-2 h-2 bg-primary rounded-full ml-2 mt-1" /> : null}
                 </div>
               </DropdownMenuItem>
             ))

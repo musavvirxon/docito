@@ -7,7 +7,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 
 export default function NotificationsBell() {
-  const { loading, unreadCount, refetch } = useNotifications({ limit: 25, unreadOnly: false, autoRefreshMs: 0 });
+  const { loading, unreadCount, refetch } = useNotifications({ limit: 25, unreadOnly: false });
 
   useRealtimeNotifications({
     enabled: true,

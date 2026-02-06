@@ -38,7 +38,9 @@ import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { searchReceivers, getEstimatedDuration } from '@/lib/api/referral-api';
-import type { ReferralEntityType, ReferralType, CreateReferralInput, ReferralScope } from '@/hooks/useReferrals';
+import type { ReferralEntityType, ReferralType, CreateReferralInput } from '@/hooks/useReferrals';
+
+type ReferralScope = 'general' | 'specific';
 
 const receiverEntityTypes = ['doctor', 'clinic', 'lab', 'imaging_center', 'pharmacy'] as const;
 
@@ -292,18 +294,12 @@ export const CreateReferralDialog = ({
 
       await onSubmit({
         patient_id: data.patient_id,
-        receiver_type: data.receiver_type,
+        receiver_type: data.receiver_type as ReferralEntityType,
         receiver_entity_id:
           scope === 'specific' ? data.receiver_entity_id?.trim() || undefined : undefined,
 
         referral_scope: scope,
-        target_field: scope === 'general' ? data.target_field?.trim() || undefined : undefined,
-        target_details:
-          scope === 'general'
-            ? data.target_details_text?.trim()
-              ? { details: data.target_details_text.trim() }
-              : {}
-            : undefined,
+        target_field: (scope === 'general' ? data.target_field?.trim() || undefined : undefined) as ReferralEntityType | undefined,
 
         referral_type: data.referral_type,
         priority: data.priority,

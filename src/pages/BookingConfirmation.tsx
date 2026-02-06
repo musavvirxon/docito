@@ -153,17 +153,18 @@ export default function BookingConfirmation() {
 
     // If practice join is missing for any reason, best-effort load practice (non-blocking)
     if (!d?.practices && practiceId) {
-      supabase
-        .from("practices")
-        .select("name,address,city,country")
-        .eq("id", practiceId)
-        .maybeSingle()
-        .then(({ data }) => {
-          if (data) {
-            setDoctorInfo((prev) => ({ ...(prev || { id: doctorId }), practices: data } as any));
-          }
-        })
-        .catch(() => {});
+      Promise.resolve(
+        supabase
+          .from("practices")
+          .select("name,address,city,country")
+          .eq("id", practiceId)
+          .maybeSingle()
+          .then(({ data }) => {
+            if (data) {
+              setDoctorInfo((prev) => ({ ...(prev || { id: doctorId }), practices: data } as any));
+            }
+          })
+      ).catch(() => {});
     }
   }, []);
 

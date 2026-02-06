@@ -247,11 +247,9 @@ export default function PatientDashboard() {
                   {upcoming.slice(0, 3).map((a: any) => {
                     const doctorTz = timeZonesByUserId[a?.doctor?.user_id || a?.doctor_user_id] || viewerTimeZone;
                     const formatted = formatAppointmentForViewer({
-                      appointmentDate: a.appointment_date,
-                      startTime: a.start_time,
-                      endTime: a.end_time,
+                      appt: { appointment_date: a.appointment_date, start_time: a.start_time, end_time: a.end_time },
+                      sourceTimeZone: doctorTz,
                       viewerTimeZone,
-                      providerTimeZone: doctorTz,
                     });
 
                     return (
@@ -352,11 +350,9 @@ export default function PatientDashboard() {
                     {upcoming.map((a: any) => {
                       const doctorTz = timeZonesByUserId[a?.doctor?.user_id || a?.doctor_user_id] || viewerTimeZone;
                       const formatted = formatAppointmentForViewer({
-                        appointmentDate: a.appointment_date,
-                        startTime: a.start_time,
-                        endTime: a.end_time,
+                        appt: { appointment_date: a.appointment_date, start_time: a.start_time, end_time: a.end_time },
+                        sourceTimeZone: doctorTz,
                         viewerTimeZone,
-                        providerTimeZone: doctorTz,
                       });
 
                       return (
@@ -415,11 +411,9 @@ export default function PatientDashboard() {
                     {past.map((a: any) => {
                       const doctorTz = timeZonesByUserId[a?.doctor?.user_id || a?.doctor_user_id] || viewerTimeZone;
                       const formatted = formatAppointmentForViewer({
-                        appointmentDate: a.appointment_date,
-                        startTime: a.start_time,
-                        endTime: a.end_time,
+                        appt: { appointment_date: a.appointment_date, start_time: a.start_time, end_time: a.end_time },
+                        sourceTimeZone: doctorTz,
                         viewerTimeZone,
-                        providerTimeZone: doctorTz,
                       });
 
                       return (
