@@ -49,10 +49,10 @@ export default defineConfig(({ mode }) => ({
     target: 'esnext',
     // Generate source maps for debugging in production
     sourcemap: true,
-    // Disable modulepreload polyfill - all modern browsers support it natively
-    modulePreload: {
-      polyfill: false,
-    },
+    // Disable modulepreload entirely - prevents browser from eagerly downloading
+    // all dynamically-imported chunks (vendor-export, vendor-recharts, etc.)
+    // Chunks will load on-demand when actually needed via lazy() / dynamic import()
+    modulePreload: false,
     // Increase chunk size limit to reduce number of chunks
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
