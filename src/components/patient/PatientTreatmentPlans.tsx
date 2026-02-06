@@ -22,8 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+// jsPDF and autoTable are dynamically imported when needed to reduce initial bundle size
 
 interface TreatmentPlanProcedure {
   id: string;
@@ -119,8 +118,10 @@ export const PatientTreatmentPlans = () => {
     await fetchProcedures(plan.id);
   };
 
-  const handleDownloadPDF = (plan: TreatmentPlan) => {
+  const handleDownloadPDF = async (plan: TreatmentPlan) => {
     try {
+      const jsPDF = (await import('jspdf')).default;
+      const autoTable = (await import('jspdf-autotable')).default;
       const doc = new jsPDF();
       
       // Title
