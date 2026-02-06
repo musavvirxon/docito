@@ -21,6 +21,7 @@ import {
   ArrowRightLeft,
   Inbox,
   ShieldCheck,
+  QrCode,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,7 @@ const navItems = [
   { id: "feedback", label: "Feedback Inbox", icon: Inbox },
   { id: "ecosystem", label: "Ecosystem", icon: LayoutGrid },
   { id: "verifications", label: "Verifications", icon: ShieldCheck },
+  { id: "documentVerification", label: "Document Verification", icon: QrCode },
   { id: "doctors", label: "Doctors", icon: Stethoscope },
   { id: "practices", label: "Clinics", icon: Building2 },
   { id: "pharmacies", label: "Pharmacies", icon: Pill },
