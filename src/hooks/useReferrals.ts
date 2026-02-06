@@ -1,4 +1,4 @@
-// src/hooks/useReferrals.ts
+// Path: src/hooks/useReferrals.ts
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,7 +7,6 @@ import { toast } from 'sonner';
 // Types
 export type ReferralEntityType = 'doctor' | 'clinic' | 'lab' | 'imaging_center' | 'pharmacy';
 export type ReferralScope = 'general' | 'specific';
-
 export type ReferralType =
   | 'consultation'
   | 'lab_test'
@@ -15,9 +14,7 @@ export type ReferralType =
   | 'prescription_fulfillment'
   | 'follow_up_care'
   | 'specialist_referral';
-
 export type ReferralPriority = 'routine' | 'urgent' | 'stat';
-
 export type ReferralStatus =
   | 'draft'
   | 'sent'
@@ -33,64 +30,48 @@ export type ReferralStatus =
 export interface Referral {
   id: string;
   referral_number: string;
+  patient_id: string;
 
-  // Patient identity
-  patient_id: string | null;
-
-  // Walk-in snapshot fields (existing in DB via 20260113000100_walkin_patient_support.sql)
-  patient_snapshot_full_name?: string | null;
-  patient_snapshot_phone?: string | null;
-  patient_snapshot_email?: string | null;
-  patient_snapshot_dob?: string | null;
-  patient_snapshot_gender?: string | null;
-  patient_snapshot_address?: string | null;
-  patient_snapshot_id_number?: string | null;
-  external_patient_ref?: string | null;
-
-  // Referral scope (general vs specific)
-  scope?: ReferralScope | null;
-  target_specialty_key?: string | null;
-  target_service_label?: string | null;
-
-  // Verification (existing via phase5 / message1 migration)
-  verification_code?: string | null;
-
-  // Participants
   referrer_type: ReferralEntityType;
   referrer_entity_id: string;
   referrer_user_id: string;
 
   receiver_type: ReferralEntityType;
   receiver_entity_id: string | null;
-  receiver_user_id?: string | null;
+
+  referral_scope?: ReferralScope;
+  target_field?: string | null;
+  target_details?: Record<string, any>;
+  verification_code?: string;
+  receiver_user_id?: string;
 
   referral_type_enum: ReferralType;
   priority: ReferralPriority;
-  status: ReferralStatus | string;
+  status: string;
 
   reason: string;
-  clinical_notes?: string | null;
+  clinical_notes?: string;
 
-  diagnosis_codes?: string[] | null;
+  diagnosis_codes?: string[];
   valid_from: string;
   valid_until: string;
 
-  preferred_date?: string | null;
-  preferred_time_slot?: string | null;
+  preferred_date?: string;
+  preferred_time_slot?: string;
 
   estimated_duration_minutes: number;
 
-  attachments?: any[] | null;
-  sent_at?: string | null;
-  accepted_at?: string | null;
-  accepted_by?: string | null;
-  rejected_at?: string | null;
-  rejected_by?: string | null;
-  rejection_reason?: string | null;
-  completed_at?: string | null;
-  completed_by?: string | null;
-  result_notes?: string | null;
-  result_attachments?: any[] | null;
+  attachments?: any[];
+  sent_at?: string;
+  accepted_at?: string;
+  accepted_by?: string;
+  rejected_at?: string;
+  rejected_by?: string;
+  rejection_reason?: string;
+  completed_at?: string;
+  completed_by?: string;
+  result_notes?: string;
+  result_attachments?: any[];
   created_at: string;
   updated_at: string;
 
@@ -102,11 +83,6 @@ export interface Referral {
   // Legacy fields (still present in DB for backward compatibility)
   referring_doctor_id?: string;
   referred_doctor_id?: string;
-
-  // UI compatibility aliases (some older components check these)
-  patient_name?: string | null;
-  patient_email?: string | null;
-  patient_phone?: string | null;
 }
 
 export interface ReferralSlot {
@@ -141,40 +117,24 @@ export interface ReferralAppointment {
 }
 
 export interface CreateReferralInput {
-  // Patient: registered or walk-in (snapshot)
-  patient_id?: string | null;
-
-  // Walk-in snapshot (preferred keys, match DB)
-  patient_snapshot_full_name?: string | null;
-  patient_snapshot_email?: string | null;
-  patient_snapshot_phone?: string | null;
-  external_patient_ref?: string | null;
-
-  // Back-compat keys (some UI payloads use these)
-  patient_name?: string | null;
-  patient_email?: string | null;
-  patient_phone?: string | null;
-
-  // Receiver and scope
-  scope?: ReferralScope;
+  patient_id: string;
   receiver_type: ReferralEntityType;
-  receiver_entity_id?: string | null; // null for general referrals
+  receiver_entity_id?: string;
 
-  // For general referrals
-  target_specialty_key?: string | null;
-  target_service_label?: string | null;
+  referral_scope?: ReferralScope;
+  target_field?: string;
+  target_details?: Record<string, any>;
 
-  // Core referral content
   referral_type: ReferralType;
   priority?: ReferralPriority;
   reason: string;
-  clinical_notes?: string | null;
-  diagnosis_codes?: string[] | null;
+  clinical_notes?: string;
+  diagnosis_codes?: string[];
   valid_until: string;
-  preferred_date?: string | null;
-  preferred_time_slot?: string | null;
+  preferred_date?: string;
+  preferred_time_slot?: string;
   estimated_duration_minutes?: number;
-  attachments?: any[] | null;
+  attachments?: any[];
 }
 
 type UseReferralsArgs =
@@ -233,7 +193,7 @@ export const useReferrals = (args?: UseReferralsArgs) => {
             email,
             phone
           )
-        `
+        `,
         )
         .order('created_at', { ascending: false });
 
@@ -255,30 +215,15 @@ export const useReferrals = (args?: UseReferralsArgs) => {
         }
       }
 
-      const { data, error: fetchError } = await query;
-      if (fetchError) throw fetchError;
+      const { data, error: queryError } = await query;
 
-      const normalized = ((data || []) as any[]).map((r) => {
-        const patientName =
-          r.patient?.full_name ||
-          r.patient_snapshot_full_name ||
-          r.patient_name ||
-          (r.patient_id ? `${String(r.patient_id).slice(0, 8)}…` : 'Unknown patient');
+      if (queryError) throw queryError;
 
-        return {
-          ...(r as Referral),
-          // UI compatibility aliases (older components rely on these)
-          patient_name: patientName,
-          patient_email: r.patient?.email || r.patient_snapshot_email || r.patient_email || null,
-          patient_phone: r.patient?.phone || r.patient_snapshot_phone || r.patient_phone || null,
-        } as Referral;
-      });
-
-      setReferrals(normalized);
+      setReferrals((data as any[]) || []);
     } catch (err: any) {
       console.error('Error fetching referrals:', err);
       setError(err.message);
-      setReferrals([]);
+      toast.error(err.message || 'Failed to load referrals');
     } finally {
       setLoading(false);
     }
@@ -296,7 +241,11 @@ export const useReferralActions = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  const createReferral = async (input: CreateReferralInput, referrerType: ReferralEntityType, referrerEntityId: string) => {
+  const createReferral = async (
+    input: CreateReferralInput,
+    referrerType: ReferralEntityType,
+    referrerEntityId: string,
+  ) => {
     if (!user) {
       toast.error('You must be logged in to create a referral');
       return { error: 'Not authenticated' };
@@ -309,93 +258,68 @@ export const useReferralActions = () => {
         input.valid_until ||
         new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-      const scope: ReferralScope =
-        input.scope || (input.receiver_entity_id ? 'specific' : 'general');
+      const scope: ReferralScope = input.referral_scope || 'specific';
 
-      // Patient identity
-      const patientId =
-        input.patient_id && input.patient_id !== 'manual' ? input.patient_id : null;
-
-      const snapshotFullName =
-        (input.patient_snapshot_full_name || input.patient_name || '').trim() || null;
-      const snapshotEmail = (input.patient_snapshot_email || input.patient_email || '').trim() || null;
-      const snapshotPhone = (input.patient_snapshot_phone || input.patient_phone || '').trim() || null;
-      const externalPatientRef = (input.external_patient_ref || '').trim() || null;
-
-      if (!patientId && !snapshotFullName) {
-        toast.error('Patient is required');
-        return { error: 'Patient is required' };
+      if (scope === 'specific') {
+        if (!input.receiver_entity_id) {
+          toast.error('Please select a receiver');
+          return { error: 'Missing receiver' };
+        }
+      } else {
+        if (!input.target_field || !input.target_field.trim()) {
+          toast.error('Please specify a target field / specialty');
+          return { error: 'Missing target_field' };
+        }
       }
 
-      const receiverEntityId =
-        scope === 'specific'
-          ? (input.receiver_entity_id || null)
-          : null;
-
-      // If receiver is a doctor AND specific, resolve receiver_user_id up-front
+      // If receiver is a doctor and the referral is specific, resolve receiver_user_id up-front
       let receiverUserId: string | null = null;
-      if (scope === 'specific' && input.receiver_type === 'doctor' && receiverEntityId) {
-        const { data: doc, error: docErr } = await supabase
+      if (scope === 'specific' && input.receiver_type === 'doctor' && input.receiver_entity_id) {
+        const { data: doc } = await supabase
           .from('doctors')
           .select('user_id')
-          .eq('id', receiverEntityId)
+          .eq('id', input.receiver_entity_id)
           .maybeSingle();
-        if (docErr) throw docErr;
         receiverUserId = (doc as any)?.user_id ?? null;
       }
 
-      const insertRow: any = {
-        // Patient
-        patient_id: patientId,
-        patient_snapshot_full_name: patientId ? null : snapshotFullName,
-        patient_snapshot_email: patientId ? null : snapshotEmail,
-        patient_snapshot_phone: patientId ? null : snapshotPhone,
-        external_patient_ref: externalPatientRef,
-
-        // Referrer (entity creating)
+      const insertPayload: any = {
+        patient_id: input.patient_id,
         referrer_type: referrerType,
         referrer_entity_id: referrerEntityId,
         referrer_user_id: user.id,
 
-        // Receiver (may be null for general)
         receiver_type: input.receiver_type,
-        receiver_entity_id: receiverEntityId,
-        receiver_user_id: receiverUserId,
+        receiver_entity_id: scope === 'specific' ? input.receiver_entity_id : null,
+        receiver_user_id: scope === 'specific' ? receiverUserId : null,
 
-        // Scope + targeting
-        scope,
-        target_specialty_key:
-          scope === 'general' && (input.receiver_type === 'doctor' || input.receiver_type === 'clinic')
-            ? (input.target_specialty_key || null)
-            : null,
-        target_service_label:
-          scope === 'general' && !(input.receiver_type === 'doctor' || input.receiver_type === 'clinic')
-            ? (input.target_service_label || null)
-            : null,
+        referral_scope: scope,
+        target_field: scope === 'general' ? input.target_field?.trim() : null,
+        target_details: scope === 'general' ? input.target_details || {} : {},
 
-        // Core content
         referral_type_enum: input.referral_type,
         priority: input.priority || 'routine',
         status: 'draft',
         reason: input.reason,
-        clinical_notes: input.clinical_notes ?? null,
-        diagnosis_codes: input.diagnosis_codes ?? null,
+        clinical_notes: input.clinical_notes,
+        diagnosis_codes: input.diagnosis_codes,
         valid_from: new Date().toISOString().split('T')[0],
         valid_until: validUntil,
-        preferred_date: input.preferred_date ?? null,
-        preferred_time_slot: input.preferred_time_slot ?? null,
+        preferred_date: input.preferred_date,
+        preferred_time_slot: input.preferred_time_slot,
         estimated_duration_minutes: input.estimated_duration_minutes || 30,
         attachments: input.attachments || [],
       };
 
-      const { data, error } = await supabase.from('referrals').insert(insertRow).select().single();
+      const { data, error } = await supabase.from('referrals').insert(insertPayload).select().single();
+
       if (error) throw error;
 
       toast.success('Referral created successfully');
       return { data, success: true };
     } catch (err: any) {
       console.error('Error creating referral:', err);
-      toast.error(err.message || 'Failed to create a referral');
+      toast.error(err.message || 'Failed to create referral');
       return { error: err.message };
     } finally {
       setLoading(false);
@@ -419,7 +343,7 @@ export const useReferralActions = () => {
       await supabase.rpc('log_referral_action', {
         p_referral_id: referralId,
         p_action: 'sent',
-        p_notes: 'Referral sent to receiver/patient',
+        p_notes: 'Referral sent to receiver',
       });
 
       toast.success('Referral sent successfully');
@@ -433,31 +357,19 @@ export const useReferralActions = () => {
     }
   };
 
-  const acceptReferral = async (referralId: string) => {
-    if (!user) return { error: 'Not authenticated' };
-
+  const acceptReferral = async (referralId: string, receiverUserId?: string) => {
     try {
       setLoading(true);
 
-      // Ensure receiver_user_id is set when receiver accepts (very important for non-doctor entities)
-      const { data: current, error: readErr } = await supabase
+      const { error } = await supabase
         .from('referrals')
-        .select('id, receiver_user_id')
-        .eq('id', referralId)
-        .single();
-      if (readErr) throw readErr;
+        .update({
+          status: 'accepted',
+          accepted_at: new Date().toISOString(),
+          accepted_by: receiverUserId || user?.id,
+        })
+        .eq('id', referralId);
 
-      const patch: any = {
-        status: 'accepted',
-        accepted_at: new Date().toISOString(),
-        accepted_by: user.id,
-      };
-
-      if (!current.receiver_user_id) {
-        patch.receiver_user_id = user.id;
-      }
-
-      const { error } = await supabase.from('referrals').update(patch).eq('id', referralId);
       if (error) throw error;
 
       await supabase.rpc('log_referral_action', {
@@ -477,37 +389,26 @@ export const useReferralActions = () => {
     }
   };
 
-  const rejectReferral = async (referralId: string, reason: string) => {
-    if (!user) return { error: 'Not authenticated' };
-
+  const rejectReferral = async (referralId: string, reason: string, receiverUserId?: string) => {
     try {
       setLoading(true);
 
-      const { data: current, error: readErr } = await supabase
+      const { error } = await supabase
         .from('referrals')
-        .select('id, receiver_user_id')
-        .eq('id', referralId)
-        .single();
-      if (readErr) throw readErr;
+        .update({
+          status: 'rejected',
+          rejected_at: new Date().toISOString(),
+          rejected_by: receiverUserId || user?.id,
+          rejection_reason: reason,
+        })
+        .eq('id', referralId);
 
-      const patch: any = {
-        status: 'rejected',
-        rejected_at: new Date().toISOString(),
-        rejected_by: user.id,
-        rejection_reason: reason,
-      };
-
-      if (!current.receiver_user_id) {
-        patch.receiver_user_id = user.id;
-      }
-
-      const { error } = await supabase.from('referrals').update(patch).eq('id', referralId);
       if (error) throw error;
 
       await supabase.rpc('log_referral_action', {
         p_referral_id: referralId,
         p_action: 'rejected',
-        p_notes: `Referral rejected: ${reason}`,
+        p_notes: reason,
       });
 
       toast.success('Referral rejected');
@@ -521,38 +422,135 @@ export const useReferralActions = () => {
     }
   };
 
-  const completeReferral = async (referralId: string, resultNotes?: string, resultAttachments?: any[]) => {
-    if (!user) return { error: 'Not authenticated' };
+  const publishSlots = async (referralId: string) => {
+    try {
+      setLoading(true);
+
+      const { error } = await supabase
+        .from('referrals')
+        .update({
+          status: 'slots_available',
+        })
+        .eq('id', referralId);
+
+      if (error) throw error;
+
+      await supabase.rpc('log_referral_action', {
+        p_referral_id: referralId,
+        p_action: 'slots_available',
+        p_notes: 'Receiver published available slots',
+      });
+
+      toast.success('Slots published');
+      return { success: true };
+    } catch (err: any) {
+      console.error('Error publishing slots:', err);
+      toast.error(err.message || 'Failed to publish slots');
+      return { error: err.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const bookReferralSlot = async (referralId: string, slotId: string) => {
+    if (!user) {
+      toast.error('You must be logged in to book an appointment');
+      return { error: 'Not authenticated' };
+    }
 
     try {
       setLoading(true);
 
-      const { data: current, error: readErr } = await supabase
-        .from('referrals')
-        .select('id, receiver_user_id')
-        .eq('id', referralId)
+      // Get slot details
+      const { data: slot, error: slotError } = await supabase
+        .from('referral_slots')
+        .select('*')
+        .eq('id', slotId)
         .single();
-      if (readErr) throw readErr;
 
-      const patch: any = {
-        status: 'completed',
-        completed_at: new Date().toISOString(),
-        completed_by: user.id,
-        result_notes: resultNotes,
-        result_attachments: resultAttachments || [],
-      };
+      if (slotError) throw slotError;
 
-      if (!current.receiver_user_id) {
-        patch.receiver_user_id = user.id;
-      }
+      // Create appointment record
+      const { data: appointment, error: appointmentError } = await supabase
+        .from('referral_appointments')
+        .insert({
+          referral_id: referralId,
+          referral_slot_id: slotId,
+          appointment_date: slot.slot_date,
+          start_time: slot.start_time,
+          end_time: slot.end_time,
+          status: 'booked',
+          booked_at: new Date().toISOString(),
+          booked_by: user.id,
+        })
+        .select()
+        .single();
 
-      const { error } = await supabase.from('referrals').update(patch).eq('id', referralId);
+      if (appointmentError) throw appointmentError;
+
+      // Mark slot as reserved
+      const { error: reserveError } = await supabase
+        .from('referral_slots')
+        .update({
+          is_reserved: true,
+          is_available: false,
+          reserved_at: new Date().toISOString(),
+          reserved_by: user.id,
+        })
+        .eq('id', slotId);
+
+      if (reserveError) throw reserveError;
+
+      // Update referral status
+      const { error: updateError } = await supabase
+        .from('referrals')
+        .update({
+          status: 'booked',
+          preferred_date: slot.slot_date,
+          preferred_time_slot: `${slot.start_time}-${slot.end_time}`,
+        })
+        .eq('id', referralId);
+
+      if (updateError) throw updateError;
+
+      await supabase.rpc('log_referral_action', {
+        p_referral_id: referralId,
+        p_action: 'booked',
+        p_notes: `Appointment booked for ${slot.slot_date} ${slot.start_time}-${slot.end_time}`,
+      });
+
+      toast.success('Appointment booked successfully');
+      return { success: true, data: appointment };
+    } catch (err: any) {
+      console.error('Error booking slot:', err);
+      toast.error(err.message || 'Failed to book appointment');
+      return { error: err.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const completeReferral = async (referralId: string, resultNotes?: string, resultAttachments?: any[]) => {
+    try {
+      setLoading(true);
+
+      const { error } = await supabase
+        .from('referrals')
+        .update({
+          status: 'completed',
+          completed_at: new Date().toISOString(),
+          completed_by: user?.id,
+          result_notes: resultNotes,
+          result_attachments: resultAttachments || [],
+        })
+        .eq('id', referralId);
+
       if (error) throw error;
 
       await supabase.rpc('log_referral_action', {
         p_referral_id: referralId,
         p_action: 'completed',
-        p_notes: 'Referral completed',
+        p_notes: resultNotes || 'Referral completed',
       });
 
       toast.success('Referral completed');
@@ -566,17 +564,23 @@ export const useReferralActions = () => {
     }
   };
 
-  const cancelReferral = async (referralId: string, reason?: string) => {
+  const cancelReferral = async (referralId: string) => {
     try {
       setLoading(true);
 
-      const { error } = await supabase.from('referrals').update({ status: 'cancelled' }).eq('id', referralId);
+      const { error } = await supabase
+        .from('referrals')
+        .update({
+          status: 'cancelled',
+        })
+        .eq('id', referralId);
+
       if (error) throw error;
 
       await supabase.rpc('log_referral_action', {
         p_referral_id: referralId,
         p_action: 'cancelled',
-        p_notes: reason || 'Referral cancelled',
+        p_notes: 'Referral cancelled',
       });
 
       toast.success('Referral cancelled');
@@ -596,36 +600,39 @@ export const useReferralActions = () => {
     sendReferral,
     acceptReferral,
     rejectReferral,
+    publishSlots,
+    bookReferralSlot,
     completeReferral,
     cancelReferral,
   };
 };
 
-// Hook for referral slots
-export const useReferralSlots = (referralId?: string) => {
+// Hook for managing referral slots
+export const useReferralSlots = (referralId: string) => {
   const [slots, setSlots] = useState<ReferralSlot[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchSlots = useCallback(async () => {
-    if (!referralId) {
-      setSlots([]);
-      return;
-    }
+    if (!referralId) return;
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      setError(null);
+
+      const { data, error: queryError } = await supabase
         .from('referral_slots')
         .select('*')
         .eq('referral_id', referralId)
-        .eq('is_available', true)
-        .order('slot_date')
-        .order('start_time');
+        .order('slot_date', { ascending: true })
+        .order('start_time', { ascending: true });
 
-      if (error) throw error;
-      setSlots(data || []);
+      if (queryError) throw queryError;
+
+      setSlots((data as any[]) || []);
     } catch (err: any) {
       console.error('Error fetching referral slots:', err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -635,108 +642,43 @@ export const useReferralSlots = (referralId?: string) => {
     fetchSlots();
   }, [fetchSlots]);
 
-  const createSlots = async (
-    referralId: string,
-    slotsData: Omit<ReferralSlot, 'id' | 'referral_id' | 'created_at' | 'is_available' | 'is_reserved'>[]
-  ) => {
-    try {
-      setLoading(true);
-
-      const { error } = await supabase.from('referral_slots').insert(
-        slotsData.map((slot) => ({
-          referral_id: referralId,
-          slot_date: slot.slot_date,
-          start_time: slot.start_time,
-          end_time: slot.end_time,
-          notes: slot.notes,
-        }))
-      );
-
-      if (error) throw error;
-
-      toast.success('Slots published');
-
-      await supabase.rpc('log_referral_action', {
-        p_referral_id: referralId,
-        p_action: 'slots_published',
-        p_notes: 'Receiver published available time slots',
-      });
-
-      return { success: true };
-    } catch (err: any) {
-      console.error('Error creating slots:', err);
-      toast.error(err.message || 'Failed to publish slots');
-      return { error: err.message };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { slots, loading, refetch: fetchSlots, createSlots };
+  return { slots, loading, error, refetch: fetchSlots };
 };
 
-// Hook for booking appointments via referral slots
-export const useReferralAppointments = (referralId?: string) => {
-  const { user } = useAuth();
-  const [loading, setLoading] = useState(false);
+// Hook for managing referral appointments
+export const useReferralAppointments = (referralId: string) => {
+  const [appointments, setAppointments] = useState<ReferralAppointment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const bookAppointment = async (referralId: string, slotId: string, appointmentData: any) => {
-    if (!user) {
-      toast.error('You must be logged in to book');
-      return { error: 'Not authenticated' };
-    }
+  const fetchAppointments = useCallback(async () => {
+    if (!referralId) return;
 
     try {
       setLoading(true);
+      setError(null);
 
-      const { data: slot, error: slotErr } = await supabase.from('referral_slots').select('*').eq('id', slotId).single();
-      if (slotErr) throw slotErr;
+      const { data, error: queryError } = await supabase
+        .from('referral_appointments')
+        .select('*')
+        .eq('referral_id', referralId)
+        .order('appointment_date', { ascending: true })
+        .order('start_time', { ascending: true });
 
-      if (!slot.is_available || slot.is_reserved) {
-        toast.error('This slot is no longer available');
-        return { error: 'Slot not available' };
-      }
+      if (queryError) throw queryError;
 
-      const { error: reserveErr } = await supabase
-        .from('referral_slots')
-        .update({
-          is_reserved: true,
-          reserved_at: new Date().toISOString(),
-          reserved_by: user.id,
-        })
-        .eq('id', slotId);
-      if (reserveErr) throw reserveErr;
-
-      const { error: apptErr } = await supabase.from('referral_appointments').insert({
-        referral_id: referralId,
-        referral_slot_id: slotId,
-        appointment_date: slot.slot_date,
-        start_time: slot.start_time,
-        end_time: slot.end_time,
-        status: 'scheduled',
-        booked_by: user.id,
-        notes: appointmentData?.notes,
-      });
-      if (apptErr) throw apptErr;
-
-      await supabase.from('referrals').update({ status: 'booked' }).eq('id', referralId);
-
-      await supabase.rpc('log_referral_action', {
-        p_referral_id: referralId,
-        p_action: 'booked',
-        p_notes: 'Patient booked a slot',
-      });
-
-      toast.success('Appointment booked');
-      return { success: true };
+      setAppointments((data as any[]) || []);
     } catch (err: any) {
-      console.error('Error booking appointment:', err);
-      toast.error(err.message || 'Failed to book');
-      return { error: err.message };
+      console.error('Error fetching referral appointments:', err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [referralId]);
 
-  return { loading, bookAppointment };
+  useEffect(() => {
+    fetchAppointments();
+  }, [fetchAppointments]);
+
+  return { appointments, loading, error, refetch: fetchAppointments };
 };
