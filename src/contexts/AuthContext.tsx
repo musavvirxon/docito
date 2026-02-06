@@ -131,7 +131,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchRoleStatus = async (userId: string) => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("role_verifications")
         .select("role,status")
         .eq("user_id", userId);
@@ -150,9 +150,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Inactivity timer (kept as-is)
   const { showWarning, countdown, stayLoggedIn } = useInactivityTimer({
     enabled: Boolean(session),
-    warningSeconds: 60,
-    timeoutSeconds: 15 * 60,
-    onTimeout: async () => {
+    inactivityTime: 15 * 60 * 1000, // 15 minutes
+    warningTime: 60 * 1000, // 1 minute
+    onInactive: async () => {
       await supabase.auth.signOut();
       toast.info("Signed out due to inactivity.");
     },

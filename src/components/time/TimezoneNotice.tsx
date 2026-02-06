@@ -11,7 +11,7 @@ interface TimezoneNoticeProps {
 }
 
 export function TimezoneNotice({ timezone, className, prefix = 'Times shown in' }: TimezoneNoticeProps) {
-  const offsetLabel = getGmtOffsetLabel(new Date(), timezone);
+  const offsetLabel = getGmtOffsetLabel(timezone);
 
   return (
     <Badge variant="outline" className={cn('text-xs font-normal', className)}>

@@ -55,17 +55,32 @@ function extractRequestedProcedureId(notes: string | null | undefined): string |
   return m?.[1] ? String(m[1]) : null;
 }
 
-async function fetchHold(service: ReturnType<typeof createClient>, holdId: string) {
+interface HoldData {
+  id: string;
+  patient_id: string | null;
+  doctor_patient_id: string | null;
+  doctor_id: string;
+  practice_id: string | null;
+  start_at: string;
+  end_at: string;
+  appointment_type: string | null;
+  notes: string | null;
+  status: string;
+  expires_at: string;
+  procedure_id?: string | null;
+}
+
+async function fetchHold(service: any, holdId: string): Promise<{ data: HoldData | null; error: any }> {
   const baseFields =
     "id, patient_id, doctor_patient_id, doctor_id, practice_id, start_at, end_at, appointment_type, notes, status, expires_at";
   const withProc = `${baseFields}, procedure_id`;
 
   // Try selecting with procedure_id first; fallback if column doesn't exist.
-  let res = await service.from("appointment_holds").select(withProc).eq("id", holdId).maybeSingle();
+  let res = await (service as any).from("appointment_holds").select(withProc).eq("id", holdId).maybeSingle();
   if (res.error && String(res.error.message || "").toLowerCase().includes("procedure_id")) {
-    res = await service.from("appointment_holds").select(baseFields).eq("id", holdId).maybeSingle();
+    res = await (service as any).from("appointment_holds").select(baseFields).eq("id", holdId).maybeSingle();
   }
-  return res;
+  return res as { data: HoldData | null; error: any };
 }
 
 async function insertAppointmentWithFallback(
@@ -127,9 +142,14 @@ serve(async (req) => {
 
     if (!body.hold_id) return json({ ok: false, error: "Missing hold_id" }, 400);
 
-    const service = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+    const service = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } }) as any;
 
-    await service.rpc("cleanup_expired_appointment_holds").catch(() => {});
+    // Cleanup expired holds (fire-and-forget, ignore errors)
+    try {
+      await service.rpc("cleanup_expired_appointment_holds");
+    } catch {
+      // Ignore cleanup errors
+    }
 
     const { data: hold, error: holdErr } = await fetchHold(service, body.hold_id);
 

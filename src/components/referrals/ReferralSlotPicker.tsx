@@ -97,14 +97,14 @@ export const ReferralSlotPicker = ({
         } else if (referral.receiver_entity_id) {
           const mapped = receiverEntityTypeMap[referral.receiver_type];
           if (mapped) {
-            const { data: entityRow, error: entityErr } = await supabase
+            const { data: entityRow, error: entityErr } = await (supabase as any)
               .from('entity_settings')
               .select('timezone')
               .eq('entity_type', mapped)
               .eq('entity_id', referral.receiver_entity_id)
               .maybeSingle();
             if (entityErr) throw entityErr;
-            tz = entityRow?.timezone;
+            tz = (entityRow as any)?.timezone;
           }
         }
 
