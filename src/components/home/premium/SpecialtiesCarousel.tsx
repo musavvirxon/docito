@@ -56,6 +56,9 @@ export default function SpecialtiesCarousel() {
   const cachedScrollWidthRef = useRef(0);
   const scrollPosRef = useRef(0);
 
+  // Memoize duplicated list for infinite scroll effect
+  const allSpecialties = [...specialties, ...specialties];
+
   useEffect(() => {
     const scrollContainer = scrollRef.current;
     if (!scrollContainer) return;
@@ -64,51 +67,27 @@ export default function SpecialtiesCarousel() {
     if (prefersReducedMotion) return;
 
     let animationId: number;
-    let initRafId: number;
     let isInitialized = false;
     const speed = 0.15;
 
-    // Cache scrollWidth using requestIdleCallback to avoid forced reflow
+    // Calculate scroll width from known item dimensions to completely avoid forced reflow
+    // Each item: w-44 (176px) + gap-6 (24px) = 200px per item, doubled for the duplicate set
+    const estimatedScrollWidth = allSpecialties.length * 200;
+    cachedScrollWidthRef.current = estimatedScrollWidth;
+
+    // Cache scrollWidth using requestIdleCallback for accuracy update (non-blocking)
     const cacheScrollWidth = () => {
       if ('requestIdleCallback' in window) {
         (window as Window).requestIdleCallback(() => {
           if (scrollContainer) {
             cachedScrollWidthRef.current = scrollContainer.scrollWidth;
           }
-        }, { timeout: 100 });
-      } else {
-        // Fallback: use double-rAF to batch layout reads
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            if (scrollContainer) {
-              cachedScrollWidthRef.current = scrollContainer.scrollWidth;
-            }
-          });
-        });
+        }, { timeout: 500 });
       }
     };
      
-    // Defer initial layout read using requestIdleCallback to completely avoid forced reflow
-    if ('requestIdleCallback' in window) {
-      (window as Window).requestIdleCallback(() => {
-        if (scrollContainer) {
-          cachedScrollWidthRef.current = scrollContainer.scrollWidth;
-          scrollPosRef.current = scrollContainer.scrollLeft;
-          isInitialized = true;
-        }
-      }, { timeout: 200 });
-    } else {
-      // Fallback: defer to next frame
-      initRafId = requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (scrollContainer) {
-            cachedScrollWidthRef.current = scrollContainer.scrollWidth;
-            scrollPosRef.current = scrollContainer.scrollLeft;
-            isInitialized = true;
-          }
-        });
-      });
-    }
+    // Defer accuracy correction to idle time - don't block initial render
+    cacheScrollWidth();
 
     const smoothAutoScroll = () => {
       if (scrollContainer && !isPausedRef.current && isInitialized) {
@@ -157,23 +136,23 @@ export default function SpecialtiesCarousel() {
     scrollContainer.addEventListener('mouseleave', handleMouseLeave);
     scrollContainer.addEventListener('wheel', handleWheel, { passive: false });
     
-    // Start animation after a short delay to let initial layout settle
-    setTimeout(() => {
+    // Start animation after a longer delay to ensure page is fully rendered
+    // This prevents any forced reflow during initial paint
+    const startTimer = setTimeout(() => {
       isInitialized = true;
       animationId = requestAnimationFrame(smoothAutoScroll);
-    }, 100);
+    }, 500);
 
     return () => {
+      clearTimeout(startTimer);
       cancelAnimationFrame(animationId);
-      cancelAnimationFrame(initRafId);
       resizeObserver.disconnect();
       scrollContainer.removeEventListener('mouseenter', handleMouseEnter);
       scrollContainer.removeEventListener('mouseleave', handleMouseLeave);
       scrollContainer.removeEventListener('wheel', handleWheel);
     };
-  }, [prefersReducedMotion]);
+  }, [prefersReducedMotion, allSpecialties.length]);
 
-  const allSpecialties = [...specialties, ...specialties];
 
   return (
     <section className="py-24 bg-gradient-to-b from-background to-muted/30 overflow-hidden">

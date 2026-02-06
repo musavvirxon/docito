@@ -95,19 +95,19 @@ const PremiumTopNav = () => {
       >
         <div className="max-w-[1400px] mx-auto px-4 lg:px-6">
           <div className="flex items-center justify-between h-14">
-            {/* Logo - use picture for WebP with PNG fallback */}
+            {/* Logo - use properly sized PNG to avoid image decode overhead */}
             <Link
               to={getLocalizedPath("/")}
               className="flex items-center hover:opacity-70 transition-opacity duration-200 flex-shrink-0"
             >
               <img
-                src="/logos/horizontal/docito-horizontal-md.png"
+                src="/logos/horizontal/docito-horizontal-sm.png"
                 alt="Docito"
                 className="h-6 w-auto"
                 width={80}
                 height={24}
                 fetchPriority="high"
-                decoding="sync"
+                decoding="async"
                 loading="eager"
                 style={{ aspectRatio: '80/24' }}
               />
