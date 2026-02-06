@@ -1,3 +1,4 @@
+// File: src/components/treatment/EnhancedTreatmentPlanDetailModal.tsx
 import { useState, useEffect, useMemo } from "react";
 import {
   Plus,
@@ -9,6 +10,7 @@ import {
   Pill,
   Send,
   Save,
+  Download,
 } from "lucide-react";
 import {
   Dialog,
@@ -41,6 +43,8 @@ import AddProcedureToPlanModal from "./AddProcedureToPlanModal";
 import MedicationManagementModal from "./MedicationManagementModal";
 import TreatmentPlanTemplatesModal from "./TreatmentPlanTemplatesModal";
 import FileAttachmentSection from "@/components/files/FileAttachmentSection";
+import { useTranslation } from "react-i18next";
+import { downloadTreatmentPlanPdf } from "@/lib/api/treatment-plan-api";
 
 interface TreatmentPlan {
   id: string;
@@ -54,6 +58,7 @@ interface TreatmentPlan {
   estimated_duration_weeks?: number;
   estimated_completion_date?: string;
   priority?: string;
+  verification_code?: string | null;
 }
 
 interface TreatmentPlanProcedure {
@@ -106,6 +111,7 @@ const EnhancedTreatmentPlanDetailModal = ({
   treatmentPlan,
   onUpdate,
 }: EnhancedTreatmentPlanDetailModalProps) => {
+  const { i18n } = useTranslation();
   const [procedures, setProcedures] = useState<TreatmentPlanProcedure[]>([]);
   const [medications, setMedications] = useState<Medication[]>([]);
   const [showAddProcedureModal, setShowAddProcedureModal] = useState(false);
@@ -205,6 +211,26 @@ const EnhancedTreatmentPlanDetailModal = ({
     }
   };
 
+  const handleDownloadPdf = async () => {
+    toast.loading("Generating PDF...", { id: "tp-pdf" });
+    try {
+      const locale = (i18n.language || "en").toLowerCase();
+      const code = (treatmentPlan.verification_code || treatmentPlan.id || "").slice(0, 18);
+      const fileName = code ? `treatment-plan_${code}.pdf` : `treatment-plan_${treatmentPlan.id}.pdf`;
+
+      await downloadTreatmentPlanPdf({
+        treatmentPlanId: treatmentPlan.id,
+        locale,
+        fileName,
+      });
+
+      toast.success("PDF downloaded successfully", { id: "tp-pdf" });
+    } catch (error: any) {
+      console.error("Download treatment plan PDF error:", error);
+      toast.error("Failed to download PDF", { id: "tp-pdf" });
+    }
+  };
+
   const checkConsentStatus = async () => {
     try {
       const { data, error } = await supabase
@@ -258,6 +284,7 @@ const EnhancedTreatmentPlanDetailModal = ({
       return new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
+        currencyDisplay: "symbol",
       }).format(amount);
     } catch {
       return `$${amount.toFixed(2)}`;
@@ -458,6 +485,15 @@ const EnhancedTreatmentPlanDetailModal = ({
                     >
                       <Save className="w-4 h-4" />
                       Save as Template
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      onClick={handleDownloadPdf}
+                      className="flex items-center gap-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      Download PDF
                     </Button>
                   </div>
                 </CardContent>
