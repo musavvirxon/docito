@@ -1,4 +1,6 @@
-import { useState } from 'react';
+// File: src/components/referrals/ReferralCard.tsx
+
+import { useEffect, useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import {
   ArrowRight,
@@ -13,8 +15,10 @@ import {
   Building2,
   TestTube,
   Scan,
-  Pill
+  Pill,
+  ArrowUpRight
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -30,7 +34,10 @@ import {
   getReferralStatusColor,
   getReferralTypeLabel,
   getEntityTypeLabel,
-  isReferralValid
+  isReferralValid,
+  getReferralTargetLabel,
+  getReferralPatientDisplayName,
+  getEntityName,
 } from '@/lib/api/referral-api';
 
 interface ReferralCardProps {
@@ -86,27 +93,135 @@ export const ReferralCard = ({
   onPublishSlots,
   onComplete
 }: ReferralCardProps) => {
+  const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [receiverName, setReceiverName] = useState<string>('');
 
   const isValid = isReferralValid(referral);
-  const StatusIcon = getStatusIcon(referral.status);
+  const StatusIcon = getStatusIcon(String(referral.status || ''));
   const ReferrerIcon = getEntityIcon(referral.referrer_type);
   const ReceiverIcon = getEntityIcon(referral.receiver_type);
 
   const priorityVariant = getReferralPriorityColor(referral.priority) as any;
-  const statusVariant = getReferralStatusColor(referral.status) as any;
+  const statusVariant = getReferralStatusColor(String(referral.status || '')) as any;
 
-  const showAcceptReject = role === 'receiver' && referral.status === 'sent';
-  const showPublishSlots = role === 'receiver' && referral.status === 'accepted';
-  const showBookSlot = role === 'patient' && referral.status === 'slots_available';
-  const showComplete = role === 'receiver' && referral.status === 'booked';
+  const scope = useMemo(() => {
+    const rAny = referral as any;
+    const s = (rAny.scope as string | null | undefined) || (referral.receiver_entity_id ? 'specific' : 'general');
+    return (s === 'general' ? 'general' : 'specific') as 'general' | 'specific';
+  }, [referral]);
 
-  // ✅ Walk-in fallback fields live on referral row after migration
-  const rAny = referral as any;
-  const patientName =
-    referral.patient?.full_name ||
-    rAny.patient_name ||
-    (referral.patient_id ? `${String(referral.patient_id).slice(0, 8)}…` : 'Unknown patient');
+  const patientName = useMemo(() => getReferralPatientDisplayName(referral), [referral]);
+  const targetLabel = useMemo(() => getReferralTargetLabel(referral), [referral]);
+
+  const status = String(referral.status || '');
+  const isDeclined = ['rejected', 'cancelled', 'expired'].includes(status);
+  const isFinished = ['completed'].includes(status);
+  const isBookableState = ['sent', 'accepted', 'slots_available'].includes(status);
+
+  const isSpecificDoctor =
+    scope === 'specific' &&
+    referral.receiver_type === 'doctor' &&
+    !!referral.receiver_entity_id;
+
+  const canPatientBookDoctor =
+    role === 'patient' &&
+    isSpecificDoctor &&
+    isValid &&
+    isBookableState &&
+    !isDeclined &&
+    !isFinished &&
+    status !== 'booked' &&
+    status !== 'in_progress';
+
+  const canPatientChooseProvider =
+    role === 'patient' &&
+    scope === 'general' &&
+    isValid &&
+    ['sent', 'accepted'].includes(status) &&
+    !isDeclined &&
+    !isFinished;
+
+  const showAcceptReject = role === 'receiver' && status === 'sent';
+  const showPublishSlots = role === 'receiver' && status === 'accepted';
+
+  // Keep slot booking for non-doctor workflows that explicitly publish slots
+  const showBookSlot = role === 'patient' && status === 'slots_available' && isValid && !isSpecificDoctor;
+
+  const showComplete = role === 'receiver' && status === 'booked';
+
+  useEffect(() => {
+    let mounted = true;
+
+    const run = async () => {
+      if (scope !== 'specific') {
+        if (mounted) setReceiverName('');
+        return;
+      }
+
+      if (!referral.receiver_entity_id) {
+        if (mounted) setReceiverName('');
+        return;
+      }
+
+      try {
+        const n = await getEntityName(referral.receiver_type, referral.receiver_entity_id);
+        if (mounted) setReceiverName(n);
+      } catch {
+        if (mounted) setReceiverName('');
+      }
+    };
+
+    run();
+    return () => {
+      mounted = false;
+    };
+  }, [scope, referral.receiver_type, referral.receiver_entity_id]);
+
+  const receiverDisplay = useMemo(() => {
+    if (scope === 'general') return targetLabel;
+    return receiverName || (referral.receiver_entity_id ? `${String(referral.receiver_entity_id).slice(0, 8)}…` : '—');
+  }, [scope, targetLabel, receiverName, referral.receiver_entity_id]);
+
+  const handlePatientBookDoctor = () => {
+    if (!referral.receiver_entity_id) return;
+    const qs = new URLSearchParams({ referralId: referral.id }).toString();
+    navigate(`/book-appointment/${referral.receiver_entity_id}?${qs}`);
+  };
+
+  const handlePatientChooseProvider = () => {
+    const qsBase = new URLSearchParams({ referralId: referral.id });
+    const rAny = referral as any;
+
+    if (referral.receiver_type === 'doctor') {
+      const specialty = String(rAny.target_specialty_key || '').trim();
+      if (specialty) qsBase.set('specialty', specialty);
+      navigate(`/find-doctors?${qsBase.toString()}`);
+      return;
+    }
+
+    if (referral.receiver_type === 'clinic') {
+      navigate(`/find-practices?${qsBase.toString()}`);
+      return;
+    }
+
+    if (referral.receiver_type === 'lab') {
+      navigate(`/labs?${qsBase.toString()}`);
+      return;
+    }
+
+    if (referral.receiver_type === 'imaging_center') {
+      navigate(`/imaging-centers?${qsBase.toString()}`);
+      return;
+    }
+
+    if (referral.receiver_type === 'pharmacy') {
+      navigate(`/pharmacies?${qsBase.toString()}`);
+      return;
+    }
+
+    navigate(`/patient-dashboard?${qsBase.toString()}`);
+  };
 
   return (
     <Card className="group hover:shadow-md transition-all duration-200 border-border/50">
@@ -132,7 +247,7 @@ export const ReferralCard = ({
             )}
             <Badge variant={statusVariant} className="capitalize">
               <StatusIcon className="h-3 w-3 mr-1" />
-              {referral.status.replace('_', ' ')}
+              {status.replace('_', ' ')}
             </Badge>
           </div>
         </div>
@@ -142,11 +257,14 @@ export const ReferralCard = ({
           <h3 className="font-semibold mt-1">
             {getReferralTypeLabel(referral.referral_type_enum || 'consultation')}
           </h3>
+          <p className="text-xs text-muted-foreground mt-1">
+            <span className="capitalize">{scope}</span> referral • <span className="font-medium">{receiverDisplay}</span>
+          </p>
         </div>
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* ✅ Patient Info always visible (registered OR walk-in) */}
+        {/* Patient Info */}
         <div className="flex items-center gap-2 text-sm">
           <User className="h-4 w-4 text-muted-foreground" />
           <span className="font-medium">Patient:</span>
@@ -184,6 +302,13 @@ export const ReferralCard = ({
 
         {isExpanded && (
           <div className="pt-2 border-t space-y-3">
+            {scope === 'general' && (
+              <div className="text-sm">
+                <span className="text-muted-foreground block mb-1">General Target:</span>
+                <p className="bg-muted/50 p-2 rounded text-sm">{targetLabel}</p>
+              </div>
+            )}
+
             {referral.clinical_notes && (
               <div className="text-sm">
                 <span className="text-muted-foreground block mb-1">Clinical Notes:</span>
@@ -209,6 +334,13 @@ export const ReferralCard = ({
                 <span className="text-muted-foreground">Preferred Date: </span>
                 <span>{format(new Date(referral.preferred_date), 'MMMM d, yyyy')}</span>
                 {referral.preferred_time_slot && <span className="ml-2">at {referral.preferred_time_slot}</span>}
+              </div>
+            )}
+
+            {(referral as any)?.verification_code && (
+              <div className="text-sm">
+                <span className="text-muted-foreground">Verification Code: </span>
+                <span className="font-mono">{(referral as any).verification_code}</span>
               </div>
             )}
           </div>
@@ -246,7 +378,21 @@ export const ReferralCard = ({
               </Button>
             )}
 
-            {showBookSlot && isValid && (
+            {canPatientBookDoctor && (
+              <Button size="sm" onClick={handlePatientBookDoctor}>
+                <Calendar className="h-4 w-4 mr-1" />
+                Book Appointment
+              </Button>
+            )}
+
+            {canPatientChooseProvider && (
+              <Button size="sm" variant="outline" onClick={handlePatientChooseProvider}>
+                <ArrowUpRight className="h-4 w-4 mr-1" />
+                Choose Provider
+              </Button>
+            )}
+
+            {showBookSlot && (
               <Button size="sm" onClick={() => onBookSlot?.(referral)}>
                 <Calendar className="h-4 w-4 mr-1" />
                 Book Appointment
