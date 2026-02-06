@@ -228,13 +228,17 @@
     <div id="root"></div>
 
     <script>
-      // Hide loader immediately when React starts mounting to not block LCP
+      // Hide loader immediately to minimize main-thread blocking
       (function() {
         var loader = document.getElementById('initial-loader');
         if (loader) {
-          // Remove immediately when script loads (React is about to mount)
-          loader.classList.add('hidden');
-          setTimeout(function() { loader.remove(); }, 300);
+          loader.style.display = 'none';
+          // Defer removal to idle time
+          if ('requestIdleCallback' in window) {
+            requestIdleCallback(function() { loader.remove(); });
+          } else {
+            setTimeout(function() { loader.remove(); }, 100);
+          }
         }
       })();
     </script>
