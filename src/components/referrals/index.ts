@@ -1,7 +1,5 @@
-export { ReferralCard } from './ReferralCard';
-export { ReferralList } from './ReferralList';
-export { CreateReferralDialog } from './CreateReferralDialog';
-export { ReferralSlotPicker } from './ReferralSlotPicker';
-export { PublishSlotsDialog } from './PublishSlotsDialog';
-export { ReferralsSection } from './ReferralsSection';
-export { FacilityReferralCreator } from './FacilityReferralCreator';
+// File: src/components/referrals/index.ts
+export * from "./CreateReferralDialog";
+export * from "./ReferralList";
+export * from "./ReferralSlotPicker";
+export * from "./PublishSlotsDialog";
