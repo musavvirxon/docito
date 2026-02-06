@@ -8,15 +8,14 @@ export function PatientReferralsSection() {
     return null;
   }
 
-  // For patients, we use a special view - they see referrals where they are the patient
   return (
     <ReferralsSection
       role="patient"
-      entityType="doctor" // Use doctor as fallback entity type
-      entityId={user.id}
       patientId={user.id}
-      patientName={profile?.full_name}
+      patientName={profile?.full_name || 'Patient'}
       showCreateButton={false}
+      title="My Referrals"
+      description="Referrals shared with you. Open a referral to book an appointment or choose a provider."
     />
   );
 }
