@@ -33,12 +33,8 @@ export default function PremiumHero() {
               </span>
             </div>
 
-            {/* Title - visible immediately for LCP, CSS animation for enhancement */}
-            <h1
-              className={`text-4xl sm:text-5xl lg:text-6xl font-light tracking-tight text-foreground transform transition-all duration-700 ease-out delay-100 ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-100 translate-y-6'
-              }`}
-            >
+            {/* Title - visible immediately for LCP, no animation to prevent LCP delay */}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-light tracking-tight text-foreground">
               <span className="block">
                 {t('home:hero.title1', 'Complete Healthcare')}
               </span>
@@ -47,12 +43,8 @@ export default function PremiumHero() {
               </span>
             </h1>
 
-            {/* Subtitle - CSS animation */}
-            <p
-              className={`text-lg sm:text-xl text-muted-foreground max-w-xl font-light leading-relaxed transform transition-all duration-700 ease-out delay-200 ${
-                isVisible ? 'opacity-100 translate-y-0' : 'opacity-100 translate-y-4'
-              }`}
-            >
+            {/* Subtitle - no animation to prevent LCP delay */}
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-xl font-light leading-relaxed">
               {t(
                 'home:hero.description',
                 'Unified scheduling, records, diagnostics, prescriptions, and payments for the modern healthcare ecosystem.'

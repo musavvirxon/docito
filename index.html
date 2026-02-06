@@ -205,7 +205,7 @@
       }
     </style>
 
-    <!-- Instant visual feedback while React loads -->
+    <!-- Instant visual feedback while React loads - removed quickly to not block LCP -->
     <div id="initial-loader" class="initial-loader">
         <picture>
           <source
@@ -219,7 +219,7 @@
             class="loader-logo"
             width="120"
             height="36"
-            fetchpriority="high"
+            fetchpriority="low"
             decoding="async"
           />
         </picture>
@@ -228,16 +228,15 @@
     <div id="root"></div>
 
     <script>
-      // Hide loader once React mounts
-      window.addEventListener('DOMContentLoaded', function() {
+      // Hide loader immediately when React starts mounting to not block LCP
+      (function() {
         var loader = document.getElementById('initial-loader');
         if (loader) {
-          setTimeout(function() {
-            loader.classList.add('hidden');
-            setTimeout(function() { loader.remove(); }, 300);
-          }, 100);
+          // Remove immediately when script loads (React is about to mount)
+          loader.classList.add('hidden');
+          setTimeout(function() { loader.remove(); }, 300);
         }
-      });
+      })();
     </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
