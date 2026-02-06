@@ -1,5 +1,7 @@
 // File: supabase/functions/facility-verification-admin/index.ts
 
+// File: supabase/functions/facility-verification-admin/index.ts
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -55,6 +57,48 @@ function uniq<T>(arr: T[]) {
   return Array.from(new Set(arr));
 }
 
+async function fetchFacilityCountry(service: any, facilityType: FacilityType, facilityId: string): Promise<string | null> {
+  if (facilityType === "practice") {
+    const { data, error } = await service.from("practices").select("country").eq("id", facilityId).maybeSingle();
+    if (error) throw error;
+    return (data as any)?.country ?? null;
+  }
+  if (facilityType === "lab") {
+    const { data, error } = await service.from("lab_centers").select("country").eq("id", facilityId).maybeSingle();
+    if (error) throw error;
+    return (data as any)?.country ?? null;
+  }
+  if (facilityType === "imaging") {
+    const { data, error } = await service.from("imaging_centers").select("country").eq("id", facilityId).maybeSingle();
+    if (error) throw error;
+    return (data as any)?.country ?? null;
+  }
+  if (facilityType === "pharmacy") {
+    const { data, error } = await service.from("pharmacies").select("country").eq("id", facilityId).maybeSingle();
+    if (error) throw error;
+    return (data as any)?.country ?? null;
+  }
+  return null;
+}
+
+async function lockFacilityTimezoneOnApprove(service: any, facilityType: FacilityType, facilityId: string, actorId: string) {
+  const entityType = facilityType; // matches entity_settings.entity_type values for facilities
+  const country = await fetchFacilityCountry(service, facilityType, facilityId);
+
+  // This RPC:
+  // - sets entity_settings.timezone based on country default timezone
+  // - sets timezone_locked = true
+  // - stores lock metadata (locked_by, locked_at, reason)
+  const { error } = await service.rpc("docito_sync_entity_timezone_on_verification", {
+    p_entity_type: entityType,
+    p_entity_id: facilityId,
+    p_country: country,
+    p_actor: actorId,
+  });
+
+  if (error) throw error;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method Not Allowed" }, 405);
@@ -95,7 +139,7 @@ serve(async (req) => {
       let q = service
         .from("facility_verification_requests")
         .select(
-          "id, facility_type, facility_id, requested_by, status, comment, rejection_reason, payload, reviewed_by, reviewed_at, created_at, updated_at"
+          "id, facility_type, facility_id, requested_by, status, comment, rejection_reason, payload, reviewed_by, reviewed_at, created_at, updated_at",
         )
         .order("created_at", { ascending: false })
         .limit(limit);
@@ -127,16 +171,22 @@ serve(async (req) => {
 
       const [practicesRes, labsRes, imagingRes, pharmaciesRes] = await Promise.all([
         practiceIds.length
-          ? service.from("practices").select("id,name,admin_id,is_verified,status,verification_status").in("id", practiceIds)
+          ? service
+              .from("practices")
+              .select("id,name,admin_id,is_verified,status,verification_status,country")
+              .in("id", practiceIds)
           : Promise.resolve({ data: [] as any[], error: null as any }),
         labIds.length
-          ? service.from("lab_centers").select("id,name,admin_id,is_verified,status").in("id", labIds)
+          ? service.from("lab_centers").select("id,name,admin_id,is_verified,status,country").in("id", labIds)
           : Promise.resolve({ data: [] as any[], error: null as any }),
         imagingIds.length
-          ? service.from("imaging_centers").select("id,name,admin_id,is_verified,status").in("id", imagingIds)
+          ? service.from("imaging_centers").select("id,name,admin_id,is_verified,status,country").in("id", imagingIds)
           : Promise.resolve({ data: [] as any[], error: null as any }),
         pharmacyIds.length
-          ? service.from("pharmacies").select("id,name,admin_id,verified,verification_status,status").in("id", pharmacyIds)
+          ? service
+              .from("pharmacies")
+              .select("id,name,admin_id,verified,verification_status,status,country")
+              .in("id", pharmacyIds)
           : Promise.resolve({ data: [] as any[], error: null as any }),
       ]);
 
@@ -202,13 +252,18 @@ serve(async (req) => {
           reviewed_at: new Date().toISOString(),
         })
         .eq("id", requestId)
-        .select("id, facility_type, facility_id, status, comment, rejection_reason, reviewed_by, reviewed_at, payload, created_at, updated_at")
+        .select(
+          "id, facility_type, facility_id, status, comment, rejection_reason, reviewed_by, reviewed_at, payload, created_at, updated_at",
+        )
         .single();
 
       if (updErr) throw updErr;
 
       // Apply facility state changes on approve/reject
       if (status === "approved") {
+        // ✅ ENFORCEMENT: Lock timezone + set to country default timezone on verification approval
+        await lockFacilityTimezoneOnApprove(service, facilityType, facilityId, user.id);
+
         if (facilityType === "practice") {
           await service
             .from("practices")
@@ -220,39 +275,21 @@ serve(async (req) => {
             .update({ verified: true, verification_status: "verified", status: "verified" })
             .eq("id", facilityId);
         } else if (facilityType === "lab") {
-          await service
-            .from("lab_centers")
-            .update({ is_verified: true, status: "active" })
-            .eq("id", facilityId);
+          await service.from("lab_centers").update({ is_verified: true, status: "active" }).eq("id", facilityId);
         } else if (facilityType === "imaging") {
-          await service
-            .from("imaging_centers")
-            .update({ is_verified: true, status: "active" })
-            .eq("id", facilityId);
+          await service.from("imaging_centers").update({ is_verified: true, status: "active" }).eq("id", facilityId);
         }
       }
 
       if (status === "rejected") {
         if (facilityType === "practice") {
-          await service
-            .from("practices")
-            .update({ is_verified: false, verification_status: "rejected" })
-            .eq("id", facilityId);
+          await service.from("practices").update({ is_verified: false, verification_status: "rejected" }).eq("id", facilityId);
         } else if (facilityType === "pharmacy") {
-          await service
-            .from("pharmacies")
-            .update({ verified: false, verification_status: "rejected" })
-            .eq("id", facilityId);
+          await service.from("pharmacies").update({ verified: false, verification_status: "rejected" }).eq("id", facilityId);
         } else if (facilityType === "lab") {
-          await service
-            .from("lab_centers")
-            .update({ is_verified: false, status: "pending" })
-            .eq("id", facilityId);
+          await service.from("lab_centers").update({ is_verified: false, status: "pending" }).eq("id", facilityId);
         } else if (facilityType === "imaging") {
-          await service
-            .from("imaging_centers")
-            .update({ is_verified: false, status: "pending" })
-            .eq("id", facilityId);
+          await service.from("imaging_centers").update({ is_verified: false, status: "pending" }).eq("id", facilityId);
         }
       }
 
@@ -263,7 +300,11 @@ serve(async (req) => {
         action: `facility_verification_${status}`,
         actor_id: user.id,
         new_values: { request_status: status },
-        metadata: { request_id: requestId, comment: comment ?? null, rejection_reason: rejectionReason ?? null },
+        metadata: {
+          request_id: requestId,
+          comment: comment ?? null,
+          rejection_reason: rejectionReason ?? null,
+        },
       });
 
       return json({ ok: true, request: updatedReq });
