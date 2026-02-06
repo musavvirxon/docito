@@ -73,7 +73,7 @@ export function AppointmentBookingPopup({
   appointmentType = "consultation",
   referralId,
   onSuccess,
-}: AppointmentBookingPopupProps) => {
+}: AppointmentBookingPopupProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();

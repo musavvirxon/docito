@@ -1,4 +1,3 @@
-// File: src/hooks/useNotifications.ts
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -7,11 +6,13 @@ export type NotificationRow = {
   id: string;
   user_id: string;
   title: string;
-  body: string | null;
+  message: string | null;
+  type: string | null;
   entity_type: string | null;
   entity_id: string | null;
-  action_url: string | null;
-  read_at: string | null;
+  related_id: string | null;
+  related_type: string | null;
+  is_read: boolean;
   created_at: string;
 };
 
@@ -29,7 +30,7 @@ export function useNotifications(args?: UseNotificationsArgs) {
   const [loading, setLoading] = useState(false);
 
   const unreadCount = useMemo(
-    () => items.filter((n) => !n.read_at).length,
+    () => items.filter((n) => !n.is_read).length,
     [items],
   );
 
@@ -48,12 +49,12 @@ export function useNotifications(args?: UseNotificationsArgs) {
         .order("created_at", { ascending: false })
         .limit(limit);
 
-      if (unreadOnly) q = q.is("read_at", null);
+      if (unreadOnly) q = q.eq("is_read", false);
 
       const { data, error } = await q;
 
       if (error) throw error;
-      setItems((data as NotificationRow[]) || []);
+      setItems((data as unknown as NotificationRow[]) || []);
     } catch (e) {
       console.error("useNotifications.fetch error:", e);
     } finally {
@@ -65,22 +66,20 @@ export function useNotifications(args?: UseNotificationsArgs) {
     async (notificationId: string) => {
       if (!user) return;
 
-      // Optimistic update
       setItems((prev) =>
         prev.map((n) =>
-          n.id === notificationId ? { ...n, read_at: n.read_at ?? new Date().toISOString() } : n,
+          n.id === notificationId ? { ...n, is_read: true } : n,
         ),
       );
 
       const { error } = await supabase
         .from("notifications")
-        .update({ read_at: new Date().toISOString() })
+        .update({ is_read: true } as any)
         .eq("id", notificationId)
         .eq("user_id", user.id);
 
       if (error) {
         console.error("useNotifications.markRead error:", error);
-        // best-effort rollback
         await fetchNotifications();
       }
     },
@@ -90,16 +89,15 @@ export function useNotifications(args?: UseNotificationsArgs) {
   const markAllRead = useCallback(async () => {
     if (!user) return;
 
-    // Optimistic update
     setItems((prev) =>
-      prev.map((n) => ({ ...n, read_at: n.read_at ?? new Date().toISOString() })),
+      prev.map((n) => ({ ...n, is_read: true })),
     );
 
     const { error } = await supabase
       .from("notifications")
-      .update({ read_at: new Date().toISOString() })
+      .update({ is_read: true } as any)
       .eq("user_id", user.id)
-      .is("read_at", null);
+      .eq("is_read", false);
 
     if (error) {
       console.error("useNotifications.markAllRead error:", error);

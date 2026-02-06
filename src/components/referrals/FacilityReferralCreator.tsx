@@ -37,10 +37,10 @@ type ManualPatientDraft = {
 };
 
 export function FacilityReferralCreator({ entityType, entityId }: FacilityReferralCreatorProps) {
-  const { userRoles } = useAuth();
+  const { allRoles } = useAuth();
   const { createReferral, sendReferral } = useReferralActions();
 
-  const uiCanCreate = useMemo(() => canCreateReferrals(userRoles), [userRoles]);
+  const uiCanCreate = useMemo(() => canCreateReferrals(allRoles), [allRoles]);
 
   const [pickerOpen, setPickerOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
@@ -269,17 +269,6 @@ export function FacilityReferralCreator({ entityType, entityId }: FacilityReferr
           }}
           patientId={selected.id}
           patientName={selected.full_name}
-          initialPatientMode={selectedMode === "manual" ? "manual" : "registered"}
-          initialManualPatient={
-            selectedMode === "manual"
-              ? {
-                  external_patient_ref: manualDraft.external_patient_ref || null,
-                  patient_name: manualDraft.patient_name || null,
-                  patient_email: manualDraft.patient_email || null,
-                  patient_phone: manualDraft.patient_phone || null,
-                }
-              : undefined
-          }
           onSubmit={async (data) => {
             const result = await createReferral(data as any, entityType, entityId);
             if (result.success && result.data) {

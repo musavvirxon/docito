@@ -9,8 +9,9 @@ function uniq(ids: string[]) {
   return Array.from(new Set(ids.filter(Boolean)));
 }
 
-export function useTimeZonesByUserIds(userIds: string[]) {
-  const ids = useMemo(() => uniq(userIds), [userIds.join("|")]);
+export function useTimeZonesByUserIds(args: string[] | { userIds: string[] }) {
+  const rawIds = Array.isArray(args) ? args : (args?.userIds ?? []);
+  const ids = useMemo(() => uniq(rawIds), [rawIds.join("|")]);
   const [loading, setLoading] = useState(false);
   const [map, setMap] = useState<TimezoneMap>({});
   const [error, setError] = useState<string | null>(null);
@@ -61,5 +62,5 @@ export function useTimeZonesByUserIds(userIds: string[]) {
     };
   }, [ids.join("|")]);
 
-  return { loading, map, error };
+  return { loading, map, error, byUserId: map };
 }

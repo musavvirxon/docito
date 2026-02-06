@@ -3,3 +3,5 @@ export * from "./CreateReferralDialog";
 export * from "./ReferralList";
 export * from "./ReferralSlotPicker";
 export * from "./PublishSlotsDialog";
+export * from "./ReferralsSection";
+export * from "./FacilityReferralCreator";
