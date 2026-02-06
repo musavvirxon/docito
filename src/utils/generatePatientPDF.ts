@@ -1,5 +1,4 @@
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+// jsPDF and autoTable are dynamically imported when needed to reduce initial bundle size
 import { format } from "date-fns";
 
 interface PatientData {
@@ -54,6 +53,8 @@ export const generatePatientSummaryPDF = async ({
   clinicName = "Docito Medical Center",
   doctorName,
 }: GeneratePDFOptions): Promise<Blob> => {
+  const jsPDF = (await import('jspdf')).default;
+  const autoTable = (await import('jspdf-autotable')).default;
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   let yPos = 20;

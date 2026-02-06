@@ -9,7 +9,7 @@ import { Upload, FileSpreadsheet, Download, CheckCircle, XCircle, AlertTriangle,
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import * as XLSX from "xlsx";
+// XLSX is dynamically imported when needed to reduce initial bundle size
 
 interface ExcelPatientImportProps {
   isOpen: boolean;
@@ -50,7 +50,8 @@ const ExcelPatientImport = ({ isOpen, onClose, onSuccess, doctorId }: ExcelPatie
   const [importing, setImporting] = useState(false);
   const [step, setStep] = useState<'upload' | 'preview' | 'complete'>('upload');
 
-  const downloadTemplate = () => {
+  const downloadTemplate = async () => {
+    const XLSX = await import('xlsx');
     const ws = XLSX.utils.aoa_to_sheet([
       ALL_COLUMNS,
       ['John Doe', '1990-05-15', 'male', '+1234567890', 'john@example.com', '123 Main St', 'Penicillin', 'Diabetes Type 2', 'Jane Doe', '+0987654321'],
@@ -142,6 +143,7 @@ const ExcelPatientImport = ({ isOpen, onClose, onSuccess, doctorId }: ExcelPatie
     setFile(selectedFile);
 
     try {
+      const XLSX = await import('xlsx');
       const data = await selectedFile.arrayBuffer();
       const workbook = XLSX.read(data);
       const sheetName = workbook.SheetNames[0];

@@ -1,5 +1,4 @@
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
+// jsPDF and autoTable are dynamically imported when needed to reduce initial bundle size
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -87,7 +86,7 @@ const formatDate = (dateStr: string | null | undefined): string => {
 };
 
 // Helper to add section title
-const addSectionTitle = (doc: jsPDF, title: string, y: number): number => {
+const addSectionTitle = (doc: any, title: string, y: number): number => {
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(37, 99, 235); // Primary blue
@@ -102,7 +101,7 @@ const addSectionTitle = (doc: jsPDF, title: string, y: number): number => {
 
 // Helper to add info row
 const addInfoRow = (
-  doc: jsPDF,
+  doc: any,
   label: string,
   value: string,
   x: number,
@@ -150,7 +149,7 @@ const formatDoctorName = (name?: string) => {
  * Draws header for a page (safe to call on every page).
  */
 const drawHeader = (
-  doc: jsPDF,
+  doc: any,
   pageWidth: number,
   practiceInfo?: PracticeInfo,
   generatedAt?: Date
@@ -196,7 +195,7 @@ const drawHeader = (
  * Draws footer for a page (safe to call on every page).
  */
 const drawFooter = (
-  doc: jsPDF,
+  doc: any,
   pageWidth: number,
   pageHeight: number,
   pageNumber: number,
@@ -251,6 +250,8 @@ export const generatePatientSummaryPDF = async (
   try {
     toast.loading("Generating PDF...");
     
+    const jsPDF = (await import('jspdf')).jsPDF;
+    const autoTable = (await import('jspdf-autotable')).default;
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
