@@ -1,45 +1,32 @@
 // src/pages/PremiumHome.tsx
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect, useCallback } from "react";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { SEOHead } from "@/components/SEOHead";
 import { useTranslation } from "react-i18next";
+import LazySection from "@/components/home/premium/LazySection";
 
 // Critical above-the-fold components (load immediately)
 import PremiumHero from "@/components/home/premium/PremiumHero";
 import SmartSearch from "@/components/home/premium/SmartSearch";
 
-// Lazy load below-the-fold sections to reduce TBT
-const ProviderCards = lazy(() => import("@/components/home/premium/ProviderCards"));
-const PlatformPillars = lazy(() => import("@/components/home/premium/PlatformPillars"));
-const SpecialtiesCarousel = lazy(() => import("@/components/home/premium/SpecialtiesCarousel"));
-const FeaturedProviders = lazy(() => import("@/components/home/premium/FeaturedProviders"));
-const TopLabs = lazy(() => import("@/components/home/premium/TopLabs"));
-const NearbyPharmacies = lazy(() => import("@/components/home/premium/NearbyPharmacies"));
-const DiagnosticsSection = lazy(() => import("@/components/home/premium/DiagnosticsSection"));
-const BookingSteps = lazy(() => import("@/components/home/premium/BookingSteps"));
-const CapabilitiesGrid = lazy(() => import("@/components/home/premium/CapabilitiesGrid"));
-const DashboardDemo = lazy(() => import("@/components/home/premium/DashboardDemo"));
-const TeamCollaboration = lazy(() => import("@/components/home/premium/TeamCollaboration"));
-const InsuranceProviders = lazy(() => import("@/components/home/premium/InsuranceProviders"));
-const FAQ = lazy(() => import("@/components/home/premium/FAQ"));
-const GlobalTrust = lazy(() => import("@/components/home/premium/GlobalTrust"));
-const FinalCTA = lazy(() => import("@/components/home/premium/FinalCTA"));
-const MobileAppShowcase = lazy(() => import("@/components/home/premium/MobileAppShowcase"));
-const ScrollToTop = lazy(() => import("@/components/home/premium/ScrollToTop"));
-
-// Lightweight skeleton for lazy sections
-const SectionSkeleton = () => (
-  <div className="w-full py-16 flex items-center justify-center">
-    <div className="animate-pulse w-full max-w-6xl mx-auto px-4">
-      <div className="h-8 w-48 bg-muted rounded mb-6 mx-auto" />
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="h-32 bg-muted rounded" />
-        <div className="h-32 bg-muted rounded" />
-        <div className="h-32 bg-muted rounded" />
-      </div>
-    </div>
-  </div>
-);
+// Factory functions for below-the-fold sections (only loaded when near viewport)
+const capabilitiesFactory = () => import("@/components/home/premium/CapabilitiesGrid");
+const providerCardsFactory = () => import("@/components/home/premium/ProviderCards");
+const platformPillarsFactory = () => import("@/components/home/premium/PlatformPillars");
+const specialtiesFactory = () => import("@/components/home/premium/SpecialtiesCarousel");
+const featuredProvidersFactory = () => import("@/components/home/premium/FeaturedProviders");
+const topLabsFactory = () => import("@/components/home/premium/TopLabs");
+const nearbyPharmaciesFactory = () => import("@/components/home/premium/NearbyPharmacies");
+const diagnosticsFactory = () => import("@/components/home/premium/DiagnosticsSection");
+const bookingStepsFactory = () => import("@/components/home/premium/BookingSteps");
+const dashboardDemoFactory = () => import("@/components/home/premium/DashboardDemo");
+const teamCollaborationFactory = () => import("@/components/home/premium/TeamCollaboration");
+const insuranceProvidersFactory = () => import("@/components/home/premium/InsuranceProviders");
+const faqFactory = () => import("@/components/home/premium/FAQ");
+const globalTrustFactory = () => import("@/components/home/premium/GlobalTrust");
+const mobileAppFactory = () => import("@/components/home/premium/MobileAppShowcase");
+const finalCtaFactory = () => import("@/components/home/premium/FinalCTA");
+const scrollToTopFactory = () => import("@/components/home/premium/ScrollToTop");
 
 export default function PremiumHome() {
   const { t } = useTranslation(["home", "common"]);
@@ -69,74 +56,24 @@ export default function PremiumHome() {
         <PremiumHero />
         <SmartSearch />
 
-        {/* Lazy-loaded below-the-fold sections */}
-        <Suspense fallback={<SectionSkeleton />}>
-          <CapabilitiesGrid />
-        </Suspense>
-
-        <Suspense fallback={<SectionSkeleton />}>
-          <ProviderCards />
-        </Suspense>
-
-        <Suspense fallback={<SectionSkeleton />}>
-          <PlatformPillars />
-        </Suspense>
-
-        <Suspense fallback={<SectionSkeleton />}>
-          <SpecialtiesCarousel />
-        </Suspense>
-
-        <Suspense fallback={<SectionSkeleton />}>
-          <FeaturedProviders />
-        </Suspense>
-
-        <Suspense fallback={<SectionSkeleton />}>
-          <TopLabs />
-        </Suspense>
-
-        <Suspense fallback={<SectionSkeleton />}>
-          <NearbyPharmacies />
-        </Suspense>
-
-        <Suspense fallback={<SectionSkeleton />}>
-          <DiagnosticsSection />
-        </Suspense>
-
-        <Suspense fallback={<SectionSkeleton />}>
-          <BookingSteps />
-        </Suspense>
-
-        <Suspense fallback={<SectionSkeleton />}>
-          <DashboardDemo />
-        </Suspense>
-
-        <Suspense fallback={<SectionSkeleton />}>
-          <TeamCollaboration />
-        </Suspense>
-
-        <Suspense fallback={<SectionSkeleton />}>
-          <InsuranceProviders />
-        </Suspense>
-
-        <Suspense fallback={<SectionSkeleton />}>
-          <FAQ />
-        </Suspense>
-
-        <Suspense fallback={<SectionSkeleton />}>
-          <GlobalTrust />
-        </Suspense>
-
-        <Suspense fallback={<SectionSkeleton />}>
-          <MobileAppShowcase />
-        </Suspense>
-
-        <Suspense fallback={<SectionSkeleton />}>
-          <FinalCTA />
-        </Suspense>
-
-        <Suspense fallback={null}>
-          <ScrollToTop />
-        </Suspense>
+        {/* Below-the-fold sections: only loaded when approaching viewport */}
+        <LazySection factory={capabilitiesFactory} />
+        <LazySection factory={providerCardsFactory} />
+        <LazySection factory={platformPillarsFactory} />
+        <LazySection factory={specialtiesFactory} />
+        <LazySection factory={featuredProvidersFactory} />
+        <LazySection factory={topLabsFactory} />
+        <LazySection factory={nearbyPharmaciesFactory} />
+        <LazySection factory={diagnosticsFactory} />
+        <LazySection factory={bookingStepsFactory} />
+        <LazySection factory={dashboardDemoFactory} />
+        <LazySection factory={teamCollaborationFactory} />
+        <LazySection factory={insuranceProvidersFactory} />
+        <LazySection factory={faqFactory} />
+        <LazySection factory={globalTrustFactory} />
+        <LazySection factory={mobileAppFactory} />
+        <LazySection factory={finalCtaFactory} />
+        <LazySection factory={scrollToTopFactory} rootMargin="0px" fallback={null} />
       </main>
     </ThemeProvider>
   );
