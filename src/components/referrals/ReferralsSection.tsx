@@ -1,5 +1,3 @@
-// File: src/components/referrals/ReferralsSection.tsx
-
 import { useState } from 'react';
 import { Plus, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -30,6 +28,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { TimezoneNotice } from '@/components/time/TimezoneNotice';
 import { getEffectiveTimeZone } from '@/lib/timezone';
 import { canCreateReferrals } from '@/lib/referrals/permissions';
+import { getReferralTargetLabel } from '@/lib/api/referral-api';
 
 interface ReferralsSectionProps {
   role: 'referrer' | 'receiver' | 'patient';
@@ -82,6 +81,7 @@ export const ReferralsSection = ({
   const { bookAppointment } = useReferralAppointments(selectedReferral?.id);
 
   const uiCanCreate =
+    role !== 'patient' &&
     showCreateButton &&
     !!patientId &&
     !!patientName &&
@@ -161,6 +161,8 @@ export const ReferralsSection = ({
     await createSlots(selectedReferral.id, slotsData);
     refetch();
   };
+
+  const referralTargetLabel = selectedReferral ? getReferralTargetLabel(selectedReferral) : '';
 
   return (
     <Card>
@@ -271,7 +273,7 @@ export const ReferralsSection = ({
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="text-muted-foreground">Status</span>
-                  <p className="font-medium capitalize">{selectedReferral.status}</p>
+                  <p className="font-medium capitalize">{String(selectedReferral.status).replace('_', ' ')}</p>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Priority</span>
@@ -289,6 +291,14 @@ export const ReferralsSection = ({
                     {selectedReferral.estimated_duration_minutes || 30} min
                   </p>
                 </div>
+                <div>
+                  <span className="text-muted-foreground">Target</span>
+                  <p className="font-medium">{referralTargetLabel}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Valid Until</span>
+                  <p className="font-medium">{selectedReferral.valid_until}</p>
+                </div>
               </div>
 
               <div>
@@ -300,6 +310,13 @@ export const ReferralsSection = ({
                 <div>
                   <span className="text-muted-foreground text-sm">Clinical Notes</span>
                   <p className="mt-1">{selectedReferral.clinical_notes}</p>
+                </div>
+              )}
+
+              {(selectedReferral as any)?.verification_code && (
+                <div>
+                  <span className="text-muted-foreground text-sm">Verification Code</span>
+                  <p className="mt-1 font-mono text-sm">{(selectedReferral as any).verification_code}</p>
                 </div>
               )}
             </div>
