@@ -1,3 +1,4 @@
+// File: src/components/patient/PatientTreatmentPlans.tsx
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,7 +23,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-// jsPDF and autoTable are dynamically imported when needed to reduce initial bundle size
+import { useTranslation } from 'react-i18next';
+import { downloadTreatmentPlanPdf } from '@/lib/api/treatment-plan-api';
 
 interface TreatmentPlanProcedure {
   id: string;
@@ -50,10 +52,12 @@ interface TreatmentPlan {
   } | null;
   procedures_count?: number;
   completed_count?: number;
+  verification_code?: string | null;
 }
 
 export const PatientTreatmentPlans = () => {
   const { user } = useAuth();
+  const { i18n } = useTranslation();
   const [plans, setPlans] = useState<TreatmentPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
@@ -119,52 +123,22 @@ export const PatientTreatmentPlans = () => {
   };
 
   const handleDownloadPDF = async (plan: TreatmentPlan) => {
+    toast.loading('Generating PDF...', { id: 'tp-pdf' });
     try {
-      const jsPDF = (await import('jspdf')).default;
-      const autoTable = (await import('jspdf-autotable')).default;
-      const doc = new jsPDF();
-      
-      // Title
-      doc.setFontSize(20);
-      doc.text(plan.title, 20, 20);
-      
-      // Status and Date
-      doc.setFontSize(12);
-      doc.text(`Status: ${plan.status}`, 20, 35);
-      doc.text(`Created: ${format(new Date(plan.created_at), 'MMM dd, yyyy')}`, 20, 45);
-      
-      if (plan.total_cost) {
-        doc.text(`Total Cost: $${plan.total_cost.toLocaleString()}`, 20, 55);
-      }
-      
-      if (plan.notes) {
-        doc.text('Notes:', 20, 70);
-        doc.setFontSize(10);
-        const splitNotes = doc.splitTextToSize(plan.notes, 170);
-        doc.text(splitNotes, 20, 80);
-      }
-      
-      // Procedures table
-      if (planProcedures.length > 0) {
-        const tableData = planProcedures.map(p => [
-          p.procedure?.name || 'N/A',
-          p.procedure?.category || 'N/A',
-          p.cost ? `$${p.cost.toLocaleString()}` : 'N/A',
-          p.status
-        ]);
-        
-        autoTable(doc, {
-          head: [['Procedure', 'Category', 'Cost', 'Status']],
-          body: tableData,
-          startY: plan.notes ? 100 : 70,
-        });
-      }
-      
-      doc.save(`treatment-plan-${plan.id.slice(0, 8)}.pdf`);
-      toast.success('PDF downloaded successfully');
+      const locale = (i18n.language || 'en').toLowerCase();
+      const code = (plan.verification_code || plan.id || '').slice(0, 18);
+      const fileName = code ? `treatment-plan_${code}.pdf` : `treatment-plan_${plan.id}.pdf`;
+
+      await downloadTreatmentPlanPdf({
+        treatmentPlanId: plan.id,
+        locale,
+        fileName,
+      });
+
+      toast.success('PDF downloaded successfully', { id: 'tp-pdf' });
     } catch (error) {
-      console.error('Error generating PDF:', error);
-      toast.error('Failed to generate PDF');
+      console.error('Error downloading PDF:', error);
+      toast.error('Failed to download PDF', { id: 'tp-pdf' });
     }
   };
 
@@ -321,10 +295,7 @@ export const PatientTreatmentPlans = () => {
                           variant="outline" 
                           size="sm" 
                           className="gap-2"
-                          onClick={async () => {
-                            await fetchProcedures(plan.id);
-                            handleDownloadPDF(plan);
-                          }}
+                          onClick={() => handleDownloadPDF(plan)}
                         >
                           <Download className="h-4 w-4" />
                           Download PDF
