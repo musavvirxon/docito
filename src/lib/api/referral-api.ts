@@ -1,150 +1,81 @@
 // File: src/lib/api/referral-api.ts
-import { supabase } from "@/integrations/supabase/client";
-import type { Referral, ReferralEntityType, ReferralType } from "@/hooks/useReferrals";
+import { supabase } from '@/integrations/supabase/client';
 
-export function getEstimatedDuration(referralType: ReferralType, receiverType: ReferralEntityType): number {
-  // Conservative defaults, can be customized per entity later.
-  const byType: Record<ReferralType, number> = {
-    consultation: 30,
-    specialist_referral: 30,
-    follow_up_care: 20,
-    lab_test: 15,
-    imaging_study: 20,
-    prescription_fulfillment: 10,
-  };
+type DownloadReferralPdfArgs = {
+  referralId: string;
+  /**
+   * Optional locale override.
+   * If omitted, we try to infer it from common dashboard settings (i18next/localStorage).
+   */
+  locale?: string;
+  /** Optional file name (without .pdf) */
+  fileName?: string;
+};
 
-  const base = byType[referralType] ?? 30;
-
-  if (receiverType === "doctor" || receiverType === "clinic") return Math.max(base, 20);
-  if (receiverType === "lab") return Math.max(base, 10);
-  if (receiverType === "imaging_center") return Math.max(base, 15);
-  if (receiverType === "pharmacy") return Math.max(base, 10);
-
-  return base;
-}
-
-export function isReferralValid(referral: Referral): boolean {
-  const status = String(referral.status || "").toLowerCase();
-  if (["cancelled", "expired"].includes(status)) return false;
-
-  const validUntil = (referral as any).valid_until ? new Date((referral as any).valid_until) : null;
-  if (!validUntil || isNaN(validUntil.getTime())) return true;
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const end = new Date(validUntil);
-  end.setHours(23, 59, 59, 999);
-
-  return end.getTime() >= today.getTime();
-}
-
-export async function searchReceivers(type: ReferralEntityType, term: string) {
-  const q = (term || "").trim();
-  const like = q ? `%${q}%` : "%";
-
+function safeLocalStorageGet(key: string): string | null {
   try {
-    if (type === "doctor") {
-      // doctors: id, specialty + profile name + practice name (best-effort)
-      const { data, error } = await supabase
-        .from("doctors")
-        .select(
-          [
-            "id",
-            "specialty",
-            "specialty_en",
-            "specialty_ru",
-            "specialty_uz",
-            "practices(name)",
-            "profiles:user_id(full_name)",
-          ].join(","),
-        )
-        .or(`specialty.ilike.${like},specialty_en.ilike.${like},specialty_ru.ilike.${like},specialty_uz.ilike.${like}`)
-        .limit(25);
-
-      if (error) throw error;
-
-      // If user searches by name, fall back to client-side filter against profile name.
-      const filtered = (data || []).filter((d: any) => {
-        if (!q) return true;
-        const name = String(d?.profiles?.full_name || "").toLowerCase();
-        const spec = String(d?.specialty || d?.specialty_en || "").toLowerCase();
-        return name.includes(q.toLowerCase()) || spec.includes(q.toLowerCase());
-      });
-
-      return filtered;
-    }
-
-    if (type === "clinic") {
-      const { data, error } = await supabase
-        .from("practices")
-        .select("id,name,name_en,name_ru,name_uz,city,country")
-        .ilike("name", like)
-        .limit(25);
-      if (error) throw error;
-      return data || [];
-    }
-
-    if (type === "lab") {
-      const { data, error } = await supabase
-        .from("lab_centers")
-        .select("id,name,city,country")
-        .ilike("name", like)
-        .limit(25);
-      if (error) throw error;
-      return data || [];
-    }
-
-    if (type === "imaging_center") {
-      const { data, error } = await supabase
-        .from("imaging_centers")
-        .select("id,name,city,country")
-        .ilike("name", like)
-        .limit(25);
-      if (error) throw error;
-      return data || [];
-    }
-
-    if (type === "pharmacy") {
-      const { data, error } = await supabase
-        .from("pharmacies")
-        .select("id,name,city,country")
-        .ilike("name", like)
-        .limit(25);
-      if (error) throw error;
-      return data || [];
-    }
-
-    return [];
-  } catch (e) {
-    console.error("searchReceivers error:", e);
-    return [];
+    if (typeof window === 'undefined' || !window.localStorage) return null;
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
   }
 }
 
-export async function downloadReferralPdf(params: { referralId: string; locale?: string }) {
-  const { referralId, locale } = params;
+function inferDashboardLocale(): string {
+  // Common keys used by i18next/react-i18next
+  const fromI18n = safeLocalStorageGet('i18nextLng');
+  const fromDocito = safeLocalStorageGet('docito:locale') || safeLocalStorageGet('docito_locale');
+  const nav = typeof navigator !== 'undefined' ? navigator.language : '';
+  return sanitizeLocale(fromDocito || fromI18n || nav || 'en');
+}
 
-  const { data, error } = await supabase.functions.invoke("referral-generate-pdf", {
-    body: { referral_id: referralId, locale },
-    method: "POST",
-    headers: { Accept: "application/pdf" },
-    // @ts-expect-error - supported by supabase-js v2; keeps TS happy for older typings
-    responseType: "blob",
+function sanitizeLocale(input: string): string {
+  const raw = String(input || '').trim().toLowerCase();
+  if (!raw) return 'en';
+
+  // Accept full locale forms (e.g. en-US) and map to supported languages.
+  const code = raw.split(/[-_]/)[0];
+  switch (code) {
+    case 'en':
+    case 'ru':
+    case 'uz':
+    case 'tr':
+    case 'ar':
+    case 'ja':
+    case 'ko':
+    case 'zh':
+    case 'es':
+    case 'pt':
+    case 'de':
+      return code;
+    default:
+      return 'en';
+  }
+}
+
+export async function downloadReferralPdf({ referralId, locale, fileName }: DownloadReferralPdfArgs) {
+  const effectiveLocale = sanitizeLocale(locale || inferDashboardLocale());
+
+  const { data, error } = await supabase.functions.invoke('referral-generate-pdf', {
+    body: {
+      referral_id: referralId,
+      locale: effectiveLocale,
+    },
+    responseType: 'blob',
   });
 
   if (error) throw error;
+  if (!data) throw new Error('No PDF data received');
 
-  // data is a Blob when responseType is "blob"
-  const blob = data as Blob;
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `docito-referral-${referralId}.pdf`;
+  const blobUrl = URL.createObjectURL(data as Blob);
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  a.download = `${(fileName || `referral_${referralId.slice(0, 8)}`).replace(/\s+/g, '_')}.pdf`;
   document.body.appendChild(a);
   a.click();
   a.remove();
 
-  setTimeout(() => URL.revokeObjectURL(url), 1500);
+  setTimeout(() => {
+    URL.revokeObjectURL(blobUrl);
+  }, 2000);
 }
