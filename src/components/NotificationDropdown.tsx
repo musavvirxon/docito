@@ -1,3 +1,4 @@
+// File: src/components/NotificationDropdown.tsx
 import { Bell, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,7 +9,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { useNotifications } from "@/hooks/useNotifications";
+import { useNotifications, type NotificationRow } from "@/hooks/useNotifications";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
@@ -16,14 +17,32 @@ import { useAuth } from "@/contexts/AuthContext";
 import { DASHBOARD_ROUTES } from "@/lib/rbac";
 
 export const NotificationDropdown = () => {
-  const { items: notifications, unreadCount, markRead, markAllRead } = useNotifications({ limit: 50, unreadOnly: false });
+  const { items: notifications, unreadCount, markRead, markAllRead } = useNotifications({
+    limit: 50,
+    unreadOnly: false,
+  });
   const { activeRole } = useAuth();
   const navigate = useNavigate();
 
-  const handleNotificationClick = (notification: any) => {
-    markRead(notification.id);
+  const openUrl = (url: string) => {
+    if (/^https?:\/\//i.test(url)) {
+      window.location.href = url;
+      return;
+    }
+    navigate(url);
+  };
 
-    // If it's appointment-related, send user to THEIR active role dashboard
+  const handleNotificationClick = (notification: NotificationRow) => {
+    // Best-effort mark read (do not block navigation)
+    void markRead(notification.id);
+
+    // If an action_url exists, always honor it (works for referrals + other deep links)
+    if (notification.action_url) {
+      openUrl(notification.action_url);
+      return;
+    }
+
+    // Fallback: If it's appointment-related, send user to THEIR active role dashboard
     if (notification.entity_type === "appointment" && notification.entity_id) {
       navigate(DASHBOARD_ROUTES[activeRole] ?? "/dashboard");
     }
@@ -49,12 +68,7 @@ export const NotificationDropdown = () => {
         <div className="flex items-center justify-between px-2 py-2">
           <h3 className="font-semibold">Notifications</h3>
           {unreadCount > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => markAllRead()}
-              className="h-8 text-xs"
-            >
+            <Button variant="ghost" size="sm" onClick={() => markAllRead()} className="h-8 text-xs">
               <Check className="h-3 w-3 mr-1" />
               Mark all read
             </Button>
@@ -65,9 +79,7 @@ export const NotificationDropdown = () => {
 
         <ScrollArea className="h-[400px]">
           {notifications.length === 0 ? (
-            <div className="py-8 text-center text-muted-foreground text-sm">
-              No notifications yet
-            </div>
+            <div className="py-8 text-center text-muted-foreground text-sm">No notifications yet</div>
           ) : (
             notifications.map((notification) => (
               <DropdownMenuItem
@@ -80,17 +92,13 @@ export const NotificationDropdown = () => {
                 <div className="flex items-start justify-between w-full">
                   <div className="flex-1">
                     <p className="font-medium text-sm">{notification.title}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {notification.body}
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">{notification.body}</p>
                     <p className="text-xs text-muted-foreground mt-1">
                       {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                     </p>
                   </div>
 
-                  {!notification.read_at && (
-                    <div className="w-2 h-2 bg-primary rounded-full ml-2 mt-1" />
-                  )}
+                  {!notification.read_at ? <div className="w-2 h-2 bg-primary rounded-full ml-2 mt-1" /> : null}
                 </div>
               </DropdownMenuItem>
             ))
