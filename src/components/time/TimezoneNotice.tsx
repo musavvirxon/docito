@@ -1,21 +1,37 @@
 // File: src/components/time/TimezoneNotice.tsx
 
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import { getGmtOffsetLabel } from '@/lib/timezone';
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { getEffectiveTimeZone } from "@/lib/timezone";
 
-interface TimezoneNoticeProps {
-  timezone: string;
+type BadgeVariant = "default" | "secondary" | "outline" | "destructive";
+
+export type TimezoneNoticeProps = {
+  /** Preferred prop name */
+  timezone?: string;
+  /** Backward-compatible prop name (some pages used this) */
+  timeZone?: string;
   className?: string;
-  prefix?: string;
-}
+  variant?: BadgeVariant;
+  prefixText?: string;
+};
 
-export function TimezoneNotice({ timezone, className, prefix = 'Times shown in' }: TimezoneNoticeProps) {
-  const offsetLabel = getGmtOffsetLabel(timezone);
+export function TimezoneNotice({
+  timezone,
+  timeZone,
+  className,
+  variant = "secondary",
+  prefixText = "Times shown in",
+}: TimezoneNoticeProps) {
+  const tz = getEffectiveTimeZone(timezone || timeZone);
 
   return (
-    <Badge variant="outline" className={cn('text-xs font-normal', className)}>
-      {prefix} {timezone} ({offsetLabel})
-    </Badge>
+    <div className={cn("flex items-center", className)}>
+      <Badge variant={variant} className="text-xs font-normal">
+        {prefixText}: {tz}
+      </Badge>
+    </div>
   );
 }
+
+export default TimezoneNotice;
