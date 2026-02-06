@@ -1,10 +1,12 @@
+// src/lib/api/referral-api.ts
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import type { ReferralEntityType, Referral } from '@/hooks/useReferrals';
+import type { ReferralEntityType, Referral, ReferralScope } from '@/hooks/useReferrals';
 
-// Helper to get entity name by type
-export const getEntityName = async (entityType: ReferralEntityType, entityId: string): Promise<string> => {
+// Helper to get entity name by type (safe for null/undefined entityId)
+export const getEntityName = async (entityType: ReferralEntityType, entityId?: string | null): Promise<string> => {
   try {
+    if (!entityId) return 'Any provider';
+
     switch (entityType) {
       case 'doctor': {
         const { data } = await supabase
@@ -15,35 +17,19 @@ export const getEntityName = async (entityType: ReferralEntityType, entityId: st
         return data?.profiles?.full_name || 'Unknown Doctor';
       }
       case 'clinic': {
-        const { data } = await supabase
-          .from('practices')
-          .select('name')
-          .eq('id', entityId)
-          .single();
+        const { data } = await supabase.from('practices').select('name').eq('id', entityId).single();
         return data?.name || 'Unknown Clinic';
       }
       case 'lab': {
-        const { data } = await supabase
-          .from('lab_centers')
-          .select('name')
-          .eq('id', entityId)
-          .single();
+        const { data } = await supabase.from('lab_centers').select('name').eq('id', entityId).single();
         return data?.name || 'Unknown Lab';
       }
       case 'imaging_center': {
-        const { data } = await supabase
-          .from('imaging_centers')
-          .select('name')
-          .eq('id', entityId)
-          .single();
+        const { data } = await supabase.from('imaging_centers').select('name').eq('id', entityId).single();
         return data?.name || 'Unknown Imaging Center';
       }
       case 'pharmacy': {
-        const { data } = await supabase
-          .from('pharmacies')
-          .select('name')
-          .eq('id', entityId)
-          .single();
+        const { data } = await supabase.from('pharmacies').select('name').eq('id', entityId).single();
         return data?.name || 'Unknown Pharmacy';
       }
       default:
@@ -66,29 +52,29 @@ export const searchReceivers = async (
       case 'doctor': {
         let query = supabase
           .from('doctors')
-          .select(`
+          .select(
+            `
             id,
             specialty,
             consultation_fee,
             verified,
             profiles:user_id(full_name, avatar_url),
             practices:practice_id(name, city, country)
-          `)
+          `
+          )
           .eq('verified', true)
           .eq('accepts_new_patients', true);
 
-        if (specialty) {
-          query = query.ilike('specialty', `%${specialty}%`);
-        }
+        if (specialty) query = query.ilike('specialty', `%${specialty}%`);
 
         const { data, error } = await query.limit(50);
         if (error) throw error;
 
-        // Filter by search term if provided
         if (searchTerm && data) {
-          return data.filter(d => 
-            d.profiles?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            d.specialty?.toLowerCase().includes(searchTerm.toLowerCase())
+          const t = searchTerm.toLowerCase();
+          return data.filter(
+            (d: any) =>
+              d.profiles?.full_name?.toLowerCase().includes(t) || d.specialty?.toLowerCase().includes(t)
           );
         }
         return data || [];
@@ -103,7 +89,8 @@ export const searchReceivers = async (
 
         if (error) throw error;
         if (searchTerm && data) {
-          return (data as any[]).filter((d: any) => d.name?.toLowerCase().includes(searchTerm.toLowerCase()));
+          const t = searchTerm.toLowerCase();
+          return (data as any[]).filter((d: any) => d.name?.toLowerCase().includes(t));
         }
         return (data as any[]) || [];
       }
@@ -117,7 +104,8 @@ export const searchReceivers = async (
 
         if (error) throw error;
         if (searchTerm && data) {
-          return data.filter((d: any) => d.name?.toLowerCase().includes(searchTerm.toLowerCase()));
+          const t = searchTerm.toLowerCase();
+          return data.filter((d: any) => d.name?.toLowerCase().includes(t));
         }
         return data || [];
       }
@@ -131,7 +119,8 @@ export const searchReceivers = async (
 
         if (error) throw error;
         if (searchTerm && data) {
-          return data.filter((d: any) => d.name?.toLowerCase().includes(searchTerm.toLowerCase()));
+          const t = searchTerm.toLowerCase();
+          return data.filter((d: any) => d.name?.toLowerCase().includes(t));
         }
         return data || [];
       }
@@ -145,7 +134,8 @@ export const searchReceivers = async (
 
         if (error) throw error;
         if (searchTerm && data) {
-          return (data as any[]).filter((d: any) => d.name?.toLowerCase().includes(searchTerm.toLowerCase()));
+          const t = searchTerm.toLowerCase();
+          return (data as any[]).filter((d: any) => d.name?.toLowerCase().includes(t));
         }
         return (data as any[]) || [];
       }
@@ -175,23 +165,12 @@ export const getReferralStats = async (
     const column = role === 'referrer' ? 'referrer_entity_id' : 'receiver_entity_id';
     const typeColumn = role === 'referrer' ? 'referrer_type' : 'receiver_type';
 
-    const { data, error } = await supabase
-      .from('referrals')
-      .select('status')
-      .eq(column, entityId)
-      .eq(typeColumn, entityType);
-
+    const { data, error } = await supabase.from('referrals').select('status').eq(column, entityId).eq(typeColumn, entityType);
     if (error) throw error;
 
-    const stats = {
-      total: data?.length || 0,
-      pending: 0,
-      accepted: 0,
-      completed: 0,
-      rejected: 0
-    };
+    const stats = { total: data?.length || 0, pending: 0, accepted: 0, completed: 0, rejected: 0 };
 
-    data?.forEach(r => {
+    data?.forEach((r: any) => {
       if (r.status === 'sent' || r.status === 'draft') stats.pending++;
       else if (r.status === 'accepted' || r.status === 'slots_available' || r.status === 'booked' || r.status === 'in_progress') stats.accepted++;
       else if (r.status === 'completed') stats.completed++;
@@ -211,61 +190,15 @@ export const getEstimatedDuration = (referralType: string, entityType: ReferralE
     case 'doctor':
       return referralType === 'specialist_referral' ? 45 : 30;
     case 'lab':
-      return 15; // Fixed duration for lab tests
+      return 15;
     case 'imaging_center':
-      switch (referralType) {
-        case 'imaging_study':
-          return 30; // Average imaging study
-        default:
-          return 30;
-      }
+      return 30;
     case 'pharmacy':
-      return 10; // Fulfillment window
+      return 10;
     case 'clinic':
       return 30;
     default:
       return 30;
-  }
-};
-
-// Notify referral participants
-export const notifyReferralParticipants = async (
-  referralId: string,
-  action: string,
-  recipientIds: string[]
-): Promise<void> => {
-  try {
-    const titles: Record<string, string> = {
-      sent: 'New Referral Received',
-      accepted: 'Referral Accepted',
-      rejected: 'Referral Rejected',
-      slots_available: 'Appointment Slots Available',
-      booked: 'Appointment Booked',
-      completed: 'Referral Completed',
-      cancelled: 'Referral Cancelled'
-    };
-
-    const messages: Record<string, string> = {
-      sent: 'You have received a new patient referral. Please review and respond.',
-      accepted: 'Your referral has been accepted. The receiver will publish available slots soon.',
-      rejected: 'Your referral has been declined. Please check the reason and consider alternatives.',
-      slots_available: 'Appointment slots are now available for your referral. Book now!',
-      booked: 'An appointment has been scheduled for your referral.',
-      completed: 'The referral has been completed. Results are available.',
-      cancelled: 'The referral has been cancelled.'
-    };
-
-    for (const recipientId of recipientIds) {
-      await supabase.rpc('create_referral_notification', {
-        p_referral_id: referralId,
-        p_recipient_id: recipientId,
-        p_type: action,
-        p_title: titles[action] || 'Referral Update',
-        p_message: messages[action] || 'Your referral has been updated.'
-      });
-    }
-  } catch (error) {
-    console.error('Error sending notifications:', error);
   }
 };
 
@@ -324,7 +257,7 @@ export const getReferralTypeLabel = (type: string): string => {
     imaging_study: 'Imaging Study',
     prescription_fulfillment: 'Prescription Fulfillment',
     follow_up_care: 'Follow-up Care',
-    specialist_referral: 'Specialist Referral'
+    specialist_referral: 'Specialist Referral',
   };
   return labels[type] || type;
 };
@@ -336,7 +269,33 @@ export const getEntityTypeLabel = (type: ReferralEntityType): string => {
     clinic: 'Clinic',
     lab: 'Laboratory',
     imaging_center: 'Imaging Center',
-    pharmacy: 'Pharmacy'
+    pharmacy: 'Pharmacy',
   };
   return labels[type] || type;
+};
+
+// New helper: human label for general vs specific referral target
+export const getReferralTargetLabel = (referral: Referral): string => {
+  const scope = (referral.scope || 'specific') as ReferralScope;
+  if (scope === 'specific') return 'Specific';
+
+  const receiverType = referral.receiver_type;
+  const specialty = (referral.target_specialty_key || '').trim();
+  const service = (referral.target_service_label || '').trim();
+
+  if (receiverType === 'doctor' || receiverType === 'clinic') {
+    return specialty ? `Any ${specialty}` : 'Any provider';
+  }
+  return service ? `Any ${service}` : 'Any service';
+};
+
+// New helper: safe patient display name (registered or walk-in)
+export const getReferralPatientDisplayName = (referral: Referral): string => {
+  const anyRef: any = referral as any;
+  return (
+    referral.patient?.full_name ||
+    referral.patient_snapshot_full_name ||
+    anyRef.patient_name ||
+    (referral.patient_id ? `${String(referral.patient_id).slice(0, 8)}…` : 'Unknown patient')
+  );
 };
