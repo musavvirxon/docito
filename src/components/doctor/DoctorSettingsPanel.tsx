@@ -205,7 +205,7 @@ export function DoctorSettingsPanel() {
         <TabsContent value="notifications" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>{t("doctor.settings.emailNotifications")}</CardDescription>
+              <CardTitle>{t("doctor.settings.emailNotifications")}</CardTitle>
               <CardDescription>{t("doctor.settings.emailNotificationsDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

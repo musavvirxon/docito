@@ -60,31 +60,62 @@ export default function SpecialtiesCarousel() {
     const scrollContainer = scrollRef.current;
     if (!scrollContainer) return;
      
-     // Skip auto-scroll animation if user prefers reduced motion
-     if (prefersReducedMotion) return;
+    // Skip auto-scroll animation if user prefers reduced motion
+    if (prefersReducedMotion) return;
 
     let animationId: number;
-     let initRafId: number;
+    let initRafId: number;
+    let isInitialized = false;
     const speed = 0.15;
 
-    // Cache scrollWidth to avoid forced reflow on every frame
+    // Cache scrollWidth using requestIdleCallback to avoid forced reflow
     const cacheScrollWidth = () => {
-      if (scrollContainer) {
-        cachedScrollWidthRef.current = scrollContainer.scrollWidth;
+      if ('requestIdleCallback' in window) {
+        (window as Window).requestIdleCallback(() => {
+          if (scrollContainer) {
+            cachedScrollWidthRef.current = scrollContainer.scrollWidth;
+          }
+        }, { timeout: 100 });
+      } else {
+        // Fallback: use double-rAF to batch layout reads
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            if (scrollContainer) {
+              cachedScrollWidthRef.current = scrollContainer.scrollWidth;
+            }
+          });
+        });
       }
     };
      
-     // Defer initial layout read to next frame to avoid forced reflow during render
-     initRafId = requestAnimationFrame(() => {
-       cacheScrollWidth();
-       scrollPosRef.current = scrollContainer.scrollLeft;
-     });
+    // Defer initial layout read using requestIdleCallback to completely avoid forced reflow
+    if ('requestIdleCallback' in window) {
+      (window as Window).requestIdleCallback(() => {
+        if (scrollContainer) {
+          cachedScrollWidthRef.current = scrollContainer.scrollWidth;
+          scrollPosRef.current = scrollContainer.scrollLeft;
+          isInitialized = true;
+        }
+      }, { timeout: 200 });
+    } else {
+      // Fallback: defer to next frame
+      initRafId = requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (scrollContainer) {
+            cachedScrollWidthRef.current = scrollContainer.scrollWidth;
+            scrollPosRef.current = scrollContainer.scrollLeft;
+            isInitialized = true;
+          }
+        });
+      });
+    }
 
     const smoothAutoScroll = () => {
-      if (scrollContainer && !isPausedRef.current) {
+      if (scrollContainer && !isPausedRef.current && isInitialized) {
         scrollPosRef.current += speed;
         const halfWidth = cachedScrollWidthRef.current / 2;
         if (scrollPosRef.current >= halfWidth) scrollPosRef.current = 0;
+        // Write-only operation - no reads that cause reflow
         scrollContainer.scrollLeft = scrollPosRef.current;
       }
       animationId = requestAnimationFrame(smoothAutoScroll);
@@ -94,20 +125,29 @@ export default function SpecialtiesCarousel() {
       isPausedRef.current = true;
     };
 
+    // Batch the scroll position read to avoid forced reflow
     const handleMouseLeave = () => {
-      scrollPosRef.current = scrollContainer.scrollLeft;
-      isPausedRef.current = false;
+      requestAnimationFrame(() => {
+        if (scrollContainer) {
+          scrollPosRef.current = scrollContainer.scrollLeft;
+        }
+        isPausedRef.current = false;
+      });
     };
 
+    // Batch wheel scroll updates to prevent forced reflow
     const handleWheel = (e: WheelEvent) => {
       if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
         e.preventDefault();
+        // Write first, then batch the read
         scrollContainer.scrollLeft += e.deltaY;
-        scrollPosRef.current = scrollContainer.scrollLeft;
+        requestAnimationFrame(() => {
+          scrollPosRef.current = scrollContainer.scrollLeft;
+        });
       }
     };
 
-    // Use ResizeObserver to update cached width on resize
+    // Use ResizeObserver to update cached width on resize (batched)
     const resizeObserver = new ResizeObserver(() => {
       cacheScrollWidth();
     });
@@ -116,7 +156,12 @@ export default function SpecialtiesCarousel() {
     scrollContainer.addEventListener('mouseenter', handleMouseEnter);
     scrollContainer.addEventListener('mouseleave', handleMouseLeave);
     scrollContainer.addEventListener('wheel', handleWheel, { passive: false });
-    animationId = requestAnimationFrame(smoothAutoScroll);
+    
+    // Start animation after a short delay to let initial layout settle
+    setTimeout(() => {
+      isInitialized = true;
+      animationId = requestAnimationFrame(smoothAutoScroll);
+    }, 100);
 
     return () => {
       cancelAnimationFrame(animationId);

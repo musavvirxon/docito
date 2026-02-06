@@ -447,7 +447,7 @@ export default function BookingConfirmation() {
                   )}
                 </div>
 
-                <TimezoneNotice timeZone={viewerTimeZone} />
+                <TimezoneNotice timezone={viewerTimeZone} />
               </div>
 
               <Separator />
@@ -595,7 +595,7 @@ export default function BookingConfirmation() {
                   <Badge variant="outline">{confirmedAppointment.appointment_type}</Badge>
                 </div>
 
-                <TimezoneNotice timeZone={viewerTimeZone} />
+                <TimezoneNotice timezone={viewerTimeZone} />
               </div>
 
               <Separator />

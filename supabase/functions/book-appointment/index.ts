@@ -144,29 +144,29 @@ function mergeNotes(original: string | undefined, extraLines: string[]) {
 }
 
 async function insertHoldWithFallback(
-  service: ReturnType<typeof createClient>,
+  service: any,
   payload: Record<string, unknown>,
-) {
+): Promise<{ data: { id: string; expires_at: string } | null; error: any }> {
   // Try with payload as-is (may include procedure_id)
-  let res = await service
+  let res = await (service as any)
     .from("appointment_holds")
-    .insert(payload)
+    .insert(payload as any)
     .select("id, expires_at")
     .single();
 
   // If procedure_id column doesn't exist, retry without it
   if (res.error && String(res.error.message || "").toLowerCase().includes("procedure_id")) {
     const p2 = { ...payload };
-    delete (p2 as any).procedure_id;
+    delete p2.procedure_id;
 
-    res = await service
+    res = await (service as any)
       .from("appointment_holds")
-      .insert(p2)
+      .insert(p2 as any)
       .select("id, expires_at")
       .single();
   }
 
-  return res;
+  return res as { data: { id: string; expires_at: string } | null; error: any };
 }
 
 serve(async (req) => {
@@ -243,7 +243,12 @@ serve(async (req) => {
      // Sanitize notes before storing
      const sanitizedNotes = notes ? sanitizeString(notes, MAX_LENGTHS.notes) : undefined;
 
-    await service.rpc("cleanup_expired_appointment_holds").catch(() => {});
+    // Cleanup expired holds (fire-and-forget, ignore errors)
+    try {
+      await (service as any).rpc("cleanup_expired_appointment_holds");
+    } catch {
+      // Ignore cleanup errors
+    }
 
     const appointmentDate = isoDate(startAt);
     const startTime = hhmmss(startAt);

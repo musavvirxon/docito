@@ -34,11 +34,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useAppointments } from "@/hooks/useAppointments";
 import { usePrescriptions } from "@/hooks/usePrescriptions";
 import { useMedicalRecords } from "@/hooks/useMedicalRecords";
-import DashboardBranding from "@/components/dashboard/DashboardBranding";
+import { DashboardBranding } from "@/components/dashboard/DashboardBranding";
 import { PatientBilling } from "@/components/patient/PatientBilling";
-import { PatientPharmaciesSection } from "@/components/patient/PatientPharmaciesSection";
-import { PatientLabsSection } from "@/components/patient/PatientLabsSection";
-import { PatientImagingSection } from "@/components/patient/PatientImagingSection";
 import { PatientReferralsSection } from "@/components/patient/PatientReferralsSection";
 import { PatientTreatmentPlans } from "@/components/patient/PatientTreatmentPlans";
 import { TimezoneNotice } from "@/components/time/TimezoneNotice";
@@ -54,13 +51,10 @@ type PatientDashboardSection =
   | "treatment-plans"
   | "billing"
   | "referrals"
-  | "pharmacies"
-  | "labs"
-  | "imaging"
   | "settings";
 
 export default function PatientDashboard() {
-  const { user, profile, signOut, isLoading: authLoading } = useAuth();
+  const { user, profile, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useTranslation("dashboard");
@@ -69,11 +63,11 @@ export default function PatientDashboard() {
 
   const doctorFallbackLabel = t("patient.appointments.doctor", { defaultValue: "Doctor" });
 
-  const { appointments, isLoading: appointmentsLoading, error: appointmentsError, refetch: refetchAppointments } =
-    useAppointments("patient");
-  const { prescriptions, isLoading: prescriptionsLoading, error: prescriptionsError, refetch: refetchPrescriptions } =
+  const { appointments, loading: appointmentsLoading, error: appointmentsError, refetch: refetchAppointments } =
+    useAppointments();
+  const { prescriptions, loading: prescriptionsLoading } =
     usePrescriptions();
-  const { records, isLoading: recordsLoading, error: recordsError, refetch: refetchRecords } = useMedicalRecords();
+  const { records, loading: recordsLoading } = useMedicalRecords();
 
   const [activeSection, setActiveSection] = useState<PatientDashboardSection>("dashboard");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -134,9 +128,7 @@ export default function PatientDashboard() {
     },
     { id: "billing", label: t("patient.nav.billing", { defaultValue: "Billing" }), icon: Receipt },
     { id: "referrals", label: t("patient.nav.referrals", { defaultValue: "Referrals" }), icon: ArrowRightLeft },
-    { id: "pharmacies", label: t("patient.nav.pharmacies", { defaultValue: "Pharmacies" }), icon: Pill },
-    { id: "labs", label: t("patient.nav.labs", { defaultValue: "Labs" }), icon: TestTube2 },
-    { id: "imaging", label: t("patient.nav.imaging", { defaultValue: "Imaging" }), icon: Calendar },
+    { id: "settings", label: t("patient.nav.settings", { defaultValue: "Settings" }), icon: Settings },
     { id: "settings", label: t("patient.nav.settings", { defaultValue: "Settings" }), icon: Settings },
   ];
 
@@ -400,7 +392,7 @@ export default function PatientDashboard() {
         <Card>
           <CardHeader className="space-y-2">
             <CardTitle>{t("patient.appointments.title", { defaultValue: "My Appointments" })}</CardTitle>
-            <TimezoneNotice timeZone={viewerTimeZone} />
+            <TimezoneNotice timezone={viewerTimeZone} />
           </CardHeader>
           <CardContent>
             {appointmentsLoading ? (
@@ -415,7 +407,7 @@ export default function PatientDashboard() {
                 <p className="text-lg font-medium mb-2">
                   {t("patient.appointments.loadErrorTitle", { defaultValue: "Failed to load appointments" })}
                 </p>
-                <p className="text-muted-foreground mb-4">{appointmentsError.message}</p>
+                <p className="text-muted-foreground mb-4">{typeof appointmentsError === 'string' ? appointmentsError : 'An error occurred'}</p>
                 <Button onClick={refetchAppointments}>
                   <RotateCcw className="h-4 w-4 mr-2" />
                   {t("patient.appointments.retry", { defaultValue: "Try Again" })}
@@ -535,18 +527,6 @@ export default function PatientDashboard() {
                 <div className="h-16 bg-muted rounded animate-pulse" />
                 <div className="h-16 bg-muted rounded animate-pulse" />
               </div>
-            ) : prescriptionsError ? (
-              <div className="text-center py-8">
-                <XCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
-                <p className="text-lg font-medium mb-2">
-                  {t("patient.prescriptions.loadErrorTitle", { defaultValue: "Failed to load prescriptions" })}
-                </p>
-                <p className="text-muted-foreground mb-4">{prescriptionsError.message}</p>
-                <Button onClick={refetchPrescriptions}>
-                  <RotateCcw className="h-4 w-4 mr-2" />
-                  {t("patient.prescriptions.retry", { defaultValue: "Try Again" })}
-                </Button>
-              </div>
             ) : prescriptions.length > 0 ? (
               <div className="space-y-4">
                 {prescriptions.map((rx: any) => (
@@ -604,18 +584,6 @@ export default function PatientDashboard() {
                 <div className="h-16 bg-muted rounded animate-pulse" />
                 <div className="h-16 bg-muted rounded animate-pulse" />
               </div>
-            ) : recordsError ? (
-              <div className="text-center py-8">
-                <XCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
-                <p className="text-lg font-medium mb-2">
-                  {t("patient.records.loadErrorTitle", { defaultValue: "Failed to load records" })}
-                </p>
-                <p className="text-muted-foreground mb-4">{recordsError.message}</p>
-                <Button onClick={refetchRecords}>
-                  <RotateCcw className="h-4 w-4 mr-2" />
-                  {t("patient.records.retry", { defaultValue: "Try Again" })}
-                </Button>
-              </div>
             ) : records.length > 0 ? (
               <div className="space-y-4">
                 {records.map((record: any) => (
@@ -661,18 +629,6 @@ export default function PatientDashboard() {
 
     if (activeSection === "referrals") {
       return <PatientReferralsSection />;
-    }
-
-    if (activeSection === "pharmacies") {
-      return <PatientPharmaciesSection />;
-    }
-
-    if (activeSection === "labs") {
-      return <PatientLabsSection />;
-    }
-
-    if (activeSection === "imaging") {
-      return <PatientImagingSection />;
     }
 
     if (activeSection === "settings") {
@@ -753,7 +709,7 @@ export default function PatientDashboard() {
       {/* Mobile Header */}
       <header className="lg:hidden border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex items-center justify-between p-4">
-          <DashboardBranding compact />
+          <DashboardBranding size="sm" />
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
