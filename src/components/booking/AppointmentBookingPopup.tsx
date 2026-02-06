@@ -1,4 +1,3 @@
-// File: src/components/booking/AppointmentBookingPopup.tsx
 import { useState, useEffect, useMemo } from "react";
 import { format, parseISO, startOfDay, isBefore, isToday, isSameDay } from "date-fns";
 import {
@@ -30,7 +29,7 @@ import {
 import { useAvailability } from "@/hooks/useAvailability";
 import { useBookAppointment } from "@/hooks/useBookAppointment";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -42,6 +41,14 @@ interface AppointmentBookingPopupProps {
   providerId?: string;
   providerName?: string;
   appointmentType?: string;
+
+  /**
+   * Optional: when booking is initiated from a referral.
+   * We carry this into the booking confirmation URL (query param) so confirmation
+   * can link the finalized appointment back to the referral.
+   */
+  referralId?: string;
+
   onSuccess?: (appointmentId: string) => void;
 }
 
@@ -64,9 +71,11 @@ export function AppointmentBookingPopup({
   providerId,
   providerName,
   appointmentType = "consultation",
+  referralId,
   onSuccess,
-}: AppointmentBookingPopupProps) {
+}: AppointmentBookingPopupProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
 
   const todayStart = startOfDay(new Date());
@@ -79,7 +88,7 @@ export function AppointmentBookingPopup({
   const [blockedDates, setBlockedDates] = useState<Date[]>([]);
   const [workingDays, setWorkingDays] = useState<Record<string, boolean>>({});
 
-  // NEW: procedures for this doctor + selection
+  // Procedures for this doctor + selection
   const [procedures, setProcedures] = useState<BookableProcedure[]>([]);
   const [loadingProcedures, setLoadingProcedures] = useState(false);
   const [selectedProcedureId, setSelectedProcedureId] = useState<string>("none");
@@ -88,6 +97,18 @@ export function AppointmentBookingPopup({
     if (selectedProcedureId === "none") return null;
     return procedures.find((p) => p.id === selectedProcedureId) || null;
   }, [procedures, selectedProcedureId]);
+
+  // Referral context: prop wins; otherwise fallback to URL query string
+  const effectiveReferralId = useMemo(() => {
+    if (referralId && String(referralId).trim()) return String(referralId).trim();
+    try {
+      const params = new URLSearchParams(location.search);
+      const rid = params.get("referralId");
+      return rid && rid.trim() ? rid.trim() : null;
+    } catch {
+      return null;
+    }
+  }, [referralId, location.search]);
 
   const { loading: slotsLoading, fetchAvailability, getAvailableSlotsForDate, slots } = useAvailability({
     entityId,
@@ -123,7 +144,7 @@ export function AppointmentBookingPopup({
     run().catch(console.error);
   }, [open, providerId, resolvedProviderName]);
 
-  // NEW: Load doctor's bookable procedures for patient to request
+  // Load doctor's bookable procedures for patient to request
   useEffect(() => {
     const load = async () => {
       if (!open) return;
@@ -247,7 +268,8 @@ export function AppointmentBookingPopup({
 
   const handleLoginRedirect = () => {
     onOpenChange(false);
-    navigate("/auth?redirect=" + encodeURIComponent(window.location.pathname));
+    const redirectPath = window.location.pathname + window.location.search;
+    navigate("/auth?redirect=" + encodeURIComponent(redirectPath));
   };
 
   // Get available slots for selected date
@@ -292,6 +314,14 @@ export function AppointmentBookingPopup({
 
   const canProceedToTime = Boolean(selectedDate);
   const canProceedToConfirm = Boolean(selectedSlot);
+
+  const confirmationUrl = useMemo(() => {
+    if (!result?.hold_id) return null;
+    const base = `/booking-confirmation/${result.hold_id}`;
+    if (!effectiveReferralId) return base;
+    const qs = new URLSearchParams({ referralId: effectiveReferralId }).toString();
+    return `${base}?${qs}`;
+  }, [result?.hold_id, effectiveReferralId]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -339,6 +369,13 @@ export function AppointmentBookingPopup({
                   <Badge variant="outline" className="inline-flex items-center gap-2">
                     <User className="h-3.5 w-3.5" />
                     Dr. {resolvedProviderName}
+                  </Badge>
+                ) : null}
+
+                {effectiveReferralId ? (
+                  <Badge variant="outline" className="inline-flex items-center gap-2">
+                    <Lock className="h-3.5 w-3.5" />
+                    Referral booking
                   </Badge>
                 ) : null}
               </div>
@@ -481,10 +518,17 @@ export function AppointmentBookingPopup({
                     Dr. {resolvedProviderName}
                   </Badge>
                 ) : null}
+
+                {effectiveReferralId ? (
+                  <Badge variant="outline" className="inline-flex items-center gap-2">
+                    <Lock className="h-3.5 w-3.5" />
+                    Referral booking
+                  </Badge>
+                ) : null}
               </div>
             </div>
 
-            {/* NEW: Procedure request */}
+            {/* Procedure request */}
             <div className="space-y-2">
               <Label>Requested procedure (optional)</Label>
 
@@ -594,7 +638,7 @@ export function AppointmentBookingPopup({
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button onClick={() => navigate(`/booking-confirmation/${result.hold_id}`)}>
+              <Button onClick={() => confirmationUrl && navigate(confirmationUrl)} disabled={!confirmationUrl}>
                 <CheckCircle className="h-4 w-4 mr-2" />
                 Confirm Appointment
               </Button>
