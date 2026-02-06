@@ -1,7 +1,27 @@
-import { defineConfig } from "vite";
+import { defineConfig, Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "node:path";
 import { componentTagger } from "lovable-tagger";
+
+/**
+ * Vite plugin to make CSS non-render-blocking by using media="print" + onload pattern.
+ * This defers CSS loading while critical styles are already inlined in index.html.
+ */
+function asyncCssPlugin(): Plugin {
+  return {
+    name: 'async-css',
+    enforce: 'post',
+    transformIndexHtml(html) {
+      // Transform Vite-injected CSS links to use async loading pattern
+      // Pattern: <link rel="stylesheet" href="/assets/index-*.css">
+      return html.replace(
+        /<link rel="stylesheet" crossorigin href="(\/assets\/[^"]+\.css)">/g,
+        `<link rel="preload" href="$1" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="$1"></noscript>`
+      );
+    },
+  };
+}
 
 export default defineConfig(({ mode }) => ({
   server: {
@@ -11,6 +31,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mode === 'development' && componentTagger(),
+    mode === 'production' && asyncCssPlugin(),
   ].filter(Boolean),
   resolve: {
     alias: {
