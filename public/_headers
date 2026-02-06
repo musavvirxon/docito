@@ -9,7 +9,25 @@
 /logos/*
   Cache-Control: public, max-age=31536000, immutable
 
+/logos/horizontal/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/logos/vertical/*
+  Cache-Control: public, max-age=31536000, immutable
+
 /locales/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/locales/en/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/locales/ar/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/locales/ru/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/locales/uz/*
   Cache-Control: public, max-age=31536000, immutable
 
 /*.png
@@ -25,6 +43,12 @@
   Cache-Control: public, max-age=31536000, immutable
 
 /*.ico
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.css
   Cache-Control: public, max-age=31536000, immutable
 
 /
