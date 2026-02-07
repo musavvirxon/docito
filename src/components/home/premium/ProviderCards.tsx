@@ -1,158 +1,221 @@
 // src/components/home/premium/ProviderCards.tsx
-import { motion } from "framer-motion";
-import {
-  Building2,
-  Stethoscope,
-  FlaskConical,
-  Pill,
-  Activity,
-  Users,
-  ArrowRight,
-} from "lucide-react";
+import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import {
+  Stethoscope,
+  Building2,
+  Pill,
+  FlaskConical,
+  ScanLine,
+  Building,
+  ArrowRight,
+} from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { trackMarketingEvent } from "@/lib/marketing";
-
-const providerTypes = [
+const providers = [
   {
-    icon: Stethoscope,
+    id: "doctors",
     title: "Doctors",
-    description: "Find the right clinician and keep visits, notes, and follow-ups in one place.",
-    route: "/doctors",
-    joinRole: "doctor",
-    joinLabel: "Join as a doctor",
+    icon: Stethoscope,
+    color: "from-blue-500 to-blue-600",
+    bgColor: "bg-blue-500/10",
+    borderColor: "border-blue-500/20",
+    glowColor: "shadow-blue-500/20",
+    iconColor: "#3b82f6",
   },
   {
-    icon: Building2,
+    id: "clinics",
     title: "Clinics",
-    description: "Run scheduling, documentation, billing, and team workflows from a single workspace.",
-    route: "/find-practices",
-    joinRole: "admin",
-    joinLabel: "Join as a clinic",
+    icon: Building2,
+    color: "from-emerald-500 to-emerald-600",
+    bgColor: "bg-emerald-500/10",
+    borderColor: "border-emerald-500/20",
+    glowColor: "shadow-emerald-500/20",
+    iconColor: "#10b981",
   },
   {
-    icon: FlaskConical,
-    title: "Labs",
-    description: "Connect orders and results directly to the patient record — no manual handoffs.",
-    route: "/labs",
-    joinRole: "lab_admin",
-    joinLabel: "Join as a lab",
-  },
-  {
-    icon: Activity,
-    title: "Imaging",
-    description: "Keep imaging reports and status updates visible across the care team.",
-    route: "/imaging",
-    joinRole: "imaging_admin",
-    joinLabel: "Join as imaging",
-  },
-  {
-    icon: Pill,
+    id: "pharmacies",
     title: "Pharmacies",
-    description: "Prescriptions, refills, and medication updates — connected to care.",
-    route: "/pharmacies",
-    joinRole: "pharmacy_admin",
-    joinLabel: "Join as a pharmacy",
+    icon: Pill,
+    color: "from-amber-500 to-amber-600",
+    bgColor: "bg-amber-500/10",
+    borderColor: "border-amber-500/20",
+    glowColor: "shadow-amber-500/20",
+    iconColor: "#f59e0b",
   },
   {
-    icon: Users,
-    title: "Patients",
-    description: "Book care, manage records, and stay on top of your health — in one app.",
-    route: "/doctors",
-    joinRole: "patient",
-    joinLabel: "Create patient account",
+    id: "labs",
+    title: "Labs",
+    icon: FlaskConical,
+    color: "from-purple-500 to-purple-600",
+    bgColor: "bg-purple-500/10",
+    borderColor: "border-purple-500/20",
+    glowColor: "shadow-purple-500/20",
+    iconColor: "#8b5cf6",
+  },
+  {
+    id: "imaging",
+    title: "Imaging",
+    icon: ScanLine,
+    color: "from-cyan-500 to-cyan-600",
+    bgColor: "bg-cyan-500/10",
+    borderColor: "border-cyan-500/20",
+    glowColor: "shadow-cyan-500/20",
+    iconColor: "#06b6d4",
+  },
+  {
+    id: "hospitals",
+    title: "Hospitals",
+    icon: Building,
+    color: "from-rose-500 to-rose-600",
+    bgColor: "bg-rose-500/10",
+    borderColor: "border-rose-500/20",
+    glowColor: "shadow-rose-500/20",
+    iconColor: "#f43f5e",
   },
 ];
 
-export default function ProviderCards() {
-  const { t } = useTranslation();
+const providerRoutes: Record<string, string> = {
+  doctors: "/doctors",
+  clinics: "/clinics",
+  pharmacies: "/pharmacies",
+  labs: "/labs",
+  imaging: "/imaging-centers",
+  hospitals: "/clinics",
+};
+
+function ProviderCard({
+  provider,
+  index,
+}: {
+  provider: (typeof providers)[0];
+  index: number;
+}) {
+  const { t } = useTranslation(["home"]);
   const navigate = useNavigate();
+  const cardRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(cardRef, { once: true, margin: "-100px" });
+  const Icon = provider.icon;
 
-  const onBrowse = (title: string, route: string) => {
-    void trackMarketingEvent("home_network_browse", { title, route });
-    navigate(route);
-  };
+  const href = providerRoutes[provider.id] ?? "/";
 
-  const onJoin = (title: string, role: string) => {
-    void trackMarketingEvent("home_network_join", { title, role });
-    navigate(`/auth?mode=signup&role=${encodeURIComponent(role)}`);
-  };
+  function go() {
+    navigate(href);
+  }
 
   return (
-    <section className="py-24 bg-gradient-to-b from-background to-primary/5">
-      <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6">
-            <Users className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-primary">
-              {t("home:premium.providers.badge", "One connected network")}
-            </span>
-          </div>
+    <motion.div
+      ref={cardRef}
+      initial={{ opacity: 0, y: 50 }}
+      animate={isInView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.6, delay: index * 0.1 }}
+      className="h-full"
+    >
+      <motion.div
+        role="button"
+        tabIndex={0}
+        onClick={go}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            go();
+          }
+        }}
+        whileHover={{ y: -8, scale: 1.02 }}
+        className={`relative group p-8 bg-background/50 backdrop-blur-xl border ${provider.borderColor} rounded-3xl shadow-xl ${provider.glowColor} hover:shadow-2xl transition-all duration-500 cursor-pointer overflow-hidden h-full flex flex-col outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background`}
+        aria-label={t(
+          `home:providers.${provider.id}.cta`,
+          `Open ${provider.title} landing page`
+        )}
+      >
+        {/* Background glow */}
+        <div
+          className={`absolute inset-0 ${provider.bgColor} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
+        />
 
-          <h2 className="text-4xl font-bold mb-6">
-            {t("home:premium.providers.title", "Patients and providers")}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-600">
-              {" "}
-              in sync
-            </span>
-          </h2>
+        {/* Animated border */}
+        <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+          <div
+            className={`absolute inset-0 rounded-3xl bg-gradient-to-r ${provider.color} opacity-20`}
+          />
+        </div>
 
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+        <div className="relative z-10 flex flex-col h-full">
+          {/* Icon */}
+          <motion.div
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            className={`w-16 h-16 ${provider.bgColor} rounded-2xl flex items-center justify-center mb-6`}
+          >
+            <Icon className="w-8 h-8" style={{ color: provider.iconColor }} />
+          </motion.div>
+
+          {/* Title */}
+          <h3 className="text-xl font-semibold text-foreground mb-3 capitalize">
+            {provider.title}
+          </h3>
+
+          {/* Description */}
+          <p className="text-muted-foreground text-sm mb-6 leading-relaxed flex-grow">
             {t(
-              "home:premium.providers.description",
-              "Browse care as a patient — or bring your organization onto Docito to unify scheduling, records, billing, and follow-ups."
+              `home:providers.${provider.id}.description`,
+              `Find and book ${provider.title.toLowerCase()}—with profiles, availability, and clear next steps.`
             )}
           </p>
-        </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {providerTypes.map((provider, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1, duration: 0.6 }}
-              className="group"
-            >
-              <div className="h-full bg-white/50 border border-primary/10 rounded-3xl p-8 backdrop-blur-sm hover:bg-white/70 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-                <div className="w-16 h-16 bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <provider.icon className="h-8 w-8 text-primary" />
-                </div>
+          {/* CTA */}
+          <motion.div
+            whileHover={{ x: 5 }}
+            className="flex items-center gap-2 text-sm font-medium text-primary mt-auto"
+          >
+            <span>
+              {t("home:providers.findProviders", "Find Providers")}
+            </span>
+            <ArrowRight className="w-4 h-4" />
+          </motion.div>
+        </div>
 
-                <h3 className="text-2xl font-bold mb-4">{provider.title}</h3>
-                <p className="text-muted-foreground mb-8">{provider.description}</p>
+        {/* Decorative elements */}
+        <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-gradient-to-br from-transparent via-transparent to-primary/5 rounded-full blur-2xl" />
+      </motion.div>
+    </motion.div>
+  );
+}
 
-                <div className="mt-auto flex flex-col gap-3">
-                  <Button
-                    variant="outline"
-                    className="w-full group/btn"
-                    onClick={() => onBrowse(provider.title, provider.route)}
-                  >
-                    {t("home:premium.providers.browseButton", "Browse")}
-                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
-                  </Button>
+export default function ProviderCards() {
+  const { t } = useTranslation(["home"]);
 
-                  {provider.joinRole && (
-                    <Button
-                      className="w-full group/btn"
-                      onClick={() => onJoin(provider.title, provider.joinRole)}
-                    >
-                      {provider.joinLabel ?? t("home:premium.providers.joinButton", "Join")}
-                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </motion.div>
+  return (
+    <section className="py-24 relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 bg-gradient-to-b from-muted/30 via-background to-background" />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Header */}
+        <div className="text-center mb-16">
+          <motion.span
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="inline-block px-4 py-2 bg-primary/10 text-primary text-sm font-medium rounded-full mb-4"
+          >
+            Healthcare Network
+          </motion.span>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light text-foreground mb-4">
+            One network, one patient journey
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Doctors, clinics, labs, imaging centers, and pharmacies—connected so care doesn’t get lost between places.
+          </p>
+          <p className="text-sm text-muted-foreground max-w-2xl mx-auto mt-4">
+            Newly launched: provider profiles appear as teams onboard.
+          </p>
+        </div>
+
+        {/* Cards Grid */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+          {providers.map((provider, index) => (
+            <ProviderCard key={provider.id} provider={provider} index={index} />
           ))}
         </div>
       </div>
