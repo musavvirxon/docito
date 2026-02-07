@@ -49,10 +49,10 @@
     <link rel="preconnect" href="https://gswwpjdtgsxzcsnrxutu.supabase.co" />
     <link rel="preconnect" href="https://gswwpjdtgsxzcsnrxutu.supabase.co" crossorigin />
 
-    <!-- Preload critical LCP images - use 2xl WebP for loader (smaller file, same quality) -->
+    <!-- Preload small loader logo for instant FCP (sm.webp ≈ 13 KiB vs 2xl.webp ≈ 580 KiB) -->
     <link
       rel="preload"
-      href="/logos/horizontal/docito-horizontal-2xl.webp"
+      href="/logos/horizontal/docito-horizontal-sm.webp"
       as="image"
       type="image/webp"
       fetchpriority="high"
@@ -209,18 +209,17 @@
     <div id="initial-loader" class="initial-loader" aria-live="polite" aria-label="Loading Docito">
         <picture>
           <source
-            srcset="/logos/horizontal/docito-horizontal-2xl.webp"
+            srcset="/logos/horizontal/docito-horizontal-sm.webp"
             type="image/webp"
-            media="(min-width: 1px)"
           />
           <img
-            src="/logos/horizontal/docito-horizontal-md.png"
+            src="/logos/horizontal/docito-horizontal-sm.png"
             alt="Loading Docito"
             class="loader-logo"
             width="120"
             height="36"
             fetchpriority="high"
-            decoding="async"
+            decoding="sync"
           />
         </picture>
     </div>
