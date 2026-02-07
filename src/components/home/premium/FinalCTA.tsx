@@ -1,89 +1,99 @@
-import { motion } from 'framer-motion';
-import { ArrowRight, Calendar, UserPlus, Sparkles } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+// src/components/home/premium/FinalCTA.tsx
+import { motion } from "framer-motion";
+import { ArrowRight, HeartPulse, ShieldCheck } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+
+import { Button } from "@/components/ui/button";
+import { trackMarketingEvent } from "@/lib/marketing";
 
 export default function FinalCTA() {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  const onStartTrial = () => {
+    void trackMarketingEvent("home_cta_start_trial", { placement: "final_cta" });
+    navigate("/auth?mode=signup");
+  };
+
+  const onFindCare = () => {
+    void trackMarketingEvent("home_cta_find_care", { placement: "final_cta" });
+    const el = document.getElementById("smart-search");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    navigate("/doctors");
+  };
+
   return (
-    <section className="py-24 relative overflow-hidden">
-      {/* Animated gradient background */}
+    <section className="relative py-24 bg-gradient-to-br from-primary/10 via-background to-purple-500/5 overflow-hidden">
+      {/* Background elements */}
       <div className="absolute inset-0">
-        <motion.div
-          animate={{
-            background: [
-              'radial-gradient(circle at 20% 50%, hsl(var(--primary) / 0.15) 0%, transparent 50%)',
-              'radial-gradient(circle at 80% 50%, hsl(var(--primary) / 0.15) 0%, transparent 50%)',
-              'radial-gradient(circle at 50% 20%, hsl(var(--primary) / 0.15) 0%, transparent 50%)',
-              'radial-gradient(circle at 20% 50%, hsl(var(--primary) / 0.15) 0%, transparent 50%)',
-            ]
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
-          className="absolute inset-0"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="container relative mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center"
+          className="max-w-4xl mx-auto text-center"
         >
-          <motion.div
-            initial={{ scale: 0 }}
-            whileInView={{ scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, type: 'spring' }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-8"
-          >
-            <Sparkles className="w-4 h-4" />
-            Start Your Journey
-          </motion.div>
-
-          <h2 className="text-4xl md:text-6xl font-extralight tracking-tight text-foreground mb-6">
-            Ready to Transform
-            <br />
-            <span className="font-normal text-primary">Your Practice?</span>
-          </h2>
-
-          <p className="text-lg md:text-xl text-muted-foreground font-light max-w-2xl mx-auto mb-12">
-            Join thousands of healthcare providers who have already modernized their practice with Docito.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Button
-                size="lg"
-                className="h-14 px-8 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-lg gap-2"
-              >
-                <Calendar className="w-5 h-5" />
-                Schedule Demo
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </motion.div>
-
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Button
-                size="lg"
-                variant="outline"
-                className="h-14 px-8 rounded-full text-lg gap-2 border-2"
-              >
-                <UserPlus className="w-5 h-5" />
-                Join as Provider
-              </Button>
-            </motion.div>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6">
+            <HeartPulse className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium text-primary">
+              {t("home:premium.finalCta.badge", "Less admin. More care.")}
+            </span>
           </div>
 
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="mt-8 text-sm text-muted-foreground"
-          >
-            Free 14-day trial • No credit card required • Cancel anytime
-          </motion.p>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+            {t("home:premium.finalCta.title", "Bring your care into sync")}
+          </h2>
+
+          <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
+            {t(
+              "home:premium.finalCta.description",
+              "Start today with scheduling and patient communication. Add records, prescriptions, billing, and analytics when you’re ready — all in one connected workspace."
+            )}
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+            <Button
+              size="lg"
+              className="group text-lg px-8 py-6"
+              onClick={onStartTrial}
+            >
+              {t("home:premium.finalCta.primaryButton", "Start free 14-day trial")}
+              <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+            </Button>
+
+            <Button
+              size="lg"
+              variant="outline"
+              className="text-lg px-8 py-6"
+              onClick={onFindCare}
+            >
+              {t("home:premium.finalCta.secondaryButton", "Find and book care")}
+            </Button>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-primary" />
+              <span>{t("home:premium.finalCta.noCreditCard", "No credit card required")}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-primary" />
+              <span>{t("home:premium.finalCta.cancelAnytime", "Cancel anytime")}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-primary" />
+              <span>{t("home:premium.finalCta.support", "Human support included")}</span>
+            </div>
+          </div>
         </motion.div>
       </div>
     </section>
