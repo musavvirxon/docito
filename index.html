@@ -205,8 +205,8 @@
       }
     </style>
 
-    <!-- Instant visual feedback while React loads - removed quickly to not block LCP -->
-    <div id="initial-loader" class="initial-loader">
+    <!-- Instant visual feedback while React loads — visible until React mounts -->
+    <div id="initial-loader" class="initial-loader" aria-live="polite" aria-label="Loading Docito">
         <picture>
           <source
             srcset="/logos/horizontal/docito-horizontal-2xl.webp"
@@ -219,7 +219,7 @@
             class="loader-logo"
             width="120"
             height="36"
-            fetchpriority="low"
+            fetchpriority="high"
             decoding="async"
           />
         </picture>
@@ -227,21 +227,6 @@
 
     <div id="root"></div>
 
-    <script>
-      // Hide loader immediately to minimize main-thread blocking
-      (function() {
-        var loader = document.getElementById('initial-loader');
-        if (loader) {
-          loader.style.display = 'none';
-          // Defer removal to idle time
-          if ('requestIdleCallback' in window) {
-            requestIdleCallback(function() { loader.remove(); });
-          } else {
-            setTimeout(function() { loader.remove(); }, 100);
-          }
-        }
-      })();
-    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
