@@ -1,8 +1,27 @@
-// src/components/super-admin/AnalyticsCharts.tsx
+// File: src/components/super-admin/AnalyticsCharts.tsx
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
-import { useRevenueData, useAppointmentVolumeData, useSignupData } from "@/hooks/useSuperAdminData";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
+import {
+  useRevenueData,
+  useAppointmentVolumeData,
+  useSignupData,
+} from "@/hooks/useSuperAdminData";
 import { Loader2 } from "lucide-react";
+import MarketingEventsPanel from "@/components/super-admin/MarketingEventsPanel";
 
 interface AnalyticsChartsProps {
   showAll?: boolean;
@@ -10,7 +29,8 @@ interface AnalyticsChartsProps {
 
 const AnalyticsCharts = ({ showAll = false }: AnalyticsChartsProps) => {
   const { data: revenueData, isLoading: revenueLoading } = useRevenueData();
-  const { data: appointmentData, isLoading: appointmentLoading } = useAppointmentVolumeData();
+  const { data: appointmentData, isLoading: appointmentLoading } =
+    useAppointmentVolumeData();
   const { data: signupData, isLoading: signupLoading } = useSignupData();
 
   return (
@@ -76,7 +96,11 @@ const AnalyticsCharts = ({ showAll = false }: AnalyticsChartsProps) => {
                       borderRadius: "8px",
                     }}
                   />
-                  <Bar dataKey="appointments" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
+                  <Bar
+                    dataKey="appointments"
+                    fill="hsl(var(--primary))"
+                    radius={[8, 8, 0, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -85,50 +109,59 @@ const AnalyticsCharts = ({ showAll = false }: AnalyticsChartsProps) => {
       </div>
 
       {showAll && (
-        <Card className="border-2 border-border hover:border-primary transition-colors">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">User Signups</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {signupLoading ? (
-              <div className="flex items-center justify-center h-[300px]">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={signupData || []}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="week" className="text-muted-foreground" />
-                  <YAxis className="text-muted-foreground" />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "2px solid hsl(var(--primary))",
-                      borderRadius: "8px",
-                    }}
-                  />
-                  <Legend />
-                  <Area
-                    type="monotone"
-                    dataKey="doctors"
-                    stackId="1"
-                    stroke="hsl(var(--primary))"
-                    fill="hsl(var(--primary))"
-                    fillOpacity={0.6}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="patients"
-                    stackId="1"
-                    stroke="hsl(var(--accent))"
-                    fill="hsl(var(--accent))"
-                    fillOpacity={0.6}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            )}
-          </CardContent>
-        </Card>
+        <div className="space-y-6">
+          {/* User Signups */}
+          <Card className="border-2 border-border hover:border-primary transition-colors">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">User Signups</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {signupLoading ? (
+                <div className="flex items-center justify-center h-[300px]">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={signupData || []}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      className="stroke-border"
+                    />
+                    <XAxis dataKey="week" className="text-muted-foreground" />
+                    <YAxis className="text-muted-foreground" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "2px solid hsl(var(--primary))",
+                        borderRadius: "8px",
+                      }}
+                    />
+                    <Legend />
+                    <Area
+                      type="monotone"
+                      dataKey="doctors"
+                      stackId="1"
+                      stroke="hsl(var(--primary))"
+                      fill="hsl(var(--primary))"
+                      fillOpacity={0.6}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="patients"
+                      stackId="1"
+                      stroke="hsl(var(--accent))"
+                      fill="hsl(var(--accent))"
+                      fillOpacity={0.6}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Marketing Events (manage + export) */}
+          <MarketingEventsPanel />
+        </div>
       )}
     </div>
   );
