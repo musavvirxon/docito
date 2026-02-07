@@ -1,212 +1,194 @@
-import { motion } from 'framer-motion';
-import { 
-  User, FileText, MessageCircle, Share2, Activity,
-  Building2, TestTube, Scan, Pill, Shield, Stethoscope, Settings
-} from 'lucide-react';
+// src/components/home/premium/TeamCollaboration.tsx
+import { motion } from "framer-motion";
+import {
+  Users,
+  Shield,
+  Share2,
+  Clock,
+  MessageSquare,
+  Stethoscope,
+  FileText,
+  Activity,
+  Lock,
+  Plug,
+} from "lucide-react";
 
-const teamMembers = [
-  { id: 1, role: 'Platform Admin', icon: Settings, color: 'from-slate-500 to-gray-600', angle: 0 },
-  { id: 2, role: 'Clinic Admin', icon: Building2, color: 'from-blue-500 to-cyan-500', angle: 45 },
-  { id: 3, role: 'Doctor', icon: Stethoscope, color: 'from-violet-500 to-purple-500', angle: 90 },
-  { id: 4, role: 'Lab Center', icon: TestTube, color: 'from-emerald-500 to-green-500', angle: 135 },
-  { id: 5, role: 'Imaging Center', icon: Scan, color: 'from-amber-500 to-orange-500', angle: 180 },
-  { id: 6, role: 'Pharmacy', icon: Pill, color: 'from-rose-500 to-pink-500', angle: 225 },
-  { id: 7, role: 'Patient', icon: User, color: 'from-cyan-500 to-blue-500', angle: 270 },
-  { id: 8, role: 'Insurance', icon: Shield, color: 'from-indigo-500 to-violet-500', angle: 315 },
+const features = [
+  {
+    icon: Shield,
+    title: "Role-based access",
+    description: "Keep every note, file, and action visible only to the right people.",
+  },
+  {
+    icon: Lock,
+    title: "Audit-friendly sharing",
+    description: "Share updates with confidence — with clear ownership and traceability.",
+  },
+  {
+    icon: MessageSquare,
+    title: "Secure team messaging",
+    description: "Coordinate care without leaking PHI into consumer chat apps.",
+  },
+  {
+    icon: Clock,
+    title: "Real-time handoffs",
+    description: "Status changes move with the patient — no calls, no screenshots, no chasing.",
+  },
+  {
+    icon: Share2,
+    title: "One patient timeline",
+    description: "Appointments, notes, labs, imaging, and prescriptions in one place.",
+  },
+  {
+    icon: Plug,
+    title: "Integrations when you need them",
+    description: "Connect systems and workflows without rebuilding your stack overnight.",
+  },
 ];
-
-// Calculate position based on angle around a circle
-const getPosition = (angle: number, radius: number = 38) => {
-  const radian = (angle - 90) * (Math.PI / 180);
-  return {
-    x: 50 + radius * Math.cos(radian),
-    y: 50 + radius * Math.sin(radian),
-  };
-};
 
 export default function TeamCollaboration() {
   return (
-    <section className="py-24 bg-gradient-to-b from-background to-muted/30 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          {/* Content */}
+    <section className="py-24 bg-gradient-to-b from-background via-primary/5 to-background">
+      <div className="container mx-auto px-4">
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
+          {/* Left content */}
           <motion.div
-            initial={{ opacity: 0, x: -40 }}
+            initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.6 }}
+            className="space-y-8"
           >
-            <h2 className="text-4xl md:text-5xl font-extralight tracking-tight text-foreground mb-6">
-              Seamless Team
-              <br />
-              <span className="font-normal text-primary">Collaboration</span>
-            </h2>
-            <p className="text-lg text-muted-foreground font-light mb-8 leading-relaxed">
-              Connect your entire healthcare ecosystem around unified patient records. 
-              Doctors, labs, pharmacies, imaging centers, and administrators — all working together seamlessly.
-            </p>
-
             <div className="space-y-4">
-              {[
-                { icon: MessageCircle, text: 'Secure HIPAA-compliant messaging' },
-                { icon: Share2, text: 'Instant record sharing between all providers' },
-                { icon: Activity, text: 'Real-time patient status updates' },
-                { icon: FileText, text: 'Collaborative care coordination' },
-              ].map((feature, index) => (
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
+                <Users className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-primary">
+                  For CTOs & Operators
+                </span>
+              </div>
+
+              <h2 className="text-4xl font-bold">
+                One record. One workflow.{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-600">
+                  Zero handoffs.
+                </span>
+              </h2>
+
+              <p className="text-xl text-muted-foreground">
+                Coordinate care across doctors, admins, labs, pharmacies, and imaging — without
+                chasing files or duplicating work.
+              </p>
+            </div>
+
+            <div className="grid gap-6">
+              {features.map((feature, index) => (
                 <motion.div
-                  key={feature.text}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
+                  key={index}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="flex items-center gap-4"
+                  transition={{ delay: index * 0.1, duration: 0.5 }}
+                  className="flex gap-4 p-4 rounded-xl bg-white/50 border border-primary/10 backdrop-blur-sm"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <feature.icon className="w-5 h-5 text-primary" />
+                  <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <feature.icon className="h-6 w-6 text-primary" />
                   </div>
-                  <span className="text-foreground">{feature.text}</span>
+                  <div className="space-y-1">
+                    <h3 className="font-semibold">{feature.title}</h3>
+                    <p className="text-sm text-muted-foreground">{feature.description}</p>
+                  </div>
                 </motion.div>
               ))}
             </div>
           </motion.div>
 
-          {/* Interactive Visualization - Circular Layout */}
+          {/* Right visualization */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="relative aspect-square max-w-md mx-auto w-full"
+            transition={{ duration: 0.6 }}
+            className="relative"
           >
-            {/* Rotating outer ring */}
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
-              className="absolute inset-[10%] border-2 border-dashed border-border/30 rounded-full"
-            />
+            <div className="relative bg-white/30 border border-primary/10 rounded-3xl p-8 backdrop-blur-sm">
+              {/* Central hub */}
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-purple-500/20 rounded-full blur-3xl opacity-50" />
 
-            {/* Animated pulses */}
-            {[...Array(3)].map((_, i) => (
-              <motion.div
-                key={i}
-                initial={{ scale: 0.3, opacity: 0.5 }}
-                animate={{ scale: 1.5, opacity: 0 }}
-                transition={{ duration: 3, repeat: Infinity, delay: i * 1 }}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full border-2 border-primary/40"
-              />
-            ))}
-
-            {/* Central Docito Hub */}
-            <motion.div
-              animate={{ 
-                boxShadow: [
-                  '0 0 30px rgba(59, 130, 246, 0.2)',
-                  '0 0 60px rgba(59, 130, 246, 0.4)',
-                  '0 0 30px rgba(59, 130, 246, 0.2)',
-                ]
-              }}
-              transition={{ duration: 3, repeat: Infinity }}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center z-20"
-            >
-              <span className="text-primary-foreground font-bold text-lg tracking-tight">Docito</span>
-            </motion.div>
-
-            {/* Connection Lines SVG */}
-            <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 5 }}>
-              <defs>
-                <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.1" />
-                  <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity="0.4" />
-                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.1" />
-                </linearGradient>
-              </defs>
-              {teamMembers.map((member, index) => {
-                const pos = getPosition(member.angle);
-                return (
-                  <motion.line
-                    key={`line-${member.id}`}
-                    x1="50%"
-                    y1="50%"
-                    x2={`${pos.x}%`}
-                    y2={`${pos.y}%`}
-                    stroke="url(#lineGradient)"
-                    strokeWidth="2"
-                    initial={{ pathLength: 0, opacity: 0 }}
-                    whileInView={{ pathLength: 1, opacity: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.8, delay: 0.2 + index * 0.1 }}
-                  />
-                );
-              })}
-              
-              {/* Animated data flow dots */}
-              {teamMembers.map((member, index) => {
-                const pos = getPosition(member.angle);
-                return (
-                  <motion.circle
-                    key={`dot-${member.id}`}
-                    r="3"
-                    fill="hsl(var(--primary))"
-                    initial={{ cx: "50%", cy: "50%" }}
-                    animate={{ 
-                      cx: [`50%`, `${pos.x}%`, `50%`],
-                      cy: [`50%`, `${pos.y}%`, `50%`]
-                    }}
-                    transition={{ 
-                      duration: 3,
-                      repeat: Infinity,
-                      delay: index * 0.4,
-                      ease: "easeInOut"
-                    }}
-                  />
-                );
-              })}
-            </svg>
-
-            {/* Team Members - Evenly distributed around circle */}
-            {teamMembers.map((member, index) => {
-              const Icon = member.icon;
-              const pos = getPosition(member.angle);
-              return (
                 <motion.div
-                  key={member.id}
-                  initial={{ scale: 0, opacity: 0 }}
-                  whileInView={{ scale: 1, opacity: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: 0.3 + index * 0.08, type: 'spring', stiffness: 200 }}
-                  style={{
-                    position: 'absolute',
-                    left: `${pos.x}%`,
-                    top: `${pos.y}%`,
-                    zIndex: 10,
-                  }}
-                  className="group -translate-x-1/2 -translate-y-1/2"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+                  className="relative w-64 h-64 mx-auto"
                 >
-                  <motion.div
-                    whileHover={{ scale: 1.2 }}
-                    animate={{ 
-                      y: [0, -4, 0],
-                    }}
-                    transition={{ 
-                      y: { duration: 2 + index * 0.2, repeat: Infinity, ease: "easeInOut" },
-                      scale: { duration: 0.2 }
-                    }}
-                    className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br ${member.color} p-[2px] cursor-pointer shadow-lg`}
-                  >
-                    <div className="w-full h-full rounded-2xl bg-background flex items-center justify-center">
-                      <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-foreground" />
-                    </div>
-                  </motion.div>
-                  {/* Label only shows on hover */}
-                  <motion.div 
-                    initial={{ opacity: 0, y: 5, scale: 0.9 }}
-                    className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 rounded-md bg-card/95 backdrop-blur-sm border border-border/50 shadow-lg whitespace-nowrap text-[10px] sm:text-xs font-medium pointer-events-none z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                  >
-                    {member.role}
-                  </motion.div>
+                  {/* Outer ring */}
+                  <div className="absolute inset-0 border-2 border-dashed border-primary/20 rounded-full" />
+
+                  {/* Inner ring */}
+                  <div className="absolute inset-12 border border-primary/30 rounded-full" />
+
+                  {/* Center */}
+                  <div className="absolute inset-24 bg-gradient-to-r from-primary to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                    <Activity className="h-12 w-12 text-white" />
+                  </div>
+
+                  {/* Nodes */}
+                  {[
+                    { icon: Stethoscope, label: "Clinicians", angle: 0 },
+                    { icon: FileText, label: "Records", angle: 72 },
+                    { icon: MessageSquare, label: "Messaging", angle: 144 },
+                    { icon: Shield, label: "Access", angle: 216 },
+                    { icon: Clock, label: "Ops", angle: 288 },
+                  ].map((node, index) => (
+                    <motion.div
+                      key={index}
+                      animate={{ rotate: -360 }}
+                      transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+                      className="absolute w-12 h-12 bg-white rounded-xl shadow-lg flex items-center justify-center border border-primary/10"
+                      style={{
+                        top: "50%",
+                        left: "50%",
+                        transform: `translate(-50%, -50%) rotate(${node.angle}deg) translateY(-120px) rotate(-${node.angle}deg)`,
+                      }}
+                    >
+                      <node.icon className="h-6 w-6 text-primary" />
+                    </motion.div>
+                  ))}
                 </motion.div>
-              );
-            })}
+
+                {/* Connection lines */}
+                <div className="mt-8 space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-white/50 rounded-xl border border-primary/10">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <Stethoscope className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">Care team</p>
+                        <p className="text-xs text-muted-foreground">
+                          Assigned + notified automatically
+                        </p>
+                      </div>
+                    </div>
+                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 bg-white/50 rounded-xl border border-primary/10">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <Shield className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">Access controls</p>
+                        <p className="text-xs text-muted-foreground">
+                          Roles, permissions, and audit trails
+                        </p>
+                      </div>
+                    </div>
+                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  </div>
+                </div>
+              </div>
+            </div>
           </motion.div>
         </div>
       </div>
