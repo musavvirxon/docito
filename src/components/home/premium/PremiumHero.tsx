@@ -1,192 +1,198 @@
 // src/components/home/premium/PremiumHero.tsx
-import { useCallback, useMemo } from "react";
-import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  ArrowRight,
+  Building2,
+  FlaskConical,
+  Pill,
+  ScanLine,
+  Stethoscope,
+  Users,
+} from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import LazyHeroOrb3D from "./LazyHeroOrb3D";
 import { trackMarketingEvent } from "@/lib/marketing";
 
-import LazyHeroOrb3D from "./HeroOrb3D";
+type EcosystemChip = {
+  label: string;
+  Icon: React.ComponentType<{ className?: string }>;
+};
 
-export default function PremiumHero() {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-
-  const heroTitle = useMemo(
-    () =>
-      t("home:premium.hero.title", "Less admin. More care") as unknown as string,
-    [t]
-  );
-
-  const titleParts = useMemo(() => heroTitle.split(" "), [heroTitle]);
-  const titleMain = useMemo(
-    () => titleParts.slice(0, -1).join(" "),
-    [titleParts]
-  );
-  const titleAccent = useMemo(
-    () => titleParts.slice(-1).join(" "),
-    [titleParts]
-  );
-
-  const scrollToSearch = useCallback(() => {
-    const el = document.getElementById("smart-search");
+function scrollToId(id: string) {
+  try {
+    const el = document.getElementById(id);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "start" });
-      return;
+      return true;
     }
-    // Fallback: keep users moving
-    navigate("/doctors");
-  }, [navigate]);
+  } catch {
+    // no-op
+  }
+  return false;
+}
 
-  const onStartTrial = useCallback(() => {
-    void trackMarketingEvent("home_cta_start_trial", { placement: "hero" });
+export default function PremiumHero() {
+  const navigate = useNavigate();
+  const [isVisible, setIsVisible] = useState(false);
+
+  const ecosystem = useMemo<EcosystemChip[]>(
+    () => [
+      { label: "Doctors", Icon: Stethoscope },
+      { label: "Clinics", Icon: Building2 },
+      { label: "Labs", Icon: FlaskConical },
+      { label: "Imaging", Icon: ScanLine },
+      { label: "Pharmacies", Icon: Pill },
+      { label: "Patients", Icon: Users },
+    ],
+    []
+  );
+
+  // Trigger CSS animations after mount
+  useEffect(() => {
+    const timer = requestAnimationFrame(() => setIsVisible(true));
+    return () => cancelAnimationFrame(timer);
+  }, []);
+
+  const startTrial = () => {
+    void trackMarketingEvent({
+      event_name: "home_hero_primary_click",
+      meta: { cta: "start_trial", section: "hero" },
+    });
     navigate("/auth?mode=signup");
-  }, [navigate]);
+  };
 
-  const onFindCare = useCallback(() => {
-    void trackMarketingEvent("home_cta_find_care", { placement: "hero" });
-    scrollToSearch();
-  }, [scrollToSearch]);
+  const findCare = () => {
+    void trackMarketingEvent({
+      event_name: "home_hero_secondary_click",
+      meta: { cta: "find_care", section: "hero" },
+    });
+    if (!scrollToId("search")) {
+      navigate("/#search");
+    }
+  };
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-primary/10 via-background to-background pt-28 pb-24">
-      {/* Background decoration */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
-      </div>
-
-      <div className="container relative z-10 mx-auto px-4">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left content */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="space-y-8"
-          >
-            <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-4 py-2 text-sm text-primary">
-              <CheckCircle2 className="mr-2 h-4 w-4" />
-              <span>
-                {t(
-                  "home:premium.hero.badge",
-                  "All your care, in sync — patients and providers"
-                )}
+    <section className="relative min-h-screen flex items-center overflow-visible pt-20">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center">
+        {/* Left side - Text content */}
+        <div className="relative z-10 w-full lg:w-1/2 py-16 lg:py-20 lg:pr-8">
+          <div className="text-left space-y-8">
+            {/* Badge */}
+            <div
+              className={`transform transition-all duration-500 ease-out ${
+                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
+              }`}
+            >
+              <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 backdrop-blur-sm text-primary text-sm font-medium rounded-full border border-primary/20">
+                <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                All your care, in sync
               </span>
             </div>
 
-            <div className="space-y-4">
-              <motion.p
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.6 }}
-                className="text-lg font-medium text-primary"
-              >
-                {t("home:premium.hero.subtitle", "Healthcare, without the chaos")}
-              </motion.p>
+            {/* Title (keep unanimated for LCP) */}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-light tracking-tight text-foreground">
+              <span className="block">Less admin. More care.</span>
+              <span className="block bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent font-normal">
+                One platform for every step of healthcare.
+              </span>
+            </h1>
 
-              <motion.h1
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.6 }}
-                className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight"
-              >
-                {titleMain}{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-600">
-                  {titleAccent}
-                </span>
-              </motion.h1>
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-xl font-light leading-relaxed">
+              Docito connects patients, providers, labs, imaging, pharmacies, and insurance—so bookings, records,
+              prescriptions, results, and payments stay in one place.
+            </p>
 
-              <motion.p
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.6 }}
-                className="text-xl text-muted-foreground max-w-xl"
-              >
-                {t(
-                  "home:premium.hero.description",
-                  "Docito brings scheduling, records, prescriptions, payments, and analytics into one connected workflow — so teams spend less time on admin and patients get faster, smoother care."
-                )}
-              </motion.p>
+            {/* For Patients / For Providers */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
+              <div className="p-5 rounded-3xl bg-background/50 backdrop-blur-xl border border-border/50">
+                <div className="text-sm font-medium text-foreground mb-2">For patients</div>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li>• Find and book verified care in minutes</li>
+                  <li>• Keep results, prescriptions, and follow-ups together</li>
+                  <li>• Pay securely and get reminders automatically</li>
+                </ul>
+              </div>
+              <div className="p-5 rounded-3xl bg-background/50 backdrop-blur-xl border border-border/50">
+                <div className="text-sm font-medium text-foreground mb-2">For clinics & teams</div>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li>• Online scheduling, messaging, and billing</li>
+                  <li>• Unified patient record across your workflow</li>
+                  <li>• Automations that reduce no-shows and admin</li>
+                </ul>
+              </div>
             </div>
 
-            {/* CTAs */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.45, duration: 0.6 }}
-              className="flex flex-col sm:flex-row gap-4"
+            {/* CTA Buttons */}
+            <div
+              className={`flex flex-col sm:flex-row gap-4 transform transition-all duration-500 ease-out delay-300 ${
+                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
+              }`}
             >
-              <Button
-                size="lg"
-                className="group text-base px-8"
-                onClick={onStartTrial}
+              <button
+                onClick={startTrial}
+                className="px-8 py-4 bg-primary text-primary-foreground font-medium rounded-full shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all inline-flex items-center justify-center gap-2"
               >
-                {t("home:premium.hero.primaryCta", "Start free 14-day trial")}
-                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-              </Button>
-
-              <Button
-                size="lg"
-                variant="outline"
-                className="text-base px-8"
-                onClick={onFindCare}
+                Start free 14-day trial
+                <ArrowRight className="w-4 h-4" />
+              </button>
+              <button
+                onClick={findCare}
+                className="px-8 py-4 bg-background/80 backdrop-blur-sm text-foreground font-medium rounded-full border border-border/50 hover:bg-background/90 hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
-                {t("home:premium.hero.secondaryCta", "Find care now")}
-              </Button>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.55, duration: 0.6 }}
-              className="text-sm text-muted-foreground"
-            >
-              {t(
-                "home:premium.hero.microcopy",
-                "No demo calls. Start in minutes. Cancel anytime."
-              )}
-            </motion.div>
-
-            {/* Feature highlights */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.6 }}
-              className="flex flex-wrap gap-4"
-            >
-              {[
-                t("home:premium.hero.features.integrated", "Integrated workflow"),
-                t("home:premium.hero.features.secure", "Privacy-first"),
-                t("home:premium.hero.features.fast", "Built for speed"),
-                t("home:premium.hero.features.support", "Patient + practice ready"),
-              ].map((feature, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/50 border border-primary/10 backdrop-blur-sm"
-                >
-                  <CheckCircle2 className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium">{feature}</span>
-                </div>
-              ))}
-            </motion.div>
-          </motion.div>
-
-          {/* Right 3D orb */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4, duration: 0.8 }}
-            className="relative h-[500px] lg:h-[600px]"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-purple-500/20 rounded-3xl blur-3xl opacity-50" />
-            <div className="relative h-full rounded-3xl overflow-hidden border border-primary/10 bg-white/5 backdrop-blur-sm">
-              <LazyHeroOrb3D />
+                Find care now
+              </button>
             </div>
-          </motion.div>
+
+            <div className="text-sm text-muted-foreground">
+              No demo. No credit card to start. Cancel anytime.
+            </div>
+
+            {/* Mobile-only ecosystem chips (replaces 3D orb on small screens) */}
+            <div className="md:hidden pt-2">
+              <div className="grid grid-cols-3 gap-2 max-w-sm">
+                {ecosystem.map(({ label, Icon }) => (
+                  <div
+                    key={label}
+                    className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-muted/30 border border-border/40"
+                  >
+                    <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <Icon className="w-4 h-4 text-primary" />
+                    </div>
+                    <span className="text-xs font-medium text-foreground">{label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
+
+        {/* Right side - 3D Globe (desktop/tablet only) */}
+        <div className="hidden md:block w-full lg:w-1/2 h-[520px] lg:h-[720px] relative">
+          <LazyHeroOrb3D />
+        </div>
+      </div>
+
+      {/* Scroll indicator */}
+      <div
+        className={`absolute bottom-8 left-1/2 -translate-x-1/2 z-10 transition-opacity duration-500 delay-[1500ms] ${
+          isVisible ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        <button
+          type="button"
+          onClick={() => {
+            void trackMarketingEvent({
+              event_name: "home_scroll_indicator_click",
+              meta: { section: "hero", target: "search" },
+            });
+            scrollToId("search");
+          }}
+          aria-label="Scroll to search"
+          className="w-6 h-10 border-2 border-muted-foreground/30 rounded-full flex justify-center animate-bounce bg-transparent"
+        >
+          <div className="w-1.5 h-3 bg-muted-foreground/50 rounded-full mt-2" />
+        </button>
       </div>
     </section>
   );
