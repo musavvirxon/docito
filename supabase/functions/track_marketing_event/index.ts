@@ -1,90 +1,118 @@
-// supabase/functions/track_marketing_event/index.ts
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+// File: supabase/functions/track_marketing_event/index.ts
 
+/**
+ * Track Marketing Event Edge Function
+ *
+ * Records lightweight marketing/product events (CTA clicks, signups, etc.).
+ * - Supports anonymous + authenticated calls (user_id is nullable)
+ * - Uses service role to insert (RLS can remain locked down)
+ * - Includes rate limiting + schema validation
+ */
+
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import {
   secureHandler,
   jsonResponse,
   errorResponse,
 } from "../_shared/security-middleware.ts";
+import { sanitizeString } from "../_shared/input-validator.ts";
 
-import {
-  MAX_LENGTHS,
-  PATTERNS,
-  type ValidationSchema,
-} from "../_shared/input-validator.ts";
-
-type TrackMarketingEventBody = {
-  event_name: string;
-  page_path: string;
-  meta?: Record<string, unknown> | null;
-};
-
-const validationSchema: ValidationSchema<TrackMarketingEventBody> = {
+const marketingEventSchema = {
   event_name: {
-    type: "string",
+    type: "string" as const,
     required: true,
-    maxLength: 120,
-    pattern: PATTERNS.noXss,
+    minLength: 2,
+    maxLength: 80,
+    sanitize: true,
   },
   page_path: {
-    type: "string",
-    required: true,
+    type: "string" as const,
+    required: false,
+    maxLength: 300,
+    sanitize: true,
+  },
+  referrer: {
+    type: "string" as const,
+    required: false,
     maxLength: 500,
-    pattern: PATTERNS.noXss,
+    sanitize: true,
+  },
+  user_agent: {
+    type: "string" as const,
+    required: false,
+    maxLength: 500,
+    sanitize: true,
   },
   meta: {
-    type: "object",
+    type: "object" as const,
     required: false,
-    maxLength: MAX_LENGTHS.json,
   },
 };
 
 serve(async (req) => {
-  const { response, context, validatedBody, requestId } = await secureHandler(
+  const { response, context, validatedBody } = await secureHandler(
     req,
     "track_marketing_event",
     {
-      allowedMethods: ["POST", "OPTIONS"],
+      rateLimit: "standard",
       requireAuth: false,
-      rateLimit: "form",
-      validationSchema,
+      allowedMethods: ["POST", "OPTIONS"],
+      validationSchema: marketingEventSchema,
       logRequests: false,
     }
   );
 
   if (response) return response;
-  if (!context) return errorResponse("security_context_missing", 500, null, requestId);
-
-  // Require Authorization header (anon or user JWT)
-  const authHeader = req.headers.get("authorization");
-  if (!authHeader) {
-    return errorResponse("missing_authorization", 401, null, requestId);
+  if (!context || !validatedBody) {
+    return errorResponse("Internal server error", 500);
   }
 
-  const body = validatedBody as TrackMarketingEventBody;
+  try {
+    const body = validatedBody as Record<string, unknown>;
 
-  const insertPayload = {
-    event_name: body.event_name,
-    page_path: body.page_path,
-    meta: body.meta ?? null,
-    user_id: context.userId ?? null,
-    ip_address: context.ip && context.ip !== "unknown" ? context.ip : null,
-    user_agent: context.userAgent ?? null,
-    referrer: req.headers.get("referer") ?? null,
-  };
+    const eventNameRaw = String(body.event_name || "");
+    const event_name = sanitizeString(eventNameRaw, 80);
 
-  const { error } = await context.serviceClient
-    .from("marketing_events")
-    .insert(insertPayload);
+    const page_path = body.page_path
+      ? sanitizeString(String(body.page_path), 300)
+      : null;
 
-  if (error) {
-    return errorResponse(
-      "failed_to_record",
-      500,
-      { message: error.message },
-      requestId
-    );
+    const referrer = body.referrer
+      ? sanitizeString(String(body.referrer), 500)
+      : req.headers.get("referer")
+        ? sanitizeString(String(req.headers.get("referer")), 500)
+        : null;
+
+    const uaFromBody = body.user_agent ? String(body.user_agent) : "";
+    const user_agent = sanitizeString(context.userAgent || uaFromBody, 500);
+
+    const meta =
+      body.meta && typeof body.meta === "object" && !Array.isArray(body.meta)
+        ? (body.meta as Record<string, unknown>)
+        : {};
+
+    const insertRow = {
+      user_id: context.user?.id ?? null,
+      event_name,
+      page_path,
+      referrer,
+      user_agent: user_agent || null,
+      ip: context.ip && context.ip !== "unknown" ? context.ip : null,
+      meta,
+    };
+
+    const { error } = await context.serviceClient
+      .from("marketing_events")
+      .insert(insertRow);
+
+    if (error) {
+      console.error("track_marketing_event insert error:", error);
+      return errorResponse("Failed to record event", 400);
+    }
+
+    return jsonResponse({ ok: true });
+  } catch (e) {
+    console.error("track_marketing_event error:", e);
+    return errorResponse("Internal server error", 500);
   }
-
-  return jsonResponse({ ok: true }, requestId);
 });
