@@ -1,6 +1,8 @@
-import { useRef, useMemo, useEffect, useState, useCallback } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Sphere, OrbitControls, Html, Line } from '@react-three/drei';
+// src/components/home/premium/HeroOrb3D.tsx
+// Path: src/components/home/premium/HeroOrb3D.tsx
+import { useRef, useState, useMemo, useEffect, useCallback } from 'react';
+import { Canvas, useFrame, useThree, invalidate } from '@react-three/fiber';
+import { OrbitControls, Html, Sphere } from '@react-three/drei';
 import * as THREE from 'three';
 import { 
   Building2, 
@@ -8,288 +10,299 @@ import {
   FlaskConical, 
   Pill, 
   Users,
+  ScanLine,
   Heart,
   type LucideIcon
 } from 'lucide-react';
 
-// Mobile detection hook - use matchMedia for best performance (no resize listener)
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false);
-  
-  useEffect(() => {
-    const mql = window.matchMedia('(max-width: 768px)');
-    setIsMobile(mql.matches);
-    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mql.addEventListener('change', onChange);
-    return () => mql.removeEventListener('change', onChange);
-  }, []);
-  
-  return isMobile;
-}
-
-// Node data interface
-interface NodeData {
+// Types
+type MedicalNode = {
   id: string;
   name: string;
   role: string;
   description: string;
   Icon: LucideIcon;
   color: string;
-  position: THREE.Vector3;
   orbitRadius: number;
   orbitSpeed: number;
   orbitOffset: number;
   verticalOffset: number;
-}
+};
 
-// Medical ecosystem nodes - 6 key nodes evenly spaced
+type NodeData = MedicalNode & {
+  position: THREE.Vector3;
+};
+
+type ConnectionLineProps = {
+  nodePosition: THREE.Vector3;
+  color: string;
+  opacity: number;
+};
+
+// Medical ecosystem nodes - 7 nodes evenly spaced
+const ORBIT_STEP = (Math.PI * 2) / 7;
 const medicalNodes: Omit<NodeData, 'position'>[] = [
-  { id: 'hospital', name: 'Hospital', role: 'Healthcare Center', description: 'Multi-specialty healthcare center', Icon: Building2, color: '#3b82f6', orbitRadius: 2.4, orbitSpeed: 0.08, orbitOffset: 0, verticalOffset: 0.6 },
-  { id: 'clinic', name: 'Clinic', role: 'Primary Care', description: 'Primary care facility', Icon: Heart, color: '#ec4899', orbitRadius: 2.4, orbitSpeed: 0.08, orbitOffset: Math.PI / 3, verticalOffset: -0.5 },
-  { id: 'lab', name: 'Laboratory', role: 'Diagnostics', description: 'Advanced diagnostic testing', Icon: FlaskConical, color: '#8b5cf6', orbitRadius: 2.4, orbitSpeed: 0.08, orbitOffset: Math.PI * 2 / 3, verticalOffset: 0.4 },
-  { id: 'pharmacy', name: 'Pharmacy', role: 'Medications', description: '24/7 medication services', Icon: Pill, color: '#10b981', orbitRadius: 2.4, orbitSpeed: 0.08, orbitOffset: Math.PI, verticalOffset: -0.6 },
-  { id: 'doctor', name: 'Doctors', role: 'Specialists', description: 'Medical specialists', Icon: Stethoscope, color: '#06b6d4', orbitRadius: 2.4, orbitSpeed: 0.08, orbitOffset: Math.PI * 4 / 3, verticalOffset: 0.5 },
-  { id: 'patient', name: 'Patients', role: 'Care Recipients', description: 'Connected health monitoring', Icon: Users, color: '#f59e0b', orbitRadius: 2.4, orbitSpeed: 0.08, orbitOffset: Math.PI * 5 / 3, verticalOffset: -0.4 },
+  {
+    id: 'hospital',
+    name: 'Hospital',
+    role: 'Care Hub',
+    description: 'Coordinate inpatient and emergency care with unified records',
+    Icon: Building2,
+    color: '#3b82f6', // blue
+    orbitRadius: 2.8,
+    orbitSpeed: 0.2,
+    orbitOffset: 0,
+    verticalOffset: 0.8,
+  },
+  {
+    id: 'clinic',
+    name: 'Clinic',
+    role: 'Primary Care',
+    description: 'Streamline appointments, records, and patient follow-ups',
+    Icon: Heart,
+    color: '#10b981', // emerald
+    orbitRadius: 2.6,
+    orbitSpeed: 0.25,
+    orbitOffset: ORBIT_STEP,
+    verticalOffset: -0.2,
+  },
+  {
+    id: 'lab',
+    name: 'Laboratory',
+    role: 'Diagnostics',
+    description: 'Fast test ordering and results sharing across providers',
+    Icon: FlaskConical,
+    color: '#8b5cf6', // purple
+    orbitRadius: 2.4,
+    orbitSpeed: 0.3,
+    orbitOffset: ORBIT_STEP * 2,
+    verticalOffset: 0.4,
+  },
+  {
+    id: 'imaging',
+    name: 'Imaging',
+    role: 'Radiology',
+    description: 'Orders, scheduling, and reports for MRI, CT, X-ray, and ultrasound',
+    Icon: ScanLine,
+    color: '#06b6d4', // cyan
+    orbitRadius: 2.2,
+    orbitSpeed: 0.28,
+    orbitOffset: ORBIT_STEP * 3,
+    verticalOffset: -0.75,
+  },
+  {
+    id: 'pharmacy',
+    name: 'Pharmacy',
+    role: 'Medications',
+    description: 'Digital prescriptions sent directly to the right pharmacy',
+    Icon: Pill,
+    color: '#f59e0b', // amber
+    orbitRadius: 2.5,
+    orbitSpeed: 0.22,
+    orbitOffset: ORBIT_STEP * 4,
+    verticalOffset: -0.6,
+  },
+  {
+    id: 'doctor',
+    name: 'Doctor',
+    role: 'Specialist',
+    description: 'Connect specialists for coordinated care and referrals',
+    Icon: Stethoscope,
+    color: '#ef4444', // red
+    orbitRadius: 2.7,
+    orbitSpeed: 0.18,
+    orbitOffset: ORBIT_STEP * 5,
+    verticalOffset: 0.1,
+  },
+  {
+    id: 'patient',
+    name: 'Patient',
+    role: 'Care Recipient',
+    description: 'Book appointments and access records in one place',
+    Icon: Users,
+    color: '#ec4899', // pink
+    orbitRadius: 2.3,
+    orbitSpeed: 0.35,
+    orbitOffset: ORBIT_STEP * 6,
+    verticalOffset: -1.0,
+  },
 ];
 
-// Scroll opacity hook - optimized to avoid forced reflow
+// Custom hook for scroll-based opacity (prevents LCP issues by not animating initially)
 function useScrollOpacity() {
   const [opacity, setOpacity] = useState(1);
-  
+
   useEffect(() => {
-    let rafId: number | null = null;
-    
     const handleScroll = () => {
-      // Batch scroll reads in rAF to avoid forced reflow
-      if (rafId !== null) return;
-      
-      rafId = requestAnimationFrame(() => {
-        const scrollY = window.scrollY;
-        const newOpacity = Math.max(0.3, 1 - scrollY / 600);
-        setOpacity(newOpacity);
-        rafId = null;
-      });
-    };
-    
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      if (rafId !== null) {
-        cancelAnimationFrame(rafId);
+      const scrollPosition = window.scrollY;
+      const heroHeight = window.innerHeight;
+      const fadeStart = heroHeight * 0.4;
+      const fadeEnd = heroHeight * 0.8;
+
+      if (scrollPosition < fadeStart) {
+        setOpacity(1);
+      } else if (scrollPosition > fadeEnd) {
+        setOpacity(0);
+      } else {
+        const fadeProgress = (scrollPosition - fadeStart) / (fadeEnd - fadeStart);
+        setOpacity(1 - fadeProgress);
       }
     };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-  
+
   return opacity;
 }
 
-// Tab visibility hook - pause rendering when tab is hidden
+// Custom hook for page visibility
 function useTabVisibility() {
   const [isVisible, setIsVisible] = useState(true);
-  
+
   useEffect(() => {
     const handleVisibilityChange = () => {
-      setIsVisible(document.visibilityState === 'visible');
+      setIsVisible(!document.hidden);
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
-  
+
   return isVisible;
 }
 
-// Component to invalidate frame on demand
+// Custom hook to detect mobile devices
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
+  return isMobile;
+}
+
+// Frame invalidator component for performance
 function FrameInvalidator({ isTabVisible }: { isTabVisible: boolean }) {
-  const { invalidate } = useThree();
+  const { invalidate: invalidateFrame } = useThree();
   
   useFrame(() => {
     if (isTabVisible) {
-      invalidate();
+      invalidateFrame();
     }
   });
   
   return null;
 }
 
-// Earth-like Globe
-function EarthGlobe({ opacity, isMobile }: { opacity: number; isMobile: boolean }) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const cloudsRef = useRef<THREE.Mesh>(null);
-  const atmosphereRef = useRef<THREE.Mesh>(null);
-  
-  // Create Earth texture with continents
-  const earthTexture = useMemo(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 1024;
-    canvas.height = 512;
-    const ctx = canvas.getContext('2d')!;
-    
-    // Ocean base - vibrant blue
-    const oceanGradient = ctx.createRadialGradient(512, 256, 0, 512, 256, 512);
-    oceanGradient.addColorStop(0, '#1e88e5');
-    oceanGradient.addColorStop(0.5, '#1565c0');
-    oceanGradient.addColorStop(1, '#0d47a1');
-    ctx.fillStyle = oceanGradient;
-    ctx.fillRect(0, 0, 1024, 512);
-    
-    // Add ocean depth variations
-    ctx.fillStyle = 'rgba(13, 71, 161, 0.3)';
-    for (let i = 0; i < 30; i++) {
-      ctx.beginPath();
-      ctx.ellipse(Math.random() * 1024, Math.random() * 512, Math.random() * 80 + 40, Math.random() * 40 + 20, 0, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    
-    // Continent colors
-    const landGreen = '#2e7d32';
-    const landLight = '#4caf50';
-    const desertColor = '#c9a227';
-    const mountainColor = '#5d4037';
-    
-    // North America
-    ctx.fillStyle = landGreen;
-    ctx.beginPath();
-    ctx.moveTo(120, 80);
-    ctx.bezierCurveTo(180, 60, 260, 80, 280, 140);
-    ctx.bezierCurveTo(290, 180, 260, 220, 200, 240);
-    ctx.bezierCurveTo(140, 260, 100, 220, 90, 180);
-    ctx.bezierCurveTo(80, 140, 100, 100, 120, 80);
-    ctx.fill();
-    
-    ctx.fillStyle = landLight;
-    ctx.beginPath();
-    ctx.ellipse(200, 150, 50, 35, 0.2, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Central America
-    ctx.fillStyle = landGreen;
-    ctx.beginPath();
-    ctx.ellipse(230, 260, 25, 40, 0.5, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // South America
-    ctx.beginPath();
-    ctx.moveTo(260, 290);
-    ctx.bezierCurveTo(300, 300, 320, 360, 300, 420);
-    ctx.bezierCurveTo(280, 460, 240, 450, 230, 400);
-    ctx.bezierCurveTo(220, 350, 240, 310, 260, 290);
-    ctx.fill();
-    
-    ctx.fillStyle = landLight;
-    ctx.beginPath();
-    ctx.ellipse(270, 330, 25, 30, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Europe
-    ctx.fillStyle = landGreen;
-    ctx.beginPath();
-    ctx.ellipse(520, 120, 60, 40, 0.1, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(560, 140, 40, 25, 0.3, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Africa
-    ctx.beginPath();
-    ctx.moveTo(480, 180);
-    ctx.bezierCurveTo(540, 170, 580, 200, 580, 280);
-    ctx.bezierCurveTo(580, 360, 540, 400, 500, 400);
-    ctx.bezierCurveTo(460, 400, 440, 340, 450, 280);
-    ctx.bezierCurveTo(455, 220, 470, 190, 480, 180);
-    ctx.fill();
-    
-    // Sahara desert
-    ctx.fillStyle = desertColor;
-    ctx.beginPath();
-    ctx.ellipse(520, 220, 50, 30, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Asia
-    ctx.fillStyle = landGreen;
-    ctx.beginPath();
-    ctx.moveTo(600, 80);
-    ctx.bezierCurveTo(700, 60, 820, 80, 860, 140);
-    ctx.bezierCurveTo(880, 180, 860, 240, 780, 260);
-    ctx.bezierCurveTo(700, 280, 640, 260, 620, 220);
-    ctx.bezierCurveTo(590, 160, 580, 100, 600, 80);
-    ctx.fill();
-    
-    // India
-    ctx.beginPath();
-    ctx.ellipse(700, 280, 35, 50, 0.2, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Southeast Asia
-    ctx.beginPath();
-    ctx.ellipse(780, 290, 40, 35, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Middle East desert
-    ctx.fillStyle = desertColor;
-    ctx.beginPath();
-    ctx.ellipse(620, 200, 35, 25, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Siberia mountains
-    ctx.fillStyle = mountainColor;
-    ctx.beginPath();
-    ctx.ellipse(740, 100, 60, 20, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Australia
-    ctx.fillStyle = desertColor;
-    ctx.beginPath();
-    ctx.ellipse(820, 360, 55, 40, 0.2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = landGreen;
-    ctx.beginPath();
-    ctx.ellipse(800, 380, 20, 15, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(850, 350, 15, 12, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Antarctica
-    ctx.fillStyle = '#eceff1';
-    ctx.beginPath();
-    ctx.ellipse(512, 490, 300, 25, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Arctic ice
-    ctx.beginPath();
-    ctx.ellipse(512, 20, 200, 20, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.ClampToEdgeWrapping;
-    return texture;
-  }, []);
+// Connection line component
+function ConnectionLine({ nodePosition, color, opacity }: ConnectionLineProps) {
+  const points = useMemo(() => {
+    return [
+      new THREE.Vector3(0, 0, 0),
+      nodePosition.clone()
+    ];
+  }, [nodePosition]);
 
-  // Create cloud texture
-  const cloudTexture = useMemo(() => {
+  const geometry = useMemo(() => {
+    return new THREE.BufferGeometry().setFromPoints(points);
+  }, [points]);
+
+  return (
+    <line geometry={geometry}>
+      <lineBasicMaterial color={color} transparent opacity={opacity} />
+    </line>
+  );
+}
+
+// Earth globe component
+function EarthGlobe({ opacity, isMobile }: { opacity: number; isMobile: boolean }) {
+  const globeRef = useRef<THREE.Mesh>(null);
+  
+  // Create earth texture with canvas
+  const earthTexture = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = 512;
     canvas.height = 256;
-    const ctx = canvas.getContext('2d')!;
-    
-    ctx.fillStyle = 'rgba(0, 0, 0, 0)';
-    ctx.fillRect(0, 0, 512, 256);
-    
-    // Cloud patterns - more realistic wispy clouds
-    for (let i = 0; i < 60; i++) {
-      const x = Math.random() * 512;
-      const y = Math.random() * 256;
-      const gradient = ctx.createRadialGradient(x, y, 0, x, y, Math.random() * 30 + 15);
-      gradient.addColorStop(0, 'rgba(255, 255, 255, 0.6)');
-      gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.3)');
-      gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-      ctx.fillStyle = gradient;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+
+    // Background - ocean
+    ctx.fillStyle = '#1e40af';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Add gradient for depth
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, '#1e3a8a');
+    gradient.addColorStop(0.5, '#2563eb');
+    gradient.addColorStop(1, '#1e40af');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw simplified continents
+    ctx.fillStyle = '#10b981';
+    ctx.globalAlpha = 0.7;
+
+    // North America
+    ctx.beginPath();
+    ctx.ellipse(120, 80, 60, 40, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // South America
+    ctx.beginPath();
+    ctx.ellipse(140, 150, 30, 50, 0.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Europe/Africa
+    ctx.beginPath();
+    ctx.ellipse(280, 90, 50, 60, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Asia
+    ctx.beginPath();
+    ctx.ellipse(380, 70, 80, 50, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // India
+    ctx.beginPath();
+    ctx.ellipse(340, 130, 25, 35, 0.1, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Australia
+    ctx.beginPath();
+    ctx.ellipse(420, 180, 40, 25, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Add grid lines
+    ctx.strokeStyle = '#60a5fa';
+    ctx.globalAlpha = 0.3;
+    ctx.lineWidth = 1;
+
+    // Latitude lines
+    for (let i = 1; i < 6; i++) {
+      const y = (canvas.height / 6) * i;
       ctx.beginPath();
-      ctx.ellipse(x, y, Math.random() * 40 + 20, Math.random() * 20 + 10, Math.random() * Math.PI, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
     }
-    
+
+    // Longitude lines
+    for (let i = 1; i < 12; i++) {
+      const x = (canvas.width / 12) * i;
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+      ctx.stroke();
+    }
+
     const texture = new THREE.CanvasTexture(canvas);
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.ClampToEdgeWrapping;
@@ -297,71 +310,51 @@ function EarthGlobe({ opacity, isMobile }: { opacity: number; isMobile: boolean 
   }, []);
 
   useFrame((state) => {
-    // Skip animations on mobile to improve performance
-    if (isMobile) return;
+    // Reduce animation on mobile for better performance
+    if (globeRef.current) {
+      const rotationSpeed = isMobile ? 0.01 : 0.03;
+      globeRef.current.rotation.y = state.clock.elapsedTime * rotationSpeed;
+      globeRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.2) * 0.05;
+    }
     
-    const time = state.clock.elapsedTime;
-    if (meshRef.current) {
-      meshRef.current.rotation.y = time * 0.08;
-    }
-    if (cloudsRef.current) {
-      cloudsRef.current.rotation.y = time * 0.1;
-    }
-    if (atmosphereRef.current) {
-      const pulse = 1 + Math.sin(time * 2) * 0.015;
-      atmosphereRef.current.scale.setScalar(pulse);
+    // Update texture offset for rotation effect
+    if (earthTexture) {
+      const textureSpeed = isMobile ? 0.0005 : 0.001;
+      earthTexture.offset.x = state.clock.elapsedTime * textureSpeed;
     }
   });
 
   return (
     <group>
-      {/* Earth core */}
-      <Sphere ref={meshRef} args={[1, 64, 64]}>
-        <meshPhongMaterial
-          map={earthTexture}
-          shininess={15}
-          specular={new THREE.Color('#4fc3f7')}
+      {/* Earth sphere */}
+      <Sphere ref={globeRef} args={[1.5, isMobile ? 32 : 64, isMobile ? 16 : 32]}>
+        <meshStandardMaterial
+          map={earthTexture || undefined}
           transparent
-          opacity={opacity}
+          opacity={0.9 * opacity}
+          roughness={0.7}
+          metalness={0.1}
+          emissive="#1e40af"
+          emissiveIntensity={0.2}
         />
       </Sphere>
-      
-      {/* Cloud layer */}
-      <Sphere ref={cloudsRef} args={[1.015, 48, 48]}>
+
+      {/* Atmosphere glow */}
+      <Sphere args={[1.55, isMobile ? 16 : 32, isMobile ? 8 : 16]}>
         <meshBasicMaterial
-          map={cloudTexture}
+          color="#60a5fa"
           transparent
-          opacity={0.4 * opacity}
-          depthWrite={false}
-        />
-      </Sphere>
-      
-      {/* Inner atmosphere glow - cyan tint */}
-      <Sphere ref={atmosphereRef} args={[1.05, 32, 32]}>
-        <meshBasicMaterial
-          color="#4fc3f7"
-          transparent
-          opacity={0.12 * opacity}
+          opacity={0.1 * opacity}
           side={THREE.BackSide}
         />
       </Sphere>
-      
-      {/* Outer atmosphere - blue glow */}
-      <Sphere args={[1.12, 32, 32]}>
+
+      {/* Outer glow */}
+      <Sphere args={[1.7, isMobile ? 16 : 32, isMobile ? 8 : 16]}>
         <meshBasicMaterial
-          color="#29b6f6"
+          color="#3b82f6"
           transparent
-          opacity={0.08 * opacity}
-          side={THREE.BackSide}
-        />
-      </Sphere>
-      
-      {/* Far atmosphere haze */}
-      <Sphere args={[1.25, 32, 32]}>
-        <meshBasicMaterial
-          color="#03a9f4"
-          transparent
-          opacity={0.04 * opacity}
+          opacity={0.05 * opacity}
           side={THREE.BackSide}
         />
       </Sphere>
@@ -369,26 +362,9 @@ function EarthGlobe({ opacity, isMobile }: { opacity: number; isMobile: boolean 
   );
 }
 
-// Connection line from node to center
-function ConnectionLine({ nodePosition, color, opacity }: { nodePosition: THREE.Vector3; color: string; opacity: number }) {
-  const points = useMemo(() => {
-    return [new THREE.Vector3(0, 0, 0), nodePosition];
-  }, [nodePosition]);
-
-  return (
-    <Line
-      points={points}
-      color={color}
-      lineWidth={1}
-      transparent
-      opacity={opacity}
-    />
-  );
-}
-
-// Floating Node Component
+// Floating node component
 function FloatingNode({ 
-  node, 
+  node,
   opacity,
   onHover,
   onUnhover,
@@ -406,32 +382,33 @@ function FloatingNode({
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const [localHover, setLocalHover] = useState(false);
-  const [currentPosition, setCurrentPosition] = useState(new THREE.Vector3(node.orbitRadius, node.verticalOffset, 0));
   const [isVisible, setIsVisible] = useState(true);
+  const { camera } = useThree();
   
+  // Calculate actual opacity based on visibility and global opacity
+  const actualOpacity = isVisible ? opacity : opacity * 0.1;
+
+  // Animate node position
   useFrame((state) => {
-    const time = state.clock.elapsedTime;
     if (groupRef.current) {
-      // Orbit animation
+      const time = state.clock.elapsedTime;
       const angle = time * node.orbitSpeed + node.orbitOffset;
+      
+      // Calculate position in orbit
       const x = Math.cos(angle) * node.orbitRadius;
       const z = Math.sin(angle) * node.orbitRadius;
-      const y = node.verticalOffset + Math.sin(time * 0.5 + node.orbitOffset) * 0.15;
+      const y = node.verticalOffset + Math.sin(time * 0.5 + node.orbitOffset) * 0.2;
       
-      groupRef.current.position.x = x;
-      groupRef.current.position.z = z;
-      groupRef.current.position.y = y;
+      // Update group position
+      groupRef.current.position.set(x, y, z);
       
-      setCurrentPosition(new THREE.Vector3(x, y, z));
+      // Billboard effect - always face camera
+      groupRef.current.lookAt(camera.position);
       
-      // Check if node is behind the globe (z < 0 means behind from default camera view)
-      const cameraPos = state.camera.position;
-      const nodeWorldPos = new THREE.Vector3(x, y, z);
-      const toCamera = cameraPos.clone().sub(nodeWorldPos).normalize();
-      const toCenter = new THREE.Vector3(0, 0, 0).sub(nodeWorldPos).normalize();
-      const dot = toCamera.dot(toCenter);
+      // Update node position for connection lines
+      node.position.set(x, y, z);
       
-      // If dot product is positive and node is close to center line, it's behind
+      // Check if node is behind globe (simple check)
       const distToCenter = Math.sqrt(x * x + z * z);
       const isBehind = z < -0.3 && distToCenter < 2;
       setIsVisible(!isBehind);
