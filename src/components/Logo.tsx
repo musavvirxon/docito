@@ -116,9 +116,10 @@ export const Logo = ({
   // than the oversized sm.webp (1920x544). WebP path for 2xl only.
   const getWebPPath = (): string | null => {
     const pngPath = getLogoPath();
-    // Only 2xl horizontal and icon variants have optimized webp
+    // Horizontal variants with optimized webp
     const webpAvailable = [
       '/logos/horizontal/docito-horizontal-2xl.webp',
+      '/logos/horizontal/docito-horizontal-sm.webp',
     ];
     const webpPath = pngPath.replace('.png', '.webp');
     if (webpAvailable.includes(webpPath) || variant === 'icon') {

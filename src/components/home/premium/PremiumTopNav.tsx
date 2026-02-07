@@ -100,17 +100,20 @@ const PremiumTopNav = () => {
               to={getLocalizedPath("/")}
               className="flex items-center hover:opacity-70 transition-opacity duration-200 flex-shrink-0"
             >
-              <img
-                src="/logos/horizontal/docito-horizontal-sm.png"
-                alt="Docito"
-                className="h-6 w-auto"
-                width={80}
-                height={24}
-                fetchPriority="high"
-                decoding="async"
-                loading="eager"
-                style={{ aspectRatio: '80/24' }}
-              />
+              <picture>
+                <source srcSet="/logos/horizontal/docito-horizontal-sm.webp" type="image/webp" />
+                <img
+                  src="/logos/horizontal/docito-horizontal-sm.png"
+                  alt="Docito"
+                  className="h-6 w-auto"
+                  width={80}
+                  height={24}
+                  fetchPriority="high"
+                  decoding="async"
+                  loading="eager"
+                  style={{ aspectRatio: '80/24' }}
+                />
+              </picture>
             </Link>
 
             {/* Desktop Navigation - Horizontal */}
