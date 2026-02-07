@@ -1,5 +1,5 @@
-// src/pages/PremiumHome.tsx
-import { useEffect, useCallback } from "react";
+// File: src/pages/PremiumHome.tsx
+import { useEffect } from "react";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { SEOHead } from "@/components/SEOHead";
 import { useTranslation } from "react-i18next";
@@ -9,19 +9,26 @@ import LazySection from "@/components/home/premium/LazySection";
 import PremiumHero from "@/components/home/premium/PremiumHero";
 import SmartSearch from "@/components/home/premium/SmartSearch";
 
-// Factory functions for below-the-fold sections (only loaded when near viewport)
-const capabilitiesFactory = () => import("@/components/home/premium/CapabilitiesGrid");
+// Patient-first below-the-fold
 const providerCardsFactory = () => import("@/components/home/premium/ProviderCards");
-const platformPillarsFactory = () => import("@/components/home/premium/PlatformPillars");
 const specialtiesFactory = () => import("@/components/home/premium/SpecialtiesCarousel");
 const diagnosticsFactory = () => import("@/components/home/premium/DiagnosticsSection");
 const bookingStepsFactory = () => import("@/components/home/premium/BookingSteps");
-const dashboardDemoFactory = () => import("@/components/home/premium/DashboardDemo");
-const teamCollaborationFactory = () => import("@/components/home/premium/TeamCollaboration");
-const insuranceProvidersFactory = () => import("@/components/home/premium/InsuranceProviders");
 const faqFactory = () => import("@/components/home/premium/FAQ");
-const globalTrustFactory = () => import("@/components/home/premium/GlobalTrust");
 const mobileAppFactory = () => import("@/components/home/premium/MobileAppShowcase");
+
+// B2B / facility-first below-the-fold
+const capabilitiesFactory = () => import("@/components/home/premium/CapabilitiesGrid");
+const platformPillarsFactory = () => import("@/components/home/premium/PlatformPillars");
+const facilityAutomationFactory = () =>
+  import("@/components/home/premium/FacilityAutomationSection");
+const teamCollaborationFactory = () =>
+  import("@/components/home/premium/TeamCollaboration");
+const insuranceProvidersFactory = () =>
+  import("@/components/home/premium/InsuranceProviders");
+
+// General
+const globalTrustFactory = () => import("@/components/home/premium/GlobalTrust");
 const finalCtaFactory = () => import("@/components/home/premium/FinalCTA");
 const scrollToTopFactory = () => import("@/components/home/premium/ScrollToTop");
 
@@ -44,28 +51,34 @@ export default function PremiumHome() {
           "home:seo.description",
           "The complete healthcare operating system. Find doctors, clinics, labs, pharmacies, and imaging centers."
         )}
-        keywords={t("home:seo.keywords", "healthcare, doctors, clinics, labs, pharmacies, medical appointments")}
+        keywords={t(
+          "home:seo.keywords",
+          "healthcare, doctors, clinics, labs, pharmacies, medical appointments"
+        )}
       />
 
-      {/* Navbar + Footer come from PublicLayout */}
       <main className="bg-background text-foreground antialiased">
-        {/* Critical above-the-fold content */}
+        {/* HERO (mixed audience) */}
         <PremiumHero />
-        <SmartSearch />
 
-        {/* Below-the-fold sections: only loaded when approaching viewport */}
-        <LazySection factory={capabilitiesFactory} />
+        {/* PATIENT-FIRST */}
+        <SmartSearch />
         <LazySection factory={providerCardsFactory} />
-        <LazySection factory={platformPillarsFactory} />
         <LazySection factory={specialtiesFactory} />
         <LazySection factory={diagnosticsFactory} />
         <LazySection factory={bookingStepsFactory} />
-        <LazySection factory={dashboardDemoFactory} />
+        <LazySection factory={faqFactory} />
+        <LazySection factory={mobileAppFactory} />
+
+        {/* B2B / FACILITY-FIRST */}
+        <LazySection factory={capabilitiesFactory} />
+        <LazySection factory={platformPillarsFactory} />
+        <LazySection factory={facilityAutomationFactory} />
         <LazySection factory={teamCollaborationFactory} />
         <LazySection factory={insuranceProvidersFactory} />
-        <LazySection factory={faqFactory} />
+
+        {/* GENERAL */}
         <LazySection factory={globalTrustFactory} />
-        <LazySection factory={mobileAppFactory} />
         <LazySection factory={finalCtaFactory} />
         <LazySection factory={scrollToTopFactory} rootMargin="0px" fallback={null} />
       </main>
