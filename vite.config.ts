@@ -70,35 +70,32 @@ export default defineConfig(({ mode }) => ({
             if (id.includes('react-dom')) return 'vendor-react';
             if (id.includes('react-router')) return 'vendor-router';
             
-            // UI libraries - separate chunk
+            // UI libraries - separate chunk (used on home page)
             if (id.includes('@radix-ui') || id.includes('cmdk')) return 'vendor-ui';
             if (id.includes('lucide-react')) return 'vendor-icons';
             
-            // Animation - separate chunks, defer loading
-            if (id.includes('framer-motion')) return 'vendor-framer';
-            if (id.includes('gsap')) return 'vendor-gsap';
-            
-            // Heavy visualization - only load on interaction
-            if (id.includes('three') || id.includes('@react-three')) return 'vendor-three';
-            if (id.includes('recharts')) return 'vendor-recharts';
-            if (id.includes('d3-')) return 'vendor-d3';
-            
-            // Data layer - separate chunks
+            // Data layer - needed early for auth
             if (id.includes('@supabase')) return 'vendor-supabase';
             if (id.includes('@tanstack/react-query')) return 'vendor-query';
             
-            // Form handling
-            if (id.includes('react-hook-form') || id.includes('zod') || id.includes('@hookform')) return 'vendor-forms';
-            
-            // Utilities - separate chunks
-            if (id.includes('date-fns')) return 'vendor-date';
+            // i18n - needed early for translations
             if (id.includes('i18next')) return 'vendor-i18n';
             
-            // PDF/Excel - very heavy, only for dashboards
-            if (id.includes('jspdf') || id.includes('xlsx') || id.includes('html2canvas')) return 'vendor-export';
+            // Date utilities - used broadly
+            if (id.includes('date-fns')) return 'vendor-date';
             
-            // React markdown - only for specific pages
-            if (id.includes('react-markdown') || id.includes('remark') || id.includes('rehype')) return 'vendor-markdown';
+            // === DYNAMIC-ONLY LIBS: DO NOT assign manualChunks ===
+            // These are only used via dynamic import() and must NOT be forced
+            // into named chunks, otherwise Rollup may pull them into the
+            // initial load. Let Vite handle their code splitting naturally.
+            //
+            // - jspdf, xlsx, html2canvas, jspdf-autotable, pako (export/PDF)
+            // - recharts, d3-* (dashboard charts)
+            // - three, @react-three (3D viewer)
+            // - framer-motion (animations - lazy pages)
+            // - gsap (animations - lazy pages)
+            // - react-hook-form, zod, @hookform (forms - lazy pages)
+            // - react-markdown, remark, rehype (markdown - lazy pages)
           }
         },
       },
