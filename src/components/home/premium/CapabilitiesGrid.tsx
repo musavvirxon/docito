@@ -1,3 +1,4 @@
+// src/components/home/premium/CapabilitiesGrid.tsx
 import { motion } from "framer-motion";
 import {
   Calendar,
@@ -18,55 +19,55 @@ const capabilities = [
   {
     icon: Calendar,
     title: "Smart Scheduling",
-    description: "AI-powered booking with real-time availability",
+    description: "Online booking, reminders, and real-time availability.",
     featureId: "feature-scheduling",
   },
   {
     icon: FileText,
     title: "Digital Prescriptions",
-    description: "Paperless prescriptions sent directly to pharmacies",
+    description: "Send prescriptions to pharmacies and keep everything in the patient timeline.",
     featureId: "feature-medication",
   },
   {
     icon: FolderOpen,
-    title: "Secure File Storage",
-    description: "HIPAA-compliant medical document management",
+    title: "Secure Records",
+    description: "Store documents and share files with the right people—fast and secure.",
     featureId: "feature-health-records",
   },
   {
     icon: PenTool,
     title: "Clinical Notes",
-    description: "AI-assisted documentation and templates",
+    description: "Templates and structured notes to document care consistently.",
     featureId: "feature-health-records",
   },
   {
     icon: Users,
-    title: "Team Collaboration",
-    description: "Seamless coordination between care providers",
+    title: "Team Coordination",
+    description: "Secure messaging and handoffs across staff, providers, and facilities.",
     featureId: "feature-messaging",
   },
   {
     icon: Shield,
-    title: "Insurance Support",
-    description: "Integrated verification and claims processing",
+    title: "Insurance & Coverage",
+    description: "Integrated coverage checks and billing support that reduces back-and-forth.",
     featureId: "feature-billing",
   },
   {
     icon: CreditCard,
-    title: "Payment Processing",
-    description: "Secure payments with multiple options",
+    title: "Payments",
+    description: "Collect payments, send invoices, and keep revenue tracking in one place.",
     featureId: "feature-billing",
   },
   {
     icon: Bell,
-    title: "Smart Notifications",
-    description: "Automated reminders and updates",
+    title: "Automations",
+    description: "Reminders, updates, and follow-ups that cut no-shows and manual work.",
     featureId: "feature-notifications",
   },
   {
     icon: Video,
     title: "Telemedicine",
-    description: "HD video consultations with screen sharing",
+    description: "Offer remote visits when in-person care isn’t possible.",
     featureId: "feature-telemedicine",
   },
 ];
@@ -89,10 +90,10 @@ export default function CapabilitiesGrid() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-extralight tracking-tight text-foreground mb-4">
-            Platform Capabilities
+            One platform. Every workflow.
           </h2>
           <p className="text-lg text-muted-foreground font-light max-w-2xl mx-auto">
-            Everything you need to deliver exceptional healthcare
+            From first search to follow-up—Docito keeps care and operations connected.
           </p>
 
           <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
@@ -101,16 +102,16 @@ export default function CapabilitiesGrid() {
               className="rounded-full h-12 px-6 gap-2"
               onClick={() => navigate("/features#features")}
             >
-              Explore Features
+              Explore platform
               <ArrowRight className="w-4 h-4" />
             </Button>
             <Button
               size="lg"
               variant="outline"
               className="rounded-full h-12 px-6"
-              onClick={() => navigate("/features#features")}
+              onClick={() => navigate("/how-it-works")}
             >
-              See All Capabilities
+              See how it works
             </Button>
           </div>
         </motion.div>
