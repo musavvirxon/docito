@@ -9,7 +9,8 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { HelmetProvider } from "react-helmet-async";
 import { languages } from "@/i18n/config";
 import i18n from "@/i18n/config";
-import TimezoneBootstrapper from "@/components/time/TimezoneBootstrapper";
+// Lazy load — renders null, only needed for authenticated users
+const TimezoneBootstrapper = lazy(() => import("@/components/time/TimezoneBootstrapper"));
 
 // Layouts
 import PublicLayout from "@/layouts/PublicLayout";
@@ -126,7 +127,9 @@ export default function App() {
     <HelmetProvider>
       <ThemeProvider>
         <AuthProvider>
-          <TimezoneBootstrapper />
+          <Suspense fallback={null}>
+            <TimezoneBootstrapper />
+          </Suspense>
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Language-prefixed routes (e.g., /en/about, /ru/doctors) */}
