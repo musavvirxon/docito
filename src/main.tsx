@@ -110,6 +110,21 @@ requestIdleCallback(() => {
   }
 }, { timeout: 2000 });
 
+// Hide initial loader once React takes over rendering
+function hideInitialLoader() {
+  const loader = document.getElementById('initial-loader');
+  if (!loader) return;
+  // Immediately hide via inline style (fastest visual switch)
+  loader.style.opacity = '0';
+  loader.style.pointerEvents = 'none';
+  // Defer DOM removal to idle time to avoid layout thrash
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(() => loader.remove());
+  } else {
+    setTimeout(() => loader.remove(), 100);
+  }
+}
+
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <HelmetProvider>
@@ -121,3 +136,6 @@ createRoot(document.getElementById("root")!).render(
     </HelmetProvider>
   </React.StrictMode>,
 );
+
+// Loader hides after React has mounted and painted
+hideInitialLoader();
