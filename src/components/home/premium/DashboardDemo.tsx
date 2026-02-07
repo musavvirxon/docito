@@ -1,65 +1,37 @@
 // src/components/home/premium/DashboardDemo.tsx
-import { motion } from "framer-motion";
-import {
-  BarChart3,
-  Calendar,
-  Users,
-  DollarSign,
-  Clock,
-  Activity,
-  ArrowUp,
-  ArrowDown,
-} from "lucide-react";
+import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
+import { Calendar, Users, TrendingUp, Clock, Bell, Activity, CheckCircle, Sparkles } from "lucide-react";
 
-const stats = [
-  {
-    icon: Calendar,
-    label: "Appointments",
-    value: "—",
-    change: "Preview",
-    trend: "up" as const,
-  },
-  {
-    icon: Users,
-    label: "Patients",
-    value: "—",
-    change: "Example",
-    trend: "up" as const,
-  },
-  {
-    icon: DollarSign,
-    label: "Revenue",
-    value: "—",
-    change: "Sample",
-    trend: "down" as const,
-  },
+type Widget = {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+  hint: string;
+  color: string;
+};
+
+const mockWidgets: Widget[] = [
+  { icon: Calendar, label: "Appointments", value: "—", hint: "Your upcoming schedule", color: "text-blue-500" },
+  { icon: Users, label: "Patients", value: "—", hint: "Active patients", color: "text-emerald-500" },
+  { icon: TrendingUp, label: "Revenue", value: "—", hint: "Collections & payouts", color: "text-violet-500" },
+  { icon: Clock, label: "Wait Time", value: "—", hint: "Operational signal", color: "text-amber-500" },
 ];
 
-const activityItems = [
-  {
-    type: "Appointment",
-    patient: "Patient check-in",
-    time: "Just now",
-    status: "Scheduled",
-  },
-  {
-    type: "Message",
-    patient: "Lab result received",
-    time: "A moment ago",
-    status: "Updated",
-  },
-  {
-    type: "Billing",
-    patient: "Invoice generated",
-    time: "Recently",
-    status: "Processed",
-  },
+const recentActivity = [
+  { text: "Appointment booked", time: "Example" },
+  { text: "Message received", time: "Example" },
+  { text: "Payment completed", time: "Example" },
+  { text: "Result uploaded", time: "Example" },
 ];
 
 export default function DashboardDemo() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(containerRef, { once: true, margin: "-100px" });
+
   return (
-    <section className="py-24 bg-gradient-to-b from-background to-primary/5">
-      <div className="container mx-auto px-4">
+    <section className="py-24 bg-muted/30 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -67,128 +39,138 @@ export default function DashboardDemo() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6">
-            <BarChart3 className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-primary">
-              Dashboard preview
-            </span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
+            <Sparkles className="w-4 h-4" />
+            Dashboard preview
           </div>
-
-          <h2 className="text-4xl font-bold mb-6">
-            Powerful visibility{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-600">
-              without spreadsheets
-            </span>
+          <h2 className="text-4xl md:text-5xl font-extralight tracking-tight text-foreground mb-4">
+            Your command center
           </h2>
-
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            See appointments, patient flow, and operations at a glance — with activity and next steps
-            in one place. (Preview data shown.)
+          <p className="text-lg text-muted-foreground font-light max-w-2xl mx-auto">
+            One place to manage appointments, messages, payments, and tasks—populated with your real data once you start.
           </p>
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="max-w-5xl mx-auto"
+          ref={containerRef}
+          initial={{ opacity: 0, y: 40 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="relative"
         >
-          <div className="bg-white/50 border border-primary/10 rounded-3xl p-8 backdrop-blur-sm shadow-xl">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-              <div>
-                <h3 className="text-2xl font-bold mb-2">Clinic Operations</h3>
-                <p className="text-muted-foreground">
-                  Live dashboard view (preview)
-                </p>
+          <div className="bg-card rounded-3xl border border-border/50 shadow-2xl overflow-hidden">
+            <div className="h-12 bg-muted/50 border-b border-border/50 flex items-center px-4 gap-2">
+              <div className="flex gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-red-400" />
+                <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                <div className="w-3 h-3 rounded-full bg-green-400" />
               </div>
-
-              <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20">
-                <Activity className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium text-primary">Active</span>
+              <div className="flex-1 flex justify-center">
+                <div className="px-4 py-1 rounded-lg bg-background/50 text-xs text-muted-foreground">
+                  dashboard.docito.com
+                </div>
               </div>
             </div>
 
-            {/* Stats grid */}
-            <div className="grid md:grid-cols-3 gap-6 mb-8">
-              {stats.map((stat, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1, duration: 0.5 }}
-                  className="p-6 bg-white/60 rounded-2xl border border-primary/10 hover:bg-white/80 transition-colors duration-300"
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
-                      <stat.icon className="h-6 w-6 text-primary" />
-                    </div>
-                    <div
-                      className={`flex items-center gap-1 text-sm font-medium ${
-                        stat.trend === "up"
-                          ? "text-green-600"
-                          : "text-orange-600"
-                      }`}
-                    >
-                      {stat.trend === "up" ? (
-                        <ArrowUp className="h-4 w-4" />
-                      ) : (
-                        <ArrowDown className="h-4 w-4" />
-                      )}
-                      {stat.change}
-                    </div>
-                  </div>
-
-                  <div>
-                    <p className="text-3xl font-bold mb-1">{stat.value}</p>
-                    <p className="text-sm text-muted-foreground">{stat.label}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Activity feed */}
-            <div className="bg-white/60 rounded-2xl border border-primary/10 p-6">
-              <div className="flex items-center gap-2 mb-6">
-                <Clock className="h-5 w-5 text-primary" />
-                <h4 className="text-lg font-bold">Recent activity</h4>
-              </div>
-
-              <div className="space-y-4">
-                {activityItems.map((item, index) => (
+            <div className="p-6 md:p-8">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                {mockWidgets.map((widget, index) => (
                   <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.1, duration: 0.5 }}
-                    className="flex items-center justify-between p-4 bg-white/50 rounded-xl border border-primary/5 hover:bg-white/70 transition-colors duration-300"
+                    key={widget.label}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={isInView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    className="p-4 rounded-2xl bg-background border border-border/50"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-                        <Activity className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{item.type}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {item.patient}
-                        </p>
-                      </div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <widget.icon className={`w-5 h-5 ${widget.color}`} />
+                      <span className="text-xs text-muted-foreground">{widget.label}</span>
                     </div>
-
-                    <div className="text-right">
-                      <p className="text-sm font-medium">{item.time}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {item.status}
-                      </p>
+                    <div className="flex items-end justify-between">
+                      <span className="text-2xl font-semibold text-foreground">{widget.value}</span>
+                      <span className="text-xs text-muted-foreground">{widget.hint}</span>
                     </div>
                   </motion.div>
                 ))}
               </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={isInView ? { opacity: 1, x: 0 } : {}}
+                  transition={{ duration: 0.6, delay: 0.3 }}
+                  className="lg:col-span-2 p-6 rounded-2xl bg-background border border-border/50"
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="font-semibold text-foreground">Weekly Overview</h3>
+                    <Activity className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                  <div className="flex items-end justify-between h-40 gap-2">
+                    {[40, 65, 45, 80, 55, 90, 70].map((height, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ height: 0 }}
+                        animate={isInView ? { height: `${height}%` } : {}}
+                        transition={{ duration: 0.6, delay: 0.4 + i * 0.05 }}
+                        className="flex-1 bg-gradient-to-t from-primary to-primary/50 rounded-t-lg"
+                      />
+                    ))}
+                  </div>
+                  <div className="flex justify-between mt-4 text-xs text-muted-foreground">
+                    {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
+                      <span key={day}>{day}</span>
+                    ))}
+                  </div>
+                  <div className="mt-4 text-xs text-muted-foreground">
+                    Sample visualization. Your metrics appear once you connect your workflow.
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={isInView ? { opacity: 1, x: 0 } : {}}
+                  transition={{ duration: 0.6, delay: 0.4 }}
+                  className="p-6 rounded-2xl bg-background border border-border/50"
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="font-semibold text-foreground">Recent Activity</h3>
+                    <Bell className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                  <div className="space-y-4">
+                    {recentActivity.map((activity, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={isInView ? { opacity: 1, x: 0 } : {}}
+                        transition={{ duration: 0.4, delay: 0.5 + index * 0.1 }}
+                        className="flex items-start gap-3"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <CheckCircle className="w-4 h-4 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-foreground truncate">{activity.text}</p>
+                          <p className="text-xs text-muted-foreground">{activity.time}</p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                  <div className="mt-6 text-xs text-muted-foreground">
+                    Sample feed. Real updates show here for your team.
+                  </div>
+                </motion.div>
+              </div>
             </div>
           </div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={isInView ? { opacity: 1, scale: 1 } : {}}
+            transition={{ duration: 0.5, delay: 0.6 }}
+            className="absolute -top-4 -right-4 md:-right-8 p-4 rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/30"
+          >
+            <CheckCircle className="w-6 h-6" />
+          </motion.div>
         </motion.div>
       </div>
     </section>
