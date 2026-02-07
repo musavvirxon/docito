@@ -70,9 +70,13 @@ export default defineConfig(({ mode }) => ({
             if (id.includes('react-dom')) return 'vendor-react';
             if (id.includes('react-router')) return 'vendor-router';
             
-            // UI libraries - separate chunk (used on home page)
-            if (id.includes('@radix-ui') || id.includes('cmdk')) return 'vendor-ui';
+            // UI libraries - lucide icons used broadly across pages
             if (id.includes('lucide-react')) return 'vendor-icons';
+            
+            // === DYNAMIC-SPLIT LIBS: DO NOT assign manualChunks ===
+            // @radix-ui and cmdk are only partially used on the home page
+            // (dropdown-menu, tooltip). Letting Vite split them naturally
+            // avoids loading unused components (select, scroll-area, slider, etc.).
             
             // Data layer - needed early for auth
             if (id.includes('@supabase')) return 'vendor-supabase';
