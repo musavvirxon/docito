@@ -49,10 +49,17 @@ export default defineConfig(({ mode }) => ({
     target: 'esnext',
     // Generate source maps for debugging in production
     sourcemap: true,
-    // Disable modulepreload entirely - prevents browser from eagerly downloading
-    // all dynamically-imported chunks (vendor-export, vendor-recharts, etc.)
-    // Chunks will load on-demand when actually needed via lazy() / dynamic import()
-    modulePreload: false,
+    // Selective modulePreload: preload only entry-point dependencies (discovered
+    // from HTML) to flatten the critical request chain. Dynamic import() chunks
+    // (lazy routes, below-the-fold sections) are NOT preloaded — they load on-demand.
+    modulePreload: {
+      polyfill: false,
+      resolveDependencies: (filename: string, deps: string[], { hostType }: { hostId: string; hostType: 'html' | 'js' }) => {
+        // Only inject <link rel="modulepreload"> for the initial entry's deps
+        // Skip preloading for JS-initiated dynamic imports (lazy routes, etc.)
+        return hostType === 'html' ? deps : [];
+      },
+    },
     // Increase chunk size limit to reduce number of chunks
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
