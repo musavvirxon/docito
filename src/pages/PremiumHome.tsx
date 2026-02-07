@@ -1,80 +1,96 @@
 // src/pages/PremiumHome.tsx
-import { useEffect, useCallback } from "react";
-import { ThemeProvider } from "@/contexts/ThemeContext";
+import { Suspense, lazy } from "react";
 import { SEOHead } from "@/components/SEOHead";
-import { useTranslation } from "react-i18next";
-import LazySection from "@/components/home/premium/LazySection";
 
-// Critical above-the-fold components (load immediately)
-import PremiumHero from "@/components/home/premium/PremiumHero";
-import SmartSearch from "@/components/home/premium/SmartSearch";
+const LazySection = ({ children }: { children: React.ReactNode }) => (
+  <Suspense fallback={<div className="min-h-screen" />}>{children}</Suspense>
+);
 
-// Factory functions for below-the-fold sections (only loaded when near viewport)
-const capabilitiesFactory = () => import("@/components/home/premium/CapabilitiesGrid");
-const providerCardsFactory = () => import("@/components/home/premium/ProviderCards");
-const platformPillarsFactory = () => import("@/components/home/premium/PlatformPillars");
-const specialtiesFactory = () => import("@/components/home/premium/SpecialtiesCarousel");
-const featuredProvidersFactory = () => import("@/components/home/premium/FeaturedProviders");
-const topLabsFactory = () => import("@/components/home/premium/TopLabs");
-const nearbyPharmaciesFactory = () => import("@/components/home/premium/NearbyPharmacies");
-const diagnosticsFactory = () => import("@/components/home/premium/DiagnosticsSection");
-const bookingStepsFactory = () => import("@/components/home/premium/BookingSteps");
-const dashboardDemoFactory = () => import("@/components/home/premium/DashboardDemo");
-const teamCollaborationFactory = () => import("@/components/home/premium/TeamCollaboration");
-const insuranceProvidersFactory = () => import("@/components/home/premium/InsuranceProviders");
-const faqFactory = () => import("@/components/home/premium/FAQ");
-const globalTrustFactory = () => import("@/components/home/premium/GlobalTrust");
-const mobileAppFactory = () => import("@/components/home/premium/MobileAppShowcase");
-const finalCtaFactory = () => import("@/components/home/premium/FinalCTA");
-const scrollToTopFactory = () => import("@/components/home/premium/ScrollToTop");
+// Lazy load premium home components
+const PremiumHero = lazy(() => import("@/components/home/premium/PremiumHero"));
+const CapabilitiesGrid = lazy(() => import("@/components/home/premium/CapabilitiesGrid"));
+const SmartSearch = lazy(() => import("@/components/home/premium/SmartSearch"));
+const ProviderCards = lazy(() => import("@/components/home/premium/ProviderCards"));
+const PlatformPillars = lazy(() => import("@/components/home/premium/PlatformPillars"));
+const SpecialtiesCarousel = lazy(() => import("@/components/home/premium/SpecialtiesCarousel"));
+const DiagnosticsSection = lazy(() => import("@/components/home/premium/DiagnosticsSection"));
+const BookingSteps = lazy(() => import("@/components/home/premium/BookingSteps"));
+const DashboardDemo = lazy(() => import("@/components/home/premium/DashboardDemo"));
+const TeamCollaboration = lazy(() => import("@/components/home/premium/TeamCollaboration"));
+const InsuranceSection = lazy(() => import("@/components/home/premium/InsuranceSection"));
+const MedicalSpecialties = lazy(() => import("@/components/home/premium/MedicalSpecialties"));
+const GlobalTrust = lazy(() => import("@/components/home/premium/GlobalTrust"));
+const MobileAppShowcase = lazy(() => import("@/components/home/premium/MobileAppShowcase"));
+const FinalCTA = lazy(() => import("@/components/home/premium/FinalCTA"));
 
 export default function PremiumHome() {
-  const { t } = useTranslation(["home", "common"]);
-
-  useEffect(() => {
-    const prev = document.documentElement.style.scrollBehavior;
-    document.documentElement.style.scrollBehavior = "smooth";
-    return () => {
-      document.documentElement.style.scrollBehavior = prev || "auto";
-    };
-  }, []);
-
   return (
-    <ThemeProvider>
+    <>
       <SEOHead
-        title={t("home:seo.title", "Docito - Professional Healthcare Platform")}
-        description={t(
-          "home:seo.description",
-          "The complete healthcare operating system. Find doctors, clinics, labs, pharmacies, and imaging centers."
-        )}
-        keywords={t("home:seo.keywords", "healthcare, doctors, clinics, labs, pharmacies, medical appointments")}
+        title="Docito | Less admin. More care."
+        description="Docito connects patients and providers in one operating system — scheduling, records, prescriptions, payments, and analytics in sync."
+        keywords="healthcare platform, clinic management, patient scheduling, EHR, prescriptions, billing, healthcare analytics"
       />
 
-      {/* Navbar + Footer come from PublicLayout */}
-      <main className="bg-background text-foreground antialiased">
-        {/* Critical above-the-fold content */}
+      <LazySection>
         <PremiumHero />
-        <SmartSearch />
+      </LazySection>
 
-        {/* Below-the-fold sections: only loaded when approaching viewport */}
-        <LazySection factory={capabilitiesFactory} />
-        <LazySection factory={providerCardsFactory} />
-        <LazySection factory={platformPillarsFactory} />
-        <LazySection factory={specialtiesFactory} />
-        <LazySection factory={featuredProvidersFactory} />
-        <LazySection factory={topLabsFactory} />
-        <LazySection factory={nearbyPharmaciesFactory} />
-        <LazySection factory={diagnosticsFactory} />
-        <LazySection factory={bookingStepsFactory} />
-        <LazySection factory={dashboardDemoFactory} />
-        <LazySection factory={teamCollaborationFactory} />
-        <LazySection factory={insuranceProvidersFactory} />
-        <LazySection factory={faqFactory} />
-        <LazySection factory={globalTrustFactory} />
-        <LazySection factory={mobileAppFactory} />
-        <LazySection factory={finalCtaFactory} />
-        <LazySection factory={scrollToTopFactory} rootMargin="0px" fallback={null} />
-      </main>
-    </ThemeProvider>
+      <LazySection>
+        <CapabilitiesGrid />
+      </LazySection>
+
+      <LazySection>
+        <SmartSearch />
+      </LazySection>
+
+      <LazySection>
+        <PlatformPillars />
+      </LazySection>
+
+      <LazySection>
+        <ProviderCards />
+      </LazySection>
+
+      <LazySection>
+        <DiagnosticsSection />
+      </LazySection>
+
+      <LazySection>
+        <BookingSteps />
+      </LazySection>
+
+      <LazySection>
+        <DashboardDemo />
+      </LazySection>
+
+      <LazySection>
+        <TeamCollaboration />
+      </LazySection>
+
+      <LazySection>
+        <InsuranceSection />
+      </LazySection>
+
+      <LazySection>
+        <SpecialtiesCarousel />
+      </LazySection>
+
+      <LazySection>
+        <MedicalSpecialties />
+      </LazySection>
+
+      <LazySection>
+        <GlobalTrust />
+      </LazySection>
+
+      <LazySection>
+        <MobileAppShowcase />
+      </LazySection>
+
+      <LazySection>
+        <FinalCTA />
+      </LazySection>
+    </>
   );
 }
