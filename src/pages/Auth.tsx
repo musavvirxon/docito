@@ -91,6 +91,19 @@ const Auth = () => {
 
   const mode = searchParams.get("mode");
 
+  const allowedSignupRoles = new Set([
+    "patient",
+    "doctor",
+    "admin",
+    "pharmacy_admin",
+    "lab_admin",
+    "imaging_admin",
+  ]);
+
+  const roleFromQuery = searchParams.get("role");
+  const initialSignUpRole =
+    roleFromQuery && allowedSignupRoles.has(roleFromQuery) ? roleFromQuery : "patient";
+
   const normalizedSignupRole = useMemo(() => normalizeRole(signUpRole), [signUpRole]);
   const nameFieldCopy = useMemo(() => getNameFieldCopy(t, normalizedSignupRole), [t, normalizedSignupRole]);
 
@@ -103,6 +116,12 @@ const Auth = () => {
       setActiveTab("signin");
     }
   }, [mode]);
+
+  useEffect(() => {
+    if (mode === "register" || mode === "signup") {
+      setSignUpRole(initialSignUpRole);
+    }
+  }, [mode, initialSignUpRole]);
 
   const getDashboardPath = () => {
     const byActive = DASHBOARD_ROUTES[activeRole];
