@@ -1,6 +1,3 @@
-// Path: src/pages/StaffDashboardPage.tsx
-// File: src/pages/StaffDashboardPage.tsx
-
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -17,8 +14,9 @@ import BillingSection from "@/components/staff/BillingSection";
 import { InvitationsList } from "@/components/staff/InvitationsList";
 import AnalyticsSection from "@/components/staff/AnalyticsSection";
 import SettingsSection from "@/components/staff/SettingsSection";
+import FinanceHub from "@/components/finance/FinanceHub";
 
-type SectionId = "dashboard" | "today" | "patients" | "billing" | "analytics" | "settings" | "invites";
+type SectionId = "dashboard" | "today" | "patients" | "billing" | "analytics" | "finance" | "settings" | "invites";
 
 export default function StaffDashboardPage() {
   const location = useLocation();
@@ -50,6 +48,7 @@ export default function StaffDashboardPage() {
       { id: "patients", label: "Patients", visible: Boolean(permissions?.can_manage_patients) },
       { id: "billing", label: "Billing", visible: Boolean(permissions?.can_manage_billing) },
       { id: "analytics", label: "Analytics", visible: Boolean(practice?.id) },
+      { id: "finance", label: "Finance", visible: Boolean(isAdminLike && practice?.id) },
       { id: "settings", label: "Settings", visible: Boolean(isAdminLike && practice?.id) },
       { id: "invites", label: "Invites", visible: Boolean(isAdminLike && practice?.id) },
     ];
@@ -215,19 +214,16 @@ export default function StaffDashboardPage() {
           <AnalyticsSection clinicId={practice.id} />
         </TabsContent>
 
+        <TabsContent value="finance" className="mt-6">
+          <FinanceHub entityType="clinic" entityId={practice.id} />
+        </TabsContent>
+
         <TabsContent value="settings" className="mt-6">
           <SettingsSection clinicId={practice.id} />
         </TabsContent>
 
         <TabsContent value="invites" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Invitations</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <InvitationsList practiceId={practice.id} />
-            </CardContent>
-          </Card>
+          <InvitationsList clinicId={practice.id} />
         </TabsContent>
       </Tabs>
     </div>
