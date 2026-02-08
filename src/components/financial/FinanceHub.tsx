@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import FinanceOverview from "@/components/financial/FinanceOverview";
 import FinancePlaceholder from "@/components/financial/FinancePlaceholder";
 import FinanceTransactions from "@/components/financial/FinanceTransactions";
+import AttendancePanel from "@/components/financial/AttendancePanel";
 
 export type FinanceEntityType = "practice" | "lab" | "pharmacy" | "imaging_center";
 
@@ -96,7 +97,7 @@ export default function FinanceHub({ entityType, entityId }: FinanceHubProps) {
         </TabsContent>
 
         <TabsContent value="attendance">
-          <FinancePlaceholder title="Attendance" description="Clock-in/out tracking to support hourly wages." />
+          <AttendancePanel entityType={entityType} entityId={entityId} />
         </TabsContent>
 
         <TabsContent value="budgets">
