@@ -9,6 +9,7 @@ import FinanceOverview from "@/components/financial/FinanceOverview";
 import FinanceTransactions from "@/components/financial/FinanceTransactions";
 import AttendancePanel from "@/components/financial/AttendancePanel";
 import PayrollPanel from "@/components/financial/PayrollPanel";
+import ExpensesPanel from "@/components/financial/ExpensesPanel";
 import FinancePlaceholder from "@/components/financial/FinancePlaceholder";
 import { useEnsureFinanceDefaults } from "@/hooks/useEnsureFinanceDefaults";
 
@@ -95,7 +96,7 @@ export default function FinanceHub({ entityType, entityId }: FinanceHubProps) {
         </TabsContent>
 
         <TabsContent value="expenses">
-          <FinancePlaceholder title="Expenses" description="Track supplies, utilities, taxes, and operational costs." />
+          <ExpensesPanel entityType={entityType} entityId={entityId} />
         </TabsContent>
 
         <TabsContent value="payroll">
