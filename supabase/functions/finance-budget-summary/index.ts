@@ -4,7 +4,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { secureHandler, jsonResponse, errorResponse } from "../_shared/security-middleware.ts";
 
-type EntityType = "practice" | "lab" | "pharmacy" | "imaging_center";
+type EntityType = "clinic" | "lab" | "imaging" | "pharmacy" | "practice" | "imaging_center" | "laboratory";
 
 type ReqBody = {
   entityType: EntityType;
@@ -33,6 +33,15 @@ type EntryRow = {
   currency: string;
   occurred_at: string;
 };
+
+function normalizeEntityType(v: string): "clinic" | "lab" | "imaging" | "pharmacy" {
+  const s = String(v || "").trim().toLowerCase();
+  if (s === "practice" || s === "clinic") return "clinic";
+  if (s === "laboratory" || s === "lab") return "lab";
+  if (s === "imaging_center" || s === "imaging") return "imaging";
+  if (s === "pharmacy") return "pharmacy";
+  return "clinic";
+}
 
 function isUuid(v: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
@@ -78,7 +87,6 @@ serve(async (req) => {
   if (secured.response) return secured.response;
   if (!secured.context) return errorResponse("Security context missing", 500);
 
-  // Use user-scoped client (RLS enforced)
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
   const authHeader = req.headers.get("Authorization") ?? "";
@@ -94,21 +102,21 @@ serve(async (req) => {
     return errorResponse("Invalid JSON body", 400);
   }
 
-  const entityType = (body as any)?.entityType as EntityType | undefined;
+  const entityTypeRaw = (body as any)?.entityType as EntityType | undefined;
   const entityId = safeText((body as any)?.entityId);
   const monthStart = safeText((body as any)?.monthStart);
   const currencyReq = safeText((body as any)?.currency);
 
-  if (!entityType) return errorResponse("Missing entityType", 400);
+  if (!entityTypeRaw) return errorResponse("Missing entityType", 400);
   if (!entityId || !isUuid(entityId)) return errorResponse("Invalid entityId", 400);
 
   const ms = parseDateOnly(monthStart);
   if (!ms) return errorResponse("Invalid monthStart (YYYY-MM-DD)", 400);
   if (!firstOfMonthCheck(ms)) return errorResponse("monthStart must be the first day of the month", 400);
 
+  const entityType = normalizeEntityType(entityTypeRaw);
   const next = addMonths(ms, 1);
 
-  // Load active categories (expense + payroll)
   const { data: cats, error: catsErr } = await userClient
     .from("finance_categories")
     .select("id,name,kind,is_active")
@@ -124,7 +132,6 @@ serve(async (req) => {
 
   const categories = ((cats || []) as any) as CategoryRow[];
 
-  // Load budgets for month
   const { data: buds, error: budsErr } = await userClient
     .from("finance_budgets")
     .select("category_id,amount_cents,currency")
@@ -139,7 +146,6 @@ serve(async (req) => {
   const budgetByCat = new Map<string, BudgetRow>();
   budgets.forEach((b) => budgetByCat.set(String(b.category_id), b));
 
-  // Load actual entries in month (expense + payroll)
   const { data: entries, error: entErr } = await userClient
     .from("finance_entries")
     .select("category_id,entry_type,amount_cents,currency,occurred_at")
@@ -171,7 +177,6 @@ serve(async (req) => {
     actualByCat.set(catId, (actualByCat.get(catId) || 0) + cents);
   }
 
-  // Ensure categories are unique by (kind,name) for stable UI (rare duplicates can exist)
   const seen = new Set<string>();
   const normalizedCats = categories.filter((c) => {
     const k = keyOf(c.kind, c.name);
@@ -210,7 +215,7 @@ serve(async (req) => {
     entityType,
     entityId,
     monthStart,
-    monthEndExclusive: ms ? toIso(next) : null,
+    monthEndExclusive: toIso(next),
     currency,
     totals: {
       budgetCents: totals.budgetCents,
