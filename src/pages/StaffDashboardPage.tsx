@@ -1,3 +1,5 @@
+// File: src/pages/StaffDashboardPage.tsx
+
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -15,7 +17,18 @@ import { InvitationsList } from "@/components/staff/InvitationsList";
 import AnalyticsSection from "@/components/staff/AnalyticsSection";
 import SettingsSection from "@/components/staff/SettingsSection";
 
-type SectionId = "dashboard" | "today" | "patients" | "billing" | "analytics" | "settings" | "invites";
+import TimeClockCard from "@/components/staff/TimeClockCard";
+import AttendanceAdminPanel from "@/components/staff/AttendanceAdminPanel";
+
+type SectionId =
+  | "dashboard"
+  | "today"
+  | "patients"
+  | "billing"
+  | "analytics"
+  | "settings"
+  | "attendance"
+  | "invites";
 
 function toNumber(v: unknown): number {
   if (typeof v === "number" && Number.isFinite(v)) return v;
@@ -63,6 +76,7 @@ export default function StaffDashboardPage() {
       { id: "billing", label: "Billing", visible: Boolean(permissions?.can_manage_billing) },
       { id: "analytics", label: "Analytics", visible: Boolean(practice?.id) },
       { id: "settings", label: "Settings", visible: Boolean(isAdminLike && practice?.id) },
+      { id: "attendance", label: "Attendance", visible: Boolean(isAdminLike && practice?.id) },
       { id: "invites", label: "Invites", visible: Boolean(isAdminLike && practice?.id) },
     ];
 
@@ -108,10 +122,8 @@ export default function StaffDashboardPage() {
     if (!practice?.id) return;
     if (!permissions?.practice_id) return;
 
-    // Step 29: Only post income on completion if there is no paid invoice/payment already.
-    // We prefer invoice total_amount if present; otherwise sum appointment procedures estimated_cost / procedure.price.
     try {
-      // 1) Check invoices for this appointment (older patient billing system)
+      // 1) Check invoices for this appointment
       const { data: inv, error: invErr } = await (supabase as any)
         .from("invoices")
         .select("id,status,total_amount,currency,patient_id,practice_id,created_at")
@@ -186,7 +198,6 @@ export default function StaffDashboardPage() {
       }
 
       if (!amountCents || amountCents <= 0) {
-        // Nothing to post
         return;
       }
 
@@ -216,7 +227,6 @@ export default function StaffDashboardPage() {
         throw new Error((resp as any).error || "Failed to post finance entry");
       }
     } catch (e: any) {
-      // Never block appointment completion; just report ledger posting issue
       console.error("finance-post-entry failed for appointment completion:", e);
       toast.error(e?.message || "Finance ledger update failed");
     }
@@ -234,7 +244,6 @@ export default function StaffDashboardPage() {
 
       if (upErr) throw upErr;
 
-      // Step 29: Appointment completion -> ledger income (only if no payment already)
       if (String(status).toLowerCase() === "completed") {
         await postFinanceForCompletedAppointment(appointmentId);
       }
@@ -303,15 +312,23 @@ export default function StaffDashboardPage() {
           ))}
         </TabsList>
 
-        <TabsContent value="dashboard" className="mt-6">
-          <StaffDashboardOverview
-            practice={practice}
-            permissions={permissions}
-            todaysAppointments={todaysAppointments}
-            upcomingAppointments={upcomingAppointments}
-            recentPayments={recentPayments}
-            onNavigate={(next) => setSectionAndUrl(next as SectionId)}
-          />
+        <TabsContent value="dashboard" className="mt-6 space-y-4">
+          {/* Step 34: Time Clock for staff */}
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="md:col-span-1">
+              <TimeClockCard entityType="clinic" entityId={practice.id} />
+            </div>
+            <div className="md:col-span-2">
+              <StaffDashboardOverview
+                practice={practice}
+                permissions={permissions}
+                todaysAppointments={todaysAppointments}
+                upcomingAppointments={upcomingAppointments}
+                recentPayments={recentPayments}
+                onNavigate={(next) => setSectionAndUrl(next as SectionId)}
+              />
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="today" className="mt-6">
@@ -332,11 +349,7 @@ export default function StaffDashboardPage() {
         </TabsContent>
 
         <TabsContent value="billing" className="mt-6">
-          <BillingSection
-            payments={recentPayments}
-            onRefresh={() => void refresh()}
-            canManageBilling={Boolean(permissions.can_manage_billing)}
-          />
+          <BillingSection payments={recentPayments} onRefresh={() => void refresh()} canManageBilling={Boolean(permissions.can_manage_billing)} />
         </TabsContent>
 
         <TabsContent value="analytics" className="mt-6">
@@ -345,6 +358,11 @@ export default function StaffDashboardPage() {
 
         <TabsContent value="settings" className="mt-6">
           <SettingsSection clinicId={practice.id} />
+        </TabsContent>
+
+        {/* Step 34: Admin attendance approval view */}
+        <TabsContent value="attendance" className="mt-6">
+          <AttendanceAdminPanel entityType="clinic" entityId={practice.id} />
         </TabsContent>
 
         <TabsContent value="invites" className="mt-6">
