@@ -1,5 +1,3 @@
-// File: src/components/imaging/ImagingDashboard.tsx
-// Path: src/components/imaging/ImagingDashboard.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
