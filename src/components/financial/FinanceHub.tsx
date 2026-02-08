@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import FinanceOverview from "@/components/financial/FinanceOverview";
 import FinancePlaceholder from "@/components/financial/FinancePlaceholder";
+import FinanceTransactions from "@/components/financial/FinanceTransactions";
 
 export type FinanceEntityType = "practice" | "lab" | "pharmacy" | "imaging_center";
 
@@ -83,45 +84,27 @@ export default function FinanceHub({ entityType, entityId }: FinanceHubProps) {
         </TabsContent>
 
         <TabsContent value="transactions">
-          <FinancePlaceholder
-            title="Transactions"
-            description="Create and manage income/expense ledger entries."
-          />
+          <FinanceTransactions entityType={entityType} entityId={entityId} />
         </TabsContent>
 
         <TabsContent value="expenses">
-          <FinancePlaceholder
-            title="Expenses"
-            description="Track supplies, utilities, taxes, and operational costs."
-          />
+          <FinancePlaceholder title="Expenses" description="Track supplies, utilities, taxes, and operational costs." />
         </TabsContent>
 
         <TabsContent value="payroll">
-          <FinancePlaceholder
-            title="Payroll"
-            description="Commissions, salaries, payouts, and payroll runs."
-          />
+          <FinancePlaceholder title="Payroll" description="Commissions, salaries, payouts, and payroll runs." />
         </TabsContent>
 
         <TabsContent value="attendance">
-          <FinancePlaceholder
-            title="Attendance"
-            description="Clock-in/out tracking to support hourly wages."
-          />
+          <FinancePlaceholder title="Attendance" description="Clock-in/out tracking to support hourly wages." />
         </TabsContent>
 
         <TabsContent value="budgets">
-          <FinancePlaceholder
-            title="Budgets"
-            description="Set monthly buckets and compare actual vs planned."
-          />
+          <FinancePlaceholder title="Budgets" description="Set monthly buckets and compare actual vs planned." />
         </TabsContent>
 
         <TabsContent value="reports">
-          <FinancePlaceholder
-            title="Reports"
-            description="Profitability, payroll ratios, exports and insights."
-          />
+          <FinancePlaceholder title="Reports" description="Profitability, payroll ratios, exports and insights." />
         </TabsContent>
       </Tabs>
     </div>
