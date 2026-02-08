@@ -1,7 +1,6 @@
-// File: src/components/financial/FinanceHub.tsx
-
 import { useMemo, useState } from "react";
 import { DollarSign, ListChecks, Receipt, Wallet, Clock, PiggyBank, BarChart3 } from "lucide-react";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 
