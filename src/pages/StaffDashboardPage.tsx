@@ -14,9 +14,23 @@ import BillingSection from "@/components/staff/BillingSection";
 import { InvitationsList } from "@/components/staff/InvitationsList";
 import AnalyticsSection from "@/components/staff/AnalyticsSection";
 import SettingsSection from "@/components/staff/SettingsSection";
-import FinanceHub from "@/components/finance/FinanceHub";
 
-type SectionId = "dashboard" | "today" | "patients" | "billing" | "analytics" | "finance" | "settings" | "invites";
+type SectionId = "dashboard" | "today" | "patients" | "billing" | "analytics" | "settings" | "invites";
+
+function toNumber(v: unknown): number {
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  if (typeof v === "string") {
+    const n = Number(v.replace(/,/g, ".").trim());
+    if (Number.isFinite(n)) return n;
+  }
+  return 0;
+}
+
+function toCentsFromMajor(v: unknown): number {
+  const n = toNumber(v);
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  return Math.round(n * 100);
+}
 
 export default function StaffDashboardPage() {
   const location = useLocation();
@@ -48,7 +62,6 @@ export default function StaffDashboardPage() {
       { id: "patients", label: "Patients", visible: Boolean(permissions?.can_manage_patients) },
       { id: "billing", label: "Billing", visible: Boolean(permissions?.can_manage_billing) },
       { id: "analytics", label: "Analytics", visible: Boolean(practice?.id) },
-      { id: "finance", label: "Finance", visible: Boolean(isAdminLike && practice?.id) },
       { id: "settings", label: "Settings", visible: Boolean(isAdminLike && practice?.id) },
       { id: "invites", label: "Invites", visible: Boolean(isAdminLike && practice?.id) },
     ];
@@ -91,6 +104,124 @@ export default function StaffDashboardPage() {
     }
   }, [availableSections, location.hash, location.search, section]);
 
+  const postFinanceForCompletedAppointment = async (appointmentId: string) => {
+    if (!practice?.id) return;
+    if (!permissions?.practice_id) return;
+
+    // Step 29: Only post income on completion if there is no paid invoice/payment already.
+    // We prefer invoice total_amount if present; otherwise sum appointment procedures estimated_cost / procedure.price.
+    try {
+      // 1) Check invoices for this appointment (older patient billing system)
+      const { data: inv, error: invErr } = await (supabase as any)
+        .from("invoices")
+        .select("id,status,total_amount,currency,patient_id,practice_id,created_at")
+        .eq("appointment_id", appointmentId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (invErr) throw invErr;
+
+      const invoiceId = inv?.id ? String(inv.id) : null;
+      const invoiceStatus = String(inv?.status || "").toLowerCase();
+      const invoiceCurrency = String(inv?.currency || "USD").toUpperCase();
+      const invoiceAmountCents = toCentsFromMajor(inv?.total_amount);
+
+      // If invoice is already paid, do NOT create another income entry.
+      if (invoiceId && invoiceStatus === "paid") {
+        return;
+      }
+
+      // If invoice isn't marked paid but there exists a paid payment for that invoice, also skip.
+      if (invoiceId) {
+        const { data: paidPayment, error: payErr } = await (supabase as any)
+          .from("payments")
+          .select("id,status")
+          .eq("invoice_id", invoiceId)
+          .in("status", ["paid"])
+          .limit(1);
+
+        if (payErr) throw payErr;
+
+        if (paidPayment && paidPayment.length > 0) {
+          return;
+        }
+      }
+
+      // 2) Determine amount
+      let amountCents = invoiceAmountCents;
+      let currency = invoiceCurrency || "USD";
+
+      if (!amountCents || amountCents <= 0) {
+        // Sum costs from appointment procedures (fallback if invoice not present/empty)
+        const { data: apRows, error: apErr } = await (supabase as any)
+          .from("appointment_procedures")
+          .select(
+            `
+              id,
+              status,
+              estimated_cost,
+              procedures:procedure_id(price, name)
+            `,
+          )
+          .eq("appointment_id", appointmentId);
+
+        if (apErr) throw apErr;
+
+        const active = (apRows || []).filter((r: any) => {
+          const s = String(r?.status || "").toLowerCase();
+          return s !== "cancelled" && s !== "canceled";
+        });
+
+        const totalMajor = active.reduce((sum: number, r: any) => {
+          const est = toNumber(r?.estimated_cost);
+          if (est > 0) return sum + est;
+          const p = toNumber(r?.procedures?.price);
+          if (p > 0) return sum + p;
+          return sum;
+        }, 0);
+
+        amountCents = Math.round(totalMajor * 100);
+        currency = "USD";
+      }
+
+      if (!amountCents || amountCents <= 0) {
+        // Nothing to post
+        return;
+      }
+
+      // 3) Post ledger entry (idempotent via source link table)
+      const { data: resp, error: fnErr } = await supabase.functions.invoke("finance-post-entry", {
+        body: {
+          entityType: "clinic",
+          entityId: practice.id,
+          entryType: "income",
+          amountCents,
+          currency,
+          occurredAt: new Date().toISOString(),
+          categoryName: "Services",
+          description: "Appointment completed",
+          source: { table: "appointments", id: appointmentId },
+          metadata: {
+            appointment_id: appointmentId,
+            practice_id: practice.id,
+            invoice_id: invoiceId,
+            invoice_status: invoiceStatus || null,
+          },
+        },
+      });
+
+      if (fnErr) throw fnErr;
+      if (resp && (resp as any).ok === false) {
+        throw new Error((resp as any).error || "Failed to post finance entry");
+      }
+    } catch (e: any) {
+      // Never block appointment completion; just report ledger posting issue
+      console.error("finance-post-entry failed for appointment completion:", e);
+      toast.error(e?.message || "Finance ledger update failed");
+    }
+  };
+
   const handleStatusUpdate = async (appointmentId: string, status: string) => {
     if (!permissions?.practice_id) return false;
 
@@ -102,6 +233,12 @@ export default function StaffDashboardPage() {
         .eq("practice_id", permissions.practice_id);
 
       if (upErr) throw upErr;
+
+      // Step 29: Appointment completion -> ledger income (only if no payment already)
+      if (String(status).toLowerCase() === "completed") {
+        await postFinanceForCompletedAppointment(appointmentId);
+      }
+
       toast.success("Appointment updated");
       await refresh();
       return true;
@@ -131,11 +268,7 @@ export default function StaffDashboardPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="text-sm text-muted-foreground">{error}</div>
-            <button
-              type="button"
-              className="text-sm text-primary underline"
-              onClick={() => void refresh()}
-            >
+            <button type="button" className="text-sm text-primary underline" onClick={() => void refresh()}>
               Retry
             </button>
           </CardContent>
@@ -151,17 +284,13 @@ export default function StaffDashboardPage() {
           <CardHeader>
             <CardTitle>Staff Dashboard</CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            No clinic practice is linked to this account.
-          </CardContent>
+          <CardContent className="text-sm text-muted-foreground">No clinic practice is linked to this account.</CardContent>
         </Card>
       </div>
     );
   }
 
-  const active = availableSections.find((s) => s.id === section)
-    ? section
-    : availableSections[0]?.id || "dashboard";
+  const active = availableSections.find((s) => s.id === section) ? section : availableSections[0]?.id || "dashboard";
 
   return (
     <div className="p-6">
@@ -214,16 +343,19 @@ export default function StaffDashboardPage() {
           <AnalyticsSection clinicId={practice.id} />
         </TabsContent>
 
-        <TabsContent value="finance" className="mt-6">
-          <FinanceHub entityType="clinic" entityId={practice.id} />
-        </TabsContent>
-
         <TabsContent value="settings" className="mt-6">
           <SettingsSection clinicId={practice.id} />
         </TabsContent>
 
         <TabsContent value="invites" className="mt-6">
-          <InvitationsList clinicId={practice.id} />
+          <Card>
+            <CardHeader>
+              <CardTitle>Invitations</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <InvitationsList practiceId={practice.id} />
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
