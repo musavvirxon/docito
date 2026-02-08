@@ -38,7 +38,7 @@ export type BudgetSummaryResponse = {
 type Args = {
   entityType: FinanceEntityType;
   entityId: string;
-  monthStart: string; // YYYY-MM-DD
+  monthStart: string;
 };
 
 export function useBudgetSummary({ entityType, entityId, monthStart }: Args) {
