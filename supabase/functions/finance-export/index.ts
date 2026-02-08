@@ -4,9 +4,8 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { secureHandler, jsonResponse, errorResponse } from "../_shared/security-middleware.ts";
 
-type EntityType = "practice" | "lab" | "pharmacy" | "imaging_center";
+type EntityType = "clinic" | "lab" | "imaging" | "pharmacy" | "practice" | "imaging_center" | "laboratory";
 type EntryType = "income" | "expense" | "payroll" | "transfer" | "adjustment";
-
 type ExportKind = "entries" | "payroll_runs";
 
 type ReqBody = {
@@ -15,16 +14,21 @@ type ReqBody = {
 
   kind: ExportKind;
 
-  // ISO timestamps; if missing defaults to last 30 days
   from?: string;
   to?: string;
 
-  // for entries
   entryTypes?: EntryType[];
-
-  // for payroll_runs
-  includeItems?: boolean; // default true
+  includeItems?: boolean;
 };
+
+function normalizeEntityType(v: string): "clinic" | "lab" | "imaging" | "pharmacy" {
+  const s = String(v || "").trim().toLowerCase();
+  if (s === "practice" || s === "clinic") return "clinic";
+  if (s === "laboratory" || s === "lab") return "lab";
+  if (s === "imaging_center" || s === "imaging") return "imaging";
+  if (s === "pharmacy") return "pharmacy";
+  return "clinic";
+}
 
 function isUuid(v: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
@@ -82,7 +86,6 @@ serve(async (req) => {
   if (secured.response) return secured.response;
   if (!secured.context) return errorResponse("Security context missing", 500);
 
-  // Use user-scoped client (RLS enforced)
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
   const authHeader = req.headers.get("Authorization") ?? "";
@@ -98,13 +101,15 @@ serve(async (req) => {
     return errorResponse("Invalid JSON body", 400);
   }
 
-  const entityType = (body as any)?.entityType as EntityType | undefined;
+  const entityTypeRaw = (body as any)?.entityType as EntityType | undefined;
   const entityId = safeText((body as any)?.entityId);
   const kind = safeText((body as any)?.kind) as ExportKind;
 
-  if (!entityType) return errorResponse("Missing entityType", 400);
+  if (!entityTypeRaw) return errorResponse("Missing entityType", 400);
   if (!entityId || !isUuid(entityId)) return errorResponse("Invalid entityId", 400);
   if (kind !== "entries" && kind !== "payroll_runs") return errorResponse("Invalid kind", 400);
+
+  const entityType = normalizeEntityType(entityTypeRaw);
 
   const now = new Date();
   const fromDefault = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
@@ -207,12 +212,9 @@ serve(async (req) => {
     });
   }
 
-  // kind === "payroll_runs"
   const includeItems = (body as any)?.includeItems !== false;
 
-  // payroll_runs uses date range (period_start..period_end_exclusive) AND created_at.
-  // We'll include runs whose period_start is within the range (simple + predictable).
-  const fromDate = isoDayKey(range.from); // YYYY-MM-DD
+  const fromDate = isoDayKey(range.from);
   const toDate = isoDayKey(range.to);
 
   const { data: runs, error: runsErr } = await userClient
