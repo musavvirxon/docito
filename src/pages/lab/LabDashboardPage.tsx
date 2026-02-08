@@ -1,5 +1,3 @@
-// File: src/pages/lab/LabDashboardPage.tsx
-// Path: src/pages/lab/LabDashboardPage.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -165,9 +163,9 @@ export default function LabDashboardPage() {
       { id: "samples", label: "Samples", icon: <TestTube2 className="h-5 w-5" /> },
       { id: "analytics", label: "Analytics", icon: <BarChart3 className="h-5 w-5" /> },
       { id: "billing", label: "Billing / Insurance", icon: <CreditCard className="h-5 w-5" /> },
-      { id: "finance", label: "Finance", icon: <DollarSign className="h-5 w-5" /> },
       { id: "referrals", label: "Referrals", icon: <ArrowRightLeft className="h-5 w-5" /> },
       { id: "staff", label: "Staff", icon: <Users className="h-5 w-5" /> },
+      { id: "finance", label: "Finance", icon: <DollarSign className="h-5 w-5" /> },
       {
         id: "settings",
         label: "Settings",
@@ -278,11 +276,11 @@ export default function LabDashboardPage() {
 
       {activeTab === "billing" && <LabBillingInsurance labCenterId={labCenterId} />}
 
-      {activeTab === "finance" && <FinanceHub entityType="lab" entityId={labCenterId} />}
-
       {activeTab === "referrals" && <LabReferralsSection labCenterId={labCenterId} />}
 
       {activeTab === "staff" && <LabStaffManager labCenterId={labCenterId} />}
+
+      {activeTab === "finance" && <FinanceHub entityType="lab" entityId={labCenterId} />}
     </DashboardShell>
   );
 }
