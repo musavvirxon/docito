@@ -43,6 +43,7 @@ import ReferralManagement from "@/components/super-admin/ReferralManagement";
 import FacilityVerificationRequestsTable from "@/components/super-admin/FacilityVerificationRequestsTable";
 import SystemLogs from "@/components/super-admin/SystemLogs";
 import DocumentVerificationLookup from "@/components/super-admin/DocumentVerificationLookup";
+import FinanceSourcesMapping from "@/components/super-admin/FinanceSourcesMapping";
 import { useTranslation } from "react-i18next";
 
 const SuperAdminLogin = () => {
@@ -218,41 +219,42 @@ const SuperAdminDashboard = () => {
         return (
           <div className="space-y-8">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                {t("superAdmin.dashboard.title")}
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                {t("superAdmin.dashboard.subtitle")}
-              </p>
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div className="space-y-1">
+                  <h1 className="text-3xl font-bold text-foreground">{t("superAdmin.title")}</h1>
+                  <p className="text-muted-foreground">{t("superAdmin.subtitle")}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <LanguageSwitcher />
+                  <ThemeToggle />
+                  <ProfileMenu />
+                </div>
+              </div>
             </div>
 
-            <KPICards />
-
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-              <AnalyticsCharts showAll />
-              <ActivityFeed />
-            </div>
-
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-              <AdvancedFinancialMetrics
-                metrics={advancedMetrics}
-                revenue={stats?.totalRevenue || 0}
-                onUpdateInputs={refreshAdvancedMetrics}
-              />
-              <ManagementTable title="Recent Activity" type="appointments" />
+            <KPICards stats={stats} />
+            <AnalyticsCharts stats={stats} />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 space-y-6">
+                <AdvancedFinancialMetrics metrics={advancedMetrics} onRefresh={refreshAdvancedMetrics} />
+                <ManagementTable />
+              </div>
+              <div className="space-y-6">
+                <FeedbackInboxLink />
+                <ActivityFeed />
+              </div>
             </div>
           </div>
         );
 
+      case "ecosystem":
+        return <EcosystemOverview />;
+
       case "verifications":
         return (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Verifications</h1>
-              <p className="text-muted-foreground mt-1">
-                Facility verification requests (clinics, pharmacies, labs, imaging)
-              </p>
-            </div>
+          <div className="space-y-8">
+            <VerificationTable />
+            <DoctorVerificationTable />
             <FacilityVerificationRequestsTable />
           </div>
         );
@@ -261,70 +263,40 @@ const SuperAdminDashboard = () => {
         return <DocumentVerificationLookup />;
 
       case "doctors":
-        return (
-          <div className="space-y-6">
-            <DoctorVerificationTable title="Pending Verifications" status="pending" />
-            <DoctorVerificationTable title="Under Review" status="under_review" />
-            <DoctorVerificationTable title="Verified Doctors" status="verified" />
-            <DoctorVerificationTable title="Rejected Applications" status="declined" />
-          </div>
-        );
+        return <EntityManagement entityType="doctors" />;
 
       case "practices":
-        return (
-          <div className="space-y-6">
-            <VerificationTable title="Pending Verifications" status="pending" />
-            <VerificationTable title="Under Review" status="under_review" />
-            <VerificationTable title="Verified Practices" status="verified" />
-            <VerificationTable title="Rejected Applications" status="rejected" />
-          </div>
-        );
+        return <EntityManagement entityType="practices" />;
+
+      case "pharmacies":
+        return <EntityManagement entityType="pharmacies" />;
+
+      case "laboratories":
+        return <EntityManagement entityType="laboratories" />;
+
+      case "imaging":
+        return <EntityManagement entityType="imaging" />;
+
+      case "referrals":
+        return <ReferralManagement />;
+
+      case "staff":
+        return <GlobalStaffManagement />;
 
       case "patients":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Patients</h1>
-              <p className="text-muted-foreground mt-1">Recent patient accounts.</p>
-            </div>
-            <ManagementTable title="Patients" type="patients" />
-          </div>
-        );
+        return <EntityManagement entityType="patients" />;
 
       case "appointments":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Appointments</h1>
-              <p className="text-muted-foreground mt-1">Recent bookings across the platform.</p>
-            </div>
-            <ManagementTable title="Appointments" type="appointments" />
-          </div>
-        );
-
-      case "ecosystem":
-        return <EcosystemOverview />;
-
-      case "analytics":
-        return <AnalyticsCharts showAll />;
+        return <EntityManagement entityType="appointments" />;
 
       case "payments":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Payments</h1>
-              <p className="text-muted-foreground mt-1">Platform revenue and recent transactions.</p>
-            </div>
+        return <EntityManagement entityType="payments" />;
 
-            <AdvancedFinancialMetrics
-              metrics={advancedMetrics}
-              revenue={stats?.totalRevenue || 0}
-              onUpdateInputs={refreshAdvancedMetrics}
-            />
+      case "analytics":
+        return <AnalyticsCharts stats={stats} />;
 
-            <ManagementTable title="Recent Payments" type="payments" />
-          </div>
-        );
+      case "financeSources":
+        return <FinanceSourcesMapping />;
 
       case "translations":
         return <TranslationManagement />;
@@ -338,76 +310,40 @@ const SuperAdminDashboard = () => {
       case "logs":
         return <SystemLogs />;
 
-      case "feedback":
-        return (
-          <div className="space-y-6">
-            <h1 className="text-3xl font-bold">Feedback Inbox</h1>
-            <p className="text-muted-foreground">Use the inbox link in the header.</p>
-          </div>
-        );
-
-      case "pharmacies":
-        return <EntityManagement entityType="pharmacy" />;
-
-      case "laboratories":
-        return <EntityManagement entityType="laboratory" />;
-
-      case "imaging":
-        return <EntityManagement entityType="imaging" />;
-
-      case "staff":
-        return <GlobalStaffManagement />;
-
-      case "referrals":
-        return <ReferralManagement />;
-
       default:
-        return null;
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>Section</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 text-sm text-muted-foreground">
+              Select a section from the sidebar.
+            </CardContent>
+          </Card>
+        );
     }
   };
 
   return (
-    <>
-      <div className="flex min-h-screen w-full bg-background">
-        <SuperAdminSidebar
-          activeSection={activeSection}
-          onSectionChange={setActiveSection}
-          collapsed={sidebarCollapsed}
-          onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-        />
+    <div className="min-h-screen bg-background flex">
+      <SuperAdminSidebar
+        activeSection={activeSection}
+        onSectionChange={setActiveSection}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed((v) => !v)}
+      />
 
-        <div className="flex-1 flex flex-col">
-          <header className="h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40">
-            <div className="flex h-16 items-center justify-between px-4 sm:px-6">
-              <div className="min-w-0">
-                <p className="text-sm text-muted-foreground">
-                  {t("superAdmin.dashboard.subtitle")}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2 sm:gap-4">
-                <FeedbackInboxLink onClick={() => setActiveSection("feedback")} />
-                <ThemeToggle />
-                <LanguageSwitcher />
-                <ProfileMenu />
-              </div>
-            </div>
-          </header>
-
-          <main className="flex-1 p-4 sm:p-8 overflow-auto">{renderContent()}</main>
-
-          <footer className="border-t border-border py-4 px-4 sm:px-8">
-            <p className="text-sm text-muted-foreground">{t("superAdmin.footer")}</p>
-          </footer>
-        </div>
-      </div>
+      <main className="flex-1 p-6 md:p-8 overflow-y-auto">
+        {renderContent()}
+      </main>
 
       <InactivityWarningModal
         open={showWarning}
         countdown={countdown}
         onStayLoggedIn={stayLoggedIn}
+        onLogout={handleInactive}
       />
-    </>
+    </div>
   );
 };
 
