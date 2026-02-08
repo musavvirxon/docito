@@ -24,6 +24,70 @@ export interface InventoryItem {
   controlled_substance_schedule?: string;
 }
 
+function toNumber(v: unknown): number {
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  if (typeof v === "string") {
+    const n = Number(v.replace(/,/g, ".").trim());
+    if (Number.isFinite(n)) return n;
+  }
+  return 0;
+}
+
+function toCentsFromMajor(v: unknown): number {
+  const n = toNumber(v);
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  return Math.round(n * 100);
+}
+
+async function postFinanceExpenseForInventoryAdd(pharmacyId: string, item: InventoryItem) {
+  // Step 30 (Ledger-first A): treat "adding inventory with quantity + unit_cost" as a supply purchase
+  const qty = Number(item.quantity_on_hand || 0);
+  const unitCostMajor = toNumber(item.unit_cost);
+
+  if (!pharmacyId) return;
+  if (!Number.isFinite(qty) || qty <= 0) return;
+  if (!Number.isFinite(unitCostMajor) || unitCostMajor <= 0) return;
+
+  const amountCents = Math.round(qty * toCentsFromMajor(unitCostMajor));
+  if (!Number.isFinite(amountCents) || amountCents <= 0) return;
+
+  try {
+    const { data, error } = await supabase.functions.invoke("finance-post-entry", {
+      body: {
+        entityType: "pharmacy",
+        entityId: pharmacyId,
+        entryType: "expense",
+        amountCents,
+        currency: "USD",
+        occurredAt: new Date().toISOString(),
+        categoryName: "Supplies",
+        description: `Inventory purchase: ${item.medication_name}`,
+        source: { table: "pharmacy_inventory", id: item.id },
+        metadata: {
+          inventory_item_id: item.id,
+          pharmacy_id: pharmacyId,
+          medication_name: item.medication_name,
+          medication_code: item.medication_code ?? null,
+          ndc_code: item.ndc_code ?? null,
+          manufacturer: item.manufacturer ?? null,
+          batch_number: item.batch_number ?? null,
+          expiry_date: item.expiry_date ?? null,
+          quantity_added: qty,
+          unit_cost: unitCostMajor,
+          computed_total_cents: amountCents,
+        },
+      },
+    });
+
+    if (error) throw error;
+    if (data && (data as any).ok === false) throw new Error((data as any).error || "finance-post-entry failed");
+  } catch (e) {
+    // Do not block inventory workflows if finance ledger posting fails.
+    // Idempotency is handled by finance_event_links via source table+id.
+    console.error("Finance ledger post failed (inventory purchase):", e);
+  }
+}
+
 export const usePharmacyInventory = (pharmacyId?: string) => {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -127,6 +191,12 @@ export const usePharmacyInventory = (pharmacyId?: string) => {
       const next = [...inventory, data as InventoryItem].sort((a, b) => a.medication_name.localeCompare(b.medication_name));
       setInventory(next);
       computeDerived(next);
+
+      // Step 30: write expense ledger entry for supplies purchase (non-blocking)
+      if (pharmacyId) {
+        void postFinanceExpenseForInventoryAdd(pharmacyId, data as InventoryItem);
+      }
+
       return data;
     } catch (error: any) {
       toast.error(error.message || "Failed to add item");
