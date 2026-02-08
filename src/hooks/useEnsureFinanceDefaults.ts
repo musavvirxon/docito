@@ -19,14 +19,12 @@ export function useEnsureFinanceDefaults({ entityType, entityId }: Args) {
     if (didRun.current === key) return;
     didRun.current = key;
 
-    // Fire-and-forget: make sure the entity has default categories.
-    // This is safe/idempotent on the server side.
     supabase.functions
       .invoke("finance-ensure-default-categories", {
         body: { entityType, entityId },
       })
       .catch(() => {
-        // intentionally silent (we don't want to toast on every page view)
+        // intentionally silent
       });
   }, [entityType, entityId]);
 }
