@@ -1,3 +1,6 @@
+// File: src/components/finance/FinanceHub.tsx
+// Step 31: Add recurring panel under budget section (design consistent)
+
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { Loader2, Download, RefreshCw, DollarSign, TrendingDown, Users, Wallet, PencilLine } from "lucide-react";
+import RecurringTemplatesPanel from "@/components/finance/RecurringTemplatesPanel";
 
 type FinanceEntityType = "clinic" | "lab" | "imaging" | "pharmacy";
 
@@ -489,18 +493,11 @@ export function FinanceHub(props: { entityType: FinanceEntityType; entityId: str
         <CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div>
             <CardTitle className="text-base">Monthly budget</CardTitle>
-            <div className="text-sm text-muted-foreground">
-              Month starting {budget?.monthStart || monthStart}
-            </div>
+            <div className="text-sm text-muted-foreground">Month starting {budget?.monthStart || monthStart}</div>
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              onClick={() => void fetchBudget()}
-              disabled={budgetLoading}
-              className="gap-2"
-            >
+            <Button variant="outline" onClick={() => void fetchBudget()} disabled={budgetLoading} className="gap-2">
               {budgetLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
               Refresh
             </Button>
@@ -522,8 +519,8 @@ export function FinanceHub(props: { entityType: FinanceEntityType; entityId: str
                 <UiDialogHeader>
                   <UiDialogTitle>Edit monthly budgets</UiDialogTitle>
                   <DialogDescription>
-                    Set a target budget per category for <span className="font-medium">{monthStart}</span>.
-                    Enter amounts in {currency}. Leave blank to set 0.
+                    Set a target budget per category for <span className="font-medium">{monthStart}</span>. Enter amounts in{" "}
+                    {currency}. Leave blank to set 0.
                   </DialogDescription>
                 </UiDialogHeader>
 
@@ -543,9 +540,7 @@ export function FinanceHub(props: { entityType: FinanceEntityType; entityId: str
                           <div key={r.categoryId} className="grid grid-cols-12 gap-2 p-3 items-center">
                             <div className="col-span-6">
                               <div className="text-sm font-medium">{r.name}</div>
-                              <div className="text-xs text-muted-foreground">
-                                Current spent: {formatMoney(currency, r.actualCents)}
-                              </div>
+                              <div className="text-xs text-muted-foreground">Current spent: {formatMoney(currency, r.actualCents)}</div>
                             </div>
                             <div className="col-span-2 text-sm text-muted-foreground">{r.kind}</div>
                             <div className="col-span-4 flex justify-end">
@@ -554,9 +549,7 @@ export function FinanceHub(props: { entityType: FinanceEntityType; entityId: str
                                   inputMode="decimal"
                                   placeholder="0.00"
                                   value={budgetEdits[r.categoryId] ?? ""}
-                                  onChange={(e) =>
-                                    setBudgetEdits((prev) => ({ ...prev, [r.categoryId]: e.target.value }))
-                                  }
+                                  onChange={(e) => setBudgetEdits((prev) => ({ ...prev, [r.categoryId]: e.target.value }))}
                                 />
                               </div>
                             </div>
@@ -569,18 +562,14 @@ export function FinanceHub(props: { entityType: FinanceEntityType; entityId: str
                   <div className="rounded-md border p-3 bg-muted/20">
                     <div className="text-sm font-medium">Tip</div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      Use budgets for supplies, utilities (water/electricity/gas/heating), taxes, rent, maintenance, and payroll.
-                      Alerts and templates will be added next.
+                      Use budgets for supplies, utilities (water/electricity/gas/heating), taxes, rent, maintenance, and payroll. Recurring
+                      templates below can auto-generate fixed costs.
                     </div>
                   </div>
                 </div>
 
                 <DialogFooter className="gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => setBudgetDialogOpen(false)}
-                    disabled={savingBudgets}
-                  >
+                  <Button variant="outline" onClick={() => setBudgetDialogOpen(false)} disabled={savingBudgets}>
                     Cancel
                   </Button>
                   <Button onClick={() => void saveBudgets()} disabled={savingBudgets || budgetRows.length === 0}>
@@ -624,13 +613,9 @@ export function FinanceHub(props: { entityType: FinanceEntityType; entityId: str
           ) : (
             <div className="space-y-3">
               {budgetRows.slice(0, 12).map((r) => {
-                const pct =
-                  r.budgetCents > 0 ? Math.min(100, Math.round((r.actualCents / r.budgetCents) * 100)) : 0;
-
+                const pct = r.budgetCents > 0 ? Math.min(100, Math.round((r.actualCents / r.budgetCents) * 100)) : 0;
                 const labelRight =
-                  r.budgetCents > 0
-                    ? `${formatMoney(currency, r.actualCents)} / ${formatMoney(currency, r.budgetCents)}`
-                    : `${formatMoney(currency, r.actualCents)} / —`;
+                  r.budgetCents > 0 ? `${formatMoney(currency, r.actualCents)} / ${formatMoney(currency, r.budgetCents)}` : `${formatMoney(currency, r.actualCents)} / —`;
 
                 return (
                   <div key={r.categoryId} className="space-y-1">
@@ -644,19 +629,18 @@ export function FinanceHub(props: { entityType: FinanceEntityType; entityId: str
                   </div>
                 );
               })}
-              {(budgetRows.length || 0) > 12 ? (
-                <div className="text-xs text-muted-foreground">Showing first 12 categories.</div>
-              ) : null}
+              {(budgetRows.length || 0) > 12 ? <div className="text-xs text-muted-foreground">Showing first 12 categories.</div> : null}
             </div>
           )}
 
           {(budget?.totals.uncategorizedCents || 0) > 0 ? (
-            <div className="text-xs text-muted-foreground">
-              Uncategorized spending this month: {formatMoney(currency, budget?.totals.uncategorizedCents || 0)}
-            </div>
+            <div className="text-xs text-muted-foreground">Uncategorized spending this month: {formatMoney(currency, budget?.totals.uncategorizedCents || 0)}</div>
           ) : null}
         </CardContent>
       </Card>
+
+      {/* Step 31 */}
+      <RecurringTemplatesPanel entityType={entityType} entityId={entityId} />
     </div>
   );
 }
