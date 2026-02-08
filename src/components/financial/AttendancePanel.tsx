@@ -1,5 +1,3 @@
-// File: src/components/financial/AttendancePanel.tsx
-
 import { useEffect, useMemo, useState } from "react";
 import { Clock, RefreshCw, LogIn, LogOut } from "lucide-react";
 import { toast } from "sonner";
@@ -48,8 +46,6 @@ export default function AttendancePanel({ entityType, entityId }: AttendancePane
   const [rows, setRows] = useState<ShiftRow[]>([]);
   const [openShift, setOpenShift] = useState<ShiftRow | null>(null);
 
-  const currency = "USD";
-
   const load = async () => {
     if (!entityType || !entityId) return;
     setLoading(true);
@@ -67,7 +63,6 @@ export default function AttendancePanel({ entityType, entityId }: AttendancePane
       const list = (shifts || []) as any as ShiftRow[];
       setRows(list);
 
-      // current user's open shift (RLS allows user to read their own)
       const { data: me } = await supabase.auth.getUser();
       const myId = me?.user?.id;
       if (myId) {
@@ -182,7 +177,11 @@ export default function AttendancePanel({ entityType, entityId }: AttendancePane
                     <TableRow key={r.id}>
                       <TableCell className="text-sm">{formatDateTime(r.clock_in_at)}</TableCell>
                       <TableCell className="text-sm">
-                        {r.clock_out_at ? formatDateTime(r.clock_out_at) : <span className="text-muted-foreground">—</span>}
+                        {r.clock_out_at ? (
+                          formatDateTime(r.clock_out_at)
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
                       </TableCell>
                       <TableCell className="text-sm">{formatDuration(r.duration_minutes)}</TableCell>
                       <TableCell className="text-sm">{r.is_manual ? "Yes" : "No"}</TableCell>
