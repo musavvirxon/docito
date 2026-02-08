@@ -22,6 +22,7 @@ import {
   Inbox,
   ShieldCheck,
   QrCode,
+  DollarSign,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,7 @@ const navItems = [
   { id: "appointments", label: "Appointments", icon: Calendar },
   { id: "payments", label: "Payments", icon: CreditCard },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
+  { id: "financeSources", label: "Finance Sources", icon: DollarSign },
   { id: "translations", label: "Translations", icon: Globe },
   { id: "help", label: "Help Center", icon: HelpCircle },
   { id: "settings", label: "Settings", icon: Settings },
