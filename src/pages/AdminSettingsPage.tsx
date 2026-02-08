@@ -1,7 +1,7 @@
 // File: src/pages/AdminSettingsPage.tsx
-// Step 36: Surface compensation panel in admin settings (file replacement is safe: keep existing design minimal)
+// B3: Add BudgetEditorPanel under admin settings page (full file replacement)
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -9,6 +9,7 @@ import { Loader2 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CompensationProfilesPanel from "@/components/staff/CompensationProfilesPanel";
+import BudgetEditorPanel from "@/components/financial/BudgetEditorPanel";
 
 type FinanceEntityType = "clinic" | "lab" | "imaging" | "pharmacy";
 
@@ -23,7 +24,7 @@ export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [practice, setPractice] = useState<PracticeRow | null>(null);
 
-  // This project appears clinic-first; keep entityType as "clinic"
+  // Clinic-first app
   const entityType: FinanceEntityType = "clinic";
 
   useEffect(() => {
@@ -37,7 +38,7 @@ export default function AdminSettingsPage() {
           return;
         }
 
-        // Attempt to load clinic practice linked to staff member
+        // Load clinic practice linked to staff member
         const { data, error } = await supabase
           .from("staff_members")
           .select("practice_id, practices:practice_id(id,name)")
@@ -95,12 +96,15 @@ export default function AdminSettingsPage() {
           <CardTitle>Admin settings · {practice.name}</CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
-          Configure clinic settings and staff compensation.
+          Configure clinic settings, staff compensation, and budgets.
         </CardContent>
       </Card>
 
-      {/* Step 36 */}
+      {/* Step 36: staff compensation */}
       <CompensationProfilesPanel entityType={entityType} entityId={practice.id} />
+
+      {/* B3: budgets */}
+      <BudgetEditorPanel entityType={entityType} entityId={practice.id} />
     </div>
   );
 }
