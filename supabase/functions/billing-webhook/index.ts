@@ -1,8 +1,3 @@
-// File: supabase/functions/billing-webhook/index.ts
-// Purpose (Step 27): When a billing transaction (Stripe PaymentIntent) is marked completed,
-// auto-write an INCOME entry into the finance ledger (finance_entries) and link it via finance_event_links
-// to prevent duplicates (Ledger-first A).
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@14.25.0?target=deno";
@@ -87,21 +82,24 @@ function pickCreatedByFromMetadata(md: Record<string, unknown> | null | undefine
 
 function isMissingRelationError(e: any) {
   const msg = String(e?.message || e || "").toLowerCase();
-  return msg.includes("does not exist") && (msg.includes("finance_entries") || msg.includes("finance_event_links") || msg.includes("finance_categories"));
+  return msg.includes("does not exist") && (
+    msg.includes("finance_entries") ||
+    msg.includes("finance_event_links") ||
+    msg.includes("finance_categories")
+  );
 }
 
-async function ensureIncomeCategoryId(service: any, args: { entityType: string; entityId: string; name: string; createdBy: string | null }) {
-  // name_norm exists in finance_categories in earlier steps; if not, fallback to ilike compare
+async function ensureCategoryId(service: any, args: { entityType: string; entityId: string; kind: "income" | "expense" | "payroll"; name: string; createdBy: string | null }) {
   const name = String(args.name || "").trim().replace(/\s+/g, " ");
   const nameNorm = name.toLowerCase();
 
-  // Try by name_norm first
+  // Try by name_norm first (generated column from step 20)
   const { data: found1, error: selErr1 } = await service
     .from("finance_categories")
     .select("id")
     .eq("entity_type", args.entityType)
     .eq("entity_id", args.entityId)
-    .eq("kind", "income")
+    .eq("kind", args.kind)
     .eq("name_norm", nameNorm)
     .limit(1);
 
@@ -113,7 +111,7 @@ async function ensureIncomeCategoryId(service: any, args: { entityType: string; 
     .select("id,name")
     .eq("entity_type", args.entityType)
     .eq("entity_id", args.entityId)
-    .eq("kind", "income")
+    .eq("kind", args.kind)
     .ilike("name", name)
     .limit(1);
 
@@ -125,7 +123,7 @@ async function ensureIncomeCategoryId(service: any, args: { entityType: string; 
     .insert({
       entity_type: args.entityType,
       entity_id: args.entityId,
-      kind: "income",
+      kind: args.kind,
       name,
       is_default: false,
       created_by: args.createdBy,
@@ -186,9 +184,10 @@ async function postFinanceForBillingTransaction(service: any, tx: any) {
   const description = descriptionParts.join(" ");
 
   // Category: "Services" income
-  const categoryId = await ensureIncomeCategoryId(service, {
+  const categoryId = await ensureCategoryId(service, {
     entityType: financeEntityType,
     entityId: billingEntityId,
+    kind: "income",
     name: "Services",
     createdBy,
   });
@@ -244,6 +243,157 @@ async function postFinanceForBillingTransaction(service: any, tx: any) {
   }
 }
 
+async function extractEntityFromStripe(stripe: Stripe, obj: any): Promise<{ entityType: "clinic" | "lab" | "imaging" | "pharmacy"; entityId: string; metadata: Record<string, unknown> } | null> {
+  // Best case: object metadata already contains entity keys
+  const md0 = (obj?.metadata && typeof obj.metadata === "object" && !Array.isArray(obj.metadata)) ? obj.metadata : {};
+  const et0 = md0?.entity_type ? String(md0.entity_type) : "";
+  const ei0 = md0?.entity_id ? String(md0.entity_id) : "";
+  const mapped0 = mapBillingEntityToFinance(et0);
+  if (mapped0 && isUuid(ei0)) return { entityType: mapped0, entityId: ei0, metadata: md0 };
+
+  // Refund often has payment_intent or charge; retrieve PaymentIntent first
+  const piId = obj?.payment_intent ? String(obj.payment_intent) : "";
+  if (piId) {
+    try {
+      const pi = await stripe.paymentIntents.retrieve(piId);
+      const md = (pi?.metadata && typeof pi.metadata === "object" && !Array.isArray(pi.metadata)) ? pi.metadata : {};
+      const et = md?.entity_type ? String(md.entity_type) : "";
+      const ei = md?.entity_id ? String(md.entity_id) : "";
+      const mapped = mapBillingEntityToFinance(et);
+      if (mapped && isUuid(ei)) return { entityType: mapped, entityId: ei, metadata: md };
+    } catch {
+      // ignore
+    }
+  }
+
+  // Fallback: retrieve charge and inspect metadata
+  const chId = obj?.charge ? String(obj.charge) : "";
+  if (chId) {
+    try {
+      const ch = await stripe.charges.retrieve(chId);
+      const md = (ch?.metadata && typeof ch.metadata === "object" && !Array.isArray(ch.metadata)) ? ch.metadata : {};
+      const et = md?.entity_type ? String(md.entity_type) : "";
+      const ei = md?.entity_id ? String(md.entity_id) : "";
+      const mapped = mapBillingEntityToFinance(et);
+      if (mapped && isUuid(ei)) return { entityType: mapped, entityId: ei, metadata: md };
+    } catch {
+      // ignore
+    }
+  }
+
+  return null;
+}
+
+async function postFinanceForStripeRefund(service: any, stripe: Stripe, refund: Stripe.Refund) {
+  // Only create ledger entry on refund creation (and keep it idempotent)
+  const refundId = String(refund.id || "").trim();
+  if (!refundId) return;
+
+  // Dedup by refund id
+  const sourceTable = "stripe_refunds";
+  const sourceId = refundId;
+
+  // Determine entity from metadata (payment intent / charge)
+  const resolved = await extractEntityFromStripe(stripe, refund as any);
+  if (!resolved) return;
+
+  const { entityType, entityId, metadata } = resolved;
+
+  const { data: existingLink, error: linkSelErr } = await service
+    .from("finance_event_links")
+    .select("id, finance_entry_id")
+    .eq("entity_type", entityType)
+    .eq("entity_id", entityId)
+    .eq("source_table", sourceTable)
+    .eq("source_id", sourceId)
+    .limit(1);
+
+  if (linkSelErr) throw linkSelErr;
+  if (existingLink && existingLink.length > 0) return;
+
+  const amountCents = toCents((refund as any).amount);
+  if (!amountCents || amountCents <= 0) return;
+
+  const currency = String((refund as any).currency || "usd").toUpperCase();
+  const occurredAt = (refund as any).created ? new Date(((refund as any).created as number) * 1000).toISOString() : new Date().toISOString();
+
+  const createdBy = pickCreatedByFromMetadata(metadata);
+
+  const reason = typeof (refund as any).reason === "string" ? (refund as any).reason : "";
+  const status = typeof (refund as any).status === "string" ? (refund as any).status : "";
+  const chargeId = refund.charge ? String(refund.charge) : "";
+  const piId = (refund as any).payment_intent ? String((refund as any).payment_intent) : "";
+
+  const patientName = typeof (metadata as any)?.patient_name === "string" ? String((metadata as any).patient_name).trim() : "";
+
+  const descriptionParts: string[] = [];
+  descriptionParts.push("Refund issued");
+  if (patientName) descriptionParts.push(`to ${patientName}`);
+  if (reason) descriptionParts.push(`(${reason})`);
+  const description = descriptionParts.join(" ");
+
+  // Category: "Refunds" expense (money out)
+  const categoryId = await ensureCategoryId(service, {
+    entityType,
+    entityId,
+    kind: "expense",
+    name: "Refunds",
+    createdBy,
+  });
+
+  // Ledger convention: entry_type='adjustment' with metadata.direction='out'
+  const entryMeta = {
+    direction: "out",
+    source: { table: sourceTable, id: sourceId },
+    billing: {
+      provider: "stripe",
+      refund_id: refundId,
+      charge_id: chargeId || null,
+      payment_intent_id: piId || null,
+      status: status || null,
+      reason: reason || null,
+    },
+    ...metadata,
+  };
+
+  const { data: entryRow, error: entryErr } = await service
+    .from("finance_entries")
+    .insert({
+      entity_type: entityType,
+      entity_id: entityId,
+      occurred_at: occurredAt,
+      entry_type: "adjustment",
+      amount_cents: amountCents,
+      currency,
+      category_id: categoryId,
+      description,
+      metadata: entryMeta,
+      created_by: createdBy,
+    })
+    .select("id")
+    .single();
+
+  if (entryErr) throw entryErr;
+
+  const financeEntryId = String(entryRow?.id);
+
+  const { error: linkInsErr } = await service
+    .from("finance_event_links")
+    .insert({
+      entity_type: entityType,
+      entity_id: entityId,
+      source_table: sourceTable,
+      source_id: sourceId,
+      finance_entry_id: financeEntryId,
+    });
+
+  if (linkInsErr) {
+    const msg = String(linkInsErr?.message || "").toLowerCase();
+    const isUnique = msg.includes("duplicate") || msg.includes("unique") || msg.includes("already exists");
+    if (!isUnique) throw linkInsErr;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return json({ ok: false, error: "Method Not Allowed" }, 405);
@@ -267,6 +417,21 @@ serve(async (req) => {
   const service = createClient(env.url, env.service);
 
   try {
+    // Step 28: Refunds -> Finance
+    // Use refund.created to record the refund once; idempotency via finance_event_links.
+    if (event.type === "refund.created") {
+      const refund = event.data.object as Stripe.Refund;
+      try {
+        await postFinanceForStripeRefund(service, stripe, refund);
+      } catch (e: any) {
+        console.error("finance refund ledger write failed:", e);
+        if (!isMissingRelationError(e)) {
+          // swallow to avoid webhook retry storms; billing still updates below if needed
+        }
+      }
+      return json({ ok: true }, 200);
+    }
+
     // Subscription created/updated/deleted
     if (event.type.startsWith("customer.subscription.")) {
       const sub = event.data.object as Stripe.Subscription;
@@ -415,8 +580,7 @@ serve(async (req) => {
         // Don't fail the Stripe webhook if finance tables aren't ready yet or transient issues occur.
         console.error("finance ledger write failed:", e);
         if (!isMissingRelationError(e)) {
-          // If it's not schema-related, still swallow to avoid Stripe retries storm;
-          // audit logs below will still show the transaction.
+          // swallow to avoid Stripe retries storm
         }
       }
 
