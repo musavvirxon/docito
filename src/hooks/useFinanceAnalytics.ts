@@ -43,7 +43,7 @@ export type FinanceAnalyticsResponse = {
   }>;
 
   series: Array<{
-    day: string; // YYYY-MM-DD
+    day: string;
     incomeCents: number;
     expenseCents: number;
     payrollCents: number;
@@ -54,8 +54,8 @@ export type FinanceAnalyticsResponse = {
 type Args = {
   entityType: FinanceEntityType;
   entityId: string;
-  from?: string; // ISO
-  to?: string; // ISO
+  from?: string;
+  to?: string;
 };
 
 export function useFinanceAnalytics({ entityType, entityId, from, to }: Args) {
