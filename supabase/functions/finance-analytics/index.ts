@@ -4,20 +4,25 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { secureHandler, jsonResponse, errorResponse } from "../_shared/security-middleware.ts";
 
-type EntityType = "practice" | "lab" | "pharmacy" | "imaging_center";
+type EntityType = "clinic" | "lab" | "imaging" | "pharmacy" | "practice" | "imaging_center" | "laboratory";
 type EntryType = "income" | "expense" | "payroll" | "transfer" | "adjustment";
 
 type ReqBody = {
   entityType: EntityType;
   entityId: string;
-
-  // ISO timestamps; if missing, defaults to last 30 days
   from?: string;
   to?: string;
-
-  // group series by day only for now (keep simple)
   groupBy?: "day";
 };
+
+function normalizeEntityType(v: string): "clinic" | "lab" | "imaging" | "pharmacy" {
+  const s = String(v || "").trim().toLowerCase();
+  if (s === "practice" || s === "clinic") return "clinic";
+  if (s === "laboratory" || s === "lab") return "lab";
+  if (s === "imaging_center" || s === "imaging") return "imaging";
+  if (s === "pharmacy") return "pharmacy";
+  return "clinic";
+}
 
 function isUuid(v: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
@@ -46,7 +51,6 @@ function isoDayKey(d: Date) {
 }
 
 function clampDateRange(from: Date, to: Date) {
-  // prevent absurd ranges; max 366 days
   const ms = to.getTime() - from.getTime();
   const max = 366 * 24 * 60 * 60 * 1000;
   if (ms <= 0) return null;
@@ -66,7 +70,6 @@ serve(async (req) => {
   if (secured.response) return secured.response;
   if (!secured.context) return errorResponse("Security context missing", 500);
 
-  // IMPORTANT: use a user-scoped client (RLS enforced) for analytics data reads
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
   const authHeader = req.headers.get("Authorization") ?? "";
@@ -82,11 +85,13 @@ serve(async (req) => {
     return errorResponse("Invalid JSON body", 400);
   }
 
-  const entityType = (body as any)?.entityType as EntityType | undefined;
+  const entityTypeRaw = (body as any)?.entityType as EntityType | undefined;
   const entityId = safeText((body as any)?.entityId);
 
-  if (!entityType) return errorResponse("Missing entityType", 400);
+  if (!entityTypeRaw) return errorResponse("Missing entityType", 400);
   if (!entityId || !isUuid(entityId)) return errorResponse("Invalid entityId", 400);
+
+  const entityType = normalizeEntityType(entityTypeRaw);
 
   const now = new Date();
   const fromDefault = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
@@ -100,7 +105,6 @@ serve(async (req) => {
   const fromIso = toIso(range.from);
   const toIsoStr = toIso(range.to);
 
-  // Load entries
   const { data: entries, error: entriesErr } = await userClient
     .from("finance_entries")
     .select("entry_type,amount_cents,currency,occurred_at,category_id")
@@ -113,7 +117,6 @@ serve(async (req) => {
 
   if (entriesErr) return errorResponse(entriesErr.message, 500);
 
-  // Load categories (for names)
   const { data: cats, error: catsErr } = await userClient
     .from("finance_categories")
     .select("id,name,kind")
@@ -136,8 +139,10 @@ serve(async (req) => {
     adjustment: 0,
   };
 
-  const totalsByCategory: Record<string, { categoryId: string | null; name: string; kind: string; totalCents: number }> =
-    {};
+  const totalsByCategory: Record<
+    string,
+    { categoryId: string | null; name: string; kind: string; totalCents: number }
+  > = {};
 
   const seriesByDay: Record<
     string,
@@ -181,7 +186,6 @@ serve(async (req) => {
   const opCost = expense + payroll;
   const net = income - opCost;
 
-  // finalize series net per day
   const series = Object.values(seriesByDay)
     .filter((x) => x.day !== "unknown")
     .sort((a, b) => a.day.localeCompare(b.day))
@@ -200,7 +204,7 @@ serve(async (req) => {
     .sort((a, b) => (b.totalCents || 0) - (a.totalCents || 0))
     .slice(0, 8);
 
-  const payrollRatioBps = income > 0 ? Math.round((payroll / income) * 10000) : 0; // basis points
+  const payrollRatioBps = income > 0 ? Math.round((payroll / income) * 10000) : 0;
   const opCostRatioBps = income > 0 ? Math.round((opCost / income) * 10000) : 0;
 
   return jsonResponse({
@@ -221,6 +225,6 @@ serve(async (req) => {
     totalsByType,
     topExpenseCategories,
     topIncomeCategories,
-    series, // day grouped
+    series,
   });
 });
