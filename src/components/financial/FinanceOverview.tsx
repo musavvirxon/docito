@@ -1,372 +1,260 @@
-// File: src/components/financial/FinanceOverview.tsx
-
 import { useMemo, useState } from "react";
-import { RefreshCw, TrendingUp, TrendingDown, Wallet, Percent, CalendarDays } from "lucide-react";
-import { toast } from "sonner";
-
-import type { FinanceEntityType } from "@/components/financial/FinanceHub";
-import { useFinanceAnalytics } from "@/hooks/useFinanceAnalytics";
+import { format } from "date-fns";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { BarChart3, DollarSign, Receipt, Wallet, TrendingUp, Loader2, RefreshCcw } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-function isoDay(d: Date) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
+import type { FinanceEntityType } from "@/components/financial/FinanceHub";
+import { useFinanceAnalytics } from "@/hooks/useFinanceAnalytics";
+
+type Props = {
+  entityType: FinanceEntityType;
+  entityId: string;
+};
+
+function isoForDaysAgo(days: number) {
+  const now = new Date();
+  const d = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+  return d.toISOString();
 }
 
-function startOfToday() {
-  const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
-}
-
-function addDays(d: Date, n: number) {
-  return new Date(d.getTime() + n * 24 * 60 * 60 * 1000);
-}
-
-function formatCurrency(cents: number, currency: string = "USD") {
-  const v = (Number(cents || 0) || 0) / 100;
+function formatCents(cents: number, currency: string) {
+  const cur = (currency || "USD").toUpperCase();
+  const value = (Number(cents || 0) || 0) / 100;
   try {
-    return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(v);
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: cur }).format(value);
   } catch {
-    return `${v.toFixed(2)} ${currency}`;
+    return `${cur} ${value.toFixed(2)}`;
   }
 }
 
-function formatBps(bps: number) {
-  const pct = (Number(bps || 0) || 0) / 100;
-  return `${pct.toFixed(2)}%`;
-}
-
-function miniBarWidth(value: number, max: number) {
-  if (max <= 0) return "0%";
-  const p = Math.max(0, Math.min(1, value / max));
-  return `${Math.round(p * 100)}%`;
-}
-
-interface Props {
-  entityType: FinanceEntityType;
-  entityId: string;
+function bpsToPct(bps: number) {
+  return (Number(bps || 0) || 0) / 100;
 }
 
 export default function FinanceOverview({ entityType, entityId }: Props) {
-  // Default: last 30 days (date-only, converted to ISO range by appending times)
-  const today = startOfToday();
-  const defaultFrom = isoDay(addDays(today, -30));
-  const defaultTo = isoDay(addDays(today, 1)); // exclusive
+  const [range, setRange] = useState<"7d" | "30d" | "90d">("30d");
 
-  const [fromDate, setFromDate] = useState(defaultFrom);
-  const [toDate, setToDate] = useState(defaultTo);
-
-  const fromIso = useMemo(() => new Date(`${fromDate}T00:00:00.000Z`).toISOString(), [fromDate]);
-  const toIso = useMemo(() => new Date(`${toDate}T00:00:00.000Z`).toISOString(), [toDate]);
+  const { from, to } = useMemo(() => {
+    const nowIso = new Date().toISOString();
+    const days = range === "7d" ? 7 : range === "90d" ? 90 : 30;
+    return { from: isoForDaysAgo(days), to: nowIso };
+  }, [range]);
 
   const { loading, data, error, refresh } = useFinanceAnalytics({
     entityType,
     entityId,
-    from: fromIso,
-    to: toIso,
+    from,
+    to,
   });
 
   const currency = data?.currency || "USD";
 
-  const totals = data?.totals || {
-    incomeCents: 0,
-    expenseCents: 0,
-    payrollCents: 0,
-    opCostCents: 0,
-    netCents: 0,
-    payrollRatioBps: 0,
-    opCostRatioBps: 0,
-  };
+  const cards = useMemo(() => {
+    const totals = data?.totals;
+    const income = totals?.incomeCents ?? 0;
+    const expense = totals?.expenseCents ?? 0;
+    const payroll = totals?.payrollCents ?? 0;
+    const net = totals?.netCents ?? 0;
 
-  const topExpense = data?.topExpenseCategories || [];
-  const topIncome = data?.topIncomeCategories || [];
+    const payrollPct = bpsToPct(totals?.payrollRatioBps ?? 0);
+    const opCostPct = bpsToPct(totals?.opCostRatioBps ?? 0);
 
-  const maxExpense = useMemo(() => Math.max(0, ...topExpense.map((x) => Number(x.totalCents || 0))), [topExpense]);
-  const maxIncome = useMemo(() => Math.max(0, ...topIncome.map((x) => Number(x.totalCents || 0))), [topIncome]);
+    return [
+      {
+        label: "Income",
+        value: formatCents(income, currency),
+        icon: <DollarSign className="h-5 w-5 text-primary" />,
+        hint: "Total income",
+      },
+      {
+        label: "Expenses",
+        value: formatCents(expense, currency),
+        icon: <Receipt className="h-5 w-5 text-primary" />,
+        hint: "Non-payroll expenses",
+      },
+      {
+        label: "Payroll",
+        value: formatCents(payroll, currency),
+        icon: <Wallet className="h-5 w-5 text-primary" />,
+        hint: `${payrollPct.toFixed(1)}% of income`,
+      },
+      {
+        label: "Net",
+        value: formatCents(net, currency),
+        icon: <TrendingUp className="h-5 w-5 text-primary" />,
+        hint: `${opCostPct.toFixed(1)}% total costs`,
+      },
+    ];
+  }, [data, currency]);
 
-  const series = data?.series || [];
-  const maxSeriesValue = useMemo(() => {
-    let m = 0;
-    for (const s of series) {
-      m = Math.max(m, Number(s.incomeCents || 0), Number(s.expenseCents || 0) + Number(s.payrollCents || 0));
-    }
-    return m;
-  }, [series]);
+  const series = useMemo(() => {
+    const s = data?.series || [];
+    return s.map((p) => ({
+      ...p,
+      dateLabel: (() => {
+        try {
+          return format(new Date(`${p.day}T00:00:00Z`), "MMM d");
+        } catch {
+          return p.day;
+        }
+      })(),
+      income: (Number(p.incomeCents || 0) || 0) / 100,
+      costs: ((Number(p.expenseCents || 0) || 0) + (Number(p.payrollCents || 0) || 0)) / 100,
+      net: (Number(p.netCents || 0) || 0) / 100,
+    }));
+  }, [data]);
 
-  const onApplyRange = async () => {
-    if (!fromDate || !toDate) {
-      toast.error("Please select a valid date range");
-      return;
-    }
-    await refresh();
-  };
+  const topCosts = useMemo(() => {
+    return (data?.topExpenseCategories || []).slice(0, 6).map((c) => ({
+      name: c.name,
+      total: formatCents(c.totalCents, currency),
+    }));
+  }, [data, currency]);
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
-          <CalendarDays className="w-5 h-5 text-muted-foreground" />
+          <BarChart3 className="h-5 w-5 text-muted-foreground" />
           <h3 className="text-base font-semibold">Overview</h3>
-          <Badge variant="secondary">Analytics</Badge>
+          <Badge variant="secondary">{range}</Badge>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-2">
-            <Input
-              type="date"
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
-              disabled={loading}
-              className="w-[155px]"
-            />
-            <Input
-              type="date"
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
-              disabled={loading}
-              className="w-[155px]"
-            />
-          </div>
+          <Button
+            size="sm"
+            variant={range === "7d" ? "default" : "outline"}
+            onClick={() => setRange("7d")}
+            disabled={loading}
+          >
+            7d
+          </Button>
+          <Button
+            size="sm"
+            variant={range === "30d" ? "default" : "outline"}
+            onClick={() => setRange("30d")}
+            disabled={loading}
+          >
+            30d
+          </Button>
+          <Button
+            size="sm"
+            variant={range === "90d" ? "default" : "outline"}
+            onClick={() => setRange("90d")}
+            disabled={loading}
+          >
+            90d
+          </Button>
 
-          <Button variant="outline" onClick={onApplyRange} disabled={loading} className="gap-2">
-            {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+          <Button size="sm" variant="outline" onClick={refresh} disabled={loading}>
+            {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCcw className="h-4 w-4 mr-2" />}
             Refresh
           </Button>
         </div>
       </div>
 
       {error ? (
-        <Card>
-          <CardContent className="py-6 text-sm text-muted-foreground">{error}</CardContent>
+        <Card className="rounded-xl">
+          <CardHeader>
+            <CardTitle className="text-base">Couldn&apos;t load finance overview</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground space-y-3">
+            <p>{error}</p>
+            <Button variant="outline" onClick={refresh}>
+              Try again
+            </Button>
+          </CardContent>
         </Card>
       ) : null}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-              <TrendingUp className="w-4 h-4" />
-              Income
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold">{formatCurrency(totals.incomeCents, currency)}</div>
-            <div className="text-xs text-muted-foreground">Total income in range</div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        {cards.map((c) => (
+          <Card key={c.label} className="rounded-xl">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">{c.label}</p>
+                  <p className="text-2xl font-semibold">{loading ? "—" : c.value}</p>
+                  <p className="text-xs text-muted-foreground">{loading ? "Loading…" : c.hint}</p>
+                </div>
+                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">{c.icon}</div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-              <TrendingDown className="w-4 h-4" />
-              Operating cost
-            </CardTitle>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="rounded-xl lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-base">Daily trend</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold">{formatCurrency(totals.opCostCents, currency)}</div>
-            <div className="text-xs text-muted-foreground">
-              Expense + payroll ({formatBps(totals.opCostRatioBps)} of income)
+            <div className="h-[280px]">
+              {loading ? (
+                <div className="h-full w-full rounded-lg bg-muted animate-pulse" />
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={series}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="dateLabel" />
+                    <YAxis />
+                    <Tooltip
+                      formatter={(value: any, name: any) => {
+                        const cur = currency || "USD";
+                        const v = Number(value || 0);
+                        if (name === "income") return [formatCents(Math.round(v * 100), cur), "Income"];
+                        if (name === "costs") return [formatCents(Math.round(v * 100), cur), "Costs"];
+                        if (name === "net") return [formatCents(Math.round(v * 100), cur), "Net"];
+                        return [value, name];
+                      }}
+                    />
+                    <Area type="monotone" dataKey="income" fillOpacity={0.18} strokeWidth={2} />
+                    <Area type="monotone" dataKey="costs" fillOpacity={0.12} strokeWidth={2} />
+                    <Area type="monotone" dataKey="net" fillOpacity={0.10} strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-              <Wallet className="w-4 h-4" />
-              Net
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold">{formatCurrency(totals.netCents, currency)}</div>
-            <div className="text-xs text-muted-foreground">Income − (expense + payroll)</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card className="lg:col-span-2">
+        <Card className="rounded-xl">
           <CardHeader>
-            <CardTitle className="text-base">Trend (daily)</CardTitle>
+            <CardTitle className="text-base">Top costs</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {loading ? (
-              <div className="py-8 text-center text-sm text-muted-foreground">Loading…</div>
-            ) : series.length === 0 ? (
-              <div className="py-8 text-center text-sm text-muted-foreground">No entries in this range.</div>
+              <div className="space-y-3">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="h-10 rounded-lg bg-muted animate-pulse" />
+                ))}
+              </div>
+            ) : topCosts.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No expense/payroll entries yet for this range.</p>
             ) : (
               <div className="space-y-2">
-                {series.slice(-14).map((d) => {
-                  const cost = (d.expenseCents || 0) + (d.payrollCents || 0);
-                  const incomeW = miniBarWidth(d.incomeCents || 0, maxSeriesValue);
-                  const costW = miniBarWidth(cost, maxSeriesValue);
-
-                  return (
-                    <div key={d.day} className="space-y-1">
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span className="font-medium text-foreground">{d.day}</span>
-                        <span>
-                          Net: <span className="font-medium text-foreground">{formatCurrency(d.netCents || 0, currency)}</span>
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-1 gap-1">
-                        <div className="h-2 rounded bg-muted overflow-hidden">
-                          <div className="h-2 bg-foreground/70 rounded" style={{ width: incomeW }} />
-                        </div>
-                        <div className="h-2 rounded bg-muted overflow-hidden">
-                          <div className="h-2 bg-foreground/30 rounded" style={{ width: costW }} />
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>Income: {formatCurrency(d.incomeCents || 0, currency)}</span>
-                        <span>Cost: {formatCurrency(cost, currency)}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-                <div className="text-xs text-muted-foreground pt-2">
-                  Bars: top = income, bottom = cost (expense + payroll). Last 14 days shown.
-                </div>
+                {topCosts.map((c) => (
+                  <div
+                    key={c.name}
+                    className="flex items-center justify-between p-3 rounded-xl border border-border/60 bg-muted/20"
+                  >
+                    <p className="text-sm font-medium truncate">{c.name}</p>
+                    <p className="text-sm font-semibold">{c.total}</p>
+                  </div>
+                ))}
               </div>
             )}
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Percent className="w-4 h-4 text-muted-foreground" />
-              Payroll ratio
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="text-3xl font-semibold">{formatBps(totals.payrollRatioBps)}</div>
-            <div className="text-sm text-muted-foreground">
-              Payroll: <span className="font-medium text-foreground">{formatCurrency(totals.payrollCents, currency)}</span>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              Expense: <span className="font-medium text-foreground">{formatCurrency(totals.expenseCents, currency)}</span>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              Income: <span className="font-medium text-foreground">{formatCurrency(totals.incomeCents, currency)}</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Top expense categories</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Category</TableHead>
-                    <TableHead className="text-right w-[160px]">Total</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loading ? (
-                    <TableRow>
-                      <TableCell colSpan={2} className="py-10 text-center text-sm text-muted-foreground">
-                        Loading…
-                      </TableCell>
-                    </TableRow>
-                  ) : topExpense.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={2} className="py-10 text-center text-sm text-muted-foreground">
-                        No expense categories found.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    topExpense.map((c) => (
-                      <TableRow key={`${c.kind}:${c.categoryId || c.name}`}>
-                        <TableCell className="text-sm">
-                          <div className="flex items-center justify-between gap-3">
-                            <span className="font-medium">{c.name}</span>
-                            <span className="text-xs text-muted-foreground capitalize">{c.kind}</span>
-                          </div>
-                          <div className="mt-2 h-2 rounded bg-muted overflow-hidden">
-                            <div
-                              className="h-2 bg-foreground/40 rounded"
-                              style={{ width: miniBarWidth(c.totalCents || 0, maxExpense) }}
-                            />
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right font-semibold">
-                          {formatCurrency(c.totalCents || 0, currency)}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Top income categories</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Category</TableHead>
-                    <TableHead className="text-right w-[160px]">Total</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loading ? (
-                    <TableRow>
-                      <TableCell colSpan={2} className="py-10 text-center text-sm text-muted-foreground">
-                        Loading…
-                      </TableCell>
-                    </TableRow>
-                  ) : topIncome.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={2} className="py-10 text-center text-sm text-muted-foreground">
-                        No income categories found.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    topIncome.map((c) => (
-                      <TableRow key={`${c.kind}:${c.categoryId || c.name}`}>
-                        <TableCell className="text-sm">
-                          <div className="flex items-center justify-between gap-3">
-                            <span className="font-medium">{c.name}</span>
-                            <span className="text-xs text-muted-foreground capitalize">{c.kind}</span>
-                          </div>
-                          <div className="mt-2 h-2 rounded bg-muted overflow-hidden">
-                            <div
-                              className="h-2 bg-foreground/40 rounded"
-                              style={{ width: miniBarWidth(c.totalCents || 0, maxIncome) }}
-                            />
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right font-semibold">
-                          {formatCurrency(c.totalCents || 0, currency)}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+            {data?.range ? (
+              <p className="text-xs text-muted-foreground pt-2">
+                {format(new Date(data.range.from), "MMM d, yyyy")} – {format(new Date(data.range.to), "MMM d, yyyy")}
+              </p>
+            ) : null}
           </CardContent>
         </Card>
       </div>
