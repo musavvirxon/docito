@@ -10,6 +10,7 @@ import FinanceTransactions from "@/components/financial/FinanceTransactions";
 import AttendancePanel from "@/components/financial/AttendancePanel";
 import PayrollPanel from "@/components/financial/PayrollPanel";
 import ExpensesPanel from "@/components/financial/ExpensesPanel";
+import BudgetsPanel from "@/components/financial/BudgetsPanel";
 import FinancePlaceholder from "@/components/financial/FinancePlaceholder";
 import { useEnsureFinanceDefaults } from "@/hooks/useEnsureFinanceDefaults";
 
@@ -27,7 +28,7 @@ export default function FinanceHub({ entityType, entityId }: FinanceHubProps) {
     "overview" | "transactions" | "expenses" | "payroll" | "attendance" | "budgets" | "reports"
   >("overview");
 
-  // Step 12: Ensure default categories exist for this entity
+  // Ensure default categories exist for this entity
   useEnsureFinanceDefaults({ entityType, entityId });
 
   const entityLabel = useMemo(() => {
@@ -108,7 +109,7 @@ export default function FinanceHub({ entityType, entityId }: FinanceHubProps) {
         </TabsContent>
 
         <TabsContent value="budgets">
-          <FinancePlaceholder title="Budgets" description="Set monthly buckets and compare actual vs planned." />
+          <BudgetsPanel entityType={entityType} entityId={entityId} />
         </TabsContent>
 
         <TabsContent value="reports">
