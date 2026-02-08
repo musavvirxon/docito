@@ -4,10 +4,11 @@ import { useMemo, useState } from "react";
 import { DollarSign, ListChecks, Receipt, Wallet, Clock, PiggyBank, BarChart3 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+
 import FinanceOverview from "@/components/financial/FinanceOverview";
-import FinancePlaceholder from "@/components/financial/FinancePlaceholder";
 import FinanceTransactions from "@/components/financial/FinanceTransactions";
 import AttendancePanel from "@/components/financial/AttendancePanel";
+import FinancePlaceholder from "@/components/financial/FinancePlaceholder";
 
 export type FinanceEntityType = "practice" | "lab" | "pharmacy" | "imaging_center";
 
