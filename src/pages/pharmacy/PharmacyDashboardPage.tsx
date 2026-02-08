@@ -134,8 +134,8 @@ export default function PharmacyDashboardPage() {
       { id: "referrals", label: "Referrals", icon: <ShieldCheck className="h-5 w-5" /> },
       { id: "analytics", label: "Analytics", icon: <BarChart3 className="h-5 w-5" /> },
       { id: "claims", label: "Billing / Claims", icon: <CreditCard className="h-5 w-5" /> },
-      { id: "finance", label: "Finance", icon: <DollarSign className="h-5 w-5" /> },
       { id: "staff", label: "Staff", icon: <Users className="h-5 w-5" /> },
+      { id: "finance", label: "Finance", icon: <DollarSign className="h-5 w-5" /> },
       {
         id: "settings",
         label: "Settings",
@@ -223,8 +223,8 @@ export default function PharmacyDashboardPage() {
       "referrals",
       "analytics",
       "claims",
-      "finance",
       "staff",
+      "finance",
       "settings",
     ];
     if (!allowed.includes(desired)) return;
@@ -369,8 +369,8 @@ export default function PharmacyDashboardPage() {
       {activeTab === "referrals" && <PharmacyReferralsSection pharmacyId={pharmacyId} />}
       {activeTab === "analytics" && <PharmacyAnalytics pharmacyId={pharmacyId} />}
       {activeTab === "claims" && <PharmacyInsuranceClaims pharmacyId={pharmacyId} />}
-      {activeTab === "finance" && <FinanceHub entityType="pharmacy" entityId={pharmacyId} />}
       {activeTab === "staff" && <PharmacyStaffManager pharmacyId={pharmacyId} />}
+      {activeTab === "finance" && <FinanceHub entityType="pharmacy" entityId={pharmacyId} />}
       {activeTab === "settings" && <PharmacySettings pharmacyId={pharmacyId} />}
     </DashboardShell>
   );
