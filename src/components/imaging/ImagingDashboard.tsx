@@ -1,3 +1,5 @@
+// File: src/components/imaging/ImagingDashboard.tsx
+// Path: src/components/imaging/ImagingDashboard.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
@@ -325,7 +327,7 @@ export default function ImagingDashboard() {
       {activeTab === "equipment" && <ImagingEquipmentManager centerId={centerId} />}
       {activeTab === "analytics" && <ImagingAnalytics centerId={centerId} />}
       {activeTab === "billing" && <ImagingBillingSection centerId={centerId} />}
-      {activeTab === "finance" && <FinanceHub entityType="imaging_center" entityId={centerId} />}
+      {activeTab === "finance" && <FinanceHub entityType="imaging" entityId={centerId} />}
       {activeTab === "staff" && <div className="p-4 text-sm text-muted-foreground">Staff management is available in Settings.</div>}
       {activeTab === "referrals" && <ImagingReferralsSection centerId={centerId} />}
     </DashboardShell>
