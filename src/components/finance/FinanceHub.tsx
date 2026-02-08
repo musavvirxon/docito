@@ -7,7 +7,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Loader2, Download, RefreshCw, DollarSign, TrendingDown, Users, Wallet } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader as UiDialogHeader,
+  DialogTitle as UiDialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
+import { Loader2, Download, RefreshCw, DollarSign, TrendingDown, Users, Wallet, PencilLine } from "lucide-react";
 
 type FinanceEntityType = "clinic" | "lab" | "imaging" | "pharmacy";
 
@@ -109,6 +120,21 @@ function formatPercentBps(bps: number) {
   return `${v.toFixed(2)}%`;
 }
 
+function centsToInput(cents: number) {
+  const v = (Number(cents || 0) || 0) / 100;
+  return v === 0 ? "" : v.toFixed(2);
+}
+
+function parseMoneyToCents(input: string) {
+  const s = String(input || "").trim();
+  if (!s) return 0;
+  const normalized = s.replace(/,/g, ".");
+  const n = Number(normalized);
+  if (!Number.isFinite(n)) return null;
+  if (n < 0) return null;
+  return Math.round(n * 100);
+}
+
 async function downloadTextFile(filename: string, content: string, mimeType: string) {
   const blob = new Blob([content], { type: mimeType || "text/plain" });
   const url = URL.createObjectURL(blob);
@@ -148,6 +174,20 @@ export function FinanceHub(props: { entityType: FinanceEntityType; entityId: str
   const toIso = useMemo(() => isoToDateEndExclusiveLocal(toDate), [toDate]);
 
   const monthStart = useMemo(() => monthStartFromDate(toDate), [toDate]);
+
+  const [budgetDialogOpen, setBudgetDialogOpen] = useState(false);
+  const [savingBudgets, setSavingBudgets] = useState(false);
+  const [budgetEdits, setBudgetEdits] = useState<Record<string, string>>({});
+
+  const budgetRows = useMemo(() => {
+    const rows = (budget?.rows || []).slice();
+    rows.sort((a, b) => {
+      const byKind = a.kind.localeCompare(b.kind);
+      if (byKind !== 0) return byKind;
+      return a.name.localeCompare(b.name);
+    });
+    return rows;
+  }, [budget?.rows]);
 
   const ensureDefaults = async () => {
     if (!entityId) return;
@@ -227,6 +267,65 @@ export function FinanceHub(props: { entityType: FinanceEntityType; entityId: str
     }
   };
 
+  const openBudgetEditor = () => {
+    const next: Record<string, string> = {};
+    for (const r of budgetRows) {
+      next[r.categoryId] = centsToInput(r.budgetCents);
+    }
+    setBudgetEdits(next);
+    setBudgetDialogOpen(true);
+  };
+
+  const saveBudgets = async () => {
+    if (!entityId) return;
+    if (budgetRows.length === 0) {
+      toast.error("No budget categories found yet.");
+      return;
+    }
+
+    setSavingBudgets(true);
+    try {
+      const { data: userResp, error: userErr } = await supabase.auth.getUser();
+      if (userErr) throw userErr;
+      const uid = userResp?.user?.id;
+      if (!uid) throw new Error("Not authenticated");
+
+      const upsertRows: any[] = [];
+      for (const r of budgetRows) {
+        const raw = budgetEdits[r.categoryId] ?? "";
+        const cents = parseMoneyToCents(raw);
+        if (cents === null) {
+          throw new Error(`Invalid amount for "${r.name}". Use a number like 100 or 100.50`);
+        }
+
+        upsertRows.push({
+          entity_type: entityType,
+          entity_id: entityId,
+          category_id: r.categoryId,
+          month_start: monthStart,
+          budget_cents: cents,
+          currency,
+          created_by: uid,
+        });
+      }
+
+      const { error } = await supabase
+        .from("finance_budgets")
+        .upsert(upsertRows, { onConflict: "entity_type,entity_id,category_id,month_start" });
+
+      if (error) throw error;
+
+      toast.success("Budgets saved");
+      setBudgetDialogOpen(false);
+      await fetchBudget();
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || "Failed to save budgets");
+    } finally {
+      setSavingBudgets(false);
+    }
+  };
+
   useEffect(() => {
     if (!entityId) return;
     void ensureDefaults();
@@ -246,16 +345,6 @@ export function FinanceHub(props: { entityType: FinanceEntityType; entityId: str
   }, [entityId, entityType, monthStart]);
 
   const totals = analytics?.totals;
-
-  const budgetRows = useMemo(() => {
-    const rows = (budget?.rows || []).slice();
-    rows.sort((a, b) => {
-      const byKind = a.kind.localeCompare(b.kind);
-      if (byKind !== 0) return byKind;
-      return a.name.localeCompare(b.name);
-    });
-    return rows;
-  }, [budget?.rows]);
 
   return (
     <div className="space-y-6">
@@ -399,15 +488,110 @@ export function FinanceHub(props: { entityType: FinanceEntityType; entityId: str
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
+        <CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div>
             <CardTitle className="text-base">Monthly budget</CardTitle>
             <div className="text-sm text-muted-foreground">
               Month starting {budget?.monthStart || monthStart}
             </div>
           </div>
-          <div className="text-sm text-muted-foreground">
-            {budgetLoading ? "Loading…" : ""}
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => void fetchBudget()}
+              disabled={budgetLoading}
+              className="gap-2"
+            >
+              {budgetLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              Refresh
+            </Button>
+
+            <Dialog open={budgetDialogOpen} onOpenChange={setBudgetDialogOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="default"
+                  onClick={openBudgetEditor}
+                  disabled={budgetLoading || ensuringDefaults || budgetRows.length === 0}
+                  className="gap-2"
+                >
+                  <PencilLine className="h-4 w-4" />
+                  Edit budgets
+                </Button>
+              </DialogTrigger>
+
+              <DialogContent className="max-w-3xl">
+                <UiDialogHeader>
+                  <UiDialogTitle>Edit monthly budgets</UiDialogTitle>
+                  <DialogDescription>
+                    Set a target budget per category for <span className="font-medium">{monthStart}</span>.
+                    Enter amounts in {currency}. Leave blank to set 0.
+                  </DialogDescription>
+                </UiDialogHeader>
+
+                <div className="space-y-4">
+                  {budgetRows.length === 0 ? (
+                    <div className="text-sm text-muted-foreground">No expense/payroll categories available yet.</div>
+                  ) : (
+                    <div className="max-h-[55vh] overflow-auto rounded-md border">
+                      <div className="grid grid-cols-12 gap-2 p-3 text-xs font-medium text-muted-foreground bg-muted/30">
+                        <div className="col-span-6">Category</div>
+                        <div className="col-span-2">Kind</div>
+                        <div className="col-span-4 text-right">Budget ({currency})</div>
+                      </div>
+
+                      <div className="divide-y">
+                        {budgetRows.map((r) => (
+                          <div key={r.categoryId} className="grid grid-cols-12 gap-2 p-3 items-center">
+                            <div className="col-span-6">
+                              <div className="text-sm font-medium">{r.name}</div>
+                              <div className="text-xs text-muted-foreground">
+                                Current spent: {formatMoney(currency, r.actualCents)}
+                              </div>
+                            </div>
+                            <div className="col-span-2 text-sm text-muted-foreground">{r.kind}</div>
+                            <div className="col-span-4 flex justify-end">
+                              <div className="w-[180px]">
+                                <Input
+                                  inputMode="decimal"
+                                  placeholder="0.00"
+                                  value={budgetEdits[r.categoryId] ?? ""}
+                                  onChange={(e) =>
+                                    setBudgetEdits((prev) => ({ ...prev, [r.categoryId]: e.target.value }))
+                                  }
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="rounded-md border p-3 bg-muted/20">
+                    <div className="text-sm font-medium">Tip</div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Use budgets for supplies, utilities (water/electricity/gas/heating), taxes, rent, maintenance, and payroll.
+                      Alerts and templates will be added next.
+                    </div>
+                  </div>
+                </div>
+
+                <DialogFooter className="gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setBudgetDialogOpen(false)}
+                    disabled={savingBudgets}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={() => void saveBudgets()} disabled={savingBudgets || budgetRows.length === 0}>
+                    {savingBudgets ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                    Save
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </CardHeader>
 
@@ -437,28 +621,42 @@ export function FinanceHub(props: { entityType: FinanceEntityType; entityId: str
 
           {budgetRows.length === 0 ? (
             <div className="text-sm text-muted-foreground">
-              No budget rows yet. (Next step: add UI to set budgets per category.)
+              No budget rows yet. Default categories should be created automatically. If this stays empty, add at least one expense entry.
             </div>
           ) : (
             <div className="space-y-3">
               {budgetRows.slice(0, 12).map((r) => {
-                const pct = r.budgetCents > 0 ? Math.min(100, Math.round((r.actualCents / r.budgetCents) * 100)) : 0;
+                const pct =
+                  r.budgetCents > 0 ? Math.min(100, Math.round((r.actualCents / r.budgetCents) * 100)) : 0;
+
+                const labelRight =
+                  r.budgetCents > 0
+                    ? `${formatMoney(currency, r.actualCents)} / ${formatMoney(currency, r.budgetCents)}`
+                    : `${formatMoney(currency, r.actualCents)} / —`;
+
                 return (
                   <div key={r.categoryId} className="space-y-1">
                     <div className="flex items-center justify-between gap-3">
                       <div className="text-sm">
                         {r.name} <span className="text-xs text-muted-foreground">({r.kind})</span>
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {formatMoney(currency, r.actualCents)} / {formatMoney(currency, r.budgetCents)}
-                      </div>
+                      <div className="text-xs text-muted-foreground">{labelRight}</div>
                     </div>
                     <Progress value={pct} />
                   </div>
                 );
               })}
+              {(budgetRows.length || 0) > 12 ? (
+                <div className="text-xs text-muted-foreground">Showing first 12 categories.</div>
+              ) : null}
             </div>
           )}
+
+          {(budget?.totals.uncategorizedCents || 0) > 0 ? (
+            <div className="text-xs text-muted-foreground">
+              Uncategorized spending this month: {formatMoney(currency, budget?.totals.uncategorizedCents || 0)}
+            </div>
+          ) : null}
         </CardContent>
       </Card>
     </div>
