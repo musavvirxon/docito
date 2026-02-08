@@ -1,272 +1,282 @@
-// File: src/components/financial/FinanceTransactions.tsx
-
-import { useMemo, useState } from "react";
-import { Plus, RefreshCw, Pencil, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { format } from "date-fns";
+import { ListChecks, Loader2, RefreshCcw, Filter, ArrowDownUp } from "lucide-react";
 import { toast } from "sonner";
 
-import type { FinanceEntityType } from "@/components/financial/FinanceHub";
 import { supabase } from "@/integrations/supabase/client";
+import type { FinanceEntityType } from "@/components/financial/FinanceHub";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import FinanceEntryDialog, { FinanceEntryDraft, FinanceEntryRow } from "@/components/financial/FinanceEntryDialog";
-import { useFinanceCategories } from "@/hooks/useFinanceCategories";
-import { useFinanceEntries } from "@/hooks/useFinanceEntries";
 
-type EntryType = "income" | "expense" | "payroll" | "adjustment" | "transfer";
-type TypeFilter = "all" | EntryType;
-
-const formatCurrency = (cents: number, currency: string = "USD") => {
-  const value = (Number(cents) || 0) / 100;
-  try {
-    return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(value);
-  } catch {
-    return `${value.toFixed(2)} ${currency}`;
-  }
-};
-
-function entryTypeBadgeVariant(t: EntryType) {
-  if (t === "income") return "default";
-  if (t === "expense" || t === "payroll") return "secondary";
-  if (t === "adjustment") return "outline";
-  return "secondary";
-}
-
-function formatDateTime(iso: string) {
-  try {
-    const d = new Date(iso);
-    return d.toLocaleString();
-  } catch {
-    return iso;
-  }
-}
-
-interface FinanceTransactionsProps {
+type Props = {
   entityType: FinanceEntityType;
   entityId: string;
+};
+
+type EntryType = "income" | "expense" | "payroll" | "transfer" | "adjustment";
+
+type FinanceEntryRow = {
+  id: string;
+  occurred_at: string;
+  entry_type: EntryType;
+  amount_cents: number;
+  currency: string;
+  description: string | null;
+  category_id: string | null;
+};
+
+type CategoryRow = {
+  id: string;
+  name: string;
+  kind: string;
+};
+
+function formatCents(cents: number, currency: string) {
+  const cur = (currency || "USD").toUpperCase();
+  const value = (Number(cents || 0) || 0) / 100;
+  try {
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: cur }).format(value);
+  } catch {
+    return `${cur} ${value.toFixed(2)}`;
+  }
 }
 
-export default function FinanceTransactions({ entityType, entityId }: FinanceTransactionsProps) {
-  const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
-  const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<FinanceEntryRow | null>(null);
+function isoForDaysAgo(days: number) {
+  const now = new Date();
+  const d = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+  return d.toISOString();
+}
 
-  const { categories, loading: categoriesLoading, refresh: refreshCategories } = useFinanceCategories({
-    entityType,
-    entityId,
-  });
+export default function FinanceTransactions({ entityType, entityId }: Props) {
+  const [range, setRange] = useState<"7d" | "30d" | "90d">("30d");
+  const [type, setType] = useState<EntryType | "all">("all");
+  const [sort, setSort] = useState<"newest" | "oldest">("newest");
 
-  const {
-    rows,
-    loading: rowsLoading,
-    currency,
-    refresh: refreshRows,
-  } = useFinanceEntries({
-    entityType,
-    entityId,
-    entryType: typeFilter === "all" ? undefined : typeFilter,
-    limit: 200,
-  });
+  const [loading, setLoading] = useState(false);
+  const [rows, setRows] = useState<FinanceEntryRow[]>([]);
+  const [cats, setCats] = useState<Map<string, CategoryRow>>(new Map());
 
-  const categoryNameById = useMemo(() => {
-    const m = new Map<string, string>();
-    categories.forEach((c) => m.set(c.id, c.name));
-    return m;
-  }, [categories]);
+  const { from, to } = useMemo(() => {
+    const days = range === "7d" ? 7 : range === "90d" ? 90 : 30;
+    return { from: isoForDaysAgo(days), to: new Date().toISOString() };
+  }, [range]);
 
-  const handleRefresh = async () => {
-    await Promise.all([refreshCategories(), refreshRows()]);
-  };
+  const currency = useMemo(() => rows.find((r) => r.currency)?.currency || "USD", [rows]);
 
-  const handleCreate = () => {
-    setEditing(null);
-    setOpen(true);
-  };
+  const refresh = async () => {
+    if (!entityType || !entityId) return;
 
-  const handleEdit = (row: FinanceEntryRow) => {
-    setEditing(row);
-    setOpen(true);
-  };
-
-  const handleDelete = async (row: FinanceEntryRow) => {
-    const ok = window.confirm("Delete this entry? This cannot be undone.");
-    if (!ok) return;
-
+    setLoading(true);
     try {
-      const { error } = await supabase.from("finance_entries").delete().eq("id", row.id);
+      const catRes = await (supabase as any)
+        .from("finance_categories")
+        .select("id,name,kind")
+        .eq("entity_type", entityType)
+        .eq("entity_id", entityId)
+        .limit(5000);
+
+      if (catRes?.error) throw catRes.error;
+
+      const catMap = new Map<string, CategoryRow>();
+      ((catRes?.data || []) as any[]).forEach((c) => {
+        if (c?.id) catMap.set(String(c.id), { id: String(c.id), name: String(c.name || "Unnamed"), kind: String(c.kind || "") });
+      });
+      setCats(catMap);
+
+      let q = (supabase as any)
+        .from("finance_entries")
+        .select("id,occurred_at,entry_type,amount_cents,currency,description,category_id")
+        .eq("entity_type", entityType)
+        .eq("entity_id", entityId)
+        .gte("occurred_at", from)
+        .lt("occurred_at", to);
+
+      if (type !== "all") q = q.eq("entry_type", type);
+
+      q = q.order("occurred_at", { ascending: sort === "oldest" });
+
+      const { data, error } = await q.limit(5000);
       if (error) throw error;
-      toast.success("Entry deleted");
-      await refreshRows();
+
+      setRows((data || []) as FinanceEntryRow[]);
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to delete entry");
+      toast.error(e?.message || "Failed to load transactions");
+      setRows([]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSave = async (draft: FinanceEntryDraft) => {
-    const payload = {
-      entity_type: entityType,
-      entity_id: entityId,
-      entry_type: draft.entryType,
-      category_id: draft.categoryId || null,
-      amount_cents: draft.amountCents,
-      currency: draft.currency || "USD",
-      occurred_at: draft.occurredAt,
-      description: draft.description || null,
-      metadata: draft.metadata ?? {},
-    };
+  useEffect(() => {
+    void refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entityType, entityId, range, type, sort]);
 
-    try {
-      if (editing?.id) {
-        const { error } = await supabase
-          .from("finance_entries")
-          .update(payload)
-          .eq("id", editing.id);
-
-        if (error) throw error;
-        toast.success("Entry updated");
-      } else {
-        const { error } = await supabase.from("finance_entries").insert(payload);
-        if (error) throw error;
-        toast.success("Entry created");
-      }
-
-      setOpen(false);
-      setEditing(null);
-      await refreshRows();
-    } catch (e: any) {
-      console.error(e);
-      toast.error(e?.message || "Failed to save entry");
-      throw e;
+  const totals = useMemo(() => {
+    const sums: Record<string, number> = { income: 0, expense: 0, payroll: 0, transfer: 0, adjustment: 0 };
+    for (const r of rows) {
+      const k = String(r.entry_type || "");
+      if (k in sums) sums[k] += Number(r.amount_cents || 0) || 0;
     }
-  };
+    const income = sums.income || 0;
+    const costs = (sums.expense || 0) + (sums.payroll || 0);
+    const net = income - costs;
+    return { sums, income, costs, net };
+  }, [rows]);
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
+          <ListChecks className="h-5 w-5 text-muted-foreground" />
           <h3 className="text-base font-semibold">Transactions</h3>
-          <Badge variant="secondary">Ledger</Badge>
+          <Badge variant="secondary">{range}</Badge>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as TypeFilter)}>
-            <SelectTrigger className="w-44">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All types</SelectItem>
-              <SelectItem value="income">Income</SelectItem>
-              <SelectItem value="expense">Expense</SelectItem>
-              <SelectItem value="payroll">Payroll</SelectItem>
-              <SelectItem value="adjustment">Adjustment</SelectItem>
-              <SelectItem value="transfer">Transfer</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Button variant="outline" onClick={handleRefresh} disabled={rowsLoading || categoriesLoading} className="gap-2">
-            {rowsLoading || categoriesLoading ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
-            ) : (
-              <RefreshCw className="w-4 h-4" />
-            )}
-            Refresh
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button size="sm" variant={range === "7d" ? "default" : "outline"} onClick={() => setRange("7d")} disabled={loading}>
+            7d
+          </Button>
+          <Button size="sm" variant={range === "30d" ? "default" : "outline"} onClick={() => setRange("30d")} disabled={loading}>
+            30d
+          </Button>
+          <Button size="sm" variant={range === "90d" ? "default" : "outline"} onClick={() => setRange("90d")} disabled={loading}>
+            90d
           </Button>
 
-          <Button onClick={handleCreate} className="gap-2">
-            <Plus className="w-4 h-4" />
-            Add entry
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setSort((s) => (s === "newest" ? "oldest" : "newest"))}
+            disabled={loading}
+            className="gap-2"
+          >
+            <ArrowDownUp className="h-4 w-4" />
+            {sort === "newest" ? "Newest" : "Oldest"}
+          </Button>
+
+          <Button size="sm" variant="outline" onClick={refresh} disabled={loading}>
+            {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCcw className="h-4 w-4 mr-2" />}
+            Refresh
           </Button>
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Latest entries</CardTitle>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="rounded-xl">
+          <CardContent className="p-5">
+            <p className="text-sm text-muted-foreground">Income</p>
+            <p className="text-2xl font-semibold">{loading ? "—" : formatCents(totals.income, currency)}</p>
+          </CardContent>
+        </Card>
+        <Card className="rounded-xl">
+          <CardContent className="p-5">
+            <p className="text-sm text-muted-foreground">Costs (expense + payroll)</p>
+            <p className="text-2xl font-semibold">{loading ? "—" : formatCents(totals.costs, currency)}</p>
+          </CardContent>
+        </Card>
+        <Card className="rounded-xl">
+          <CardContent className="p-5">
+            <p className="text-sm text-muted-foreground">Net</p>
+            <p className="text-2xl font-semibold">{loading ? "—" : formatCents(totals.net, currency)}</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="rounded-xl">
+        <CardHeader className="space-y-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <CardTitle className="text-base">Entries</CardTitle>
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Filter className="h-4 w-4" />
+                Type:
+              </div>
+              <Button size="sm" variant={type === "all" ? "default" : "outline"} onClick={() => setType("all")} disabled={loading}>
+                All
+              </Button>
+              <Button size="sm" variant={type === "income" ? "default" : "outline"} onClick={() => setType("income")} disabled={loading}>
+                Income
+              </Button>
+              <Button size="sm" variant={type === "expense" ? "default" : "outline"} onClick={() => setType("expense")} disabled={loading}>
+                Expense
+              </Button>
+              <Button size="sm" variant={type === "payroll" ? "default" : "outline"} onClick={() => setType("payroll")} disabled={loading}>
+                Payroll
+              </Button>
+            </div>
+          </div>
+
+          <p className="text-sm text-muted-foreground">
+            {format(new Date(from), "MMM d, yyyy")} – {format(new Date(to), "MMM d, yyyy")}
+          </p>
         </CardHeader>
+
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          {loading ? (
+            <div className="p-6">
+              <div className="h-12 rounded-lg bg-muted animate-pulse" />
+              <div className="h-12 rounded-lg bg-muted animate-pulse mt-3" />
+              <div className="h-12 rounded-lg bg-muted animate-pulse mt-3" />
+            </div>
+          ) : rows.length === 0 ? (
+            <div className="p-6 text-sm text-muted-foreground">No transactions for this filter/range yet.</div>
+          ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[190px]">Date</TableHead>
-                  <TableHead className="w-[120px]">Type</TableHead>
-                  <TableHead className="w-[220px]">Category</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Category</TableHead>
                   <TableHead>Description</TableHead>
-                  <TableHead className="text-right w-[160px]">Amount</TableHead>
-                  <TableHead className="text-right w-[110px]">Actions</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {rowsLoading && (
-                  <TableRow>
-                    <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
-                      Loading entries…
-                    </TableCell>
-                  </TableRow>
-                )}
+                {rows.map((r) => {
+                  const cat = r.category_id ? cats.get(String(r.category_id)) : null;
+                  const dateLabel = (() => {
+                    try {
+                      return format(new Date(r.occurred_at), "MMM d, yyyy");
+                    } catch {
+                      return r.occurred_at;
+                    }
+                  })();
 
-                {!rowsLoading && rows.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
-                      No entries yet. Click “Add entry” to create your first record.
-                    </TableCell>
-                  </TableRow>
-                )}
+                  const amount = formatCents(r.amount_cents, r.currency || currency);
 
-                {!rowsLoading &&
-                  rows.map((r) => {
-                    const t = r.entry_type as EntryType;
-                    const categoryName = r.category_id ? categoryNameById.get(r.category_id) || "Unknown" : "—";
-                    return (
-                      <TableRow key={r.id}>
-                        <TableCell className="text-sm">{formatDateTime(r.occurred_at)}</TableCell>
-                        <TableCell>
-                          <Badge variant={entryTypeBadgeVariant(t)} className="capitalize">
-                            {t}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-sm">{categoryName}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {r.description || <span className="text-muted-foreground">—</span>}
-                        </TableCell>
-                        <TableCell className="text-right font-medium">
-                          {formatCurrency(r.amount_cents, r.currency || currency)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <Button variant="ghost" size="icon" onClick={() => handleEdit(r)} aria-label="Edit">
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDelete(r)} aria-label="Delete">
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                  const typeBadge =
+                    r.entry_type === "income"
+                      ? "default"
+                      : r.entry_type === "expense" || r.entry_type === "payroll"
+                      ? "secondary"
+                      : "outline";
+
+                  return (
+                    <TableRow key={r.id}>
+                      <TableCell className="whitespace-nowrap">{dateLabel}</TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        <Badge variant={typeBadge as any}>{r.entry_type}</Badge>
+                      </TableCell>
+                      <TableCell className="min-w-[180px]">
+                        <span className="font-medium">{cat?.name || "Uncategorized"}</span>
+                      </TableCell>
+                      <TableCell className="min-w-[220px]">
+                        <span className="text-sm text-muted-foreground">{r.description || "—"}</span>
+                      </TableCell>
+                      <TableCell className="text-right font-semibold whitespace-nowrap">{amount}</TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
-          </div>
+          )}
         </CardContent>
       </Card>
-
-      <FinanceEntryDialog
-        open={open}
-        onOpenChange={(v) => {
-          setOpen(v);
-          if (!v) setEditing(null);
-        }}
-        currencyDefault={currency}
-        categories={categories}
-        loadingCategories={categoriesLoading}
-        initialRow={editing}
-        onSave={handleSave}
-      />
     </div>
   );
 }
