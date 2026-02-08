@@ -11,7 +11,7 @@ import AttendancePanel from "@/components/financial/AttendancePanel";
 import PayrollPanel from "@/components/financial/PayrollPanel";
 import ExpensesPanel from "@/components/financial/ExpensesPanel";
 import BudgetsPanel from "@/components/financial/BudgetsPanel";
-import FinancePlaceholder from "@/components/financial/FinancePlaceholder";
+import ReportsPanel from "@/components/financial/ReportsPanel";
 import { useEnsureFinanceDefaults } from "@/hooks/useEnsureFinanceDefaults";
 
 export type FinanceEntityType = "practice" | "lab" | "pharmacy" | "imaging_center";
@@ -113,7 +113,7 @@ export default function FinanceHub({ entityType, entityId }: FinanceHubProps) {
         </TabsContent>
 
         <TabsContent value="reports">
-          <FinancePlaceholder title="Reports" description="Profitability, payroll ratios, exports and insights." />
+          <ReportsPanel entityType={entityType} entityId={entityId} />
         </TabsContent>
       </Tabs>
     </div>
