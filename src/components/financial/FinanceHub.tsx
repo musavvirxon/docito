@@ -14,7 +14,7 @@ import BudgetsPanel from "@/components/financial/BudgetsPanel";
 import ReportsPanel from "@/components/financial/ReportsPanel";
 import { useEnsureFinanceDefaults } from "@/hooks/useEnsureFinanceDefaults";
 
-export type FinanceEntityType = "practice" | "lab" | "pharmacy" | "imaging_center";
+export type FinanceEntityType = "clinic" | "lab" | "imaging" | "pharmacy";
 
 interface FinanceHubProps {
   entityType: FinanceEntityType;
@@ -28,19 +28,18 @@ export default function FinanceHub({ entityType, entityId }: FinanceHubProps) {
     "overview" | "transactions" | "expenses" | "payroll" | "attendance" | "budgets" | "reports"
   >("overview");
 
-  // Ensure default categories exist for this entity
   useEnsureFinanceDefaults({ entityType, entityId });
 
   const entityLabel = useMemo(() => {
     switch (entityType) {
-      case "practice":
+      case "clinic":
         return "Clinic";
       case "lab":
         return "Lab";
       case "pharmacy":
         return "Pharmacy";
-      case "imaging_center":
-        return "Imaging Center";
+      case "imaging":
+        return "Imaging";
       default:
         return "Entity";
     }
