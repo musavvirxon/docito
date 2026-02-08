@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import FinanceOverview from "@/components/financial/FinanceOverview";
 import FinanceTransactions from "@/components/financial/FinanceTransactions";
 import AttendancePanel from "@/components/financial/AttendancePanel";
+import PayrollPanel from "@/components/financial/PayrollPanel";
 import FinancePlaceholder from "@/components/financial/FinancePlaceholder";
 
 export type FinanceEntityType = "practice" | "lab" | "pharmacy" | "imaging_center";
@@ -94,7 +95,7 @@ export default function FinanceHub({ entityType, entityId }: FinanceHubProps) {
         </TabsContent>
 
         <TabsContent value="payroll">
-          <FinancePlaceholder title="Payroll" description="Commissions, salaries, payouts, and payroll runs." />
+          <PayrollPanel entityType={entityType} entityId={entityId} />
         </TabsContent>
 
         <TabsContent value="attendance">
