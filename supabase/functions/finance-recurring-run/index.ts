@@ -1,6 +1,7 @@
 // File: supabase/functions/finance-recurring-run/index.ts
-// B25: Edge Function wrapper (unchanged API) now benefits from batch catch-up in SQL
-// - Returns all rows from finance_recurring_generate_due (may include many)
+// B29: Manual runner Edge Function wrapper to run due recurring rules for an entity
+// - Logs a per-entity run into finance_recurring_entity_runs (source='manual')
+// - Deno + supabase-js v2 + CORS + Authorization
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
@@ -74,6 +75,22 @@ Deno.serve(async (req) => {
 
     const asOf = cleanDate(payload?.as_of);
 
+    // Create run log (best effort)
+    const startedAt = new Date().toISOString();
+    const { data: runLog } = await supabase
+      .from("finance_recurring_entity_runs")
+      .insert({
+        entity_type: entityType,
+        entity_id: entityId,
+        source: "manual",
+        as_of: asOf || new Date().toISOString().slice(0, 10),
+        started_at: startedAt,
+      })
+      .select("id")
+      .single();
+
+    const runLogId = String((runLog as any)?.id || "");
+
     const { data, error } = await supabase.rpc("finance_recurring_generate_due", {
       p_entity_type: entityType,
       p_entity_id: entityId,
@@ -81,12 +98,42 @@ Deno.serve(async (req) => {
     });
 
     if (error) {
+      if (runLogId) {
+        await supabase
+          .from("finance_recurring_entity_runs")
+          .update({
+            finished_at: new Date().toISOString(),
+            created_count: 0,
+            skipped_count: 0,
+            error_count: 1,
+            notes: `RPC error: ${error.message}`,
+          })
+          .eq("id", runLogId);
+      }
       return jsonResponse({ error: error.message }, 400);
+    }
+
+    const results = Array.isArray(data) ? data : [];
+    const created = results.filter((r: any) => r.status === "created").length;
+    const skipped = results.filter((r: any) => r.status === "skipped").length;
+    const errored = results.filter((r: any) => r.status === "error").length;
+
+    if (runLogId) {
+      await supabase
+        .from("finance_recurring_entity_runs")
+        .update({
+          finished_at: new Date().toISOString(),
+          created_count: created,
+          skipped_count: skipped,
+          error_count: errored,
+        })
+        .eq("id", runLogId);
     }
 
     return jsonResponse(
       {
-        results: Array.isArray(data) ? data : [],
+        results,
+        run_log_id: runLogId || null,
       },
       200,
     );
