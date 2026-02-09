@@ -1,7 +1,7 @@
 // File: src/components/financial/InventoryItemsPanel.tsx
-// B13: Inventory items CRUD + manual stock adjustments (audit trail)
-// - CRUD via direct table writes (inventory_items)
-// - Adjust stock via RPC inventory_adjust_stock
+// B14: Inventory avg cost display + optional consumption posting to finance on negative adjustments
+// - Shows avg_unit_cost_cents
+// - Uses RPC inventory_adjust_stock_v2 with "Post to finance" toggle
 
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, RefreshCw, Plus, Package, Save, Minus, PlusCircle, History } from "lucide-react";
+import { Loader2, RefreshCw, Plus, Package, Save, Minus, PlusCircle, History, DollarSign } from "lucide-react";
 
 type FinanceEntityType = "clinic" | "lab" | "imaging" | "pharmacy";
 
@@ -22,6 +22,7 @@ type ItemRow = {
   unit: string;
   min_stock_qty: number;
   current_stock_qty: number;
+  avg_unit_cost_cents: number;
   is_active: boolean;
   notes: string | null;
 };
@@ -35,16 +36,21 @@ type AdjRow = {
   occurred_at: string;
 };
 
-function rowKey() {
-  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
 function parseQty(v: string) {
   const s = String(v || "").trim().replace(/,/g, ".");
   if (!s) return 0;
   const n = Number(s);
   if (!Number.isFinite(n)) return null;
   return n;
+}
+
+function formatMoney(currency: string, cents: number) {
+  const v = (Number(cents || 0) || 0) / 100;
+  try {
+    return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(v);
+  } catch {
+    return `${currency} ${v.toFixed(2)}`;
+  }
 }
 
 export default function InventoryItemsPanel(props: { entityType: FinanceEntityType; entityId: string }) {
@@ -70,6 +76,10 @@ export default function InventoryItemsPanel(props: { entityType: FinanceEntityTy
   const [adjReason, setAdjReason] = useState("manual");
   const [adjNote, setAdjNote] = useState("");
 
+  // Finance posting (consumption)
+  const [postToFinance, setPostToFinance] = useState(false);
+  const [expenseCategoryName, setExpenseCategoryName] = useState("Supplies usage");
+
   const [history, setHistory] = useState<AdjRow[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
@@ -88,7 +98,7 @@ export default function InventoryItemsPanel(props: { entityType: FinanceEntityTy
     try {
       const { data, error } = await supabase
         .from("inventory_items")
-        .select("id,name,sku,unit,min_stock_qty,current_stock_qty,is_active,notes")
+        .select("id,name,sku,unit,min_stock_qty,current_stock_qty,avg_unit_cost_cents,is_active,notes")
         .eq("entity_type", entityType)
         .eq("entity_id", entityId)
         .order("is_active", { ascending: false })
@@ -166,6 +176,7 @@ export default function InventoryItemsPanel(props: { entityType: FinanceEntityTy
         unit: newUnit.trim(),
         min_stock_qty: min,
         current_stock_qty: 0,
+        avg_unit_cost_cents: 0,
         is_active: true,
         notes: newNotes.trim() ? newNotes.trim() : null,
         created_by: uid,
@@ -214,11 +225,14 @@ export default function InventoryItemsPanel(props: { entityType: FinanceEntityTy
       return;
     }
 
+    // Only negative adjustments can be posted as consumption
+    const shouldPost = postToFinance && deltaSign === -1;
+
     setSaving(true);
     try {
       const delta = deltaRaw * deltaSign;
 
-      const { data, error } = await supabase.rpc("inventory_adjust_stock", {
+      const { data, error } = await supabase.rpc("inventory_adjust_stock_v2", {
         p_entity_type: entityType,
         p_entity_id: entityId,
         p_item_id: selected.id,
@@ -226,12 +240,22 @@ export default function InventoryItemsPanel(props: { entityType: FinanceEntityTy
         p_reason: adjReason.trim() ? adjReason.trim() : "manual",
         p_note: adjNote.trim() ? adjNote.trim() : null,
         p_occurred_at: null,
+        p_post_to_finance: shouldPost,
+        p_expense_category_name: expenseCategoryName.trim() ? expenseCategoryName.trim() : "Supplies usage",
       });
 
       if (error) throw error;
 
-      const row = Array.isArray(data) ? data[0] : data;
-      toast.success(`Stock updated · new stock: ${Number(row?.new_stock_qty ?? 0).toFixed(2)} ${selected.unit}`);
+      const row = Array.isArray(data) ? (data as any[])[0] : (data as any);
+
+      const newQty = Number(row?.new_stock_qty ?? 0);
+      const posted = Number(row?.posted_amount_cents ?? 0);
+
+      if (shouldPost && posted > 0) {
+        toast.success(`Stock updated · posted ${formatMoney("USD", posted)} to finance`);
+      } else {
+        toast.success(`Stock updated · new stock: ${newQty.toFixed(2)} ${selected.unit}`);
+      }
 
       setAdjNote("");
       await fetchItems();
@@ -252,7 +276,9 @@ export default function InventoryItemsPanel(props: { entityType: FinanceEntityTy
             <Package className="h-4 w-4 text-muted-foreground" />
             Inventory items
           </CardTitle>
-          <div className="text-sm text-muted-foreground">Create items, set min stock, and record manual adjustments.</div>
+          <div className="text-sm text-muted-foreground">
+            Create items, set min stock, track average cost, and record adjustments (optionally post consumption to finance).
+          </div>
         </div>
 
         <Button variant="outline" onClick={() => void fetchItems()} disabled={loading} className="gap-2">
@@ -328,8 +354,12 @@ export default function InventoryItemsPanel(props: { entityType: FinanceEntityTy
                         <span className="text-xs text-muted-foreground">{i.unit}</span>
                       </div>
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      min {Number(i.min_stock_qty).toFixed(2)} · {i.sku ? `sku ${i.sku}` : "no sku"}
+                    <div className="text-xs text-muted-foreground flex items-center justify-between">
+                      <span>min {Number(i.min_stock_qty).toFixed(2)} · {i.sku ? `sku ${i.sku}` : "no sku"}</span>
+                      <span className="inline-flex items-center gap-1">
+                        <DollarSign className="h-3.5 w-3.5" />
+                        avg {formatMoney("USD", Number(i.avg_unit_cost_cents || 0))}
+                      </span>
                     </div>
                   </button>
                 ))}
@@ -436,9 +466,16 @@ export default function InventoryItemsPanel(props: { entityType: FinanceEntityTy
 
                 <div className="rounded-md border p-3 space-y-2">
                   <div className="text-sm font-medium">Stock adjustment</div>
-                  <div className="text-xs text-muted-foreground">
-                    Current: <span className="font-medium">{Number(selected.current_stock_qty).toFixed(2)}</span>{" "}
-                    {selected.unit}
+
+                  <div className="grid gap-2 md:grid-cols-2">
+                    <div className="text-xs text-muted-foreground">
+                      Current: <span className="font-medium">{Number(selected.current_stock_qty).toFixed(2)}</span>{" "}
+                      {selected.unit}
+                    </div>
+                    <div className="text-xs text-muted-foreground md:text-right">
+                      Avg cost: <span className="font-medium">{formatMoney("USD", Number(selected.avg_unit_cost_cents || 0))}</span> /{" "}
+                      {selected.unit}
+                    </div>
                   </div>
 
                   <div className="grid gap-3 md:grid-cols-6 md:items-end">
@@ -465,13 +502,35 @@ export default function InventoryItemsPanel(props: { entityType: FinanceEntityTy
                       <Input value={adjNote} onChange={(e) => setAdjNote(e.target.value)} placeholder="Optional" />
                     </div>
 
+                    <div className="md:col-span-6 rounded-md border p-3 bg-muted/20">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <Label className="flex items-center gap-2 text-sm">
+                          <input type="checkbox" checked={postToFinance} onChange={(e) => setPostToFinance(e.target.checked)} />
+                          Post negative adjustments to finance (consumption)
+                        </Label>
+                        <div className="text-xs text-muted-foreground">
+                          Uses avg cost × qty, posts to expense category.
+                        </div>
+                      </div>
+
+                      <div className="mt-2 grid gap-3 md:grid-cols-3">
+                        <div className="md:col-span-2 space-y-1">
+                          <Label>Expense category name</Label>
+                          <Input
+                            value={expenseCategoryName}
+                            onChange={(e) => setExpenseCategoryName(e.target.value)}
+                            placeholder="Supplies usage"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label>Posting currency</Label>
+                          <Input value="USD" disabled />
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="md:col-span-6 flex flex-wrap items-center gap-2 justify-end">
-                      <Button
-                        variant="outline"
-                        onClick={() => void adjustStock(-1)}
-                        disabled={saving}
-                        className="gap-2"
-                      >
+                      <Button variant="outline" onClick={() => void adjustStock(-1)} disabled={saving} className="gap-2">
                         <Minus className="h-4 w-4" />
                         Decrease
                       </Button>
