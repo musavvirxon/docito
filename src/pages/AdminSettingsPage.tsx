@@ -1,5 +1,5 @@
 // File: src/pages/AdminSettingsPage.tsx
-// B3: Add BudgetEditorPanel under admin settings page (full file replacement)
+// B5: Add BudgetDashboard under budgets section (full file replacement)
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +10,7 @@ import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CompensationProfilesPanel from "@/components/staff/CompensationProfilesPanel";
 import BudgetEditorPanel from "@/components/financial/BudgetEditorPanel";
+import BudgetDashboard from "@/components/financial/BudgetDashboard";
 
 type FinanceEntityType = "clinic" | "lab" | "imaging" | "pharmacy";
 
@@ -38,7 +39,6 @@ export default function AdminSettingsPage() {
           return;
         }
 
-        // Load clinic practice linked to staff member
         const { data, error } = await supabase
           .from("staff_members")
           .select("practice_id, practices:practice_id(id,name)")
@@ -100,11 +100,14 @@ export default function AdminSettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Step 36: staff compensation */}
+      {/* Step 36 */}
       <CompensationProfilesPanel entityType={entityType} entityId={practice.id} />
 
-      {/* B3: budgets */}
+      {/* B3 */}
       <BudgetEditorPanel entityType={entityType} entityId={practice.id} />
+
+      {/* B5 */}
+      <BudgetDashboard entityType={entityType} entityId={practice.id} />
     </div>
   );
 }
