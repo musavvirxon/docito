@@ -33,7 +33,7 @@ import ImagingReportManager from "@/components/imaging/ImagingReportManager";
 import ImagingAnalytics from "@/components/imaging/ImagingAnalytics";
 import { ImagingReferralsSection } from "@/components/imaging/ImagingReferralsSection";
 import ImagingBillingSection from "@/components/imaging/ImagingBillingSection";
-import FinanceHub from "@/components/financial/FinanceHub";
+import FinanceManagementSection from "@/components/financial/FinanceManagementSection";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import Header from "@/components/Header";
@@ -84,15 +84,10 @@ export default function ImagingDashboard() {
     { id: "equipment", label: "Equipment", icon: <Wrench className="h-5 w-5" /> },
     { id: "analytics", label: "Analytics", icon: <BarChart3 className="h-5 w-5" /> },
     { id: "billing", label: "Billing", icon: <CreditCard className="h-5 w-5" /> },
-    { id: "finance", label: "Finance", icon: <DollarSign className="h-5 w-5" /> },
+    { id: "finances", label: "Finances", icon: <DollarSign className="h-5 w-5" /> },
     { id: "staff", label: "Staff", icon: <Users className="h-5 w-5" /> },
     { id: "referrals", label: "Referrals", icon: <ArrowRightLeft className="h-5 w-5" /> },
-    {
-      id: "settings",
-      label: "Settings",
-      icon: <Settings className="h-5 w-5" />,
-      onClick: () => navigate("/imaging/settings"),
-    },
+    { id: "settings", label: "Settings", icon: <Settings className="h-5 w-5" />, onClick: () => navigate("/imaging/settings") },
   ];
 
   const centerId = myImagingCenter?.id || "";
@@ -128,7 +123,7 @@ export default function ImagingDashboard() {
 
     if (!desired) return;
 
-    const allowed = ["overview", "workflow", "reports", "equipment", "analytics", "billing", "finance", "staff", "referrals"];
+    const allowed = ["overview", "workflow", "reports", "equipment", "analytics", "billing", "finances", "staff", "referrals"];
     if (!allowed.includes(desired)) return;
 
     if (activeTab !== desired) {
@@ -325,7 +320,7 @@ export default function ImagingDashboard() {
       {activeTab === "equipment" && <ImagingEquipmentManager centerId={centerId} />}
       {activeTab === "analytics" && <ImagingAnalytics centerId={centerId} />}
       {activeTab === "billing" && <ImagingBillingSection centerId={centerId} />}
-      {activeTab === "finance" && <FinanceHub entityType="imaging" entityId={centerId} />}
+      {activeTab === "finances" && <FinanceManagementSection entityType="imaging" entityId={centerId} />}
       {activeTab === "staff" && <div className="p-4 text-sm text-muted-foreground">Staff management is available in Settings.</div>}
       {activeTab === "referrals" && <ImagingReferralsSection centerId={centerId} />}
     </DashboardShell>
