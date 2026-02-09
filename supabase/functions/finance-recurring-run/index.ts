@@ -1,7 +1,5 @@
 // File: supabase/functions/finance-recurring-run/index.ts
-// B29: Manual runner Edge Function wrapper to run due recurring rules for an entity
-// - Logs a per-entity run into finance_recurring_entity_runs (source='manual')
-// - Deno + supabase-js v2 + CORS + Authorization
+// B30: Manual runner now calls finance_recurring_generate_due_v2 and passes entity_run_id for drilldown linking.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
@@ -91,10 +89,11 @@ Deno.serve(async (req) => {
 
     const runLogId = String((runLog as any)?.id || "");
 
-    const { data, error } = await supabase.rpc("finance_recurring_generate_due", {
+    const { data, error } = await supabase.rpc("finance_recurring_generate_due_v2", {
       p_entity_type: entityType,
       p_entity_id: entityId,
       p_as_of: asOf,
+      p_entity_run_id: runLogId || null,
     });
 
     if (error) {
