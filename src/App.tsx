@@ -1,6 +1,3 @@
-// File: src/App.tsx
-
-// src/App.tsx
 import { Suspense, lazy, useEffect } from "react";
 import { Routes, Route, useParams, Outlet } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
@@ -72,6 +69,9 @@ const Messages = lazy(() => import("@/pages/Messages"));
 const VideoCall = lazy(() => import("@/pages/VideoCall"));
 const AppointmentSession = lazy(() => import("@/pages/AppointmentSession"));
 const BillingPage = lazy(() => import("@/pages/BillingPage"));
+
+// Finance
+const FinanceDashboard = lazy(() => import("@/pages/FinanceDashboard"));
 
 // Doctor pages
 const DoctorScheduleSettings = lazy(() => import("@/pages/DoctorScheduleSettings"));
@@ -214,6 +214,8 @@ export default function App() {
                 <Route path="notifications" element={<Notifications />} />
                 <Route path="messages" element={<Messages />} />
                 <Route path="billing" element={<BillingPage />} />
+                <Route path="finance" element={<FinanceDashboard />} />
+                <Route path="finance-dashboard" element={<FinanceDashboard />} />
                 <Route path="video-call" element={<VideoCall />} />
                 <Route path="video/:roomId" element={<VideoCall />} />
                 <Route path="appointment-session/:appointmentId" element={<AppointmentSession />} />
@@ -302,6 +304,8 @@ export default function App() {
               <Route path="notifications" element={<Notifications />} />
               <Route path="messages" element={<Messages />} />
               <Route path="billing" element={<BillingPage />} />
+              <Route path="finance" element={<FinanceDashboard />} />
+              <Route path="finance-dashboard" element={<FinanceDashboard />} />
               <Route path="video-call" element={<VideoCall />} />
               <Route path="video/:roomId" element={<VideoCall />} />
               <Route path="appointment-session/:appointmentId" element={<AppointmentSession />} />
