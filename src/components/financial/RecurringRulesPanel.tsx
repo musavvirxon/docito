@@ -1,8 +1,3 @@
-// File: src/components/financial/RecurringRulesPanel.tsx
-// B25: Add "Recent runs" panel (audit trail) + run results preview
-// - Uses RPC: finance_recurring_rule_runs_list
-// - Still uses Edge Function: finance-recurring-run
-
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -14,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
-import { Loader2, RefreshCw, Repeat, Plus, Play, Trash2, Pencil, History } from "lucide-react";
+import { Loader2, RefreshCw, Repeat, Plus, Play, Trash2, Pencil, History, CalendarClock } from "lucide-react";
 
 type FinanceEntityType = "clinic" | "lab" | "imaging" | "pharmacy";
 type EntryType = "income" | "expense" | "payroll";
@@ -49,6 +44,18 @@ type RunRow = {
   finance_entry_id: string | null;
   error: string | null;
   created_at: string;
+};
+
+type EntityRunRow = {
+  id: string;
+  source: "pg_cron" | "edge_cron" | "manual";
+  as_of: string;
+  started_at: string;
+  finished_at: string | null;
+  created_count: number;
+  skipped_count: number;
+  error_count: number;
+  notes: string | null;
 };
 
 function isoDate(d: Date) {
@@ -88,6 +95,12 @@ function dowLabel(dow: number | null) {
   return names[dow] || "—";
 }
 
+function sourceLabel(s: EntityRunRow["source"]) {
+  if (s === "pg_cron") return "DB cron";
+  if (s === "edge_cron") return "Edge cron";
+  return "Manual";
+}
+
 export default function RecurringRulesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { entityType, entityId } = props;
 
@@ -101,6 +114,7 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
   const [rules, setRules] = useState<RuleRow[]>([]);
   const [categories, setCategories] = useState<CategoryRow[]>([]);
   const [runs, setRuns] = useState<RunRow[]>([]);
+  const [entityRuns, setEntityRuns] = useState<EntityRunRow[]>([]);
   const [lastRunResults, setLastRunResults] = useState<any[]>([]);
 
   // dialog
@@ -126,7 +140,6 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
   }, [categories, formEntryType]);
 
   const currencyHint = useMemo(() => (rules[0]?.currency || "USD").toUpperCase(), [rules]);
-
   const canLoad = useMemo(() => Boolean(entityId), [entityId]);
 
   const loadCategories = async () => {
@@ -154,6 +167,17 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
     setRuns(((data || []) as any) as RunRow[]);
   };
 
+  const loadEntityRuns = async () => {
+    const { data, error } = await supabase.rpc("finance_recurring_entity_runs_list", {
+      p_entity_type: entityType,
+      p_entity_id: entityId,
+      p_limit: 30,
+    });
+
+    if (error) throw error;
+    setEntityRuns(((data || []) as any) as EntityRunRow[]);
+  };
+
   const load = async () => {
     if (!canLoad) return;
     setLoading(true);
@@ -165,6 +189,7 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
         }),
         loadCategories(),
         loadRuns(),
+        loadEntityRuns(),
       ]);
 
       if ((rRes as any).error) throw (rRes as any).error;
@@ -174,6 +199,7 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
       toast.error(e?.message || "Failed to load recurring rules");
       setRules([]);
       setRuns([]);
+      setEntityRuns([]);
     } finally {
       setLoading(false);
     }
@@ -339,7 +365,8 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
       const errored = results.filter((r: any) => r.status === "error").length;
 
       toast.success(`Run complete: ${created} created, ${skipped} skipped, ${errored} errors`);
-      await loadRuns();
+
+      await Promise.all([loadRuns(), loadEntityRuns()]);
       await supabase.rpc("finance_recurring_rule_list", { p_entity_type: entityType, p_entity_id: entityId }).then((res: any) => {
         if (!res.error) setRules(((res.data || []) as any) as RuleRow[]);
       });
@@ -431,6 +458,57 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
                 <div className="px-3 py-2 text-xs text-muted-foreground">Showing first 12 results.</div>
               ) : null}
             </div>
+          ) : null}
+        </div>
+
+        {/* Automation */}
+        <div className="rounded-md border overflow-hidden">
+          <div className="flex items-center justify-between px-3 py-2 border-b">
+            <div className="text-sm font-medium flex items-center gap-2">
+              <CalendarClock className="h-4 w-4 text-muted-foreground" />
+              Automation
+            </div>
+            <Button variant="outline" size="sm" onClick={() => void loadEntityRuns()} disabled={!entityId} className="gap-2">
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
+          </div>
+
+          {entityRuns.length === 0 ? (
+            <div className="p-3 text-sm text-muted-foreground">No automation runs yet.</div>
+          ) : (
+            <div className="divide-y">
+              {entityRuns.slice(0, 10).map((er) => {
+                const total = (er.created_count || 0) + (er.skipped_count || 0) + (er.error_count || 0);
+                const state = er.finished_at ? "done" : "running";
+                return (
+                  <div key={er.id} className="px-3 py-2 text-sm flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-muted-foreground">{sourceLabel(er.source)}</span>
+                      <span className="text-muted-foreground">·</span>
+                      <span className="font-mono">{er.as_of}</span>
+                      <span className="text-muted-foreground">·</span>
+                      <span className="truncate text-muted-foreground">{state === "running" ? "running…" : "completed"}</span>
+                      {er.notes ? <span className="text-xs text-muted-foreground truncate">· {er.notes}</span> : null}
+                    </div>
+                    <div className="text-right whitespace-nowrap">
+                      <span className="font-medium">{total}</span>
+                      <span className="text-muted-foreground"> total</span>
+                      <span className="text-muted-foreground"> · </span>
+                      <span className="text-foreground">{er.created_count}</span>
+                      <span className="text-muted-foreground">/</span>
+                      <span className="text-muted-foreground">{er.skipped_count}</span>
+                      <span className="text-muted-foreground">/</span>
+                      <span className={er.error_count ? "text-destructive" : "text-muted-foreground"}>{er.error_count}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {entityRuns.length > 10 ? (
+            <div className="px-3 py-2 text-xs text-muted-foreground">Showing latest 10 runs.</div>
           ) : null}
         </div>
 
