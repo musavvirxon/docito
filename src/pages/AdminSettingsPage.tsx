@@ -1,5 +1,5 @@
 // File: src/pages/AdminSettingsPage.tsx
-// B5: Add BudgetDashboard under budgets section (full file replacement)
+// B8: Add recurring expenses panel to admin settings (full file replacement)
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import CompensationProfilesPanel from "@/components/staff/CompensationProfilesPanel";
 import BudgetEditorPanel from "@/components/financial/BudgetEditorPanel";
 import BudgetDashboard from "@/components/financial/BudgetDashboard";
+import RecurringExpensesPanel from "@/components/financial/RecurringExpensesPanel";
 
 type FinanceEntityType = "clinic" | "lab" | "imaging" | "pharmacy";
 
@@ -25,7 +26,6 @@ export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [practice, setPractice] = useState<PracticeRow | null>(null);
 
-  // Clinic-first app
   const entityType: FinanceEntityType = "clinic";
 
   useEffect(() => {
@@ -96,7 +96,7 @@ export default function AdminSettingsPage() {
           <CardTitle>Admin settings · {practice.name}</CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
-          Configure clinic settings, staff compensation, and budgets.
+          Configure clinic settings, staff compensation, budgets, and recurring expenses.
         </CardContent>
       </Card>
 
@@ -108,6 +108,9 @@ export default function AdminSettingsPage() {
 
       {/* B5 */}
       <BudgetDashboard entityType={entityType} entityId={practice.id} />
+
+      {/* B8 */}
+      <RecurringExpensesPanel entityType={entityType} entityId={practice.id} />
     </div>
   );
 }
