@@ -17,7 +17,7 @@ import LabAnalytics from "@/components/lab/LabAnalytics";
 import LabBillingInsurance from "@/components/lab/LabBillingInsurance";
 import { LabReferralsSection } from "@/components/lab/LabReferralsSection";
 import { LabStaffManager } from "@/components/lab/LabStaffManager";
-import FinanceHub from "@/components/financial/FinanceHub";
+import FinanceManagementSection from "@/components/financial/FinanceManagementSection";
 
 import {
   LayoutDashboard,
@@ -77,7 +77,7 @@ export default function LabDashboardPage() {
   const { user, loading: authLoading, activeRole } = useAuth();
 
   const [activeTab, setActiveTab] = useState<
-    "overview" | "orders" | "home" | "samples" | "analytics" | "billing" | "referrals" | "staff" | "finance"
+    "overview" | "orders" | "home" | "samples" | "analytics" | "billing" | "finances" | "referrals" | "staff"
   >("overview");
 
   const [center, setCenter] = useState<LabCenterRow | null>(null);
@@ -145,7 +145,7 @@ export default function LabDashboardPage() {
 
     if (!desired) return;
 
-    const allowed = ["overview", "orders", "home", "samples", "analytics", "billing", "referrals", "staff", "finance"];
+    const allowed = ["overview", "orders", "home", "samples", "analytics", "billing", "finances", "referrals", "staff"];
     if (!allowed.includes(desired)) return;
 
     if (activeTab !== (desired as any)) {
@@ -163,9 +163,9 @@ export default function LabDashboardPage() {
       { id: "samples", label: "Samples", icon: <TestTube2 className="h-5 w-5" /> },
       { id: "analytics", label: "Analytics", icon: <BarChart3 className="h-5 w-5" /> },
       { id: "billing", label: "Billing / Insurance", icon: <CreditCard className="h-5 w-5" /> },
+      { id: "finances", label: "Finances", icon: <DollarSign className="h-5 w-5" /> },
       { id: "referrals", label: "Referrals", icon: <ArrowRightLeft className="h-5 w-5" /> },
       { id: "staff", label: "Staff", icon: <Users className="h-5 w-5" /> },
-      { id: "finance", label: "Finance", icon: <DollarSign className="h-5 w-5" /> },
       {
         id: "settings",
         label: "Settings",
@@ -276,11 +276,11 @@ export default function LabDashboardPage() {
 
       {activeTab === "billing" && <LabBillingInsurance labCenterId={labCenterId} />}
 
+      {activeTab === "finances" && <FinanceManagementSection entityType="lab" entityId={labCenterId} />}
+
       {activeTab === "referrals" && <LabReferralsSection labCenterId={labCenterId} />}
 
       {activeTab === "staff" && <LabStaffManager labCenterId={labCenterId} />}
-
-      {activeTab === "finance" && <FinanceHub entityType="lab" entityId={labCenterId} />}
     </DashboardShell>
   );
 }
