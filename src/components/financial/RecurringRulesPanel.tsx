@@ -1,7 +1,7 @@
 // File: src/components/financial/RecurringRulesPanel.tsx
-// B24: Recurring rules UI (utilities/tax/etc) + "Run due now"
-// - Uses RPCs: finance_recurring_rule_list, finance_recurring_rule_upsert, finance_recurring_rule_deactivate
-// - Uses Edge Function: finance-recurring-run
+// B25: Add "Recent runs" panel (audit trail) + run results preview
+// - Uses RPC: finance_recurring_rule_runs_list
+// - Still uses Edge Function: finance-recurring-run
 
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
-import { Loader2, RefreshCw, Repeat, Plus, Play, Trash2, Pencil } from "lucide-react";
+import { Loader2, RefreshCw, Repeat, Plus, Play, Trash2, Pencil, History } from "lucide-react";
 
 type FinanceEntityType = "clinic" | "lab" | "imaging" | "pharmacy";
 type EntryType = "income" | "expense" | "payroll";
@@ -39,6 +39,16 @@ type RuleRow = {
   next_run_date: string;
   active: boolean;
   updated_at: string;
+};
+
+type RunRow = {
+  run_id: string;
+  rule_id: string;
+  run_date: string;
+  status: "created" | "skipped" | "error";
+  finance_entry_id: string | null;
+  error: string | null;
+  created_at: string;
 };
 
 function isoDate(d: Date) {
@@ -90,6 +100,8 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
 
   const [rules, setRules] = useState<RuleRow[]>([]);
   const [categories, setCategories] = useState<CategoryRow[]>([]);
+  const [runs, setRuns] = useState<RunRow[]>([]);
+  const [lastRunResults, setLastRunResults] = useState<any[]>([]);
 
   // dialog
   const [open, setOpen] = useState(false);
@@ -131,6 +143,17 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
     setCategories((data || []) as any);
   };
 
+  const loadRuns = async () => {
+    const { data, error } = await supabase.rpc("finance_recurring_rule_runs_list", {
+      p_entity_type: entityType,
+      p_entity_id: entityId,
+      p_limit: 150,
+    });
+
+    if (error) throw error;
+    setRuns(((data || []) as any) as RunRow[]);
+  };
+
   const load = async () => {
     if (!canLoad) return;
     setLoading(true);
@@ -141,6 +164,7 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
           p_entity_id: entityId,
         }),
         loadCategories(),
+        loadRuns(),
       ]);
 
       if ((rRes as any).error) throw (rRes as any).error;
@@ -149,6 +173,7 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
       console.error(e);
       toast.error(e?.message || "Failed to load recurring rules");
       setRules([]);
+      setRuns([]);
     } finally {
       setLoading(false);
     }
@@ -307,12 +332,17 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
       if (error) throw error;
 
       const results = Array.isArray(data?.results) ? data.results : [];
+      setLastRunResults(results);
+
       const created = results.filter((r: any) => r.status === "created").length;
       const skipped = results.filter((r: any) => r.status === "skipped").length;
       const errored = results.filter((r: any) => r.status === "error").length;
 
       toast.success(`Run complete: ${created} created, ${skipped} skipped, ${errored} errors`);
-      await load();
+      await loadRuns();
+      await supabase.rpc("finance_recurring_rule_list", { p_entity_type: entityType, p_entity_id: entityId }).then((res: any) => {
+        if (!res.error) setRules(((res.data || []) as any) as RuleRow[]);
+      });
     } catch (e: any) {
       console.error(e);
       toast.error(e?.message || "Failed to run recurring rules");
@@ -367,8 +397,41 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
             </div>
           </div>
           <div className="text-xs text-muted-foreground">
-            Running creates finance entries for rules with <span className="font-mono">next_run_date</span> ≤ selected date.
+            Running creates finance entries for all rules with <span className="font-mono">next_run_date</span> ≤ selected date (catch-up supported).
           </div>
+
+          {lastRunResults.length ? (
+            <div className="mt-2 rounded-md border bg-background">
+              <div className="px-3 py-2 text-xs text-muted-foreground border-b">Last run results</div>
+              <div className="divide-y">
+                {lastRunResults.slice(0, 12).map((r: any, idx: number) => (
+                  <div key={idx} className="px-3 py-2 text-sm flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono">{String(r.run_date || "")}</span>
+                      <span className="text-muted-foreground">·</span>
+                      <span className="font-mono text-muted-foreground">{String(r.rule_id || "").slice(0, 8)}</span>
+                    </div>
+                    <div className="text-right">
+                      <span
+                        className={
+                          r.status === "created"
+                            ? "text-foreground"
+                            : r.status === "error"
+                              ? "text-destructive"
+                              : "text-muted-foreground"
+                        }
+                      >
+                        {String(r.status)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {lastRunResults.length > 12 ? (
+                <div className="px-3 py-2 text-xs text-muted-foreground">Showing first 12 results.</div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
 
         {/* Rules list */}
@@ -429,6 +492,56 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
               })}
             </div>
           )}
+        </div>
+
+        {/* Recent runs */}
+        <div className="rounded-md border overflow-hidden">
+          <div className="flex items-center justify-between px-3 py-2 border-b">
+            <div className="text-sm font-medium flex items-center gap-2">
+              <History className="h-4 w-4 text-muted-foreground" />
+              Recent runs
+            </div>
+            <Button variant="outline" size="sm" onClick={() => void loadRuns()} disabled={!entityId} className="gap-2">
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
+          </div>
+
+          {runs.length === 0 ? (
+            <div className="p-3 text-sm text-muted-foreground">No runs yet.</div>
+          ) : (
+            <div className="divide-y">
+              {runs.slice(0, 20).map((rr) => (
+                <div key={rr.run_id} className="px-3 py-2 text-sm flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono">{rr.run_date}</span>
+                    <span className="text-muted-foreground">·</span>
+                    <span className="font-mono text-muted-foreground">{rr.rule_id.slice(0, 8)}</span>
+                    {rr.status === "error" && rr.error ? (
+                      <span className="text-xs text-destructive truncate max-w-[420px]">· {rr.error}</span>
+                    ) : null}
+                  </div>
+                  <div className="text-right">
+                    <span
+                      className={
+                        rr.status === "created"
+                          ? "text-foreground"
+                          : rr.status === "error"
+                            ? "text-destructive"
+                            : "text-muted-foreground"
+                      }
+                    >
+                      {rr.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {runs.length > 20 ? (
+            <div className="px-3 py-2 text-xs text-muted-foreground">Showing latest 20 runs.</div>
+          ) : null}
         </div>
 
         {/* Upsert dialog */}
