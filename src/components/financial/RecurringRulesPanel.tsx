@@ -1,5 +1,5 @@
 // File: src/components/financial/RecurringRulesPanel.tsx
-// B30: Add drilldown for automation runs (view linked rule runs + created entries)
+// B32: Show per-entity recurring status summary (due count + last run info)
 
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +23,7 @@ import {
   History,
   CalendarClock,
   Eye,
+  Activity,
 } from "lucide-react";
 
 type FinanceEntityType = "clinic" | "lab" | "imaging" | "pharmacy";
@@ -82,6 +83,17 @@ type FinanceEntryRow = {
   reference: string | null;
 };
 
+type StatusRow = {
+  due_rules_count: number;
+  next_due_date: string | null;
+  last_run_started_at: string | null;
+  last_run_finished_at: string | null;
+  last_run_source: "pg_cron" | "edge_cron" | "manual" | null;
+  last_created_count: number | null;
+  last_skipped_count: number | null;
+  last_error_count: number | null;
+};
+
 function isoDate(d: Date) {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -119,10 +131,18 @@ function dowLabel(dow: number | null) {
   return names[dow] || "—";
 }
 
-function sourceLabel(s: EntityRunRow["source"]) {
+function sourceLabel(s: EntityRunRow["source"] | StatusRow["last_run_source"]) {
   if (s === "pg_cron") return "DB cron";
   if (s === "edge_cron") return "Edge cron";
-  return "Manual";
+  if (s === "manual") return "Manual";
+  return "—";
+}
+
+function fmtTs(ts: string | null | undefined) {
+  if (!ts) return "—";
+  const d = new Date(ts);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString();
 }
 
 export default function RecurringRulesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
@@ -140,6 +160,9 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
   const [runs, setRuns] = useState<RunRow[]>([]);
   const [entityRuns, setEntityRuns] = useState<EntityRunRow[]>([]);
   const [lastRunResults, setLastRunResults] = useState<any[]>([]);
+
+  const [statusLoading, setStatusLoading] = useState(false);
+  const [status, setStatus] = useState<StatusRow | null>(null);
 
   // drilldown
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -209,6 +232,40 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
     setEntityRuns(((data || []) as any) as EntityRunRow[]);
   };
 
+  const loadStatus = async () => {
+    if (!entityId) return;
+    setStatusLoading(true);
+    try {
+      const { data, error } = await supabase.rpc("finance_recurring_entity_status", {
+        p_entity_type: entityType,
+        p_entity_id: entityId,
+        p_as_of: asOf,
+      });
+
+      if (error) throw error;
+      const row = (Array.isArray(data) ? data[0] : data) as any;
+      setStatus(
+        row
+          ? {
+              due_rules_count: Number(row.due_rules_count ?? 0),
+              next_due_date: row.next_due_date ?? null,
+              last_run_started_at: row.last_run_started_at ?? null,
+              last_run_finished_at: row.last_run_finished_at ?? null,
+              last_run_source: row.last_run_source ?? null,
+              last_created_count: row.last_created_count ?? null,
+              last_skipped_count: row.last_skipped_count ?? null,
+              last_error_count: row.last_error_count ?? null,
+            }
+          : null,
+      );
+    } catch (e: any) {
+      console.error(e);
+      setStatus(null);
+    } finally {
+      setStatusLoading(false);
+    }
+  };
+
   const load = async () => {
     if (!canLoad) return;
     setLoading(true);
@@ -240,6 +297,11 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entityType, entityId]);
+
+  useEffect(() => {
+    void loadStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entityType, entityId, asOf]);
 
   const resetForm = () => {
     setEditId(null);
@@ -351,6 +413,7 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
       setOpen(false);
       resetForm();
       await load();
+      await loadStatus();
     } catch (e: any) {
       console.error(e);
       toast.error(e?.message || "Failed to save rule");
@@ -368,6 +431,7 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
       });
       toast.success("Rule deactivated");
       await load();
+      await loadStatus();
     } catch (e: any) {
       console.error(e);
       toast.error(e?.message || "Failed to deactivate rule");
@@ -397,7 +461,7 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
 
       toast.success(`Run complete: ${created} created, ${skipped} skipped, ${errored} errors`);
 
-      await Promise.all([loadRuns(), loadEntityRuns()]);
+      await Promise.all([loadRuns(), loadEntityRuns(), loadStatus()]);
       await supabase.rpc("finance_recurring_rule_list", { p_entity_type: entityType, p_entity_id: entityId }).then((res: any) => {
         if (!res.error) setRules(((res.data || []) as any) as RuleRow[]);
       });
@@ -425,9 +489,7 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
       const ruleRuns = ((data || []) as any) as RunRow[];
       setDetailsRuleRuns(ruleRuns);
 
-      const entryIds = ruleRuns
-        .map((r) => r.finance_entry_id)
-        .filter((x): x is string => Boolean(x));
+      const entryIds = ruleRuns.map((r) => r.finance_entry_id).filter((x): x is string => Boolean(x));
 
       if (entryIds.length) {
         const { data: entries, error: eErr } = await supabase
@@ -451,6 +513,23 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
       setDetailsLoading(false);
     }
   };
+
+  const statusLine = useMemo(() => {
+    if (statusLoading) return "Loading status…";
+    if (!status) return "—";
+    const due = Number(status.due_rules_count || 0);
+    const next = status.next_due_date ? `next due ${status.next_due_date}` : "no due rules";
+    return due > 0 ? `${due} due · ${next}` : next;
+  }, [status, statusLoading]);
+
+  const lastRunLine = useMemo(() => {
+    if (!status || !status.last_run_started_at) return "No previous runs";
+    const src = sourceLabel(status.last_run_source);
+    const created = status.last_created_count ?? 0;
+    const skipped = status.last_skipped_count ?? 0;
+    const err = status.last_error_count ?? 0;
+    return `${src} · created ${created} / skipped ${skipped} / errors ${err} · ${fmtTs(status.last_run_started_at)}`;
+  }, [status]);
 
   return (
     <Card className="border-muted">
@@ -479,6 +558,24 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
       </CardHeader>
 
       <CardContent className="space-y-4">
+        {/* Status summary */}
+        <div className="rounded-md border p-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="text-sm font-medium flex items-center gap-2">
+                <Activity className="h-4 w-4 text-muted-foreground" />
+                Status
+              </div>
+              <div className="text-sm text-muted-foreground mt-1">{statusLine}</div>
+              <div className="text-xs text-muted-foreground mt-1">{lastRunLine}</div>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => void loadStatus()} disabled={!entityId || statusLoading} className="gap-2">
+              {statusLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              Refresh
+            </Button>
+          </div>
+        </div>
+
         {/* Run Due */}
         <div className="rounded-md border p-3 space-y-3">
           <div className="text-sm font-medium flex items-center gap-2">
