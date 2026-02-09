@@ -1,6 +1,4 @@
 // File: src/components/financial/FinanceEntriesExportCard.tsx
-// B34: UI card to export finance entries for an entity as CSV (date range + optional filters)
-
 import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -13,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 import { FileDown, Loader2, Download } from "lucide-react";
 
-type FinanceEntityType = "clinic" | "lab" | "imaging" | "pharmacy";
+type FinanceEntityType = "clinic" | "practice" | "lab" | "imaging" | "pharmacy";
 type EntryTypeFilter = "all" | "income" | "expense" | "payroll";
 
 type ExportRow = {
@@ -68,11 +66,7 @@ function formatMoney(currency: string, cents: number) {
   }
 }
 
-export default function FinanceEntriesExportCard(props: {
-  entityType: FinanceEntityType;
-  entityId: string;
-  defaultDays?: number; // defaults to 90
-}) {
+export default function FinanceEntriesExportCard(props: { entityType: FinanceEntityType; entityId: string; defaultDays?: number }) {
   const { entityType, entityId } = props;
   const days = Math.max(1, Math.min(props.defaultDays ?? 90, 3650));
 
@@ -85,7 +79,7 @@ export default function FinanceEntriesExportCard(props: {
   });
 
   const [entryType, setEntryType] = useState<EntryTypeFilter>("all");
-  const [categoryId, setCategoryId] = useState<string>("all"); // optional hook-up later to category picker
+  const [categoryId, setCategoryId] = useState<string>("all");
   const [exporting, setExporting] = useState(false);
 
   const canExport = useMemo(() => {
@@ -129,7 +123,6 @@ export default function FinanceEntriesExportCard(props: {
       const filename = `finance_entries_${entityType}_${entityId.slice(0, 8)}_${dateFrom}_to_${dateTo}.csv`;
       downloadCsv(filename, csvRows);
 
-      // quick summary toast
       const total = rows.reduce((acc, r) => acc + (Number(r.amount_cents || 0) || 0), 0);
       toast.success(`Exported ${csvRows.length} rows · total ${formatMoney(rows[0]?.currency || "USD", total)}`);
     } catch (e: any) {
@@ -187,7 +180,6 @@ export default function FinanceEntriesExportCard(props: {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All categories</SelectItem>
-                {/* B34: keep simple; can be wired to real categories list later */}
               </SelectContent>
             </Select>
           </div>
