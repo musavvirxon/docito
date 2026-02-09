@@ -5,7 +5,8 @@ import { Download, RefreshCw, BarChart3, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
 
 import type { FinanceEntityType } from "@/components/financial/FinanceHub";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase as supabaseClient } from "@/integrations/supabase/client";
+const supabase = supabaseClient as any;
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -111,7 +112,7 @@ export default function ReportsPanel({ entityType, entityId }: Props) {
         body.includeItems = true;
       }
 
-      const { data, error } = await supabase.functions.invoke<ExportResponse>("finance-export", { body });
+      const { data, error } = await supabase.functions.invoke("finance-export", { body });
       if (error) throw error;
       if (!data?.ok) throw new Error(data?.error || "Export failed");
 

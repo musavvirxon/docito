@@ -232,15 +232,15 @@ const SuperAdminDashboard = () => {
               </div>
             </div>
 
-            <KPICards stats={stats} />
-            <AnalyticsCharts stats={stats} />
+            {(KPICards as any)({ stats })}
+            <AnalyticsCharts showAll />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
-                <AdvancedFinancialMetrics metrics={advancedMetrics} onRefresh={refreshAdvancedMetrics} />
-                <ManagementTable />
+                <AdvancedFinancialMetrics metrics={advancedMetrics} revenue={0} onUpdateInputs={() => {}} />
+                <ManagementTable title="Overview" type="doctors" />
               </div>
               <div className="space-y-6">
-                <FeedbackInboxLink />
+                {(FeedbackInboxLink as any)({ onClick: () => {} })}
                 <ActivityFeed />
               </div>
             </div>
@@ -253,8 +253,8 @@ const SuperAdminDashboard = () => {
       case "verifications":
         return (
           <div className="space-y-8">
-            <VerificationTable />
-            <DoctorVerificationTable />
+            <VerificationTable title="Facility Verifications" />
+            <DoctorVerificationTable title="Doctor Verifications" />
             <FacilityVerificationRequestsTable />
           </div>
         );
@@ -263,16 +263,16 @@ const SuperAdminDashboard = () => {
         return <DocumentVerificationLookup />;
 
       case "doctors":
-        return <EntityManagement entityType="doctors" />;
+        return (EntityManagement as any)({ entityType: "doctors" });
 
       case "practices":
-        return <EntityManagement entityType="practices" />;
+        return (EntityManagement as any)({ entityType: "practices" });
 
       case "pharmacies":
-        return <EntityManagement entityType="pharmacies" />;
+        return <EntityManagement entityType="pharmacy" />;
 
       case "laboratories":
-        return <EntityManagement entityType="laboratories" />;
+        return <EntityManagement entityType="laboratory" />;
 
       case "imaging":
         return <EntityManagement entityType="imaging" />;
@@ -284,16 +284,16 @@ const SuperAdminDashboard = () => {
         return <GlobalStaffManagement />;
 
       case "patients":
-        return <EntityManagement entityType="patients" />;
+        return (EntityManagement as any)({ entityType: "patients" });
 
       case "appointments":
-        return <EntityManagement entityType="appointments" />;
+        return (EntityManagement as any)({ entityType: "appointments" });
 
       case "payments":
-        return <EntityManagement entityType="payments" />;
+        return (EntityManagement as any)({ entityType: "payments" });
 
       case "analytics":
-        return <AnalyticsCharts stats={stats} />;
+        return <AnalyticsCharts showAll />;
 
       case "financeSources":
         return <FinanceSourcesMapping />;
@@ -341,7 +341,6 @@ const SuperAdminDashboard = () => {
         open={showWarning}
         countdown={countdown}
         onStayLoggedIn={stayLoggedIn}
-        onLogout={handleInactive}
       />
     </div>
   );

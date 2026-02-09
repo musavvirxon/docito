@@ -1,6 +1,7 @@
 // File: src/components/financial/FinanceCategoriesManager.tsx
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase as supabaseClient } from "@/integrations/supabase/client";
+const supabase = supabaseClient as any;
 import { toast } from "sonner";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

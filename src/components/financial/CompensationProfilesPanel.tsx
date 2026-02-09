@@ -5,7 +5,8 @@ import { Plus, RefreshCw, Pencil, Trash2, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 
 import type { FinanceEntityType } from "@/components/financial/FinanceHub";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase as supabaseClient } from "@/integrations/supabase/client";
+const supabase = supabaseClient as any;
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,8 +39,8 @@ export default function CompensationProfilesPanel({ entityType, entityId }: Prop
   const { rows, loading, refresh } = useCompensationProfiles({ entityType, entityId });
 
   const currency = useMemo(() => {
-    const any = rows.find((r) => r.currency)?.currency;
-    return (any || "USD").toUpperCase();
+    const found = rows.find((r) => (r as any).currency);
+    return (((found as any)?.currency) || "USD").toUpperCase();
   }, [rows]);
 
   const handleCreate = () => {

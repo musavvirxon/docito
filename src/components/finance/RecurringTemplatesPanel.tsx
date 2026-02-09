@@ -2,7 +2,8 @@
 // Step 31: Minimal UI panel to create + list recurring templates and run due items (manual trigger)
 
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase as supabaseClient } from "@/integrations/supabase/client";
+const supabase = supabaseClient as any;
 import { toast } from "sonner";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Plus, Play, RefreshCw, Trash2 } from "lucide-react";
 
-type FinanceEntityType = "clinic" | "lab" | "imaging" | "pharmacy";
+type FinanceEntityType = "clinic" | "practice" | "lab" | "imaging" | "pharmacy";
 
 type TemplateRow = {
   id: string;

@@ -62,9 +62,9 @@ export default function FinalCTA() {
                 size="lg"
                 className="h-14 px-8 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-lg gap-2"
                 onClick={() => {
-                  void trackMarketingEvent({
-                    event_name: "home_final_cta_primary_click",
-                    meta: { cta: "start_trial", section: "final_cta" },
+                  void trackMarketingEvent("home_final_cta_primary_click", {
+                    cta: "start_trial",
+                    section: "final_cta",
                   });
                   navigate("/auth?mode=signup");
                 }}
@@ -81,9 +81,9 @@ export default function FinalCTA() {
                 variant="outline"
                 className="h-14 px-8 rounded-full text-lg gap-2 border-2"
                 onClick={() => {
-                  void trackMarketingEvent({
-                    event_name: "home_final_cta_secondary_click",
-                    meta: { cta: "explore_features", section: "final_cta" },
+                  void trackMarketingEvent("home_final_cta_secondary_click", {
+                    cta: "explore_features",
+                    section: "final_cta",
                   });
                   navigate("/features#features");
                 }}

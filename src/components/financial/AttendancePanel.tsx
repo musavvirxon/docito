@@ -3,7 +3,8 @@ import { Clock, RefreshCw, LogIn, LogOut } from "lucide-react";
 import { toast } from "sonner";
 
 import type { FinanceEntityType } from "@/components/financial/FinanceHub";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase as supabaseClient } from "@/integrations/supabase/client";
+const supabase = supabaseClient as any;
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

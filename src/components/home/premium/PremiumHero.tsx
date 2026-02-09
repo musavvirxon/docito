@@ -55,17 +55,17 @@ export default function PremiumHero() {
   }, []);
 
   const startTrial = () => {
-    void trackMarketingEvent({
-      event_name: "home_hero_primary_click",
-      meta: { cta: "start_trial", section: "hero" },
+    void trackMarketingEvent("home_hero_primary_click", {
+      cta: "start_trial",
+      section: "hero",
     });
     navigate("/auth?mode=signup");
   };
 
   const findCare = () => {
-    void trackMarketingEvent({
-      event_name: "home_hero_secondary_click",
-      meta: { cta: "find_care", section: "hero" },
+    void trackMarketingEvent("home_hero_secondary_click", {
+      cta: "find_care",
+      section: "hero",
     });
     if (!scrollToId("search")) {
       navigate("/#search");
@@ -182,10 +182,10 @@ export default function PremiumHero() {
         <button
           type="button"
           onClick={() => {
-            void trackMarketingEvent({
-              event_name: "home_scroll_indicator_click",
-              meta: { section: "hero", target: "search" },
-            });
+             void trackMarketingEvent("home_scroll_indicator_click", {
+               section: "hero",
+               target: "search",
+             });
             scrollToId("search");
           }}
           aria-label="Scroll to search"
