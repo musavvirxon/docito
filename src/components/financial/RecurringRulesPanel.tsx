@@ -1,3 +1,6 @@
+// File: src/components/financial/RecurringRulesPanel.tsx
+// B30: Add drilldown for automation runs (view linked rule runs + created entries)
+
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -9,7 +12,18 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
-import { Loader2, RefreshCw, Repeat, Plus, Play, Trash2, Pencil, History, CalendarClock } from "lucide-react";
+import {
+  Loader2,
+  RefreshCw,
+  Repeat,
+  Plus,
+  Play,
+  Trash2,
+  Pencil,
+  History,
+  CalendarClock,
+  Eye,
+} from "lucide-react";
 
 type FinanceEntityType = "clinic" | "lab" | "imaging" | "pharmacy";
 type EntryType = "income" | "expense" | "payroll";
@@ -56,6 +70,16 @@ type EntityRunRow = {
   skipped_count: number;
   error_count: number;
   notes: string | null;
+};
+
+type FinanceEntryRow = {
+  id: string;
+  entry_type: "income" | "expense" | "payroll";
+  amount_cents: number;
+  currency: string;
+  occurred_at: string;
+  description: string | null;
+  reference: string | null;
 };
 
 function isoDate(d: Date) {
@@ -117,6 +141,13 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
   const [entityRuns, setEntityRuns] = useState<EntityRunRow[]>([]);
   const [lastRunResults, setLastRunResults] = useState<any[]>([]);
 
+  // drilldown
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [detailsRun, setDetailsRun] = useState<EntityRunRow | null>(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [detailsRuleRuns, setDetailsRuleRuns] = useState<RunRow[]>([]);
+  const [detailsEntries, setDetailsEntries] = useState<Record<string, FinanceEntryRow>>({});
+
   // dialog
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -133,7 +164,7 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
   const [formAmount, setFormAmount] = useState("");
   const [formDescription, setFormDescription] = useState("");
   const [formCategoryId, setFormCategoryId] = useState<string>("uncategorized"); // "uncategorized" | uuid
-  const [formCategoryName, setFormCategoryName] = useState<string>("Utilities"); // fallback label when no category id
+  const [formCategoryName, setFormCategoryName] = useState<string>("Utilities");
 
   const relevantCategories = useMemo(() => {
     return categories.filter((c) => c.kind === formEntryType);
@@ -378,6 +409,49 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
     }
   };
 
+  const openDetails = async (er: EntityRunRow) => {
+    setDetailsRun(er);
+    setDetailsOpen(true);
+    setDetailsLoading(true);
+    setDetailsRuleRuns([]);
+    setDetailsEntries({});
+    try {
+      const { data, error } = await supabase.rpc("finance_recurring_rule_runs_for_entity_run", {
+        p_entity_run_id: er.id,
+        p_limit: 400,
+      });
+      if (error) throw error;
+
+      const ruleRuns = ((data || []) as any) as RunRow[];
+      setDetailsRuleRuns(ruleRuns);
+
+      const entryIds = ruleRuns
+        .map((r) => r.finance_entry_id)
+        .filter((x): x is string => Boolean(x));
+
+      if (entryIds.length) {
+        const { data: entries, error: eErr } = await supabase
+          .from("finance_entries")
+          .select("id,entry_type,amount_cents,currency,occurred_at,description,reference")
+          .in("id", entryIds)
+          .limit(1000);
+
+        if (eErr) throw eErr;
+
+        const map: Record<string, FinanceEntryRow> = {};
+        for (const row of (entries || []) as any[]) {
+          map[String(row.id)] = row as FinanceEntryRow;
+        }
+        setDetailsEntries(map);
+      }
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || "Failed to load run details");
+    } finally {
+      setDetailsLoading(false);
+    }
+  };
+
   return (
     <Card className="border-muted">
       <CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
@@ -491,15 +565,20 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
                       <span className="truncate text-muted-foreground">{state === "running" ? "running…" : "completed"}</span>
                       {er.notes ? <span className="text-xs text-muted-foreground truncate">· {er.notes}</span> : null}
                     </div>
-                    <div className="text-right whitespace-nowrap">
-                      <span className="font-medium">{total}</span>
-                      <span className="text-muted-foreground"> total</span>
-                      <span className="text-muted-foreground"> · </span>
-                      <span className="text-foreground">{er.created_count}</span>
-                      <span className="text-muted-foreground">/</span>
-                      <span className="text-muted-foreground">{er.skipped_count}</span>
-                      <span className="text-muted-foreground">/</span>
-                      <span className={er.error_count ? "text-destructive" : "text-muted-foreground"}>{er.error_count}</span>
+                    <div className="flex items-center gap-2">
+                      <div className="text-right whitespace-nowrap">
+                        <span className="font-medium">{total}</span>
+                        <span className="text-muted-foreground"> total</span>
+                        <span className="text-muted-foreground"> · </span>
+                        <span className="text-foreground">{er.created_count}</span>
+                        <span className="text-muted-foreground">/</span>
+                        <span className="text-muted-foreground">{er.skipped_count}</span>
+                        <span className="text-muted-foreground">/</span>
+                        <span className={er.error_count ? "text-destructive" : "text-muted-foreground"}>{er.error_count}</span>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={() => void openDetails(er)} className="gap-2">
+                        <Eye className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 );
@@ -621,6 +700,123 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
             <div className="px-3 py-2 text-xs text-muted-foreground">Showing latest 20 runs.</div>
           ) : null}
         </div>
+
+        {/* Details dialog */}
+        <Dialog
+          open={detailsOpen}
+          onOpenChange={(v) => {
+            setDetailsOpen(v);
+            if (!v) {
+              setDetailsRun(null);
+              setDetailsRuleRuns([]);
+              setDetailsEntries({});
+              setDetailsLoading(false);
+            }
+          }}
+        >
+          <DialogTrigger asChild>
+            <span />
+          </DialogTrigger>
+
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>Automation run details</DialogTitle>
+            </DialogHeader>
+
+            {detailsRun ? (
+              <div className="space-y-4">
+                <div className="rounded-md border p-3 text-sm">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-muted-foreground">{sourceLabel(detailsRun.source)}</span>
+                    <span className="text-muted-foreground">·</span>
+                    <span className="font-mono">{detailsRun.as_of}</span>
+                    <span className="text-muted-foreground">·</span>
+                    <span className="text-muted-foreground">created {detailsRun.created_count}</span>
+                    <span className="text-muted-foreground">·</span>
+                    <span className="text-muted-foreground">skipped {detailsRun.skipped_count}</span>
+                    <span className="text-muted-foreground">·</span>
+                    <span className={detailsRun.error_count ? "text-destructive" : "text-muted-foreground"}>
+                      errors {detailsRun.error_count}
+                    </span>
+                  </div>
+                  {detailsRun.notes ? <div className="mt-2 text-xs text-muted-foreground">{detailsRun.notes}</div> : null}
+                </div>
+
+                {detailsLoading ? (
+                  <div className="text-sm text-muted-foreground flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Loading details…
+                  </div>
+                ) : detailsRuleRuns.length === 0 ? (
+                  <div className="text-sm text-muted-foreground">No linked rule runs for this automation run.</div>
+                ) : (
+                  <div className="rounded-md border overflow-hidden">
+                    <div className="grid grid-cols-12 gap-2 px-3 py-2 text-xs text-muted-foreground border-b">
+                      <div className="col-span-2">Run date</div>
+                      <div className="col-span-2">Status</div>
+                      <div className="col-span-2">Rule</div>
+                      <div className="col-span-6">Created entry</div>
+                    </div>
+                    <div className="divide-y">
+                      {detailsRuleRuns.slice(0, 100).map((rr) => {
+                        const entry = rr.finance_entry_id ? detailsEntries[rr.finance_entry_id] : undefined;
+                        return (
+                          <div key={rr.run_id} className="grid grid-cols-12 gap-2 px-3 py-2 text-sm items-center">
+                            <div className="col-span-2 font-mono">{rr.run_date}</div>
+                            <div
+                              className={
+                                rr.status === "created"
+                                  ? "col-span-2"
+                                  : rr.status === "error"
+                                    ? "col-span-2 text-destructive"
+                                    : "col-span-2 text-muted-foreground"
+                              }
+                            >
+                              {rr.status}
+                            </div>
+                            <div className="col-span-2 font-mono text-muted-foreground">{rr.rule_id.slice(0, 8)}</div>
+                            <div className="col-span-6 min-w-0">
+                              {rr.status === "error" ? (
+                                <span className="text-destructive truncate block">{rr.error || "Error"}</span>
+                              ) : entry ? (
+                                <div className="flex items-center justify-between gap-3">
+                                  <div className="truncate">
+                                    <span className="text-muted-foreground">{entry.entry_type}</span>
+                                    <span className="text-muted-foreground"> · </span>
+                                    <span className="truncate">{entry.description || "—"}</span>
+                                    {entry.reference ? <span className="text-xs text-muted-foreground"> · {entry.reference}</span> : null}
+                                  </div>
+                                  <div className="font-medium whitespace-nowrap">
+                                    {formatMoney(entry.currency, entry.amount_cents)}
+                                  </div>
+                                </div>
+                              ) : rr.finance_entry_id ? (
+                                <span className="text-muted-foreground font-mono">entry {rr.finance_entry_id.slice(0, 8)}…</span>
+                              ) : (
+                                <span className="text-muted-foreground">—</span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {detailsRuleRuns.length > 100 ? (
+                      <div className="px-3 py-2 text-xs text-muted-foreground">Showing first 100 rows.</div>
+                    ) : null}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-sm text-muted-foreground">No run selected.</div>
+            )}
+
+            <div className="flex justify-end">
+              <Button variant="outline" onClick={() => setDetailsOpen(false)}>
+                Close
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Upsert dialog */}
         <Dialog
