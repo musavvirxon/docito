@@ -1,8 +1,6 @@
 // File: supabase/functions/finance-recurring-run/index.ts
-// B24: Edge Function wrapper to run due recurring rules for an entity
-// - Deno + supabase-js v2
-// - CORS + Authorization
-// - Calls RPC: finance_recurring_generate_due
+// B25: Edge Function wrapper (unchanged API) now benefits from batch catch-up in SQL
+// - Returns all rows from finance_recurring_generate_due (may include many)
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
