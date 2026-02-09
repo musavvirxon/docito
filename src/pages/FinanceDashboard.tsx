@@ -14,7 +14,7 @@ import { EmptyState } from "@/components/dashboard/EmptyState";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Loader2, RefreshCw, Landmark, ListOrdered, Wallet, Package, Users, BarChart3, ArrowUpRight } from "lucide-react";
+import { Loader2, RefreshCw, Landmark, ListOrdered, Wallet, Package, Users, BarChart3, ArrowUpRight, Repeat } from "lucide-react";
 
 import FinanceLedgerPanel from "@/components/financial/FinanceLedgerPanel";
 import IncomeEntriesPanel from "@/components/financial/IncomeEntriesPanel";
@@ -23,8 +23,18 @@ import PayrollEntriesPanel from "@/components/financial/PayrollEntriesPanel";
 import FinanceAnalyticsPanel from "@/components/financial/FinanceAnalyticsPanel";
 import BudgetsPanel from "@/components/financial/BudgetsPanel";
 import SuppliesPanel from "@/components/financial/SuppliesPanel";
+import RecurringRulesPanel from "@/components/financial/RecurringRulesPanel";
 
-type FinanceTab = "overview" | "ledger" | "income" | "budgets" | "expenses" | "supplies" | "payroll" | "analytics";
+type FinanceTab =
+  | "overview"
+  | "ledger"
+  | "income"
+  | "budgets"
+  | "expenses"
+  | "supplies"
+  | "recurring"
+  | "payroll"
+  | "analytics";
 
 const TYPE_KEY = "docito.activeEntity.financeType";
 
@@ -91,7 +101,7 @@ export default function FinanceDashboard() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = String(params.get("tab") || "").toLowerCase();
-    const ok: FinanceTab[] = ["overview", "ledger", "income", "budgets", "expenses", "supplies", "payroll", "analytics"];
+    const ok: FinanceTab[] = ["overview", "ledger", "income", "budgets", "expenses", "supplies", "recurring", "payroll", "analytics"];
     if (ok.includes(tab as any)) setActiveTab(tab as FinanceTab);
   }, [location.search]);
 
@@ -103,6 +113,7 @@ export default function FinanceDashboard() {
       { id: "budgets", label: "Budgets", icon: <Wallet className="h-5 w-5" /> },
       { id: "expenses", label: "Expenses", icon: <Wallet className="h-5 w-5" /> },
       { id: "supplies", label: "Supplies", icon: <Package className="h-5 w-5" /> },
+      { id: "recurring", label: "Recurring", icon: <Repeat className="h-5 w-5" /> },
       { id: "payroll", label: "Payroll", icon: <Users className="h-5 w-5" /> },
       { id: "analytics", label: "Analytics", icon: <BarChart3 className="h-5 w-5" /> },
     ],
@@ -227,7 +238,7 @@ export default function FinanceDashboard() {
         >
           <PageHeader
             title="Finance"
-            description="Manage income, expenses, payroll, supplies, and analytics from one place."
+            description="Manage income, expenses, payroll, supplies, recurring rules, and analytics from one place."
             actions={
               <>
                 <div className="hidden md:flex items-center gap-2">
@@ -341,7 +352,7 @@ export default function FinanceDashboard() {
                   Selected: <span className="text-foreground font-medium">{labelForType(entityType)}</span>{" "}
                   {entityName ? <span className="text-foreground font-medium">· {entityName}</span> : null}
                 </div>
-                <div>Use Supplies to record purchases (auto-posts to Expenses → Supplies).</div>
+                <div>Use Recurring to automate utilities/taxes and post them into the ledger.</div>
               </CardContent>
             </Card>
           ) : null}
@@ -407,6 +418,19 @@ export default function FinanceDashboard() {
                   <CardTitle className="text-base">Supplies</CardTitle>
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground">Select an organization to manage supplies.</CardContent>
+              </Card>
+            )
+          ) : null}
+
+          {activeTab === "recurring" ? (
+            entityId ? (
+              <RecurringRulesPanel entityType={entityType as any} entityId={entityId} />
+            ) : (
+              <Card className="border-muted">
+                <CardHeader>
+                  <CardTitle className="text-base">Recurring</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">Select an organization to manage recurring rules.</CardContent>
               </Card>
             )
           ) : null}
