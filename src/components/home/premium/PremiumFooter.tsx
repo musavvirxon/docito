@@ -60,7 +60,10 @@ const fallbackLabels: Record<string, string> = {
 };
 
 function titleizeKey(key: string) {
-  const withSpaces = key.replace(/_/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").trim();
+  const withSpaces = key
+    .replace(/_/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .trim();
   if (!withSpaces) return key;
   return withSpaces
     .split(/\s+/)
@@ -79,19 +82,13 @@ function asString(v: unknown, fallback: string) {
 function languageLabel(code: string) {
   switch (code) {
     case "en":
-      return "en — English 🇬🇧 (LTR)";
+      return "en — English 🇬🇧";
     case "ru":
-      return "ru — Русский 🇷🇺 (LTR)";
-    case "uz":
-      return "uz — O'zbek 🇺🇿 (LTR)";
-    case "ar":
-      return "ar — العربية 🇸🇦 (RTL enabled)";
-    case "tr":
-      return "tr — Türkçe 🇹🇷";
-    case "es":
-      return "es — Español 🇪🇸";
+      return "ru — Русский 🇷🇺";
     case "de":
       return "de — Deutsch 🇩🇪";
+    case "es":
+      return "es — Español 🇪🇸";
     case "zh":
       return "zh — 中文 🇨🇳";
     case "pt":
@@ -100,6 +97,12 @@ function languageLabel(code: string) {
       return "ja — 日本語 🇯🇵";
     case "ko":
       return "ko — 한국어 🇰🇷";
+    case "ar":
+      return "ar — العربية 🇸🇦";
+    case "tr":
+      return "tr — Türkçe 🇹🇷";
+    case "uz":
+      return "uz — O'zbek 🇺🇿";
     default:
       return code;
   }
@@ -136,7 +139,7 @@ export default function PremiumFooter() {
                 t("home:footer.description", {
                   defaultValue: "The Complete Healthcare Operating System For Modern Medical Practices.",
                 }),
-                "The Complete Healthcare Operating System For Modern Medical Practices."
+                "The Complete Healthcare Operating System For Modern Medical Practices.",
               )}
             </p>
 
@@ -272,7 +275,10 @@ export default function PremiumFooter() {
                 <select
                   value={i18n.language}
                   onChange={(e) => i18n.changeLanguage(e.target.value)}
-                  aria-label={asString(t("common:language.select", { defaultValue: "Select Language" }), "Select Language")}
+                  aria-label={asString(
+                    t("common:language.select", { defaultValue: "Select Language" }),
+                    "Select Language",
+                  )}
                   className="bg-background text-sm text-muted-foreground hover:text-foreground cursor-pointer focus:outline-none border border-border/50 rounded-lg px-2 py-1"
                 >
                   {allLanguages.map((l) => (
