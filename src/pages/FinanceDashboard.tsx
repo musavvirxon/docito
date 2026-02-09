@@ -1,6 +1,3 @@
-// File: src/pages/FinanceDashboard.tsx
-// B16: Render Ledger panel in the Ledger tab
-
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -17,12 +14,13 @@ import { EmptyState } from "@/components/dashboard/EmptyState";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Loader2, RefreshCw, Landmark, ListOrdered, Wallet, Package, Users, BarChart3 } from "lucide-react";
+import { Loader2, RefreshCw, Landmark, ListOrdered, Wallet, Package, Users, BarChart3, ArrowUpRight } from "lucide-react";
 
 import FinanceLedgerPanel from "@/components/financial/FinanceLedgerPanel";
+import IncomeEntriesPanel from "@/components/financial/IncomeEntriesPanel";
 
 type FinanceEntityType = "clinic" | "lab" | "imaging" | "pharmacy";
-type FinanceTab = "overview" | "ledger" | "budgets" | "expenses" | "supplies" | "payroll" | "analytics";
+type FinanceTab = "overview" | "ledger" | "income" | "budgets" | "expenses" | "supplies" | "payroll" | "analytics";
 
 const TYPE_KEY = "docito.activeEntity.financeType";
 
@@ -89,7 +87,7 @@ export default function FinanceDashboard() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = String(params.get("tab") || "").toLowerCase();
-    const ok: FinanceTab[] = ["overview", "ledger", "budgets", "expenses", "supplies", "payroll", "analytics"];
+    const ok: FinanceTab[] = ["overview", "ledger", "income", "budgets", "expenses", "supplies", "payroll", "analytics"];
     if (ok.includes(tab as any)) setActiveTab(tab as FinanceTab);
   }, [location.search]);
 
@@ -97,6 +95,7 @@ export default function FinanceDashboard() {
     () => [
       { id: "overview", label: "Overview", icon: <Landmark className="h-5 w-5" /> },
       { id: "ledger", label: "Ledger", icon: <ListOrdered className="h-5 w-5" /> },
+      { id: "income", label: "Income", icon: <ArrowUpRight className="h-5 w-5" /> },
       { id: "budgets", label: "Budgets", icon: <Wallet className="h-5 w-5" /> },
       { id: "expenses", label: "Expenses", icon: <Wallet className="h-5 w-5" /> },
       { id: "supplies", label: "Supplies", icon: <Package className="h-5 w-5" /> },
@@ -352,6 +351,19 @@ export default function FinanceDashboard() {
                   <CardTitle className="text-base">Ledger</CardTitle>
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground">Select an organization to view the ledger.</CardContent>
+              </Card>
+            )
+          ) : null}
+
+          {activeTab === "income" ? (
+            entityId ? (
+              <IncomeEntriesPanel entityType={entityType as any} entityId={entityId} />
+            ) : (
+              <Card className="border-muted">
+                <CardHeader>
+                  <CardTitle className="text-base">Income</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">Select an organization to manage income.</CardContent>
               </Card>
             )
           ) : null}
