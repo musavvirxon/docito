@@ -1,5 +1,5 @@
 // File: src/pages/AdminSettingsPage.tsx
-// B8: Add recurring expenses panel to admin settings (full file replacement)
+// B11: Add SuppliesPurchasesPanel (full file replacement)
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +12,7 @@ import CompensationProfilesPanel from "@/components/staff/CompensationProfilesPa
 import BudgetEditorPanel from "@/components/financial/BudgetEditorPanel";
 import BudgetDashboard from "@/components/financial/BudgetDashboard";
 import RecurringExpensesPanel from "@/components/financial/RecurringExpensesPanel";
+import SuppliesPurchasesPanel from "@/components/financial/SuppliesPurchasesPanel";
 
 type FinanceEntityType = "clinic" | "lab" | "imaging" | "pharmacy";
 
@@ -96,7 +97,7 @@ export default function AdminSettingsPage() {
           <CardTitle>Admin settings · {practice.name}</CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
-          Configure clinic settings, staff compensation, budgets, and recurring expenses.
+          Configure clinic settings, staff compensation, budgets, recurring expenses, and supplies.
         </CardContent>
       </Card>
 
@@ -111,6 +112,9 @@ export default function AdminSettingsPage() {
 
       {/* B8 */}
       <RecurringExpensesPanel entityType={entityType} entityId={practice.id} />
+
+      {/* B11 */}
+      <SuppliesPurchasesPanel entityType={entityType} entityId={practice.id} />
     </div>
   );
 }
