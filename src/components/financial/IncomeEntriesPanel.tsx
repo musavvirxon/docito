@@ -1,8 +1,3 @@
-// File: src/components/financial/IncomeEntriesPanel.tsx
-// B17: Manual Income entries (create + edit) with reference
-// - Uses RPC finance_entry_upsert_manual
-// - Allows selecting existing income categories OR creating by name
-
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -14,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
-import { Loader2, RefreshCw, Plus, Pencil, ArrowUpRight } from "lucide-react";
+import { Loader2, RefreshCw, Plus, Pencil, ArrowUpRight, RotateCcw } from "lucide-react";
 
 type FinanceEntityType = "clinic" | "lab" | "imaging" | "pharmacy";
 
@@ -77,8 +72,12 @@ function parseMajorToCents(v: string) {
 }
 
 function middayUtcISO(dateStr: string) {
-  // stable day value (UTC)
   return new Date(`${dateStr}T12:00:00.000Z`).toISOString();
+}
+
+function isReversalRow(r: IncomeRow) {
+  const md = r.metadata || {};
+  return Boolean(md.reversal_of || md["reversal_of"]);
 }
 
 export default function IncomeEntriesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
@@ -97,7 +96,7 @@ export default function IncomeEntriesPanel(props: { entityType: FinanceEntityTyp
 
   const [rows, setRows] = useState<IncomeRow[]>([]);
 
-  // dialog state
+  // entry dialog state
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
 
@@ -108,6 +107,14 @@ export default function IncomeEntriesPanel(props: { entityType: FinanceEntityTyp
   const [formCategoryName, setFormCategoryName] = useState<string>("");
   const [formDescription, setFormDescription] = useState("");
   const [formReference, setFormReference] = useState("");
+
+  // refund dialog state
+  const [refundOpen, setRefundOpen] = useState(false);
+  const [refundOriginal, setRefundOriginal] = useState<IncomeRow | null>(null);
+  const [refundDate, setRefundDate] = useState(() => isoDate(today));
+  const [refundDescription, setRefundDescription] = useState("Refund");
+  const [refundReference, setRefundReference] = useState("");
+  const [refundIdempotencyKey, setRefundIdempotencyKey] = useState("");
 
   const currencyHint = useMemo(() => (rows[0]?.currency || "USD").toUpperCase(), [rows]);
 
@@ -127,6 +134,13 @@ export default function IncomeEntriesPanel(props: { entityType: FinanceEntityTyp
     return true;
   }, [entityId, formAmount, formCategoryId, formCategoryName, formCurrency, formDate]);
 
+  const canRefund = useMemo(() => {
+    if (!entityId) return false;
+    if (!refundOriginal) return false;
+    if (!refundDate.trim()) return false;
+    return true;
+  }, [entityId, refundDate, refundOriginal]);
+
   const resetForm = () => {
     setEditId(null);
     setFormDate(isoDate(today));
@@ -136,6 +150,14 @@ export default function IncomeEntriesPanel(props: { entityType: FinanceEntityTyp
     setFormCategoryName("");
     setFormDescription("");
     setFormReference("");
+  };
+
+  const resetRefund = () => {
+    setRefundOriginal(null);
+    setRefundDate(isoDate(today));
+    setRefundDescription("Refund");
+    setRefundReference("");
+    setRefundIdempotencyKey("");
   };
 
   const loadCategories = async () => {
@@ -208,6 +230,15 @@ export default function IncomeEntriesPanel(props: { entityType: FinanceEntityTyp
     setOpen(true);
   };
 
+  const openRefund = (r: IncomeRow) => {
+    setRefundOriginal(r);
+    setRefundDate(isoDate(today));
+    setRefundDescription(`Refund for ${formatMoney(r.currency, r.amount_cents)}`);
+    setRefundReference("");
+    setRefundIdempotencyKey(`refund_${r.id}_${Date.now()}`);
+    setRefundOpen(true);
+  };
+
   const save = async () => {
     if (!canSave) return;
 
@@ -251,6 +282,39 @@ export default function IncomeEntriesPanel(props: { entityType: FinanceEntityTyp
     }
   };
 
+  const createRefund = async () => {
+    if (!canRefund || !refundOriginal) return;
+
+    setSaving(true);
+    try {
+      const occurredAt = middayUtcISO(refundDate);
+
+      const { data, error } = await supabase.rpc("finance_entry_create_reversal", {
+        p_entity_type: entityType,
+        p_entity_id: entityId,
+        p_original_entry_id: refundOriginal.id,
+        p_occurred_at: occurredAt,
+        p_description: refundDescription.trim() ? refundDescription.trim() : null,
+        p_reference: refundReference.trim() ? refundReference.trim() : null,
+        p_idempotency_key: refundIdempotencyKey.trim() ? refundIdempotencyKey.trim() : null,
+      });
+
+      if (error) throw error;
+      const id = Array.isArray(data) ? data[0]?.reversal_entry_id : (data as any)?.reversal_entry_id;
+      if (!id) throw new Error("Refund failed");
+
+      toast.success("Refund posted (reversal created)");
+      setRefundOpen(false);
+      resetRefund();
+      await loadIncome();
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || "Failed to create refund");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <Card className="border-muted">
       <CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
@@ -259,7 +323,9 @@ export default function IncomeEntriesPanel(props: { entityType: FinanceEntityTyp
             <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
             Income
           </CardTitle>
-          <div className="text-sm text-muted-foreground">Manual income entries with category + reference and edit support.</div>
+          <div className="text-sm text-muted-foreground">
+            Manual income entries with category + reference. Refunds create linked reversal entries.
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -304,6 +370,7 @@ export default function IncomeEntriesPanel(props: { entityType: FinanceEntityTyp
         <div className="rounded-md border p-3">
           <div className="text-xs text-muted-foreground">Total income (filtered range)</div>
           <div className="text-sm font-medium">{formatMoney(currencyHint, totals)}</div>
+          <div className="text-xs text-muted-foreground mt-1">Refunds/reversals appear as negative income.</div>
         </div>
 
         {/* List */}
@@ -313,7 +380,7 @@ export default function IncomeEntriesPanel(props: { entityType: FinanceEntityTyp
             <div className="col-span-3">Category</div>
             <div className="col-span-2 text-right">Amount</div>
             <div className="col-span-3">Description</div>
-            <div className="col-span-1">Ref</div>
+            <div className="col-span-1 text-right">Refund</div>
             <div className="col-span-1 text-right">Edit</div>
           </div>
 
@@ -328,16 +395,39 @@ export default function IncomeEntriesPanel(props: { entityType: FinanceEntityTyp
             <div className="divide-y">
               {rows.map((r) => {
                 const catName = r.category_id ? incomeCategories.find((c) => c.id === r.category_id)?.name : null;
-                const ref = String((r.metadata && (r.metadata.reference || r.metadata["reference"])) || "") || "";
+                const reversal = isReversalRow(r);
                 return (
                   <div key={r.id} className="grid grid-cols-12 gap-2 px-3 py-2 text-sm items-center">
                     <div className="col-span-2 font-mono">{new Date(r.occurred_at).toLocaleDateString()}</div>
                     <div className="col-span-3 truncate">{catName || <span className="text-muted-foreground">—</span>}</div>
                     <div className="col-span-2 text-right font-medium">{formatMoney(r.currency, r.amount_cents)}</div>
-                    <div className="col-span-3 truncate text-muted-foreground">{r.description || ""}</div>
-                    <div className="col-span-1 truncate text-muted-foreground">{ref || "—"}</div>
+                    <div className="col-span-3 truncate text-muted-foreground">
+                      {reversal ? <span className="text-foreground">Refund/Reversal · </span> : null}
+                      {r.description || ""}
+                    </div>
+
                     <div className="col-span-1 text-right">
-                      <Button variant="outline" size="sm" onClick={() => openEdit(r)} className="gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openRefund(r)}
+                        className="gap-2"
+                        disabled={saving || reversal}
+                        title={reversal ? "Refund entries cannot be refunded again" : "Create a refund reversal"}
+                      >
+                        <RotateCcw className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                    <div className="col-span-1 text-right">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openEdit(r)}
+                        className="gap-2"
+                        disabled={saving || reversal}
+                        title={reversal ? "Refund entries are not editable" : "Edit"}
+                      >
                         <Pencil className="h-4 w-4" />
                       </Button>
                     </div>
@@ -348,8 +438,14 @@ export default function IncomeEntriesPanel(props: { entityType: FinanceEntityTyp
           )}
         </div>
 
-        {/* Dialog */}
-        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
+        {/* Entry dialog */}
+        <Dialog
+          open={open}
+          onOpenChange={(v) => {
+            setOpen(v);
+            if (!v) resetForm();
+          }}
+        >
           <DialogTrigger asChild>
             <span />
           </DialogTrigger>
@@ -414,17 +510,103 @@ export default function IncomeEntriesPanel(props: { entityType: FinanceEntityTyp
 
               <div className="space-y-1 md:col-span-12">
                 <Label>Reference</Label>
-                <Input value={formReference} onChange={(e) => setFormReference(e.target.value)} placeholder="Receipt / invoice / payment ref (optional)" />
+                <Input
+                  value={formReference}
+                  onChange={(e) => setFormReference(e.target.value)}
+                  placeholder="Receipt / invoice / payment ref (optional)"
+                />
               </div>
             </div>
 
             <div className="flex justify-end gap-2 mt-2">
-              <Button variant="outline" onClick={() => { setOpen(false); resetForm(); }} disabled={saving}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setOpen(false);
+                  resetForm();
+                }}
+                disabled={saving}
+              >
                 Cancel
               </Button>
               <Button onClick={() => void save()} disabled={!canSave || saving} className="gap-2">
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                 {editId ? "Save" : "Create"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Refund dialog */}
+        <Dialog
+          open={refundOpen}
+          onOpenChange={(v) => {
+            setRefundOpen(v);
+            if (!v) resetRefund();
+          }}
+        >
+          <DialogTrigger asChild>
+            <span />
+          </DialogTrigger>
+
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Create refund (reversal)</DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <div>
+                Original amount:{" "}
+                <span className="text-foreground font-medium">
+                  {refundOriginal ? formatMoney(refundOriginal.currency, refundOriginal.amount_cents) : "—"}
+                </span>
+              </div>
+              <div>The refund will create a new income entry with the negative amount and link it to the original entry.</div>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-12 mt-3">
+              <div className="space-y-1 md:col-span-4">
+                <Label>Date</Label>
+                <Input type="date" value={refundDate} onChange={(e) => setRefundDate(e.target.value)} />
+              </div>
+
+              <div className="space-y-1 md:col-span-8">
+                <Label>Description</Label>
+                <Input value={refundDescription} onChange={(e) => setRefundDescription(e.target.value)} placeholder="Refund reason" />
+              </div>
+
+              <div className="space-y-1 md:col-span-12">
+                <Label>Reference</Label>
+                <Input value={refundReference} onChange={(e) => setRefundReference(e.target.value)} placeholder="Refund reference (optional)" />
+              </div>
+
+              <div className="space-y-1 md:col-span-12">
+                <Label>Idempotency key</Label>
+                <Input
+                  value={refundIdempotencyKey}
+                  onChange={(e) => setRefundIdempotencyKey(e.target.value)}
+                  placeholder="(auto-filled) prevents double refunds"
+                />
+                <div className="text-xs text-muted-foreground mt-1">
+                  Keep this unchanged unless you intentionally want a second reversal.
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 mt-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setRefundOpen(false);
+                  resetRefund();
+                }}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+              <Button onClick={() => void createRefund()} disabled={!canRefund || saving} className="gap-2">
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                Post refund
               </Button>
             </div>
           </DialogContent>
