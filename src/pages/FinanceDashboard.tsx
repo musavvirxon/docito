@@ -1,7 +1,5 @@
 // File: src/pages/FinanceDashboard.tsx
-// B15: Finance navigation + entity switcher (clinic/lab/pharmacy/imaging)
-// - Uses access-scope + active entity scope to persist selection
-// - Provides Finance sidebar navigation skeleton (next steps will fill panels)
+// B16: Render Ledger panel in the Ledger tab
 
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -21,6 +19,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Loader2, RefreshCw, Landmark, ListOrdered, Wallet, Package, Users, BarChart3 } from "lucide-react";
 
+import FinanceLedgerPanel from "@/components/financial/FinanceLedgerPanel";
+
+type FinanceEntityType = "clinic" | "lab" | "imaging" | "pharmacy";
 type FinanceTab = "overview" | "ledger" | "budgets" | "expenses" | "supplies" | "payroll" | "analytics";
 
 const TYPE_KEY = "docito.activeEntity.financeType";
@@ -50,7 +51,6 @@ export default function FinanceDashboard() {
   }, [scopes]);
 
   const defaultType = useMemo((): EntityType => {
-    // 1) persisted
     try {
       const saved = (localStorage.getItem(TYPE_KEY) || "").toLowerCase();
       if (saved && (["clinic", "lab", "imaging", "pharmacy"] as string[]).includes(saved)) {
@@ -60,11 +60,9 @@ export default function FinanceDashboard() {
       // ignore
     }
 
-    // 2) primary
     const p = String(primary?.entity_type || "").toLowerCase();
     if ((["clinic", "lab", "imaging", "pharmacy"] as string[]).includes(p)) return p as EntityType;
 
-    // 3) first available
     return (availableTypes[0] as EntityType) || "clinic";
   }, [availableTypes, primary?.entity_type]);
 
@@ -75,7 +73,6 @@ export default function FinanceDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultType]);
 
-  // Persist finance type
   useEffect(() => {
     try {
       localStorage.setItem(TYPE_KEY, entityType);
@@ -330,7 +327,7 @@ export default function FinanceDashboard() {
             </Button>
           </div>
 
-          {/* Content skeleton for B15 (next steps will replace placeholders with real panels) */}
+          {/* Content */}
           {activeTab === "overview" ? (
             <Card className="border-muted">
               <CardHeader>
@@ -347,14 +344,16 @@ export default function FinanceDashboard() {
           ) : null}
 
           {activeTab === "ledger" ? (
-            <Card className="border-muted">
-              <CardHeader>
-                <CardTitle className="text-base">Ledger</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                Next: unified list of income + expenses + payroll entries, filters, and manual entry forms.
-              </CardContent>
-            </Card>
+            entityId ? (
+              <FinanceLedgerPanel entityType={entityType as any} entityId={entityId} />
+            ) : (
+              <Card className="border-muted">
+                <CardHeader>
+                  <CardTitle className="text-base">Ledger</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">Select an organization to view the ledger.</CardContent>
+              </Card>
+            )
           ) : null}
 
           {activeTab === "budgets" ? (
