@@ -1,6 +1,3 @@
-// File: src/pages/FinanceDashboard.tsx
-// B20: Render PayrollEntriesPanel in Payroll tab
-
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -23,6 +20,7 @@ import FinanceLedgerPanel from "@/components/financial/FinanceLedgerPanel";
 import IncomeEntriesPanel from "@/components/financial/IncomeEntriesPanel";
 import ExpensesEntriesPanel from "@/components/financial/ExpensesEntriesPanel";
 import PayrollEntriesPanel from "@/components/financial/PayrollEntriesPanel";
+import FinanceAnalyticsPanel from "@/components/financial/FinanceAnalyticsPanel";
 
 type FinanceTab = "overview" | "ledger" | "income" | "budgets" | "expenses" | "supplies" | "payroll" | "analytics";
 
@@ -341,7 +339,7 @@ export default function FinanceDashboard() {
                   Selected: <span className="text-foreground font-medium">{labelForType(entityType)}</span>{" "}
                   {entityName ? <span className="text-foreground font-medium">· {entityName}</span> : null}
                 </div>
-                <div>Next: KPIs, profit & loss, cashflow, and alerts.</div>
+                <div>Use Ledger for full list and Analytics for trend + breakdown.</div>
               </CardContent>
             </Card>
           ) : null}
@@ -421,14 +419,16 @@ export default function FinanceDashboard() {
           ) : null}
 
           {activeTab === "analytics" ? (
-            <Card className="border-muted">
-              <CardHeader>
-                <CardTitle className="text-base">Analytics</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                Next: income/expense/payroll trends, profit, cashflow, and cross-entity consolidated analytics.
-              </CardContent>
-            </Card>
+            entityId ? (
+              <FinanceAnalyticsPanel entityType={entityType as any} entityId={entityId} />
+            ) : (
+              <Card className="border-muted">
+                <CardHeader>
+                  <CardTitle className="text-base">Analytics</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">Select an organization to view analytics.</CardContent>
+              </Card>
+            )
           ) : null}
 
           {(error || scopeError) && <div className="mt-6 text-sm text-destructive">{error || scopeError}</div>}
