@@ -1,3 +1,5 @@
+// File: src/pages/pharmacy/PharmacyDashboardPage.tsx
+// Path: src/pages/pharmacy/PharmacyDashboardPage.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -20,7 +22,7 @@ import PharmacyInsuranceClaims from "@/components/pharmacy/PharmacyInsuranceClai
 import PharmacyStaffManager from "@/components/pharmacy/PharmacyStaffManager";
 import PharmacySettings from "@/components/pharmacy/PharmacySettings";
 import { PharmacyReferralsSection } from "@/components/pharmacy/PharmacyReferralsSection";
-import FinanceHub from "@/components/financial/FinanceHub";
+import FinanceManagementSection from "@/components/financial/FinanceManagementSection";
 
 import {
   LayoutDashboard,
@@ -134,8 +136,8 @@ export default function PharmacyDashboardPage() {
       { id: "referrals", label: "Referrals", icon: <ShieldCheck className="h-5 w-5" /> },
       { id: "analytics", label: "Analytics", icon: <BarChart3 className="h-5 w-5" /> },
       { id: "claims", label: "Billing / Claims", icon: <CreditCard className="h-5 w-5" /> },
+      { id: "finances", label: "Finances", icon: <DollarSign className="h-5 w-5" /> },
       { id: "staff", label: "Staff", icon: <Users className="h-5 w-5" /> },
-      { id: "finance", label: "Finance", icon: <DollarSign className="h-5 w-5" /> },
       {
         id: "settings",
         label: "Settings",
@@ -223,8 +225,8 @@ export default function PharmacyDashboardPage() {
       "referrals",
       "analytics",
       "claims",
+      "finances",
       "staff",
-      "finance",
       "settings",
     ];
     if (!allowed.includes(desired)) return;
@@ -250,7 +252,7 @@ export default function PharmacyDashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="flex items-center justify-center min-h-[calc(100vh-64px)] bg-background">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
           <p className="mt-4 text-muted-foreground">Loading...</p>
@@ -299,17 +301,11 @@ export default function PharmacyDashboardPage() {
     );
   }
 
-  const statusLabel = (pharmacy.verified ? "verified" : pharmacy.verification_status || "pending") as
-    | "active"
-    | "pending"
-    | "suspended"
-    | "verified";
-
   return (
     <DashboardShell
       role={activeRole as any}
       entityName={pharmacy.name}
-      entityStatus={statusLabel}
+      entityStatus={pharmacy.verified ? "verified" : "pending"}
       sidebarItems={sidebarItems}
       activeItem={activeTab}
       onItemChange={(id) => {
@@ -369,8 +365,8 @@ export default function PharmacyDashboardPage() {
       {activeTab === "referrals" && <PharmacyReferralsSection pharmacyId={pharmacyId} />}
       {activeTab === "analytics" && <PharmacyAnalytics pharmacyId={pharmacyId} />}
       {activeTab === "claims" && <PharmacyInsuranceClaims pharmacyId={pharmacyId} />}
+      {activeTab === "finances" && <FinanceManagementSection entityType="pharmacy" entityId={pharmacyId} />}
       {activeTab === "staff" && <PharmacyStaffManager pharmacyId={pharmacyId} />}
-      {activeTab === "finance" && <FinanceHub entityType="pharmacy" entityId={pharmacyId} />}
       {activeTab === "settings" && <PharmacySettings pharmacyId={pharmacyId} />}
     </DashboardShell>
   );
