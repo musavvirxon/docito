@@ -20,6 +20,14 @@ export const Logo = ({
   const { appliedTheme } = useTheme();
   
   const getLogoPath = () => {
+    // For horizontal variant in nav/footer, use theme-aware full logos
+    if (variant === 'horizontal') {
+      // Use theme-aware logos for better dark/light mode support
+      return appliedTheme === 'dark'
+        ? '/logos/logo-full-dark.png'
+        : '/logos/logo-full-light.png';
+    }
+    
     // Icon variant - use icon sizes
     if (variant === 'icon') {
       const iconSizes: Record<string, string> = {
@@ -29,17 +37,6 @@ export const Logo = ({
         'xl': '512x512'
       };
       return `/logos/icon/docito-logo-${iconSizes[size] || '128x128'}.png`;
-    }
-    
-    // Horizontal variant - use size-specific files
-    if (variant === 'horizontal') {
-      const sizeMap: Record<string, string> = {
-        'sm': 'sm',
-        'md': 'md',
-        'lg': 'lg',
-        'xl': '2xl'
-      };
-      return `/logos/horizontal/docito-horizontal-${sizeMap[size] || 'md'}.png`;
     }
     
     // Vertical variant
@@ -64,7 +61,9 @@ export const Logo = ({
       return `/logos/wordmark/docito-wordmark-${sizeMap[size] || 'md'}.png`;
     }
     
-    return `/logos/horizontal/docito-horizontal-md.png`;
+    return appliedTheme === 'dark'
+      ? '/logos/logo-full-dark.png'
+      : '/logos/logo-full-light.png';
   };
   
   const getDefaultDimensions = () => {
@@ -76,10 +75,10 @@ export const Logo = ({
     
     if (variant === 'horizontal') {
       const sizes = {
-        sm: { width: 150, height: 45 },
-        md: { width: 200, height: 60 },
-        lg: { width: 300, height: 90 },
-        xl: { width: 400, height: 120 }
+        sm: { width: 120, height: 36 },
+        md: { width: 160, height: 48 },
+        lg: { width: 240, height: 72 },
+        xl: { width: 320, height: 96 }
       };
       return sizes[size] || sizes.md;
     }
@@ -104,7 +103,7 @@ export const Logo = ({
       return sizes[size] || sizes.md;
     }
     
-    return { width: 200, height: 60 };
+    return { width: 160, height: 48 };
   };
   
   const dimensions = {
@@ -112,41 +111,20 @@ export const Logo = ({
     height: height || getDefaultDimensions().height
   };
   
-  // For horizontal variant use the md version (300x90) as it's much smaller
-  // than the oversized sm.webp (1920x544). WebP path for 2xl only.
-  const getWebPPath = (): string | null => {
-    const pngPath = getLogoPath();
-    // Horizontal variants with optimized webp
-    const webpAvailable = [
-      '/logos/horizontal/docito-horizontal-2xl.webp',
-      '/logos/horizontal/docito-horizontal-sm.webp',
-    ];
-    const webpPath = pngPath.replace('.png', '.webp');
-    if (webpAvailable.includes(webpPath) || variant === 'icon') {
-      return webpPath;
-    }
-    return null;
-  };
-
-  const webpPath = getWebPPath();
-  
   // LCP optimization: xl size logos are likely LCP elements
   const isLCP = size === 'xl' || size === 'lg';
   
   return (
-    <picture>
-      {webpPath && <source srcSet={webpPath} type="image/webp" />}
-      <img
-        src={getLogoPath()}
-        alt="Docito® - Healthcare Management Platform"
-        width={dimensions.width}
-        height={dimensions.height}
-        className={`transition-opacity duration-300 ${onClick ? 'cursor-pointer hover:opacity-80' : ''} ${className}`}
-        onClick={onClick}
-        loading={isLCP ? 'eager' : 'lazy'}
-        fetchPriority={isLCP ? 'high' : 'auto'}
-        decoding={isLCP ? 'sync' : 'async'}
-      />
-    </picture>
+    <img
+      src={getLogoPath()}
+      alt="Docito® - Healthcare Management Platform"
+      width={dimensions.width}
+      height={dimensions.height}
+      className={`transition-opacity duration-300 object-contain ${onClick ? 'cursor-pointer hover:opacity-80' : ''} ${className}`}
+      onClick={onClick}
+      loading={isLCP ? 'eager' : 'lazy'}
+      fetchPriority={isLCP ? 'high' : 'auto'}
+      decoding={isLCP ? 'sync' : 'async'}
+    />
   );
 };

@@ -88,7 +88,7 @@ export default function TeamCollaboration() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1, duration: 0.5 }}
-                  className="flex gap-4 p-4 rounded-xl bg-white/50 border border-primary/10 backdrop-blur-sm"
+                  className="flex gap-4 p-4 rounded-xl bg-background/50 border border-border/40 backdrop-blur-sm"
                 >
                   <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
                     <feature.icon className="h-6 w-6 text-primary" />
@@ -110,7 +110,7 @@ export default function TeamCollaboration() {
             transition={{ duration: 0.6 }}
             className="relative"
           >
-            <div className="relative bg-white/30 border border-primary/10 rounded-3xl p-8 backdrop-blur-sm">
+            <div className="relative bg-background/30 border border-border/40 rounded-3xl p-8 backdrop-blur-sm">
               {/* Central hub */}
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-purple-500/20 rounded-full blur-3xl opacity-50" />
@@ -143,7 +143,7 @@ export default function TeamCollaboration() {
                       key={index}
                       animate={{ rotate: -360 }}
                       transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-                      className="absolute w-12 h-12 bg-white rounded-xl shadow-lg flex items-center justify-center border border-primary/10"
+                      className="absolute w-12 h-12 bg-background rounded-xl shadow-lg flex items-center justify-center border border-border/40"
                       style={{
                         top: "50%",
                         left: "50%",
@@ -157,7 +157,7 @@ export default function TeamCollaboration() {
 
                 {/* Connection lines */}
                 <div className="mt-8 space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-white/50 rounded-xl border border-primary/10">
+                  <div className="flex items-center justify-between p-4 bg-background/50 rounded-xl border border-border/40">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
                         <Stethoscope className="h-4 w-4 text-primary" />
@@ -172,7 +172,7 @@ export default function TeamCollaboration() {
                     <div className="w-2 h-2 bg-green-500 rounded-full" />
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-white/50 rounded-xl border border-primary/10">
+                  <div className="flex items-center justify-between p-4 bg-background/50 rounded-xl border border-border/40">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
                         <Shield className="h-4 w-4 text-primary" />

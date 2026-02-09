@@ -49,12 +49,19 @@
     <link rel="preconnect" href="https://gswwpjdtgsxzcsnrxutu.supabase.co" />
     <link rel="preconnect" href="https://gswwpjdtgsxzcsnrxutu.supabase.co" crossorigin />
 
-    <!-- Preload small loader logo for instant FCP (sm.webp ≈ 13 KiB vs 2xl.webp ≈ 580 KiB) -->
+    <!-- Preload loader logos for instant FCP -->
     <link
       rel="preload"
-      href="/logos/horizontal/docito-horizontal-sm.webp"
+      href="/logos/logo-full-light.png"
       as="image"
-      type="image/webp"
+      type="image/png"
+      fetchpriority="high"
+    />
+    <link
+      rel="preload"
+      href="/logos/logo-full-dark.png"
+      as="image"
+      type="image/png"
       fetchpriority="high"
     />
 
@@ -198,6 +205,15 @@
         height: auto;
         animation: pulse 1.5s ease-in-out infinite;
       }
+      /* Theme-aware loader logos */
+      .loader-logo-dark { display: none; }
+      .loader-logo-light { display: block; }
+      @media (prefers-color-scheme: dark) {
+        .loader-logo-dark { display: block; }
+        .loader-logo-light { display: none; }
+      }
+      .dark .loader-logo-dark { display: block; }
+      .dark .loader-logo-light { display: none; }
       @keyframes pulse {
         0%, 100% { opacity: 1; transform: scale(1); }
         50% { opacity: 0.7; transform: scale(0.98); }
@@ -214,21 +230,24 @@
 
     <!-- Instant visual feedback while React loads — visible until React mounts -->
     <div id="initial-loader" class="initial-loader" aria-live="polite" aria-label="Loading Docito">
-        <picture>
-          <source
-            srcset="/logos/horizontal/docito-horizontal-sm.webp"
-            type="image/webp"
-          />
-          <img
-            src="/logos/horizontal/docito-horizontal-sm.png"
-            alt="Loading Docito"
-            class="loader-logo"
-            width="120"
-            height="36"
-            fetchpriority="high"
-            decoding="sync"
-          />
-        </picture>
+        <img
+          src="/logos/logo-full-light.png"
+          alt="Loading Docito"
+          class="loader-logo loader-logo-light"
+          width="120"
+          height="36"
+          fetchpriority="high"
+          decoding="sync"
+        />
+        <img
+          src="/logos/logo-full-dark.png"
+          alt="Loading Docito"
+          class="loader-logo loader-logo-dark"
+          width="120"
+          height="36"
+          fetchpriority="high"
+          decoding="sync"
+        />
     </div>
 
     <div id="root"></div>
