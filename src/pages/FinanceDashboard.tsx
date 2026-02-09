@@ -18,6 +18,7 @@ import { Loader2, RefreshCw, Landmark, ListOrdered, Wallet, Package, Users, BarC
 
 import FinanceLedgerPanel from "@/components/financial/FinanceLedgerPanel";
 import IncomeEntriesPanel from "@/components/financial/IncomeEntriesPanel";
+import ExpensesEntriesPanel from "@/components/financial/ExpensesEntriesPanel";
 
 type FinanceEntityType = "clinic" | "lab" | "imaging" | "pharmacy";
 type FinanceTab = "overview" | "ledger" | "income" | "budgets" | "expenses" | "supplies" | "payroll" | "analytics";
@@ -380,14 +381,16 @@ export default function FinanceDashboard() {
           ) : null}
 
           {activeTab === "expenses" ? (
-            <Card className="border-muted">
-              <CardHeader>
-                <CardTitle className="text-base">Expenses</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                Next: recurring templates, utility/tax expenses, and category drilldowns.
-              </CardContent>
-            </Card>
+            entityId ? (
+              <ExpensesEntriesPanel entityType={entityType as any} entityId={entityId} />
+            ) : (
+              <Card className="border-muted">
+                <CardHeader>
+                  <CardTitle className="text-base">Expenses</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">Select an organization to manage expenses.</CardContent>
+              </Card>
+            )
           ) : null}
 
           {activeTab === "supplies" ? (
