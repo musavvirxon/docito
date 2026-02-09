@@ -22,6 +22,7 @@ import ExpensesEntriesPanel from "@/components/financial/ExpensesEntriesPanel";
 import PayrollEntriesPanel from "@/components/financial/PayrollEntriesPanel";
 import FinanceAnalyticsPanel from "@/components/financial/FinanceAnalyticsPanel";
 import BudgetsPanel from "@/components/financial/BudgetsPanel";
+import SuppliesPanel from "@/components/financial/SuppliesPanel";
 
 type FinanceTab = "overview" | "ledger" | "income" | "budgets" | "expenses" | "supplies" | "payroll" | "analytics";
 
@@ -340,7 +341,7 @@ export default function FinanceDashboard() {
                   Selected: <span className="text-foreground font-medium">{labelForType(entityType)}</span>{" "}
                   {entityName ? <span className="text-foreground font-medium">· {entityName}</span> : null}
                 </div>
-                <div>Use Budgets to set targets, and Analytics to see trends.</div>
+                <div>Use Supplies to record purchases (auto-posts to Expenses → Supplies).</div>
               </CardContent>
             </Card>
           ) : null}
@@ -398,14 +399,16 @@ export default function FinanceDashboard() {
           ) : null}
 
           {activeTab === "supplies" ? (
-            <Card className="border-muted">
-              <CardHeader>
-                <CardTitle className="text-base">Supplies</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                Next: inventory purchases, average cost, consumption posting, and reorder alerts.
-              </CardContent>
-            </Card>
+            entityId ? (
+              <SuppliesPanel entityType={entityType as any} entityId={entityId} />
+            ) : (
+              <Card className="border-muted">
+                <CardHeader>
+                  <CardTitle className="text-base">Supplies</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">Select an organization to manage supplies.</CardContent>
+              </Card>
+            )
           ) : null}
 
           {activeTab === "payroll" ? (
