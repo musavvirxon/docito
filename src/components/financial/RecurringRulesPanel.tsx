@@ -1,5 +1,5 @@
 // File: src/components/financial/RecurringRulesPanel.tsx
-// B32: Show per-entity recurring status summary (due count + last run info)
+// B33: Add export (CSV) for recurring runs by date range
 
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +24,8 @@ import {
   CalendarClock,
   Eye,
   Activity,
+  Download,
+  FileDown,
 } from "lucide-react";
 
 type FinanceEntityType = "clinic" | "lab" | "imaging" | "pharmacy";
@@ -94,6 +96,23 @@ type StatusRow = {
   last_error_count: number | null;
 };
 
+type ExportRow = {
+  run_date: string;
+  status: string;
+  rule_id: string;
+  entry_type: string | null;
+  amount_cents: number | null;
+  currency: string | null;
+  category_name: string | null;
+  rule_description: string | null;
+  finance_entry_id: string | null;
+  entry_occurred_at: string | null;
+  entry_description: string | null;
+  entry_reference: string | null;
+  run_error: string | null;
+  run_created_at: string | null;
+};
+
 function isoDate(d: Date) {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -145,6 +164,28 @@ function fmtTs(ts: string | null | undefined) {
   return d.toLocaleString();
 }
 
+function escapeCsvCell(v: unknown) {
+  const s = String(v ?? "");
+  if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+}
+
+function downloadCsv(filename: string, rows: Record<string, unknown>[]) {
+  const keys = rows.length ? Object.keys(rows[0]) : [];
+  const header = keys.map(escapeCsvCell).join(",");
+  const lines = rows.map((r) => keys.map((k) => escapeCsvCell((r as any)[k])).join(","));
+  const content = [header, ...lines].join("\n");
+  const blob = new Blob([content], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 export default function RecurringRulesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { entityType, entityId } = props;
 
@@ -163,6 +204,15 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
 
   const [statusLoading, setStatusLoading] = useState(false);
   const [status, setStatus] = useState<StatusRow | null>(null);
+
+  // export
+  const [exporting, setExporting] = useState(false);
+  const [exportFrom, setExportFrom] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 30);
+    return isoDate(d);
+  });
+  const [exportTo, setExportTo] = useState(() => isoDate(today));
 
   // drilldown
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -258,8 +308,7 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
             }
           : null,
       );
-    } catch (e: any) {
-      console.error(e);
+    } catch {
       setStatus(null);
     } finally {
       setStatusLoading(false);
@@ -514,6 +563,59 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
     }
   };
 
+  const exportRuns = async () => {
+    if (!entityId) return;
+    if (!exportFrom || !exportTo) {
+      toast.error("Select export date range");
+      return;
+    }
+    if (exportFrom > exportTo) {
+      toast.error("Export from must be before export to");
+      return;
+    }
+
+    setExporting(true);
+    try {
+      const { data, error } = await supabase.rpc("finance_recurring_runs_export", {
+        p_entity_type: entityType,
+        p_entity_id: entityId,
+        p_date_from: exportFrom,
+        p_date_to: exportTo,
+        p_limit: 20000,
+      });
+
+      if (error) throw error;
+
+      const rows = ((data || []) as any[]) as ExportRow[];
+
+      const csvRows = rows.map((r) => ({
+        run_date: r.run_date,
+        status: r.status,
+        rule_id: r.rule_id,
+        entry_type: r.entry_type ?? "",
+        amount: r.amount_cents === null ? "" : (Number(r.amount_cents || 0) / 100).toFixed(2),
+        currency: r.currency ?? "",
+        category: r.category_name ?? "",
+        rule_description: r.rule_description ?? "",
+        finance_entry_id: r.finance_entry_id ?? "",
+        entry_occurred_at: r.entry_occurred_at ?? "",
+        entry_description: r.entry_description ?? "",
+        entry_reference: r.entry_reference ?? "",
+        run_error: r.run_error ?? "",
+        run_created_at: r.run_created_at ?? "",
+      }));
+
+      const filename = `recurring_runs_${entityType}_${entityId.slice(0, 8)}_${exportFrom}_to_${exportTo}.csv`;
+      downloadCsv(filename, csvRows);
+      toast.success(`Exported ${csvRows.length} rows`);
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || "Failed to export");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const statusLine = useMemo(() => {
     if (statusLoading) return "Loading status…";
     if (!status) return "—";
@@ -748,7 +850,7 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
           )}
         </div>
 
-        {/* Recent runs */}
+        {/* Recent runs + Export */}
         <div className="rounded-md border overflow-hidden">
           <div className="flex items-center justify-between px-3 py-2 border-b">
             <div className="text-sm font-medium flex items-center gap-2">
@@ -759,6 +861,35 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
               <RefreshCw className="h-4 w-4" />
               Refresh
             </Button>
+          </div>
+
+          {/* Export controls */}
+          <div className="px-3 py-3 border-b bg-background">
+            <div className="grid gap-3 md:grid-cols-12">
+              <div className="space-y-1 md:col-span-3">
+                <Label>Export from</Label>
+                <Input type="date" value={exportFrom} onChange={(e) => setExportFrom(e.target.value)} />
+              </div>
+              <div className="space-y-1 md:col-span-3">
+                <Label>Export to</Label>
+                <Input type="date" value={exportTo} onChange={(e) => setExportTo(e.target.value)} />
+              </div>
+              <div className="md:col-span-6 flex items-end justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => void exportRuns()}
+                  disabled={!entityId || exporting || !exportFrom || !exportTo}
+                  className="gap-2 w-full md:w-auto"
+                >
+                  {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
+                  Export CSV
+                </Button>
+              </div>
+            </div>
+            <div className="text-xs text-muted-foreground mt-2 flex items-center gap-2">
+              <Download className="h-3.5 w-3.5" />
+              Exports rule runs + linked created entries (for auditing and analytics).
+            </div>
           </div>
 
           {runs.length === 0 ? (
