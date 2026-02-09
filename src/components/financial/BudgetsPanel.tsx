@@ -1,298 +1,521 @@
-// File: src/components/financial/BudgetsPanel.tsx
-
 import { useEffect, useMemo, useState } from "react";
-import { RefreshCw, PiggyBank, Save, AlertTriangle } from "lucide-react";
-import { toast } from "sonner";
-
-import type { FinanceEntityType } from "@/components/financial/FinanceHub";
 import { supabase } from "@/integrations/supabase/client";
-import { useBudgetSummary } from "@/hooks/useBudgetSummary";
+import { toast } from "sonner";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
-function firstDayOfMonthIso(d: Date) {
+import { Loader2, RefreshCw, Wallet, Plus, Pencil } from "lucide-react";
+
+type FinanceEntityType = "clinic" | "lab" | "imaging" | "pharmacy";
+type EntryType = "income" | "expense" | "payroll";
+
+type CategoryRow = {
+  id: string;
+  kind: "income" | "expense" | "payroll";
+  name: string;
+};
+
+type BudgetRow = {
+  id: string;
+  month: string; // date
+  entry_type: EntryType;
+  category_id: string | null;
+  amount_cents: number;
+  currency: string;
+  updated_at: string;
+};
+
+type VsRow = {
+  month: string; // date
+  entry_type: EntryType;
+  category_id: string | null;
+  category_name: string;
+  budget_cents: number;
+  actual_cents: number;
+  variance_cents: number;
+};
+
+function isoMonth(d: Date) {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
   return `${y}-${m}-01`;
 }
 
-function formatCurrency(cents: number, currency: string = "USD") {
-  const v = (Number(cents || 0) || 0) / 100;
-  try {
-    return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(v);
-  } catch {
-    return `${v.toFixed(2)} ${currency}`;
-  }
+function addMonths(firstDay: string, delta: number) {
+  const d = new Date(`${firstDay}T00:00:00.000Z`);
+  const y = d.getUTCFullYear();
+  const m = d.getUTCMonth();
+  const nd = new Date(Date.UTC(y, m + delta, 1, 0, 0, 0));
+  return isoMonth(new Date(nd.getTime()));
 }
 
-function parseMoneyToCents(v: string) {
-  const n = Number(String(v || "").replaceAll(",", "").trim());
-  if (!Number.isFinite(n)) return 0;
+function parseMajorToCents(v: string) {
+  const s = String(v || "").trim();
+  if (!s) return null;
+  const n = Number(s.replace(/,/g, "."));
+  if (!Number.isFinite(n)) return null;
+  if (n < 0) return null;
   return Math.round(n * 100);
 }
 
-function centsToMoneyInput(cents: number) {
-  const n = (Number(cents || 0) || 0) / 100;
-  return n.toFixed(2);
+function normalizeCurrency(v: string) {
+  const s = String(v || "").trim().toUpperCase();
+  return s || "USD";
 }
 
-function monthValueFromMonthStart(monthStart: string) {
-  // YYYY-MM-DD -> YYYY-MM
-  return monthStart.slice(0, 7);
+function formatMoney(currency: string, cents: number) {
+  const v = (Number(cents || 0) || 0) / 100;
+  try {
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: currency || "USD" }).format(v);
+  } catch {
+    const sign = v < 0 ? "-" : "";
+    return `${sign}${currency || "USD"} ${Math.abs(v).toFixed(2)}`;
+  }
 }
 
-function monthStartFromMonthValue(month: string) {
-  // YYYY-MM -> YYYY-MM-01
-  if (!month || month.length < 7) return "";
-  return `${month}-01`;
+function monthLabel(dateStr: string) {
+  const d = new Date(`${dateStr}T00:00:00.000Z`);
+  if (Number.isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString(undefined, { year: "numeric", month: "short" });
 }
 
-type BudgetEditMap = Record<string, string>; // categoryId -> "12.34"
+export default function BudgetsPanel(props: { entityType: FinanceEntityType; entityId: string }) {
+  const { entityType, entityId } = props;
 
-interface Props {
-  entityType: FinanceEntityType;
-  entityId: string;
-}
+  const now = useMemo(() => new Date(), []);
+  const [monthFrom, setMonthFrom] = useState(() => isoMonth(new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1))));
+  const [monthTo, setMonthTo] = useState(() => isoMonth(new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1))));
+  const [filterEntryType, setFilterEntryType] = useState<"all" | EntryType>("all");
 
-export default function BudgetsPanel({ entityType, entityId }: Props) {
-  const defaultMonthStart = useMemo(() => firstDayOfMonthIso(new Date()), []);
-  const [monthStart, setMonthStart] = useState<string>(defaultMonthStart);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const { loading, data, error, refresh } = useBudgetSummary({ entityType, entityId, monthStart });
+  const [categories, setCategories] = useState<CategoryRow[]>([]);
+  const [budgets, setBudgets] = useState<BudgetRow[]>([]);
+  const [vs, setVs] = useState<VsRow[]>([]);
 
-  const currency = data?.currency || "USD";
-  const rows = data?.rows || [];
-  const totals = data?.totals || {
-    budgetCents: 0,
-    actualCents: 0,
-    varianceCents: 0,
-    uncategorizedCents: 0,
+  // dialog
+  const [open, setOpen] = useState(false);
+  const [editBudgetId, setEditBudgetId] = useState<string | null>(null);
+
+  const [formMonth, setFormMonth] = useState(() => isoMonth(new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1))));
+  const [formEntryType, setFormEntryType] = useState<EntryType>("expense");
+  const [formCategoryId, setFormCategoryId] = useState<string>("overall"); // "overall" | uuid
+  const [formCurrency, setFormCurrency] = useState("USD");
+  const [formAmount, setFormAmount] = useState("");
+
+  const canLoad = useMemo(() => Boolean(entityId && monthFrom && monthTo), [entityId, monthFrom, monthTo]);
+
+  const relevantCategories = useMemo(() => {
+    if (formEntryType === "income") return categories.filter((c) => c.kind === "income");
+    if (formEntryType === "expense") return categories.filter((c) => c.kind === "expense");
+    return categories.filter((c) => c.kind === "payroll");
+  }, [categories, formEntryType]);
+
+  const loadCategories = async () => {
+    const { data, error } = await supabase
+      .from("finance_categories")
+      .select("id,kind,name")
+      .eq("entity_type", entityType)
+      .eq("entity_id", entityId)
+      .order("kind", { ascending: true })
+      .order("name", { ascending: true })
+      .limit(2000);
+
+    if (error) throw error;
+    setCategories((data || []) as any);
   };
 
-  const [edits, setEdits] = useState<BudgetEditMap>({});
-  const [savingId, setSavingId] = useState<string | null>(null);
+  const load = async () => {
+    if (!canLoad) return;
+    setLoading(true);
+    try {
+      const [bRes, vRes] = await Promise.all([
+        supabase.rpc("finance_budget_list", {
+          p_entity_type: entityType,
+          p_entity_id: entityId,
+          p_month_from: monthFrom,
+          p_month_to: monthTo,
+        }),
+        supabase.rpc("finance_budget_vs_actual", {
+          p_entity_type: entityType,
+          p_entity_id: entityId,
+          p_month_from: monthFrom,
+          p_month_to: monthTo,
+          p_entry_type: filterEntryType === "all" ? null : filterEntryType,
+        }),
+        loadCategories(),
+      ]);
+
+      if ((bRes as any).error) throw (bRes as any).error;
+      if ((vRes as any).error) throw (vRes as any).error;
+
+      setBudgets(((bRes as any).data || []) as any);
+      setVs(((vRes as any).data || []) as any);
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || "Failed to load budgets");
+      setBudgets([]);
+      setVs([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // reset edits when data changes
-    const next: BudgetEditMap = {};
-    for (const r of rows) next[r.categoryId] = centsToMoneyInput(r.budgetCents || 0);
-    setEdits(next);
-  }, [rows, monthStart]);
+    void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entityType, entityId]);
 
-  const onMonthChange = (v: string) => {
-    const ms = monthStartFromMonthValue(v);
-    if (!ms) return;
-    setMonthStart(ms);
+  const currencyHint = useMemo(() => {
+    const b = budgets[0]?.currency;
+    if (b) return String(b).toUpperCase();
+    return "USD";
+  }, [budgets]);
+
+  const resetForm = () => {
+    setEditBudgetId(null);
+    setFormMonth(isoMonth(new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1))));
+    setFormEntryType("expense");
+    setFormCategoryId("overall");
+    setFormCurrency(currencyHint || "USD");
+    setFormAmount("");
   };
 
-  const setEdit = (categoryId: string, val: string) => {
-    setEdits((p) => ({ ...p, [categoryId]: val }));
+  const openCreate = () => {
+    resetForm();
+    setOpen(true);
   };
 
-  const saveOne = async (categoryId: string) => {
-    const row = rows.find((r) => r.categoryId === categoryId);
-    if (!row) return;
+  const openEdit = (b: BudgetRow) => {
+    setEditBudgetId(b.id);
+    setFormMonth(String(b.month));
+    setFormEntryType(b.entry_type);
+    setFormCategoryId(b.category_id ? b.category_id : "overall");
+    setFormCurrency(String(b.currency || "USD").toUpperCase());
+    setFormAmount(((Number(b.amount_cents || 0) || 0) / 100).toFixed(2));
+    setOpen(true);
+  };
 
-    const cents = parseMoneyToCents(edits[categoryId] ?? "0");
-    if (cents < 0) {
-      toast.error("Budget cannot be negative");
-      return;
-    }
+  const canSave = useMemo(() => {
+    const cents = parseMajorToCents(formAmount);
+    if (!entityId) return false;
+    if (!formMonth) return false;
+    if (!formEntryType) return false;
+    if (cents === null || cents < 0) return false;
+    return true;
+  }, [entityId, formAmount, formEntryType, formMonth]);
 
+  const save = async () => {
+    if (!canSave) return;
+    setSaving(true);
     try {
-      setSavingId(categoryId);
+      const cents = parseMajorToCents(formAmount);
+      if (cents === null || cents < 0) throw new Error("Invalid amount");
 
-      const payload = {
-        entity_type: entityType,
-        entity_id: entityId,
-        month_start: monthStart,
-        category_id: categoryId,
-        amount_cents: cents,
-        currency,
-      };
+      const categoryId = formCategoryId === "overall" ? null : formCategoryId;
 
-      const { error: upErr } = await supabase.from("finance_budgets").upsert(payload, {
-        onConflict: "entity_type,entity_id,month_start,category_id",
+      const { data, error } = await supabase.rpc("finance_budget_upsert", {
+        p_entity_type: entityType,
+        p_entity_id: entityId,
+        p_month: formMonth,
+        p_entry_type: formEntryType,
+        p_amount_cents: cents,
+        p_currency: normalizeCurrency(formCurrency),
+        p_category_id: categoryId,
       });
 
-      if (upErr) throw upErr;
+      if (error) throw error;
 
-      toast.success("Budget saved");
-      await refresh();
+      const id = Array.isArray(data) ? data[0]?.budget_id : (data as any)?.budget_id;
+      if (!id) throw new Error("Save failed");
+
+      toast.success(editBudgetId ? "Budget updated" : "Budget created/updated");
+      setOpen(false);
+      resetForm();
+      await load();
     } catch (e: any) {
       console.error(e);
       toast.error(e?.message || "Failed to save budget");
     } finally {
-      setSavingId(null);
+      setSaving(false);
     }
   };
 
-  const varianceLabel = (cents: number) => {
-    // positive variance means under budget (budget - actual)
-    if (cents > 0) return "Under";
-    if (cents < 0) return "Over";
-    return "On";
-  };
+  const vsFiltered = useMemo(() => {
+    if (filterEntryType === "all") return vs;
+    return vs.filter((r) => r.entry_type === filterEntryType);
+  }, [filterEntryType, vs]);
+
+  const totals = useMemo(() => {
+    let budget = 0;
+    let actual = 0;
+    for (const r of vsFiltered) {
+      budget += Number(r.budget_cents || 0) || 0;
+      actual += Number(r.actual_cents || 0) || 0;
+    }
+    return { budget, actual, variance: budget - actual };
+  }, [vsFiltered]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-2">
-          <PiggyBank className="w-5 h-5 text-muted-foreground" />
-          <h3 className="text-base font-semibold">Budgets</h3>
-          <Badge variant="secondary">Monthly</Badge>
+    <Card className="border-muted">
+      <CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-1">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Wallet className="h-4 w-4 text-muted-foreground" />
+            Budgets
+          </CardTitle>
+          <div className="text-sm text-muted-foreground">Set monthly budgets and compare against actuals.</div>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          <Input
-            type="month"
-            value={monthValueFromMonthStart(monthStart)}
-            onChange={(e) => onMonthChange(e.target.value)}
-            disabled={loading}
-            className="w-[160px]"
-          />
-          <Button variant="outline" onClick={refresh} disabled={loading} className="gap-2">
-            {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+        <div className="flex flex-wrap items-center gap-2">
+          <Button onClick={openCreate} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Add budget
+          </Button>
+          <Button variant="outline" onClick={() => void load()} disabled={!canLoad || loading} className="gap-2">
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
             Refresh
           </Button>
         </div>
-      </div>
+      </CardHeader>
 
-      {error ? (
-        <Card>
-          <CardContent className="py-6 text-sm text-muted-foreground">{error}</CardContent>
-        </Card>
-      ) : null}
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Budget total</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold">{formatCurrency(totals.budgetCents, currency)}</div>
-            <div className="text-xs text-muted-foreground">Sum of category budgets</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Actual cost</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold">{formatCurrency(totals.actualCents, currency)}</div>
-            <div className="text-xs text-muted-foreground">Expenses + payroll in month</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Variance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold">{formatCurrency(totals.varianceCents, currency)}</div>
-            <div className="text-xs text-muted-foreground">
-              {varianceLabel(totals.varianceCents)} budget (budget − actual)
+      <CardContent className="space-y-4">
+        {/* Filters */}
+        <div className="rounded-md border p-3 space-y-3">
+          <div className="text-sm font-medium">Filters</div>
+          <div className="grid gap-3 md:grid-cols-12">
+            <div className="space-y-1 md:col-span-3">
+              <Label>Month from</Label>
+              <Input type="month" value={monthFrom.slice(0, 7)} onChange={(e) => setMonthFrom(`${e.target.value}-01`)} />
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            <div className="space-y-1 md:col-span-3">
+              <Label>Month to</Label>
+              <Input type="month" value={monthTo.slice(0, 7)} onChange={(e) => setMonthTo(`${e.target.value}-01`)} />
+            </div>
+            <div className="space-y-1 md:col-span-4">
+              <Label>Entry type</Label>
+              <Select value={filterEntryType} onValueChange={(v) => setFilterEntryType(v as any)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="income">Income</SelectItem>
+                  <SelectItem value="expense">Expense</SelectItem>
+                  <SelectItem value="payroll">Payroll</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="md:col-span-2 flex items-end justify-end">
+              <Button variant="outline" onClick={() => void load()} disabled={!canLoad || loading} className="gap-2 w-full">
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                Apply
+              </Button>
+            </div>
+          </div>
+        </div>
 
-      {totals.uncategorizedCents > 0 ? (
-        <Card>
-          <CardContent className="py-4 text-sm flex items-start gap-3">
-            <AlertTriangle className="w-4 h-4 text-muted-foreground mt-0.5" />
-            <div className="space-y-1">
-              <div className="font-medium">Uncategorized spending detected</div>
-              <div className="text-muted-foreground">
-                Uncategorized actual: <span className="font-medium text-foreground">{formatCurrency(totals.uncategorizedCents, currency)}</span>. Categorize entries to improve budget reporting.
+        {/* Totals */}
+        <div className="grid gap-3 md:grid-cols-3">
+          <div className="rounded-md border p-3">
+            <div className="text-xs text-muted-foreground">Budget total</div>
+            <div className="text-sm font-medium">{formatMoney(currencyHint, totals.budget)}</div>
+          </div>
+          <div className="rounded-md border p-3">
+            <div className="text-xs text-muted-foreground">Actual total</div>
+            <div className="text-sm font-medium">{formatMoney(currencyHint, totals.actual)}</div>
+          </div>
+          <div className="rounded-md border p-3">
+            <div className="text-xs text-muted-foreground">Variance (budget - actual)</div>
+            <div className="text-sm font-medium">{formatMoney(currencyHint, totals.variance)}</div>
+          </div>
+        </div>
+
+        {/* Budgets list */}
+        <div className="rounded-md border overflow-hidden">
+          <div className="px-3 py-2 border-b">
+            <div className="text-sm font-medium">Budgets</div>
+            <div className="text-xs text-muted-foreground">Click edit to change amounts (upsert by month/type/category).</div>
+          </div>
+
+          <div className="grid grid-cols-12 gap-2 px-3 py-2 text-xs text-muted-foreground border-b">
+            <div className="col-span-3">Month</div>
+            <div className="col-span-2">Type</div>
+            <div className="col-span-5">Category</div>
+            <div className="col-span-1 text-right">Amount</div>
+            <div className="col-span-1 text-right">Edit</div>
+          </div>
+
+          {loading ? (
+            <div className="p-3 text-sm text-muted-foreground flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Loading…
+            </div>
+          ) : budgets.length === 0 ? (
+            <div className="p-3 text-sm text-muted-foreground">No budgets in this range.</div>
+          ) : (
+            <div className="divide-y">
+              {budgets.map((b) => {
+                const catName =
+                  b.category_id === null
+                    ? "Overall"
+                    : categories.find((c) => c.id === b.category_id)?.name || "Uncategorized";
+
+                return (
+                  <div key={b.id} className="grid grid-cols-12 gap-2 px-3 py-2 text-sm items-center">
+                    <div className="col-span-3 font-mono">{monthLabel(b.month)}</div>
+                    <div className="col-span-2 text-muted-foreground">{b.entry_type}</div>
+                    <div className="col-span-5 truncate">{catName}</div>
+                    <div className="col-span-1 text-right font-medium">{formatMoney(b.currency, b.amount_cents)}</div>
+                    <div className="col-span-1 text-right">
+                      <Button variant="outline" size="sm" className="gap-2" onClick={() => openEdit(b)} disabled={saving}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Budget vs actual */}
+        <div className="rounded-md border overflow-hidden">
+          <div className="px-3 py-2 border-b">
+            <div className="text-sm font-medium flex items-center gap-2">
+              <Wallet className="h-4 w-4 text-muted-foreground" />
+              Budget vs Actual
+            </div>
+            <div className="text-xs text-muted-foreground">Monthly/category variance. For income, variance is budget - actual.</div>
+          </div>
+
+          <div className="grid grid-cols-12 gap-2 px-3 py-2 text-xs text-muted-foreground border-b">
+            <div className="col-span-3">Month</div>
+            <div className="col-span-2">Type</div>
+            <div className="col-span-4">Category</div>
+            <div className="col-span-1 text-right">Budget</div>
+            <div className="col-span-1 text-right">Actual</div>
+            <div className="col-span-1 text-right">Var</div>
+          </div>
+
+          {loading ? (
+            <div className="p-3 text-sm text-muted-foreground flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Loading…
+            </div>
+          ) : vsFiltered.length === 0 ? (
+            <div className="p-3 text-sm text-muted-foreground">No budget vs actual rows for this range.</div>
+          ) : (
+            <div className="divide-y">
+              {vsFiltered.slice(0, 100).map((r, idx) => (
+                <div key={`${r.month}-${r.entry_type}-${r.category_id ?? "overall"}-${idx}`} className="grid grid-cols-12 gap-2 px-3 py-2 text-sm items-center">
+                  <div className="col-span-3 font-mono">{monthLabel(r.month)}</div>
+                  <div className="col-span-2 text-muted-foreground">{r.entry_type}</div>
+                  <div className="col-span-4 truncate">{r.category_name || "Overall"}</div>
+                  <div className="col-span-1 text-right font-medium">{formatMoney(currencyHint, r.budget_cents)}</div>
+                  <div className="col-span-1 text-right font-medium">{formatMoney(currencyHint, r.actual_cents)}</div>
+                  <div className="col-span-1 text-right font-medium">{formatMoney(currencyHint, r.variance_cents)}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Upsert dialog */}
+        <Dialog
+          open={open}
+          onOpenChange={(v) => {
+            setOpen(v);
+            if (!v) resetForm();
+          }}
+        >
+          <DialogTrigger asChild>
+            <span />
+          </DialogTrigger>
+
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>{editBudgetId ? "Edit budget" : "Add budget"}</DialogTitle>
+            </DialogHeader>
+
+            <div className="grid gap-3 md:grid-cols-12">
+              <div className="space-y-1 md:col-span-4">
+                <Label>Month</Label>
+                <Input
+                  type="month"
+                  value={formMonth.slice(0, 7)}
+                  onChange={(e) => setFormMonth(`${e.target.value}-01`)}
+                />
+              </div>
+
+              <div className="space-y-1 md:col-span-4">
+                <Label>Entry type</Label>
+                <Select value={formEntryType} onValueChange={(v) => setFormEntryType(v as EntryType)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Expense" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="income">Income</SelectItem>
+                    <SelectItem value="expense">Expense</SelectItem>
+                    <SelectItem value="payroll">Payroll</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1 md:col-span-4">
+                <Label>Currency</Label>
+                <Input value={formCurrency} onChange={(e) => setFormCurrency(e.target.value)} placeholder="USD" />
+              </div>
+
+              <div className="space-y-1 md:col-span-8">
+                <Label>Category</Label>
+                <Select value={formCategoryId} onValueChange={(v) => setFormCategoryId(v)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Overall" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="overall">Overall</SelectItem>
+                    {relevantCategories.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="text-xs text-muted-foreground mt-1">Overall budget is stored with category_id = null.</div>
+              </div>
+
+              <div className="space-y-1 md:col-span-4">
+                <Label>Amount</Label>
+                <Input inputMode="decimal" value={formAmount} onChange={(e) => setFormAmount(e.target.value)} placeholder="0.00" />
               </div>
             </div>
-          </CardContent>
-        </Card>
-      ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Budget vs actual (by category)</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[260px]">Category</TableHead>
-                  <TableHead className="w-[120px]">Kind</TableHead>
-                  <TableHead className="w-[200px]">Budget</TableHead>
-                  <TableHead className="text-right w-[180px]">Actual</TableHead>
-                  <TableHead className="text-right w-[180px]">Variance</TableHead>
-                  <TableHead className="text-right w-[110px]"> </TableHead>
-                </TableRow>
-              </TableHeader>
-
-              <TableBody>
-                {loading && rows.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
-                      Loading…
-                    </TableCell>
-                  </TableRow>
-                ) : rows.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
-                      No expense/payroll categories found.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  rows.map((r) => {
-                    const val = edits[r.categoryId] ?? "0.00";
-                    const isSaving = savingId === r.categoryId;
-
-                    return (
-                      <TableRow key={r.categoryId}>
-                        <TableCell className="text-sm font-medium">{r.name}</TableCell>
-                        <TableCell className="text-sm capitalize">{r.kind}</TableCell>
-                        <TableCell className="text-sm">
-                          <Input
-                            value={val}
-                            onChange={(e) => setEdit(r.categoryId, e.target.value)}
-                            disabled={loading || isSaving}
-                            inputMode="decimal"
-                            className="w-[170px]"
-                          />
-                          <div className="text-xs text-muted-foreground mt-1">{currency}</div>
-                        </TableCell>
-                        <TableCell className="text-right font-semibold">
-                          {formatCurrency(r.actualCents || 0, currency)}
-                        </TableCell>
-                        <TableCell className="text-right font-semibold">
-                          {formatCurrency(r.varianceCents || 0, currency)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => saveOne(r.categoryId)}
-                            disabled={loading || isSaving}
-                            className="gap-2"
-                          >
-                            {isSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                            Save
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+            <div className="flex justify-end gap-2 mt-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setOpen(false);
+                  resetForm();
+                }}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
+              <Button onClick={() => void save()} disabled={!canSave || saving} className="gap-2">
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                Save
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </CardContent>
+    </Card>
   );
 }
