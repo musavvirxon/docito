@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import FinanceEntriesExportCard from "@/components/financial/FinanceEntriesExportCard";
 import RecurringRulesPanel from "@/components/financial/RecurringRulesPanel";
 
-type FinanceEntityType = "clinic" | "lab" | "imaging" | "pharmacy";
+type FinanceEntityType = "clinic" | "practice" | "lab" | "imaging" | "pharmacy";
 
 export default function FinanceManagementSection(props: { entityType: FinanceEntityType; entityId: string }) {
   const { entityType, entityId } = props;
@@ -28,8 +28,8 @@ export default function FinanceManagementSection(props: { entityType: FinanceEnt
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground space-y-2">
           <p>
-            This tab currently includes exports + recurring automation. Next steps will add full ledger management:
-            categories, manual entries, payroll payout runs, and analytics breakdowns (supplies, utilities, taxes, etc.).
+            Next steps will add full ledger management: categories, manual entries, payroll payout runs, and analytics
+            breakdowns (supplies, utilities, taxes, etc.).
           </p>
         </CardContent>
       </Card>
