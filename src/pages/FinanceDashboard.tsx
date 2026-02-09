@@ -1,3 +1,6 @@
+// File: src/pages/FinanceDashboard.tsx
+// B20: Render PayrollEntriesPanel in Payroll tab
+
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -19,8 +22,8 @@ import { Loader2, RefreshCw, Landmark, ListOrdered, Wallet, Package, Users, BarC
 import FinanceLedgerPanel from "@/components/financial/FinanceLedgerPanel";
 import IncomeEntriesPanel from "@/components/financial/IncomeEntriesPanel";
 import ExpensesEntriesPanel from "@/components/financial/ExpensesEntriesPanel";
+import PayrollEntriesPanel from "@/components/financial/PayrollEntriesPanel";
 
-type FinanceEntityType = "clinic" | "lab" | "imaging" | "pharmacy";
 type FinanceTab = "overview" | "ledger" | "income" | "budgets" | "expenses" | "supplies" | "payroll" | "analytics";
 
 const TYPE_KEY = "docito.activeEntity.financeType";
@@ -405,14 +408,16 @@ export default function FinanceDashboard() {
           ) : null}
 
           {activeTab === "payroll" ? (
-            <Card className="border-muted">
-              <CardHeader>
-                <CardTitle className="text-base">Payroll</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                Next: timecards, salary/hourly/commission configs, payroll runs, approvals, and posting to finance.
-              </CardContent>
-            </Card>
+            entityId ? (
+              <PayrollEntriesPanel entityType={entityType as any} entityId={entityId} />
+            ) : (
+              <Card className="border-muted">
+                <CardHeader>
+                  <CardTitle className="text-base">Payroll</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">Select an organization to manage payroll.</CardContent>
+              </Card>
+            )
           ) : null}
 
           {activeTab === "analytics" ? (
