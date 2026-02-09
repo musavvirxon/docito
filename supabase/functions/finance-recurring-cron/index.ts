@@ -1,9 +1,3 @@
-// File: supabase/functions/finance-recurring-cron/index.ts
-// B27: Cron-safe Edge Function to run recurring rules across ALL due entities
-// - Deno + supabase-js v2 + CORS
-// - Authorization: requires Authorization: Bearer <CRON_SECRET>
-// - Uses SUPABASE_SERVICE_ROLE_KEY to bypass RLS and call finance_recurring_generate_due (now service_role-enabled)
-
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
@@ -42,6 +36,10 @@ function cleanDate(v: unknown) {
   return s;
 }
 
+function todayIso() {
+  return new Date().toISOString().slice(0, 10);
+}
+
 Deno.serve(async (req) => {
   try {
     if (req.method === "OPTIONS") {
@@ -75,25 +73,26 @@ Deno.serve(async (req) => {
 
     const payload = (await req.json().catch(() => ({}))) as Payload;
 
-    const asOf = cleanDate(payload?.as_of);
+    const asOf = cleanDate(payload?.as_of) || todayIso();
     const maxEntities = Math.max(1, Math.min(Number(payload?.max_entities ?? 200), 1000));
 
-    // Find distinct entities with due rules
-    const { data: dueEntities, error: entErr } = await supabase
+    // Find due entities (distinct)
+    const { data: dueRules, error: dueErr } = await supabase
       .from("finance_recurring_rules")
-      .select("entity_type,entity_id,next_run_date,active")
+      .select("entity_type,entity_id,next_run_date")
       .eq("active", true)
-      .lte("next_run_date", asOf || new Date().toISOString().slice(0, 10))
+      .lte("next_run_date", asOf)
       .order("next_run_date", { ascending: true })
       .limit(5000);
 
-    if (entErr) {
-      return jsonResponse({ error: entErr.message }, 400);
+    if (dueErr) {
+      return jsonResponse({ error: dueErr.message }, 400);
     }
 
     const seen = new Set<string>();
     const entities: Array<{ entity_type: string; entity_id: string }> = [];
-    for (const row of dueEntities || []) {
+
+    for (const row of dueRules || []) {
       const et = String((row as any).entity_type || "").toLowerCase();
       const eid = String((row as any).entity_id || "");
       if (!et || !eid) continue;
@@ -115,9 +114,27 @@ Deno.serve(async (req) => {
       skipped: number;
       error: number;
       total: number;
+      run_log_id?: string;
     }> = [];
 
     for (const e of entities) {
+      const startedAt = new Date().toISOString();
+
+      // Insert per-entity run log
+      const { data: runLog, error: runLogErr } = await supabase
+        .from("finance_recurring_entity_runs")
+        .insert({
+          entity_type: e.entity_type,
+          entity_id: e.entity_id,
+          source: "edge_cron",
+          as_of: asOf,
+          started_at: startedAt,
+        })
+        .select("id")
+        .single();
+
+      const runLogId = runLogErr ? undefined : String((runLog as any)?.id || "");
+
       const { data, error } = await supabase.rpc("finance_recurring_generate_due", {
         p_entity_type: e.entity_type,
         p_entity_id: e.entity_id,
@@ -125,6 +142,20 @@ Deno.serve(async (req) => {
       });
 
       if (error) {
+        // Update run log as error
+        if (runLogId) {
+          await supabase
+            .from("finance_recurring_entity_runs")
+            .update({
+              finished_at: new Date().toISOString(),
+              created_count: 0,
+              skipped_count: 0,
+              error_count: 1,
+              notes: `RPC error: ${error.message}`,
+            })
+            .eq("id", runLogId);
+        }
+
         perEntity.push({
           entity_type: e.entity_type,
           entity_id: e.entity_id,
@@ -132,6 +163,7 @@ Deno.serve(async (req) => {
           skipped: 0,
           error: 1,
           total: 1,
+          run_log_id: runLogId,
         });
         totalErrors += 1;
         continue;
@@ -142,6 +174,18 @@ Deno.serve(async (req) => {
       const skipped = results.filter((r: any) => r.status === "skipped").length;
       const errored = results.filter((r: any) => r.status === "error").length;
 
+      if (runLogId) {
+        await supabase
+          .from("finance_recurring_entity_runs")
+          .update({
+            finished_at: new Date().toISOString(),
+            created_count: created,
+            skipped_count: skipped,
+            error_count: errored,
+          })
+          .eq("id", runLogId);
+      }
+
       perEntity.push({
         entity_type: e.entity_type,
         entity_id: e.entity_id,
@@ -149,6 +193,7 @@ Deno.serve(async (req) => {
         skipped,
         error: errored,
         total: results.length,
+        run_log_id: runLogId,
       });
 
       totalCreated += created;
@@ -158,7 +203,7 @@ Deno.serve(async (req) => {
 
     return jsonResponse(
       {
-        as_of: asOf || new Date().toISOString().slice(0, 10),
+        as_of: asOf,
         entities_processed: entities.length,
         totals: {
           created: totalCreated,
