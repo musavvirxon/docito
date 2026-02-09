@@ -1,5 +1,6 @@
 // File: src/components/financial/FinanceLedgerPanel.tsx
-// B16: Finance ledger unified list + filters + quick add (income/expense/payroll)
+// B18: Small update — show negative amounts correctly and include refunds in net automatically (no functional change)
+// (Full file replacement required)
 
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,7 +23,7 @@ type FinanceEntryRow = {
   entity_type: FinanceEntityType;
   entity_id: string;
   entry_type: EntryType;
-  amount_cents: number;
+  amount_cents: number; // can be negative (refunds/reversals)
   currency: string;
   occurred_at: string;
   category_id: string | null;
@@ -42,7 +43,8 @@ function formatMoney(currency: string, cents: number) {
   try {
     return new Intl.NumberFormat(undefined, { style: "currency", currency: currency || "USD" }).format(v);
   } catch {
-    return `${currency || "USD"} ${v.toFixed(2)}`;
+    const sign = v < 0 ? "-" : "";
+    return `${sign}${currency || "USD"} ${Math.abs(v).toFixed(2)}`;
   }
 }
 
@@ -54,7 +56,6 @@ function isoDate(d: Date) {
 }
 
 function startOfDayISO(dateStr: string) {
-  // local date -> ISO string boundary (treat as local, convert to ISO)
   const [y, m, d] = dateStr.split("-").map((x) => Number(x));
   const dt = new Date(y, (m || 1) - 1, d || 1, 0, 0, 0, 0);
   return dt.toISOString();
@@ -115,7 +116,7 @@ export default function FinanceLedgerPanel(props: { entityType: FinanceEntityTyp
     return list.filter((c) => c.kind === filterType);
   }, [categories, filterType]);
 
-  // Create dialog state
+  // Create dialog state (manual entries remain positive; refunds handled separately via reversal RPC)
   const [openCreate, setOpenCreate] = useState(false);
   const [createType, setCreateType] = useState<EntryType>("expense");
   const [createAmountMajor, setCreateAmountMajor] = useState("");
@@ -133,7 +134,6 @@ export default function FinanceLedgerPanel(props: { entityType: FinanceEntityTyp
     if (cents === null || cents <= 0) return false;
     if (!createCurrency.trim()) return false;
     if (!createDate.trim()) return false;
-    // category: either existing id or a name to create later
     if (!createCategoryId && !createCategoryName.trim()) return false;
     return true;
   }, [createAmountMajor, createCategoryId, createCategoryName, createCurrency, createDate, entityId]);
@@ -174,10 +174,7 @@ export default function FinanceLedgerPanel(props: { entityType: FinanceEntityTyp
       if (filterCategoryId !== "all") q = q.eq("category_id", filterCategoryId);
 
       const s = search.trim();
-      if (s) {
-        // description only (safe, indexed later)
-        q = q.ilike("description", `%${s}%`);
-      }
+      if (s) q = q.ilike("description", `%${s}%`);
 
       const [entriesRes] = await Promise.all([q, fetchCategories()]);
       if (entriesRes.error) throw entriesRes.error;
@@ -203,7 +200,6 @@ export default function FinanceLedgerPanel(props: { entityType: FinanceEntityTyp
     const name = createCategoryName.trim();
     if (!name) throw new Error("Category required");
 
-    // Prefer server-side helper if present (from B14). If not, fallback to insert.
     try {
       const { data, error } = await supabase.rpc("finance_ensure_category", {
         p_entity_type: entityType,
@@ -215,7 +211,6 @@ export default function FinanceLedgerPanel(props: { entityType: FinanceEntityTyp
       if (!data) throw new Error("Failed to create category");
       return String(data);
     } catch {
-      // Fallback direct insert
       const { data: u, error: uErr } = await supabase.auth.getUser();
       if (uErr) throw uErr;
       const uid = u?.user?.id;
@@ -252,8 +247,7 @@ export default function FinanceLedgerPanel(props: { entityType: FinanceEntityTyp
       if (!uid) throw new Error("Not authenticated");
 
       const categoryId = await ensureCategory();
-
-      const occurredAt = new Date(`${createDate}T12:00:00.000Z`).toISOString(); // stable day value
+      const occurredAt = new Date(`${createDate}T12:00:00.000Z`).toISOString();
 
       const payload = {
         entity_type: entityType,
@@ -264,9 +258,7 @@ export default function FinanceLedgerPanel(props: { entityType: FinanceEntityTyp
         occurred_at: occurredAt,
         category_id: categoryId,
         description: createDescription.trim() ? createDescription.trim() : null,
-        metadata: {
-          module: "manual",
-        },
+        metadata: { module: "manual" },
         created_by: uid,
       };
 
@@ -276,7 +268,6 @@ export default function FinanceLedgerPanel(props: { entityType: FinanceEntityTyp
       toast.success(`${labelForType(createType)} entry created`);
       setOpenCreate(false);
 
-      // Reset minimal fields
       setCreateAmountMajor("");
       setCreateDescription("");
       setCreateCategoryId("");
@@ -296,7 +287,7 @@ export default function FinanceLedgerPanel(props: { entityType: FinanceEntityTyp
     let expense = 0;
     let payroll = 0;
     for (const e of entries) {
-      const v = Number(e.amount_cents || 0) || 0;
+      const v = Number(e.amount_cents || 0) || 0; // can be negative
       if (e.entry_type === "income") income += v;
       else if (e.entry_type === "expense") expense += v;
       else payroll += v;
@@ -368,13 +359,9 @@ export default function FinanceLedgerPanel(props: { entityType: FinanceEntityTyp
                 </div>
 
                 <div className="space-y-1 md:col-span-6">
-                  <Label>Amount</Label>
-                  <Input
-                    inputMode="decimal"
-                    value={createAmountMajor}
-                    onChange={(e) => setCreateAmountMajor(e.target.value)}
-                    placeholder="0.00"
-                  />
+                  <Label>Amount (positive)</Label>
+                  <Input inputMode="decimal" value={createAmountMajor} onChange={(e) => setCreateAmountMajor(e.target.value)} placeholder="0.00" />
+                  <div className="text-xs text-muted-foreground mt-1">Refunds should be created from the Income list (reversal entry).</div>
                 </div>
 
                 <div className="space-y-1 md:col-span-6">
@@ -404,9 +391,7 @@ export default function FinanceLedgerPanel(props: { entityType: FinanceEntityTyp
                     }}
                     placeholder="e.g. Utilities, Rent, VAT, Lab income"
                   />
-                  <div className="text-xs text-muted-foreground mt-1">
-                    If you type a name here, we’ll create (or reuse) a matching category.
-                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">If you type a name here, we’ll create (or reuse) a matching category.</div>
                 </div>
 
                 <div className="space-y-1 md:col-span-12">
@@ -536,12 +521,15 @@ export default function FinanceLedgerPanel(props: { entityType: FinanceEntityTyp
             <div className="divide-y">
               {entries.map((e) => {
                 const cat = e.category_id ? categories.find((c) => c.id === e.category_id)?.name : null;
+                const md = e.metadata || {};
+                const isReversal = Boolean(md.reversal_of || md["reversal_of"]);
                 return (
                   <div key={e.id} className="grid grid-cols-12 gap-2 px-3 py-2 text-sm">
                     <div className="col-span-3 font-mono">{new Date(e.occurred_at).toLocaleDateString()}</div>
                     <div className="col-span-2 flex items-center gap-2">
                       {iconForType(e.entry_type)}
                       <span>{labelForType(e.entry_type)}</span>
+                      {isReversal ? <span className="text-xs text-muted-foreground">(reversal)</span> : null}
                     </div>
                     <div className="col-span-3 truncate">{cat || <span className="text-muted-foreground">—</span>}</div>
                     <div className="col-span-2 text-right font-medium">{formatMoney(e.currency, e.amount_cents)}</div>
@@ -554,7 +542,7 @@ export default function FinanceLedgerPanel(props: { entityType: FinanceEntityTyp
         </div>
 
         <div className="text-xs text-muted-foreground">
-          Tip: For now, type search updates require “Apply”. Next step adds live filtering + pagination + entry details drawer.
+          Refunds and reversals are negative entries linked to an original entry.
         </div>
       </CardContent>
     </Card>
