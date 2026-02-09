@@ -1,4 +1,4 @@
-// PATH: src/pages/AdminDashboard.tsx
+// File: src/pages/AdminDashboard.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -41,7 +41,7 @@ import VerificationSuccessModal from "@/components/dashboard/VerificationSuccess
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
 import { useAdvancedFinancialMetrics } from "@/hooks/useAdvancedFinancialMetrics";
 import AdvancedFinancialMetrics from "@/components/financial/AdvancedFinancialMetrics";
-import FinanceHub from "@/components/financial/FinanceHub";
+import FinanceManagementSection from "@/components/financial/FinanceManagementSection";
 import { useVerificationStatus } from "@/hooks/useVerificationStatus";
 import { usePracticeInsights, type DailyTrendPoint } from "@/hooks/usePracticeInsights";
 
@@ -77,17 +77,11 @@ type AdminSection =
   | "locations"
   | "patients"
   | "billing"
+  | "finances"
   | "analytics"
-  | "finance"
   | "settings";
 
-function LockedOverlay({
-  onRequestVerify,
-  message,
-}: {
-  onRequestVerify: () => void;
-  message: string;
-}) {
+function LockedOverlay({ onRequestVerify, message }: { onRequestVerify: () => void; message: string }) {
   return (
     <div
       className="absolute inset-0 z-20 rounded-xl bg-background/70 backdrop-blur-sm border border-border flex items-center justify-center p-6"
@@ -105,8 +99,7 @@ function LockedOverlay({
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Your clinic/practice/hospital dashboard is visible, but actions are disabled until your
-              organization is verified.
+              Your clinic/practice/hospital dashboard is visible, but actions are disabled until your organization is verified.
             </p>
             <div className="flex flex-col sm:flex-row gap-2">
               <Button
@@ -159,8 +152,11 @@ const AdminDashboard = () => {
   const verificationStatus = practice?.verification_status || "pending";
   const isVerified = verificationStatus === "verified";
 
-  const { metrics: advancedMetrics, refreshData: refreshAdvancedMetrics } =
-    useAdvancedFinancialMetrics(stats.totalRevenue, "practice", practice?.id);
+  const { metrics: advancedMetrics, refreshData: refreshAdvancedMetrics } = useAdvancedFinancialMetrics(
+    stats.totalRevenue,
+    "practice",
+    practice?.id
+  );
 
   const { shouldShowModal, markModalAsShown } = useVerificationStatus(practice?.id);
 
@@ -226,13 +222,13 @@ const AdminDashboard = () => {
   const getVerificationStatusColor = (status: string) => {
     switch (status) {
       case "verified":
-        return "border-green-500 bg-green-500/10 text-green-700 dark:text-green-400";
+        return "bg-green-100 text-green-800 border-green-200";
       case "rejected":
-        return "border-red-500 bg-red-500/10 text-red-700 dark:text-red-400";
+        return "bg-red-100 text-red-800 border-red-200";
       case "under_review":
-        return "border-blue-500 bg-blue-500/10 text-blue-700 dark:text-blue-400";
+        return "bg-blue-100 text-blue-800 border-blue-200";
       default:
-        return "border-yellow-500 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400";
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
     }
   };
 
@@ -268,7 +264,7 @@ const AdminDashboard = () => {
     { id: "locations", label: t("admin.tabs.locations"), icon: MapPin },
     { id: "patients", label: t("admin.tabs.patients"), icon: Users },
     { id: "billing", label: t("admin.tabs.billing"), icon: CreditCard },
-    { id: "finance", label: t("admin.tabs.finance", { defaultValue: "Finance" }), icon: DollarSign },
+    { id: "finances", label: t("admin.tabs.finances", { defaultValue: "Finances" }), icon: DollarSign },
     { id: "analytics", label: t("admin.tabs.analytics"), icon: TrendingUp },
     { id: "settings", label: t("admin.tabs.settings", { defaultValue: "Settings" }), icon: Settings },
   ];
@@ -279,13 +275,7 @@ const AdminDashboard = () => {
         <header className="sticky top-0 z-40 w-full border-b border-border/50 bg-background/80 backdrop-blur-md">
           <div className="container mx-auto flex h-16 items-center justify-between px-4">
             <a href="/" className="flex items-center gap-2 font-bold text-lg">
-              <img
-                src="/logos/horizontal/docito-horizontal-sm.png"
-                alt="Docito"
-                className="h-7"
-                width={93}
-                height={28}
-              />
+              <img src="/logos/horizontal/docito-horizontal-sm.png" alt="Docito" className="h-7" width={93} height={28} />
             </a>
             <div className="flex items-center gap-4">
               <ThemeToggle />
@@ -310,13 +300,7 @@ const AdminDashboard = () => {
         <header className="sticky top-0 z-40 w-full border-b border-border/50 bg-background/80 backdrop-blur-md">
           <div className="container mx-auto flex h-16 items-center justify-between px-4">
             <a href="/" className="flex items-center gap-2 font-bold text-lg">
-              <img
-                src="/logos/horizontal/docito-horizontal-sm.png"
-                alt="Docito"
-                className="h-7"
-                width={93}
-                height={28}
-              />
+              <img src="/logos/horizontal/docito-horizontal-sm.png" alt="Docito" className="h-7" width={93} height={28} />
             </a>
             <div className="flex items-center gap-4">
               <ThemeToggle />
@@ -384,18 +368,16 @@ const AdminDashboard = () => {
                       <p>{t("admin.overview.noAppointments")}</p>
                     </div>
                   ) : (
-                    <div className="space-y-4">
-                      {appointments.slice(0, 5).map((appointment: any) => (
+                    <div className="space-y-3">
+                      {appointments.slice(0, 5).map((appointment) => (
                         <div
                           key={appointment.id}
-                          className="flex items-center justify-between p-3 bg-muted/40 rounded-xl border border-border cursor-pointer hover:bg-muted/60 transition"
-                          onClick={() => guard(() => toast.info("Appointment details (coming soon)"))}
+                          className="flex items-center justify-between p-3 bg-muted/40 rounded-xl border border-border"
                         >
                           <div className="min-w-0">
                             <p className="font-medium truncate">{appointment.patient_name}</p>
-                            <p className="text-sm text-muted-foreground truncate">
-                              {appointment.doctor_name} • {format(new Date(appointment.date), "MMM d, yyyy")} •{" "}
-                              {appointment.time}
+                            <p className="text-sm text-muted-foreground">
+                              {format(new Date(appointment.appointment_date), "MMM dd, yyyy")} • {appointment.doctor_name}
                             </p>
                           </div>
                           <Badge variant="outline">{appointment.status}</Badge>
@@ -408,29 +390,207 @@ const AdminDashboard = () => {
 
               <Card className="rounded-xl">
                 <CardHeader>
-                  <CardTitle>{t("admin.overview.quickActions")}</CardTitle>
+                  <CardTitle>{t("admin.overview.practiceStatus")}</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button className="w-full justify-start" onClick={() => guard(() => setInviteProviderOpen(true))}>
-                    <Stethoscope className="h-4 w-4 mr-2" />
-                    {t("admin.overview.inviteProvider")}
-                  </Button>
-                  <Button className="w-full justify-start" onClick={() => guard(() => setAddServiceOpen(true))} variant="outline">
-                    <Building2 className="h-4 w-4 mr-2" />
-                    {t("admin.overview.addService")}
-                  </Button>
-                  <Button className="w-full justify-start" onClick={() => guard(() => setInviteStaffOpen(true))} variant="outline">
-                    <Users className="h-4 w-4 mr-2" />
-                    {t("admin.overview.inviteStaff")}
-                  </Button>
-                  <Button className="w-full justify-start" onClick={() => guard(() => setAddLocationOpen(true))} variant="outline">
-                    <MapPin className="h-4 w-4 mr-2" />
-                    {t("admin.overview.addLocation")}
-                  </Button>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">{t("admin.overview.verificationStatus")}</span>
+                    <Badge className={getVerificationStatusColor(verificationStatus)}>{verificationStatus}</Badge>
+                  </div>
+
+                  <div className="text-sm text-muted-foreground">{getVerificationMessage(verificationStatus)}</div>
+
+                  {!isVerified && (
+                    <Button onClick={() => setCreateClinicOpen(true)} className="w-full">
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      {t("admin.overview.startVerification")}
+                    </Button>
+                  )}
 
                   <div className="pt-2 border-t border-border">
-                    <PendingInvitationsSection practiceId={practice?.id} />
+                    <div className="text-sm font-medium mb-2">{t("admin.overview.quickActions")}</div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => guard(() => setInviteProviderOpen(true))}
+                        disabled={!allowModals}
+                      >
+                        <UserPlus className="h-4 w-4 mr-1" />
+                        {t("admin.actions.inviteDoctor")}
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => guard(() => setAddServiceOpen(true))} disabled={!allowModals}>
+                        <Building2 className="h-4 w-4 mr-1" />
+                        {t("admin.actions.addService")}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => guard(() => setInviteStaffOpen(true))}
+                        disabled={!allowModals}
+                      >
+                        <Users className="h-4 w-4 mr-1" />
+                        {t("admin.actions.inviteStaff")}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => guard(() => setAddLocationOpen(true))}
+                        disabled={!allowModals}
+                      >
+                        <MapPin className="h-4 w-4 mr-1" />
+                        {t("admin.actions.addLocation")}
+                      </Button>
+                    </div>
                   </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+              <Card className="rounded-xl">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    {t("admin.overview.doctors")}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {doctors.length === 0 ? (
+                    <div className="text-center py-6 text-muted-foreground">
+                      <Stethoscope className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">{t("admin.overview.noDoctors")}</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {doctors.slice(0, 5).map((doctor) => (
+                        <div key={doctor.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/30">
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{doctor.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">{doctor.specialty}</p>
+                          </div>
+                          <Badge variant="outline" className="text-xs">
+                            {doctor.status}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-xl">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Building2 className="h-5 w-5" />
+                    {t("admin.overview.services")}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {services.length === 0 ? (
+                    <div className="text-center py-6 text-muted-foreground">
+                      <Building2 className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">{t("admin.overview.noServices")}</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {services.slice(0, 5).map((service) => (
+                        <div key={service.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/30">
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{service.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">{service.category}</p>
+                          </div>
+                          <span className="text-sm font-medium">${service.price}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-xl">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Mail className="h-5 w-5" />
+                    {t("admin.overview.messages")}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {messages.length === 0 ? (
+                    <div className="text-center py-6 text-muted-foreground">
+                      <MessageCircle className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">{t("admin.overview.noMessages")}</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {messages.slice(0, 5).map((msg) => (
+                        <div key={msg.id} className="p-2 rounded-lg bg-muted/30">
+                          <div className="flex items-center justify-between mb-1">
+                            <p className="text-sm font-medium truncate">{msg.from_name}</p>
+                            <span className="text-xs text-muted-foreground">{format(new Date(msg.created_at), "MMM dd")}</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground line-clamp-2">{msg.message}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+              <Card className="rounded-xl">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5" />
+                    {t("admin.overview.performance")}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {dashboardMetrics.map((metric, idx) => {
+                      const Icon = metric.icon;
+                      return (
+                        <div key={idx} className="p-4 rounded-xl bg-muted/30 border border-border">
+                          <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                            <Icon className="h-4 w-4" />
+                            <span className="text-xs">{metric.label}</span>
+                          </div>
+                          <div className="text-lg font-semibold">{metric.value}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-xl">
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <span>{t("admin.overview.pendingInvitations")}</span>
+                    <Button variant="outline" size="sm" onClick={() => setActiveSection("staff")}>
+                      {t("admin.overview.manage")}
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <PendingInvitationsSection practiceId={practice?.id} />
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="mt-6">
+              <Card className="rounded-xl">
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <span>{t("admin.overview.advancedFinancialMetrics")}</span>
+                    <Button variant="outline" size="sm" onClick={() => guard(() => refreshAdvancedMetrics())}>
+                      Refresh
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <AdvancedFinancialMetrics metrics={advancedMetrics} />
                 </CardContent>
               </Card>
             </div>
@@ -442,57 +602,55 @@ const AdminDashboard = () => {
           <SectionWrapper locked={!isVerified}>
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <h2 className="text-xl font-semibold">{t("admin.providers.title")}</h2>
-              <Button onClick={() => guard(() => setInviteProviderOpen(true))}>
+              <Button onClick={() => guard(() => setInviteProviderOpen(true))} disabled={!allowModals}>
                 <UserPlus className="h-4 w-4 mr-2" />
-                {t("admin.providers.inviteProvider")}
+                {t("admin.providers.invite")}
               </Button>
             </div>
 
-            <Card className="mt-6 rounded-xl">
+            <Card className="rounded-xl mt-6">
               <CardHeader>
-                <CardTitle>{t("admin.providers.activeProviders")}</CardTitle>
+                <CardTitle>{t("admin.providers.listTitle")}</CardTitle>
               </CardHeader>
               <CardContent>
                 {doctors.length === 0 ? (
                   <div className="text-center py-10 text-muted-foreground">
                     <Stethoscope className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p>{t("admin.providers.noProviders")}</p>
-                    <Button className="mt-4" onClick={() => guard(() => setInviteProviderOpen(true))}>
-                      {t("admin.providers.inviteFirst")}
+                    <p className="font-medium">{t("admin.providers.emptyTitle")}</p>
+                    <p className="text-sm mt-1">{t("admin.providers.emptyDescription")}</p>
+                    <Button className="mt-4" onClick={() => guard(() => setInviteProviderOpen(true))} disabled={!allowModals}>
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      {t("admin.providers.invite")}
                     </Button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {doctors.map((doc: any) => (
-                      <Card key={doc.id} className="rounded-xl border border-border/60">
-                        <CardContent className="p-5 space-y-3">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="min-w-0">
-                              <p className="font-semibold truncate">{doc.name}</p>
-                              <p className="text-sm text-muted-foreground truncate">{doc.specialty || "Provider"}</p>
-                            </div>
-                            <Badge variant="outline">{doc.status || "active"}</Badge>
-                          </div>
-                          <div className="text-sm text-muted-foreground space-y-1">
-                            <p className="flex items-center gap-2">
-                              <Mail className="h-4 w-4 opacity-70" />
-                              <span className="truncate">{doc.email || "—"}</span>
-                            </p>
-                            <p className="flex items-center gap-2">
-                              <MessageCircle className="h-4 w-4 opacity-70" />
-                              <span className="truncate">{doc.phone || "—"}</span>
-                            </p>
-                          </div>
-                          <div className="flex gap-2 pt-2">
-                            <Button variant="outline" size="sm" className="w-full" onClick={() => guard(() => toast.info("Edit provider (coming soon)"))}>
-                              Edit
-                            </Button>
-                            <Button variant="outline" size="sm" className="w-full" onClick={() => guard(() => toast.info("View schedule (coming soon)"))}>
-                              Schedule
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
+                  <div className="space-y-3">
+                    {doctors.map((doctor) => (
+                      <div
+                        key={doctor.id}
+                        className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border"
+                      >
+                        <div className="min-w-0">
+                          <p className="font-medium truncate">{doctor.name}</p>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {doctor.specialty} • {doctor.email}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline">{doctor.status}</Badge>
+                          <Button variant="outline" size="icon" onClick={() => toast.info("View profile (coming soon)")}>
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => guard(() => toast.info("Remove provider (coming soon)"))}
+                            disabled={!allowModals}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -506,37 +664,50 @@ const AdminDashboard = () => {
           <SectionWrapper locked={!isVerified}>
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <h2 className="text-xl font-semibold">{t("admin.services.title")}</h2>
-              <Button onClick={() => guard(() => setAddServiceOpen(true))}>
+              <Button onClick={() => guard(() => setAddServiceOpen(true))} disabled={!allowModals}>
                 <Building2 className="h-4 w-4 mr-2" />
-                {t("admin.services.addService")}
+                {t("admin.services.add")}
               </Button>
             </div>
 
-            <Card className="mt-6 rounded-xl">
+            <Card className="rounded-xl mt-6">
               <CardHeader>
-                <CardTitle>{t("admin.services.list")}</CardTitle>
+                <CardTitle>{t("admin.services.listTitle")}</CardTitle>
               </CardHeader>
               <CardContent>
                 {services.length === 0 ? (
                   <div className="text-center py-10 text-muted-foreground">
                     <Building2 className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p>{t("admin.services.noServices")}</p>
-                    <Button className="mt-4" onClick={() => guard(() => setAddServiceOpen(true))}>
-                      {t("admin.services.addFirst")}
+                    <p className="font-medium">{t("admin.services.emptyTitle")}</p>
+                    <p className="text-sm mt-1">{t("admin.services.emptyDescription")}</p>
+                    <Button className="mt-4" onClick={() => guard(() => setAddServiceOpen(true))} disabled={!allowModals}>
+                      <Building2 className="h-4 w-4 mr-2" />
+                      {t("admin.services.add")}
                     </Button>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {services.map((s: any) => (
-                      <div key={s.id} className="flex items-center justify-between p-4 rounded-xl border border-border/60 bg-muted/20">
+                    {services.map((service) => (
+                      <div
+                        key={service.id}
+                        className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border"
+                      >
                         <div className="min-w-0">
-                          <p className="font-semibold truncate">{s.name}</p>
-                          <p className="text-sm text-muted-foreground truncate">{s.description || "—"}</p>
+                          <p className="font-medium truncate">{service.name}</p>
+                          <p className="text-sm text-muted-foreground truncate">{service.category}</p>
                         </div>
-                        <div className="text-right">
-                          <p className="font-semibold">${Number(s.price || 0).toFixed(2)}</p>
-                          <Button size="sm" variant="outline" className="mt-2" onClick={() => guard(() => toast.info("Edit service (coming soon)"))}>
-                            Edit
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold">${service.price}</span>
+                          <Button variant="outline" size="icon" onClick={() => guard(() => toast.info("Edit service (coming soon)"))}>
+                            <Settings className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => guard(() => toast.info("Delete service (coming soon)"))}
+                            disabled={!allowModals}
+                          >
+                            <X className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
@@ -553,37 +724,57 @@ const AdminDashboard = () => {
           <SectionWrapper locked={!isVerified}>
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <h2 className="text-xl font-semibold">{t("admin.staff.title")}</h2>
-              <Button onClick={() => guard(() => setInviteStaffOpen(true))}>
+              <Button onClick={() => guard(() => setInviteStaffOpen(true))} disabled={!allowModals}>
                 <UserPlus className="h-4 w-4 mr-2" />
                 {t("admin.staff.invite")}
               </Button>
             </div>
 
-            <Card className="mt-6 rounded-xl">
+            <Card className="rounded-xl mt-6">
               <CardHeader>
-                <CardTitle>{t("admin.staff.members")}</CardTitle>
+                <CardTitle>{t("admin.staff.listTitle")}</CardTitle>
               </CardHeader>
               <CardContent>
                 {staff.length === 0 ? (
                   <div className="text-center py-10 text-muted-foreground">
                     <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p>{t("admin.staff.noStaff")}</p>
-                    <Button className="mt-4" onClick={() => guard(() => setInviteStaffOpen(true))}>
-                      {t("admin.staff.inviteFirst")}
+                    <p className="font-medium">{t("admin.staff.emptyTitle")}</p>
+                    <p className="text-sm mt-1">{t("admin.staff.emptyDescription")}</p>
+                    <Button className="mt-4" onClick={() => guard(() => setInviteStaffOpen(true))} disabled={!allowModals}>
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      {t("admin.staff.invite")}
                     </Button>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {staff.map((m: any) => (
-                      <div key={m.id} className="flex items-center justify-between p-4 rounded-xl border border-border/60 bg-muted/20">
+                    {staff.map((member) => (
+                      <div
+                        key={member.id}
+                        className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border"
+                      >
                         <div className="min-w-0">
-                          <p className="font-semibold truncate">{m.name}</p>
-                          <p className="text-sm text-muted-foreground truncate">{m.email || "—"}</p>
+                          <p className="font-medium truncate">{member.name}</p>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {member.role} • {member.email}
+                          </p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline">{m.role || "staff"}</Badge>
-                          <Button size="sm" variant="outline" onClick={() => guard(() => toast.info("Manage staff (coming soon)"))}>
-                            Manage
+                          <Badge variant="outline">{member.status}</Badge>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => guard(() => toast.info("Manage permissions (coming soon)"))}
+                            disabled={!allowModals}
+                          >
+                            <Settings className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => guard(() => toast.info("Remove staff (coming soon)"))}
+                            disabled={!allowModals}
+                          >
+                            <X className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
@@ -600,39 +791,58 @@ const AdminDashboard = () => {
           <SectionWrapper locked={!isVerified}>
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <h2 className="text-xl font-semibold">{t("admin.locations.title")}</h2>
-              <Button onClick={() => guard(() => setAddLocationOpen(true))}>
+              <Button onClick={() => guard(() => setAddLocationOpen(true))} disabled={!allowModals}>
                 <MapPin className="h-4 w-4 mr-2" />
-                {t("admin.locations.addLocation")}
+                {t("admin.locations.add")}
               </Button>
             </div>
 
-            <Card className="mt-6 rounded-xl">
+            <Card className="rounded-xl mt-6">
               <CardHeader>
-                <CardTitle>{t("admin.locations.list")}</CardTitle>
+                <CardTitle>{t("admin.locations.listTitle")}</CardTitle>
               </CardHeader>
               <CardContent>
                 {locations.length === 0 ? (
                   <div className="text-center py-10 text-muted-foreground">
                     <MapPin className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p>{t("admin.locations.noLocations")}</p>
-                    <Button className="mt-4" onClick={() => guard(() => setAddLocationOpen(true))}>
-                      {t("admin.locations.addFirst")}
+                    <p className="font-medium">{t("admin.locations.emptyTitle")}</p>
+                    <p className="text-sm mt-1">{t("admin.locations.emptyDescription")}</p>
+                    <Button className="mt-4" onClick={() => guard(() => setAddLocationOpen(true))} disabled={!allowModals}>
+                      <MapPin className="h-4 w-4 mr-2" />
+                      {t("admin.locations.add")}
                     </Button>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {locations.map((loc: any) => (
-                      <Card key={loc.id} className="rounded-xl border border-border/60">
-                        <CardContent className="p-5 space-y-2">
-                          <p className="font-semibold truncate">{loc.name || "Location"}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {loc.address || loc.city ? `${loc.address || ""} ${loc.city || ""}` : "—"}
-                          </p>
-                          <Button size="sm" variant="outline" className="mt-2" onClick={() => guard(() => toast.info("Edit location (coming soon)"))}>
-                            Edit
+                  <div className="space-y-3">
+                    {locations.map((location) => (
+                      <div
+                        key={location.id}
+                        className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border"
+                      >
+                        <div className="min-w-0">
+                          <p className="font-medium truncate">{location.name}</p>
+                          <p className="text-sm text-muted-foreground truncate">{location.address}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline">{location.status}</Badge>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => guard(() => toast.info("Edit location (coming soon)"))}
+                            disabled={!allowModals}
+                          >
+                            <Settings className="h-4 w-4" />
                           </Button>
-                        </CardContent>
-                      </Card>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => guard(() => toast.info("Remove location (coming soon)"))}
+                            disabled={!allowModals}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -646,41 +856,41 @@ const AdminDashboard = () => {
           <SectionWrapper locked={!isVerified}>
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <h2 className="text-xl font-semibold">{t("admin.patients.title")}</h2>
-              <div className="flex items-center gap-2">
-                <Input placeholder={t("admin.patients.searchPlaceholder")} className="w-56" />
-                <Button variant="outline" onClick={() => guard(() => toast.info("Search (coming soon)"))}>
-                  Search
-                </Button>
-              </div>
+              <Button variant="outline" onClick={() => guard(() => toast.info("Export patients (coming soon)"))}>
+                {t("admin.patients.export")}
+              </Button>
             </div>
 
-            <Card className="mt-6 rounded-xl">
-              <CardHeader>
-                <CardTitle>{t("admin.patients.list")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {patients.length === 0 ? (
-                  <div className="text-center py-10 text-muted-foreground">
-                    <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p>{t("admin.patients.noPatients")}</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {patients.slice(0, 25).map((p: any) => (
-                      <div key={p.id} className="flex items-center justify-between p-4 rounded-xl border border-border/60 bg-muted/20">
-                        <div className="min-w-0">
-                          <p className="font-semibold truncate">{p.name}</p>
-                          <p className="text-sm text-muted-foreground truncate">{p.email || "—"}</p>
-                        </div>
-                        <Button size="sm" variant="outline" onClick={() => guard(() => toast.info("View patient profile (coming soon)"))}>
-                          View
-                        </Button>
+            {patients.length === 0 ? (
+              <Card className="rounded-xl mt-6">
+                <CardContent className="py-12 text-center text-muted-foreground">
+                  <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <p className="font-medium">{t("admin.patients.emptyTitle")}</p>
+                  <p className="text-sm mt-1">{t("admin.patients.emptyDescription")}</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="rounded-xl mt-6">
+                <CardHeader>
+                  <CardTitle>{t("admin.patients.listTitle")}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {patients.map((patient) => (
+                    <div
+                      key={patient.id}
+                      className="grid grid-cols-1 sm:grid-cols-4 gap-2 p-4 rounded-xl bg-muted/30 border border-border"
+                    >
+                      <div className="font-medium truncate">{patient.name}</div>
+                      <div className="text-muted-foreground">{format(new Date(patient.last_visit), "MMM dd, yyyy")}</div>
+                      <div className="text-muted-foreground">{patient.doctor_name}</div>
+                      <div>
+                        <Badge variant="outline">{patient.status}</Badge>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
           </SectionWrapper>
         );
 
@@ -688,16 +898,19 @@ const AdminDashboard = () => {
         return (
           <SectionWrapper locked={!isVerified}>
             <div className="flex items-center justify-between gap-3 flex-wrap">
-              <h2 className="text-xl font-semibold">{t("admin.billing.title")}</h2>
-              <div className="flex items-center gap-2">
-                <Button variant={billingRange === "7d" ? "default" : "outline"} size="sm" onClick={() => setBillingRange("7d")}>
-                  7d
+              <h2 className="text-xl font-semibold">Billing & Payments</h2>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button variant={billingRange === "7d" ? "default" : "outline"} onClick={() => guard(() => setBillingRange("7d"))}>
+                  7D
                 </Button>
-                <Button variant={billingRange === "30d" ? "default" : "outline"} size="sm" onClick={() => setBillingRange("30d")}>
-                  30d
+                <Button variant={billingRange === "30d" ? "default" : "outline"} onClick={() => guard(() => setBillingRange("30d"))}>
+                  30D
                 </Button>
-                <Button variant={billingRange === "90d" ? "default" : "outline"} size="sm" onClick={() => setBillingRange("90d")}>
-                  90d
+                <Button variant={billingRange === "90d" ? "default" : "outline"} onClick={() => guard(() => setBillingRange("90d"))}>
+                  90D
+                </Button>
+                <Button variant="outline" onClick={() => guard(() => billing.refetch())}>
+                  Refresh
                 </Button>
               </div>
             </div>
@@ -705,214 +918,227 @@ const AdminDashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
               <Card className="rounded-xl">
                 <CardHeader>
-                  <CardTitle>{t("admin.billing.recentPayments")}</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <CreditCard className="h-5 w-5" />
+                    Payment Summary
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {billing.loading ? (
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Loading…
+                      <span>Loading…</span>
                     </div>
-                  ) : (billing.data as any)?.payments?.length === 0 ? (
-                    <div className="text-center py-10 text-muted-foreground">
-                      <CreditCard className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                      <p>{t("admin.billing.noPayments")}</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {(billing.data as any)?.payments?.map((p: any) => (
-                        <div key={p.id} className="flex items-center justify-between p-4 rounded-xl border border-border/60 bg-muted/20">
-                          <div className="min-w-0">
-                            <p className="font-semibold truncate">{p.patient_name || "Patient"}</p>
-                            <p className="text-sm text-muted-foreground truncate">{format(new Date(p.created_at), "MMM d, yyyy")}</p>
+                  ) : billing.error ? (
+                    <p className="text-sm text-destructive">{billing.error}</p>
+                  ) : billing.data ? (
+                    (() => {
+                      const b: any = billing.data;
+                      const fmt = (cents: number) =>
+                        `$${(Number(cents || 0) / 100).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+
+                      return (
+                        <div className="space-y-4">
+                          <div className="flex justify-between">
+                            <span>Total Revenue ({b.period?.days ?? 0} days)</span>
+                            <span className="font-semibold">{fmt(b.summary?.totalRevenueCents ?? 0)}</span>
                           </div>
-                          <div className="text-right">
-                            <p className="font-semibold">${(Number(p.amount_cents || 0) / 100).toFixed(2)}</p>
-                            <Badge variant="outline" className="mt-1">
-                              {p.status || "paid"}
-                            </Badge>
+                          <div className="flex justify-between">
+                            <span>Pending</span>
+                            <span className="font-semibold text-yellow-600">{fmt(b.summary?.pendingCents ?? 0)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Refunds</span>
+                            <span className="font-semibold text-red-600">{fmt(b.summary?.refundCents ?? 0)}</span>
+                          </div>
+                          <div className="pt-2 text-sm text-muted-foreground">
+                            {b.summary?.completedCount ?? 0} completed • {b.summary?.pendingCount ?? 0} pending •{" "}
+                            {b.summary?.transactionCount ?? 0} total
                           </div>
                         </div>
-                      ))}
-                    </div>
+                      );
+                    })()
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No billing data.</p>
                   )}
                 </CardContent>
               </Card>
 
               <Card className="rounded-xl">
                 <CardHeader>
-                  <CardTitle>{t("admin.billing.summary")}</CardTitle>
+                  <CardTitle>Recent Transactions</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {billing.loading ? (
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Loading…
+                      <span>Loading…</span>
+                    </div>
+                  ) : billing.error ? (
+                    <p className="text-sm text-destructive">{billing.error}</p>
+                  ) : !billing.data || !(billing.data as any).transactions?.length ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <CreditCard className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                      <p>No transactions in this period</p>
                     </div>
                   ) : (
-                    <div className="space-y-4">
-                      <div className="flex justify-between">
-                        <span>{t("admin.billing.totalRevenue")}</span>
-                        <span className="font-semibold">
-                          ${(((billing.data as any)?.kpis?.totalRevenueCents ?? 0) / 100).toFixed(2)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>{t("admin.billing.paidInvoices")}</span>
-                        <span className="font-semibold">{(billing.data as any)?.kpis?.paidInvoices ?? 0}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>{t("admin.billing.pendingInvoices")}</span>
-                        <span className="font-semibold">{(billing.data as any)?.kpis?.pendingInvoices ?? 0}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>{t("admin.billing.refunds")}</span>
-                        <span className="font-semibold">
-                          ${(((billing.data as any)?.kpis?.refundsCents ?? 0) / 100).toFixed(2)}
-                        </span>
-                      </div>
+                    <div className="space-y-3">
+                      {(billing.data as any).transactions.map((tx: any) => {
+                        const patientName =
+                          tx?.metadata?.patient_name || tx?.metadata?.customer_name || tx?.metadata?.payer_name || "—";
 
-                      <Button variant="outline" className="w-full" onClick={() => guard(() => toast.info("Export billing (coming soon)"))}>
-                        Export
-                      </Button>
+                        const fmt = `$${(Number(tx.amount_cents || 0) / 100).toLocaleString(undefined, {
+                          maximumFractionDigits: 2,
+                        })}`;
+
+                        const statusLower = String(tx.status || "").toLowerCase();
+                        const isPaid = statusLower === "completed" || statusLower === "paid";
+                        const isPending = statusLower === "pending";
+                        const badgeVariant = isPaid ? "default" : isPending ? "outline" : "secondary";
+
+                        return (
+                          <div
+                            key={tx.id}
+                            className="flex items-center justify-between p-3 bg-muted/40 rounded-xl border border-border"
+                          >
+                            <div className="min-w-0">
+                              <p className="font-medium truncate">{patientName}</p>
+                              <p className="text-sm text-muted-foreground">{format(new Date(tx.created_at), "MMM dd, yyyy")}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-semibold">{fmt}</p>
+                              <Badge variant={badgeVariant}>{tx.status}</Badge>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </CardContent>
               </Card>
             </div>
+          </SectionWrapper>
+        );
+
+      case "finances":
+        return (
+          <SectionWrapper locked={!isVerified}>
+            <FinanceManagementSection entityType="practice" entityId={practice?.id || ""} />
           </SectionWrapper>
         );
 
       case "analytics":
         return (
           <SectionWrapper locked={!isVerified}>
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <h2 className="text-xl font-semibold">{t("admin.analytics.title")}</h2>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant={analyticsRange === "7d" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setAnalyticsRange("7d")}
-                >
-                  7d
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <h2 className="text-xl font-semibold">Practice Analytics</h2>
+              <div className="flex gap-2 flex-wrap">
+                <Button variant={analyticsRange === "7d" ? "default" : "outline"} onClick={() => guard(() => setAnalyticsRange("7d"))}>
+                  7D
                 </Button>
                 <Button
                   variant={analyticsRange === "30d" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setAnalyticsRange("30d")}
+                  onClick={() => guard(() => setAnalyticsRange("30d"))}
                 >
-                  30d
+                  30D
                 </Button>
                 <Button
                   variant={analyticsRange === "90d" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setAnalyticsRange("90d")}
+                  onClick={() => guard(() => setAnalyticsRange("90d"))}
                 >
-                  90d
+                  90D
+                </Button>
+                <Button variant="outline" onClick={() => guard(() => analytics.refetch())}>
+                  Refresh
                 </Button>
               </div>
             </div>
 
-            {analytics.loading ? (
-              <div className="mt-6 flex items-center gap-2 text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Loading analytics…
-              </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-                  <Card className="rounded-xl">
-                    <CardHeader>
-                      <CardTitle>Daily Trend</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-[280px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={((analytics.data as any)?.trend || []) as DailyTrendPoint[]}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="date" tickFormatter={(d) => format(new Date(d), "MMM d")} />
-                            <YAxis />
-                            <Tooltip
-                              formatter={(value: any, name: any) => {
-                                if (name === "revenue_cents") return [`$${(Number(value) / 100).toFixed(2)}`, "Revenue"];
-                                if (name === "completed") return [value, "Completed"];
-                                if (name === "bookings") return [value, "Bookings"];
-                                return [value, name];
-                              }}
-                            />
-                            <Area type="monotone" dataKey="bookings" fillOpacity={0.2} strokeWidth={2} />
-                            <Area type="monotone" dataKey="completed" fillOpacity={0.15} strokeWidth={2} />
-                          </AreaChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="rounded-xl">
-                    <CardHeader>
-                      <CardTitle>Performance Metrics</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                          <span>Average Rating</span>
-                          <div className="flex items-center gap-2">
-                            <Star className="h-4 w-4" />
-                            <span className="font-semibold">
-                              {Number((analytics.data as any).kpis?.averageRating || 0).toFixed(1)}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span>Patient Retention (180d)</span>
-                          <span className="font-semibold">{(analytics.data as any).kpis?.patientRetentionPct ?? 0}%</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span>No-show / Cancel rate</span>
-                          <span className="font-semibold">{(analytics.data as any).kpis?.noShowRatePct ?? 0}%</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span>Completed</span>
-                          <span className="font-semibold">{(analytics.data as any).kpis?.completedAppointments ?? 0}</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                <div className="mt-6">
-                  <AdvancedFinancialMetrics
-                    metrics={advancedMetrics}
-                    revenue={stats.totalRevenue}
-                    onUpdateInputs={() => {
-                      guard(() => {
-                        refreshData();
-                        refreshAdvancedMetrics();
-                        analytics.refetch();
-                      });
-                    }}
-                  />
-                </div>
-              </>
-            )}
-          </SectionWrapper>
-        );
-
-      case "finance":
-        return (
-          <SectionWrapper locked={!isVerified}>
-            {!practice?.id ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
               <Card className="rounded-xl">
                 <CardHeader>
-                  <CardTitle>Finance</CardTitle>
+                  <CardTitle>Daily Trend</CardTitle>
                 </CardHeader>
-                <CardContent className="text-sm text-muted-foreground">
-                  No clinic/practice found for this account.
+                <CardContent>
+                  {analytics.loading ? (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Loading…</span>
+                    </div>
+                  ) : analytics.error ? (
+                    <p className="text-sm text-destructive">{analytics.error}</p>
+                  ) : !(analytics.data as any)?.trend?.length ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <TrendingUp className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                      <p>No analytics data.</p>
+                    </div>
+                  ) : (
+                    <div className="h-72">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={(analytics.data as any).trend as DailyTrendPoint[]}>
+                          <defs>
+                            <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="currentColor" stopOpacity={0.25} />
+                              <stop offset="95%" stopColor="currentColor" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="date" />
+                          <YAxis />
+                          <Tooltip />
+                          <Area type="monotone" dataKey="value" stroke="currentColor" fillOpacity={1} fill="url(#colorValue)" />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
-            ) : (
-              <FinanceHub entityType="clinic" entityId={practice.id} />
-            )}
+
+              <Card className="rounded-xl">
+                <CardHeader>
+                  <CardTitle>Summary</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {analytics.loading ? (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Loading…</span>
+                    </div>
+                  ) : analytics.error ? (
+                    <p className="text-sm text-destructive">{analytics.error}</p>
+                  ) : analytics.data ? (
+                    (() => {
+                      const a: any = analytics.data;
+                      return (
+                        <div className="space-y-3">
+                          <div className="flex justify-between">
+                            <span>Appointments</span>
+                            <span className="font-semibold">{a.summary?.appointments ?? 0}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Unique Patients</span>
+                            <span className="font-semibold">{a.summary?.patients ?? 0}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Providers</span>
+                            <span className="font-semibold">{a.summary?.providers ?? 0}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Locations</span>
+                            <span className="font-semibold">{a.summary?.locations ?? 0}</span>
+                          </div>
+                          <div className="pt-2 text-xs text-muted-foreground">
+                            Range: {a.period?.from ?? "—"} → {a.period?.to ?? "—"}
+                          </div>
+                        </div>
+                      );
+                    })()
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No analytics data.</p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </SectionWrapper>
         );
 
@@ -920,22 +1146,14 @@ const AdminDashboard = () => {
         return (
           <SectionWrapper locked={!isVerified}>
             <div className="flex items-center justify-between gap-3 flex-wrap">
-              <h2 className="text-xl font-semibold">Settings</h2>
-              <Button onClick={() => guard(() => setSettingsOpen(true))}>
+              <h2 className="text-xl font-semibold">{t("admin.settings.title", { defaultValue: "Settings" })}</h2>
+              <Button variant="outline" onClick={() => guard(() => setSettingsOpen(true))} disabled={!allowModals}>
                 <Settings className="h-4 w-4 mr-2" />
-                Open Settings
+                {t("admin.settings.open", { defaultValue: "Open settings" })}
               </Button>
             </div>
 
-            <Card className="mt-6 rounded-xl">
-              <CardHeader>
-                <CardTitle>Practice Settings</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground space-y-2">
-                <p>Manage practice profile, booking rules, payments, notifications, staff roles, and more.</p>
-                <p>Use the button above to open the settings panel.</p>
-              </CardContent>
-            </Card>
+            <SettingsPanel practice={practice} />
           </SectionWrapper>
         );
 
@@ -946,189 +1164,100 @@ const AdminDashboard = () => {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background">
-        <Sidebar className="border-r">
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupLabel className="flex items-center gap-2">
-                <Building2 className="h-4 w-4" />
-                {t("admin.title")}
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {menuItems.map((item) => (
-                    <SidebarMenuItem key={item.id}>
-                      <SidebarMenuButton onClick={() => setActiveSection(item.id)} isActive={activeSection === item.id}>
-                        <item.icon className="w-4 h-4" />
-                        <span>{item.label}</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </SidebarContent>
-        </Sidebar>
-
-        <div className="flex-1 flex flex-col">
-          <header className="h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40">
-            <div className="flex h-16 items-center justify-between px-4 sm:px-6">
-              <div className="flex items-center gap-4 min-w-0">
-                <SidebarTrigger />
-                <div className="min-w-0">
-                  <h1 className="text-lg font-semibold truncate">{practice?.name || t("admin.unverifiedPractice")}</h1>
-                  <p className="text-sm text-muted-foreground truncate">
-                    Status:{" "}
-                    <span className="font-medium">{t(`admin.verification.statuses.${verificationStatus}`)}</span>
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 sm:gap-4">
-                <ThemeToggle />
-                <LanguageSwitcher />
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => guard(() => toast.info("Profile preview (coming soon)"))}
-                  className="hidden sm:inline-flex"
-                >
-                  <Eye className="h-4 w-4 mr-2" />
-                  {t("admin.header.previewProfile")}
-                </Button>
-
-                <ProfileMenu />
-              </div>
+      <div className="min-h-screen bg-background flex flex-col">
+        <header className="sticky top-0 z-40 w-full border-b border-border/50 bg-background/80 backdrop-blur-md">
+          <div className="container mx-auto flex h-16 items-center justify-between px-4">
+            <div className="flex items-center gap-3">
+              <SidebarTrigger />
+              <a href="/" className="flex items-center gap-2 font-bold text-lg">
+                <img src="/logos/horizontal/docito-horizontal-sm.png" alt="Docito" className="h-7" width={93} height={28} />
+              </a>
             </div>
-          </header>
 
-          <main className="flex-1 p-4 sm:p-6 space-y-6">
-            <Card className={`border-2 ${getVerificationStatusColor(verificationStatus)}`}>
-              <CardContent className="p-4">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 mt-0.5">
-                    {verificationStatus === "verified" ? (
-                      <CheckCircle className="h-6 w-6 text-green-600" />
-                    ) : verificationStatus === "rejected" ? (
-                      <X className="h-6 w-6 text-red-600" />
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              <LanguageSwitcher />
+              <ProfileMenu />
+            </div>
+          </div>
+        </header>
+
+        <div className="flex-1 flex">
+          <Sidebar>
+            <SidebarContent>
+              <SidebarGroup>
+                <SidebarGroupLabel className="flex items-center justify-between">
+                  <span>{t("admin.sidebar.title")}</span>
+                  {practice?.name ? (
+                    <Badge variant="outline" className="text-xs">
+                      {practice.name}
+                    </Badge>
+                  ) : null}
+                </SidebarGroupLabel>
+
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {menuItems.map((item) => (
+                      <SidebarMenuItem key={item.id}>
+                        <SidebarMenuButton
+                          isActive={activeSection === item.id}
+                          onClick={() => setActiveSection(item.id)}
+                          tooltip={item.label}
+                        >
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.label}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+
+              <SidebarGroup>
+                <SidebarGroupLabel className="flex items-center justify-between">
+                  <span>{t("admin.sidebar.status")}</span>
+                  <Badge className={getVerificationStatusColor(verificationStatus)}>{verificationStatus}</Badge>
+                </SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <div className="p-3 space-y-3">
+                    <div className="text-xs text-muted-foreground">{getVerificationMessage(verificationStatus)}</div>
+                    {!isVerified ? (
+                      <Button onClick={() => setCreateClinicOpen(true)} className="w-full">
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        {t("admin.sidebar.verify")}
+                      </Button>
                     ) : (
-                      <AlertCircle className="h-6 w-6 text-yellow-600" />
+                      <Button variant="outline" onClick={() => toast.success("You're verified!") } className="w-full">
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Verified
+                      </Button>
                     )}
                   </div>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            </SidebarContent>
+          </Sidebar>
 
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <h3 className="font-semibold">{t("admin.verification.status")}</h3>
-                      <Badge variant="outline" className={getVerificationStatusColor(verificationStatus)}>
-                        {t(`admin.verification.statuses.${verificationStatus}`)}
-                      </Badge>
-                    </div>
-
-                    <p className="text-sm mb-3">{getVerificationMessage(verificationStatus)}</p>
-
-                    {!isVerified && (
-                      <div className="flex gap-2 flex-wrap">
-                        <Button size="sm" onClick={() => setCreateClinicOpen(true)}>
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          {verificationStatus === "rejected"
-                            ? t("admin.verification.resubmit")
-                            : t("admin.verification.verifyPractice")}
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => setRequirementsOpen(true)}>
-                          {t("admin.verification.viewRequirements")}
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-              {dashboardMetrics.map((m, idx) => {
-                const Icon = m.icon;
-                return (
-                  <Card key={idx} className="rounded-xl">
-                    <CardContent className="p-5">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-1">
-                          <p className="text-sm text-muted-foreground">{m.label}</p>
-                          <p className="text-2xl font-semibold">{m.value}</p>
-                        </div>
-                        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                          <Icon className="h-5 w-5 text-primary" />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-
-            {renderSection()}
+          <main className="flex-1 p-6">
+            <div className="max-w-7xl mx-auto space-y-6">{renderSection()}</div>
           </main>
         </div>
 
-        <InviteProviderModal
-          open={inviteProviderOpen}
-          onOpenChange={setInviteProviderOpen}
-          practiceId={practice?.id}
-          disabled={!allowModals}
-        />
+        <InviteProviderModal open={inviteProviderOpen} onOpenChange={setInviteProviderOpen} practiceId={practice?.id} />
 
-        <AddServiceModal
-          open={addServiceOpen}
-          onOpenChange={setAddServiceOpen}
-          practiceId={practice?.id}
-          disabled={!allowModals}
-        />
+        <AddServiceModal open={addServiceOpen} onOpenChange={setAddServiceOpen} practiceId={practice?.id} />
 
-        <InviteStaffModal
-          open={inviteStaffOpen}
-          onOpenChange={setInviteStaffOpen}
-          practiceId={practice?.id}
-          disabled={!allowModals}
-        />
+        <InviteStaffModal open={inviteStaffOpen} onOpenChange={setInviteStaffOpen} practiceId={practice?.id} />
 
-        <AddLocationModal
-          open={addLocationOpen}
-          onOpenChange={setAddLocationOpen}
-          practiceId={practice?.id}
-          disabled={!allowModals}
-        />
+        <AddLocationModal open={addLocationOpen} onOpenChange={setAddLocationOpen} practiceId={practice?.id} />
 
-        <SettingsPanel
-          open={settingsOpen}
-          onOpenChange={setSettingsOpen}
-          practiceId={practice?.id}
-          disabled={!allowModals}
-        />
+        <ComprehensiveRegistrationModal open={settingsOpen} onOpenChange={setSettingsOpen} practiceId={practice?.id} />
 
-        <ComprehensiveRegistrationModal
-          open={createClinicOpen}
-          onOpenChange={setCreateClinicOpen}
-          practiceId={practice?.id}
-        />
+        <CreateClinicModal open={createClinicOpen} onOpenChange={setCreateClinicOpen} />
 
-        <CreateClinicModal
-          open={createClinicOpen}
-          onOpenChange={setCreateClinicOpen}
-          practiceId={practice?.id}
-        />
+        <ViewRequirementsModal open={requirementsOpen} onOpenChange={setRequirementsOpen} />
 
-        <ViewRequirementsModal
-          open={requirementsOpen}
-          onOpenChange={setRequirementsOpen}
-        />
-
-        <VerificationSuccessModal
-          open={verificationModalOpen}
-          onOpenChange={setVerificationModalOpen}
-          onClose={handleVerificationModalClose}
-          onSuccess={handleVerificationSuccess}
-          practiceId={practice?.id}
-        />
+        <VerificationSuccessModal open={verificationModalOpen} onOpenChange={setVerificationModalOpen} onClose={handleVerificationModalClose} onSuccess={handleVerificationSuccess} />
       </div>
     </SidebarProvider>
   );
