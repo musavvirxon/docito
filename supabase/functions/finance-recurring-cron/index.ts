@@ -1,3 +1,6 @@
+// File: supabase/functions/finance-recurring-cron/index.ts
+// B30: Edge cron now calls finance_recurring_generate_due_v2 and passes entity_run_id for drilldown linking.
+
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
@@ -76,7 +79,6 @@ Deno.serve(async (req) => {
     const asOf = cleanDate(payload?.as_of) || todayIso();
     const maxEntities = Math.max(1, Math.min(Number(payload?.max_entities ?? 200), 1000));
 
-    // Find due entities (distinct)
     const { data: dueRules, error: dueErr } = await supabase
       .from("finance_recurring_rules")
       .select("entity_type,entity_id,next_run_date")
@@ -120,7 +122,6 @@ Deno.serve(async (req) => {
     for (const e of entities) {
       const startedAt = new Date().toISOString();
 
-      // Insert per-entity run log
       const { data: runLog, error: runLogErr } = await supabase
         .from("finance_recurring_entity_runs")
         .insert({
@@ -135,14 +136,14 @@ Deno.serve(async (req) => {
 
       const runLogId = runLogErr ? undefined : String((runLog as any)?.id || "");
 
-      const { data, error } = await supabase.rpc("finance_recurring_generate_due", {
+      const { data, error } = await supabase.rpc("finance_recurring_generate_due_v2", {
         p_entity_type: e.entity_type,
         p_entity_id: e.entity_id,
         p_as_of: asOf,
+        p_entity_run_id: runLogId || null,
       });
 
       if (error) {
-        // Update run log as error
         if (runLogId) {
           await supabase
             .from("finance_recurring_entity_runs")
