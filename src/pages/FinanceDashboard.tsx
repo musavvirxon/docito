@@ -21,6 +21,7 @@ import IncomeEntriesPanel from "@/components/financial/IncomeEntriesPanel";
 import ExpensesEntriesPanel from "@/components/financial/ExpensesEntriesPanel";
 import PayrollEntriesPanel from "@/components/financial/PayrollEntriesPanel";
 import FinanceAnalyticsPanel from "@/components/financial/FinanceAnalyticsPanel";
+import BudgetsPanel from "@/components/financial/BudgetsPanel";
 
 type FinanceTab = "overview" | "ledger" | "income" | "budgets" | "expenses" | "supplies" | "payroll" | "analytics";
 
@@ -339,7 +340,7 @@ export default function FinanceDashboard() {
                   Selected: <span className="text-foreground font-medium">{labelForType(entityType)}</span>{" "}
                   {entityName ? <span className="text-foreground font-medium">· {entityName}</span> : null}
                 </div>
-                <div>Use Ledger for full list and Analytics for trend + breakdown.</div>
+                <div>Use Budgets to set targets, and Analytics to see trends.</div>
               </CardContent>
             </Card>
           ) : null}
@@ -371,14 +372,16 @@ export default function FinanceDashboard() {
           ) : null}
 
           {activeTab === "budgets" ? (
-            <Card className="border-muted">
-              <CardHeader>
-                <CardTitle className="text-base">Budgets</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                Next: budgets by category, budget vs actual, month range comparisons.
-              </CardContent>
-            </Card>
+            entityId ? (
+              <BudgetsPanel entityType={entityType as any} entityId={entityId} />
+            ) : (
+              <Card className="border-muted">
+                <CardHeader>
+                  <CardTitle className="text-base">Budgets</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">Select an organization to manage budgets.</CardContent>
+              </Card>
+            )
           ) : null}
 
           {activeTab === "expenses" ? (
