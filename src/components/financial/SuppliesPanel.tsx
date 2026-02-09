@@ -1,8 +1,3 @@
-// File: src/components/financial/SuppliesPanel.tsx
-// B23: Supplies purchases UI (create purchase + list purchases + view items)
-// - Uses RPC supplies_purchase_create
-// - Direct queries to list purchases and purchase items
-
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -238,21 +233,21 @@ export default function SuppliesPanel(props: { entityType: FinanceEntityType; en
 
       if (!items.length) throw new Error("Add at least one valid item");
 
-      const { data, error } = await supabase.rpc("supplies_purchase_create", {
-        p_entity_type: entityType,
-        p_entity_id: entityId,
-        p_occurred_at: occurredAt,
-        p_currency: normalizeCurrency(formCurrency),
-        p_vendor_name: formVendor.trim() ? formVendor.trim() : null,
-        p_notes: formNotes.trim() ? formNotes.trim() : null,
-        p_items: items as any,
-        p_idempotency_key: idemKey.trim() ? idemKey.trim() : null,
+      const { data, error } = await supabase.functions.invoke("supplies-purchase-create", {
+        body: {
+          entity_type: entityType,
+          entity_id: entityId,
+          occurred_at: occurredAt,
+          currency: normalizeCurrency(formCurrency),
+          vendor_name: formVendor.trim() ? formVendor.trim() : null,
+          notes: formNotes.trim() ? formNotes.trim() : null,
+          items,
+          idempotency_key: idemKey.trim() ? idemKey.trim() : null,
+        },
       });
 
       if (error) throw error;
-
-      const purchaseId = Array.isArray(data) ? data[0]?.purchase_id : (data as any)?.purchase_id;
-      if (!purchaseId) throw new Error("Failed to create purchase");
+      if (!data?.purchase_id) throw new Error(data?.error || "Failed to create purchase");
 
       toast.success("Supplies purchase saved and posted to expenses");
       setOpen(false);
@@ -384,7 +379,9 @@ export default function SuppliesPanel(props: { entityType: FinanceEntityType; en
                             {items.map((it) => (
                               <div key={it.id} className="grid grid-cols-12 gap-2 px-3 py-2 text-sm items-center">
                                 <div className="col-span-6 truncate">{it.item_name}</div>
-                                <div className="col-span-2 text-right text-muted-foreground">{Number(it.qty).toFixed(3).replace(/\.?0+$/,"")}</div>
+                                <div className="col-span-2 text-right text-muted-foreground">
+                                  {Number(it.qty).toFixed(3).replace(/\.?0+$/, "")}
+                                </div>
                                 <div className="col-span-2 text-right text-muted-foreground">
                                   {formatMoney(p.currency, it.unit_cost_cents)}
                                 </div>
