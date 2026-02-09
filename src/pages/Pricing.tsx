@@ -3,8 +3,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SEOHead } from "@/components/SEOHead";
-import ModernNavbar from "@/components/home/ModernNavbar";
-import ModernFooter from "@/components/home/ModernFooter";
 import { PricingHeader } from "@/components/pricing/PricingHeader";
 import { PricingFAQ } from "@/components/pricing/PricingFAQ";
 import { TrustIndicators } from "@/components/pricing/TrustIndicators";
@@ -19,7 +17,7 @@ const Pricing = () => {
   return (
     <>
       <SEOHead title={t("seo.title")} description={t("seo.description")} keywords={t("seo.keywords")} />
-      <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-primary/5 relative overflow-hidden">
+      <div className="min-h-screen flex flex-col bg-background relative overflow-hidden">
         {/* Decorative elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-1/2 -right-1/4 w-1/2 h-1/2 bg-primary/5 rounded-full blur-3xl" />
@@ -27,10 +25,8 @@ const Pricing = () => {
         </div>
 
         <div className="relative z-10 flex flex-col min-h-screen">
-          <ModernNavbar />
-
-          <main className="flex-1 container mx-auto px-4 py-16 pt-28 space-y-20">
-            {/* HERO — keep as-is */}
+          <main className="flex-1 container mx-auto px-4 py-16 pt-12 space-y-20">
+            {/* HERO */}
             <div className="flex flex-col lg:flex-row items-center gap-8">
               <div className="flex-1">
                 <PricingHeader />
@@ -40,17 +36,14 @@ const Pricing = () => {
               </div>
             </div>
 
-            {/* NEW: Apple-style plans (3) on top, roles on left + monthly/yearly toggle */}
+            {/* Apple-style plans (3) on top, roles on left + monthly/yearly toggle */}
             <PricingMatrix period={billingPeriod} onChangePeriod={setBillingPeriod} />
 
-            {/* Keep existing premium sections */}
+            {/* Premium sections */}
             <TrustIndicators />
             <PricingFAQ />
             <CallToAction />
           </main>
-
-          {/* PREMIUM FOOTER — keep as-is */}
-          <ModernFooter />
         </div>
       </div>
     </>

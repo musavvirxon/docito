@@ -119,7 +119,7 @@ export default function DiagnosticsSection() {
               transition={{ delay: index * 0.1, duration: 0.6 }}
               className="group"
             >
-              <div className="h-full bg-white/50 border border-primary/10 rounded-3xl p-8 backdrop-blur-sm hover:bg-white/70 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+              <div className="h-full bg-background/50 border border-border/40 rounded-3xl p-8 backdrop-blur-sm hover:bg-background/70 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
                 <div className="w-16 h-16 bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                   <service.icon className="h-8 w-8 text-primary" />
                 </div>

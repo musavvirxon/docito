@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import ProfileMenu from "@/components/dashboard/ProfileMenu";
 import { useLocalizedPath } from "@/hooks/useLocalizedPath";
+import { useTheme } from "@/contexts/ThemeContext";
 
 // Lazy load mobile menu to avoid loading framer-motion on initial render
 const MobileMenu = lazy(() => import("./MobileMenu"));
@@ -28,6 +29,7 @@ const PremiumTopNav = () => {
   const location = useLocation();
   const { t } = useTranslation("common");
   const { getLocalizedPath } = useLocalizedPath();
+  const { appliedTheme } = useTheme();
 
   const { user } = useAuth();
 
@@ -81,6 +83,11 @@ const PremiumTopNav = () => {
           : "Pricing",
     });
 
+  // Theme-aware logo: use dark variant for dark mode (light text on transparent bg)
+  const logoSrc = appliedTheme === "dark"
+    ? "/logos/logo-full-dark.png"
+    : "/logos/logo-full-light.png";
+
   return (
     <>
       <nav
@@ -95,25 +102,21 @@ const PremiumTopNav = () => {
       >
         <div className="max-w-[1400px] mx-auto px-4 lg:px-6">
           <div className="flex items-center justify-between h-14">
-            {/* Logo - use properly sized PNG to avoid image decode overhead */}
+            {/* Logo - theme-aware PNG with transparent background */}
             <Link
               to={getLocalizedPath("/")}
               className="flex items-center hover:opacity-70 transition-opacity duration-200 flex-shrink-0"
             >
-              <picture>
-                <source srcSet="/logos/horizontal/docito-horizontal-sm.webp" type="image/webp" />
-                <img
-                  src="/logos/horizontal/docito-horizontal-sm.png"
-                  alt="Docito"
-                  className="h-6 w-auto"
-                  width={80}
-                  height={24}
-                  fetchPriority="high"
-                  decoding="async"
-                  loading="eager"
-                  style={{ aspectRatio: '80/24' }}
-                />
-              </picture>
+              <img
+                src={logoSrc}
+                alt="Docito"
+                className="h-7 w-auto object-contain"
+                width={100}
+                height={28}
+                fetchPriority="high"
+                decoding="async"
+                loading="eager"
+              />
             </Link>
 
             {/* Desktop Navigation - Horizontal */}
