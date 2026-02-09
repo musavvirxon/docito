@@ -63,7 +63,7 @@ function datetimeLocalToIso(v: string) {
 }
 
 function parseMoneyToCents(v: string) {
-  const n = Number(String(v || "").replaceAll(",", "").trim());
+  const n = Number(String(v || "").split(",").join("").trim());
   if (!Number.isFinite(n)) return 0;
   return Math.round(n * 100);
 }
@@ -288,7 +288,7 @@ export default function FinanceEntryDialog({
             <div className="space-y-2 sm:col-span-2">
               <Label>Description</Label>
               <Textarea
-                value={dscription}
+                value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={saving}
                 placeholder="Optional note (e.g., utilities bill, supplies, consultation income)"

@@ -164,9 +164,9 @@ export default function FacilityAutomationSection() {
             size="lg"
             className="rounded-full h-12 px-7 gap-2"
             onClick={() => {
-              void trackMarketingEvent({
-                event_name: "home_automation_primary_click",
-                meta: { cta: "start_trial", section: "automation" },
+              void trackMarketingEvent("home_automation_primary_click", {
+                cta: "start_trial",
+                section: "automation",
               });
               navigate("/auth?mode=signup");
             }}
@@ -180,9 +180,9 @@ export default function FacilityAutomationSection() {
             variant="outline"
             className="rounded-full h-12 px-7 gap-2 border-2"
             onClick={() => {
-              void trackMarketingEvent({
-                event_name: "home_automation_secondary_click",
-                meta: { cta: "explore_features", section: "automation" },
+              void trackMarketingEvent("home_automation_secondary_click", {
+                cta: "explore_features",
+                section: "automation",
               });
               navigate("/features#features");
             }}

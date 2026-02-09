@@ -36,7 +36,7 @@ const PAGE_SIZE = 50;
 function csvEscape(value: unknown): string {
   if (value === null || value === undefined) return '""';
   const s = typeof value === "string" ? value : JSON.stringify(value);
-  return '"' + s.replaceAll('"', '""') + '"';
+  return '"' + s.split('"').join('""') + '"';
 }
 
 function toIsoStart(dateStr: string) {

@@ -39,7 +39,7 @@ export type CompensationProfileDraft = {
 };
 
 function parseMoneyToCents(v: string) {
-  const n = Number(String(v || "").replaceAll(",", "").trim());
+  const n = Number(String(v || "").split(",").join("").trim());
   if (!Number.isFinite(n)) return 0;
   return Math.round(n * 100);
 }

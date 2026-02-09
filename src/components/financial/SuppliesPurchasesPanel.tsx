@@ -5,7 +5,8 @@
 // - Keeps UI consistent, minimal, admin-oriented
 
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase as supabaseClient } from "@/integrations/supabase/client";
+const supabase = supabaseClient as any;
 import { toast } from "sonner";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, RefreshCw, Plus, ShoppingCart, AlertTriangle, PackageSearch } from "lucide-react";
 
-type FinanceEntityType = "clinic" | "lab" | "imaging" | "pharmacy";
+type FinanceEntityType = "clinic" | "practice" | "lab" | "imaging" | "pharmacy";
 
 type PurchaseRow = {
   id: string;

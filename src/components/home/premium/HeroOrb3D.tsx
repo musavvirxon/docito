@@ -216,9 +216,7 @@ function ConnectionLine({ nodePosition, color, opacity }: ConnectionLineProps) {
   }, [points]);
 
   return (
-    <line geometry={geometry}>
-      <lineBasicMaterial color={color} transparent opacity={opacity} />
-    </line>
+    <primitive object={new THREE.Line(geometry, new THREE.LineBasicMaterial({ color, transparent: true, opacity }))} />
   );
 }
 
@@ -434,7 +432,7 @@ function FloatingNode({
     <>
       {/* Connection line - only show when visible */}
       {isVisible && (
-        <ConnectionLine nodePosition={currentPosition} color={node.color} opacity={opacity * 0.2} />
+        <ConnectionLine nodePosition={node.position} color={node.color} opacity={opacity * 0.2} />
       )}
       
       <group 

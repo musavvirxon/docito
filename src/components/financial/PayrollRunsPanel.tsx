@@ -2,7 +2,8 @@
 // Step 32: Minimal UI to create payroll run + mark paid (creates finance ledger payroll entry)
 
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase as supabaseClient } from "@/integrations/supabase/client";
+const supabase = supabaseClient as any;
 import { toast } from "sonner";
 import { Loader2, Plus, RefreshCw, BadgeCheck, CreditCard, CalendarDays } from "lucide-react";
 

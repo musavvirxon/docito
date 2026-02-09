@@ -1,7 +1,8 @@
 // File: src/hooks/useFinanceCategories.ts
 
 import { useCallback, useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase as supabaseClient } from "@/integrations/supabase/client";
+const supabase = supabaseClient as any;
 import type { FinanceEntityType } from "@/components/financial/FinanceHub";
 import type { FinanceCategoryRow } from "@/components/financial/FinanceEntryDialog";
 
