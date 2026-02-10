@@ -1,1 +1,33 @@
- {}
+{
+  "hero": {
+    "badge": "Ihre gesamte Versorgung – synchron",
+    "title": {
+      "line1": "Weniger Verwaltung. Mehr Versorgung.",
+      "line2": "Eine Plattform für jeden Schritt im Gesundheitswesen."
+    },
+    "description": "Docito verbindet Patient:innen, Anbieter, Labore, Bildgebung, Apotheken und Versicherungen—damit Termine, Akten, Rezepte, Ergebnisse und Zahlungen an einem Ort bleiben.",
+    "cards": {
+      "patients": { "title": "Für Patient:innen", "description": "Finden, buchen und Versorgung an einem Ort verfolgen" },
+      "clinics": { "title": "Für Kliniken", "description": "Terminplanung, Akten und Abrechnung vereint" },
+      "imaging": { "title": "Für Bildgebung", "description": "Aufträge, Befunde und Überweisungskoordination" },
+      "pharmacy": { "title": "Für Apotheken", "description": "E-Rezepte, Belieferung und Zustellung" },
+      "labs": { "title": "Für Labore", "description": "Testaufträge, Ergebnisse und digitale Zustellung" }
+    },
+    "cta": {
+      "primary": "Kostenlose 14-Tage-Testphase starten",
+      "secondary": "Jetzt Versorgung finden",
+      "note": "Keine Demo. Keine Kreditkarte zum Start. Jederzeit kündbar."
+    },
+    "ecosystem": {
+      "doctors": "Ärzt:innen",
+      "clinics": "Kliniken",
+      "labs": "Labore",
+      "imaging": "Bildgebung",
+      "pharmacies": "Apotheken",
+      "patients": "Patient:innen"
+    },
+    "a11y": {
+      "scrollToSearch": "Zum Suchen scrollen"
+    }
+  }
+}
