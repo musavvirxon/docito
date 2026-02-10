@@ -1,1 +1,33 @@
- {}
+{
+  "hero": {
+    "badge": "你的所有医疗服务，同步协同",
+    "title": {
+      "line1": "少些行政，多些关怀。",
+      "line2": "覆盖医疗全流程的一体化平台。"
+    },
+    "description": "Docito 连接患者、医疗机构、实验室、影像中心、药房与保险—让预约、病历、处方、结果与支付集中在一个地方。",
+    "cards": {
+      "patients": { "title": "面向患者", "description": "查找、预约并在一处跟踪就医进度" },
+      "clinics": { "title": "面向诊所", "description": "排班、病历与账单统一管理" },
+      "imaging": { "title": "面向影像", "description": "医嘱、报告与转诊协同" },
+      "pharmacy": { "title": "面向药房", "description": "电子处方、配药与配送" },
+      "labs": { "title": "面向检验", "description": "检验申请、结果与数字化交付" }
+    },
+    "cta": {
+      "primary": "开始 14 天免费试用",
+      "secondary": "立即查找医疗服务",
+      "note": "无需演示。无需信用卡即可开始。随时取消。"
+    },
+    "ecosystem": {
+      "doctors": "医生",
+      "clinics": "诊所",
+      "labs": "实验室",
+      "imaging": "影像",
+      "pharmacies": "药房",
+      "patients": "患者"
+    },
+    "a11y": {
+      "scrollToSearch": "滚动到搜索"
+    }
+  }
+}
