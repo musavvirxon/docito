@@ -131,39 +131,24 @@ const Auth = () => {
     return getDashboardRoute(roles as any);
   };
 
-  useEffect(() => {
-    if (!user) return;
-    
-    // If we have user + profile, navigate immediately
-    if (profile) {
-      const pendingInviteToken = sessionStorage.getItem("pending_staff_invite_token");
-      if (pendingInviteToken) {
-        sessionStorage.removeItem("pending_staff_invite_token");
-        navigate(`/accept-invite/${pendingInviteToken}`, { replace: true });
-        return;
-      }
-
-      const target = !isBlockedReturnTo(safeReturnTo) && safeReturnTo ? safeReturnTo : getDashboardPath();
-      navigate(target, { replace: true });
-      return;
-    }
-
-    // If we have user but no profile yet (trigger may still be creating it), 
-    // wait briefly then redirect to dashboard anyway
-    const timeout = setTimeout(() => {
-      if (user && !profile) {
-        console.warn("Profile not loaded after auth, redirecting to dashboard anyway");
-        navigate("/dashboard", { replace: true });
-      }
-    }, 3000);
-    return () => clearTimeout(timeout);
-  }, [user, profile, activeRole, navigate, safeReturnTo]);
+  // No auto-redirect from auth page - user must explicitly sign in/up
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await signIn(signInEmail, signInPassword);
+      const result = await signIn(signInEmail, signInPassword);
+      if (!result.error) {
+        // Navigate to dashboard after successful sign in
+        const pendingInviteToken = sessionStorage.getItem("pending_staff_invite_token");
+        if (pendingInviteToken) {
+          sessionStorage.removeItem("pending_staff_invite_token");
+          navigate(`/accept-invite/${pendingInviteToken}`, { replace: true });
+        } else {
+          const target = !isBlockedReturnTo(safeReturnTo) && safeReturnTo ? safeReturnTo : getDashboardPath();
+          navigate(target, { replace: true });
+        }
+      }
     } catch (error) {
       console.error("Sign in error:", error);
     } finally {
@@ -175,11 +160,14 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await signUp(signUpEmail, signUpPassword, {
-        // For facility/practice admins this is the facility name shown in Profile.
+      const result = await signUp(signUpEmail, signUpPassword, {
         fullName: signUpFullName,
         role: signUpRole,
       });
+      if (!result.error) {
+        // Navigate to dashboard after successful sign up
+        navigate("/dashboard", { replace: true });
+      }
     } catch (error) {
       console.error("Sign up error:", error);
     } finally {

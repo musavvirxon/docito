@@ -85,8 +85,14 @@ const ProfileMenu = ({ compact = false }: ProfileMenuProps) => {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel className="text-xs text-muted-foreground">
-          Signed in as {profile?.full_name || user?.email}
+        <DropdownMenuLabel className="flex flex-col gap-0.5">
+          <span className="text-sm font-medium text-foreground">{profile?.full_name || user?.email || "Account"}</span>
+          <span className="text-xs text-muted-foreground">{user?.email}</span>
+          {roles.length > 0 && (
+            <span className="text-xs text-primary font-medium mt-0.5">
+              {roleLabels[effectiveActiveRole] || effectiveActiveRole}
+            </span>
+          )}
         </DropdownMenuLabel>
 
         <DropdownMenuItem onClick={() => navigate(dashboardRoute)}>

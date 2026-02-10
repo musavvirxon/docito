@@ -3,7 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { getDashboardRoute } from "@/lib/rbac";
 
-const isAuthOrRoot = (path: string) => path === "/" || path === "/auth";
+// Only redirect from root page, NOT from /auth (user may want to stay on auth page)
+const isAuthOrRoot = (path: string) => path === "/";
 
 export default function PostAuthRedirect() {
   const { user, profile, loading, allRoles, activeRole } = useAuth();
