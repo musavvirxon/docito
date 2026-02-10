@@ -1,1 +1,34 @@
- {}
+
+{
+  "hero": {
+    "badge": "Barcha tibbiy xizmatlar — bir ritmda",
+    "title": {
+      "line1": "Kamroq byurokratiya. Ko‘proq g‘amxo‘rlik.",
+      "line2": "Sog‘liqni saqlashning har bir bosqichi uchun yagona platforma."
+    },
+    "description": "Docito bemorlar, shifokorlar, laboratoriyalar, diagnostika, dorixonalar va sug‘urtani bog‘laydi — shunda yozilishlar, kartalar, retseptlar, natijalar va to‘lovlar bir joyda bo‘ladi.",
+    "cards": {
+      "patients": { "title": "Bemorlar uchun", "description": "Toping, yoziling va davolanishni bir joyda kuzating" },
+      "clinics": { "title": "Klinikalar uchun", "description": "Jadval, hujjatlar va billing — barchasi birlashgan" },
+      "imaging": { "title": "Diagnostika uchun", "description": "Yo‘llanmalar, hisobotlar va muvofiqlashtirish" },
+      "pharmacy": { "title": "Dorixonalar uchun", "description": "Elektron retseptlar, bajarish va yetkazib berish" },
+      "labs": { "title": "Laboratoriyalar uchun", "description": "Tahlil buyurtmalari, natijalar va raqamli yetkazish" }
+    },
+    "cta": {
+      "primary": "14 kunlik bepul sinovni boshlash",
+      "secondary": "Hozir yordam toping",
+      "note": "Demo yo‘q. Boshlash uchun karta kerak emas. Istalgan payt bekor qiling."
+    },
+    "ecosystem": {
+      "doctors": "Shifokorlar",
+      "clinics": "Klinikalar",
+      "labs": "Laboratoriyalar",
+      "imaging": "Diagnostika",
+      "pharmacies": "Dorixonalar",
+      "patients": "Bemorlar"
+    },
+    "a11y": {
+      "scrollToSearch": "Qidiruvga o‘tish"
+    }
+  }
+}
