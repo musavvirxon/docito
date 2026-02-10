@@ -64,11 +64,11 @@ export default function PremiumHome() {
         title={t("home:seo.title", "Docito - Professional Healthcare Platform")}
         description={t(
           "home:seo.description",
-          "The complete healthcare operating system. Find doctors, clinics, labs, pharmacies, and imaging centers.",
+          "The complete healthcare operating system. Automates all healthcare facilities in one place. Find doctors, clinics, labs, pharmacies, and imaging centers.",
         )}
         keywords={t(
           "home:seo.keywords",
-          "healthcare, doctors, clinics, labs, pharmacies, medical appointments",
+          "healthcare, doctors, clinics, labs, pharmacies, medical appointments, clinic automatization, patient records, medical management",
         )}
       />
 
