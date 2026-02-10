@@ -110,9 +110,9 @@ const PremiumTopNav = () => {
               <img
                 src={logoSrc}
                 alt="Docito"
-                className="h-7 w-auto object-contain"
-                width={100}
-                height={28}
+                className="h-9 w-auto object-contain"
+                width={128}
+                height={36}
                 fetchPriority="high"
                 decoding="async"
                 loading="eager"

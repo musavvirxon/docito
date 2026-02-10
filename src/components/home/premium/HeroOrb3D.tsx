@@ -337,22 +337,32 @@ function EarthGlobe({ opacity, isMobile }: { opacity: number; isMobile: boolean 
         />
       </Sphere>
 
-      {/* Atmosphere glow */}
+      {/* Atmosphere glow - enhanced */}
       <Sphere args={[1.55, isMobile ? 16 : 32, isMobile ? 8 : 16]}>
         <meshBasicMaterial
           color="#60a5fa"
           transparent
-          opacity={0.1 * opacity}
+          opacity={0.2 * opacity}
+          side={THREE.BackSide}
+        />
+      </Sphere>
+
+      {/* Mid glow */}
+      <Sphere args={[1.65, isMobile ? 16 : 32, isMobile ? 8 : 16]}>
+        <meshBasicMaterial
+          color="#818cf8"
+          transparent
+          opacity={0.12 * opacity}
           side={THREE.BackSide}
         />
       </Sphere>
 
       {/* Outer glow */}
-      <Sphere args={[1.7, isMobile ? 16 : 32, isMobile ? 8 : 16]}>
+      <Sphere args={[1.8, isMobile ? 16 : 32, isMobile ? 8 : 16]}>
         <meshBasicMaterial
           color="#3b82f6"
           transparent
-          opacity={0.05 * opacity}
+          opacity={0.06 * opacity}
           side={THREE.BackSide}
         />
       </Sphere>
@@ -507,7 +517,7 @@ function FloatingNode({
 // Particle system for holographic effect
 function HolographicParticles({ opacity, isMobile }: { opacity: number; isMobile: boolean }) {
   const particlesRef = useRef<THREE.Points>(null);
-  const count = 100;
+  const count = 200;
   
   const positions = useMemo(() => {
     const pos = new Float32Array(count * 3);

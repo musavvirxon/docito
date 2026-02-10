@@ -51,7 +51,7 @@ export default function SmartSearch() {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSearch();
     }
@@ -106,7 +106,7 @@ export default function SmartSearch() {
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => setFocused(true)}
                     onBlur={() => setTimeout(() => setFocused(false), 200)}
-                    onKeyPress={handleKeyPress}
+                    onKeyDown={handleKeyDown}
                     placeholder={t('home:search.specialty', 'Search doctors, labs, services...')}
                     className="w-full pl-12 pr-12 py-4 bg-muted/30 rounded-2xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
                   />
@@ -127,7 +127,7 @@ export default function SmartSearch() {
                     type="text"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    onKeyPress={handleKeyPress}
+                    onKeyDown={handleKeyDown}
                     placeholder={t('home:search.location', 'Location')}
                     className="w-full pl-12 pr-4 py-4 bg-muted/30 rounded-2xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
                   />
@@ -142,7 +142,7 @@ export default function SmartSearch() {
                     type="text"
                     value={insurance}
                     onChange={(e) => setInsurance(e.target.value)}
-                    onKeyPress={handleKeyPress}
+                    onKeyDown={handleKeyDown}
                     placeholder={t('home:search.insurance', 'Insurance')}
                     className="w-full pl-12 pr-4 py-4 bg-muted/30 rounded-2xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
                   />

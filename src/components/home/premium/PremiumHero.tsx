@@ -73,10 +73,10 @@ export default function PremiumHero() {
   };
 
   return (
-    <section className="relative min-h-screen flex items-center overflow-visible pt-20">
+    <section className="relative min-h-screen flex items-center overflow-visible pt-4">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center">
         {/* Left side - Text content */}
-        <div className="relative z-10 w-full lg:w-1/2 py-16 lg:py-20 lg:pr-8">
+        <div className="relative z-10 w-full lg:w-1/2 py-8 lg:py-10 lg:pr-8">
           <div className="text-left space-y-8">
             {/* Badge */}
             <div
@@ -103,23 +103,42 @@ export default function PremiumHero() {
               prescriptions, results, and payments stay in one place.
             </p>
 
-            {/* For Patients / For Providers */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
-              <div className="p-5 rounded-3xl bg-background/50 backdrop-blur-xl border border-border/50">
-                <div className="text-sm font-medium text-foreground mb-2">For patients</div>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>• Find and book verified care in minutes</li>
-                  <li>• Keep results, prescriptions, and follow-ups together</li>
-                  <li>• Pay securely and get reminders automatically</li>
-                </ul>
+            {/* Audience Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-xl">
+              <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium text-foreground">For patients</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Find, book, and track care in one place</p>
               </div>
-              <div className="p-5 rounded-3xl bg-background/50 backdrop-blur-xl border border-border/50">
-                <div className="text-sm font-medium text-foreground mb-2">For clinics & teams</div>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>• Online scheduling, messaging, and billing</li>
-                  <li>• Unified patient record across your workflow</li>
-                  <li>• Automations that reduce no-shows and admin</li>
-                </ul>
+              <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
+                <div className="flex items-center gap-2 mb-2">
+                  <Building2 className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium text-foreground">For clinics</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Scheduling, records, and billing unified</p>
+              </div>
+              <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
+                <div className="flex items-center gap-2 mb-2">
+                  <ScanLine className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium text-foreground">For imaging</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Orders, reports, and referral coordination</p>
+              </div>
+              <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
+                <div className="flex items-center gap-2 mb-2">
+                  <Pill className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium text-foreground">For pharmacy</span>
+                </div>
+                <p className="text-xs text-muted-foreground">ePrescriptions, fulfillment, and delivery</p>
+              </div>
+              <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
+                <div className="flex items-center gap-2 mb-2">
+                  <FlaskConical className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium text-foreground">For labs</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Test ordering, results, and digital delivery</p>
               </div>
             </div>
 
@@ -168,7 +187,7 @@ export default function PremiumHero() {
         </div>
 
         {/* Right side - 3D Globe (desktop/tablet only) */}
-        <div className="hidden md:block w-full lg:w-1/2 h-[520px] lg:h-[720px] relative">
+        <div className="hidden md:block w-full lg:w-1/2 h-[520px] lg:h-[720px] relative -mt-8">
           <LazyHeroOrb3D />
         </div>
       </div>

@@ -13,7 +13,6 @@ import SmartSearch from "@/components/home/premium/SmartSearch";
 const providerCardsFactory = () => import("@/components/home/premium/ProviderCards");
 const specialtiesFactory = () => import("@/components/home/premium/SpecialtiesCarousel");
 const diagnosticsFactory = () => import("@/components/home/premium/DiagnosticsSection");
-const bookingStepsFactory = () => import("@/components/home/premium/BookingSteps");
 const faqFactory = () => import("@/components/home/premium/FAQ");
 const mobileAppFactory = () => import("@/components/home/premium/MobileAppShowcase");
 
@@ -66,9 +65,6 @@ export default function PremiumHome() {
         <LazySection factory={providerCardsFactory} />
         <LazySection factory={specialtiesFactory} />
         <LazySection factory={diagnosticsFactory} />
-        <LazySection factory={bookingStepsFactory} />
-        <LazySection factory={faqFactory} />
-        <LazySection factory={mobileAppFactory} />
 
         {/* B2B / FACILITY-FIRST */}
         <LazySection factory={capabilitiesFactory} />
@@ -79,6 +75,8 @@ export default function PremiumHome() {
 
         {/* GENERAL */}
         <LazySection factory={globalTrustFactory} />
+        <LazySection factory={mobileAppFactory} />
+        <LazySection factory={faqFactory} />
         <LazySection factory={finalCtaFactory} />
         <LazySection factory={scrollToTopFactory} rootMargin="0px" fallback={null} />
       </main>
