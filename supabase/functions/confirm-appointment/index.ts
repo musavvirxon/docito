@@ -84,9 +84,9 @@ async function fetchHold(service: any, holdId: string): Promise<{ data: HoldData
 }
 
 async function insertAppointmentWithFallback(
-  service: ReturnType<typeof createClient>,
+  service: any,
   payload: Record<string, unknown>,
-) {
+): Promise<{ data: any; error: any }> {
   // Try with payload as-is (may include procedure_id)
   let res = await service
     .from("appointments")
@@ -296,7 +296,7 @@ serve(async (req) => {
           estimated_cost: estimatedCost,
           status: "scheduled",
         } as any)
-        .catch((e) => {
+        .catch((e: any) => {
           console.error("Failed to create appointment_procedures:", e);
         });
     }

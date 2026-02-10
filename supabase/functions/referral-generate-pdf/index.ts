@@ -14,8 +14,16 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { PDFDocument, rgb } from "https://esm.sh/pdf-lib@1.17.1";
 import fontkit from "https://esm.sh/@pdf-lib/fontkit@1.1.1";
 import QRCode from "https://esm.sh/qrcode@1.5.3";
-import arabicReshaper from "https://esm.sh/arabic-reshaper@3.0.0";
-import bidi from "https://esm.sh/bidi-js@1.0.3";
+// @ts-ignore - optional RTL support
+let arabicReshaper: any = null;
+// @ts-ignore - optional RTL support
+let bidi: any = null;
+try {
+  arabicReshaper = (await import("https://esm.sh/arabic-reshaper@3.0.0")).default;
+  bidi = (await import("https://esm.sh/bidi-js@1.0.3")).default;
+} catch {
+  // RTL reshaping not available - graceful fallback
+}
 
 import {
   secureHandler,
@@ -1289,7 +1297,7 @@ serve(async (req) => {
     const bytes = await pdfDoc.save();
     const fileName = sanitizeFileName(`referral_${r.referral_number || r.id}`) + ".pdf";
 
-    return new Response(bytes, {
+    return new Response(bytes as unknown as BodyInit, {
       status: 200,
       headers: {
         ...corsHeaders,

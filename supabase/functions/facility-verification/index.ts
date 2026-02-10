@@ -57,7 +57,7 @@ function isValidIanaTimezone(tz: string): boolean {
 }
 
 function normalizeEntityType(input: unknown): EntityType | null {
-  const v = validateString(input, 1, 24);
+  const v = validateString(input, 1, 24 as any);
   if (!v) return null;
   const t = v.toLowerCase();
   if (t === "practice" || t === "clinic" || t === "lab" || t === "imaging" || t === "pharmacy") return t;
@@ -65,13 +65,13 @@ function normalizeEntityType(input: unknown): EntityType | null {
 }
 
 function normalizeCountry(input: unknown): string | null {
-  const v = validateString(input, 1, 120);
+  const v = validateString(input, 1, 120 as any);
   if (!v) return null;
   return v.trim();
 }
 
 function normalizeTimezone(input: unknown): string | null {
-  const v = validateString(input, 1, 100);
+  const v = validateString(input, 1, 100 as any);
   if (!v) return null;
   const tz = v.trim();
   return tz;
