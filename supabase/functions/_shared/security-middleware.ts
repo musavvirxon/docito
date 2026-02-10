@@ -47,12 +47,13 @@ export type SecureHandlerOptions = {
 
 export type SecureContext = {
   user: { id: string; email?: string | null } | null;
+  userId?: string; // convenience alias for user?.id
   token: string | null;
   ip: string;
   roles: string[];
-  anonClient: ReturnType<typeof createClient>;
-  serviceClient: ReturnType<typeof createClient>;
-  supabase: ReturnType<typeof createClient>; // alias for anonClient (user-scoped)
+  anonClient: any;
+  serviceClient: any;
+  supabase: any; // alias for anonClient (user-scoped)
 };
 
 type SecureHandlerResult =
@@ -235,6 +236,7 @@ export async function secureHandler(
 
     const context: SecureContext = {
       user,
+      userId: user?.id,
       token,
       ip,
       roles,

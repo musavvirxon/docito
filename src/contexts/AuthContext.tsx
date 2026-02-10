@@ -266,24 +266,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signOut = async () => {
+    // Clear local UI state FIRST so the UI updates immediately
+    setSession(null);
+    setUser(null);
+    setProfile(null);
+    setAllRolesState([]);
+    setRoleStatus({});
+    _setActiveRole("patient");
+    clearStoredRole();
+
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) console.warn("signOut API error (ignored):", error.message);
+      await supabase.auth.signOut();
     } catch (e: any) {
       console.warn("signOut error (ignored):", e?.message || e);
-    } finally {
-      // Always clear local UI state
-      setSession(null);
-      setUser(null);
-      setProfile(null);
-      setAllRolesState([]);
-      setRoleStatus({});
-      _setActiveRole("patient");
-      clearStoredRole();
-      toast.success("Signed out");
-      // Force full navigation to ensure all state is truly reset
-      window.location.href = "/auth";
     }
+
+    toast.success("Signed out");
   };
 
   const signIn = async (email: string, password: string) => {
