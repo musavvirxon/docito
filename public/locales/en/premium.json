@@ -1,1 +1,34 @@
- {}
+// File: public/locales/en/premium.json
+{
+  "hero": {
+    "badge": "All your care, in sync",
+    "title": {
+      "line1": "Less admin. More care.",
+      "line2": "One platform for every step of healthcare."
+    },
+    "description": "Docito connects patients, providers, labs, imaging, pharmacies, and insurance—so bookings, records, prescriptions, results, and payments stay in one place.",
+    "cards": {
+      "patients": { "title": "For patients", "description": "Find, book, and track care in one place" },
+      "clinics": { "title": "For clinics", "description": "Scheduling, records, and billing unified" },
+      "imaging": { "title": "For imaging", "description": "Orders, reports, and referral coordination" },
+      "pharmacy": { "title": "For pharmacy", "description": "ePrescriptions, fulfillment, and delivery" },
+      "labs": { "title": "For labs", "description": "Test ordering, results, and digital delivery" }
+    },
+    "cta": {
+      "primary": "Start free 14-day trial",
+      "secondary": "Find care now",
+      "note": "No demo. No credit card to start. Cancel anytime."
+    },
+    "ecosystem": {
+      "doctors": "Doctors",
+      "clinics": "Clinics",
+      "labs": "Labs",
+      "imaging": "Imaging",
+      "pharmacies": "Pharmacies",
+      "patients": "Patients"
+    },
+    "a11y": {
+      "scrollToSearch": "Scroll to search"
+    }
+  }
+}
