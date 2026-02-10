@@ -1,6 +1,7 @@
-// src/components/home/premium/PremiumHero.tsx
+// File: src/components/home/premium/PremiumHero.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   ArrowRight,
   Building2,
@@ -13,6 +14,7 @@ import {
 
 import LazyHeroOrb3D from "./LazyHeroOrb3D";
 import { trackMarketingEvent } from "@/lib/marketing";
+import { useLocalizedPath } from "@/hooks/useLocalizedPath";
 
 type EcosystemChip = {
   label: string;
@@ -34,18 +36,20 @@ function scrollToId(id: string) {
 
 export default function PremiumHero() {
   const navigate = useNavigate();
+  const { t } = useTranslation("premium");
+  const { getLocalizedPath } = useLocalizedPath();
   const [isVisible, setIsVisible] = useState(false);
 
   const ecosystem = useMemo<EcosystemChip[]>(
     () => [
-      { label: "Doctors", Icon: Stethoscope },
-      { label: "Clinics", Icon: Building2 },
-      { label: "Labs", Icon: FlaskConical },
-      { label: "Imaging", Icon: ScanLine },
-      { label: "Pharmacies", Icon: Pill },
-      { label: "Patients", Icon: Users },
+      { label: t("hero.ecosystem.doctors", "Doctors"), Icon: Stethoscope },
+      { label: t("hero.ecosystem.clinics", "Clinics"), Icon: Building2 },
+      { label: t("hero.ecosystem.labs", "Labs"), Icon: FlaskConical },
+      { label: t("hero.ecosystem.imaging", "Imaging"), Icon: ScanLine },
+      { label: t("hero.ecosystem.pharmacies", "Pharmacies"), Icon: Pill },
+      { label: t("hero.ecosystem.patients", "Patients"), Icon: Users },
     ],
-    []
+    [t],
   );
 
   // Trigger CSS animations after mount
@@ -59,7 +63,7 @@ export default function PremiumHero() {
       cta: "start_trial",
       section: "hero",
     });
-    navigate("/auth?mode=signup");
+    navigate(`${getLocalizedPath("/auth")}?mode=signup`);
   };
 
   const findCare = () => {
@@ -68,7 +72,7 @@ export default function PremiumHero() {
       section: "hero",
     });
     if (!scrollToId("search")) {
-      navigate("/#search");
+      navigate(`${getLocalizedPath("/") }#search`);
     }
   };
 
@@ -86,21 +90,23 @@ export default function PremiumHero() {
             >
               <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 backdrop-blur-sm text-primary text-sm font-medium rounded-full border border-primary/20">
                 <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-                All your care, in sync
+                {t("hero.badge", "All your care, in sync")}
               </span>
             </div>
 
             {/* Title (keep unanimated for LCP) */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-light tracking-tight text-foreground">
-              <span className="block">Less admin. More care.</span>
+              <span className="block">{t("hero.title.line1", "Less admin. More care.")}</span>
               <span className="block bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent font-normal">
-                One platform for every step of healthcare.
+                {t("hero.title.line2", "One platform for every step of healthcare.")}
               </span>
             </h1>
 
             <p className="text-lg sm:text-xl text-muted-foreground max-w-xl font-light leading-relaxed">
-              Docito connects patients, providers, labs, imaging, pharmacies, and insurance—so bookings, records,
-              prescriptions, results, and payments stay in one place.
+              {t(
+                "hero.description",
+                "Docito connects patients, providers, labs, imaging, pharmacies, and insurance—so bookings, records, prescriptions, results, and payments stay in one place.",
+              )}
             </p>
 
             {/* Audience Cards */}
@@ -108,37 +114,61 @@ export default function PremiumHero() {
               <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
                 <div className="flex items-center gap-2 mb-2">
                   <Users className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-medium text-foreground">For patients</span>
+                  <span className="text-sm font-medium text-foreground">
+                    {t("hero.cards.patients.title", "For patients")}
+                  </span>
                 </div>
-                <p className="text-xs text-muted-foreground">Find, book, and track care in one place</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("hero.cards.patients.description", "Find, book, and track care in one place")}
+                </p>
               </div>
+
               <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
                 <div className="flex items-center gap-2 mb-2">
                   <Building2 className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-medium text-foreground">For clinics</span>
+                  <span className="text-sm font-medium text-foreground">
+                    {t("hero.cards.clinics.title", "For clinics")}
+                  </span>
                 </div>
-                <p className="text-xs text-muted-foreground">Scheduling, records, and billing unified</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("hero.cards.clinics.description", "Scheduling, records, and billing unified")}
+                </p>
               </div>
+
               <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
                 <div className="flex items-center gap-2 mb-2">
                   <ScanLine className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-medium text-foreground">For imaging</span>
+                  <span className="text-sm font-medium text-foreground">
+                    {t("hero.cards.imaging.title", "For imaging")}
+                  </span>
                 </div>
-                <p className="text-xs text-muted-foreground">Orders, reports, and referral coordination</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("hero.cards.imaging.description", "Orders, reports, and referral coordination")}
+                </p>
               </div>
+
               <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
                 <div className="flex items-center gap-2 mb-2">
                   <Pill className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-medium text-foreground">For pharmacy</span>
+                  <span className="text-sm font-medium text-foreground">
+                    {t("hero.cards.pharmacy.title", "For pharmacy")}
+                  </span>
                 </div>
-                <p className="text-xs text-muted-foreground">ePrescriptions, fulfillment, and delivery</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("hero.cards.pharmacy.description", "ePrescriptions, fulfillment, and delivery")}
+                </p>
               </div>
+
               <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
                 <div className="flex items-center gap-2 mb-2">
                   <FlaskConical className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-medium text-foreground">For labs</span>
+                  <span className="text-sm font-medium text-foreground">
+                    {t("hero.cards.labs.title", "For labs")}
+                  </span>
                 </div>
-                <p className="text-xs text-muted-foreground">Test ordering, results, and digital delivery</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("hero.cards.labs.description", "Test ordering, results, and digital delivery")}
+                </p>
               </div>
             </div>
 
@@ -152,19 +182,20 @@ export default function PremiumHero() {
                 onClick={startTrial}
                 className="px-8 py-4 bg-primary text-primary-foreground font-medium rounded-full shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all inline-flex items-center justify-center gap-2"
               >
-                Start free 14-day trial
+                {t("hero.cta.primary", "Start free 14-day trial")}
                 <ArrowRight className="w-4 h-4" />
               </button>
+
               <button
                 onClick={findCare}
                 className="px-8 py-4 bg-background/80 backdrop-blur-sm text-foreground font-medium rounded-full border border-border/50 hover:bg-background/90 hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
-                Find care now
+                {t("hero.cta.secondary", "Find care now")}
               </button>
             </div>
 
             <div className="text-sm text-muted-foreground">
-              No demo. No credit card to start. Cancel anytime.
+              {t("hero.cta.note", "No demo. No credit card to start. Cancel anytime.")}
             </div>
 
             {/* Mobile-only ecosystem chips (replaces 3D orb on small screens) */}
@@ -201,13 +232,13 @@ export default function PremiumHero() {
         <button
           type="button"
           onClick={() => {
-             void trackMarketingEvent("home_scroll_indicator_click", {
-               section: "hero",
-               target: "search",
-             });
+            void trackMarketingEvent("home_scroll_indicator_click", {
+              section: "hero",
+              target: "search",
+            });
             scrollToId("search");
           }}
-          aria-label="Scroll to search"
+          aria-label={t("hero.a11y.scrollToSearch", "Scroll to search")}
           className="w-6 h-10 border-2 border-muted-foreground/30 rounded-full flex justify-center animate-bounce bg-transparent"
         >
           <div className="w-1.5 h-3 bg-muted-foreground/50 rounded-full mt-2" />
