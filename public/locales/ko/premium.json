@@ -1,1 +1,33 @@
- {}
+{
+  "hero": {
+    "badge": "모든 케어를 한곳에, 완벽한 동기화",
+    "title": {
+      "line1": "행정은 줄이고, 케어는 늘리고.",
+      "line2": "의료 전 과정을 위한 하나의 플랫폼."
+    },
+    "description": "Docito는 환자, 의료기관, 검사실, 영상센터, 약국, 보험을 연결해—예약, 기록, 처방, 결과, 결제를 한곳에서 관리할 수 있게 합니다.",
+    "cards": {
+      "patients": { "title": "환자용", "description": "찾고, 예약하고, 케어를 한곳에서 추적" },
+      "clinics": { "title": "클리닉용", "description": "스케줄링, 기록, 청구를 통합" },
+      "imaging": { "title": "영상센터용", "description": "오더, 리포트, 의뢰 연계를 간편하게" },
+      "pharmacy": { "title": "약국용", "description": "전자처방, 조제, 배송" },
+      "labs": { "title": "검사실용", "description": "검사 의뢰, 결과, 디지털 전달" }
+    },
+    "cta": {
+      "primary": "14일 무료 체험 시작하기",
+      "secondary": "지금 케어 찾기",
+      "note": "데모 없음. 시작에 카드 불필요. 언제든 취소 가능."
+    },
+    "ecosystem": {
+      "doctors": "의사",
+      "clinics": "클리닉",
+      "labs": "검사실",
+      "imaging": "영상",
+      "pharmacies": "약국",
+      "patients": "환자"
+    },
+    "a11y": {
+      "scrollToSearch": "검색으로 스크롤"
+    }
+  }
+}
