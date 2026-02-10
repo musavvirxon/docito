@@ -1,1 +1,34 @@
- {}
+// File: public/locales/tr/premium.json
+{
+  "hero": {
+    "badge": "Tüm bakımınız, senkron",
+    "title": {
+      "line1": "Daha az bürokrasi. Daha çok bakım.",
+      "line2": "Sağlığın her adımı için tek platform."
+    },
+    "description": "Docito; hastaları, sağlayıcıları, laboratuvarları, görüntülemeyi, eczaneleri ve sigortayı bir araya getirir—böylece randevular, kayıtlar, reçeteler, sonuçlar ve ödemeler tek yerde kalır.",
+    "cards": {
+      "patients": { "title": "Hastalar için", "description": "Bulun, randevu alın ve bakımı tek yerde takip edin" },
+      "clinics": { "title": "Klinikler için", "description": "Randevu, kayıt ve faturalama tek bir yapıda" },
+      "imaging": { "title": "Görüntüleme için", "description": "İstekler, raporlar ve sevk koordinasyonu" },
+      "pharmacy": { "title": "Eczane için", "description": "e-Reçete, karşılama ve teslimat" },
+      "labs": { "title": "Laboratuvarlar için", "description": "Test istemi, sonuçlar ve dijital teslim" }
+    },
+    "cta": {
+      "primary": "14 günlük ücretsiz denemeyi başlat",
+      "secondary": "Şimdi bakım bulun",
+      "note": "Demo yok. Başlamak için kredi kartı yok. İstediğiniz zaman iptal edin."
+    },
+    "ecosystem": {
+      "doctors": "Doktorlar",
+      "clinics": "Klinikler",
+      "labs": "Laboratuvarlar",
+      "imaging": "Görüntüleme",
+      "pharmacies": "Eczaneler",
+      "patients": "Hastalar"
+    },
+    "a11y": {
+      "scrollToSearch": "Aramaya kaydır"
+    }
+  }
+}
