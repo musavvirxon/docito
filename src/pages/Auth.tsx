@@ -1,401 +1,263 @@
-// src/pages/Auth.tsx
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { Loader2, User, Stethoscope, Building2, Pill, FlaskConical, Scan } from "lucide-react";
-
+// File: src/pages/Auth.tsx
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-import { useAuth } from "@/contexts/AuthContext";
-import { AuthIllustration } from "@/components/Visuals/illustrations";
-import { DASHBOARD_ROUTES, getDashboardRoute, normalizeRole, type AppRole } from "@/lib/rbac";
-
-type NameFieldCopy = {
-  label: string;
-  placeholder: string;
-};
-
-const getNameFieldCopy = (t: any, role: AppRole | null): NameFieldCopy => {
-  switch (role) {
-    case "clinic_admin":
-    case "admin":
-      return {
-        label: t("auth.signUp.practiceName", "Clinic name"),
-        placeholder: t("auth.signUp.practiceNamePlaceholder", "Enter clinic name"),
-      };
-    case "lab_admin":
-      return {
-        label: t("auth.signUp.labName", "Lab name"),
-        placeholder: t("auth.signUp.labNamePlaceholder", "Enter lab name"),
-      };
-    case "pharmacy_admin":
-      return {
-        label: t("auth.signUp.pharmacyName", "Pharmacy name"),
-        placeholder: t("auth.signUp.pharmacyNamePlaceholder", "Enter pharmacy name"),
-      };
-    case "imaging_admin":
-      return {
-        label: t("auth.signUp.imagingName", "Imaging center name"),
-        placeholder: t("auth.signUp.imagingNamePlaceholder", "Enter imaging center name"),
-      };
-    default:
-      return {
-        label: t("auth.signUp.fullName", "Full Name"),
-        placeholder: t("auth.signUp.fullNamePlaceholder", "Enter your full name"),
-      };
-  }
-};
-
-const isBlockedReturnTo = (returnTo: string | null) => {
-  if (!returnTo || !returnTo.startsWith("/")) return true;
-
-  try {
-    const u = new URL(returnTo, "http://local");
-    const p = u.pathname;
-
-    // Never bounce users back into registration flows after login
-    const blockedPrefixes = ["/register-practice", "/lab/register", "/pharmacy/register", "/imaging/register", "/auth"];
-    return blockedPrefixes.some((bp) => p === bp || p.startsWith(`${bp}/`));
-  } catch {
-    return true;
-  }
-};
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { getDashboardRoute } from "@/lib/rbac";
 
 const Auth = () => {
-  const { t } = useTranslation("auth");
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const { user, loading: authLoading, signIn, signUp, allRoles } = useAuth();
+  
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
 
-  const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("signin");
+  const [signInData, setSignInData] = useState({ email: "", password: "" });
+  const [signUpData, setSignUpData] = useState({ 
+    email: "", 
+    password: "", 
+    fullName: "",
+    confirmPassword: "" 
+  });
 
-  // Sign In Form
-  const [signInEmail, setSignInEmail] = useState("");
-  const [signInPassword, setSignInPassword] = useState("");
-
-  // Sign Up Form
-  const [signUpEmail, setSignUpEmail] = useState("");
-  const [signUpPassword, setSignUpPassword] = useState("");
-  const [signUpFullName, setSignUpFullName] = useState("");
-  const [signUpRole, setSignUpRole] = useState<string>("patient");
-
-  const { signIn, signUp, user, profile, activeRole } = useAuth();
-
-  const returnToParam = searchParams.get("returnTo");
-  const safeReturnTo = returnToParam && returnToParam.startsWith("/") ? returnToParam : null;
-
-  const mode = searchParams.get("mode");
-
-  const allowedSignupRoles = new Set([
-    "patient",
-    "doctor",
-    "admin",
-    "pharmacy_admin",
-    "lab_admin",
-    "imaging_admin",
-  ]);
-
-  const roleFromQuery = searchParams.get("role");
-  const initialSignUpRole =
-    roleFromQuery && allowedSignupRoles.has(roleFromQuery) ? roleFromQuery : "patient";
-
-  const normalizedSignupRole = useMemo(() => normalizeRole(signUpRole), [signUpRole]);
-  const nameFieldCopy = useMemo(() => getNameFieldCopy(t, normalizedSignupRole), [t, normalizedSignupRole]);
-
+  // Redirect if already authenticated
   useEffect(() => {
-    if (mode === "register" || mode === "signup") {
-      setActiveTab("signup");
-      return;
+    if (!authLoading && user) {
+      const from = (location.state as any)?.from?.pathname || getDashboardRoute(allRoles);
+      console.log("Auth page - User detected, redirecting to:", from);
+      navigate(from, { replace: true });
     }
-    if (mode === "signin") {
-      setActiveTab("signin");
-    }
-  }, [mode]);
+  }, [user, authLoading, navigate, location, allRoles]);
 
-  useEffect(() => {
-    if (mode === "register" || mode === "signup") {
-      setSignUpRole(initialSignUpRole);
-    }
-  }, [mode, initialSignUpRole]);
+  // Show loading while checking auth state
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
-  const getDashboardPath = () => {
-    const byActive = DASHBOARD_ROUTES[activeRole];
-    if (byActive) return byActive;
-
-    const roles = profile?.roles || [];
-    return getDashboardRoute(roles as any);
-  };
-
-  useEffect(() => {
-    if (!user) return;
-    
-    // If we have user + profile, navigate immediately
-    if (profile) {
-      const pendingInviteToken = sessionStorage.getItem("pending_staff_invite_token");
-      if (pendingInviteToken) {
-        sessionStorage.removeItem("pending_staff_invite_token");
-        navigate(`/accept-invite/${pendingInviteToken}`, { replace: true });
-        return;
-      }
-
-      const target = !isBlockedReturnTo(safeReturnTo) && safeReturnTo ? safeReturnTo : getDashboardPath();
-      navigate(target, { replace: true });
-      return;
-    }
-
-    // If we have user but no profile yet (trigger may still be creating it), 
-    // wait briefly then redirect to dashboard anyway
-    const timeout = setTimeout(() => {
-      if (user && !profile) {
-        console.warn("Profile not loaded after auth, redirecting to dashboard anyway");
-        navigate("/dashboard", { replace: true });
-      }
-    }, 3000);
-    return () => clearTimeout(timeout);
-  }, [user, profile, activeRole, navigate, safeReturnTo]);
+  // Don't render auth form if user is logged in
+  if (user) {
+    return null;
+  }
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    if (!signInData.email || !signInData.password) return;
+
+    setIsLoading(true);
     try {
-      await signIn(signInEmail, signInPassword);
-    } catch (error) {
-      console.error("Sign in error:", error);
+      const { error } = await signIn(signInData.email, signInData.password);
+      if (!error) {
+        const from = (location.state as any)?.from?.pathname || getDashboardRoute(allRoles);
+        navigate(from, { replace: true });
+      }
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    try {
-      await signUp(signUpEmail, signUpPassword, {
-        // For facility/practice admins this is the facility name shown in Profile.
-        fullName: signUpFullName,
-        role: signUpRole,
-      });
-    } catch (error) {
-      console.error("Sign up error:", error);
-    } finally {
-      setLoading(false);
+    
+    if (!signUpData.email || !signUpData.password || !signUpData.fullName) {
+      return;
     }
-  };
 
-  const getRoleIcon = (role: string) => {
-    switch (role) {
-      case "doctor":
-        return <Stethoscope className="w-5 h-5" />;
-      case "admin":
-      case "clinic_admin":
-        return <Building2 className="w-5 h-5" />;
-      case "pharmacy_admin":
-        return <Pill className="w-5 h-5" />;
-      case "lab_admin":
-        return <FlaskConical className="w-5 h-5" />;
-      case "imaging_admin":
-        return <Scan className="w-5 h-5" />;
-      default:
-        return <User className="w-5 h-5" />;
+    if (signUpData.password !== signUpData.confirmPassword) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { error } = await signUp(signUpData.email, signUpData.password, {
+        full_name: signUpData.fullName,
+      });
+      
+      if (!error) {
+        setActiveTab("signin");
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="flex justify-center mb-6">
-          <AuthIllustration variant={activeTab === "signin" ? "signin" : "signup"} className="w-40 h-40" />
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center">Welcome to Docito</CardTitle>
+          <CardDescription className="text-center">
+            Sign in to your account or create a new one
+          </CardDescription>
+        </CardHeader>
+        
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "signin" | "signup")}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="signin">Sign In</TabsTrigger>
+              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            </TabsList>
 
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-primary mb-2">{t("auth.appTitle")}</h1>
-          <p className="text-muted-foreground">{t("auth.appSubtitle")}</p>
-        </div>
+            <TabsContent value="signin">
+              <form onSubmit={handleSignIn} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signin-email">Email</Label>
+                  <Input
+                    id="signin-email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={signInData.email}
+                    onChange={(e) => setSignInData({ ...signInData, email: e.target.value })}
+                    disabled={isLoading}
+                    required
+                  />
+                </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="signin">{t("auth.tabs.signIn")}</TabsTrigger>
-            <TabsTrigger value="signup">{t("auth.tabs.signUp")}</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="signin">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t("auth.signIn.title")}</CardTitle>
-                <CardDescription>{t("auth.signIn.description")}</CardDescription>
-              </CardHeader>
-
-              <form onSubmit={handleSignIn}>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-email">{t("auth.signIn.email")}</Label>
-                    <Input
-                      id="signin-email"
-                      type="email"
-                      placeholder={t("auth.signIn.emailPlaceholder")}
-                      value={signInEmail}
-                      onChange={(e) => setSignInEmail(e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-password">{t("auth.signIn.password")}</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="signin-password">Password</Label>
+                  <div className="relative">
                     <Input
                       id="signin-password"
-                      type="password"
-                      placeholder={t("auth.signIn.passwordPlaceholder")}
-                      value={signInPassword}
-                      onChange={(e) => setSignInPassword(e.target.value)}
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={signInData.password}
+                      onChange={(e) => setSignInData({ ...signInData, password: e.target.value })}
+                      disabled={isLoading}
                       required
                     />
-                  </div>
-                </CardContent>
-
-                <CardFooter>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        {t("auth.signIn.buttonLoading")}
-                      </>
-                    ) : (
-                      t("auth.signIn.button")
-                    )}
-                  </Button>
-                </CardFooter>
-              </form>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="signup">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t("auth.signUp.title")}</CardTitle>
-                <CardDescription>{t("auth.signUp.description")}</CardDescription>
-              </CardHeader>
-
-              <form onSubmit={handleSignUp}>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-role">{t("auth.signUp.accountType")}</Label>
-                    <Select
-                      value={signUpRole}
-                      onValueChange={(value) => {
-                        setSignUpRole(value);
-                        setSignUpFullName("");
-                      }}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                      disabled={isLoading}
                     >
-                      <SelectTrigger>
-                        <div className="flex items-center gap-2">
-                          {getRoleIcon(signUpRole)}
-                          <SelectValue placeholder={t("auth.signUp.accountTypePlaceholder")} />
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="patient">
-                          <div className="flex items-center gap-2">
-                            <User className="w-4 h-4" />
-                            {t("auth.signUp.roles.patient", "Patient")}
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="doctor">
-                          <div className="flex items-center gap-2">
-                            <Stethoscope className="w-4 h-4" />
-                            {t("auth.signUp.roles.doctor", "Doctor")}
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="admin">
-                          <div className="flex items-center gap-2">
-                            <Building2 className="w-4 h-4" />
-                            {t("auth.signUp.roles.admin", "Practice Administrator")}
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="pharmacy_admin">
-                          <div className="flex items-center gap-2">
-                            <Pill className="w-4 h-4" />
-                            {t("auth.signUp.roles.pharmacyAdmin", "Pharmacy Admin")}
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="lab_admin">
-                          <div className="flex items-center gap-2">
-                            <FlaskConical className="w-4 h-4" />
-                            {t("auth.signUp.roles.labAdmin", "Lab Admin")}
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="imaging_admin">
-                          <div className="flex items-center gap-2">
-                            <Scan className="w-4 h-4" />
-                            {t("auth.signUp.roles.imagingAdmin", "Imaging Center Admin")}
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
                   </div>
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-name">{nameFieldCopy.label}</Label>
-                    <Input
-                      id="signup-name"
-                      type="text"
-                      placeholder={nameFieldCopy.placeholder}
-                      value={signUpFullName}
-                      onChange={(e) => setSignUpFullName(e.target.value)}
-                      required
-                    />
-                  </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Signing in...
+                    </>
+                  ) : (
+                    "Sign In"
+                  )}
+                </Button>
+              </form>
+            </TabsContent>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">{t("auth.signUp.email")}</Label>
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder={t("auth.signUp.emailPlaceholder")}
-                      value={signUpEmail}
-                      onChange={(e) => setSignUpEmail(e.target.value)}
-                      required
-                    />
-                  </div>
+            <TabsContent value="signup">
+              <form onSubmit={handleSignUp} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-name">Full Name</Label>
+                  <Input
+                    id="signup-name"
+                    type="text"
+                    placeholder="John Doe"
+                    value={signUpData.fullName}
+                    onChange={(e) => setSignUpData({ ...signUpData, fullName: e.target.value })}
+                    disabled={isLoading}
+                    required
+                  />
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">{t("auth.signUp.password")}</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-email">Email</Label>
+                  <Input
+                    id="signup-email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={signUpData.email}
+                    onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
+                    disabled={isLoading}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="signup-password">Password</Label>
+                  <div className="relative">
                     <Input
                       id="signup-password"
-                      type="password"
-                      placeholder={t("auth.signUp.passwordPlaceholder")}
-                      value={signUpPassword}
-                      onChange={(e) => setSignUpPassword(e.target.value)}
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={signUpData.password}
+                      onChange={(e) => setSignUpData({ ...signUpData, password: e.target.value })}
+                      disabled={isLoading}
                       required
+                      minLength={6}
                     />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                      disabled={isLoading}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
                   </div>
-                </CardContent>
+                </div>
 
-                <CardFooter>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        {t("auth.signUp.buttonLoading")}
-                      </>
-                    ) : (
-                      t("auth.signUp.button")
-                    )}
-                  </Button>
-                </CardFooter>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-confirm">Confirm Password</Label>
+                  <Input
+                    id="signup-confirm"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={signUpData.confirmPassword}
+                    onChange={(e) => setSignUpData({ ...signUpData, confirmPassword: e.target.value })}
+                    disabled={isLoading}
+                    required
+                    minLength={6}
+                  />
+                </div>
+
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating account...
+                    </>
+                  ) : (
+                    "Create Account"
+                  )}
+                </Button>
               </form>
-            </Card>
-          </TabsContent>
-        </Tabs>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
 
-        <div className="text-center mt-6">
-          <p className="text-sm text-muted-foreground">{t("auth.footer.terms")}</p>
-        </div>
-      </div>
+        <CardFooter className="flex flex-col space-y-2">
+          <div className="text-sm text-muted-foreground text-center">
+            By continuing, you agree to our Terms of Service and Privacy Policy
+          </div>
+        </CardFooter>
+      </Card>
     </div>
   );
 };
