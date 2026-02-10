@@ -1,1 +1,34 @@
- {}
+
+{
+  "hero": {
+    "badge": "Todo o seu cuidado, em sincronia",
+    "title": {
+      "line1": "Menos burocracia. Mais cuidado.",
+      "line2": "Uma plataforma para cada etapa da saúde."
+    },
+    "description": "Docito conecta pacientes, profissionais, laboratórios, imagem, farmácias e seguros—para que agendamentos, prontuários, prescrições, resultados e pagamentos fiquem em um só lugar.",
+    "cards": {
+      "patients": { "title": "Para pacientes", "description": "Encontre, agende e acompanhe o cuidado em um só lugar" },
+      "clinics": { "title": "Para clínicas", "description": "Agenda, prontuários e faturamento unificados" },
+      "imaging": { "title": "Para imagem", "description": "Pedidos, laudos e coordenação de encaminhamentos" },
+      "pharmacy": { "title": "Para farmácia", "description": "Receitas eletrônicas, dispensação e entrega" },
+      "labs": { "title": "Para laboratórios", "description": "Solicitação de exames, resultados e entrega digital" }
+    },
+    "cta": {
+      "primary": "Começar teste grátis de 14 dias",
+      "secondary": "Encontrar cuidado agora",
+      "note": "Sem demo. Sem cartão para começar. Cancele a qualquer momento."
+    },
+    "ecosystem": {
+      "doctors": "Médicos",
+      "clinics": "Clínicas",
+      "labs": "Laboratórios",
+      "imaging": "Imagem",
+      "pharmacies": "Farmácias",
+      "patients": "Pacientes"
+    },
+    "a11y": {
+      "scrollToSearch": "Ir para a busca"
+    }
+  }
+}
