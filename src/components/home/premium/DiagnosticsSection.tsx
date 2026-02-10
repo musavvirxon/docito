@@ -119,15 +119,15 @@ export default function DiagnosticsSection() {
               transition={{ delay: index * 0.1, duration: 0.6 }}
               className="group"
             >
-              <div className="h-full bg-background/50 border border-border/40 rounded-3xl p-8 backdrop-blur-sm hover:bg-background/70 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+              <div className="h-full bg-background/50 border border-border/40 rounded-3xl p-8 backdrop-blur-sm hover:bg-background/70 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col">
                 <div className="w-16 h-16 bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                   <service.icon className="h-8 w-8 text-primary" />
                 </div>
 
                 <h3 className="text-2xl font-bold mb-4">{service.title}</h3>
-                <p className="text-muted-foreground mb-6">{service.description}</p>
+                <p className="text-muted-foreground mb-6 min-h-[72px]">{service.description}</p>
 
-                <div className="space-y-3 mb-8">
+                <div className="space-y-3 mb-8 min-h-[108px]">
                   {service.features.map((feature, featureIndex) => (
                     <div
                       key={featureIndex}

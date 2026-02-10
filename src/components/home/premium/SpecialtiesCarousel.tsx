@@ -1,29 +1,16 @@
 // src/components/home/premium/SpecialtiesCarousel.tsx
 import { useRef, useEffect } from 'react';
- import { useReducedMotion } from 'framer-motion';
+import { useReducedMotion } from 'framer-motion';
 import {
-  Heart,
-  Brain,
-  Eye,
-  Bone,
-  Baby,
-  Smile,
-  Stethoscope,
-  Activity,
-  Pill,
-  Syringe,
-  Microscope,
-  Wind,
-  Ear,
-  Hand,
-  Scissors,
-  Shield,
-  Users,
-  Sparkles,
+  Heart, Brain, Eye, Bone, Baby, Smile, Stethoscope, Activity,
+  Pill, Syringe, Microscope, Wind, Ear, Hand, Scissors, Shield,
+  Users, Sparkles, Flower2, ScanLine, Thermometer, Droplets,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import FadeIn from '@/components/howItWorks/FadeIn';
+import { Button } from '@/components/ui/button';
+import { ArrowRight } from 'lucide-react';
 
 const specialties = [
   { icon: Heart, name: 'Cardiology', color: 'from-rose-500 to-pink-500' },
@@ -44,38 +31,36 @@ const specialties = [
   { icon: Shield, name: 'Urology', color: 'from-blue-600 to-indigo-600' },
   { icon: Users, name: 'Psychiatry', color: 'from-green-500 to-emerald-500' },
   { icon: Sparkles, name: 'Oncology', color: 'from-fuchsia-500 to-pink-500' },
+  { icon: Droplets, name: 'Nephrology', color: 'from-blue-400 to-cyan-500' },
+  { icon: Flower2, name: 'Gynecology', color: 'from-pink-400 to-rose-400' },
+  { icon: ScanLine, name: 'Radiology', color: 'from-gray-500 to-slate-600' },
+  { icon: Thermometer, name: 'Allergy & Immunology', color: 'from-lime-500 to-green-500' },
 ];
 
 export default function SpecialtiesCarousel() {
   const { t } = useTranslation(['home']);
   const navigate = useNavigate();
-   const prefersReducedMotion = useReducedMotion();
+  const prefersReducedMotion = useReducedMotion();
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const isPausedRef = useRef(false);
   const cachedScrollWidthRef = useRef(0);
   const scrollPosRef = useRef(0);
 
-  // Memoize duplicated list for infinite scroll effect
   const allSpecialties = [...specialties, ...specialties];
 
   useEffect(() => {
     const scrollContainer = scrollRef.current;
     if (!scrollContainer) return;
-     
-    // Skip auto-scroll animation if user prefers reduced motion
     if (prefersReducedMotion) return;
 
     let animationId: number;
     let isInitialized = false;
     const speed = 0.15;
 
-    // Calculate scroll width from known item dimensions to completely avoid forced reflow
-    // Each item: w-44 (176px) + gap-6 (24px) = 200px per item, doubled for the duplicate set
     const estimatedScrollWidth = allSpecialties.length * 200;
     cachedScrollWidthRef.current = estimatedScrollWidth;
 
-    // Cache scrollWidth using requestIdleCallback for accuracy update (non-blocking)
     const cacheScrollWidth = () => {
       if ('requestIdleCallback' in window) {
         (window as Window).requestIdleCallback(() => {
@@ -85,8 +70,6 @@ export default function SpecialtiesCarousel() {
         }, { timeout: 500 });
       }
     };
-     
-    // Defer accuracy correction to idle time - don't block initial render
     cacheScrollWidth();
 
     const smoothAutoScroll = () => {
@@ -94,50 +77,34 @@ export default function SpecialtiesCarousel() {
         scrollPosRef.current += speed;
         const halfWidth = cachedScrollWidthRef.current / 2;
         if (scrollPosRef.current >= halfWidth) scrollPosRef.current = 0;
-        // Write-only operation - no reads that cause reflow
         scrollContainer.scrollLeft = scrollPosRef.current;
       }
       animationId = requestAnimationFrame(smoothAutoScroll);
     };
 
-    const handleMouseEnter = () => {
-      isPausedRef.current = true;
-    };
-
-    // Batch the scroll position read to avoid forced reflow
+    const handleMouseEnter = () => { isPausedRef.current = true; };
     const handleMouseLeave = () => {
       requestAnimationFrame(() => {
-        if (scrollContainer) {
-          scrollPosRef.current = scrollContainer.scrollLeft;
-        }
+        if (scrollContainer) scrollPosRef.current = scrollContainer.scrollLeft;
         isPausedRef.current = false;
       });
     };
 
-    // Batch wheel scroll updates to prevent forced reflow
     const handleWheel = (e: WheelEvent) => {
       if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
         e.preventDefault();
-        // Write first, then batch the read
         scrollContainer.scrollLeft += e.deltaY;
-        requestAnimationFrame(() => {
-          scrollPosRef.current = scrollContainer.scrollLeft;
-        });
+        requestAnimationFrame(() => { scrollPosRef.current = scrollContainer.scrollLeft; });
       }
     };
 
-    // Use ResizeObserver to update cached width on resize (batched)
-    const resizeObserver = new ResizeObserver(() => {
-      cacheScrollWidth();
-    });
+    const resizeObserver = new ResizeObserver(() => cacheScrollWidth());
     resizeObserver.observe(scrollContainer);
 
     scrollContainer.addEventListener('mouseenter', handleMouseEnter);
     scrollContainer.addEventListener('mouseleave', handleMouseLeave);
     scrollContainer.addEventListener('wheel', handleWheel, { passive: false });
-    
-    // Start animation after a longer delay to ensure page is fully rendered
-    // This prevents any forced reflow during initial paint
+
     const startTimer = setTimeout(() => {
       isInitialized = true;
       animationId = requestAnimationFrame(smoothAutoScroll);
@@ -153,15 +120,22 @@ export default function SpecialtiesCarousel() {
     };
   }, [prefersReducedMotion, allSpecialties.length]);
 
-
   return (
     <section className="py-24 bg-gradient-to-b from-background to-muted/30 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
         <FadeIn className="text-center">
           <h2 className="text-4xl md:text-5xl font-extralight tracking-tight text-foreground mb-4">Medical Specialties</h2>
-          <p className="text-lg text-muted-foreground font-light max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground font-light max-w-2xl mx-auto mb-6">
             {t('home:specialtiesSubtitle', 'Find specialists across all medical disciplines')}
           </p>
+          <Button
+            variant="outline"
+            className="rounded-full"
+            onClick={() => navigate('/specialties')}
+          >
+            View all specialties
+            <ArrowRight className="ml-2 w-4 h-4" />
+          </Button>
         </FadeIn>
       </div>
 

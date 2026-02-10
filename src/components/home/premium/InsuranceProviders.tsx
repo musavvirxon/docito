@@ -1,22 +1,34 @@
 import { motion } from 'framer-motion';
-import { Shield, Check } from 'lucide-react';
-
-const insuranceProviders = [
-  { name: 'Aetna', initials: 'AE', color: 'bg-purple-600', textColor: 'text-white' },
-  { name: 'Blue Cross', initials: 'BC', color: 'bg-blue-600', textColor: 'text-white' },
-  { name: 'Cigna', initials: 'CG', color: 'bg-orange-500', textColor: 'text-white' },
-  { name: 'United', initials: 'UH', color: 'bg-blue-700', textColor: 'text-white' },
-  { name: 'Kaiser', initials: 'KP', color: 'bg-red-600', textColor: 'text-white' },
-  { name: 'Humana', initials: 'HU', color: 'bg-green-600', textColor: 'text-white' },
-  { name: 'Anthem', initials: 'AN', color: 'bg-blue-500', textColor: 'text-white' },
-  { name: 'Medicare', initials: 'MC', color: 'bg-teal-600', textColor: 'text-white' },
-];
+import { Shield, Check, ArrowRight, FileCheck, CreditCard, Search } from 'lucide-react';
 
 const benefits = [
-  'Instant verification',
-  'Direct billing',
-  'No paperwork',
-  'Pre-authorization',
+  'Instant eligibility checks',
+  'Direct claims submission',
+  'No paperwork for patients',
+  'Pre-authorization support',
+  'Multi-payer compatibility',
+  'Real-time claim status',
+];
+
+const steps = [
+  {
+    icon: Search,
+    step: '1',
+    title: 'Select provider',
+    description: 'Patient selects their insurance during booking — coverage is checked instantly.',
+  },
+  {
+    icon: FileCheck,
+    step: '2',
+    title: 'Instant verification',
+    description: 'Eligibility, copay, and deductible details are surfaced before the visit.',
+  },
+  {
+    icon: CreditCard,
+    step: '3',
+    title: 'Direct billing',
+    description: 'Claims are submitted automatically — patients only pay their share.',
+  },
 ];
 
 export default function InsuranceProviders() {
@@ -28,54 +40,64 @@ export default function InsuranceProviders() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          className="text-center mb-16"
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-sm font-medium mb-6">
             <Shield className="w-4 h-4" />
-            Insurance Partners
+            Insurance Integration
           </div>
           <h2 className="text-4xl md:text-5xl font-extralight tracking-tight text-foreground mb-4">
-            We Work With Your Insurance
+            Works with insurance providers worldwide
           </h2>
           <p className="text-lg text-muted-foreground font-light max-w-2xl mx-auto">
-            Seamless coverage verification and direct billing with major providers
+            Docito integrates with insurance workflows globally — so verification, billing, and claims happen inside the platform.
           </p>
         </motion.div>
 
-        {/* Insurance logos - larger and more visible */}
-        <div className="flex flex-wrap justify-center gap-6 mb-12">
-          {insuranceProviders.map((provider, index) => (
+        {/* 3-step flow */}
+        <div className="grid md:grid-cols-3 gap-8 mb-16">
+          {steps.map((s, index) => (
             <motion.div
-              key={provider.name}
-              initial={{ opacity: 0, scale: 0.8 }}
-              whileInView={{ opacity: 1, scale: 1 }}
+              key={s.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: index * 0.05 }}
-              whileHover={{ scale: 1.05, y: -3 }}
-              className="w-32 h-32 rounded-2xl bg-card border border-border/50 flex flex-col items-center justify-center gap-3 hover:border-primary/30 hover:shadow-lg transition-all duration-300 cursor-pointer"
+              transition={{ delay: index * 0.1, duration: 0.5 }}
+              className="relative"
             >
-              <div className={`w-16 h-16 rounded-xl ${provider.color} flex items-center justify-center ${provider.textColor} font-bold text-xl shadow-md`}>
-                {provider.initials}
+              <div className="h-full p-8 rounded-3xl bg-card border border-border/50 text-center flex flex-col items-center">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-5">
+                  <s.icon className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-2">
+                  Step {s.step}
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">{s.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{s.description}</p>
               </div>
-              <span className="text-sm text-foreground font-medium">{provider.name}</span>
+              {index < steps.length - 1 && (
+                <div className="hidden md:flex absolute top-1/2 -right-5 -translate-y-1/2 z-10">
+                  <ArrowRight className="w-5 h-5 text-muted-foreground/40" />
+                </div>
+              )}
             </motion.div>
           ))}
         </div>
 
-        {/* Benefits */}
+        {/* Benefits grid */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="flex flex-wrap justify-center gap-6"
+          className="flex flex-wrap justify-center gap-4"
         >
           {benefits.map((benefit) => (
             <div
               key={benefit}
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10"
+              className="flex items-center gap-2 px-5 py-3 rounded-full bg-card border border-border/50"
             >
-              <Check className="w-4 h-4 text-emerald-500" />
+              <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
               <span className="text-sm font-medium text-foreground">{benefit}</span>
             </div>
           ))}

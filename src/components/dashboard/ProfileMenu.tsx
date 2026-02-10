@@ -78,9 +78,9 @@ const ProfileMenu = ({ compact = false }: ProfileMenuProps) => {
         <Button
           variant={compact ? "ghost" : "outline"}
           size={compact ? "icon" : "sm"}
-          className={compact ? "h-9 w-9 rounded-xl" : "h-9 rounded-full"}
+          className={compact ? "h-9 w-9 rounded-xl" : "h-9 rounded-full text-sm font-medium text-foreground"}
         >
-          {compact ? <User className="h-4 w-4" /> : profile?.full_name || "Account"}
+          {compact ? <User className="h-4 w-4" /> : <span className="text-foreground">{profile?.full_name || "Account"}</span>}
         </Button>
       </DropdownMenuTrigger>
 

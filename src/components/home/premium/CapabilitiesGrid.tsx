@@ -123,12 +123,15 @@ export default function CapabilitiesGrid() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.05 }}
+              transition={{ duration: 0.5, delay: index * 0.06 }}
               whileHover={{ y: -5, scale: 1.02 }}
               className="group"
             >
-              <div className="h-full p-6 rounded-3xl bg-card border border-border/50 transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 flex flex-col">
-                <div className="flex items-start gap-4">
+              <div className="h-full p-6 rounded-3xl bg-card border border-border/50 transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 flex flex-col relative overflow-hidden">
+                {/* Gradient border glow on hover */}
+                <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+
+                <div className="relative flex items-start gap-4">
                   <motion.div
                     whileHover={{ rotate: 5, scale: 1.1 }}
                     transition={{ type: "spring", stiffness: 300 }}
@@ -147,7 +150,7 @@ export default function CapabilitiesGrid() {
                   </div>
                 </div>
 
-                <div className="mt-5">
+                <div className="relative mt-5">
                   <Button
                     variant="ghost"
                     className="px-0 h-auto text-primary hover:text-primary/90 hover:bg-transparent"
