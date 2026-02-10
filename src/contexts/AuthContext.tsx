@@ -1,11 +1,11 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+// File: src/contexts/AuthContext.tsx
+import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useInactivityTimer } from "@/hooks/useInactivityTimer";
 import { InactivityWarningModal } from "@/components/InactivityWarningModal";
 import { getPrimaryRole, getUserRolesFromProfile, type AppRole } from "@/lib/rbac";
-import { getBrowserTimeZone } from "@/lib/timezone";
 
 interface Profile {
   id: string;
@@ -126,55 +126,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     writeStoredRole(primary);
   };
 
-  const bootstrapViaEdge = async (): Promise<{ profile: Profile; roles: AppRole[] } | null> => {
-    try {
-      const { data, error } = await supabase.functions.invoke("me", {
-        body: { action: "get" },
-      });
-
-      if (error) {
-        console.error("Edge function error:", error);
-        throw error;
-      }
-
-      if (!data || data.ok !== true) {
-        const msg = data?.error || "Failed to load account";
-        console.error("Bootstrap failed:", msg);
-        throw new Error(msg);
-      }
-
-      const nextProfile = data.profile as Profile | null;
-      const nextRoles = (Array.isArray(data.roles) ? data.roles : []) as AppRole[];
-
-      if (!nextProfile) {
-        console.warn("No profile returned from edge function");
-        return null;
-      }
-
-      setProfile(nextProfile);
-      setAllRolesState(nextRoles);
-      applyActiveRoleFrom(nextRoles, nextProfile);
-
-      console.log("Profile loaded:", nextProfile.full_name, "Roles:", nextRoles);
-      return { profile: nextProfile, roles: nextRoles };
-    } catch (err) {
-      console.error("bootstrapViaEdge failed:", err);
-      throw err;
-    }
-  };
-
-  const loadProfileAndRoles = async (userId: string) => {
-    try {
-      const result = await bootstrapViaEdge();
-      if (!result) {
-        console.warn("No profile loaded for user:", userId);
-      }
-    } catch (err: any) {
-      console.error("loadProfileAndRoles failed:", err?.message || err);
-      throw err;
-    }
-  };
-
   const fetchRoleStatus = async (userId: string) => {
     try {
       const { data, error } = await supabase
@@ -196,21 +147,70 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const loadProfileDirect = async (userId: string) => {
+    try {
+      // Direct query to profiles table
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", userId)
+        .single();
+
+      if (profileError) throw profileError;
+
+      // Direct query to user_roles table
+      const { data: rolesData, error: rolesError } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId);
+
+      if (rolesError) {
+        console.warn("Failed to fetch roles, using profile role only:", rolesError);
+      }
+
+      const userRoles = rolesData?.map((r: any) => r.role as AppRole) || [];
+      const profileRoles = getUserRolesFromProfile(profileData as any) as AppRole[];
+      const mergedRoles = Array.from(new Set([...userRoles, ...profileRoles])) as AppRole[];
+
+      setProfile(profileData as Profile);
+      setAllRolesState(mergedRoles);
+      applyActiveRoleFrom(mergedRoles, profileData as Profile);
+
+      return { profile: profileData as Profile, roles: mergedRoles };
+    } catch (err) {
+      console.error("loadProfileDirect failed:", err);
+      throw err;
+    }
+  };
+
+  const refreshProfile = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      await loadProfileDirect(user.id);
+    } catch (err) {
+      console.error("refreshProfile failed:", err);
+    }
+  }, [user?.id]);
+
   useEffect(() => {
+    let mounted = true;
+
     const init = async () => {
-      setLoading(true);
       try {
+        setLoading(true);
         const { data } = await supabase.auth.getSession();
+        
+        if (!mounted) return;
+
         setSession(data.session);
         setUser(data.session?.user ?? null);
 
         if (data.session?.user?.id) {
           try {
-            await loadProfileAndRoles(data.session.user.id);
+            await loadProfileDirect(data.session.user.id);
             await fetchRoleStatus(data.session.user.id);
           } catch (err) {
-            console.error("Initial profile/role load failed:", err);
-            toast.error("Failed to load profile data");
+            console.error("Initial profile load failed:", err);
           }
         } else {
           setProfile(null);
@@ -219,34 +219,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           _setActiveRole("patient");
           clearStoredRole();
         }
+      } catch (err) {
+        console.error("Session init error:", err);
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
     void init();
 
-    const { data: sub } = supabase.auth.onAuthStateChange(async (event, nextSession) => {
-      console.log("Auth state change:", event, {
-        hasSession: !!nextSession,
-        userId: nextSession?.user?.id,
-        hasProfile: !!profile
-      });
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, nextSession) => {
+      if (!mounted) return;
+
+      console.log("Auth event:", event);
 
       setSession(nextSession);
       setUser(nextSession?.user ?? null);
 
+      if (event === 'SIGNED_OUT') {
+        setProfile(null);
+        setAllRolesState([]);
+        setRoleStatus({});
+        _setActiveRole("patient");
+        clearStoredRole();
+        return;
+      }
+
       if (nextSession?.user?.id) {
         try {
-          await loadProfileAndRoles(nextSession.user.id);
+          setLoading(true);
+          await loadProfileDirect(nextSession.user.id);
           await fetchRoleStatus(nextSession.user.id);
-          console.log("Profile loaded successfully after auth change");
         } catch (err) {
-          console.error("Auth state change profile/role load failed:", err);
-          toast.error("Failed to load profile. Please refresh the page.");
+          console.error("Profile load after auth change failed:", err);
+        } finally {
+          setLoading(false);
         }
       } else {
-        console.log("Clearing auth state");
         setProfile(null);
         setAllRolesState([]);
         setRoleStatus({});
@@ -255,8 +266,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     });
 
-    return () => sub.subscription.unsubscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      mounted = false;
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   const { showWarning, countdown, stayLoggedIn } = useInactivityTimer({
@@ -273,55 +286,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const signOut = async () => {
+    // Clear state immediately
+    setUser(null);
+    setProfile(null);
+    setSession(null);
+    setAllRolesState([]);
+    setRoleStatus({});
+    _setActiveRole("patient");
+    clearStoredRole();
+
     try {
-      // Clear UI state FIRST
-      setSession(null);
-      setUser(null);
-      setProfile(null);
-      setAllRolesState([]);
-      setRoleStatus({});
-      _setActiveRole("patient");
-      clearStoredRole();
-
-      // Then call Supabase signOut
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.warn("signOut API error:", error.message);
-      }
-
-      toast.success("Signed out successfully");
+      await supabase.auth.signOut();
     } catch (e: any) {
-      console.error("signOut error:", e?.message || e);
-      toast.error("Error signing out, but you've been logged out locally");
-    } finally {
-      // Force navigation after a brief delay to ensure state is cleared
-      setTimeout(() => {
-        window.location.href = "/auth";
-      }, 100);
+      console.error("signOut error:", e);
     }
+
+    toast.success("Signed out successfully");
+    
+    // Use replace to prevent back button issues
+    window.location.replace("/auth");
   };
 
   const signIn = async (email: string, password: string) => {
     try {
-      setLoading(true);
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ 
+        email, 
+        password 
+      });
 
       if (error) throw error;
 
-      // Wait for profile to load
       if (data.user) {
-        await loadProfileAndRoles(data.user.id);
-        await fetchRoleStatus(data.user.id);
+        try {
+          await loadProfileDirect(data.user.id);
+          await fetchRoleStatus(data.user.id);
+        } catch (err) {
+          console.error("Profile load after sign in failed:", err);
+        }
       }
 
       toast.success("Successfully signed in!");
       return {};
     } catch (error: any) {
       console.error("Sign in error:", error);
-      toast.error(error.message || "Invalid email or password. Please try again.");
+      toast.error(error.message || "Invalid email or password");
       return { error };
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -364,15 +373,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error("Update profile error:", error);
       toast.error("Failed to update profile");
       return { error };
-    }
-  };
-
-  const refreshProfile = async () => {
-    if (!user?.id) return;
-    try {
-      await loadProfileAndRoles(user.id);
-    } catch (err) {
-      console.error("refreshProfile failed:", err);
     }
   };
 
