@@ -1,4 +1,3 @@
-// File: src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -404,4 +403,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       />
     </AuthContext.Provider>
   );
-}
+};
