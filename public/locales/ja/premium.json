@@ -1,1 +1,34 @@
- {}
+// File: public/locales/ja/premium.json
+{
+  "hero": {
+    "badge": "医療をひとつに、シームレスに",
+    "title": {
+      "line1": "事務を減らして、ケアを増やす。",
+      "line2": "医療のあらゆるステップを支える一つのプラットフォーム。"
+    },
+    "description": "Docito は患者、医療機関、検査、画像診断、薬局、保険をつなぎ—予約、記録、処方、結果、支払いを一か所にまとめます。",
+    "cards": {
+      "patients": { "title": "患者向け", "description": "探す・予約する・経過を一か所で管理" },
+      "clinics": { "title": "クリニック向け", "description": "スケジュール、記録、請求を統合" },
+      "imaging": { "title": "画像診断向け", "description": "オーダー、レポート、紹介の連携" },
+      "pharmacy": { "title": "薬局向け", "description": "電子処方、調剤、配送" },
+      "labs": { "title": "検査機関向け", "description": "検査依頼、結果、デジタル提供" }
+    },
+    "cta": {
+      "primary": "14日間の無料トライアルを開始",
+      "secondary": "今すぐ探す",
+      "note": "デモ不要。開始にクレジットカード不要。いつでもキャンセル可能。"
+    },
+    "ecosystem": {
+      "doctors": "医師",
+      "clinics": "クリニック",
+      "labs": "検査機関",
+      "imaging": "画像診断",
+      "pharmacies": "薬局",
+      "patients": "患者"
+    },
+    "a11y": {
+      "scrollToSearch": "検索へスクロール"
+    }
+  }
+}
