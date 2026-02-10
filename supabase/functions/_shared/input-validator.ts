@@ -392,11 +392,11 @@
    return sanitizeUrl(url) || null;
  }
  
- export function validateString(
-   value: unknown,
-   minLength = 0,
-   maxLength = MAX_LENGTHS.longText
- ): string | null {
+export function validateString(
+  value: unknown,
+  minLength: number = 0,
+  maxLength: number = MAX_LENGTHS.longText as number
+): string | null {
    if (typeof value !== 'string') return null;
    const cleaned = sanitizeString(value, maxLength);
    if (cleaned.length < minLength) return null;
