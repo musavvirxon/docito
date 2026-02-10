@@ -1,3 +1,5 @@
+// src/components/dashboard/ProfileMenu.tsx
+// File: src/components/dashboard/ProfileMenu.tsx
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -27,7 +29,7 @@ interface ProfileMenuProps {
 
 const ProfileMenu = ({ compact = false }: ProfileMenuProps) => {
   const navigate = useNavigate();
-  const { profile, user, allRoles, activeRole, switchRole, signOut, loading } = useAuth();
+  const { profile, user, allRoles, activeRole, switchRole, signOut } = useAuth();
 
   const roles: AppRole[] = useMemo(() => {
     const fromContext = Array.isArray(allRoles) ? allRoles : [];
@@ -35,14 +37,6 @@ const ProfileMenu = ({ compact = false }: ProfileMenuProps) => {
     const merged = fromContext.length > 0 ? fromContext : fallback;
     return Array.from(new Set((merged || []).filter(Boolean) as AppRole[]));
   }, [allRoles, profile]);
-
-  // Don't render if loading or no user
-  if (loading || !user) {
-    return null;
-  }
-
-  // Show a placeholder if profile hasn't loaded yet
-  const displayName = profile?.full_name || user?.email?.split('@')[0] || "User";
 
   const canShowRoleSwitch = roles.length > 1;
 
@@ -86,17 +80,13 @@ const ProfileMenu = ({ compact = false }: ProfileMenuProps) => {
           size={compact ? "icon" : "sm"}
           className={compact ? "h-9 w-9 rounded-xl" : "h-9 rounded-full text-sm font-medium text-foreground"}
         >
-          {compact ? (
-            <User className="h-4 w-4" />
-          ) : (
-            <span className="text-foreground">{displayName}</span>
-          )}
+          {compact ? <User className="h-4 w-4" /> : <span className="text-foreground">{profile?.full_name || "Account"}</span>}
         </Button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel className="text-xs text-muted-foreground">
-          Signed in as {displayName}
+          Signed in as {profile?.full_name || user?.email}
         </DropdownMenuLabel>
 
         <DropdownMenuItem onClick={() => navigate(dashboardRoute)}>

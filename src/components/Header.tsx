@@ -1,3 +1,4 @@
+// File: src/components/Header.tsx
 import { useMemo, useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Menu, X, User, LogOut, Settings, Bell as BellIcon, Check } from "lucide-react";
@@ -27,7 +28,7 @@ const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const { user, profile, signOut, allRoles, activeRole, switchRole, loading } = useAuth();
+  const { user, profile, signOut, allRoles, activeRole, switchRole } = useAuth();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -79,10 +80,6 @@ const Header = () => {
     return "Dashboard";
   }, [roles]);
 
-  const displayName = useMemo(() => {
-    return profile?.full_name || user?.email?.split('@')[0] || "User";
-  }, [profile?.full_name, user?.email]);
-
   const handleRoleClick = (role: AppRole) => {
     switchRole(role);
     navigate(DASHBOARD_ROUTES[role] ?? getDashboardRoute([role]));
@@ -131,31 +128,22 @@ const Header = () => {
 
             <div className="hidden xl:flex items-center gap-3">
               <ThemeToggle />
-              {loading ? (
-                <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
-              ) : user ? (
+              {user ? (
                 <>
                   <NotificationDropdown />
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={profile?.avatar_url} alt={displayName} />
+                          <AvatarImage src={profile?.avatar_url} alt={profile?.full_name} />
                           <AvatarFallback className="text-xs">
-                            {profile?.full_name?.split(" ").map((n) => n[0]).join("") || 
-                             user?.email?.charAt(0).toUpperCase() || "U"}
+                            {profile?.full_name?.split(" ").map((n) => n[0]).join("") || "U"}
                           </AvatarFallback>
                         </Avatar>
                       </Button>
                     </DropdownMenuTrigger>
 
                     <DropdownMenuContent className="w-56" align="end">
-                      <DropdownMenuLabel className="text-xs text-muted-foreground">
-                        Signed in as {displayName}
-                      </DropdownMenuLabel>
-
-                      <DropdownMenuSeparator />
-
                       <DropdownMenuItem onClick={() => navigate(dashboardRoute)}>
                         <User className="mr-2 h-4 w-4" />
                         <span>{dashboardLabel}</span>
@@ -262,9 +250,7 @@ const Header = () => {
                   transition={{ delay: 0.3 }}
                   className="mt-6 pt-6 border-t border-border/40"
                 >
-                  {loading ? (
-                    <div className="h-12 w-full rounded-xl bg-muted animate-pulse" />
-                  ) : user ? (
+                  {user ? (
                     <div className="space-y-3">
                       <Button
                         variant="outline"
