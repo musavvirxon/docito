@@ -220,12 +220,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(data.session);
         setUser(data.session?.user ?? null);
 
-        if (data.session?.user?.id) {
+      if (data.session?.user?.id) {
           try {
             await loadProfileAndRoles(data.session.user.id);
             await fetchRoleStatus(data.session.user.id);
-          } catch {
-            // ignore
+          } catch (err) {
+            console.error("Initial profile/role load failed:", err);
           }
         } else {
           setProfile(null);
@@ -249,8 +249,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           await loadProfileAndRoles(nextSession.user.id);
           await fetchRoleStatus(nextSession.user.id);
-        } catch {
-          // ignore
+        } catch (err) {
+          console.error("Auth state change profile/role load failed:", err);
         }
       } else {
         setProfile(null);
@@ -268,13 +268,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      toast.success("Signed out");
+      if (error) console.warn("signOut API error (ignored):", error.message);
     } catch (e: any) {
-      // Always clear local UI state even if remote signOut fails.
-      toast.success("Signed out");
       console.warn("signOut error (ignored):", e?.message || e);
     } finally {
+      // Always clear local UI state
       setSession(null);
       setUser(null);
       setProfile(null);
@@ -282,6 +280,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setRoleStatus({});
       _setActiveRole("patient");
       clearStoredRole();
+      toast.success("Signed out");
+      // Force full navigation to ensure all state is truly reset
+      window.location.href = "/auth";
     }
   };
 

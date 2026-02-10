@@ -132,7 +132,10 @@ const Auth = () => {
   };
 
   useEffect(() => {
-    if (user && profile) {
+    if (!user) return;
+    
+    // If we have user + profile, navigate immediately
+    if (profile) {
       const pendingInviteToken = sessionStorage.getItem("pending_staff_invite_token");
       if (pendingInviteToken) {
         sessionStorage.removeItem("pending_staff_invite_token");
@@ -142,7 +145,18 @@ const Auth = () => {
 
       const target = !isBlockedReturnTo(safeReturnTo) && safeReturnTo ? safeReturnTo : getDashboardPath();
       navigate(target, { replace: true });
+      return;
     }
+
+    // If we have user but no profile yet (trigger may still be creating it), 
+    // wait briefly then redirect to dashboard anyway
+    const timeout = setTimeout(() => {
+      if (user && !profile) {
+        console.warn("Profile not loaded after auth, redirecting to dashboard anyway");
+        navigate("/dashboard", { replace: true });
+      }
+    }, 3000);
+    return () => clearTimeout(timeout);
   }, [user, profile, activeRole, navigate, safeReturnTo]);
 
   const handleSignIn = async (e: React.FormEvent) => {
