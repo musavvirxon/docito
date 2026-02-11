@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,13 +8,16 @@ const Dashboard = () => {
   const { user, loading, allRoles, activeRole } = useAuth();
   const navigate = useNavigate();
   const { lang } = useParams<{ lang?: string }>();
+  const hasRedirected = useRef(false);
 
   const prefix = (path: string) => (lang ? `/${lang}${path}` : path);
 
   useEffect(() => {
     if (loading) return;
+    if (hasRedirected.current) return;
 
     if (!user) {
+      hasRedirected.current = true;
       navigate(prefix("/auth"), { replace: true });
       return;
     }
@@ -25,6 +28,7 @@ const Dashboard = () => {
         : [activeRole || "patient"];
 
     const target = getDashboardRoute(roles);
+    hasRedirected.current = true;
     navigate(prefix(target), { replace: true });
   }, [loading, user, allRoles, activeRole]);
 

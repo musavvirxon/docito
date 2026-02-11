@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Loader2, User, Stethoscope, Building2, Pill, FlaskConical, Scan } from "lucide-react";
@@ -146,10 +146,12 @@ const Auth = () => {
     }
   }, [mode, initialSignUpRole]);
 
-  // If already logged in, send user to dashboard entrypoint
+  const hasAutoRedirected = useRef(false);
   useEffect(() => {
     if (authLoading) return;
     if (!user) return;
+    if (hasAutoRedirected.current) return;
+    hasAutoRedirected.current = true;
     goAfterAuth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, user]);

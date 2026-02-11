@@ -347,20 +347,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     let safetyTimer: ReturnType<typeof setTimeout> | null = null;
+    let didUnmount = false;
 
-    const init = async () => {
-      try {
-        const { data } = await supabase.auth.getSession();
-        await runBootstrap(data.session);
-      } catch (e) {
-        console.error("Auth init failed:", e);
-        setLoading(false);
-      }
-    };
-
-    void init();
-
+    // Register onAuthStateChange FIRST — it fires synchronously with INITIAL_SESSION
+    // which handles the bootstrap. We do NOT call runBootstrap from init() to avoid double-bootstrap.
     const { data: sub } = supabase.auth.onAuthStateChange(async (event, nextSession) => {
+      if (didUnmount) return;
+
       // For TOKEN_REFRESHED, just update session/user without full profile reload
       if (event === "TOKEN_REFRESHED") {
         setSession(nextSession);
@@ -372,6 +365,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await runBootstrap(nextSession);
       } catch (e) {
         console.error("Auth state change bootstrap failed:", e);
+        setLoading(false);
       }
     });
 
@@ -387,6 +381,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, 10_000);
 
     return () => {
+      didUnmount = true;
       sub.subscription.unsubscribe();
       if (safetyTimer) clearTimeout(safetyTimer);
     };
