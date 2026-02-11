@@ -14,7 +14,7 @@ import {
 } from "../_shared/security-middleware.ts";
 import type { ValidationSchema } from "../_shared/input-validator.ts";
 
-import { DOCITO_FONT_TTF_BASE64, DOCITO_LOGO_PNG_BASE64 } from "../referral-generate-pdf/assets.ts";
+import { DOCITO_FONT_TTF_BASE64, DOCITO_LOGO_PNG_BASE64 } from "./assets.ts";
 
 type Locale =
   | "en"
