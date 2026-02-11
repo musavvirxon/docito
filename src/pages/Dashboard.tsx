@@ -1,52 +1,42 @@
-import { useEffect, useMemo } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-
 import { useAuth } from "@/contexts/AuthContext";
 import { getDashboardRoute, type AppRole } from "@/lib/rbac";
 
 const Dashboard = () => {
   const { user, loading, allRoles, activeRole } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const { lang } = useParams<{ lang?: string }>();
 
-  const withLang = (path: string) => {
-    if (!lang) return path;
-    if (!path.startsWith("/")) return `/${lang}/${path}`;
-    if (path === "/") return `/${lang}`;
-    if (path.startsWith(`/${lang}/`) || path === `/${lang}`) return path;
-    return `/${lang}${path}`;
-  };
-
-  const returnTo = useMemo(() => {
-    const p = location.pathname + location.search + location.hash;
-    return encodeURIComponent(p);
-  }, [location.pathname, location.search, location.hash]);
+  const prefix = (path: string) => (lang ? `/${lang}${path}` : path);
 
   useEffect(() => {
+    // Wait for auth to finish loading
     if (loading) return;
 
+    // Not logged in → send to auth
     if (!user) {
-      navigate(withLang(`/auth?returnTo=${returnTo}`), { replace: true });
+      navigate(prefix("/auth"), { replace: true });
       return;
     }
 
-    const roles: AppRole[] = (Array.isArray(allRoles) && allRoles.length > 0 ? allRoles : [activeRole]).filter(
-      Boolean,
-    ) as AppRole[];
+    // Determine target dashboard from roles
+    const roles: AppRole[] =
+      Array.isArray(allRoles) && allRoles.length > 0
+        ? allRoles
+        : [activeRole || "patient"];
 
-    if (!roles || roles.length === 0) return;
+    const target = getDashboardRoute(roles);
+    navigate(prefix(target), { replace: true });
+  }, [loading, user, allRoles, activeRole]);
 
-    const target = withLang(getDashboardRoute(roles));
-    navigate(target, { replace: true });
-  }, [loading, user, allRoles, activeRole, navigate, returnTo]);
-
+  // Always render a visible loading state so the page is never blank
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <Loader2 className="h-5 w-5 animate-spin" />
-        <span>Loading dashboard…</span>
+      <div className="flex flex-col items-center gap-3">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground">Redirecting to your dashboard…</p>
       </div>
     </div>
   );
