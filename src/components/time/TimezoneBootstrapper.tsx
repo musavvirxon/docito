@@ -1,11 +1,9 @@
-// File: src/components/time/TimezoneBootstrapper.tsx
-
-import { useEffect, useRef, forwardRef } from "react";
+import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getBrowserTimeZone } from "@/lib/timezone";
 
-const TimezoneBootstrapper = forwardRef<HTMLDivElement>(function TimezoneBootstrapper(_props, _ref) {
+const TimezoneBootstrapper = () => {
   const { user, profile, session, loading, refreshProfile } = useAuth();
   const ran = useRef(false);
 
@@ -21,7 +19,6 @@ const TimezoneBootstrapper = forwardRef<HTMLDivElement>(function TimezoneBootstr
 
     const currentTz = (profile as any)?.timezone as string | undefined;
 
-    // If we already have a timezone, don't spam updates.
     if (currentTz && String(currentTz).trim()) {
       try {
         window.localStorage?.setItem(key, "1");
@@ -56,7 +53,7 @@ const TimezoneBootstrapper = forwardRef<HTMLDivElement>(function TimezoneBootstr
           // ignore
         }
       } catch {
-        // Silent by design: timezone bootstrap should never block UX.
+        // Silent by design
       }
     };
 
@@ -65,6 +62,6 @@ const TimezoneBootstrapper = forwardRef<HTMLDivElement>(function TimezoneBootstr
   }, [loading, user?.id]);
 
   return null;
-});
+};
 
 export default TimezoneBootstrapper;
