@@ -1,28 +1,55 @@
-import { useAuth } from "@/contexts/AuthContext";
-import { Navigate } from "react-router-dom";
+import { useEffect, useMemo } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { getDashboardRoute } from "@/lib/rbac";
+
+import { useAuth } from "@/contexts/AuthContext";
+import { getDashboardRoute, type AppRole } from "@/lib/rbac";
 
 const Dashboard = () => {
-  const { user, loading, activeRole } = useAuth();
+  const { user, loading, allRoles, activeRole } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { lang } = useParams<{ lang?: string }>();
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex items-center gap-2">
-          <Loader2 className="w-5 h-5 animate-spin text-primary" />
-          <span className="text-muted-foreground">Loading...</span>
-        </div>
+  const withLang = (path: string) => {
+    if (!lang) return path;
+    if (!path.startsWith("/")) return `/${lang}/${path}`;
+    if (path === "/") return `/${lang}`;
+    if (path.startsWith(`/${lang}/`) || path === `/${lang}`) return path;
+    return `/${lang}${path}`;
+  };
+
+  const returnTo = useMemo(() => {
+    const p = location.pathname + location.search + location.hash;
+    return encodeURIComponent(p);
+  }, [location.pathname, location.search, location.hash]);
+
+  useEffect(() => {
+    if (loading) return;
+
+    if (!user) {
+      navigate(withLang(`/auth?returnTo=${returnTo}`), { replace: true });
+      return;
+    }
+
+    const roles: AppRole[] = (Array.isArray(allRoles) && allRoles.length > 0 ? allRoles : [activeRole]).filter(
+      Boolean,
+    ) as AppRole[];
+
+    if (!roles || roles.length === 0) return;
+
+    const target = withLang(getDashboardRoute(roles));
+    navigate(target, { replace: true });
+  }, [loading, user, allRoles, activeRole, navigate, returnTo]);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="flex items-center gap-2 text-muted-foreground">
+        <Loader2 className="h-5 w-5 animate-spin" />
+        <span>Loading dashboard…</span>
       </div>
-    );
-  }
-
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-
-  // Universal entrypoint: always send user to the dashboard for their currently active role
-  return <Navigate to={getDashboardRoute([activeRole])} replace />;
+    </div>
+  );
 };
 
 export default Dashboard;
