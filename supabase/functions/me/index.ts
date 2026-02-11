@@ -95,10 +95,6 @@ serve(async (req) => {
     (typeof meta.timezone === "string" && meta.timezone.trim()) ||
     "UTC";
 
-  const timezoneSource =
-    (typeof meta.timezone_source === "string" && meta.timezone_source.trim()) ||
-    "browser";
-
   try {
     const { data: existing, error: selErr } = await admin
       .from("profiles")
@@ -109,8 +105,7 @@ serve(async (req) => {
     if (selErr) throw selErr;
 
     if (!existing) {
-      // Try the "new schema" (timezone columns), then fall back if columns are missing.
-      const attemptFull = await admin
+      const { error: insErr } = await admin
         .from("profiles")
         .upsert(
           {
@@ -119,32 +114,13 @@ serve(async (req) => {
             email: email,
             role: profileRole,
             timezone,
-            timezone_source: timezoneSource,
-            timezone_updated_at: new Date().toISOString(),
-            timezone_detected_at: new Date().toISOString(),
           } as any,
           { onConflict: "user_id" },
         )
         .select("*")
         .single();
 
-      if (attemptFull.error) {
-        const attemptMinimal = await admin
-          .from("profiles")
-          .upsert(
-            {
-              user_id: userId,
-              full_name: fullName,
-              email: email,
-              role: profileRole,
-            } as any,
-            { onConflict: "user_id" },
-          )
-          .select("*")
-          .single();
-
-        if (attemptMinimal.error) throw attemptMinimal.error;
-      }
+      if (insErr) throw insErr;
     }
   } catch (e: any) {
     console.error("me bootstrap error:", e);
