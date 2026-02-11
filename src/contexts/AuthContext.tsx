@@ -22,8 +22,8 @@ interface Profile {
   notification_settings?: any;
   privacy_settings?: any;
   timezone?: string;
-  timezone_source?: string;
-  timezone_updated_at?: string;
+  timezone_source?: string;  // not in DB yet, kept for compat
+  timezone_updated_at?: string;  // not in DB yet, kept for compat
   language?: string;
   created_at: string;
   updated_at: string;
@@ -225,8 +225,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             full_name: fullName,
             role: profileRole,
             timezone: tz,
-            timezone_source: tzFromMeta ? "repair_meta" : "repair_browser",
-            timezone_updated_at: new Date().toISOString(),
           } as any,
           { onConflict: "user_id" },
         );
@@ -304,19 +302,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     applyActiveRoleFrom(first.directRoles, first.directProfile);
   };
 
-  const fetchRoleStatus = async (uid: string) => {
-    try {
-      const { data, error } = await (supabase as any).from("role_verifications").select("role,status").eq("user_id", uid);
-      if (error) return;
-
-      const next: Partial<Record<AppRole, RoleVerificationStatus>> = {};
-      for (const row of (data as any[]) || []) {
-        if (row?.role) next[row.role as AppRole] = (row.status as RoleVerificationStatus) || "unverified";
-      }
-      setRoleStatus(next);
-    } catch {
-      // ignore
-    }
+  const fetchRoleStatus = async (_uid: string) => {
+    // role_verifications table does not exist yet — skip to avoid errors
   };
 
   const runBootstrap = async (nextSession: Session | null) => {
@@ -407,32 +394,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (email: string, password: string): Promise<AuthActionResult> => {
     try {
-      setLoading(true);
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
 
-      // Make auth state available immediately (so routing can proceed)
+      // Don't set loading here — onAuthStateChange will fire runBootstrap which manages loading.
+      // Just set session/user so routing can proceed immediately.
       setSession(data.session);
       setUser(data.user);
-
-      if (data.session?.user?.id) {
-        await loadProfileAndRoles(data.session.user.id, data.session.access_token);
-        await fetchRoleStatus(data.session.user.id);
-      }
 
       toast.success("Successfully signed in!");
       return {};
     } catch (error: any) {
       toast.error("Invalid email or password. Please try again.");
       return { error };
-    } finally {
-      setLoading(false);
     }
   };
 
   const signUp = async (email: string, password: string, userData: any = {}): Promise<AuthActionResult> => {
     try {
-      setLoading(true);
       const role = userData.role || "patient";
       const signupTz = String(userData.timezone || getBrowserTimeZone() || "").trim() || "UTC";
 
@@ -461,14 +440,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { needsEmailConfirmation: true };
       }
 
-      // Otherwise, user is signed in immediately.
+      // Otherwise, user is signed in immediately — onAuthStateChange handles bootstrap.
       setSession(data.session);
       setUser(data.user);
-
-      if (data.session.user?.id) {
-        await loadProfileAndRoles(data.session.user.id, data.session.access_token);
-        await fetchRoleStatus(data.session.user.id);
-      }
 
       toast.success("Account created successfully!");
       return {};
@@ -477,8 +451,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error("Full signup error:", error);
       toast.error(msg);
       return { error };
-    } finally {
-      setLoading(false);
     }
   };
 
