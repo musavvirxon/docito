@@ -29,14 +29,14 @@ export const roleLabels: Record<AppRole, string> = {
  */
 export const DASHBOARD_ROUTES: Record<AppRole, string> = {
   patient: "/patient-dashboard",
-  doctor: "/doctor-dashboard",
-  admin: "/admin-dashboard",
+  doctor: "/doctor/dashboard",
+  admin: "/practices/dashboard",
   staff: "/staff-dashboard",
   super_admin: "/super-admin-dashboard",
   clinic_admin: "/practices/dashboard",
-  pharmacy_admin: "/dashboard/pharmacies",
-  lab_admin: "/dashboard/labs",
-  imaging_admin: "/dashboard/imaging",
+  pharmacy_admin: "/pharmacy/dashboard",
+  lab_admin: "/lab/dashboard",
+  imaging_admin: "/imaging/dashboard",
 };
 
 const VALID_ROLES: AppRole[] = [

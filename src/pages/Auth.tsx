@@ -137,23 +137,39 @@ const Auth = () => {
   useEffect(() => {
     if (!pendingRedirect) return;
     if (authLoading) return;
-    if (!user || !profile) return;
+    if (!user) return;
 
-    if (pendingRedirect === "signin") {
-      const pendingInviteToken = sessionStorage.getItem("pending_staff_invite_token");
-      if (pendingInviteToken) {
-        sessionStorage.removeItem("pending_staff_invite_token");
-        navigate(`/accept-invite/${pendingInviteToken}`, { replace: true });
-      } else {
-        const target = !isBlockedReturnTo(safeReturnTo) && safeReturnTo ? safeReturnTo : getDashboardPath();
-        navigate(target, { replace: true });
-      }
-    } else {
-      // signup
-      navigate(getDashboardPath(), { replace: true });
+    // If profile loaded, redirect immediately
+    if (profile) {
+      const doRedirect = () => {
+        if (pendingRedirect === "signin") {
+          const pendingInviteToken = sessionStorage.getItem("pending_staff_invite_token");
+          if (pendingInviteToken) {
+            sessionStorage.removeItem("pending_staff_invite_token");
+            navigate(`/accept-invite/${pendingInviteToken}`, { replace: true });
+          } else {
+            const target = !isBlockedReturnTo(safeReturnTo) && safeReturnTo ? safeReturnTo : getDashboardPath();
+            navigate(target, { replace: true });
+          }
+        } else {
+          navigate(getDashboardPath(), { replace: true });
+        }
+        setPendingRedirect(null);
+      };
+      doRedirect();
+      return;
     }
 
-    setPendingRedirect(null);
+    // Fallback: if profile hasn't loaded after 4s, redirect to a safe default
+    const timeout = setTimeout(() => {
+      if (pendingRedirect) {
+        console.warn("Auth redirect timeout: profile did not load in time, redirecting to default dashboard");
+        navigate("/patient-dashboard", { replace: true });
+        setPendingRedirect(null);
+      }
+    }, 4000);
+
+    return () => clearTimeout(timeout);
   }, [pendingRedirect, authLoading, user, profile, activeRole]);
 
   // No auto-redirect from auth page - user must explicitly sign in/up
