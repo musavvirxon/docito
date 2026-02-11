@@ -1,11 +1,10 @@
-// File: src/contexts/AuthContext.tsx
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useInactivityTimer } from "@/hooks/useInactivityTimer";
 import { InactivityWarningModal } from "@/components/InactivityWarningModal";
-import { getPrimaryRole, getUserRolesFromProfile, type AppRole } from "@/lib/rbac";
+import { getPrimaryRole, getUserRolesFromProfile, normalizeRole, type AppRole } from "@/lib/rbac";
 import { getBrowserTimeZone } from "@/lib/timezone";
 
 interface Profile {
@@ -33,6 +32,11 @@ interface Profile {
 
 type RoleVerificationStatus = "unverified" | "pending" | "verified" | "rejected";
 
+type AuthActionResult = {
+  error?: any;
+  needsEmailConfirmation?: boolean;
+};
+
 interface AuthContextType {
   user: User | null;
   profile: Profile | null;
@@ -46,8 +50,8 @@ interface AuthContextType {
 
   roleStatus: Partial<Record<AppRole, RoleVerificationStatus>>;
 
-  signIn: (email: string, password: string) => Promise<{ error?: any }>;
-  signUp: (email: string, password: string, userData?: any) => Promise<{ error?: any }>;
+  signIn: (email: string, password: string) => Promise<AuthActionResult>;
+  signUp: (email: string, password: string, userData?: any) => Promise<AuthActionResult>;
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<Profile>) => Promise<{ error?: any }>;
   refreshProfile: () => Promise<void>;
@@ -63,7 +67,32 @@ export const useAuth = () => {
 
 const ACTIVE_ROLE_KEY = "docito.activeRole";
 
+function safeLocalNameFromEmail(email: string | null | undefined): string {
+  const e = String(email || "").trim();
+  if (!e) return "User";
+  const local = e.split("@")[0] || "User";
+  return local.replace(/[._-]+/g, " ").replace(/\s+/g, " ").trim() || "User";
+}
+
+function mapProfileRoleFromAppRole(role: AppRole): Profile["role"] {
+  if (role === "doctor") return "doctor";
+  if (role === "staff") return "staff";
+  if (
+    role === "admin" ||
+    role === "clinic_admin" ||
+    role === "pharmacy_admin" ||
+    role === "lab_admin" ||
+    role === "imaging_admin" ||
+    role === "super_admin"
+  ) {
+    return "admin";
+  }
+  return "patient";
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const bootstrapPromiseRef = useRef<Promise<void> | null>(null);
+
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -116,20 +145,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const applyActiveRoleFrom = (roles: AppRole[], nextProfile?: Profile | null) => {
-    const merged = Array.from(new Set([...(roles || []), ...((nextProfile ? (getUserRolesFromProfile(nextProfile as any) as AppRole[]) : []) || [])]));
+    const merged = Array.from(
+      new Set([
+        ...(roles || []),
+        ...((nextProfile ? (getUserRolesFromProfile(nextProfile as any) as AppRole[]) : []) || []),
+      ]),
+    );
+
     const stored = readStoredRole();
     if (stored && merged.includes(stored)) {
       _setActiveRole(stored);
       return;
     }
+
     const primary = getPrimaryRole(merged);
     _setActiveRole(primary);
     writeStoredRole(primary);
   };
 
-  const bootstrapViaEdge = async (): Promise<{ profile: Profile; roles: AppRole[] } | null> => {
+  const clearAuthState = () => {
+    setSession(null);
+    setUser(null);
+    setProfile(null);
+    setAllRolesState([]);
+    setRoleStatus({});
+    _setActiveRole("patient");
+    clearStoredRole();
+  };
+
+  const bootstrapViaEdge = async (accessToken?: string): Promise<{ profile: Profile; roles: AppRole[] } | null> => {
     const { data, error } = await supabase.functions.invoke("me", {
       body: { action: "get" },
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
     });
 
     if (error) throw error;
@@ -150,42 +197,116 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { profile: nextProfile, roles: nextRoles };
   };
 
-  const loadProfileAndRoles = async (userId: string) => {
-    // Prefer direct reads (faster). If anything is missing, fall back to Edge bootstrap (service-role ensured).
-    const [profileRes, rolesRes] = await Promise.all([
-      supabase.from("profiles").select("*").eq("user_id", userId).maybeSingle(),
-      supabase.from("user_roles").select("role").eq("user_id", userId),
-    ]);
+  const ensureSelfBootstrap = async (uid: string) => {
+    // Best-effort self-bootstrap when profile/roles are missing.
+    // This avoids getting stuck if the Edge Function is not deployed.
+    try {
+      const { data: userRes } = await supabase.auth.getUser();
+      const u = userRes?.user;
+      const email = (u?.email || user?.email || "").trim();
 
-    const pErr = profileRes.error;
-    const rErr = rolesRes.error;
+      const fullName =
+        (String((u as any)?.user_metadata?.full_name || (u as any)?.user_metadata?.fullName || "").trim() ||
+          safeLocalNameFromEmail(email));
 
-    const directProfile = (profileRes.data as any) as Profile | null;
-    const directRoles = (Array.isArray(rolesRes.data) ? rolesRes.data : []).map((r: any) => r?.role).filter(Boolean) as AppRole[];
+      const metaRole = (normalizeRole((u as any)?.user_metadata?.role) || "patient") as AppRole;
+      const profileRole = mapProfileRoleFromAppRole(metaRole);
 
-    // If either fails (RLS or missing rows) OR profile missing, bootstrap with Edge Function.
-    if (pErr || rErr || !directProfile) {
-      const boot = await bootstrapViaEdge();
-      if (boot) return;
-      // If bootstrap returned null, still clear profile so UI doesn't lie.
+      const tzFromMeta = String((u as any)?.user_metadata?.timezone || "").trim();
+      const tz = tzFromMeta || String(getBrowserTimeZone() || "").trim() || "UTC";
+
+      // Create profile row (idempotent)
+      await supabase
+        .from("profiles")
+        .upsert(
+          {
+            user_id: uid,
+            email: email || null,
+            full_name: fullName,
+            role: profileRole,
+            timezone: tz,
+            timezone_source: tzFromMeta ? "repair_meta" : "repair_browser",
+            timezone_updated_at: new Date().toISOString(),
+          } as any,
+          { onConflict: "user_id" },
+        );
+
+      // Ensure at least one role row exists
+      const tryInsert = async (role: AppRole) => {
+        const { error } = await supabase.from("user_roles").upsert({ user_id: uid, role } as any, {
+          onConflict: "user_id,role",
+        });
+        return error;
+      };
+
+      const err1 = await tryInsert(metaRole);
+      if (err1) {
+        await tryInsert("patient");
+      }
+    } catch (e) {
+      console.warn("ensureSelfBootstrap failed (ignored):", e);
+    }
+  };
+
+  const loadProfileAndRoles = async (uid: string, accessToken?: string) => {
+    const directRead = async () => {
+      const [profileRes, rolesRes] = await Promise.all([
+        supabase.from("profiles").select("*").eq("user_id", uid).maybeSingle(),
+        supabase.from("user_roles").select("role").eq("user_id", uid),
+      ]);
+
+      const directProfile = (profileRes.data as any) as Profile | null;
+      const directRoles = (Array.isArray(rolesRes.data) ? rolesRes.data : [])
+        .map((r: any) => r?.role)
+        .filter(Boolean) as AppRole[];
+
+      return {
+        directProfile,
+        directRoles,
+        profileError: profileRes.error,
+        rolesError: rolesRes.error,
+      };
+    };
+
+    // 1) Direct reads first
+    let first = await directRead();
+
+    // 2) If missing profile or roles, try self-bootstrap + re-read
+    if (!first.directProfile || first.directRoles.length === 0 || first.profileError || first.rolesError) {
+      await ensureSelfBootstrap(uid);
+      const second = await directRead();
+
+      if (second.directProfile) {
+        setProfile(second.directProfile);
+        setAllRolesState(second.directRoles);
+        applyActiveRoleFrom(second.directRoles, second.directProfile);
+        return;
+      }
+
+      // 3) Last resort: Edge bootstrap (if deployed)
+      try {
+        const boot = await bootstrapViaEdge(accessToken);
+        if (boot) return;
+      } catch (e) {
+        console.warn("Edge bootstrap failed (ignored):", e);
+      }
+
+      // Still no profile: clear so UI doesn't lie
       setProfile(null);
-      setAllRolesState([]);
+      setAllRolesState(second.directRoles || []);
+      applyActiveRoleFrom(second.directRoles || [], null);
       return;
     }
 
-    setProfile(directProfile);
-    setAllRolesState(directRoles);
-    applyActiveRoleFrom(directRoles, directProfile);
+    // Direct reads succeeded
+    setProfile(first.directProfile);
+    setAllRolesState(first.directRoles);
+    applyActiveRoleFrom(first.directRoles, first.directProfile);
   };
 
-  const refreshProfile = async () => {
-    if (!user?.id) return;
-    await loadProfileAndRoles(user.id);
-  };
-
-  const fetchRoleStatus = async (userId: string) => {
+  const fetchRoleStatus = async (uid: string) => {
     try {
-      const { data, error } = await (supabase as any).from("role_verifications").select("role,status").eq("user_id", userId);
+      const { data, error } = await (supabase as any).from("role_verifications").select("role,status").eq("user_id", uid);
       if (error) return;
 
       const next: Partial<Record<AppRole, RoleVerificationStatus>> = {};
@@ -196,6 +317,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {
       // ignore
     }
+  };
+
+  const runBootstrap = async (nextSession: Session | null) => {
+    if (bootstrapPromiseRef.current) return bootstrapPromiseRef.current;
+
+    const p = (async () => {
+      setLoading(true);
+      try {
+        setSession(nextSession);
+        setUser(nextSession?.user ?? null);
+
+        if (!nextSession?.user?.id) {
+          clearAuthState();
+          return;
+        }
+
+        const uid = nextSession.user.id;
+        await loadProfileAndRoles(uid, nextSession.access_token);
+        await fetchRoleStatus(uid);
+      } finally {
+        setLoading(false);
+      }
+    })();
+
+    bootstrapPromiseRef.current = p;
+    try {
+      await p;
+    } finally {
+      bootstrapPromiseRef.current = null;
+    }
+  };
+
+  const refreshProfile = async () => {
+    if (!session?.user?.id) return;
+    await runBootstrap(session);
   };
 
   // Inactivity timer (kept as-is)
@@ -214,27 +370,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const init = async () => {
-      setLoading(true);
       try {
         const { data } = await supabase.auth.getSession();
-        setSession(data.session);
-        setUser(data.session?.user ?? null);
-
-      if (data.session?.user?.id) {
-          try {
-            await loadProfileAndRoles(data.session.user.id);
-            await fetchRoleStatus(data.session.user.id);
-          } catch (err) {
-            console.error("Initial profile/role load failed:", err);
-          }
-        } else {
-          setProfile(null);
-          setAllRolesState([]);
-          setRoleStatus({});
-          _setActiveRole("patient");
-          clearStoredRole();
-        }
-      } finally {
+        await runBootstrap(data.session);
+      } catch (e) {
+        console.error("Auth init failed:", e);
         setLoading(false);
       }
     };
@@ -242,22 +382,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     void init();
 
     const { data: sub } = supabase.auth.onAuthStateChange(async (_event, nextSession) => {
-      setSession(nextSession);
-      setUser(nextSession?.user ?? null);
-
-      if (nextSession?.user?.id) {
-        try {
-          await loadProfileAndRoles(nextSession.user.id);
-          await fetchRoleStatus(nextSession.user.id);
-        } catch (err) {
-          console.error("Auth state change profile/role load failed:", err);
-        }
-      } else {
-        setProfile(null);
-        setAllRolesState([]);
-        setRoleStatus({});
-        _setActiveRole("patient");
-        clearStoredRole();
+      try {
+        await runBootstrap(nextSession);
+      } catch (e) {
+        console.error("Auth state change bootstrap failed:", e);
       }
     });
 
@@ -266,14 +394,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signOut = async () => {
-    // Clear local UI state FIRST so the UI updates immediately
-    setSession(null);
-    setUser(null);
-    setProfile(null);
-    setAllRolesState([]);
-    setRoleStatus({});
-    _setActiveRole("patient");
-    clearStoredRole();
+    clearAuthState();
 
     try {
       await supabase.auth.signOut();
@@ -284,34 +405,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     toast.success("Signed out");
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string): Promise<AuthActionResult> => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      setLoading(true);
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
+
+      // Make auth state available immediately (so routing can proceed)
+      setSession(data.session);
+      setUser(data.user);
+
+      if (data.session?.user?.id) {
+        await loadProfileAndRoles(data.session.user.id, data.session.access_token);
+        await fetchRoleStatus(data.session.user.id);
+      }
+
       toast.success("Successfully signed in!");
       return {};
     } catch (error: any) {
       toast.error("Invalid email or password. Please try again.");
       return { error };
+    } finally {
+      setLoading(false);
     }
   };
 
-  const signUp = async (email: string, password: string, userData: any = {}) => {
+  const signUp = async (email: string, password: string, userData: any = {}): Promise<AuthActionResult> => {
     try {
+      setLoading(true);
       const role = userData.role || "patient";
       const signupTz = String(userData.timezone || getBrowserTimeZone() || "").trim() || "UTC";
 
       const marketing =
-        Boolean(
-          userData.marketing_communications ?? userData.marketingCommunications ?? userData.marketingOptIn ?? false,
-        ) || false;
+        Boolean(userData.marketing_communications ?? userData.marketingCommunications ?? userData.marketingOptIn ?? false) ||
+        false;
 
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
-            full_name: userData.fullName || email,
+            full_name: userData.fullName || safeLocalNameFromEmail(email),
             role,
             marketing_communications: marketing,
             timezone: signupTz,
@@ -321,6 +455,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) throw error;
 
+      // If email confirmations are enabled, Supabase returns user but no session.
+      if (!data.session) {
+        toast.success("Account created successfully! Please check your email to confirm your account.");
+        return { needsEmailConfirmation: true };
+      }
+
+      // Otherwise, user is signed in immediately.
+      setSession(data.session);
+      setUser(data.user);
+
+      if (data.session.user?.id) {
+        await loadProfileAndRoles(data.session.user.id, data.session.access_token);
+        await fetchRoleStatus(data.session.user.id);
+      }
+
       toast.success("Account created successfully!");
       return {};
     } catch (error: any) {
@@ -328,6 +477,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error("Full signup error:", error);
       toast.error(msg);
       return { error };
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -338,7 +489,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { error } = await supabase.from("profiles").update(updates).eq("user_id", user.id);
       if (error) throw error;
 
-      await loadProfileAndRoles(user.id);
+      await refreshProfile();
       toast.success("Profile updated successfully!");
       return {};
     } catch (error: any) {
