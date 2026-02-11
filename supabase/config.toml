@@ -1,10 +1,1 @@
 project_id = "gswwpjdtgsxzcsnrxutu"
-
-[functions.send-sms]
-verify_jwt = true
-
-[functions.send-invitation-email]
-verify_jwt = true
-
-[functions.update-ratings]
-verify_jwt = true
