@@ -1,40 +1,79 @@
+## Root Cause Analysis
 
+### Bug 1: `runBootstrap` deduplication swallows auth state changes
 
-## Problem Analysis
+The `bootstrapPromiseRef` pattern in `AuthContext.tsx` (line 310) causes critical failures:
 
-There are multiple interacting bugs causing the auth page to show constant loading and dashboard redirection to fail:
+```
+When bootstrapPromiseRef.current is set, ALL subsequent calls return the same promise
+```
 
-### Root Cause 1: Non-existent database columns
-The `profiles` table does NOT have `timezone_source`, `timezone_updated_at`, or `timezone_detected_at` columns. But two places try to write them:
-- **AuthContext.tsx** `ensureSelfBootstrap` (line 228-229) -- causes the profile upsert to fail
-- **`me` edge function** (lines 122-124) -- causes the first insert attempt to fail (has a fallback, but adds latency)
+This means:
 
-When `ensureSelfBootstrap` fails, no profile gets created, so `loadProfileAndRoles` can't find a profile, and the auth state never fully resolves.
+- If the user signs out WHILE the initial bootstrap is still running, the SIGNED_OUT event's bootstrap is skipped entirely -- the old session's profile gets loaded, and the user appears still logged in.
+- If `onAuthStateChange` fires TOKEN_REFRESHED while bootstrap is running, it's also swallowed.
+- On reload, if `getSession()` resolves AFTER `onAuthStateChange` fires, one of them is skipped -- but they might have different session states.
 
-### Root Cause 2: Missing `role_verifications` table
-`fetchRoleStatus` queries a table called `role_verifications` which doesn't exist. The error is caught silently but adds unnecessary async work during bootstrap.
+### Bug 2: `ProfileMenu.signOut` bypasses `AuthContext.signOut`
 
-### Root Cause 3: Double bootstrap race condition
-When `signIn` is called, it sets `loading = true`, calls `loadProfileAndRoles`, then sets `loading = false`. But `onAuthStateChange` also fires and calls `runBootstrap` which sets `loading = true` again. This creates a race where `loading` flickers or stays `true`, keeping the auth page button disabled and preventing navigation.
+`ProfileMenu.tsx` (line 56) calls `supabase.auth.signOut()` directly instead of `useAuth().signOut()`. This means:
 
-### Root Cause 4: `runBootstrap` deduplication blocks second call
-The `bootstrapPromiseRef` check means if `onAuthStateChange` fires while `signIn`'s manual bootstrap is running, one of them gets skipped. But since `signIn` already handles its own profile loading, the `onAuthStateChange` listener running `runBootstrap` again is redundant and can cause the `loading` state to stay `true`.
+- `clearAuthState()` is NOT called immediately -- it only runs when `onAuthStateChange(SIGNED_OUT)` fires and triggers `runBootstrap(null)`.
+- But if a bootstrap is already running (from INITIAL_SESSION), the SIGNED_OUT `runBootstrap` is RETURNED as the existing promise (Bug 1), so `clearAuthState()` never runs for the sign-out event.
+- The session IS cleared from localStorage by `supabase.auth.signOut()`, but the React state retains the old user/profile. On page reload, `getSession()` returns null, but the user briefly sees the old state.
+
+### Bug 3: Missing INSERT policy on `user_roles`
+
+The `user_roles` table has no INSERT policy for regular authenticated users. Only `super_admin` can insert via the ALL policy. When `ensureSelfBootstrap` tries to upsert a role for a new user, it fails silently. This means `allRoles` is always empty for new users, so the role switcher never appears.
 
 ---
 
 ## Fix Plan
 
-### 1. Fix `ensureSelfBootstrap` in AuthContext.tsx
-Remove `timezone_source` and `timezone_updated_at` from the upsert payload (lines 228-229). Only write columns that actually exist in the `profiles` table.
+### 1. Replace bootstrap deduplication with a version counter (AuthContext.tsx)
 
-### 2. Fix `me` edge function
-Remove `timezone_source`, `timezone_updated_at`, and `timezone_detected_at` from the initial insert attempt (lines 122-124). This eliminates the need for the fallback path entirely, making bootstrap faster and more reliable.
+Replace `bootstrapPromiseRef` with a simple version counter (`bootstrapVersionRef`). Each call to `runBootstrap` increments the counter. After async work completes, the result is only applied if the version hasn't changed (meaning no newer call has started).
 
-### 3. Remove `fetchRoleStatus` call or make it safe
-Since the `role_verifications` table doesn't exist, wrap the call or skip it entirely to prevent unnecessary errors.
+```text
+Before: if (bootstrapPromiseRef.current) return bootstrapPromiseRef.current;
+After:  const version = ++bootstrapVersionRef.current;
+        // ... do async work ...
+        if (bootstrapVersionRef.current !== version) return; // stale, discard
+        // ... apply state ...
+```
 
-### 4. Fix the double-bootstrap race in `signIn`/`signUp`
-After `signIn`/`signUp` manually loads profile and roles, prevent `onAuthStateChange` from re-triggering a full bootstrap. The simplest approach: don't set `loading = true` in `signIn`/`signUp` at the context level -- use only the local `loading` state in Auth.tsx (which already exists). Or, skip `runBootstrap` in `onAuthStateChange` if profile is already loaded.
+This ensures:
+
+- The latest auth event always wins
+- Stale bootstrap results are discarded
+- No more swallowed sign-out events
+- `setLoading(false)` always runs via `finally`
+
+### 2. Fix ProfileMenu to use AuthContext's signOut (ProfileMenu.tsx)
+
+Replace the direct `supabase.auth.signOut()` call with the `signOut` function from `useAuth()`. This ensures `clearAuthState()` runs immediately (before the async API call), providing instant UI feedback.
+
+### 3. Add a safety timeout (AuthContext.tsx)
+
+Add a 10-second fallback timer in the `init` useEffect. If `loading` is still `true` after 10 seconds, force it to `false`. This prevents the UI from being permanently stuck if something unexpected happens during bootstrap.
+
+### 4. Add INSERT policy on `user_roles` for self-registration (Database migration)
+
+Add an RLS policy allowing authenticated users to insert their own role row:
+
+```sql
+CREATE POLICY "Users can insert their own roles"
+ON public.user_roles
+FOR INSERT
+TO authenticated
+WITH CHECK (user_id = auth.uid());
+```
+
+This allows `ensureSelfBootstrap` to create the initial role row for new users.
+
+### 5. Skip full bootstrap on TOKEN_REFRESHED (AuthContext.tsx)
+
+In the `onAuthStateChange` callback, check the event type. For `TOKEN_REFRESHED`, only update the session/user state without re-running the full profile load. This prevents unnecessary loading flicker.
 
 ---
 
@@ -42,22 +81,22 @@ After `signIn`/`signUp` manually loads profile and roles, prevent `onAuthStateCh
 
 ### Files to modify:
 
-**`src/contexts/AuthContext.tsx`**:
-- Line 228-229: Remove `timezone_source: ...` and `timezone_updated_at: ...` from the upsert object
-- Line 307-320: Guard `fetchRoleStatus` to not query non-existent table, or remove the call
-- Lines 410, 435: Remove `setLoading(true)` / `setLoading(false)` from `signIn` and `signUp` to avoid fighting with `onAuthStateChange`'s bootstrap. The Auth.tsx page already has its own local `loading` state for button disable.
+`**src/contexts/AuthContext.tsx**` -- Core fixes:
 
-**`supabase/functions/me/index.ts`**:
-- Lines 98-100, 122-124: Remove references to `timezone_source`, `timezone_updated_at`, `timezone_detected_at`. Simplify to only write `timezone` alongside the core profile fields.
+- Replace `bootstrapPromiseRef` with `bootstrapVersionRef` counter pattern
+- Add safety timeout (10 seconds) in init useEffect
+- In `onAuthStateChange`, differentiate TOKEN_REFRESHED from other events
+- Ensure `setLoading(false)` is always called, even for discarded stale bootstraps
 
-**`src/pages/Dashboard.tsx`** -- no changes needed, logic is correct.
+`**src/components/profile/ProfileMenu.tsx**` -- Sign-out fix:
 
-**`src/pages/Auth.tsx`** -- no changes needed, the local loading + `goAfterAuth` logic is sound once the context stops getting stuck.
+- Import and use `signOut` from `useAuth()` instead of calling `supabase.auth.signOut()` directly
+- Remove the direct supabase import (it's only used for signOut)
 
-**`src/lib/rbac.ts`** -- no changes needed.
+**Database migration** -- RLS policy:
 
-**`src/components/profile/ProfileMenu.tsx`** -- no changes needed, works correctly once roles load.
+- Add INSERT policy on `user_roles` for authenticated users on their own rows
 
-### Deployment:
-- Redeploy the `me` edge function after changes.
+&nbsp;
 
+At the end test it with console logs. Try signing in with [docito@gmail.com](mailto:docito@gmail.com) password: 123456  
