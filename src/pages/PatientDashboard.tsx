@@ -569,7 +569,7 @@ export default function PatientDashboard() {
     return null;
   };
 
-  if (authLoading || (user && !profile)) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">{t("patient.loading", { defaultValue: "Loading..." })}</div>
