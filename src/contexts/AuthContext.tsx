@@ -1,11 +1,10 @@
-import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useInactivityTimer } from "@/hooks/useInactivityTimer";
 import { InactivityWarningModal } from "@/components/InactivityWarningModal";
-import { getPrimaryRole, getUserRolesFromProfile, normalizeRole, type AppRole } from "@/lib/rbac";
-import { getBrowserTimeZone } from "@/lib/timezone";
+import { getPrimaryRole, normalizeRole, type AppRole } from "@/lib/rbac";
 
 interface Profile {
   id: string;
@@ -43,6 +42,7 @@ interface AuthContextType {
 
   allRoles: AppRole[];
   activeRole: AppRole;
+  // Kept as no-ops for API compatibility
   switchRole: (role: AppRole) => void;
   setActiveRoleSilently: (role: AppRole) => void;
 
@@ -62,8 +62,6 @@ export const useAuth = () => {
   if (!ctx) throw new Error("useAuth must be used within an AuthProvider");
   return ctx;
 };
-
-const ACTIVE_ROLE_KEY = "docito.activeRole";
 
 function safeLocalNameFromEmail(email: string | null | undefined): string {
   const e = String(email || "").trim();
@@ -89,7 +87,6 @@ function mapProfileRoleFromAppRole(role: AppRole): Profile["role"] {
 }
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Version counter replaces bootstrapPromiseRef to avoid swallowing auth state changes
   const bootstrapVersionRef = useRef(0);
 
   const [user, setUser] = useState<User | null>(null);
@@ -99,77 +96,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [activeRole, _setActiveRole] = useState<AppRole>("patient");
   const [roleStatus, setRoleStatus] = useState<Partial<Record<AppRole, RoleVerificationStatus>>>({});
-  const [allRolesState, setAllRolesState] = useState<AppRole[]>([]);
 
-  const allRoles: AppRole[] = useMemo(() => {
-    const fromUserRoles = Array.isArray(allRolesState) ? allRolesState : [];
-    const fromProfile = profile ? (getUserRolesFromProfile(profile as any) as AppRole[]) : [];
-    const merged = [...fromUserRoles, ...fromProfile].filter(Boolean) as AppRole[];
-    return Array.from(new Set(merged));
-  }, [allRolesState, profile]);
+  // Single-element array for API compatibility
+  const allRoles: AppRole[] = [activeRole];
 
-  const readStoredRole = (): AppRole | null => {
-    try {
-      const v = localStorage.getItem(ACTIVE_ROLE_KEY);
-      return (v as AppRole | null) ?? null;
-    } catch {
-      return null;
-    }
-  };
-
-  const writeStoredRole = (role: AppRole) => {
-    try {
-      localStorage.setItem(ACTIVE_ROLE_KEY, role);
-    } catch {
-      // ignore
-    }
-  };
-
-  const clearStoredRole = () => {
-    try {
-      localStorage.removeItem(ACTIVE_ROLE_KEY);
-    } catch {
-      // ignore
-    }
-  };
-
-  const setActiveRoleSilently = (role: AppRole) => {
-    _setActiveRole(role);
-    writeStoredRole(role);
-  };
-
-  const switchRole = (role: AppRole) => {
-    setActiveRoleSilently(role);
-    toast.success(`Switched to ${role.replace("_", " ")}`);
-  };
-
-  const applyActiveRoleFrom = (roles: AppRole[], nextProfile?: Profile | null) => {
-    const merged = Array.from(
-      new Set([
-        ...(roles || []),
-        ...((nextProfile ? (getUserRolesFromProfile(nextProfile as any) as AppRole[]) : []) || []),
-      ]),
-    );
-
-    const stored = readStoredRole();
-    if (stored && merged.includes(stored)) {
-      _setActiveRole(stored);
-      return;
-    }
-
-    const primary = getPrimaryRole(merged);
-    _setActiveRole(primary);
-    writeStoredRole(primary);
-  };
+  // No-ops for API compatibility
+  const switchRole = (_role: AppRole) => {};
+  const setActiveRoleSilently = (_role: AppRole) => {};
 
   const clearAuthState = () => {
     setSession(null);
     setUser(null);
     setProfile(null);
-    setAllRolesState([]);
     setRoleStatus({});
     _setActiveRole("patient");
-    clearStoredRole();
   };
 
   const bootstrapViaEdge = async (accessToken?: string): Promise<{ profile: Profile; roles: AppRole[] } | null> => {
@@ -205,9 +145,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const metaRole = (normalizeRole((u as any)?.user_metadata?.role) || "patient") as AppRole;
       const profileRole = mapProfileRoleFromAppRole(metaRole);
 
-      const tzFromMeta = String((u as any)?.user_metadata?.timezone || "").trim();
-      const tz = tzFromMeta || String(getBrowserTimeZone() || "").trim() || "UTC";
-
       await supabase
         .from("profiles")
         .upsert(
@@ -216,7 +153,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             email: email || null,
             full_name: fullName,
             role: profileRole,
-            timezone: tz,
           } as any,
           { onConflict: "user_id" },
         );
@@ -267,7 +203,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { profile: second.directProfile, roles: second.directRoles };
       }
 
-      // Last resort: Edge bootstrap
       try {
         const boot = await bootstrapViaEdge(accessToken);
         if (boot) return boot;
@@ -282,7 +217,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const runBootstrap = async (nextSession: Session | null) => {
-    // Increment version — any older in-flight bootstrap will discard its results
     const version = ++bootstrapVersionRef.current;
     setLoading(true);
 
@@ -298,28 +232,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const uid = nextSession.user.id;
       const result = await loadProfileAndRoles(uid, nextSession.access_token);
 
-      // Check if a newer bootstrap has started — if so, discard these results
       if (bootstrapVersionRef.current !== version) {
         console.log("[Auth] Stale bootstrap discarded (version", version, "vs current", bootstrapVersionRef.current, ")");
         return;
       }
 
-      // Apply results
       if (result.profile) {
         setProfile(result.profile);
       } else {
         setProfile(null);
       }
-      setAllRolesState(result.roles);
-      applyActiveRoleFrom(result.roles, result.profile);
+
+      // Single role: use getPrimaryRole from user_roles table
+      const primary = getPrimaryRole(result.roles);
+      _setActiveRole(primary);
     } catch (e) {
       console.error("[Auth] runBootstrap error:", e);
-      // Only clear if this is still the latest bootstrap
-      if (bootstrapVersionRef.current === version) {
-        // Don't clear auth state on error — keep session/user so retry is possible
-      }
     } finally {
-      // Always set loading false, even for stale bootstraps
       if (bootstrapVersionRef.current === version) {
         setLoading(false);
       }
@@ -349,12 +278,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let safetyTimer: ReturnType<typeof setTimeout> | null = null;
     let didUnmount = false;
 
-    // Register onAuthStateChange FIRST — it fires synchronously with INITIAL_SESSION
-    // which handles the bootstrap. We do NOT call runBootstrap from init() to avoid double-bootstrap.
     const { data: sub } = supabase.auth.onAuthStateChange(async (event, nextSession) => {
       if (didUnmount) return;
 
-      // For TOKEN_REFRESHED, just update session/user without full profile reload
       if (event === "TOKEN_REFRESHED") {
         setSession(nextSession);
         setUser(nextSession?.user ?? null);
@@ -369,7 +295,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     });
 
-    // Safety timeout: if loading is still true after 10s, force it to false
     safetyTimer = setTimeout(() => {
       setLoading((current) => {
         if (current) {
@@ -405,7 +330,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
 
-      // Don't set loading here — onAuthStateChange will fire runBootstrap which manages loading.
       setSession(data.session);
       setUser(data.user);
 
@@ -420,7 +344,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, userData: any = {}): Promise<AuthActionResult> => {
     try {
       const role = userData.role || "patient";
-      const signupTz = String(userData.timezone || getBrowserTimeZone() || "").trim() || "UTC";
 
       const marketing =
         Boolean(userData.marketing_communications ?? userData.marketingCommunications ?? userData.marketingOptIn ?? false) ||
@@ -434,7 +357,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             full_name: userData.fullName || safeLocalNameFromEmail(email),
             role,
             marketing_communications: marketing,
-            timezone: signupTz,
           },
         },
       });
