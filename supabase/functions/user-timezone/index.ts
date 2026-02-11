@@ -114,18 +114,17 @@ serve(async (req) => {
 
     const { data: prof, error: profErr } = await userClient
       .from("profiles")
-      .select("timezone, timezone_source")
+      .select("timezone")
       .eq("user_id", user.id)
       .maybeSingle();
 
     if (profErr) throw profErr;
 
     const existingTz = (prof as any)?.timezone ? String((prof as any).timezone).trim() : "";
-    const existingSource = (prof as any)?.timezone_source ? String((prof as any).timezone_source).trim() : "";
 
     // Default behavior: only set when missing.
     if (!allowOverwrite && existingTz) {
-      return json({ ok: true, timezone: existingTz, source: existingSource || null, changed: false });
+      return json({ ok: true, timezone: existingTz, source: null, changed: false });
     }
 
     // Determine timezone
@@ -158,29 +157,19 @@ serve(async (req) => {
 
     if (!chosenTimezone) {
       chosenTimezone = existingTz || "UTC";
-      chosenSource = existingSource || "fallback";
+      chosenSource = "fallback";
     }
 
-    // Prefer RPC that tracks timezone_source (created in Step 12 migration). Fallback to direct update.
-    try {
-      const { data: res, error: rpcErr } = await userClient.rpc("docito_set_my_timezone", {
-        p_timezone: chosenTimezone,
-        p_source: chosenSource,
-      });
-      if (rpcErr) throw rpcErr;
-      if (res && (res as any).ok === false) throw new Error((res as any).error || "Failed to set timezone");
-    } catch {
-      // If RPC isn't available yet, do a best-effort update.
-      const updatePayload: Record<string, unknown> = {
+    // Update timezone directly on profiles table.
+    const { error: updErr } = await userClient
+      .from("profiles")
+      .update({
         timezone: chosenTimezone,
         updated_at: new Date().toISOString(),
-        timezone_source: chosenSource,
-        timezone_updated_at: new Date().toISOString(),
-      };
+      })
+      .eq("user_id", user.id);
 
-      const { error: updErr } = await userClient.from("profiles").update(updatePayload).eq("user_id", user.id);
-      if (updErr) throw updErr;
-    }
+    if (updErr) throw updErr;
 
     return json({ ok: true, timezone: chosenTimezone, source: chosenSource, changed: true });
   } catch (e) {

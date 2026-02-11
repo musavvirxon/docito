@@ -20,10 +20,9 @@ export default function TimezoneBootstrapper() {
     if (typeof window !== "undefined" && window.localStorage?.getItem(key) === "1") return;
 
     const currentTz = (profile as any)?.timezone as string | undefined;
-    const currentSource = (profile as any)?.timezone_source as string | undefined;
 
-    // If we already have a timezone with a known source, don't spam updates.
-    if (currentTz && String(currentTz).trim() && currentSource) {
+    // If we already have a timezone, don't spam updates.
+    if (currentTz && String(currentTz).trim()) {
       try {
         window.localStorage?.setItem(key, "1");
       } catch {
