@@ -1,10 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, forwardRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getDashboardRoute, type AppRole } from "@/lib/rbac";
 
-const Dashboard = () => {
+const Dashboard = forwardRef<HTMLDivElement>((_props, ref) => {
   const { user, loading, allRoles, activeRole } = useAuth();
   const navigate = useNavigate();
   const { lang } = useParams<{ lang?: string }>();
@@ -33,13 +33,15 @@ const Dashboard = () => {
 
   // Always render a visible loading state so the page is never blank
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div ref={ref} className="min-h-screen flex items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-3">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <p className="text-sm text-muted-foreground">Redirecting to your dashboard…</p>
       </div>
     </div>
   );
-};
+});
+
+Dashboard.displayName = "Dashboard";
 
 export default Dashboard;
