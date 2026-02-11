@@ -98,7 +98,7 @@ type Result = { success?: boolean; error?: string };
 
 // Custom hook for unified doctor data management
 export const useDoctorIntegration = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, activeRole } = useAuth();
 
   const [doctorProfile, setDoctorProfile] = useState<DoctorProfile | null>(null);
   const [services, setServices] = useState<DoctorService[]>([]);
@@ -140,7 +140,7 @@ export const useDoctorIntegration = () => {
 
   // Profile operations - uses denormalized doctor_id from profile
   const fetchDoctorProfile = useCallback(async () => {
-    if (!user || profile?.role !== "doctor") return null;
+    if (!user || (activeRole !== "doctor" && profile?.role !== "doctor")) return null;
     const doctorId = doctorIdFromProfile;
 
     if (!doctorId) {
@@ -180,7 +180,7 @@ export const useDoctorIntegration = () => {
       toast.error(`Profile error: ${err.message}`);
       return null;
     }
-  }, [doctorIdFromProfile, profile?.role, user]);
+  }, [doctorIdFromProfile, profile?.role, activeRole, user]);
 
   // Services (procedures)
   const fetchServices = useCallback(async () => {
@@ -587,7 +587,7 @@ export const useDoctorIntegration = () => {
       if (!mounted) return;
       // Prevent a re-run loop caused by callback identity changes when doctorProfile updates.
       if (didInitialLoad.current) return;
-      if (user && profile?.role === "doctor") {
+      if (user && (activeRole === "doctor" || profile?.role === "doctor")) {
         didInitialLoad.current = true;
         await refreshAllData();
       } else {
@@ -598,7 +598,7 @@ export const useDoctorIntegration = () => {
     return () => {
       mounted = false;
     };
-  }, [user, profile?.role, refreshAllData]);
+  }, [user, profile?.role, activeRole, refreshAllData]);
 
   return {
     // Data
