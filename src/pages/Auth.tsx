@@ -84,7 +84,10 @@ const Auth = () => {
   const [signUpFullName, setSignUpFullName] = useState("");
   const [signUpRole, setSignUpRole] = useState<string>("patient");
 
-  const { signIn, signUp, user, profile, activeRole } = useAuth();
+  const { signIn, signUp, user, profile, activeRole, loading: authLoading } = useAuth();
+
+  // Track whether we're waiting for profile to load after auth
+  const [pendingRedirect, setPendingRedirect] = useState<"signin" | "signup" | null>(null);
 
   const returnToParam = searchParams.get("returnTo");
   const safeReturnTo = returnToParam && returnToParam.startsWith("/") ? returnToParam : null;
@@ -126,10 +129,32 @@ const Auth = () => {
   const getDashboardPath = () => {
     const byActive = DASHBOARD_ROUTES[activeRole];
     if (byActive) return byActive;
-
     const roles = profile?.roles || [];
     return getDashboardRoute(roles as any);
   };
+
+  // Once profile loads after a pending sign-in/sign-up, redirect
+  useEffect(() => {
+    if (!pendingRedirect) return;
+    if (authLoading) return;
+    if (!user || !profile) return;
+
+    if (pendingRedirect === "signin") {
+      const pendingInviteToken = sessionStorage.getItem("pending_staff_invite_token");
+      if (pendingInviteToken) {
+        sessionStorage.removeItem("pending_staff_invite_token");
+        navigate(`/accept-invite/${pendingInviteToken}`, { replace: true });
+      } else {
+        const target = !isBlockedReturnTo(safeReturnTo) && safeReturnTo ? safeReturnTo : getDashboardPath();
+        navigate(target, { replace: true });
+      }
+    } else {
+      // signup
+      navigate(getDashboardPath(), { replace: true });
+    }
+
+    setPendingRedirect(null);
+  }, [pendingRedirect, authLoading, user, profile, activeRole]);
 
   // No auto-redirect from auth page - user must explicitly sign in/up
 
@@ -139,15 +164,7 @@ const Auth = () => {
     try {
       const result = await signIn(signInEmail, signInPassword);
       if (!result.error) {
-        // Navigate to dashboard after successful sign in
-        const pendingInviteToken = sessionStorage.getItem("pending_staff_invite_token");
-        if (pendingInviteToken) {
-          sessionStorage.removeItem("pending_staff_invite_token");
-          navigate(`/accept-invite/${pendingInviteToken}`, { replace: true });
-        } else {
-          const target = !isBlockedReturnTo(safeReturnTo) && safeReturnTo ? safeReturnTo : getDashboardPath();
-          navigate(target, { replace: true });
-        }
+        setPendingRedirect("signin");
       }
     } catch (error) {
       console.error("Sign in error:", error);
@@ -165,8 +182,7 @@ const Auth = () => {
         role: signUpRole,
       });
       if (!result.error) {
-        // Navigate to dashboard after successful sign up
-        navigate("/dashboard", { replace: true });
+        setPendingRedirect("signup");
       }
     } catch (error) {
       console.error("Sign up error:", error);
