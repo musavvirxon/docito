@@ -1,17 +1,7 @@
 // Path: src/pages/Settings.tsx
+// Redirect to the unified profile/settings page
+import { Navigate } from "react-router-dom";
 
-import { SettingsPanel } from "@/components/dashboard/SettingsPanel";
-import Header from "@/components/Header";
-
-const Settings = () => {
-  return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="pt-16">
-        <SettingsPanel open={true} onOpenChange={() => {}} />
-      </div>
-    </div>
-  );
-};
+const Settings = () => <Navigate to="/profile" replace />;
 
 export default Settings;
