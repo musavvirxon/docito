@@ -97,6 +97,7 @@ const ImagingRegistration = lazy(() => import("@/pages/imaging/ImagingRegistrati
 
 // Staff invitation
 const AcceptInvite = lazy(() => import("@/pages/AcceptInvite"));
+const Dashboard = lazy(() => import("@/pages/Dashboard"));
 
 const supportedLangCodes = languages.map((l) => l.code);
 
@@ -220,6 +221,7 @@ export default function App() {
                 <Route path="video/:roomId" element={<VideoCall />} />
                 <Route path="appointment-session/:appointmentId" element={<AppointmentSession />} />
 
+                <Route path="dashboard" element={<Dashboard />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
 
@@ -310,6 +312,7 @@ export default function App() {
               <Route path="video/:roomId" element={<VideoCall />} />
               <Route path="appointment-session/:appointmentId" element={<AppointmentSession />} />
 
+              <Route path="dashboard" element={<Dashboard />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
