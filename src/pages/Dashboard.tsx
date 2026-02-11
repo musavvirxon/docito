@@ -2,10 +2,10 @@ import { useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getDashboardRoute, type AppRole } from "@/lib/rbac";
+import { getDashboardRoute } from "@/lib/rbac";
 
 const Dashboard = () => {
-  const { user, loading, allRoles, activeRole } = useAuth();
+  const { user, loading, activeRole } = useAuth();
   const navigate = useNavigate();
   const { lang } = useParams<{ lang?: string }>();
   const hasRedirected = useRef(false);
@@ -22,15 +22,10 @@ const Dashboard = () => {
       return;
     }
 
-    const roles: AppRole[] =
-      Array.isArray(allRoles) && allRoles.length > 0
-        ? allRoles
-        : [activeRole || "patient"];
-
-    const target = getDashboardRoute(roles);
+    const target = getDashboardRoute([activeRole || "patient"]);
     hasRedirected.current = true;
     navigate(prefix(target), { replace: true });
-  }, [loading, user, allRoles, activeRole]);
+  }, [loading, user, activeRole]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">

@@ -7,11 +7,9 @@ import {
   User,
   LayoutDashboard,
   MessageSquareWarning,
-  ChevronRight,
-  Check,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { roleLabels, DASHBOARD_ROUTES, type AppRole } from "@/lib/rbac";
+import { roleLabels } from "@/lib/rbac";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -20,9 +18,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -36,7 +31,7 @@ type ProfileMenuProps = {
 
 export default function ProfileMenu({ displayName, avatarUrl, email }: ProfileMenuProps) {
   const navigate = useNavigate();
-  const { allRoles, activeRole, switchRole, signOut } = useAuth();
+  const { activeRole, signOut } = useAuth();
   const [openSettings, setOpenSettings] = React.useState(false);
 
   const name = displayName || email || "User";
@@ -52,12 +47,6 @@ export default function ProfileMenu({ displayName, avatarUrl, email }: ProfileMe
   const handleSignOut = async () => {
     await signOut();
     navigate("/auth");
-  };
-
-  const handleRoleSwitch = (role: AppRole) => {
-    switchRole(role);
-    const target = DASHBOARD_ROUTES[role] || "/dashboard";
-    navigate(target, { replace: true });
   };
 
   return (
@@ -121,31 +110,6 @@ export default function ProfileMenu({ displayName, avatarUrl, email }: ProfileMe
               Help
             </Link>
           </DropdownMenuItem>
-
-          {/* Role Switcher — only if multiple roles */}
-          {allRoles.length > 1 && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger className="flex items-center gap-2">
-                  <ChevronRight className="h-4 w-4" />
-                  Switch Role
-                </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent>
-                  {allRoles.map((role) => (
-                    <DropdownMenuItem
-                      key={role}
-                      onClick={() => handleRoleSwitch(role)}
-                      className="flex items-center justify-between gap-2"
-                    >
-                      <span>{roleLabels[role] || role}</span>
-                      {role === activeRole && <Check className="h-4 w-4 text-primary" />}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-            </>
-          )}
 
           <DropdownMenuSeparator />
 
