@@ -167,11 +167,6 @@ export default function PatientDashboard() {
         icon: Settings,
         label: t("patient.menu.settings", { defaultValue: "Settings" }),
       },
-      {
-        id: "settings" as const,
-        icon: Settings,
-        label: t("patient.menu.settings", { defaultValue: "Settings" }),
-      },
     ],
     [t]
   );
@@ -574,7 +569,7 @@ export default function PatientDashboard() {
     return null;
   };
 
-  if (authLoading) {
+  if (authLoading || (user && !profile)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">{t("patient.loading", { defaultValue: "Loading..." })}</div>
