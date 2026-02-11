@@ -22,8 +22,6 @@ interface Profile {
   notification_settings?: any;
   privacy_settings?: any;
   timezone?: string;
-  timezone_source?: string;  // not in DB yet, kept for compat
-  timezone_updated_at?: string;  // not in DB yet, kept for compat
   language?: string;
   created_at: string;
   updated_at: string;
@@ -91,7 +89,8 @@ function mapProfileRoleFromAppRole(role: AppRole): Profile["role"] {
 }
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const bootstrapPromiseRef = useRef<Promise<void> | null>(null);
+  // Version counter replaces bootstrapPromiseRef to avoid swallowing auth state changes
+  const bootstrapVersionRef = useRef(0);
 
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -190,16 +189,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (!nextProfile) return null;
 
-    setProfile(nextProfile);
-    setAllRolesState(nextRoles);
-    applyActiveRoleFrom(nextRoles, nextProfile);
-
     return { profile: nextProfile, roles: nextRoles };
   };
 
   const ensureSelfBootstrap = async (uid: string) => {
-    // Best-effort self-bootstrap when profile/roles are missing.
-    // This avoids getting stuck if the Edge Function is not deployed.
     try {
       const { data: userRes } = await supabase.auth.getUser();
       const u = userRes?.user;
@@ -215,7 +208,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const tzFromMeta = String((u as any)?.user_metadata?.timezone || "").trim();
       const tz = tzFromMeta || String(getBrowserTimeZone() || "").trim() || "UTC";
 
-      // Create profile row (idempotent)
       await supabase
         .from("profiles")
         .upsert(
@@ -229,7 +221,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           { onConflict: "user_id" },
         );
 
-      // Ensure at least one role row exists
       const tryInsert = async (role: AppRole) => {
         const { error } = await supabase.from("user_roles").upsert({ user_id: uid, role } as any, {
           onConflict: "user_id,role",
@@ -266,73 +257,72 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
     };
 
-    // 1) Direct reads first
     let first = await directRead();
 
-    // 2) If missing profile or roles, try self-bootstrap + re-read
     if (!first.directProfile || first.directRoles.length === 0 || first.profileError || first.rolesError) {
       await ensureSelfBootstrap(uid);
       const second = await directRead();
 
       if (second.directProfile) {
-        setProfile(second.directProfile);
-        setAllRolesState(second.directRoles);
-        applyActiveRoleFrom(second.directRoles, second.directProfile);
-        return;
+        return { profile: second.directProfile, roles: second.directRoles };
       }
 
-      // 3) Last resort: Edge bootstrap (if deployed)
+      // Last resort: Edge bootstrap
       try {
         const boot = await bootstrapViaEdge(accessToken);
-        if (boot) return;
+        if (boot) return boot;
       } catch (e) {
         console.warn("Edge bootstrap failed (ignored):", e);
       }
 
-      // Still no profile: clear so UI doesn't lie
-      setProfile(null);
-      setAllRolesState(second.directRoles || []);
-      applyActiveRoleFrom(second.directRoles || [], null);
-      return;
+      return { profile: null as Profile | null, roles: second.directRoles || [] };
     }
 
-    // Direct reads succeeded
-    setProfile(first.directProfile);
-    setAllRolesState(first.directRoles);
-    applyActiveRoleFrom(first.directRoles, first.directProfile);
-  };
-
-  const fetchRoleStatus = async (_uid: string) => {
-    // role_verifications table does not exist yet — skip to avoid errors
+    return { profile: first.directProfile, roles: first.directRoles };
   };
 
   const runBootstrap = async (nextSession: Session | null) => {
-    if (bootstrapPromiseRef.current) return bootstrapPromiseRef.current;
+    // Increment version — any older in-flight bootstrap will discard its results
+    const version = ++bootstrapVersionRef.current;
+    setLoading(true);
 
-    const p = (async () => {
-      setLoading(true);
-      try {
-        setSession(nextSession);
-        setUser(nextSession?.user ?? null);
+    try {
+      if (!nextSession?.user?.id) {
+        clearAuthState();
+        return;
+      }
 
-        if (!nextSession?.user?.id) {
-          clearAuthState();
-          return;
-        }
+      setSession(nextSession);
+      setUser(nextSession.user);
 
-        const uid = nextSession.user.id;
-        await loadProfileAndRoles(uid, nextSession.access_token);
-        await fetchRoleStatus(uid);
-      } finally {
+      const uid = nextSession.user.id;
+      const result = await loadProfileAndRoles(uid, nextSession.access_token);
+
+      // Check if a newer bootstrap has started — if so, discard these results
+      if (bootstrapVersionRef.current !== version) {
+        console.log("[Auth] Stale bootstrap discarded (version", version, "vs current", bootstrapVersionRef.current, ")");
+        return;
+      }
+
+      // Apply results
+      if (result.profile) {
+        setProfile(result.profile);
+      } else {
+        setProfile(null);
+      }
+      setAllRolesState(result.roles);
+      applyActiveRoleFrom(result.roles, result.profile);
+    } catch (e) {
+      console.error("[Auth] runBootstrap error:", e);
+      // Only clear if this is still the latest bootstrap
+      if (bootstrapVersionRef.current === version) {
+        // Don't clear auth state on error — keep session/user so retry is possible
+      }
+    } finally {
+      // Always set loading false, even for stale bootstraps
+      if (bootstrapVersionRef.current === version) {
         setLoading(false);
       }
-    })();
-
-    bootstrapPromiseRef.current = p;
-    try {
-      await p;
-    } finally {
-      bootstrapPromiseRef.current = null;
     }
   };
 
@@ -341,11 +331,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await runBootstrap(session);
   };
 
-  // Inactivity timer (kept as-is)
+  // Inactivity timer
   const { showWarning, countdown, stayLoggedIn } = useInactivityTimer({
     enabled: Boolean(session),
-    inactivityTime: 15 * 60 * 1000, // 15 minutes
-    warningTime: 60 * 1000, // 1 minute
+    inactivityTime: 15 * 60 * 1000,
+    warningTime: 60 * 1000,
     onInactive: async () => {
       try {
         await supabase.auth.signOut();
@@ -356,6 +346,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   useEffect(() => {
+    let safetyTimer: ReturnType<typeof setTimeout> | null = null;
+
     const init = async () => {
       try {
         const { data } = await supabase.auth.getSession();
@@ -368,7 +360,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     void init();
 
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, nextSession) => {
+    const { data: sub } = supabase.auth.onAuthStateChange(async (event, nextSession) => {
+      // For TOKEN_REFRESHED, just update session/user without full profile reload
+      if (event === "TOKEN_REFRESHED") {
+        setSession(nextSession);
+        setUser(nextSession?.user ?? null);
+        return;
+      }
+
       try {
         await runBootstrap(nextSession);
       } catch (e) {
@@ -376,7 +375,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     });
 
-    return () => sub.subscription.unsubscribe();
+    // Safety timeout: if loading is still true after 10s, force it to false
+    safetyTimer = setTimeout(() => {
+      setLoading((current) => {
+        if (current) {
+          console.warn("[Auth] Safety timeout: forcing loading to false after 10s");
+          return false;
+        }
+        return current;
+      });
+    }, 10_000);
+
+    return () => {
+      sub.subscription.unsubscribe();
+      if (safetyTimer) clearTimeout(safetyTimer);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -398,7 +411,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) throw error;
 
       // Don't set loading here — onAuthStateChange will fire runBootstrap which manages loading.
-      // Just set session/user so routing can proceed immediately.
       setSession(data.session);
       setUser(data.user);
 
@@ -434,13 +446,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) throw error;
 
-      // If email confirmations are enabled, Supabase returns user but no session.
       if (!data.session) {
         toast.success("Account created successfully! Please check your email to confirm your account.");
         return { needsEmailConfirmation: true };
       }
 
-      // Otherwise, user is signed in immediately — onAuthStateChange handles bootstrap.
       setSession(data.session);
       setUser(data.user);
 
