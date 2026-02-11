@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { HelmetProvider } from "react-helmet-async";
 import { languages } from "@/i18n/config";
 import i18n from "@/i18n/config";
+
 // Lazy load — renders null, only needed for authenticated users
 const TimezoneBootstrapper = lazy(() => import("@/components/time/TimezoneBootstrapper"));
 
@@ -138,6 +139,7 @@ export default function App() {
                 <Route element={<PublicLayout />}>
                   <Route index element={<PremiumHome />} />
                   <Route path="auth" element={<Auth />} />
+                  <Route path="accept-invite/:token" element={<AcceptInvite />} />
                   <Route path="accept-invite" element={<AcceptInvite />} />
                   <Route path="doctor" element={<DoctorLandingPage />} />
                   <Route path="doctors" element={<DoctorLandingPage />} />
@@ -220,7 +222,6 @@ export default function App() {
                 <Route path="video-call" element={<VideoCall />} />
                 <Route path="video/:roomId" element={<VideoCall />} />
                 <Route path="appointment-session/:appointmentId" element={<AppointmentSession />} />
-
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
@@ -229,6 +230,7 @@ export default function App() {
               <Route element={<PublicLayout />}>
                 <Route index element={<PremiumHome />} />
                 <Route path="auth" element={<Auth />} />
+                <Route path="accept-invite/:token" element={<AcceptInvite />} />
                 <Route path="accept-invite" element={<AcceptInvite />} />
                 <Route path="doctor" element={<DoctorLandingPage />} />
                 <Route path="doctors" element={<DoctorLandingPage />} />
@@ -311,7 +313,6 @@ export default function App() {
               <Route path="video-call" element={<VideoCall />} />
               <Route path="video/:roomId" element={<VideoCall />} />
               <Route path="appointment-session/:appointmentId" element={<AppointmentSession />} />
-
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
