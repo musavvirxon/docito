@@ -10,8 +10,6 @@ import {
   ChevronRight,
   Check,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { roleLabels, DASHBOARD_ROUTES, type AppRole } from "@/lib/rbac";
 
@@ -38,8 +36,7 @@ type ProfileMenuProps = {
 
 export default function ProfileMenu({ displayName, avatarUrl, email }: ProfileMenuProps) {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { allRoles, activeRole, switchRole } = useAuth();
+  const { allRoles, activeRole, switchRole, signOut } = useAuth();
   const [openSettings, setOpenSettings] = React.useState(false);
 
   const name = displayName || email || "User";
@@ -52,12 +49,8 @@ export default function ProfileMenu({ displayName, avatarUrl, email }: ProfileMe
       .map((s) => s[0]?.toUpperCase())
       .join("") || "U";
 
-  const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast({ variant: "destructive", title: "Sign out failed", description: error.message });
-      return;
-    }
+  const handleSignOut = async () => {
+    await signOut();
     navigate("/auth");
   };
 
@@ -157,7 +150,7 @@ export default function ProfileMenu({ displayName, avatarUrl, email }: ProfileMe
           <DropdownMenuSeparator />
 
           {/* Sign out */}
-          <DropdownMenuItem onClick={signOut} className="flex items-center gap-2 text-destructive">
+          <DropdownMenuItem onClick={handleSignOut} className="flex items-center gap-2 text-destructive">
             <LogOut className="h-4 w-4" />
             Sign out
           </DropdownMenuItem>
