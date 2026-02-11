@@ -1,8 +1,16 @@
 import { memo, useCallback, useEffect, useState, lazy, Suspense } from "react";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import HeroStaticFallback from "./HeroStaticFallback";
 
-// Dynamically import the heavy 3D component - this prevents three.js from loading until needed
-const HeroOrb3D = lazy(() => import("./HeroOrb3D"));
+// Dynamically import with retry logic to handle transient network failures
+const HeroOrb3D = lazy(() =>
+  import("./HeroOrb3D").catch(() => {
+    // Retry once after a short delay
+    return new Promise<typeof import("./HeroOrb3D")>((resolve) =>
+      setTimeout(() => resolve(import("./HeroOrb3D")), 2000)
+    );
+  })
+);
 
 function LazyHeroOrb3D() {
   const [shouldLoad3D, setShouldLoad3D] = useState(false);
@@ -13,7 +21,6 @@ function LazyHeroOrb3D() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // Use matchMedia instead of window.innerWidth to avoid forced reflow
     const mobileQuery = window.matchMedia("(max-width: 767px)");
     const touchDevice = "ontouchstart" in window;
     
@@ -21,10 +28,8 @@ function LazyHeroOrb3D() {
       setIsMobile(e.matches || touchDevice);
     };
 
-    // Initial check
     handleChange(mobileQuery);
     
-    // Listen for changes
     mobileQuery.addEventListener("change", handleChange);
     return () => mobileQuery.removeEventListener("change", handleChange);
   }, []);
@@ -59,9 +64,11 @@ function LazyHeroOrb3D() {
   }
 
   return (
-    <Suspense fallback={<HeroStaticFallback onClick={handleFallbackClick} />}>
-      <HeroOrb3D />
-    </Suspense>
+    <ErrorBoundary fallback={() => <HeroStaticFallback onClick={handleFallbackClick} />}>
+      <Suspense fallback={<HeroStaticFallback onClick={handleFallbackClick} />}>
+        <HeroOrb3D />
+      </Suspense>
+    </ErrorBoundary>
   );
 }
 
